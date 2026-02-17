@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-017: GL-DATA-X-020 Schema Migration Agent - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: schema-migration-service
+  namespace: greenlang
+  labels:
+    app: schema-migration-service
+    agent-id: GL-DATA-X-020
+    component: schema-migration
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: schema-migration-service

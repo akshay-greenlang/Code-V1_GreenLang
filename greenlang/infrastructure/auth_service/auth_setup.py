@@ -134,6 +134,101 @@ except ImportError:
     pii_router = None
     PII_SERVICE_AVAILABLE = False
 
+# Duplicate Detection Agent imports (AGENT-DATA-011)
+try:
+    from greenlang.duplicate_detector.api.router import router as dedup_router
+
+    DUPLICATE_DETECTOR_AVAILABLE = True
+except ImportError:
+    dedup_router = None
+    DUPLICATE_DETECTOR_AVAILABLE = False
+
+# Missing Value Imputer Agent imports (AGENT-DATA-012)
+try:
+    from greenlang.missing_value_imputer.api.router import router as imputer_router
+
+    MISSING_VALUE_IMPUTER_AVAILABLE = True
+except ImportError:
+    imputer_router = None
+    MISSING_VALUE_IMPUTER_AVAILABLE = False
+
+# Outlier Detection Agent imports (AGENT-DATA-013)
+try:
+    from greenlang.outlier_detector.api.router import router as outlier_router
+
+    OUTLIER_DETECTOR_AVAILABLE = True
+except ImportError:
+    outlier_router = None
+    OUTLIER_DETECTOR_AVAILABLE = False
+
+# Time Series Gap Filler Agent imports (AGENT-DATA-014)
+try:
+    from greenlang.time_series_gap_filler.setup import get_router as get_gap_filler_router
+
+    _gap_filler_router = get_gap_filler_router()
+    GAP_FILLER_AVAILABLE = True
+except ImportError:
+    _gap_filler_router = None
+    GAP_FILLER_AVAILABLE = False
+
+# Cross-Source Reconciliation Agent imports (AGENT-DATA-015)
+try:
+    from greenlang.cross_source_reconciliation.setup import get_router as get_reconciliation_router
+
+    _reconciliation_router = get_reconciliation_router()
+    RECONCILIATION_AVAILABLE = True
+except ImportError:
+    _reconciliation_router = None
+    RECONCILIATION_AVAILABLE = False
+
+# Data Freshness Monitor Agent imports (AGENT-DATA-016)
+try:
+    from greenlang.data_freshness_monitor.setup import get_router as get_freshness_router
+
+    _freshness_router = get_freshness_router()
+    FRESHNESS_MONITOR_AVAILABLE = True
+except ImportError:
+    _freshness_router = None
+    FRESHNESS_MONITOR_AVAILABLE = False
+
+# Schema Migration Agent imports (AGENT-DATA-017)
+try:
+    from greenlang.schema_migration.setup import get_router as get_sm_router
+
+    _sm_router = get_sm_router()
+    SCHEMA_MIGRATION_AVAILABLE = True
+except ImportError:
+    _sm_router = None
+    SCHEMA_MIGRATION_AVAILABLE = False
+
+# Data Lineage Tracker Agent imports (AGENT-DATA-018)
+try:
+    from greenlang.data_lineage_tracker.setup import get_router as get_dlt_router
+
+    DATA_LINEAGE_AVAILABLE = True
+    _dlt_router = get_dlt_router()
+except ImportError:
+    DATA_LINEAGE_AVAILABLE = False
+    _dlt_router = None
+
+# Validation Rule Engine imports (AGENT-DATA-019)
+try:
+    from greenlang.validation_rule_engine.setup import get_router as get_vre_router
+    VALIDATION_RULE_ENGINE_AVAILABLE = True
+    _vre_router = get_vre_router()
+except ImportError:
+    VALIDATION_RULE_ENGINE_AVAILABLE = False
+    _vre_router = None
+
+# Climate Hazard Connector imports (AGENT-DATA-020)
+try:
+    from greenlang.climate_hazard.setup import get_router as get_chc_router
+    CLIMATE_HAZARD_AVAILABLE = True
+    _chc_router = get_chc_router()
+except ImportError:
+    CLIMATE_HAZARD_AVAILABLE = False
+    _chc_router = None
+
 
 def configure_auth(
     app: "FastAPI",
@@ -411,6 +506,76 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("PII service router included (SEC-011)")
     else:
         logger.debug("PII service router not available; skipping")
+
+    # Include Duplicate Detection Agent router (AGENT-DATA-011)
+    if DUPLICATE_DETECTOR_AVAILABLE and dedup_router is not None:
+        app.include_router(dedup_router)
+        logger.info("Duplicate Detection Agent router included (AGENT-DATA-011)")
+    else:
+        logger.debug("Duplicate Detection Agent router not available; skipping")
+
+    # Include Missing Value Imputer Agent router (AGENT-DATA-012)
+    if MISSING_VALUE_IMPUTER_AVAILABLE and imputer_router is not None:
+        app.include_router(imputer_router)
+        logger.info("Missing Value Imputer Agent router included (AGENT-DATA-012)")
+    else:
+        logger.debug("Missing Value Imputer Agent router not available; skipping")
+
+    # Include Outlier Detection Agent router (AGENT-DATA-013)
+    if OUTLIER_DETECTOR_AVAILABLE and outlier_router is not None:
+        app.include_router(outlier_router)
+        logger.info("Outlier Detection Agent router included (AGENT-DATA-013)")
+    else:
+        logger.debug("Outlier Detection Agent router not available; skipping")
+
+    # Include Time Series Gap Filler Agent router (AGENT-DATA-014)
+    if GAP_FILLER_AVAILABLE and _gap_filler_router is not None:
+        app.include_router(_gap_filler_router)
+        logger.info("Time Series Gap Filler Agent router included (AGENT-DATA-014)")
+    else:
+        logger.debug("Time Series Gap Filler Agent router not available; skipping")
+
+    # Include Cross-Source Reconciliation Agent router (AGENT-DATA-015)
+    if RECONCILIATION_AVAILABLE and _reconciliation_router is not None:
+        app.include_router(_reconciliation_router)
+        logger.info("Cross-Source Reconciliation Agent router included (AGENT-DATA-015)")
+    else:
+        logger.debug("Cross-Source Reconciliation Agent router not available; skipping")
+
+    # Include Data Freshness Monitor Agent router (AGENT-DATA-016)
+    if FRESHNESS_MONITOR_AVAILABLE and _freshness_router is not None:
+        app.include_router(_freshness_router)
+        logger.info("Data Freshness Monitor Agent router included (AGENT-DATA-016)")
+    else:
+        logger.debug("Data Freshness Monitor Agent router not available; skipping")
+
+    # Include Schema Migration Agent router (AGENT-DATA-017)
+    if SCHEMA_MIGRATION_AVAILABLE and _sm_router is not None:
+        app.include_router(_sm_router)
+        logger.info("Schema Migration Agent router included (AGENT-DATA-017)")
+    else:
+        logger.debug("Schema Migration Agent router not available; skipping")
+
+    # Include Data Lineage Tracker Agent router (AGENT-DATA-018)
+    if DATA_LINEAGE_AVAILABLE and _dlt_router is not None:
+        app.include_router(_dlt_router)
+        logger.info("Data Lineage Tracker Agent router included (AGENT-DATA-018)")
+    else:
+        logger.debug("Data Lineage Tracker Agent router not available; skipping")
+
+    # Include Validation Rule Engine router (AGENT-DATA-019)
+    if VALIDATION_RULE_ENGINE_AVAILABLE and _vre_router is not None:
+        app.include_router(_vre_router)
+        logger.info("Validation Rule Engine router included (AGENT-DATA-019)")
+    else:
+        logger.debug("Validation Rule Engine router not available; skipping")
+
+    # Climate Hazard Connector router (AGENT-DATA-020)
+    if CLIMATE_HAZARD_AVAILABLE and _chc_router is not None:
+        app.include_router(_chc_router)
+        logger.info("Climate Hazard Connector router included (AGENT-DATA-020)")
+    else:
+        logger.debug("Climate Hazard Connector router not available; skipping")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

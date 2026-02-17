@@ -1,0 +1,116 @@
+---
+# AGENT-DATA-019: GL-DATA-X-022 Validation Rule Engine - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: validation-rule-engine-alerts
+  namespace: greenlang
+  labels:
+    app: validation-rule-engine-service
+    agent-id: GL-DATA-X-022
+    component: validation-rule-engine
+    release: prometheus
+spec:
+  groups:
+    - name: validation-rule-engine.rules
+      rules:
+        # Alert 1: High evaluation failure rate
+        - alert: ValidationRuleEngineHighEvaluationFailureRate
+          expr: |
+            rate(gl_vre_evaluations_total{status="failed"}[5m])
+            / rate(gl_vre_evaluations_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: validation-rule-engine-service
+            agent_id: GL-DATA-X-022
+          annotations:
+            summary: "Validation Rule Engine high evaluation failure rate"
+            description: "Evaluation failure rate {{ $value | humanizePercentage }} for validation-rule-engine-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/validation-rule-engine/high-evaluation-failure-rate"
+
+        # Alert 2: Multiple rule conflicts detected
+        - alert: ValidationRuleEngineMultipleConflicts
+          expr: |
+            increase(gl_vre_conflicts_detected_total[1h]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: validation-rule-engine-service
+          annotations:
+            summary: "Multiple validation rule conflicts detected"
+            description: "{{ $value }} rule conflicts detected in the last hour. Review conflicting rules for resolution."
+
+        # Alert 3: Low overall pass rate (<50%)
+        - alert: ValidationRuleEngineLowPassRate
+          expr: |
+            gl_vre_pass_rate < 0.5
+          for: 15m
+          labels:
+            severity: critical
+            service: validation-rule-engine-service
+          annotations:
+            summary: "Validation rule pass rate below 50%"
+            description: "Overall pass rate {{ $value | humanizePercentage }} is below the 50% threshold. Investigate failing rules and data quality issues."
+
+        # Alert 4: High evaluation latency (p95 > 30s)
+        - alert: ValidationRuleEngineHighEvaluationLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_vre_evaluation_duration_seconds_bucket[5m])) > 30
+          for: 10m
+          labels:
+            severity: warning
+            service: validation-rule-engine-service
+          annotations:
+            summary: "Validation Rule Engine p95 evaluation latency > 30s"
+            description: "Evaluation p95 duration {{ $value | humanizeDuration }} exceeds 30s threshold."
+
+        # Alert 5: Rule pack application failures
+        - alert: ValidationRuleEngineRulePackFailures
+          expr: |
+            increase(gl_vre_rule_pack_applications_total{status="failed"}[1h]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            service: validation-rule-engine-service
+          annotations:
+            summary: "Rule pack application failures detected"
+            description: "{{ $value }} rule pack applications failed in the last hour. Immediate investigation required."
+
+        # Alert 6: High rule change rate
+        - alert: ValidationRuleEngineHighRuleChangeRate
+          expr: |
+            increase(gl_vre_rule_changes_total[1h]) > 50
+          for: 5m
+          labels:
+            severity: warning
+            service: validation-rule-engine-service
+          annotations:
+            summary: "High rule change rate detected"
+            description: "{{ $value }} rule changes detected in the last hour. Verify changes are intentional and authorized."
+
+        # Alert 7: Pod not ready
+        - alert: ValidationRuleEnginePodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="validation-rule-engine-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="validation-rule-engine-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: validation-rule-engine-service
+          annotations:
+            summary: "Validation Rule Engine pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high (>85%)
+        - alert: ValidationRuleEngineHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"validation-rule-engine.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"validation-rule-engine.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: validation-rule-engine-service
+          annotations:
+            summary: "Validation Rule Engine memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

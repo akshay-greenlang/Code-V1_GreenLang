@@ -1,0 +1,21 @@
+---
+# AGENT-DATA-019: GL-DATA-X-022 Validation Rule Engine - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: validation-rule-engine-service
+  namespace: greenlang
+  labels:
+    app: validation-rule-engine-service
+    agent-id: GL-DATA-X-022
+    component: validation-rule-engine
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app: validation-rule-engine-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

@@ -1,0 +1,21 @@
+---
+# AGENT-DATA-017: GL-DATA-X-020 Schema Migration Agent - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: schema-migration-service
+  namespace: greenlang
+  labels:
+    app: schema-migration-service
+    agent-id: GL-DATA-X-020
+    component: schema-migration
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app: schema-migration-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

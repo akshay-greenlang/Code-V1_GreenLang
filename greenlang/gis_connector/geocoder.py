@@ -115,9 +115,9 @@ ELEVATION_ZONES: Dict[str, float] = {
 
 # Coordinate format regex patterns
 _DMS_PATTERN = re.compile(
-    r"(\d{1,3})\s*[dD\u00b0]\s*(\d{1,2})\s*[''\u2032]\s*(\d{1,2}(?:\.\d+)?)\s*[\""\u2033]?\s*([NSns])"
-    r"\s*[,\s]\s*"
-    r"(\d{1,3})\s*[dD\u00b0]\s*(\d{1,2})\s*[''\u2032]\s*(\d{1,2}(?:\.\d+)?)\s*[\""\u2033]?\s*([EWew])",
+    "(\d{1,3})\s*[dD\u00b0]\s*(\d{1,2})\s*['\u2018\u2019\u2032]\s*(\d{1,2}(?:\.\d+)?)\s*[\"\u201c\u201d\u2033]?\s*([NSns])"
+    "\s*[,\s]\s*"
+    "(\d{1,3})\s*[dD\u00b0]\s*(\d{1,2})\s*['\u2018\u2019\u2032]\s*(\d{1,2}(?:\.\d+)?)\s*[\"\u201c\u201d\u2033]?\s*([EWew])",
 )
 
 _DD_PATTERN = re.compile(

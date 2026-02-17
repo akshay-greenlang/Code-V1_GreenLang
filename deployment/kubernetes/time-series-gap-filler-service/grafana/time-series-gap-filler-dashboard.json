@@ -1,0 +1,118 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Jobs Processed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_tsgf_jobs_processed_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Gaps Detected (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_tsgf_gaps_detected_total[5m]) * 60", "legendFormat": "{{type}}" }]
+    },
+    {
+      "title": "Gaps Filled (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_tsgf_gaps_filled_total[5m]) * 60", "legendFormat": "{{method}}" }]
+    },
+    {
+      "title": "Validations (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_tsgf_validations_passed_total[5m]) * 60", "legendFormat": "{{result}}" }]
+    },
+    {
+      "title": "Frequencies Detected (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "rate(gl_tsgf_frequencies_detected_total[5m]) * 60", "legendFormat": "{{level}}" }]
+    },
+    {
+      "title": "Strategies Selected (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "rate(gl_tsgf_strategies_selected_total[5m]) * 60", "legendFormat": "{{type}}" }]
+    },
+    {
+      "title": "Active Jobs / Open Gaps",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_tsgf_active_jobs", "legendFormat": "Active Jobs" },
+        { "expr": "gl_tsgf_total_gaps_open", "legendFormat": "Open Gaps" }
+      ]
+    },
+    {
+      "title": "Fill Confidence Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "gl_tsgf_fill_confidence_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Processing Duration (p50 / p95 / p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_tsgf_processing_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_tsgf_processing_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_tsgf_processing_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "title": "Gap Duration Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "gl_tsgf_gap_duration_seconds_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Processing Errors (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "rate(gl_tsgf_processing_errors_total[5m]) * 60", "legendFormat": "{{error_type}}" }]
+    },
+    {
+      "title": "Fill Method Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "sum by (method) (gl_tsgf_gaps_filled_total)", "legendFormat": "{{method}}" }]
+    },
+    {
+      "title": "Avg Fill Confidence",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [{ "expr": "histogram_quantile(0.5, rate(gl_tsgf_fill_confidence_bucket[1h]))" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "thresholds": { "steps": [
+        { "value": 0, "color": "red" },
+        { "value": 0.5, "color": "yellow" },
+        { "value": 0.8, "color": "green" }
+      ]}}}
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"time-series-gap-filler.*\"} / 1024 / 1024", "legendFormat": "Memory (MB) - {{pod}}" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"time-series-gap-filler.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores) - {{pod}}" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "time-series-gap-filler", "agent-data-014", "data-quality"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Time Series Gap Filler - GL-DATA-X-017",
+  "uid": "time-series-gap-filler-overview",
+  "version": 1
+}

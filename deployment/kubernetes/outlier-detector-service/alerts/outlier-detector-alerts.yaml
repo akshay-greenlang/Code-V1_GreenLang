@@ -1,0 +1,115 @@
+---
+# AGENT-DATA-013: GL-DATA-X-016 Outlier Detection Agent - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: outlier-detector-alerts
+  namespace: greenlang
+  labels:
+    app: outlier-detector-service
+    agent-id: GL-DATA-X-016
+    component: outlier-detection
+    release: prometheus
+spec:
+  groups:
+    - name: outlier-detector.rules
+      rules:
+        # Alert 1: High error rate
+        - alert: OutlierDetectorHighErrorRate
+          expr: |
+            rate(gl_od_processing_errors_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: outlier-detector-service
+            agent_id: GL-DATA-X-016
+          annotations:
+            summary: "Outlier Detector high error rate"
+            description: "Error rate {{ $value | humanize }}/s for outlier-detector-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/outlier-detector/high-error-rate"
+
+        # Alert 2: Job failures
+        - alert: OutlierDetectorJobFailures
+          expr: |
+            increase(gl_od_jobs_processed_total{status="failed"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: critical
+            service: outlier-detector-service
+          annotations:
+            summary: "Multiple outlier detection job failures"
+            description: "{{ $value }} outlier detection jobs failed in the last hour."
+
+        # Alert 3: Processing latency high
+        - alert: OutlierDetectorHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_od_processing_duration_seconds_bucket[5m])) > 30
+          for: 10m
+          labels:
+            severity: warning
+            service: outlier-detector-service
+          annotations:
+            summary: "Outlier Detector p95 latency > 30s"
+            description: "Processing p95 latency {{ $value | humanizeDuration }} exceeds 30s threshold."
+
+        # Alert 4: High false positive rate
+        - alert: OutlierDetectorHighFalsePositiveRate
+          expr: |
+            rate(gl_od_feedback_total{feedback_type="reject"}[1h]) / rate(gl_od_detections_total[1h]) > 0.3
+          for: 15m
+          labels:
+            severity: warning
+            service: outlier-detector-service
+          annotations:
+            summary: "High false positive rate (>30%)"
+            description: "{{ $value | humanizePercentage }} of detections are being rejected as false positives. Consider threshold tuning."
+
+        # Alert 5: Detection backlog
+        - alert: OutlierDetectorDetectionBacklog
+          expr: |
+            rate(gl_od_outliers_detected_total[5m]) < 1 and gl_od_active_jobs > 0
+          for: 10m
+          labels:
+            severity: warning
+            service: outlier-detector-service
+          annotations:
+            summary: "Detection throughput stalled"
+            description: "Active jobs but detection near zero. Possible pipeline or performance issue."
+
+        # Alert 6: Low quality scores
+        - alert: OutlierDetectorLowQualityScores
+          expr: |
+            histogram_quantile(0.5, rate(gl_od_quality_score_bucket[1h])) < 0.5
+          for: 15m
+          labels:
+            severity: warning
+            service: outlier-detector-service
+          annotations:
+            summary: "Low median detection quality scores"
+            description: "Median quality score {{ $value }} is below 0.5. Check detection method configuration."
+
+        # Alert 7: Pod not ready
+        - alert: OutlierDetectorPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="outlier-detector-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="outlier-detector-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: outlier-detector-service
+          annotations:
+            summary: "Outlier Detector pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high
+        - alert: OutlierDetectorHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"outlier-detector.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"outlier-detector.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: outlier-detector-service
+          annotations:
+            summary: "Outlier Detector memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

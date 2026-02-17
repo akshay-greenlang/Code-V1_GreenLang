@@ -1,0 +1,30 @@
+---
+# AGENT-DATA-015: GL-DATA-X-018 Cross-Source Reconciliation - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cross-source-reconciliation-service
+  namespace: greenlang
+  labels:
+    app: cross-source-reconciliation-service
+    agent-id: GL-DATA-X-018
+    agent: cross-source-reconciliation
+    component: data-quality
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: cross-source-reconciliation-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_csr_.*"
+          action: keep

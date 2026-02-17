@@ -1,0 +1,37 @@
+---
+# AGENT-DATA-014: GL-DATA-X-017 Time Series Gap Filler - ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: time-series-gap-filler-config
+  namespace: greenlang
+  labels:
+    app: time-series-gap-filler-service
+    agent-id: GL-DATA-X-017
+    component: data-quality
+data:
+  GL_TSGF_LOG_LEVEL: "INFO"
+  GL_TSGF_BATCH_SIZE: "1000"
+  GL_TSGF_MAX_RECORDS: "100000"
+  GL_TSGF_MIN_POINTS: "10"
+  GL_TSGF_MAX_GAP_PCT: "0.5"
+  GL_TSGF_DEFAULT_STRATEGY: "auto"
+  GL_TSGF_INTERPOLATION_METHOD: "linear"
+  GL_TSGF_SEASONAL_PERIODS: "12"
+  GL_TSGF_SMOOTHING_ALPHA: "0.3"
+  GL_TSGF_SMOOTHING_BETA: "0.1"
+  GL_TSGF_SMOOTHING_GAMMA: "0.1"
+  GL_TSGF_CONFIDENCE_THRESHOLD: "0.7"
+  GL_TSGF_CORRELATION_THRESHOLD: "0.7"
+  GL_TSGF_SHORT_GAP_LIMIT: "3"
+  GL_TSGF_LONG_GAP_LIMIT: "12"
+  GL_TSGF_ENABLE_SEASONAL: "true"
+  GL_TSGF_ENABLE_CROSS_SERIES: "true"
+  GL_TSGF_ENABLE_CALENDAR: "true"
+  GL_TSGF_WORKER_COUNT: "4"
+  GL_TSGF_POOL_MIN_SIZE: "2"
+  GL_TSGF_POOL_MAX_SIZE: "10"
+  GL_TSGF_CACHE_TTL: "3600"
+  GL_TSGF_RATE_LIMIT_RPM: "120"
+  GL_TSGF_ENABLE_PROVENANCE: "true"
+  GL_TSGF_ENABLE_METRICS: "true"

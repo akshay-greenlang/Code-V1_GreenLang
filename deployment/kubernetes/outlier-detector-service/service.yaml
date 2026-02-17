@@ -1,0 +1,21 @@
+---
+# AGENT-DATA-013: GL-DATA-X-016 Outlier Detection Agent - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: outlier-detector-service
+  namespace: greenlang
+  labels:
+    app: outlier-detector-service
+    agent-id: GL-DATA-X-016
+    component: outlier-detection
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app: outlier-detector-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

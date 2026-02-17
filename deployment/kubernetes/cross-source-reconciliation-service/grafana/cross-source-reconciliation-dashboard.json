@@ -1,0 +1,118 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Jobs Processed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_csr_jobs_processed_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Matches Found (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_csr_matches_total[5m]) * 60", "legendFormat": "{{match_type}}" }]
+    },
+    {
+      "title": "Discrepancies Detected (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_csr_discrepancies_total[5m]) * 60", "legendFormat": "{{severity}}" }]
+    },
+    {
+      "title": "Resolutions Applied (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_csr_resolutions_total[5m]) * 60", "legendFormat": "{{strategy}}" }]
+    },
+    {
+      "title": "Match Confidence Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "gl_csr_match_confidence_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Discrepancy Severity Breakdown",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "sum by (severity) (gl_csr_discrepancies_total)", "legendFormat": "{{severity}}" }]
+    },
+    {
+      "title": "Active Jobs / Pending Reviews",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_csr_active_jobs", "legendFormat": "Active Jobs" },
+        { "expr": "gl_csr_pending_reviews", "legendFormat": "Pending Reviews" }
+      ]
+    },
+    {
+      "title": "Processing Duration (p50 / p95 / p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_csr_processing_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_csr_processing_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_csr_processing_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "title": "Records Compared (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "rate(gl_csr_records_compared_total[5m]) * 60", "legendFormat": "compared" }]
+    },
+    {
+      "title": "Median Match Confidence",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "histogram_quantile(0.5, rate(gl_csr_match_confidence_bucket[1h]))" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "thresholds": { "steps": [
+        { "value": 0, "color": "red" },
+        { "value": 0.5, "color": "yellow" },
+        { "value": 0.8, "color": "green" }
+      ]}}}
+    },
+    {
+      "title": "Processing Errors (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "rate(gl_csr_processing_errors_total[5m]) * 60", "legendFormat": "{{error_type}}" }]
+    },
+    {
+      "title": "Source Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "sum by (source) (gl_csr_records_compared_total)", "legendFormat": "{{source}}" }]
+    },
+    {
+      "title": "Conflict Resolution Strategy Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [{ "expr": "sum by (strategy) (gl_csr_resolutions_total)", "legendFormat": "{{strategy}}" }]
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"cross-source-reconciliation.*\"} / 1024 / 1024", "legendFormat": "Memory (MB) - {{pod}}" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"cross-source-reconciliation.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores) - {{pod}}" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "cross-source-reconciliation", "agent-data-015", "data-quality"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Cross-Source Reconciliation - GL-DATA-X-018",
+  "uid": "cross-source-reconciliation-overview",
+  "version": 1
+}

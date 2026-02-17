@@ -1,0 +1,117 @@
+---
+# AGENT-DATA-020: GL-DATA-GEO-002 Climate Hazard Connector - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: climate-hazard-alerts
+  namespace: greenlang
+  labels:
+    app: climate-hazard-service
+    agent-id: GL-DATA-GEO-002
+    component: data-agent
+    part-of: greenlang
+    release: prometheus
+spec:
+  groups:
+    - name: climate-hazard.rules
+      rules:
+        # Alert 1: High error rate on assessments
+        - alert: ClimateHazardHighErrorRate
+          expr: |
+            rate(gl_chc_assessments_total{status="failed"}[5m])
+            / rate(gl_chc_assessments_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: climate-hazard-service
+            agent_id: GL-DATA-GEO-002
+          annotations:
+            summary: "Climate Hazard Connector high assessment error rate"
+            description: "Assessment failure rate {{ $value | humanizePercentage }} for climate-hazard-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/climate-hazard/high-error-rate"
+
+        # Alert 2: High assessment latency (p95 > 30s)
+        - alert: ClimateHazardHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_chc_assessment_duration_seconds_bucket[5m])) > 30
+          for: 10m
+          labels:
+            severity: warning
+            service: climate-hazard-service
+          annotations:
+            summary: "Climate Hazard Connector p95 assessment latency > 30s"
+            description: "Assessment p95 duration {{ $value | humanizeDuration }} exceeds 30s threshold."
+
+        # Alert 3: Pod restarts detected
+        - alert: ClimateHazardPodRestarts
+          expr: |
+            increase(kube_pod_container_status_restarts_total{pod=~"climate-hazard.*", namespace="greenlang"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: critical
+            service: climate-hazard-service
+          annotations:
+            summary: "Climate Hazard Connector pod restarts detected"
+            description: "Pod {{ $labels.pod }} restarted {{ $value }} times in the last hour."
+
+        # Alert 4: High risk locations exceeding threshold
+        - alert: ClimateHazardHighRiskLocations
+          expr: |
+            gl_chc_high_risk_locations > 100
+          for: 15m
+          labels:
+            severity: critical
+            service: climate-hazard-service
+          annotations:
+            summary: "High number of climate high-risk locations detected"
+            description: "{{ $value }} locations classified as high risk. Review climate hazard assessments and notify stakeholders."
+
+        # Alert 5: External data source failures
+        - alert: ClimateHazardDataSourceFailures
+          expr: |
+            increase(gl_chc_data_source_errors_total[1h]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: climate-hazard-service
+          annotations:
+            summary: "Climate data source retrieval failures"
+            description: "{{ $value }} data source errors in the last hour. External climate APIs may be degraded."
+
+        # Alert 6: Projection computation failures
+        - alert: ClimateHazardProjectionFailures
+          expr: |
+            increase(gl_chc_projections_total{status="failed"}[1h]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            service: climate-hazard-service
+          annotations:
+            summary: "Climate hazard projection computation failures"
+            description: "{{ $value }} projection computations failed in the last hour. Immediate investigation required."
+
+        # Alert 7: Pod not ready
+        - alert: ClimateHazardPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="climate-hazard-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="climate-hazard-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: climate-hazard-service
+          annotations:
+            summary: "Climate Hazard Connector pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high (>85%)
+        - alert: ClimateHazardHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"climate-hazard.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"climate-hazard.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: climate-hazard-service
+          annotations:
+            summary: "Climate Hazard Connector memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

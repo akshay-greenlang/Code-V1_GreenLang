@@ -1,0 +1,29 @@
+---
+# AGENT-DATA-014: GL-DATA-X-017 Time Series Gap Filler - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: time-series-gap-filler-service
+  namespace: greenlang
+  labels:
+    app: time-series-gap-filler-service
+    agent-id: GL-DATA-X-017
+    component: data-quality
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: time-series-gap-filler-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_tsgf_.*"
+          action: keep

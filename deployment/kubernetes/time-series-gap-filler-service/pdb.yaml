@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-014: GL-DATA-X-017 Time Series Gap Filler - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: time-series-gap-filler-service
+  namespace: greenlang
+  labels:
+    app: time-series-gap-filler-service
+    agent-id: GL-DATA-X-017
+    component: data-quality
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: time-series-gap-filler-service

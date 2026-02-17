@@ -1,0 +1,108 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Jobs Processed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_od_jobs_processed_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Outliers Detected (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_od_outliers_detected_total[5m]) * 60", "legendFormat": "{{method}}" }]
+    },
+    {
+      "title": "Detections by Method (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_od_detections_total[5m]) * 60", "legendFormat": "{{detection_method}}" }]
+    },
+    {
+      "title": "Treatments Applied (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_od_treatments_applied_total[5m]) * 60", "legendFormat": "{{treatment_method}}" }]
+    },
+    {
+      "title": "Quality Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "gl_od_quality_score_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Processing Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_od_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Active Jobs / Outliers Detected",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_od_active_jobs", "legendFormat": "Active Jobs" },
+        { "expr": "increase(gl_od_outliers_detected_total[1h])", "legendFormat": "Outliers (1h)" }
+      ]
+    },
+    {
+      "title": "Processing Errors (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "rate(gl_od_processing_errors_total[5m]) * 60", "legendFormat": "{{error_type}}" }]
+    },
+    {
+      "title": "Classification Distribution (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "rate(gl_od_classifications_total[5m]) * 60", "legendFormat": "{{outlier_type}}" }]
+    },
+    {
+      "title": "Feedback Rates",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "rate(gl_od_feedback_total[5m]) * 60", "legendFormat": "{{feedback_type}}" }]
+    },
+    {
+      "title": "Detection Method Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "sum by (detection_method) (gl_od_detections_total)", "legendFormat": "{{detection_method}}" }]
+    },
+    {
+      "title": "Avg Quality Score",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "histogram_quantile(0.5, rate(gl_od_quality_score_bucket[1h]))" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "thresholds": { "steps": [
+        { "value": 0, "color": "red" },
+        { "value": 0.5, "color": "yellow" },
+        { "value": 0.8, "color": "green" }
+      ]}}}
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"outlier-detector.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"outlier-detector.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "outlier-detector", "agent-data-013", "anomaly-detection"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Outlier Detection Agent - GL-DATA-X-016",
+  "uid": "outlier-detector-overview",
+  "version": 1
+}

@@ -1,0 +1,29 @@
+---
+# AGENT-DATA-017: GL-DATA-X-020 Schema Migration Agent - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: schema-migration-service
+  namespace: greenlang
+  labels:
+    app: schema-migration-service
+    agent-id: GL-DATA-X-020
+    component: schema-migration
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: schema-migration-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_sm_.*"
+          action: keep

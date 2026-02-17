@@ -1,0 +1,103 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Migrations Executed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_sm_migrations_executed_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Schemas Registered (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_sm_schemas_registered_total[5m]) * 60", "legendFormat": "{{schema_type}}" }]
+    },
+    {
+      "title": "Versions Created (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_sm_versions_created_total[5m]) * 60", "legendFormat": "{{bump_type}}" }]
+    },
+    {
+      "title": "Compatibility Checks (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_sm_compatibility_checks_total[5m]) * 60", "legendFormat": "{{result}}" }]
+    },
+    {
+      "title": "Migration Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_sm_migration_duration_seconds_bucket[5m]))", "legendFormat": "p95" }]
+    },
+    {
+      "title": "Records Migrated Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "gl_sm_records_migrated_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Active Migrations / Changes Detected",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_sm_active_migrations", "legendFormat": "Active Migrations" },
+        { "expr": "increase(gl_sm_changes_detected_total[1h])", "legendFormat": "Changes (1h)" }
+      ]
+    },
+    {
+      "title": "Rollbacks (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "rate(gl_sm_rollbacks_total[5m]) * 60", "legendFormat": "{{rollback_type}} - {{status}}" }]
+    },
+    {
+      "title": "Drift Detected (rate/hour)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "rate(gl_sm_drift_detected_total[1h]) * 60", "legendFormat": "{{drift_type}} ({{severity}})" }]
+    },
+    {
+      "title": "Processing Duration by Operation (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_sm_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Migration Plans by Status",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "sum by (status) (gl_sm_migrations_planned_total)", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Changes by Type & Severity",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "sum by (change_type, severity) (increase(gl_sm_changes_detected_total[1h]))", "legendFormat": "{{change_type}} ({{severity}})" }]
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"schema-migration.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"schema-migration.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "schema-migration", "agent-data-017", "data-quality"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Schema Migration Agent - GL-DATA-X-020",
+  "uid": "schema-migration-overview",
+  "version": 1
+}

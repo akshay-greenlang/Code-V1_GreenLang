@@ -1,0 +1,203 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.1, pluggy-1.6.0
+rootdir: C:\Users\aksha\Code-V1_GreenLang
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: anyio-4.11.0, Faker-38.2.0, hypothesis-6.151.4, langsmith-0.4.59, asyncio-1.3.0, cov-7.0.0, timeout-2.4.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests\integration\duplicate_detector\test_e2e_pipeline.py E              [100%]
+
+=================================== ERRORS ====================================
+____ ERROR at setup of TestFullPipelineE2E.test_pipeline_with_empty_input _____
+
+fixturedef = <FixtureDef argname='mock_agents' scope='function' baseid='tests/integration'>
+request = <SubRequest 'mock_agents' for <Function test_pipeline_with_empty_input>>
+
+    @pytest.hookimpl(wrapper=True)
+    def pytest_fixture_setup(fixturedef: FixtureDef, request) -> object | None:
+        asyncio_mode = _get_asyncio_mode(request.config)
+        if not _is_asyncio_fixture_function(fixturedef.func):
+            if asyncio_mode == Mode.STRICT:
+                # Ignore async fixtures without explicit asyncio mark in strict mode
+                # This applies to pytest_trio fixtures, for example
+>               return (yield)
+                        ^^^^^
+
+..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_asyncio\plugin.py:728: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    @pytest.fixture(autouse=True)
+    def mock_agents():
+        """Mock all agents with deterministic behavior."""
+        from unittest.mock import Mock
+    
+        # Create mock agent registry
+        mock_registry = {
+            "DataParserAgent": Mock(execute=lambda x: {"parsed_data": x["data"]}),
+            "EmissionCalculatorAgent": Mock(execute=lambda x: {
+                "emissions": {
+                    "total_co2e_kg": 1230000.0,
+                    "total_co2e_tons": 1230.0,
+                    "by_fuel": {
+                        "electricity": 1230000.0,
+                        "natural_gas": 101000.0,
+                        "diesel": 26800.0
+                    }
+                },
+                "provenance": {
+                    "dataset_version": "0.0.1",
+                    "source": "Test Dataset",
+                    "last_updated": "2024-01-01"
+                }
+            }),
+            "BenchmarkAgent": Mock(execute=lambda x: {
+                "rating": "Good",
+                "comparison": {"percentile": 75}
+            }),
+            "RecommendationAgent": Mock(execute=lambda x: {
+                "recommendations": [
+                    {"action": "Install LED lighting", "savings": "10%"},
+                    {"action": "Optimize HVAC", "savings": "15%"},
+                    {"action": "Solar installation", "savings": "20%"}
+                ]
+            }),
+            "ReportAgent": Mock(execute=lambda x: {
+                "report": {
+                    "emissions": x.get("emissions"),
+                    "benchmark": x.get("benchmark"),
+                    "recommendations": x.get("recommendations"),
+                    "provenance": x.get("provenance")
+                }
+            })
+        }
+    
+>       with patch("greenlang.agents.registry.get_agent") as mock_get:
+
+tests\integration\conftest.py:336: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <unittest.mock._patch object at 0x00000120C892DE90>
+
+    def __enter__(self):
+        """Perform the patch."""
+        new, spec, spec_set = self.new, self.spec, self.spec_set
+        autospec, kwargs = self.autospec, self.kwargs
+        new_callable = self.new_callable
+        self.target = self.getter()
+    
+        # normalise False to None
+        if spec is False:
+            spec = None
+        if spec_set is False:
+            spec_set = None
+        if autospec is False:
+            autospec = None
+    
+        if spec is not None and autospec is not None:
+            raise TypeError("Can't specify spec and autospec")
+        if ((spec is not None or autospec is not None) and
+            spec_set not in (True, None)):
+            raise TypeError("Can't provide explicit spec_set *and* spec or autospec")
+    
+>       original, local = self.get_original()
+                          ^^^^^^^^^^^^^^^^^^^
+
+..\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py:1446: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <unittest.mock._patch object at 0x00000120C892DE90>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'greenlang.agents.registry' from 'C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\agents\\registry.py'> does not have the attribute 'get_agent'
+
+..\AppData\Local\Programs\Python\Python311\Lib\unittest\mock.py:1419: AttributeError
+============================== warnings summary ===============================
+greenlang\agents\intelligence\config.py:27
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\config.py:27: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class IntelligenceConfig(BaseModel):
+
+greenlang\agents\intelligence\verification.py:74
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\verification.py:74: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class NumericClaim(BaseModel):
+
+greenlang\agents\intelligence\verification.py:122
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\verification.py:122: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Citation(BaseModel):
+
+greenlang\agents\intelligence\runtime\telemetry.py:27
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\runtime\telemetry.py:27: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TelemetryEvent(BaseModel):
+
+greenlang\execution\core\workflow.py:7
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\execution\core\workflow.py:7: DeprecationWarning: Importing from greenlang.exceptions is deprecated. Please import from specific submodules: greenlang.exceptions.base, greenlang.exceptions.agent, greenlang.exceptions.workflow, greenlang.exceptions.data, greenlang.exceptions.utils
+    from greenlang.exceptions import ValidationError
+
+greenlang\agents\foundation\orchestrator.py:152
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\orchestrator.py:152: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('agents')
+
+greenlang\governance\validation\framework.py:82
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\governance\validation\framework.py:82: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Validator(BaseModel):
+
+greenlang\governance\validation\rules.py:35
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\governance\validation\rules.py:35: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Rule(BaseModel):
+
+greenlang\schema\compiler\regex_analyzer.py:50
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\schema\compiler\regex_analyzer.py:50: DeprecationWarning: module 'sre_parse' is deprecated
+    import sre_parse
+
+greenlang\agents\foundation\policy_guard.py:149
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\policy_guard.py:149: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('clearance_level', pre=True)
+
+greenlang\agents\foundation\policy_guard.py:172
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\policy_guard.py:172: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('classification', pre=True)
+
+greenlang\agents\foundation\policy_guard.py:224
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\policy_guard.py:224: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('classification_max', pre=True)
+
+greenlang\agents\foundation\qa_test_harness.py:145
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\qa_test_harness.py:145: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('name')
+
+greenlang\agents\foundation\observability_agent.py:136
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\observability_agent.py:136: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('name')
+
+greenlang\agents\foundation\observability_agent.py:200
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\observability_agent.py:200: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('condition')
+
+greenlang\agents\foundation\observability_agent.py:254
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\observability_agent.py:254: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('operation')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/integration/duplicate_detector/test_e2e_pipeline.py::TestFullPipelineE2E::test_pipeline_with_empty_input
+======================= 16 warnings, 1 error in 16.20s ========================

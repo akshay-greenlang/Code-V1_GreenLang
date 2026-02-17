@@ -1,0 +1,115 @@
+---
+# AGENT-DATA-012: GL-DATA-X-015 Missing Value Imputer - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: missing-value-imputer-alerts
+  namespace: greenlang
+  labels:
+    app: missing-value-imputer-service
+    agent-id: GL-DATA-X-015
+    component: missing-value-imputation
+    release: prometheus
+spec:
+  groups:
+    - name: missing-value-imputer.rules
+      rules:
+        # Alert 1: High error rate
+        - alert: MissingValueImputerHighErrorRate
+          expr: |
+            rate(gl_mvi_processing_errors_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: missing-value-imputer-service
+            agent_id: GL-DATA-X-015
+          annotations:
+            summary: "Missing Value Imputer high error rate"
+            description: "Error rate {{ $value | humanize }}/s for missing-value-imputer-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/missing-value-imputer/high-error-rate"
+
+        # Alert 2: Job failures
+        - alert: MissingValueImputerJobFailures
+          expr: |
+            increase(gl_mvi_jobs_processed_total{status="failed"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: critical
+            service: missing-value-imputer-service
+          annotations:
+            summary: "Multiple imputation job failures"
+            description: "{{ $value }} imputation jobs failed in the last hour."
+
+        # Alert 3: Processing latency high
+        - alert: MissingValueImputerHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_mvi_processing_duration_seconds_bucket[5m])) > 30
+          for: 10m
+          labels:
+            severity: warning
+            service: missing-value-imputer-service
+          annotations:
+            summary: "Missing Value Imputer p95 latency > 30s"
+            description: "Processing p95 latency {{ $value | humanizeDuration }} exceeds 30s threshold."
+
+        # Alert 4: Low validation pass rate
+        - alert: MissingValueImputerLowValidationPassRate
+          expr: |
+            rate(gl_mvi_validations_passed_total[1h]) / rate(gl_mvi_validations_total[1h]) < 0.7
+          for: 15m
+          labels:
+            severity: warning
+            service: missing-value-imputer-service
+          annotations:
+            summary: "Low validation pass rate (<70%)"
+            description: "{{ $value | humanizePercentage }} of validations are passing. Imputation quality may be degraded."
+
+        # Alert 5: Imputation backlog
+        - alert: MissingValueImputerImputationBacklog
+          expr: |
+            rate(gl_mvi_values_imputed_total[5m]) < 1 and gl_mvi_active_jobs > 0
+          for: 10m
+          labels:
+            severity: warning
+            service: missing-value-imputer-service
+          annotations:
+            summary: "Imputation throughput stalled"
+            description: "Active jobs but imputation near zero. Possible pipeline or performance issue."
+
+        # Alert 6: Low quality scores
+        - alert: MissingValueImputerLowQualityScores
+          expr: |
+            histogram_quantile(0.5, rate(gl_mvi_quality_score_bucket[1h])) < 0.5
+          for: 15m
+          labels:
+            severity: warning
+            service: missing-value-imputer-service
+          annotations:
+            summary: "Low median imputation quality scores"
+            description: "Median quality score {{ $value }} is below 0.5. Check imputation strategy configuration."
+
+        # Alert 7: Pod not ready
+        - alert: MissingValueImputerPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="missing-value-imputer-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="missing-value-imputer-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: missing-value-imputer-service
+          annotations:
+            summary: "Missing Value Imputer pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high
+        - alert: MissingValueImputerHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"missing-value-imputer.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"missing-value-imputer.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: missing-value-imputer-service
+          annotations:
+            summary: "Missing Value Imputer memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

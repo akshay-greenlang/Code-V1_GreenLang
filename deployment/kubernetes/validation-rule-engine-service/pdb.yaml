@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-019: GL-DATA-X-022 Validation Rule Engine - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: validation-rule-engine-service
+  namespace: greenlang
+  labels:
+    app: validation-rule-engine-service
+    agent-id: GL-DATA-X-022
+    component: validation-rule-engine
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: validation-rule-engine-service

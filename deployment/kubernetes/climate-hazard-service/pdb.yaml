@@ -1,0 +1,17 @@
+---
+# AGENT-DATA-020: GL-DATA-GEO-002 Climate Hazard Connector - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: climate-hazard-service
+  namespace: greenlang
+  labels:
+    app: climate-hazard-service
+    agent-id: GL-DATA-GEO-002
+    component: data-agent
+    part-of: greenlang
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: climate-hazard-service

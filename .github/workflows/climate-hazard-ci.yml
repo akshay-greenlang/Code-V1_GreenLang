@@ -1,0 +1,280 @@
+# AGENT-DATA-020: GL-DATA-GEO-002 Climate Hazard Connector - CI/CD Pipeline
+name: Climate Hazard Connector CI
+
+on:
+  push:
+    branches: [master, develop, "feature/**"]
+    paths:
+      - "greenlang/climate_hazard/**"
+      - "tests/unit/climate_hazard_service/**"
+      - "deployment/database/migrations/sql/V050*"
+      - "deployment/kubernetes/climate-hazard-service/**"
+      - ".github/workflows/climate-hazard-ci.yml"
+  pull_request:
+    branches: [master, develop]
+    paths:
+      - "greenlang/climate_hazard/**"
+      - "tests/unit/climate_hazard_service/**"
+
+env:
+  PYTHON_VERSION: "3.11"
+  AGENT_ID: "GL-DATA-GEO-002"
+  SERVICE_NAME: "climate-hazard-service"
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1: Lint
+  # ──────────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linters
+        run: pip install ruff black isort yamllint
+
+      - name: Ruff check
+        run: ruff check greenlang/climate_hazard/ --select=E,W,F,I,N,UP,B,A,C4,SIM
+
+      - name: Black check
+        run: black --check --diff greenlang/climate_hazard/
+
+      - name: isort check
+        run: isort --check-only --diff greenlang/climate_hazard/
+
+      - name: YAML lint
+        run: yamllint -d relaxed deployment/kubernetes/climate-hazard-service/
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2: Type Check
+  # ──────────────────────────────────────────────────────────────
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn
+          pip install mypy types-PyYAML types-requests
+
+      - name: mypy check
+        run: |
+          mypy greenlang/climate_hazard/ \
+            --ignore-missing-imports \
+            --no-strict-optional \
+            --allow-untyped-defs \
+            --show-error-codes
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 3: Unit Tests
+  # ──────────────────────────────────────────────────────────────
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn httpx
+          pip install pytest pytest-cov pytest-asyncio pytest-xdist
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/unit/climate_hazard_service/ \
+            -v \
+            --tb=short \
+            --cov=greenlang/climate_hazard \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage-climate-hazard.xml \
+            --cov-fail-under=85 \
+            -x \
+            -n auto
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-climate-hazard
+          path: coverage-climate-hazard.xml
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 4: Integration Tests
+  # ──────────────────────────────────────────────────────────────
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [unit-test]
+    services:
+      postgres:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn httpx
+          pip install pytest pytest-asyncio psycopg[binary] redis
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/greenlang_test"
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -f deployment/database/migrations/sql/V050__climate_hazard_service.sql
+
+      - name: Run integration tests
+        env:
+          GL_CHC_DATABASE_URL: "postgresql://test:test@localhost:5432/greenlang_test"
+          GL_CHC_REDIS_URL: "redis://localhost:6379/22"
+        run: |
+          pytest tests/integration/climate_hazard/ -v --tb=short -x
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 5: Security Scan
+  # ──────────────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install scanners
+        run: pip install bandit safety
+
+      - name: Bandit scan
+        run: |
+          bandit -r greenlang/climate_hazard/ \
+            -f json -o bandit-climate-hazard.json \
+            --severity-level medium \
+            --confidence-level medium
+
+      - name: Safety check
+        run: safety check --json --output safety-climate-hazard.json
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-climate-hazard
+          path: |
+            bandit-climate-hazard.json
+            safety-climate-hazard.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 6: Docker Build
+  # ──────────────────────────────────────────────────────────────
+  build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint, type-check, unit-test, security-scan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f deployment/docker/Dockerfile.climate-hazard \
+            -t greenlang/climate-hazard-service:${{ github.sha }} \
+            -t greenlang/climate-hazard-service:latest \
+            .
+
+      - name: Verify image
+        run: |
+          docker images greenlang/climate-hazard-service
+          docker inspect greenlang/climate-hazard-service:latest --format='{{.Config.ExposedPorts}}'
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 7: Deploy (Placeholder)
+  # ──────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint, type-check, unit-test, integration-test, security-scan, build]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy placeholder
+        run: |
+          echo "==========================================="
+          echo " Climate Hazard Connector Deploy"
+          echo "==========================================="
+          echo "Agent ID:    ${{ env.AGENT_ID }}"
+          echo "Service:     ${{ env.SERVICE_NAME }}"
+          echo "Branch:      ${{ github.ref_name }}"
+          echo "Commit:      ${{ github.sha }}"
+          echo "Image:       greenlang/climate-hazard-service:${{ github.sha }}"
+          echo ""
+          echo "Deploy steps (to be implemented):"
+          echo "  1. Push image to container registry"
+          echo "  2. Update Kubernetes manifests"
+          echo "  3. Apply rolling deployment"
+          echo "  4. Verify health checks"
+          echo "  5. Run smoke tests"
+          echo "==========================================="

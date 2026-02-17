@@ -1,0 +1,29 @@
+---
+# AGENT-DATA-018: GL-DATA-X-021 Data Lineage Tracker - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: data-lineage-tracker-service
+  namespace: greenlang
+  labels:
+    app: data-lineage-tracker-service
+    agent-id: GL-DATA-X-021
+    component: data-lineage-tracker
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: data-lineage-tracker-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_dlt_.*"
+          action: keep

@@ -1,0 +1,38 @@
+---
+# AGENT-DATA-015: GL-DATA-X-018 Cross-Source Reconciliation - ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cross-source-reconciliation-config
+  namespace: greenlang
+  labels:
+    app: cross-source-reconciliation-service
+    agent-id: GL-DATA-X-018
+    agent: cross-source-reconciliation
+    component: data-quality
+data:
+  GL_CSR_LOG_LEVEL: "INFO"
+  GL_CSR_BATCH_SIZE: "500"
+  GL_CSR_MAX_RECORDS: "100000"
+  GL_CSR_MATCH_THRESHOLD: "0.85"
+  GL_CSR_FUZZY_THRESHOLD: "0.7"
+  GL_CSR_EXACT_MATCH_WEIGHT: "1.0"
+  GL_CSR_FUZZY_MATCH_WEIGHT: "0.8"
+  GL_CSR_TEMPORAL_MATCH_WEIGHT: "0.6"
+  GL_CSR_NUMERIC_TOLERANCE_PCT: "0.01"
+  GL_CSR_DATE_TOLERANCE_DAYS: "3"
+  GL_CSR_CURRENCY_TOLERANCE_PCT: "0.005"
+  GL_CSR_MAX_SOURCES: "10"
+  GL_CSR_CONFLICT_STRATEGY: "confidence_weighted"
+  GL_CSR_AUTO_RESOLVE_THRESHOLD: "0.95"
+  GL_CSR_DISCREPANCY_SEVERITY_CRITICAL: "0.20"
+  GL_CSR_DISCREPANCY_SEVERITY_HIGH: "0.10"
+  GL_CSR_DISCREPANCY_SEVERITY_MEDIUM: "0.05"
+  GL_CSR_REVIEW_QUEUE_MAX: "1000"
+  GL_CSR_WORKER_COUNT: "4"
+  GL_CSR_POOL_MIN_SIZE: "2"
+  GL_CSR_POOL_MAX_SIZE: "10"
+  GL_CSR_CACHE_TTL: "3600"
+  GL_CSR_RATE_LIMIT_RPM: "120"
+  GL_CSR_ENABLE_PROVENANCE: "true"
+  GL_CSR_ENABLE_METRICS: "true"

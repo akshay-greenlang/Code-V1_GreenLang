@@ -1,0 +1,133 @@
+---
+# AGENT-DATA-014: GL-DATA-X-017 Time Series Gap Filler - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: time-series-gap-filler-alerts
+  namespace: greenlang
+  labels:
+    app: time-series-gap-filler-service
+    agent-id: GL-DATA-X-017
+    component: data-quality
+    release: prometheus
+spec:
+  groups:
+    - name: time-series-gap-filler.rules
+      rules:
+        # Alert 1: High error rate (>5% errors for 5m)
+        - alert: TimeSeriesGapFillerHighErrorRate
+          expr: |
+            (
+              rate(gl_tsgf_processing_errors_total[5m])
+              / on() group_left()
+              (rate(gl_tsgf_jobs_processed_total[5m]) > 0)
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "Time Series Gap Filler high error rate (>5%)"
+            description: "Error rate {{ $value | humanizePercentage }} for time-series-gap-filler-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/high-error-rate"
+
+        # Alert 2: High latency (p95 > 500ms for 5m)
+        - alert: TimeSeriesGapFillerHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_tsgf_processing_duration_seconds_bucket[5m])) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "Time Series Gap Filler p95 latency > 500ms"
+            description: "Processing p95 latency {{ $value | humanizeDuration }} exceeds 500ms threshold."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/high-latency"
+
+        # Alert 3: Failed jobs exceeding threshold (>10 failures in 15m)
+        - alert: TimeSeriesGapFillerJobsFailing
+          expr: |
+            increase(gl_tsgf_jobs_processed_total{status="failed"}[15m]) > 10
+          for: 15m
+          labels:
+            severity: critical
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "Time Series Gap Filler jobs failing (>10 in 15m)"
+            description: "{{ $value }} gap filler jobs failed in the last 15 minutes. Check logs and database connectivity."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/jobs-failing"
+
+        # Alert 4: Service down (absent up metric for 5m)
+        - alert: TimeSeriesGapFillerDown
+          expr: |
+            absent(up{job="time-series-gap-filler-service", namespace="greenlang"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "Time Series Gap Filler service is down"
+            description: "time-series-gap-filler-service has been unreachable for 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/service-down"
+
+        # Alert 5: Low fill confidence
+        - alert: TimeSeriesGapFillerLowConfidence
+          expr: |
+            histogram_quantile(0.5, rate(gl_tsgf_fill_confidence_bucket[1h])) < 0.5
+          for: 15m
+          labels:
+            severity: warning
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "Low median fill confidence scores (<0.5)"
+            description: "Median fill confidence {{ $value }} is below 0.5. Check input data quality and filling strategies."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/low-confidence"
+
+        # Alert 6: High open gap count
+        - alert: TimeSeriesGapFillerHighOpenGaps
+          expr: |
+            gl_tsgf_total_gaps_open > 1000
+          for: 15m
+          labels:
+            severity: warning
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "High number of unfilled gaps (>1000)"
+            description: "{{ $value }} gaps remain unfilled. Possible backlog or processing stall."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/high-open-gaps"
+
+        # Alert 7: Pod not ready
+        - alert: TimeSeriesGapFillerPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="time-series-gap-filler-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="time-series-gap-filler-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "Time Series Gap Filler pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/pod-not-ready"
+
+        # Alert 8: Memory usage high
+        - alert: TimeSeriesGapFillerHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"time-series-gap-filler.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"time-series-gap-filler.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: time-series-gap-filler-service
+            agent_id: GL-DATA-X-017
+          annotations:
+            summary: "Time Series Gap Filler memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."
+            runbook_url: "https://docs.greenlang.io/runbooks/time-series-gap-filler/high-memory"

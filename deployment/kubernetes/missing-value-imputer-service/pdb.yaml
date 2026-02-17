@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-012: GL-DATA-X-015 Missing Value Imputer - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: missing-value-imputer-service
+  namespace: greenlang
+  labels:
+    app: missing-value-imputer-service
+    agent-id: GL-DATA-X-015
+    component: missing-value-imputation
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: missing-value-imputer-service

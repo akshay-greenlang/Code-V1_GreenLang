@@ -1,0 +1,35 @@
+---
+# AGENT-DATA-016: GL-DATA-X-019 Data Freshness Monitor - ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-freshness-monitor-config
+  namespace: greenlang
+  labels:
+    app: data-freshness-monitor-service
+    agent-id: GL-DATA-X-019
+    agent: data-freshness-monitor
+    component: data-quality
+data:
+  GL_DFM_LOG_LEVEL: "INFO"
+  GL_DFM_BATCH_SIZE: "500"
+  GL_DFM_MAX_SOURCES: "200"
+  GL_DFM_POLL_INTERVAL_SECONDS: "60"
+  GL_DFM_STALENESS_THRESHOLD_HOURS: "24"
+  GL_DFM_CRITICAL_STALENESS_HOURS: "72"
+  GL_DFM_WARNING_STALENESS_HOURS: "48"
+  GL_DFM_SLA_CHECK_INTERVAL_SECONDS: "300"
+  GL_DFM_SLA_DEFAULT_FRESHNESS_HOURS: "24"
+  GL_DFM_TREND_WINDOW_DAYS: "30"
+  GL_DFM_ANOMALY_SENSITIVITY: "0.05"
+  GL_DFM_ANOMALY_METHOD: "z_score"
+  GL_DFM_ALERT_COOLDOWN_MINUTES: "30"
+  GL_DFM_ALERT_MAX_PER_SOURCE_HOUR: "5"
+  GL_DFM_SNAPSHOT_RETENTION_DAYS: "90"
+  GL_DFM_WORKER_COUNT: "4"
+  GL_DFM_POOL_MIN_SIZE: "2"
+  GL_DFM_POOL_MAX_SIZE: "10"
+  GL_DFM_CACHE_TTL: "300"
+  GL_DFM_RATE_LIMIT_RPM: "120"
+  GL_DFM_ENABLE_PROVENANCE: "true"
+  GL_DFM_ENABLE_METRICS: "true"

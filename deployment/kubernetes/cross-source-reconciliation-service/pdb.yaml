@@ -1,0 +1,17 @@
+---
+# AGENT-DATA-015: GL-DATA-X-018 Cross-Source Reconciliation - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cross-source-reconciliation-service
+  namespace: greenlang
+  labels:
+    app: cross-source-reconciliation-service
+    agent-id: GL-DATA-X-018
+    agent: cross-source-reconciliation
+    component: data-quality
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cross-source-reconciliation-service

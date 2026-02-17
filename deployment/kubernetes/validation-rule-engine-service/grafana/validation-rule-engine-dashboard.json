@@ -1,0 +1,116 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Rules Registered (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_vre_rules_registered_total[5m]) * 60", "legendFormat": "{{rule_type}}" }]
+    },
+    {
+      "title": "Evaluations (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_vre_evaluations_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Pass Rate",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "gl_vre_pass_rate", "legendFormat": "Pass Rate" }],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Active Rules / Rule Sets",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        { "expr": "gl_vre_active_rules", "legendFormat": "Active Rules" },
+        { "expr": "gl_vre_active_rule_sets", "legendFormat": "Active Rule Sets" }
+      ]
+    },
+    {
+      "title": "Evaluation Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_vre_evaluation_duration_seconds_bucket[5m]))", "legendFormat": "p95" }]
+    },
+    {
+      "title": "Conflicts Detected (rate/hour)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "rate(gl_vre_conflicts_detected_total[1h]) * 60", "legendFormat": "{{conflict_type}}" }]
+    },
+    {
+      "title": "Reports Generated (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [{ "expr": "rate(gl_vre_reports_generated_total[5m]) * 60", "legendFormat": "{{report_type}}" }]
+    },
+    {
+      "title": "Rules per Set Distribution",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "sum by (rule_set) (gl_vre_rules_per_set)", "legendFormat": "{{rule_set}}" }]
+    },
+    {
+      "title": "Processing Duration by Operation (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_vre_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Rule Pack Applications",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "rate(gl_vre_rule_pack_applications_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"validation-rule-engine.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"validation-rule-engine.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    },
+    {
+      "title": "Changes by Type",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "sum by (change_type) (increase(gl_vre_rule_changes_total[1h]))", "legendFormat": "{{change_type}}" }]
+    },
+    {
+      "title": "Requests Total (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [{ "expr": "rate(gl_vre_requests_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "validation-rule-engine", "agent-data-019", "data-quality"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Validation Rule Engine - GL-DATA-X-022",
+  "uid": "validation-rule-engine-overview",
+  "version": 1
+}

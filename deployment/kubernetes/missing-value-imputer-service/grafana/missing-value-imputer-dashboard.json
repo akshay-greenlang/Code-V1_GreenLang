@@ -1,0 +1,108 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Jobs Processed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_mvi_jobs_processed_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Values Imputed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_mvi_values_imputed_total[5m]) * 60", "legendFormat": "{{strategy}}" }]
+    },
+    {
+      "title": "Analyses Completed (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_mvi_analyses_completed_total[5m]) * 60", "legendFormat": "{{mechanism}}" }]
+    },
+    {
+      "title": "Validations (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_mvi_validations_total[5m]) * 60", "legendFormat": "{{test_type}}" }]
+    },
+    {
+      "title": "Quality Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "gl_mvi_quality_score_bucket", "legendFormat": "{{le}}" }]
+    },
+    {
+      "title": "Processing Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_mvi_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Active Jobs / Columns Imputed",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_mvi_active_jobs", "legendFormat": "Active Jobs" },
+        { "expr": "increase(gl_mvi_columns_imputed_total[1h])", "legendFormat": "Columns (1h)" }
+      ]
+    },
+    {
+      "title": "Processing Errors (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "rate(gl_mvi_processing_errors_total[5m]) * 60", "legendFormat": "{{error_type}}" }]
+    },
+    {
+      "title": "Strategies Applied (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "rate(gl_mvi_strategies_applied_total[5m]) * 60", "legendFormat": "{{strategy_type}}" }]
+    },
+    {
+      "title": "Validation Pass Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "rate(gl_mvi_validations_passed_total[5m]) / rate(gl_mvi_validations_total[5m])", "legendFormat": "{{test_type}}" }]
+    },
+    {
+      "title": "Missingness Mechanism Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "sum by (mechanism) (gl_mvi_analyses_completed_total)", "legendFormat": "{{mechanism}}" }]
+    },
+    {
+      "title": "Avg Quality Score",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "histogram_quantile(0.5, rate(gl_mvi_quality_score_bucket[1h]))" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "thresholds": { "steps": [
+        { "value": 0, "color": "red" },
+        { "value": 0.5, "color": "yellow" },
+        { "value": 0.8, "color": "green" }
+      ]}}}
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"missing-value-imputer.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"missing-value-imputer.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "missing-value-imputer", "agent-data-012", "imputation"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Missing Value Imputer - GL-DATA-X-015",
+  "uid": "missing-value-imputer-overview",
+  "version": 1
+}

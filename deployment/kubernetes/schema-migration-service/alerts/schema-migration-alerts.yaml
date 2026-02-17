@@ -1,0 +1,115 @@
+---
+# AGENT-DATA-017: GL-DATA-X-020 Schema Migration Agent - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: schema-migration-alerts
+  namespace: greenlang
+  labels:
+    app: schema-migration-service
+    agent-id: GL-DATA-X-020
+    component: schema-migration
+    release: prometheus
+spec:
+  groups:
+    - name: schema-migration.rules
+      rules:
+        # Alert 1: High migration failure rate
+        - alert: SchemaMigrationHighFailureRate
+          expr: |
+            rate(gl_sm_migrations_executed_total{status="failed"}[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: schema-migration-service
+            agent_id: GL-DATA-X-020
+          annotations:
+            summary: "Schema Migration high failure rate"
+            description: "Migration failure rate {{ $value | humanize }}/s for schema-migration-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/schema-migration/high-failure-rate"
+
+        # Alert 2: Migration execution failures
+        - alert: SchemaMigrationExecutionFailures
+          expr: |
+            increase(gl_sm_migrations_executed_total{status="failed"}[1h]) > 3
+          for: 5m
+          labels:
+            severity: critical
+            service: schema-migration-service
+          annotations:
+            summary: "Multiple schema migration execution failures"
+            description: "{{ $value }} schema migrations failed in the last hour."
+
+        # Alert 3: Migration duration too long
+        - alert: SchemaMigrationHighLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_sm_migration_duration_seconds_bucket[5m])) > 600
+          for: 10m
+          labels:
+            severity: warning
+            service: schema-migration-service
+          annotations:
+            summary: "Schema Migration p95 duration > 10 minutes"
+            description: "Migration p95 duration {{ $value | humanizeDuration }} exceeds 600s threshold."
+
+        # Alert 4: Compatibility check failures
+        - alert: SchemaMigrationCompatibilityFailures
+          expr: |
+            rate(gl_sm_compatibility_checks_total{result="incompatible"}[1h]) / rate(gl_sm_compatibility_checks_total[1h]) > 0.5
+          for: 15m
+          labels:
+            severity: warning
+            service: schema-migration-service
+          annotations:
+            summary: "High schema incompatibility rate (>50%)"
+            description: "{{ $value | humanizePercentage }} of compatibility checks are failing."
+
+        # Alert 5: Rollback rate high
+        - alert: SchemaMigrationHighRollbackRate
+          expr: |
+            increase(gl_sm_rollbacks_total[1h]) > 5
+          for: 5m
+          labels:
+            severity: warning
+            service: schema-migration-service
+          annotations:
+            summary: "High schema migration rollback rate"
+            description: "{{ $value }} rollbacks in the last hour. Investigate migration quality."
+
+        # Alert 6: Schema drift detected (critical)
+        - alert: SchemaMigrationCriticalDrift
+          expr: |
+            increase(gl_sm_drift_detected_total{severity="critical"}[1h]) > 0
+          for: 1m
+          labels:
+            severity: critical
+            service: schema-migration-service
+          annotations:
+            summary: "Critical schema drift detected"
+            description: "{{ $value }} critical drift events detected in the last hour. Immediate investigation required."
+
+        # Alert 7: Pod not ready
+        - alert: SchemaMigrationPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="schema-migration-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="schema-migration-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: schema-migration-service
+          annotations:
+            summary: "Schema Migration Agent pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high
+        - alert: SchemaMigrationHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"schema-migration.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"schema-migration.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: schema-migration-service
+          annotations:
+            summary: "Schema Migration Agent memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

@@ -1,0 +1,138 @@
+---
+# AGENT-DATA-015: GL-DATA-X-018 Cross-Source Reconciliation - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cross-source-reconciliation-alerts
+  namespace: greenlang
+  labels:
+    app: cross-source-reconciliation-service
+    agent-id: GL-DATA-X-018
+    agent: cross-source-reconciliation
+    component: data-quality
+    release: prometheus
+spec:
+  groups:
+    - name: cross-source-reconciliation.rules
+      rules:
+        # Alert 1: High critical discrepancy rate (>20% critical discrepancies)
+        - alert: CrossSourceReconciliationHighDiscrepancyRate
+          expr: |
+            (
+              rate(gl_csr_discrepancies_total{severity="critical"}[5m])
+              / on() group_left()
+              (rate(gl_csr_records_compared_total[5m]) > 0)
+            ) > 0.20
+          for: 5m
+          labels:
+            severity: critical
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Cross-Source Reconciliation high critical discrepancy rate (>20%)"
+            description: "Critical discrepancy rate {{ $value | humanizePercentage }} for cross-source-reconciliation-service over last 5 minutes. Data sources may be severely inconsistent."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/high-discrepancy-rate"
+
+        # Alert 2: Reconciliation job failure rate (>5% failures)
+        - alert: CrossSourceReconciliationJobFailure
+          expr: |
+            (
+              rate(gl_csr_jobs_processed_total{status="failed"}[5m])
+              / on() group_left()
+              (rate(gl_csr_jobs_processed_total[5m]) > 0)
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Cross-Source Reconciliation job failure rate >5%"
+            description: "Job failure rate {{ $value | humanizePercentage }} for cross-source-reconciliation-service over last 5 minutes. Check logs and data source connectivity."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/job-failure"
+
+        # Alert 3: Pending reviews backlog (>100 pending reviews)
+        - alert: CrossSourceReconciliationPendingReviewsBacklog
+          expr: |
+            gl_csr_pending_reviews > 100
+          for: 15m
+          labels:
+            severity: warning
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Cross-Source Reconciliation pending reviews backlog >100"
+            description: "{{ $value }} reconciliation reviews are pending. Review queue may be stalled or understaffed."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/pending-reviews-backlog"
+
+        # Alert 4: Slow processing (p95 duration >60s)
+        - alert: CrossSourceReconciliationSlowProcessing
+          expr: |
+            histogram_quantile(0.95, rate(gl_csr_processing_duration_seconds_bucket[5m])) > 60
+          for: 5m
+          labels:
+            severity: warning
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Cross-Source Reconciliation p95 latency >60s"
+            description: "Processing p95 latency {{ $value | humanizeDuration }} exceeds 60s threshold. Large datasets or complex matching may be causing slowdowns."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/slow-processing"
+
+        # Alert 5: Service down (absent up metric for 5m)
+        - alert: CrossSourceReconciliationDown
+          expr: |
+            absent(up{job="cross-source-reconciliation-service", namespace="greenlang"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Cross-Source Reconciliation service is down"
+            description: "cross-source-reconciliation-service has been unreachable for 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/service-down"
+
+        # Alert 6: Low match confidence
+        - alert: CrossSourceReconciliationLowMatchConfidence
+          expr: |
+            histogram_quantile(0.5, rate(gl_csr_match_confidence_bucket[1h])) < 0.5
+          for: 15m
+          labels:
+            severity: warning
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Low median match confidence scores (<0.5)"
+            description: "Median match confidence {{ $value }} is below 0.5. Check data source quality and matching configuration."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/low-match-confidence"
+
+        # Alert 7: Pod not ready
+        - alert: CrossSourceReconciliationPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="cross-source-reconciliation-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="cross-source-reconciliation-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Cross-Source Reconciliation pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/pod-not-ready"
+
+        # Alert 8: Memory usage high
+        - alert: CrossSourceReconciliationHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"cross-source-reconciliation.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"cross-source-reconciliation.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: cross-source-reconciliation-service
+            agent_id: GL-DATA-X-018
+          annotations:
+            summary: "Cross-Source Reconciliation memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."
+            runbook_url: "https://docs.greenlang.io/runbooks/cross-source-reconciliation/high-memory"

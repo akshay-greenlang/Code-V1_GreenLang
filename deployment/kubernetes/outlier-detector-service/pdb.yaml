@@ -1,0 +1,16 @@
+---
+# AGENT-DATA-013: GL-DATA-X-016 Outlier Detection Agent - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: outlier-detector-service
+  namespace: greenlang
+  labels:
+    app: outlier-detector-service
+    agent-id: GL-DATA-X-016
+    component: outlier-detection
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: outlier-detector-service

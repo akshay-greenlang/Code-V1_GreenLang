@@ -1,0 +1,298 @@
+# AGENT-DATA-016: GL-DATA-X-019 Data Freshness Monitor Agent - CI/CD Pipeline
+name: Data Freshness Monitor CI
+
+on:
+  push:
+    branches: [master, develop, "feature/**"]
+    paths:
+      - "greenlang/data_freshness_monitor/**"
+      - "tests/unit/data_freshness_monitor_service/**"
+      - "deployment/database/migrations/sql/V046*"
+      - "deployment/kubernetes/data-freshness-monitor-service/**"
+      - ".github/workflows/data-freshness-monitor-ci.yml"
+  pull_request:
+    branches: [master, develop]
+    paths:
+      - "greenlang/data_freshness_monitor/**"
+      - "tests/unit/data_freshness_monitor_service/**"
+
+env:
+  PYTHON_VERSION: "3.11"
+  AGENT_ID: "GL-DATA-X-019"
+  SERVICE_NAME: "data-freshness-monitor-service"
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1: Lint
+  # ──────────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linters
+        run: pip install ruff black isort yamllint
+
+      - name: Ruff check
+        run: ruff check greenlang/data_freshness_monitor/ --select=E,W,F,I,N,UP,B,A,C4,SIM
+
+      - name: Black check
+        run: black --check --diff greenlang/data_freshness_monitor/
+
+      - name: isort check
+        run: isort --check-only --diff greenlang/data_freshness_monitor/
+
+      - name: YAML lint
+        run: yamllint -d relaxed deployment/kubernetes/data-freshness-monitor-service/
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2: Type Check
+  # ──────────────────────────────────────────────────────────────
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn
+          pip install mypy types-PyYAML types-requests
+
+      - name: mypy check
+        run: |
+          mypy greenlang/data_freshness_monitor/ \
+            --ignore-missing-imports \
+            --no-strict-optional \
+            --allow-untyped-defs \
+            --show-error-codes
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 3: Unit Tests
+  # ──────────────────────────────────────────────────────────────
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn httpx
+          pip install pytest pytest-cov pytest-asyncio pytest-xdist
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/unit/data_freshness_monitor_service/ \
+            -v \
+            --tb=short \
+            --cov=greenlang/data_freshness_monitor \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage-data-freshness-monitor.xml \
+            --cov-fail-under=85 \
+            -x \
+            -n auto
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-data-freshness-monitor
+          path: coverage-data-freshness-monitor.xml
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 4: Integration Tests
+  # ──────────────────────────────────────────────────────────────
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [unit-test]
+    services:
+      postgres:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pydantic>=2.0 fastapi uvicorn httpx
+          pip install pytest pytest-asyncio psycopg[binary] redis
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/greenlang_test"
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -f deployment/database/migrations/sql/V046__data_freshness_monitor_service.sql
+
+      - name: Run integration tests
+        env:
+          GL_DFM_DATABASE_URL: "postgresql://test:test@localhost:5432/greenlang_test"
+          GL_DFM_REDIS_URL: "redis://localhost:6379/18"
+        run: |
+          pytest tests/integration/data_freshness_monitor/ -v --tb=short -x
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 5: Security Scan
+  # ──────────────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install scanners
+        run: pip install bandit safety
+
+      - name: Bandit scan
+        run: |
+          bandit -r greenlang/data_freshness_monitor/ \
+            -f json -o bandit-data-freshness-monitor.json \
+            --severity-level medium \
+            --confidence-level medium
+
+      - name: Safety check
+        run: safety check --json --output safety-data-freshness-monitor.json
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-data-freshness-monitor
+          path: |
+            bandit-data-freshness-monitor.json
+            safety-data-freshness-monitor.json
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 6: Migration Validate
+  # ──────────────────────────────────────────────────────────────
+  migration-validate:
+    name: Migration Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SQL syntax
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test \
+            -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test \
+            -f deployment/database/migrations/sql/V046__data_freshness_monitor_service.sql
+
+      - name: Verify schema objects
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -c "
+            SELECT schemaname, tablename
+            FROM pg_tables
+            WHERE schemaname = 'data_freshness_monitor_service'
+            ORDER BY tablename;
+          "
+
+      - name: Verify hypertables
+        run: |
+          PGPASSWORD=test psql -h localhost -U test -d greenlang_test -c "
+            SELECT hypertable_schema, hypertable_name
+            FROM timescaledb_information.hypertables
+            WHERE hypertable_schema = 'data_freshness_monitor_service';
+          "
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 7: All Checks Gate
+  # ──────────────────────────────────────────────────────────────
+  all-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, unit-test, security-scan, migration-validate]
+    if: always()
+    steps:
+      - name: Verify all jobs passed
+        run: |
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Type Check: ${{ needs.type-check.result }}"
+          echo "Unit Tests: ${{ needs.unit-test.result }}"
+          echo "Security: ${{ needs.security-scan.result }}"
+          echo "Migration: ${{ needs.migration-validate.result }}"
+
+          if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.type-check.result }}" != "success" ]] || \
+             [[ "${{ needs.unit-test.result }}" != "success" ]] || \
+             [[ "${{ needs.security-scan.result }}" != "success" ]] || \
+             [[ "${{ needs.migration-validate.result }}" != "success" ]]; then
+            echo "One or more required checks failed!"
+            exit 1
+          fi
+
+          echo "All checks passed for ${{ env.SERVICE_NAME }} (${{ env.AGENT_ID }})"

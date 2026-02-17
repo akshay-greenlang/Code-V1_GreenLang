@@ -1,0 +1,116 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Requests Total (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dlt_requests_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Nodes Registered (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dlt_nodes_registered_total[5m]) * 60", "legendFormat": "{{node_type}}" }]
+    },
+    {
+      "title": "Edges Created (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dlt_edges_created_total[5m]) * 60", "legendFormat": "{{edge_type}}" }]
+    },
+    {
+      "title": "Validations (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "targets": [{ "expr": "rate(gl_dlt_validations_total[5m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Traversal Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_dlt_traversal_duration_seconds_bucket[5m]))", "legendFormat": "p95" }]
+    },
+    {
+      "title": "Coverage Score",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [{ "expr": "gl_dlt_coverage_score", "legendFormat": "Coverage" }],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.8 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Active Graph Nodes / Edges",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "gl_dlt_active_graph_nodes", "legendFormat": "Active Nodes" },
+        { "expr": "gl_dlt_active_graph_edges", "legendFormat": "Active Edges" }
+      ]
+    },
+    {
+      "title": "Changes Detected (rate/hour)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+      "targets": [{ "expr": "rate(gl_dlt_changes_detected_total[1h]) * 60", "legendFormat": "{{change_type}} ({{severity}})" }]
+    },
+    {
+      "title": "Impact Analysis Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_dlt_impact_analysis_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Processing Duration by Operation (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(gl_dlt_processing_duration_seconds_bucket[5m]))", "legendFormat": "{{operation}}" }]
+    },
+    {
+      "title": "Graph Snapshots by Status",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 18 },
+      "targets": [{ "expr": "sum by (status) (gl_dlt_graph_snapshots_total)", "legendFormat": "{{status}}" }]
+    },
+    {
+      "title": "Changes by Type & Severity",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 18 },
+      "targets": [{ "expr": "sum by (change_type, severity) (increase(gl_dlt_changes_detected_total[1h]))", "legendFormat": "{{change_type}} ({{severity}})" }]
+    },
+    {
+      "title": "Pod Resource Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 18 },
+      "targets": [
+        { "expr": "container_memory_working_set_bytes{pod=~\"data-lineage-tracker.*\"} / 1024 / 1024", "legendFormat": "Memory (MB)" },
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"data-lineage-tracker.*\"}[5m]) * 1000", "legendFormat": "CPU (millicores)" }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["greenlang", "data-lineage-tracker", "agent-data-018", "data-quality"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Data Lineage Tracker - GL-DATA-X-021",
+  "uid": "data-lineage-tracker-overview",
+  "version": 1
+}

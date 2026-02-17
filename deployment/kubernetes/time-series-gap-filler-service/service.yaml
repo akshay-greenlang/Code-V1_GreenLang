@@ -1,0 +1,21 @@
+---
+# AGENT-DATA-014: GL-DATA-X-017 Time Series Gap Filler - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: time-series-gap-filler-service
+  namespace: greenlang
+  labels:
+    app: time-series-gap-filler-service
+    agent-id: GL-DATA-X-017
+    component: data-quality
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app: time-series-gap-filler-service
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

@@ -1,0 +1,29 @@
+---
+# AGENT-DATA-019: GL-DATA-X-022 Validation Rule Engine - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: validation-rule-engine-service
+  namespace: greenlang
+  labels:
+    app: validation-rule-engine-service
+    agent-id: GL-DATA-X-022
+    component: validation-rule-engine
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: validation-rule-engine-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_vre_.*"
+          action: keep

@@ -1,0 +1,17 @@
+---
+# AGENT-DATA-016: GL-DATA-X-019 Data Freshness Monitor - PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: data-freshness-monitor-service
+  namespace: greenlang
+  labels:
+    app: data-freshness-monitor-service
+    agent-id: GL-DATA-X-019
+    agent: data-freshness-monitor
+    component: data-quality
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: data-freshness-monitor-service

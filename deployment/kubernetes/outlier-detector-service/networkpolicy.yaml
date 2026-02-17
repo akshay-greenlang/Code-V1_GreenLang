@@ -1,0 +1,90 @@
+---
+# AGENT-DATA-013: GL-DATA-X-016 Outlier Detection Agent - NetworkPolicy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: outlier-detector-service
+  namespace: greenlang
+  labels:
+    app: outlier-detector-service
+    agent-id: GL-DATA-X-016
+    component: outlier-detection
+spec:
+  podSelector:
+    matchLabels:
+      app: outlier-detector-service
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from Kong API Gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: kong
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow from Prometheus scraping
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow from other GreenLang data-quality agents
+    - from:
+        - podSelector:
+            matchLabels:
+              tier: data-quality
+      ports:
+        - protocol: TCP
+          port: 8000
+    - from:
+        - podSelector:
+            matchLabels:
+              component: data-gateway
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # DNS
+    - to: []
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # OTel Collector
+    - to:
+        - podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+    # Other GreenLang agents
+    - to:
+        - podSelector:
+            matchLabels:
+              tier: data-quality
+      ports:
+        - protocol: TCP
+          port: 8000

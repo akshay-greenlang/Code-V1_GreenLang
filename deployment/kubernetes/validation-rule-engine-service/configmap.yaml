@@ -1,0 +1,34 @@
+---
+# AGENT-DATA-019: GL-DATA-X-022 Validation Rule Engine - ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: validation-rule-engine-config
+  namespace: greenlang
+  labels:
+    app: validation-rule-engine-service
+    agent-id: GL-DATA-X-022
+    component: validation-rule-engine
+data:
+  GL_VRE_MAX_RULES: "10000"
+  GL_VRE_MAX_RULE_SETS: "500"
+  GL_VRE_MAX_RULES_PER_SET: "200"
+  GL_VRE_EVALUATION_TIMEOUT_SECONDS: "60"
+  GL_VRE_ENABLE_CONFLICT_DETECTION: "true"
+  GL_VRE_CONFLICT_DETECTION_MODE: "strict"
+  GL_VRE_ENABLE_RULE_PACKS: "true"
+  GL_VRE_PASS_RATE_THRESHOLD: "0.8"
+  GL_VRE_ENABLE_PROVENANCE: "true"
+  GL_VRE_GENESIS_HASH: "greenlang-validation-rule-engine-genesis"
+  GL_VRE_MAX_WORKERS: "4"
+  GL_VRE_POOL_SIZE: "5"
+  GL_VRE_CACHE_TTL: "300"
+  GL_VRE_RATE_LIMIT: "100"
+  GL_VRE_CHECKPOINT_INTERVAL: "100"
+  GL_VRE_RETRY_MAX_ATTEMPTS: "3"
+  GL_VRE_RETRY_BACKOFF_BASE: "2.0"
+  GL_VRE_RULE_CHANGE_AUDIT_ENABLED: "true"
+  GL_VRE_DEFAULT_SEVERITY: "warning"
+  GL_VRE_ENABLE_REPORTING: "true"
+  GL_VRE_LOG_LEVEL: "INFO"
+  GL_VRE_ENABLE_METRICS: "true"

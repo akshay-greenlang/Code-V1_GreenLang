@@ -1,0 +1,29 @@
+---
+# AGENT-DATA-012: GL-DATA-X-015 Missing Value Imputer - ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: missing-value-imputer-service
+  namespace: greenlang
+  labels:
+    app: missing-value-imputer-service
+    agent-id: GL-DATA-X-015
+    component: missing-value-imputation
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: missing-value-imputer-service
+  namespaceSelector:
+    matchNames:
+      - greenlang
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: "gl_mvi_.*"
+          action: keep

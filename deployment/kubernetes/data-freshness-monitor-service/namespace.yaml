@@ -1,0 +1,22 @@
+---
+# AGENT-DATA-016: GL-DATA-X-019 Data Freshness Monitor - Namespace
+# Uses shared greenlang namespace; this manifest exists for documentation
+# and for standalone deployment scenarios.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-data-freshness-monitor
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: data-freshness-monitor
+    app.kubernetes.io/part-of: greenlang-platform
+    agent-id: GL-DATA-X-019
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.28
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    team: platform-engineering
+    owner: greenlang
+    description: "GreenLang Data Freshness Monitor Agent namespace"
+    documentation: "https://docs.greenlang.ai/agents/data-freshness-monitor"

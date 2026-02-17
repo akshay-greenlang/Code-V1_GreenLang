@@ -1,0 +1,22 @@
+---
+# AGENT-DATA-020: GL-DATA-GEO-002 Climate Hazard Connector - Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: climate-hazard-service
+  namespace: greenlang
+  labels:
+    app: climate-hazard-service
+    agent-id: GL-DATA-GEO-002
+    component: data-agent
+    part-of: greenlang
+spec:
+  type: ClusterIP
+  selector:
+    matchLabels:
+      app: climate-hazard-service
+  ports:
+    - name: http
+      port: 8020
+      targetPort: 8020
+      protocol: TCP

@@ -1,0 +1,57 @@
+# =============================================================================
+# Dockerfile: GL-DATA-X-017 Time Series Gap Filler Agent Service
+# AGENT-DATA-014
+# =============================================================================
+
+# Stage 1: Builder
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Copy source
+COPY greenlang/ /build/greenlang/
+
+# Stage 2: Runtime
+FROM python:3.11-slim AS runtime
+
+LABEL maintainer="GreenLang Platform Team"
+LABEL description="GL-DATA-X-017 Time Series Gap Filler Agent Service"
+LABEL version="1.0.0"
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r greenlang && useradd -r -g greenlang -d /app -s /sbin/nologin greenlang
+
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /install /usr/local
+
+# Copy application code
+COPY --from=builder /build/greenlang /app/greenlang
+
+# Security: non-root user, read-only filesystem compatible
+USER greenlang
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -sf http://localhost:8000/api/v1/gap-filler/health || exit 1
+
+# Expose service port
+EXPOSE 8000
+
+# Run with uvicorn
+CMD ["python", "-m", "uvicorn", "greenlang.time_series_gap_filler.setup:create_app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

@@ -1,0 +1,36 @@
+---
+# AGENT-DATA-017: GL-DATA-X-020 Schema Migration Agent - ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schema-migration-config
+  namespace: greenlang
+  labels:
+    app: schema-migration-service
+    agent-id: GL-DATA-X-020
+    component: schema-migration
+data:
+  GL_SM_MAX_SCHEMAS: "50000"
+  GL_SM_MAX_VERSIONS_PER_SCHEMA: "1000"
+  GL_SM_MAX_MIGRATION_BATCH_SIZE: "10000"
+  GL_SM_MIGRATION_TIMEOUT_SECONDS: "3600"
+  GL_SM_ENABLE_DRY_RUN: "true"
+  GL_SM_ENABLE_AUTO_ROLLBACK: "true"
+  GL_SM_COMPATIBILITY_DEFAULT_LEVEL: "backward"
+  GL_SM_DRIFT_CHECK_INTERVAL_MINUTES: "60"
+  GL_SM_DRIFT_SAMPLE_SIZE: "1000"
+  GL_SM_ENABLE_PROVENANCE: "true"
+  GL_SM_GENESIS_HASH: "greenlang-schema-migration-genesis"
+  GL_SM_MAX_WORKERS: "4"
+  GL_SM_POOL_SIZE: "5"
+  GL_SM_CACHE_TTL: "300"
+  GL_SM_RATE_LIMIT: "100"
+  GL_SM_CHECKPOINT_INTERVAL: "100"
+  GL_SM_RETRY_MAX_ATTEMPTS: "3"
+  GL_SM_RETRY_BACKOFF_BASE: "2.0"
+  GL_SM_FIELD_MAPPING_MIN_CONFIDENCE: "0.8"
+  GL_SM_DEPRECATION_WARNING_DAYS: "30"
+  GL_SM_MAX_CHANGE_DEPTH: "10"
+  GL_SM_ENABLE_IMPACT_ANALYSIS: "true"
+  GL_SM_LOG_LEVEL: "INFO"
+  GL_SM_ENABLE_METRICS: "true"

@@ -1,0 +1,116 @@
+---
+# AGENT-DATA-018: GL-DATA-X-021 Data Lineage Tracker - Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: data-lineage-tracker-alerts
+  namespace: greenlang
+  labels:
+    app: data-lineage-tracker-service
+    agent-id: GL-DATA-X-021
+    component: data-lineage-tracker
+    release: prometheus
+spec:
+  groups:
+    - name: data-lineage-tracker.rules
+      rules:
+        # Alert 1: High error rate
+        - alert: DataLineageTrackerHighErrorRate
+          expr: |
+            rate(gl_dlt_requests_total{status="error"}[5m])
+            / rate(gl_dlt_requests_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: data-lineage-tracker-service
+            agent_id: GL-DATA-X-021
+          annotations:
+            summary: "Data Lineage Tracker high error rate"
+            description: "Error rate {{ $value | humanizePercentage }} for data-lineage-tracker-service over last 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/data-lineage-tracker/high-error-rate"
+
+        # Alert 2: Validation failures
+        - alert: DataLineageTrackerValidationFailures
+          expr: |
+            increase(gl_dlt_validations_total{status="failed"}[1h]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            service: data-lineage-tracker-service
+          annotations:
+            summary: "Multiple lineage validation failures"
+            description: "{{ $value }} lineage validations failed in the last hour."
+
+        # Alert 3: Low coverage score
+        - alert: DataLineageTrackerLowCoverage
+          expr: |
+            gl_dlt_coverage_score < 0.5
+          for: 15m
+          labels:
+            severity: critical
+            service: data-lineage-tracker-service
+          annotations:
+            summary: "Data lineage coverage below 50%"
+            description: "Lineage coverage score {{ $value | humanizePercentage }} is below the 50% threshold. Investigate missing lineage registrations."
+
+        # Alert 4: High traversal latency
+        - alert: DataLineageTrackerHighTraversalLatency
+          expr: |
+            histogram_quantile(0.95, rate(gl_dlt_traversal_duration_seconds_bucket[5m])) > 30
+          for: 10m
+          labels:
+            severity: warning
+            service: data-lineage-tracker-service
+          annotations:
+            summary: "Data Lineage Tracker p95 traversal latency > 30s"
+            description: "Traversal p95 duration {{ $value | humanizeDuration }} exceeds 30s threshold."
+
+        # Alert 5: Change detection alerts
+        - alert: DataLineageTrackerHighChangeRate
+          expr: |
+            increase(gl_dlt_changes_detected_total{severity="breaking"}[1h]) > 5
+          for: 5m
+          labels:
+            severity: critical
+            service: data-lineage-tracker-service
+          annotations:
+            summary: "High breaking lineage change rate detected"
+            description: "{{ $value }} breaking lineage changes detected in the last hour. Immediate investigation required."
+
+        # Alert 6: Graph stale
+        - alert: DataLineageTrackerGraphStale
+          expr: |
+            time() - gl_dlt_last_graph_update_timestamp > 7200
+          for: 10m
+          labels:
+            severity: warning
+            service: data-lineage-tracker-service
+          annotations:
+            summary: "Data lineage graph is stale"
+            description: "Lineage graph has not been updated for over 2 hours. Check graph refresh pipeline."
+
+        # Alert 7: Pod not ready
+        - alert: DataLineageTrackerPodNotReady
+          expr: |
+            kube_deployment_status_replicas_ready{deployment="data-lineage-tracker-service", namespace="greenlang"}
+            < kube_deployment_spec_replicas{deployment="data-lineage-tracker-service", namespace="greenlang"}
+          for: 5m
+          labels:
+            severity: critical
+            service: data-lineage-tracker-service
+          annotations:
+            summary: "Data Lineage Tracker pods not ready"
+            description: "{{ $value }} pods not ready out of desired replicas."
+
+        # Alert 8: Memory usage high
+        - alert: DataLineageTrackerHighMemory
+          expr: |
+            container_memory_working_set_bytes{pod=~"data-lineage-tracker.*", namespace="greenlang"}
+            / container_spec_memory_limit_bytes{pod=~"data-lineage-tracker.*", namespace="greenlang"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            service: data-lineage-tracker-service
+          annotations:
+            summary: "Data Lineage Tracker memory usage > 85%"
+            description: "Pod {{ $labels.pod }} using {{ $value | humanizePercentage }} of memory limit."

@@ -183,7 +183,7 @@ jobs:
           GL_DD_DATABASE_URL: "postgresql://test:test@localhost:5432/greenlang_test"
           GL_DD_REDIS_URL: "redis://localhost:6379/13"
         run: |
-          pytest tests/integration/duplicate_detector/ -v --tb=short -x || true
+          pytest tests/integration/duplicate_detector/ -v --tb=short -x
 
   # ──────────────────────────────────────────────────────────────
   # Job 5: Security Scan
