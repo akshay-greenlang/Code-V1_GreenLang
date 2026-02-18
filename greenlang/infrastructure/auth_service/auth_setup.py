@@ -229,6 +229,51 @@ except ImportError:
     CLIMATE_HAZARD_AVAILABLE = False
     _chc_router = None
 
+# Stationary Combustion imports (AGENT-MRV-001)
+try:
+    from greenlang.stationary_combustion.setup import get_router as get_sc_router
+    STATIONARY_COMBUSTION_AVAILABLE = True
+    _sc_router = get_sc_router()
+except ImportError:
+    STATIONARY_COMBUSTION_AVAILABLE = False
+    _sc_router = None
+
+# Refrigerants & F-Gas imports (AGENT-MRV-002)
+try:
+    from greenlang.refrigerants_fgas.setup import get_router as get_rf_router
+    REFRIGERANTS_FGAS_AVAILABLE = True
+    _rf_router = get_rf_router()
+except ImportError:
+    REFRIGERANTS_FGAS_AVAILABLE = False
+    _rf_router = None
+
+# Mobile Combustion imports (AGENT-MRV-003)
+try:
+    from greenlang.mobile_combustion.setup import get_router as get_mc_router
+    MOBILE_COMBUSTION_AVAILABLE = True
+    _mc_router = get_mc_router()
+except ImportError:
+    MOBILE_COMBUSTION_AVAILABLE = False
+    _mc_router = None
+
+# Process Emissions imports (AGENT-MRV-004)
+try:
+    from greenlang.process_emissions.setup import get_router as get_pe_router
+    PROCESS_EMISSIONS_AVAILABLE = True
+    _pe_router = get_pe_router()
+except ImportError:
+    PROCESS_EMISSIONS_AVAILABLE = False
+    _pe_router = None
+
+# Fugitive Emissions imports (AGENT-MRV-005)
+try:
+    from greenlang.fugitive_emissions.setup import get_router as get_fue_router
+    FUGITIVE_EMISSIONS_AVAILABLE = True
+    _fue_router = get_fue_router()
+except ImportError:
+    FUGITIVE_EMISSIONS_AVAILABLE = False
+    _fue_router = None
+
 
 def configure_auth(
     app: "FastAPI",
@@ -576,6 +621,41 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("Climate Hazard Connector router included (AGENT-DATA-020)")
     else:
         logger.debug("Climate Hazard Connector router not available; skipping")
+
+    # Stationary Combustion router (AGENT-MRV-001)
+    if STATIONARY_COMBUSTION_AVAILABLE and _sc_router is not None:
+        app.include_router(_sc_router)
+        logger.info("Stationary Combustion router included (AGENT-MRV-001)")
+    else:
+        logger.debug("Stationary Combustion router not available; skipping")
+
+    # Refrigerants & F-Gas router (AGENT-MRV-002)
+    if REFRIGERANTS_FGAS_AVAILABLE and _rf_router is not None:
+        app.include_router(_rf_router)
+        logger.info("Refrigerants & F-Gas router included (AGENT-MRV-002)")
+    else:
+        logger.debug("Refrigerants & F-Gas router not available; skipping")
+
+    # Mobile Combustion router (AGENT-MRV-003)
+    if MOBILE_COMBUSTION_AVAILABLE and _mc_router is not None:
+        app.include_router(_mc_router)
+        logger.info("Mobile Combustion router included (AGENT-MRV-003)")
+    else:
+        logger.debug("Mobile Combustion router not available; skipping")
+
+    # Process Emissions router (AGENT-MRV-004)
+    if PROCESS_EMISSIONS_AVAILABLE and _pe_router is not None:
+        app.include_router(_pe_router)
+        logger.info("Process Emissions router included (AGENT-MRV-004)")
+    else:
+        logger.debug("Process Emissions router not available; skipping")
+
+    # Fugitive Emissions router (AGENT-MRV-005)
+    if FUGITIVE_EMISSIONS_AVAILABLE and _fue_router is not None:
+        app.include_router(_fue_router)
+        logger.info("Fugitive Emissions router included (AGENT-MRV-005)")
+    else:
+        logger.debug("Fugitive Emissions router not available; skipping")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

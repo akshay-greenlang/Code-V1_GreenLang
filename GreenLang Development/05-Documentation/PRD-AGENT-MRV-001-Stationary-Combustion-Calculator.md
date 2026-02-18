@@ -11,7 +11,7 @@
 | Status | PLANNED |
 | Author | GreenLang Platform Team |
 | Date | February 2026 |
-| DB Migration | V048 |
+| DB Migration | V051 |
 
 ## 2. Problem Statement
 Scope 1 stationary combustion is the largest source of direct GHG emissions for most industrial organizations. Calculating these emissions requires matching fuel consumption data to authoritative emission factors (EPA, IPCC AR6, DEFRA), applying heating value conversions, oxidation factors, and GWP multipliers for CO2, CH4, and N2O. Existing Layer 1 code in `greenlang.agents.mrv.scope1_combustion` provides basic calculation but lacks the new platform architecture (7-engine pattern, 20 REST API endpoints, Prometheus metrics, provenance chains, K8s manifests, auth integration). A dedicated Layer 3 agent is needed for production-grade, auditable Scope 1 stationary combustion calculations.
@@ -54,7 +54,7 @@ Scope 1 stationary combustion is the largest source of direct GHG emissions for 
 | 6 | AuditTrailEngine | Complete calculation lineage; SHA-256 provenance chains; regulatory compliance mapping (GHG Protocol, ISO 14064-1, CSRD E1, EPA 40 CFR 98); export to audit-ready formats (JSON, CSV, PDF-ready) |
 | 7 | StationaryCombustionPipelineEngine | End-to-end orchestration: validate inputs → select EF → convert units → calculate → quantify uncertainty → generate audit trail; batch processing with checkpointing; facility aggregation |
 
-### 5.2 Database Schema (V048)
+### 5.2 Database Schema (V051)
 - `sc_fuel_types` — fuel type registry (15+ fuels, properties, classifications)
 - `sc_emission_factors` — emission factor database (factor_id, gas, value, unit, source, tier, geography, effective_date)
 - `sc_heating_values` — heating values (HHV/LHV per fuel per unit, source)

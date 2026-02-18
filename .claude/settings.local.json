@@ -338,7 +338,16 @@
       "Bash(powershell.exe -NoProfile -Command:*)",
       "Bash(1 <<'PYEOF'\nimport sys, os\nsys.path.insert\\(0, os.getcwd\\(\\)\\)\nfrom greenlang.schema_migration.change_detector import ChangeDetectorEngine, _extract_fields\n\nengine = ChangeDetectorEngine\\(\\)\n\nsource = {'type': 'object', 'properties': {'address': {'type': 'object', 'properties': {'city': {'type': 'string'}}}}}\ntarget = {'type': 'object', 'properties': {'address': {'type': 'object', 'properties': {'city': {'type': 'string'}, 'zip': {'type': 'string'}}}}}\n\nsrc_f = _extract_fields\\(source\\)\nprint\\('src address properties:', src_f.get\\('address', {}\\).get\\('properties'\\)\\)\n\nchanges = engine.detect_nested_changes\\(source, target\\)\nprint\\('Count:', len\\(changes\\)\\)\nfor c in changes:\n    print\\(c['change_type'], c['field_path']\\)\nPYEOF)",
       "Bash(1 <<'PYEOF'\nimport sys, os, importlib\nsys.path.insert\\(0, os.getcwd\\(\\)\\)\n\n# Import only the change_detector module directly\nimport greenlang.schema_migration.provenance\nimport greenlang.schema_migration.change_detector as cd\n\nengine = cd.ChangeDetectorEngine\\(\\)\n\nsource = {'type': 'object', 'properties': {'address': {'type': 'object', 'properties': {'city': {'type': 'string'}}}}}\ntarget = {'type': 'object', 'properties': {'address': {'type': 'object', 'properties': {'city': {'type': 'string'}, 'zip': {'type': 'string'}}}}}\n\nsrc_f = cd._extract_fields\\(source\\)\nprint\\('src address properties:', src_f.get\\('address', {}\\).get\\('properties'\\)\\)\n\nchanges = engine.detect_nested_changes\\(source, target\\)\nprint\\('Count:', len\\(changes\\)\\)\nfor c in changes:\n    print\\(c['change_type'], c['field_path']\\)\nPYEOF)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "WebFetch(domain:www.ecfr.gov)",
+      "WebFetch(domain:www.law.cornell.edu)",
+      "WebFetch(domain:www.epa.gov)",
+      "WebFetch(domain:ghgprotocol.org)",
+      "WebFetch(domain:climate-transparency-platform.org)",
+      "WebFetch(domain:www.ipcc-nggip.iges.or.jp)",
+      "WebFetch(domain:www.danfoss.com)",
+      "WebFetch(domain:normecverifavia.com)",
+      "WebFetch(domain:www.fgascontrols.com)"
     ],
     "deny": [],
     "ask": []
