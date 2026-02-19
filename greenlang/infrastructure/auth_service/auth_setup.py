@@ -274,6 +274,15 @@ except ImportError:
     FUGITIVE_EMISSIONS_AVAILABLE = False
     _fue_router = None
 
+# Land Use Emissions imports (AGENT-MRV-006)
+try:
+    from greenlang.land_use_emissions.setup import get_router as get_lu_router
+    LAND_USE_EMISSIONS_AVAILABLE = True
+    _lu_router = get_lu_router()
+except ImportError:
+    LAND_USE_EMISSIONS_AVAILABLE = False
+    _lu_router = None
+
 
 def configure_auth(
     app: "FastAPI",
@@ -656,6 +665,13 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("Fugitive Emissions router included (AGENT-MRV-005)")
     else:
         logger.debug("Fugitive Emissions router not available; skipping")
+
+    # Land Use Emissions router (AGENT-MRV-006)
+    if LAND_USE_EMISSIONS_AVAILABLE and _lu_router is not None:
+        app.include_router(_lu_router)
+        logger.info("Land Use Emissions router included (AGENT-MRV-006)")
+    else:
+        logger.debug("Land Use Emissions router not available; skipping")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

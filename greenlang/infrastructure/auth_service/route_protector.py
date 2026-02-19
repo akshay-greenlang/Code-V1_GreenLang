@@ -690,6 +690,27 @@ PERMISSION_MAP: Dict[str, str] = {
     "POST:/api/v1/fugitive-emissions/compliance/check": "fugitive-emissions:execute",
     "GET:/api/v1/fugitive-emissions/health": "fugitive-emissions:read",
     "GET:/api/v1/fugitive-emissions/stats": "fugitive-emissions:read",
+    # ── Land Use Emissions (AGENT-MRV-006) ─────────────────────────
+    "POST:/api/v1/land-use-emissions/calculations": "land-use:calculate",
+    "POST:/api/v1/land-use-emissions/calculations/batch": "land-use:calculate",
+    "GET:/api/v1/land-use-emissions/calculations": "land-use:read",
+    "GET:/api/v1/land-use-emissions/calculations/{calc_id}": "land-use:read",
+    "DELETE:/api/v1/land-use-emissions/calculations/{calc_id}": "land-use:delete",
+    "POST:/api/v1/land-use-emissions/carbon-stocks": "land-use:carbon-stocks:write",
+    "GET:/api/v1/land-use-emissions/carbon-stocks/{parcel_id}": "land-use:carbon-stocks:read",
+    "GET:/api/v1/land-use-emissions/carbon-stocks/{parcel_id}/summary": "land-use:carbon-stocks:read",
+    "POST:/api/v1/land-use-emissions/land-parcels": "land-use:parcels:write",
+    "GET:/api/v1/land-use-emissions/land-parcels": "land-use:parcels:read",
+    "PUT:/api/v1/land-use-emissions/land-parcels/{parcel_id}": "land-use:parcels:write",
+    "POST:/api/v1/land-use-emissions/transitions": "land-use:transitions:write",
+    "GET:/api/v1/land-use-emissions/transitions": "land-use:transitions:read",
+    "GET:/api/v1/land-use-emissions/transitions/matrix": "land-use:transitions:read",
+    "POST:/api/v1/land-use-emissions/soc-assessments": "land-use:soc:write",
+    "GET:/api/v1/land-use-emissions/soc-assessments/{parcel_id}": "land-use:soc:read",
+    "POST:/api/v1/land-use-emissions/compliance/check": "land-use:compliance:check",
+    "GET:/api/v1/land-use-emissions/compliance/{check_id}": "land-use:compliance:read",
+    "POST:/api/v1/land-use-emissions/uncertainty": "land-use:uncertainty:run",
+    "GET:/api/v1/land-use-emissions/aggregations": "land-use:read",
 }
 
 
