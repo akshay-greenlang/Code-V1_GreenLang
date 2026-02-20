@@ -134,7 +134,7 @@ server = [
   "opentelemetry-api==1.22.0",
   "opentelemetry-sdk==1.22.0",
   "opentelemetry-instrumentation-fastapi==0.43b0",
-  "structlog==24.1.0",
+  "structlog==25.5.0",
   "gunicorn==21.2.0",
   "python-multipart==0.0.22",
   "asyncpg==0.29.0",
