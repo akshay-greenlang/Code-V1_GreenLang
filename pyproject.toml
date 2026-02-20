@@ -99,7 +99,7 @@ data = [
   "pymongo==4.6.1",
 ]
 llm = [
-  "openai==1.12.0",
+  "openai==2.16.0",
   # LangChain: Required for core GreenLang RAG tools (scripts/build_vector_store.py, greenlang/cli/assistant_rag.py)
   # NOTE: GL-CSRD-APP uses greenlang.intelligence abstraction layer instead of direct LangChain imports
   "langchain==0.1.9",
