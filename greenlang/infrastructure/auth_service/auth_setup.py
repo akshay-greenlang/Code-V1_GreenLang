@@ -283,6 +283,110 @@ except ImportError:
     LAND_USE_EMISSIONS_AVAILABLE = False
     _lu_router = None
 
+# Waste Treatment Emissions imports (AGENT-MRV-007)
+try:
+    from greenlang.waste_treatment_emissions.setup import get_router as get_wt_router
+    WASTE_TREATMENT_EMISSIONS_AVAILABLE = True
+    _wt_router = get_wt_router()
+except ImportError:
+    WASTE_TREATMENT_EMISSIONS_AVAILABLE = False
+    _wt_router = None
+
+
+# Agricultural Emissions imports (AGENT-MRV-008)
+try:
+    from greenlang.agricultural_emissions.setup import get_router as get_ag_router
+    AGRICULTURAL_EMISSIONS_AVAILABLE = True
+    _ag_router = get_ag_router()
+except ImportError:
+    AGRICULTURAL_EMISSIONS_AVAILABLE = False
+    _ag_router = None
+
+# Scope 2 Location-Based Emissions imports (AGENT-MRV-009)
+try:
+    from greenlang.scope2_location.api.router import router as _s2l_router
+    SCOPE2_LOCATION_AVAILABLE = True
+except ImportError:
+    SCOPE2_LOCATION_AVAILABLE = False
+    _s2l_router = None
+
+# Scope 2 Market-Based Emissions imports (AGENT-MRV-010)
+try:
+    from greenlang.scope2_market.api.router import router as _s2m_router
+    SCOPE2_MARKET_AVAILABLE = True
+except ImportError:
+    SCOPE2_MARKET_AVAILABLE = False
+    _s2m_router = None
+
+# Steam/Heat Purchase imports (AGENT-MRV-011)
+try:
+    from greenlang.steam_heat_purchase.api.router import router as _shp_router
+    STEAM_HEAT_PURCHASE_AVAILABLE = True
+except ImportError:
+    STEAM_HEAT_PURCHASE_AVAILABLE = False
+    _shp_router = None
+
+# Cooling Purchase imports (AGENT-MRV-012)
+try:
+    from greenlang.cooling_purchase.api.router import router as _cp_router
+    COOLING_PURCHASE_AVAILABLE = True
+except ImportError:
+    COOLING_PURCHASE_AVAILABLE = False
+    _cp_router = None
+
+# Dual Reporting Reconciliation imports (AGENT-MRV-013)
+try:
+    from greenlang.dual_reporting_reconciliation.api.router import router as _drr_router
+    DUAL_REPORTING_AVAILABLE = True
+except ImportError:
+    DUAL_REPORTING_AVAILABLE = False
+    _drr_router = None
+
+# Purchased Goods & Services imports (AGENT-MRV-014)
+try:
+    from greenlang.purchased_goods_services.setup import get_router as get_pgs_router
+    PURCHASED_GOODS_AVAILABLE = True
+    _pgs_router = get_pgs_router()
+except ImportError:
+    PURCHASED_GOODS_AVAILABLE = False
+    _pgs_router = None
+
+# Capital Goods imports (AGENT-MRV-015)
+try:
+    from greenlang.capital_goods.setup import get_router as get_cg_router
+    CAPITAL_GOODS_AVAILABLE = True
+    _cg_router = get_cg_router()
+except ImportError:
+    CAPITAL_GOODS_AVAILABLE = False
+    _cg_router = None
+
+# Fuel & Energy Activities imports (AGENT-MRV-016)
+try:
+    from greenlang.fuel_energy_activities.setup import get_router as get_fea_router
+    FUEL_ENERGY_ACTIVITIES_AVAILABLE = True
+    _fea_router = get_fea_router()
+except ImportError:
+    FUEL_ENERGY_ACTIVITIES_AVAILABLE = False
+    _fea_router = None
+
+# Upstream Transportation & Distribution imports (AGENT-MRV-017)
+try:
+    from greenlang.upstream_transportation.setup import get_router as get_uto_router
+    UPSTREAM_TRANSPORTATION_AVAILABLE = True
+    _uto_router = get_uto_router()
+except ImportError:
+    UPSTREAM_TRANSPORTATION_AVAILABLE = False
+    _uto_router = None
+
+# Waste Generated imports (AGENT-MRV-018)
+try:
+    from greenlang.waste_generated.setup import get_router as get_wg_router
+    WASTE_GENERATED_AVAILABLE = True
+    _wg_router = get_wg_router()
+except ImportError:
+    WASTE_GENERATED_AVAILABLE = False
+    _wg_router = None
+
 
 def configure_auth(
     app: "FastAPI",
@@ -672,6 +776,90 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("Land Use Emissions router included (AGENT-MRV-006)")
     else:
         logger.debug("Land Use Emissions router not available; skipping")
+
+    # Waste Treatment Emissions router (AGENT-MRV-007)
+    if WASTE_TREATMENT_EMISSIONS_AVAILABLE and _wt_router is not None:
+        app.include_router(_wt_router)
+        logger.info("Waste Treatment Emissions router included (AGENT-MRV-007)")
+    else:
+        logger.debug("Waste Treatment Emissions router not available; skipping")
+
+    # Agricultural Emissions router (AGENT-MRV-008)
+    if AGRICULTURAL_EMISSIONS_AVAILABLE and _ag_router is not None:
+        app.include_router(_ag_router)
+        logger.info("Agricultural Emissions router included (AGENT-MRV-008)")
+    else:
+        logger.debug("Agricultural Emissions router not available; skipping")
+
+    # Scope 2 Location-Based Emissions router (AGENT-MRV-009)
+    if SCOPE2_LOCATION_AVAILABLE and _s2l_router is not None:
+        app.include_router(_s2l_router)
+        logger.info("Scope 2 Location-Based router included (AGENT-MRV-009)")
+    else:
+        logger.debug("Scope 2 Location-Based router not available; skipping")
+
+    # Scope 2 Market-Based Emissions router (AGENT-MRV-010)
+    if SCOPE2_MARKET_AVAILABLE and _s2m_router is not None:
+        app.include_router(_s2m_router)
+        logger.info("Scope 2 Market-Based router included (AGENT-MRV-010)")
+    else:
+        logger.debug("Scope 2 Market-Based router not available; skipping")
+
+    # Steam/Heat Purchase router (AGENT-MRV-011)
+    if STEAM_HEAT_PURCHASE_AVAILABLE and _shp_router is not None:
+        app.include_router(_shp_router)
+        logger.info("Steam/Heat Purchase router included (AGENT-MRV-011)")
+    else:
+        logger.debug("Steam/Heat Purchase router not available; skipping")
+
+    # Cooling Purchase router (AGENT-MRV-012)
+    if COOLING_PURCHASE_AVAILABLE and _cp_router is not None:
+        app.include_router(_cp_router)
+        logger.info("Cooling Purchase router included (AGENT-MRV-012)")
+    else:
+        logger.debug("Cooling Purchase router not available; skipping")
+
+    # Dual Reporting Reconciliation router (AGENT-MRV-013)
+    if DUAL_REPORTING_AVAILABLE and _drr_router is not None:
+        app.include_router(_drr_router)
+        logger.info("Dual Reporting Reconciliation router included (AGENT-MRV-013)")
+    else:
+        logger.debug("Dual Reporting Reconciliation router not available; skipping")
+
+    # Purchased Goods & Services router (AGENT-MRV-014)
+    if PURCHASED_GOODS_AVAILABLE and _pgs_router is not None:
+        app.include_router(_pgs_router)
+        logger.info("Purchased Goods & Services router included (AGENT-MRV-014)")
+    else:
+        logger.debug("Purchased Goods & Services router not available; skipping")
+
+    # Capital Goods router (AGENT-MRV-015)
+    if CAPITAL_GOODS_AVAILABLE and _cg_router is not None:
+        app.include_router(_cg_router)
+        logger.info("Capital Goods router included (AGENT-MRV-015)")
+    else:
+        logger.debug("Capital Goods router not available; skipping")
+
+    # Fuel & Energy Activities router (AGENT-MRV-016)
+    if FUEL_ENERGY_ACTIVITIES_AVAILABLE and _fea_router is not None:
+        app.include_router(_fea_router)
+        logger.info("Fuel & Energy Activities router included (AGENT-MRV-016)")
+    else:
+        logger.debug("Fuel & Energy Activities router not available; skipping")
+
+    # Upstream Transportation & Distribution router (AGENT-MRV-017)
+    if UPSTREAM_TRANSPORTATION_AVAILABLE and _uto_router is not None:
+        app.include_router(_uto_router)
+        logger.info("Upstream Transportation & Distribution router included (AGENT-MRV-017)")
+    else:
+        logger.debug("Upstream Transportation & Distribution router not available; skipping")
+
+    # Waste Generated router (AGENT-MRV-018)
+    if WASTE_GENERATED_AVAILABLE and _wg_router is not None:
+        app.include_router(_wg_router)
+        logger.info("Waste Generated router included (AGENT-MRV-018)")
+    else:
+        logger.debug("Waste Generated router not available; skipping")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:
