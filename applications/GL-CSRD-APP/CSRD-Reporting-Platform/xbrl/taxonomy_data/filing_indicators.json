@@ -1,0 +1,264 @@
+{
+  "metadata": {
+    "description": "EFRAG ESRS Filing Indicators - defines which standards are filed based on materiality assessment",
+    "version": "2024.1.0",
+    "reference": "ESRS 1 Chapter 3 - Double Materiality",
+    "notes": "ESRS-1 and ESRS-2 are always mandatory. Topical standards (E1-E5, S1-S4, G1) are subject to materiality."
+  },
+  "filing_indicators": {
+    "ESRS-1": {
+      "standard_id": "ESRS-1",
+      "full_name": "General Requirements",
+      "mandatory": true,
+      "materiality_subject": false,
+      "description": "Cross-cutting standard establishing general principles and requirements",
+      "filing_code": "FI_ESRS1",
+      "minimum_disclosures": [],
+      "phase_in": null,
+      "notes": "Always required. Sets the basis for all ESRS reporting."
+    },
+    "ESRS-2": {
+      "standard_id": "ESRS-2",
+      "full_name": "General Disclosures",
+      "mandatory": true,
+      "materiality_subject": false,
+      "description": "General disclosures on governance, strategy, impact management, and metrics",
+      "filing_code": "FI_ESRS2",
+      "minimum_disclosures": [
+        "BP-1", "BP-2",
+        "GOV-1", "GOV-2", "GOV-3", "GOV-4", "GOV-5",
+        "SBM-1", "SBM-2", "SBM-3",
+        "IRO-1", "IRO-2",
+        "MDR-P", "MDR-A", "MDR-T", "MDR-M"
+      ],
+      "phase_in": null,
+      "notes": "Always required regardless of materiality."
+    },
+    "ESRS-E1": {
+      "standard_id": "ESRS-E1",
+      "full_name": "Climate Change",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Climate change mitigation and adaptation, energy",
+      "filing_code": "FI_E1",
+      "minimum_disclosures": [
+        "E1-1", "E1-2", "E1-3", "E1-4", "E1-5", "E1-6", "E1-7", "E1-8", "E1-9"
+      ],
+      "mandatory_if_material": [
+        "E1-1", "E1-4", "E1-5", "E1-6", "E1-9"
+      ],
+      "phase_in": {
+        "first_year_exemptions": ["E1-6_scope3"],
+        "description": "Scope 3 can be omitted in the first year of reporting"
+      },
+      "omission_explanation_required": true,
+      "notes": "If climate change is not material, undertaking must provide detailed explanation per ESRS 2 IRO-2."
+    },
+    "ESRS-E2": {
+      "standard_id": "ESRS-E2",
+      "full_name": "Pollution",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Pollution of air, water, soil, substances of concern, microplastics",
+      "filing_code": "FI_E2",
+      "minimum_disclosures": [
+        "E2-1", "E2-2", "E2-3", "E2-4", "E2-5", "E2-6"
+      ],
+      "mandatory_if_material": [
+        "E2-4", "E2-6"
+      ],
+      "phase_in": null,
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    },
+    "ESRS-E3": {
+      "standard_id": "ESRS-E3",
+      "full_name": "Water and Marine Resources",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Water consumption, marine resources",
+      "filing_code": "FI_E3",
+      "minimum_disclosures": [
+        "E3-1", "E3-2", "E3-3", "E3-4", "E3-5"
+      ],
+      "mandatory_if_material": [
+        "E3-4", "E3-5"
+      ],
+      "phase_in": null,
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    },
+    "ESRS-E4": {
+      "standard_id": "ESRS-E4",
+      "full_name": "Biodiversity and Ecosystems",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Biodiversity, ecosystems, ecosystem services",
+      "filing_code": "FI_E4",
+      "minimum_disclosures": [
+        "E4-1", "E4-2", "E4-3", "E4-4", "E4-5", "E4-6"
+      ],
+      "mandatory_if_material": [
+        "E4-4", "E4-6"
+      ],
+      "phase_in": {
+        "first_year_exemptions": ["E4-full"],
+        "description": "Undertakings with fewer than 750 employees may omit all E4 data points in first year"
+      },
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment. Phase-in for smaller undertakings."
+    },
+    "ESRS-E5": {
+      "standard_id": "ESRS-E5",
+      "full_name": "Resource Use and Circular Economy",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Resource inflows, resource outflows, waste",
+      "filing_code": "FI_E5",
+      "minimum_disclosures": [
+        "E5-1", "E5-2", "E5-3", "E5-4", "E5-5", "E5-6"
+      ],
+      "mandatory_if_material": [
+        "E5-4", "E5-5", "E5-6"
+      ],
+      "phase_in": null,
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    },
+    "ESRS-S1": {
+      "standard_id": "ESRS-S1",
+      "full_name": "Own Workforce",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Working conditions, equal treatment, health and safety, training",
+      "filing_code": "FI_S1",
+      "minimum_disclosures": [
+        "S1-1", "S1-2", "S1-3", "S1-4", "S1-5", "S1-6", "S1-7", "S1-8",
+        "S1-9", "S1-10", "S1-11", "S1-12", "S1-13", "S1-14", "S1-15",
+        "S1-16", "S1-17"
+      ],
+      "mandatory_if_material": [
+        "S1-6", "S1-9", "S1-14", "S1-16", "S1-17"
+      ],
+      "phase_in": {
+        "first_year_exemptions": ["S1-value-chain"],
+        "description": "Value chain own workforce data can be omitted in first year"
+      },
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    },
+    "ESRS-S2": {
+      "standard_id": "ESRS-S2",
+      "full_name": "Workers in the Value Chain",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Working conditions and human rights of value chain workers",
+      "filing_code": "FI_S2",
+      "minimum_disclosures": [
+        "S2-1", "S2-2", "S2-3", "S2-4", "S2-5"
+      ],
+      "mandatory_if_material": [
+        "S2-5"
+      ],
+      "phase_in": {
+        "first_year_exemptions": ["S2-full"],
+        "description": "Undertakings with fewer than 750 employees may omit all S2 data points in first year"
+      },
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    },
+    "ESRS-S3": {
+      "standard_id": "ESRS-S3",
+      "full_name": "Affected Communities",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Impacts on affected communities including indigenous peoples",
+      "filing_code": "FI_S3",
+      "minimum_disclosures": [
+        "S3-1", "S3-2", "S3-3", "S3-4", "S3-5"
+      ],
+      "mandatory_if_material": [
+        "S3-5"
+      ],
+      "phase_in": {
+        "first_year_exemptions": ["S3-full"],
+        "description": "Undertakings with fewer than 750 employees may omit all S3 data points in first year"
+      },
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    },
+    "ESRS-S4": {
+      "standard_id": "ESRS-S4",
+      "full_name": "Consumers and End-users",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Impacts on consumers and end-users",
+      "filing_code": "FI_S4",
+      "minimum_disclosures": [
+        "S4-1", "S4-2", "S4-3", "S4-4", "S4-5"
+      ],
+      "mandatory_if_material": [
+        "S4-5"
+      ],
+      "phase_in": {
+        "first_year_exemptions": ["S4-full"],
+        "description": "Undertakings with fewer than 750 employees may omit all S4 data points in first year"
+      },
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    },
+    "ESRS-G1": {
+      "standard_id": "ESRS-G1",
+      "full_name": "Business Conduct",
+      "mandatory": false,
+      "materiality_subject": true,
+      "description": "Business conduct, corruption, political engagement, payment practices",
+      "filing_code": "FI_G1",
+      "minimum_disclosures": [
+        "G1-1", "G1-2", "G1-3", "G1-4", "G1-5", "G1-6"
+      ],
+      "mandatory_if_material": [
+        "G1-3", "G1-6"
+      ],
+      "phase_in": null,
+      "omission_explanation_required": false,
+      "notes": "Subject to materiality assessment."
+    }
+  },
+  "phase_in_schedule": {
+    "year_1": {
+      "description": "First reporting year under CSRD (FY 2024 for largest companies)",
+      "exemptions": [
+        "ESRS-E1: Scope 3 GHG emissions may be omitted",
+        "ESRS-E4: Full standard may be omitted for <750 employees",
+        "ESRS-S2: Full standard may be omitted for <750 employees",
+        "ESRS-S3: Full standard may be omitted for <750 employees",
+        "ESRS-S4: Full standard may be omitted for <750 employees",
+        "ESRS-S1: Value chain workforce data may be omitted"
+      ]
+    },
+    "year_2": {
+      "description": "Second reporting year",
+      "exemptions": [
+        "ESRS-E4: Full standard may be omitted for <750 employees"
+      ]
+    },
+    "year_3": {
+      "description": "Third reporting year - full compliance required",
+      "exemptions": []
+    }
+  },
+  "materiality_determination": {
+    "description": "Double materiality assessment determines which topical standards must be filed",
+    "impact_materiality": {
+      "criteria": "Actual or potential, positive or negative impacts on people or environment",
+      "severity_factors": ["scale", "scope", "irremediable_character"],
+      "likelihood_considered_for": "potential impacts"
+    },
+    "financial_materiality": {
+      "criteria": "Risks and opportunities that affect or could affect financial position, performance, cash flows, access to finance, cost of capital",
+      "assessment_factors": ["magnitude", "likelihood"]
+    },
+    "threshold": "A sustainability matter is material if it is material from impact or financial perspective or both"
+  }
+}

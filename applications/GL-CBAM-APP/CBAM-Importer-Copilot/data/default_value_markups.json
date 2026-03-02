@@ -1,0 +1,481 @@
+{
+  "metadata": {
+    "version": "1.1.0",
+    "regulation": "EU CBAM Regulation (EU) 2023/956 and Implementing Regulation (EU) 2023/1773",
+    "source": "EU Commission Implementing Acts, JRC Technical Reports on CBAM Default Values (2025)",
+    "last_updated": "2026-02-26",
+    "description": "Progressive markup schedule on default emission values for CBAM goods when actual installation-level data is not available. Default values represent the average emission intensity of the worst-performing 10% of installations in the EU for each product.",
+    "disclaimer": "For actual CBAM filings, use the official default values published by the EU Commission in the Official Journal. Values herein are based on JRC technical assessments and may be updated."
+  },
+  "markup_schedule": {
+    "transitional_period": {
+      "period_start": "2023-10-01",
+      "period_end": "2025-12-31",
+      "markup_percentage": 0,
+      "effective_multiplier": 1.0,
+      "notes": "Transitional period. Reporting only, no financial obligations. Default values may be used without penalty. UN Comtrade-based estimates accepted as fallback."
+    },
+    "definitive_year_1": {
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "markup_percentage": 0,
+      "effective_multiplier": 1.0,
+      "notes": "First year of definitive period. CBAM certificates must be purchased. Commission-published default values used at face value. Importers should transition to actual data."
+    },
+    "definitive_year_2": {
+      "period_start": "2027-01-01",
+      "period_end": "2027-12-31",
+      "markup_percentage": 10,
+      "effective_multiplier": 1.10,
+      "notes": "10% markup on default values to incentivize actual data reporting from installations. Importers relying on defaults face higher certificate costs."
+    },
+    "definitive_year_3": {
+      "period_start": "2028-01-01",
+      "period_end": "2028-12-31",
+      "markup_percentage": 20,
+      "effective_multiplier": 1.20,
+      "notes": "20% markup on default values. Strong incentive to obtain verified installation-level data."
+    },
+    "definitive_year_4_plus": {
+      "period_start": "2029-01-01",
+      "period_end": null,
+      "markup_percentage": 30,
+      "effective_multiplier": 1.30,
+      "notes": "30% maximum markup on default values. Applies from 2029 onwards. Importers should have supplier-specific data by this point."
+    }
+  },
+  "sector_default_values": {
+    "cement": {
+      "sector_name": "Cement",
+      "cbam_annex_section": "Section I",
+      "products": {
+        "clinker": {
+          "product_name": "Cement clinker",
+          "cn_codes": ["25231000"],
+          "default_direct_emissions_tco2e_per_t": "0.880",
+          "default_indirect_emissions_tco2e_per_mwh": "0.065",
+          "default_total_specific_emissions_tco2e_per_t": "0.930",
+          "eu_benchmark_tco2e_per_t": "0.766",
+          "source": "JRC 2025 - Based on worst-performing 10% of EU clinker kilns",
+          "process_emissions_share_pct": 65,
+          "energy_emissions_share_pct": 35,
+          "notes": "Direct emissions dominated by CaCO3 calcination (~65%). Kiln fuel combustion ~35%."
+        },
+        "grey_portland_cement": {
+          "product_name": "Grey Portland cement",
+          "cn_codes": ["25232900"],
+          "default_direct_emissions_tco2e_per_t": "0.640",
+          "default_indirect_emissions_tco2e_per_mwh": "0.080",
+          "default_total_specific_emissions_tco2e_per_t": "0.700",
+          "eu_benchmark_tco2e_per_t": "0.550",
+          "source": "JRC 2025 - Weighted by typical 70% clinker ratio",
+          "clinker_ratio_assumed_pct": 70,
+          "notes": "Lower than clinker due to dilution with SCMs (slag, fly ash, limestone). Clinker ratio varies 65-95%."
+        },
+        "white_portland_cement": {
+          "product_name": "White Portland cement",
+          "cn_codes": ["25232100"],
+          "default_direct_emissions_tco2e_per_t": "0.770",
+          "default_indirect_emissions_tco2e_per_mwh": "0.095",
+          "default_total_specific_emissions_tco2e_per_t": "0.840",
+          "eu_benchmark_tco2e_per_t": "0.690",
+          "source": "JRC 2025 - Higher energy intensity due to purity requirements",
+          "clinker_ratio_assumed_pct": 85,
+          "notes": "White cement requires higher kiln temperature and purer raw materials, ~12% more energy-intensive."
+        },
+        "aluminous_cement": {
+          "product_name": "Aluminous (calcium aluminate) cement",
+          "cn_codes": ["25233000"],
+          "default_direct_emissions_tco2e_per_t": "0.700",
+          "default_indirect_emissions_tco2e_per_mwh": "0.090",
+          "default_total_specific_emissions_tco2e_per_t": "0.770",
+          "eu_benchmark_tco2e_per_t": "0.620",
+          "source": "JRC 2025 - Based on bauxite-limestone fusion process",
+          "notes": "Lower process CO2 than Portland clinker (no CaCO3 calcination at same scale) but higher energy."
+        },
+        "other_hydraulic_cements": {
+          "product_name": "Other hydraulic cements",
+          "cn_codes": ["25239000"],
+          "default_direct_emissions_tco2e_per_t": "0.600",
+          "default_indirect_emissions_tco2e_per_mwh": "0.075",
+          "default_total_specific_emissions_tco2e_per_t": "0.660",
+          "eu_benchmark_tco2e_per_t": "0.520",
+          "source": "JRC 2025 - Category average for blended/composite cements",
+          "notes": "Includes slag cement, pozzolanic cement, composite cements. Lower clinker factor."
+        }
+      }
+    },
+    "iron_steel": {
+      "sector_name": "Iron and Steel",
+      "cbam_annex_section": "Section II",
+      "products": {
+        "pig_iron": {
+          "product_name": "Pig iron / hot metal (blast furnace)",
+          "cn_codes": ["72011000", "72015000"],
+          "default_direct_emissions_tco2e_per_t": "1.600",
+          "default_indirect_emissions_tco2e_per_mwh": "0.050",
+          "default_total_specific_emissions_tco2e_per_t": "1.640",
+          "eu_benchmark_tco2e_per_t": "1.328",
+          "source": "JRC 2025 / World Steel Association",
+          "notes": "BF-BOF route. Coke consumption is primary emission source."
+        },
+        "crude_steel_bof": {
+          "product_name": "Crude steel (basic oxygen furnace)",
+          "cn_codes": ["72061000", "72071100"],
+          "default_direct_emissions_tco2e_per_t": "1.850",
+          "default_indirect_emissions_tco2e_per_mwh": "0.065",
+          "default_total_specific_emissions_tco2e_per_t": "1.900",
+          "eu_benchmark_tco2e_per_t": "1.531",
+          "source": "JRC 2025 / World Steel Association",
+          "notes": "Integrated route including sintering, coking, blast furnace, and basic oxygen furnace."
+        },
+        "crude_steel_eaf": {
+          "product_name": "Crude steel (electric arc furnace)",
+          "cn_codes": ["72061000", "72071900"],
+          "default_direct_emissions_tco2e_per_t": "0.350",
+          "default_indirect_emissions_tco2e_per_mwh": "0.450",
+          "default_total_specific_emissions_tco2e_per_t": "0.550",
+          "eu_benchmark_tco2e_per_t": "0.283",
+          "source": "JRC 2025 - Scrap-based EAF",
+          "notes": "EAF with 100% scrap. Indirect emissions significant due to electricity consumption (~400 kWh/t). Total depends heavily on grid mix."
+        },
+        "sintered_ore": {
+          "product_name": "Sintered ore",
+          "cn_codes": ["26011200"],
+          "default_direct_emissions_tco2e_per_t": "0.230",
+          "default_indirect_emissions_tco2e_per_mwh": "0.015",
+          "default_total_specific_emissions_tco2e_per_t": "0.240",
+          "eu_benchmark_tco2e_per_t": "0.171",
+          "source": "JRC 2025 / EU ETS benchmark",
+          "notes": "Sinter strand emissions from coke breeze combustion and limestone calcination."
+        },
+        "iron_castings": {
+          "product_name": "Iron castings",
+          "cn_codes": ["73251000", "73259100"],
+          "default_direct_emissions_tco2e_per_t": "0.500",
+          "default_indirect_emissions_tco2e_per_mwh": "0.300",
+          "default_total_specific_emissions_tco2e_per_t": "0.650",
+          "eu_benchmark_tco2e_per_t": "0.376",
+          "source": "JRC 2025 - Foundry operations",
+          "notes": "Cupola and induction furnace based. High indirect emissions from electricity."
+        },
+        "ferro_alloys": {
+          "product_name": "Ferro-alloys (ferro-manganese, ferro-chromium, ferro-silicon)",
+          "cn_codes": ["72021100", "72024100", "72022100"],
+          "default_direct_emissions_tco2e_per_t": "2.200",
+          "default_indirect_emissions_tco2e_per_mwh": "3.500",
+          "default_total_specific_emissions_tco2e_per_t": "4.200",
+          "eu_benchmark_tco2e_per_t": "2.900",
+          "source": "JRC 2025 - Weighted average across ferro-alloy types",
+          "notes": "Very high electricity consumption (4,000-10,000 kWh/t). FeSi is most electricity-intensive."
+        },
+        "hot_rolled_flat_products": {
+          "product_name": "Hot-rolled flat steel products",
+          "cn_codes": ["72081000", "72082500", "72083900"],
+          "default_direct_emissions_tco2e_per_t": "1.950",
+          "default_indirect_emissions_tco2e_per_mwh": "0.080",
+          "default_total_specific_emissions_tco2e_per_t": "2.010",
+          "eu_benchmark_tco2e_per_t": "1.630",
+          "source": "JRC 2025 - Includes upstream steelmaking",
+          "notes": "Includes embedded emissions from steelmaking plus rolling energy. BF-BOF assumed."
+        },
+        "steel_tubes_pipes": {
+          "product_name": "Steel tubes and pipes",
+          "cn_codes": ["73041100", "73043100"],
+          "default_direct_emissions_tco2e_per_t": "2.100",
+          "default_indirect_emissions_tco2e_per_mwh": "0.120",
+          "default_total_specific_emissions_tco2e_per_t": "2.170",
+          "eu_benchmark_tco2e_per_t": "1.750",
+          "source": "JRC 2025 - Seamless and welded tube production",
+          "notes": "Includes upstream steelmaking emissions plus tube forming/welding energy."
+        }
+      }
+    },
+    "aluminium": {
+      "sector_name": "Aluminium",
+      "cbam_annex_section": "Section III",
+      "products": {
+        "unwrought_aluminium_primary": {
+          "product_name": "Unwrought aluminium (primary, not alloyed)",
+          "cn_codes": ["76011000"],
+          "default_direct_emissions_tco2e_per_t": "1.600",
+          "default_indirect_emissions_tco2e_per_mwh": "6.800",
+          "default_total_specific_emissions_tco2e_per_t": "7.200",
+          "eu_benchmark_tco2e_per_t": "1.514",
+          "source": "JRC 2025 / International Aluminium Institute (IAI)",
+          "notes": "Extremely electricity-intensive (~14.5 MWh/t). Total depends heavily on grid mix. Direct = anode consumption + PFC. Indirect = smelter electricity."
+        },
+        "unwrought_aluminium_alloyed": {
+          "product_name": "Unwrought aluminium (alloyed)",
+          "cn_codes": ["76012000"],
+          "default_direct_emissions_tco2e_per_t": "1.650",
+          "default_indirect_emissions_tco2e_per_mwh": "6.800",
+          "default_total_specific_emissions_tco2e_per_t": "7.300",
+          "eu_benchmark_tco2e_per_t": "1.514",
+          "source": "JRC 2025 / IAI",
+          "notes": "Slightly higher direct emissions due to alloying furnace energy."
+        },
+        "aluminium_bars_rods_profiles": {
+          "product_name": "Aluminium bars, rods, and profiles",
+          "cn_codes": ["76041000", "76042100"],
+          "default_direct_emissions_tco2e_per_t": "1.750",
+          "default_indirect_emissions_tco2e_per_mwh": "7.100",
+          "default_total_specific_emissions_tco2e_per_t": "7.600",
+          "eu_benchmark_tco2e_per_t": "1.600",
+          "source": "JRC 2025 - Includes extrusion energy",
+          "notes": "Upstream smelting plus extrusion/forming energy."
+        },
+        "aluminium_plates_sheets": {
+          "product_name": "Aluminium plates, sheets, and strip",
+          "cn_codes": ["76061100", "76061200"],
+          "default_direct_emissions_tco2e_per_t": "1.800",
+          "default_indirect_emissions_tco2e_per_mwh": "7.200",
+          "default_total_specific_emissions_tco2e_per_t": "7.700",
+          "eu_benchmark_tco2e_per_t": "1.650",
+          "source": "JRC 2025 - Includes rolling energy",
+          "notes": "Upstream smelting plus hot/cold rolling energy."
+        },
+        "aluminium_foil": {
+          "product_name": "Aluminium foil",
+          "cn_codes": ["76071100", "76071900"],
+          "default_direct_emissions_tco2e_per_t": "1.900",
+          "default_indirect_emissions_tco2e_per_mwh": "7.500",
+          "default_total_specific_emissions_tco2e_per_t": "8.000",
+          "eu_benchmark_tco2e_per_t": "1.750",
+          "source": "JRC 2025 - Includes foil rolling energy",
+          "notes": "Additional energy for thin-gauge rolling. Highest processing energy in aluminium downstream."
+        },
+        "aluminium_wire": {
+          "product_name": "Aluminium wire",
+          "cn_codes": ["76051100", "76052100"],
+          "default_direct_emissions_tco2e_per_t": "1.700",
+          "default_indirect_emissions_tco2e_per_mwh": "7.000",
+          "default_total_specific_emissions_tco2e_per_t": "7.500",
+          "eu_benchmark_tco2e_per_t": "1.580",
+          "source": "JRC 2025 - Includes drawing energy",
+          "notes": "Upstream smelting plus wire drawing energy."
+        }
+      }
+    },
+    "fertilisers": {
+      "sector_name": "Fertilisers",
+      "cbam_annex_section": "Section IV",
+      "products": {
+        "ammonia_anhydrous": {
+          "product_name": "Ammonia, anhydrous",
+          "cn_codes": ["28141000"],
+          "default_direct_emissions_tco2e_per_t": "2.130",
+          "default_indirect_emissions_tco2e_per_mwh": "0.020",
+          "default_total_specific_emissions_tco2e_per_t": "2.140",
+          "eu_benchmark_tco2e_per_t": "1.619",
+          "source": "JRC 2025 / IPCC 2006 Vol 3 Ch 3",
+          "notes": "Steam methane reforming (SMR) route. 1.2 tCO2 process + ~0.9 tCO2 fuel. CCS could reduce by 90%."
+        },
+        "ammonia_in_solution": {
+          "product_name": "Ammonia in aqueous solution",
+          "cn_codes": ["28142000"],
+          "default_direct_emissions_tco2e_per_t": "1.700",
+          "default_indirect_emissions_tco2e_per_mwh": "0.020",
+          "default_total_specific_emissions_tco2e_per_t": "1.710",
+          "eu_benchmark_tco2e_per_t": "1.300",
+          "source": "JRC 2025 - Adjusted for water content (~20-25% NH3)",
+          "notes": "Lower per tonne due to dilution. Expressed per tonne of solution, not per tonne NH3."
+        },
+        "nitric_acid": {
+          "product_name": "Nitric acid",
+          "cn_codes": ["28080000"],
+          "default_direct_emissions_tco2e_per_t": "1.850",
+          "default_indirect_emissions_tco2e_per_mwh": "0.025",
+          "default_total_specific_emissions_tco2e_per_t": "1.870",
+          "eu_benchmark_tco2e_per_t": "1.360",
+          "source": "JRC 2025 - Includes upstream ammonia + N2O from oxidation",
+          "notes": "N2O from catalytic oxidation is major source. Modern abatement reduces N2O by >95%. Default assumes partial abatement."
+        },
+        "urea": {
+          "product_name": "Urea",
+          "cn_codes": ["31021010", "31021090"],
+          "default_direct_emissions_tco2e_per_t": "1.250",
+          "default_indirect_emissions_tco2e_per_mwh": "0.025",
+          "default_total_specific_emissions_tco2e_per_t": "1.270",
+          "eu_benchmark_tco2e_per_t": "0.977",
+          "source": "JRC 2025 - Net of CO2 chemically bound in urea",
+          "notes": "Ammonia production CO2 minus CO2 sequestered in urea molecule (~0.73 tCO2/t urea). Net direct emissions lower than ammonia."
+        },
+        "ammonium_nitrate": {
+          "product_name": "Ammonium nitrate",
+          "cn_codes": ["31023010", "31023090"],
+          "default_direct_emissions_tco2e_per_t": "2.800",
+          "default_indirect_emissions_tco2e_per_mwh": "0.035",
+          "default_total_specific_emissions_tco2e_per_t": "2.830",
+          "eu_benchmark_tco2e_per_t": "2.150",
+          "source": "JRC 2025 - Includes upstream ammonia + nitric acid",
+          "notes": "Combines ammonia and nitric acid emissions. N2O emissions from nitric acid production are significant."
+        },
+        "mixed_fertilisers_npk": {
+          "product_name": "NPK compound fertilisers",
+          "cn_codes": ["31052000", "31053000", "31054000"],
+          "default_direct_emissions_tco2e_per_t": "1.800",
+          "default_indirect_emissions_tco2e_per_mwh": "0.040",
+          "default_total_specific_emissions_tco2e_per_t": "1.830",
+          "eu_benchmark_tco2e_per_t": "1.400",
+          "source": "JRC 2025 - Weighted by typical NPK ratio and precursors",
+          "notes": "Varies significantly by N:P:K ratio. Default based on representative 15-15-15 formulation."
+        },
+        "calcium_ammonium_nitrate": {
+          "product_name": "Calcium ammonium nitrate (CAN)",
+          "cn_codes": ["31024010", "31024090"],
+          "default_direct_emissions_tco2e_per_t": "2.200",
+          "default_indirect_emissions_tco2e_per_mwh": "0.030",
+          "default_total_specific_emissions_tco2e_per_t": "2.220",
+          "eu_benchmark_tco2e_per_t": "1.700",
+          "source": "JRC 2025 - AN diluted with calcium carbonate",
+          "notes": "27% N content typical. Lower intensity per tonne than pure AN due to dilution with limestone."
+        }
+      }
+    },
+    "electricity": {
+      "sector_name": "Electricity",
+      "cbam_annex_section": "Section V",
+      "products": {
+        "electricity": {
+          "product_name": "Electricity",
+          "cn_codes": ["27160000"],
+          "default_direct_emissions_tco2e_per_mwh": "0.800",
+          "default_indirect_emissions_tco2e_per_mwh": null,
+          "default_total_specific_emissions_tco2e_per_mwh": "0.800",
+          "notes": "Default for direct interconnection imports. Country-specific grid factors should be used where available. No indirect emissions for electricity as a final product.",
+          "country_specific_defaults": {
+            "Turkey": "0.480",
+            "Ukraine": "0.600",
+            "Russia": "0.390",
+            "Serbia": "0.760",
+            "Bosnia_Herzegovina": "0.850",
+            "North_Macedonia": "0.700",
+            "Kosovo": "1.050",
+            "Montenegro": "0.520",
+            "Albania": "0.015",
+            "Moldova": "0.540",
+            "Georgia": "0.120",
+            "Morocco": "0.650",
+            "Tunisia": "0.500",
+            "Norway": "0.008",
+            "UK": "0.207",
+            "Switzerland": "0.013"
+          },
+          "source": "IEA 2024, Ember 2025"
+        }
+      }
+    },
+    "hydrogen": {
+      "sector_name": "Hydrogen",
+      "cbam_annex_section": "Section VI",
+      "products": {
+        "hydrogen_smr": {
+          "product_name": "Hydrogen (steam methane reforming - grey)",
+          "cn_codes": ["28041000"],
+          "default_direct_emissions_tco2e_per_t": "9.300",
+          "default_indirect_emissions_tco2e_per_mwh": "0.050",
+          "default_total_specific_emissions_tco2e_per_t": "9.320",
+          "eu_benchmark_tco2e_per_t": "8.850",
+          "source": "JRC 2025 / IPCC 2006 Vol 2 Ch 3",
+          "notes": "Conventional SMR without CCS. ~9-11 tCO2/tH2 depending on energy efficiency."
+        },
+        "hydrogen_smr_ccs": {
+          "product_name": "Hydrogen (SMR with CCS - blue)",
+          "cn_codes": ["28041000"],
+          "default_direct_emissions_tco2e_per_t": "1.500",
+          "default_indirect_emissions_tco2e_per_mwh": "0.050",
+          "default_total_specific_emissions_tco2e_per_t": "1.540",
+          "eu_benchmark_tco2e_per_t": "1.200",
+          "source": "JRC 2025 - Assuming 85% CO2 capture rate",
+          "notes": "Blue hydrogen with CCS. Residual emissions from incomplete capture, upstream methane leakage not included in direct."
+        },
+        "hydrogen_electrolysis": {
+          "product_name": "Hydrogen (electrolysis - green if renewable)",
+          "cn_codes": ["28041000"],
+          "default_direct_emissions_tco2e_per_t": "0.000",
+          "default_indirect_emissions_tco2e_per_mwh": "26.700",
+          "default_total_specific_emissions_tco2e_per_t": "0.900",
+          "eu_benchmark_tco2e_per_t": "0.000",
+          "source": "JRC 2025 - Grid-average electricity; 0 if certified renewable",
+          "notes": "~50-55 MWh/tH2. Zero direct emissions. Indirect depends entirely on electricity source. Default assumes mixed grid. Green hydrogen (certified renewable) = 0 tCO2e."
+        },
+        "hydrogen_atr": {
+          "product_name": "Hydrogen (autothermal reforming)",
+          "cn_codes": ["28041000"],
+          "default_direct_emissions_tco2e_per_t": "8.500",
+          "default_indirect_emissions_tco2e_per_mwh": "0.040",
+          "default_total_specific_emissions_tco2e_per_t": "8.530",
+          "eu_benchmark_tco2e_per_t": "8.000",
+          "source": "JRC 2025 - ATR without CCS",
+          "notes": "ATR route typically has better CCS integration potential. Without CCS, similar to SMR."
+        }
+      }
+    }
+  },
+  "calculation_method_hierarchy": [
+    {
+      "priority": 1,
+      "method": "supplier_actual",
+      "method_name": "Supplier-specific actual emissions",
+      "description": "Verified emission data from the specific installation producing the goods, based on direct monitoring and measurement.",
+      "data_requirements": ["installation_emission_report", "verification_statement", "production_data"],
+      "markup_applicable": false,
+      "accuracy": "highest",
+      "notes": "Preferred method. Requires installation-level monitoring per EU CBAM MRV requirements."
+    },
+    {
+      "priority": 2,
+      "method": "installation_actual",
+      "method_name": "Installation-level reported data (unverified)",
+      "description": "Installation emission data reported by the operator but not yet independently verified.",
+      "data_requirements": ["installation_emission_report", "production_data"],
+      "markup_applicable": false,
+      "accuracy": "high",
+      "notes": "Acceptable during transition. Must be verified for definitive period claims."
+    },
+    {
+      "priority": 3,
+      "method": "country_average",
+      "method_name": "Country-specific average emission factor",
+      "description": "Average emission intensity for the product in the country of production, published by the EU Commission or derived from reliable national statistics.",
+      "data_requirements": ["country_of_origin", "product_type"],
+      "markup_applicable": false,
+      "accuracy": "medium",
+      "notes": "Used when installation data unavailable. Based on IEA, national inventory, or industry association data."
+    },
+    {
+      "priority": 4,
+      "method": "default_with_markup",
+      "method_name": "EU default value (with progressive markup)",
+      "description": "Commission-published default values based on the worst-performing 10% of EU installations, subject to annual markup per the schedule above.",
+      "data_requirements": ["product_type"],
+      "markup_applicable": true,
+      "accuracy": "low",
+      "notes": "Fallback method. Markup incentivizes migration to actual data. Default = p90 EU emissions."
+    },
+    {
+      "priority": 5,
+      "method": "comtrade_estimate",
+      "method_name": "UN Comtrade-based estimation (transitional only)",
+      "description": "Estimation based on trade statistics and average emission intensities. Only allowed during the transitional period (2023-2025).",
+      "data_requirements": ["trade_statistics"],
+      "markup_applicable": false,
+      "accuracy": "lowest",
+      "notes": "Transitional period only. Not accepted from 2026 onwards."
+    }
+  ],
+  "indirect_emissions_methodology": {
+    "description": "Rules for calculating indirect (Scope 2) embedded emissions in CBAM goods",
+    "applicable_sectors": ["aluminium", "hydrogen", "cement", "iron_steel", "fertilisers"],
+    "not_applicable": ["electricity"],
+    "default_grid_factor_tco2e_per_mwh": "0.800",
+    "rules": [
+      "Indirect emissions are included for all CBAM goods except electricity (which is a final product)",
+      "The electricity emission factor should reflect the actual source of electricity used by the installation",
+      "If actual source data unavailable, use the country-specific grid emission factor",
+      "If country grid factor unavailable, use the default (0.800 tCO2e/MWh)",
+      "Power Purchase Agreements (PPAs) for renewable electricity may be used to reduce indirect emissions to zero, subject to additionality and temporal matching criteria"
+    ]
+  }
+}

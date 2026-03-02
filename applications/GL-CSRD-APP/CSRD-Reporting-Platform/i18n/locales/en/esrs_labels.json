@@ -1,0 +1,1240 @@
+{
+  "metadata": {
+    "locale": "en",
+    "version": "1.1.0",
+    "description": "English labels for all ESRS data points, standards, and disclosure requirements",
+    "source": "EFRAG ESRS Set 1 (Commission Delegated Regulation 2023/2772)",
+    "total_standards": 12,
+    "last_updated": "2026-03-01"
+  },
+  "standards": {
+    "ESRS-1": {
+      "name": "General Requirements",
+      "description": "Overarching requirements for sustainability reporting under ESRS, including materiality assessment, value chain considerations, and reporting principles."
+    },
+    "ESRS-2": {
+      "name": "General Disclosures",
+      "description": "General disclosures applicable to all undertakings regardless of sector, including governance, strategy, impact/risk/opportunity management, and metrics/targets."
+    },
+    "E1": {
+      "name": "Climate Change",
+      "description": "Climate change mitigation and adaptation, including GHG emissions (Scopes 1, 2, 3), energy consumption and mix, GHG intensity, removal projects, and transition plans."
+    },
+    "E2": {
+      "name": "Pollution",
+      "description": "Pollution of air, water and soil, including emissions of pollutants, substances of concern, and microplastics."
+    },
+    "E3": {
+      "name": "Water and Marine Resources",
+      "description": "Water consumption, withdrawal, discharge, recycling and impacts on marine resources."
+    },
+    "E4": {
+      "name": "Biodiversity and Ecosystems",
+      "description": "Impacts on biodiversity and ecosystems, land-use change, species at risk, and ecosystem services."
+    },
+    "E5": {
+      "name": "Resource Use and Circular Economy",
+      "description": "Resource inflows, outflows, waste generation, recycling, and circular economy strategies."
+    },
+    "S1": {
+      "name": "Own Workforce",
+      "description": "Working conditions, equal treatment and opportunities, and other work-related rights for the undertaking's own workforce."
+    },
+    "S2": {
+      "name": "Workers in the Value Chain",
+      "description": "Working conditions, equal treatment, and rights of workers in the upstream and downstream value chain."
+    },
+    "S3": {
+      "name": "Affected Communities",
+      "description": "Impacts on communities in the areas where the undertaking operates or has significant activities."
+    },
+    "S4": {
+      "name": "Consumers and End-Users",
+      "description": "Impacts on consumers and end-users related to product safety, data privacy, and other consumer rights."
+    },
+    "G1": {
+      "name": "Business Conduct",
+      "description": "Business ethics, corporate culture, anti-corruption, political engagement, and management of relationships with suppliers."
+    }
+  },
+  "disclosure_requirements": {
+    "ESRS2-GOV-1": "Governance: Role of administrative, management and supervisory bodies",
+    "ESRS2-GOV-2": "Governance: Information provided to and sustainability matters addressed by administrative, management and supervisory bodies",
+    "ESRS2-GOV-3": "Governance: Integration of sustainability-related performance in incentive schemes",
+    "ESRS2-GOV-4": "Governance: Statement on due diligence",
+    "ESRS2-GOV-5": "Governance: Risk management and internal controls over sustainability reporting",
+    "ESRS2-SBM-1": "Strategy: Market position, strategy, business model and value chain",
+    "ESRS2-SBM-2": "Strategy: Interests and views of stakeholders",
+    "ESRS2-SBM-3": "Strategy: Material impacts, risks and opportunities and their interaction with strategy and business model",
+    "ESRS2-IRO-1": "Impact, risk and opportunity management: Description of processes to identify and assess material impacts, risks and opportunities",
+    "ESRS2-IRO-2": "Impact, risk and opportunity management: Disclosure requirements in ESRS covered by the sustainability statement",
+    "ESRS2-MDR-P": "Minimum disclosure requirement - Policies",
+    "ESRS2-MDR-A": "Minimum disclosure requirement - Actions",
+    "ESRS2-MDR-M": "Minimum disclosure requirement - Metrics",
+    "ESRS2-MDR-T": "Minimum disclosure requirement - Targets",
+    "ESRS2-BP-1": "Basis for preparation: General basis for preparation of sustainability statement",
+    "ESRS2-BP-2": "Basis for preparation: Disclosures in relation to specific circumstances",
+    "E1-1": "Transition plan for climate change mitigation",
+    "E1-2": "Policies related to climate change mitigation and adaptation",
+    "E1-3": "Actions and resources in relation to climate change policies",
+    "E1-4": "Targets related to climate change mitigation and adaptation",
+    "E1-5": "Energy consumption and mix",
+    "E1-6": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+    "E1-7": "GHG removals and GHG mitigation projects financed through carbon credits",
+    "E1-8": "Internal carbon pricing",
+    "E1-9": "Anticipated financial effects from material physical and transition risks and potential climate-related opportunities",
+    "E2-1": "Policies related to pollution",
+    "E2-2": "Actions and resources related to pollution",
+    "E2-3": "Targets related to pollution",
+    "E2-4": "Pollution of air, water and soil",
+    "E2-5": "Substances of concern and substances of very high concern",
+    "E2-6": "Anticipated financial effects from pollution-related impacts, risks and opportunities",
+    "E3-1": "Policies related to water and marine resources",
+    "E3-2": "Actions and resources related to water and marine resources",
+    "E3-3": "Targets related to water and marine resources",
+    "E3-4": "Water consumption",
+    "E3-5": "Anticipated financial effects from water and marine resources-related impacts, risks and opportunities",
+    "E4-1": "Transition plan on biodiversity and ecosystems",
+    "E4-2": "Policies related to biodiversity and ecosystems",
+    "E4-3": "Actions and resources related to biodiversity and ecosystems",
+    "E4-4": "Targets related to biodiversity and ecosystems",
+    "E4-5": "Impact metrics related to biodiversity and ecosystems change",
+    "E4-6": "Anticipated financial effects from biodiversity and ecosystem-related impacts, risks and opportunities",
+    "E5-1": "Policies related to resource use and circular economy",
+    "E5-2": "Actions and resources related to resource use and circular economy",
+    "E5-3": "Targets related to resource use and circular economy",
+    "E5-4": "Resource inflows",
+    "E5-5": "Resource outflows",
+    "E5-6": "Anticipated financial effects from resource use and circular economy-related impacts, risks and opportunities",
+    "S1-1": "Policies related to own workforce",
+    "S1-2": "Processes for engaging with own workforce and workers' representatives about impacts",
+    "S1-3": "Processes to remediate negative impacts and channels for own workforce to raise concerns",
+    "S1-4": "Taking action on material impacts on own workforce, and approaches to managing material risks and pursuing material opportunities related to own workforce, and effectiveness of those actions",
+    "S1-5": "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities",
+    "S1-6": "Characteristics of the undertaking's employees",
+    "S1-7": "Characteristics of non-employee workers in the undertaking's own workforce",
+    "S1-8": "Collective bargaining coverage and social dialogue",
+    "S1-9": "Diversity metrics",
+    "S1-10": "Adequate wages",
+    "S1-11": "Social protection",
+    "S1-12": "Persons with disabilities",
+    "S1-13": "Training and skills development metrics",
+    "S1-14": "Health and safety metrics",
+    "S1-15": "Work-life balance metrics",
+    "S1-16": "Remuneration metrics (pay gap and total remuneration)",
+    "S1-17": "Incidents, complaints and severe human rights impacts",
+    "S2-1": "Policies related to value chain workers",
+    "S2-2": "Processes for engaging with value chain workers about impacts",
+    "S2-3": "Processes to remediate negative impacts and channels for value chain workers to raise concerns",
+    "S2-4": "Taking action on material impacts on value chain workers, and approaches to managing material risks and pursuing material opportunities, and effectiveness of those actions",
+    "S2-5": "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities",
+    "S3-1": "Policies related to affected communities",
+    "S3-2": "Processes for engaging with affected communities about impacts",
+    "S3-3": "Processes to remediate negative impacts and channels for affected communities to raise concerns",
+    "S3-4": "Taking action on material impacts on affected communities, and approaches to managing material risks and pursuing material opportunities, and effectiveness of those actions",
+    "S3-5": "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities",
+    "S4-1": "Policies related to consumers and end-users",
+    "S4-2": "Processes for engaging with consumers and end-users about impacts",
+    "S4-3": "Processes to remediate negative impacts and channels for consumers and end-users to raise concerns",
+    "S4-4": "Taking action on material impacts on consumers and end-users, and approaches to managing material risks and pursuing material opportunities, and effectiveness of those actions",
+    "S4-5": "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities",
+    "G1-1": "Business conduct policies and corporate culture",
+    "G1-2": "Management of relationships with suppliers",
+    "G1-3": "Prevention and detection of corruption and bribery",
+    "G1-4": "Confirmed incidents of corruption or bribery",
+    "G1-5": "Political influence and lobbying activities",
+    "G1-6": "Payment practices"
+  },
+  "data_points": {
+    "ESRS2-GOV-1-1": {
+      "label": "Composition of administrative, management and supervisory bodies",
+      "description": "Description of the composition and diversity of the administrative, management and supervisory bodies including their roles in sustainability oversight.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-GOV-1-2": {
+      "label": "Sustainability expertise of governing bodies",
+      "description": "Description of the sustainability-related expertise available to or accessible by the administrative, management and supervisory bodies.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-GOV-1-3": {
+      "label": "Sustainability responsibilities of governing bodies",
+      "description": "Description of how the administrative, management and supervisory bodies interact with their roles and responsibilities regarding sustainability matters.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-GOV-1-4": {
+      "label": "Frequency of sustainability discussions by governing bodies",
+      "description": "How often the administrative, management and supervisory bodies are informed about and discuss sustainability-related topics.",
+      "unit_label": "count"
+    },
+    "ESRS2-GOV-2-1": {
+      "label": "Information provided to governing bodies on sustainability",
+      "description": "Description of the information that the administrative, management and supervisory bodies consider with respect to sustainability matters.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-GOV-2-2": {
+      "label": "Sustainability matters addressed by governing bodies",
+      "description": "List and description of the sustainability matters addressed by the administrative, management and supervisory bodies during the reporting period.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-GOV-3-1": {
+      "label": "Sustainability performance in incentive schemes",
+      "description": "Description of how sustainability-related performance is integrated into the incentive schemes for members of the administrative, management and supervisory bodies.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-GOV-3-2": {
+      "label": "Percentage of variable remuneration linked to sustainability",
+      "description": "The proportion of variable remuneration dependent on sustainability-related targets or performance.",
+      "unit_label": "percentage"
+    },
+    "ESRS2-GOV-4-1": {
+      "label": "Statement on sustainability due diligence",
+      "description": "Mapping of the undertaking's due diligence process as set out in the UN Guiding Principles on Business and Human Rights and OECD Guidelines.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-GOV-5-1": {
+      "label": "Risk management processes for sustainability reporting",
+      "description": "Description of the risk management and internal control processes over sustainability reporting.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-SBM-1-1": {
+      "label": "Description of business model and value chain",
+      "description": "Description of the undertaking's business model and value chain, including significant changes during the reporting period.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-SBM-1-2": {
+      "label": "Markets and customer segments",
+      "description": "Description of the markets and customer segments the undertaking operates in.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-SBM-1-3": {
+      "label": "Significant value chain elements",
+      "description": "Description of significant elements in the undertaking's value chain relevant to sustainability matters.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-SBM-1-4": {
+      "label": "Revenue by significant ESRS sector",
+      "description": "Breakdown of revenue by significant ESRS sector.",
+      "unit_label": "EUR"
+    },
+    "ESRS2-SBM-1-5": {
+      "label": "Number of employees by country",
+      "description": "Number of employees in the undertaking broken down by country.",
+      "unit_label": "headcount"
+    },
+    "ESRS2-SBM-2-1": {
+      "label": "Stakeholder engagement processes",
+      "description": "Description of the process for engaging with stakeholders and their interests and views.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-SBM-2-2": {
+      "label": "Key stakeholder groups identified",
+      "description": "Identification of the undertaking's key stakeholder groups and their relationships.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-SBM-3-1": {
+      "label": "Material impacts, risks and opportunities",
+      "description": "Description of the material impacts, risks and opportunities identified through the materiality assessment process.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-SBM-3-2": {
+      "label": "Financial effects of sustainability risks and opportunities",
+      "description": "Current and anticipated financial effects of sustainability-related risks and opportunities on the undertaking's financial position, performance and cash flows.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-IRO-1-1": {
+      "label": "Process for identifying material sustainability matters",
+      "description": "Description of the process to identify and assess material sustainability impacts, risks and opportunities.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-IRO-1-2": {
+      "label": "Stakeholder engagement in materiality assessment",
+      "description": "Description of how stakeholders are involved in the materiality assessment process.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-IRO-2-1": {
+      "label": "List of ESRS covered in the sustainability statement",
+      "description": "List of the disclosure requirements in ESRS that are covered by the undertaking's sustainability statement.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-BP-1-1": {
+      "label": "Basis for preparation of sustainability statement",
+      "description": "General basis for the preparation of the sustainability statement, including reporting boundary and consolidation scope.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-BP-1-2": {
+      "label": "Reporting boundary and consolidation scope",
+      "description": "Description of the reporting boundary and consolidation scope used in the sustainability statement.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-BP-2-1": {
+      "label": "Disclosures for specific circumstances",
+      "description": "Additional disclosures required for specific circumstances such as time horizons, value chain estimation, or sources of estimation uncertainty.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-MDR-P-1": {
+      "label": "Description of sustainability-related policies",
+      "description": "Description of the policies the undertaking has in place to manage material sustainability matters.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-MDR-A-1": {
+      "label": "Description of sustainability-related actions",
+      "description": "Description of the actions and action plans, including resources allocated, to address material sustainability matters.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-MDR-M-1": {
+      "label": "Metrics used to assess sustainability performance",
+      "description": "Description of the metrics used by the undertaking to evaluate performance on material sustainability matters.",
+      "unit_label": "narrative"
+    },
+    "ESRS2-MDR-T-1": {
+      "label": "Sustainability-related targets",
+      "description": "Description of the measurable, outcome-oriented, time-bound targets set by the undertaking for material sustainability matters.",
+      "unit_label": "narrative"
+    },
+    "E1-1": {
+      "label": "Gross Scope 1 GHG emissions",
+      "description": "Total gross Scope 1 GHG emissions in metric tonnes of CO2 equivalent, covering all direct emissions from owned or controlled sources including stationary combustion, mobile combustion, process emissions, and fugitive emissions.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-2": {
+      "label": "Gross Scope 2 GHG emissions (location-based)",
+      "description": "Total gross location-based Scope 2 GHG emissions in metric tonnes of CO2 equivalent from purchased electricity, heat, steam, and cooling using grid-average emission factors.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-2A": {
+      "label": "Gross Scope 2 GHG emissions (market-based)",
+      "description": "Total gross market-based Scope 2 GHG emissions in metric tonnes of CO2 equivalent, reflecting contractual instruments such as renewable energy certificates and power purchase agreements.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3": {
+      "label": "Gross Scope 3 GHG emissions",
+      "description": "Total gross Scope 3 GHG emissions in metric tonnes of CO2 equivalent across all 15 upstream and downstream categories.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C1": {
+      "label": "Scope 3 Category 1 - Purchased goods and services",
+      "description": "GHG emissions from the production of goods and services purchased by the undertaking in the reporting period.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C2": {
+      "label": "Scope 3 Category 2 - Capital goods",
+      "description": "GHG emissions from the production of capital goods purchased or acquired by the undertaking in the reporting period.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C3": {
+      "label": "Scope 3 Category 3 - Fuel-and-energy-related activities",
+      "description": "GHG emissions from fuel-and-energy-related activities not included in Scope 1 or Scope 2, including upstream emissions of purchased fuels and T&D losses.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C4": {
+      "label": "Scope 3 Category 4 - Upstream transportation and distribution",
+      "description": "GHG emissions from transportation and distribution of purchased products in vehicles not owned or controlled by the undertaking.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C5": {
+      "label": "Scope 3 Category 5 - Waste generated in operations",
+      "description": "GHG emissions from third-party disposal and treatment of waste generated in the undertaking's operations.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C6": {
+      "label": "Scope 3 Category 6 - Business travel",
+      "description": "GHG emissions from transportation of employees for business-related activities in vehicles not owned or controlled by the undertaking.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C7": {
+      "label": "Scope 3 Category 7 - Employee commuting",
+      "description": "GHG emissions from transportation of employees between their homes and worksites.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C8": {
+      "label": "Scope 3 Category 8 - Upstream leased assets",
+      "description": "GHG emissions from operation of assets leased by the undertaking not already included in Scope 1 and 2.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C9": {
+      "label": "Scope 3 Category 9 - Downstream transportation and distribution",
+      "description": "GHG emissions from transportation and distribution of sold products in vehicles not owned or controlled by the undertaking.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C10": {
+      "label": "Scope 3 Category 10 - Processing of sold products",
+      "description": "GHG emissions from processing of intermediate products sold by the undertaking by third parties after sale.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C11": {
+      "label": "Scope 3 Category 11 - Use of sold products",
+      "description": "GHG emissions from the use of goods and services sold by the undertaking in the reporting period.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C12": {
+      "label": "Scope 3 Category 12 - End-of-life treatment of sold products",
+      "description": "GHG emissions from waste disposal and treatment of products sold by the undertaking at the end of their life.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C13": {
+      "label": "Scope 3 Category 13 - Downstream leased assets",
+      "description": "GHG emissions from operation of assets owned by the undertaking and leased to other entities.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C14": {
+      "label": "Scope 3 Category 14 - Franchises",
+      "description": "GHG emissions from operation of franchises not included in Scope 1 and 2.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-3-C15": {
+      "label": "Scope 3 Category 15 - Investments",
+      "description": "GHG emissions associated with the undertaking's investments in the reporting period not already included in Scope 1 and 2.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-4": {
+      "label": "Total GHG emissions",
+      "description": "Total GHG emissions across Scope 1, Scope 2 (location-based), and Scope 3 in metric tonnes of CO2 equivalent.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-5": {
+      "label": "Total energy consumption",
+      "description": "Total energy consumption from all sources, both renewable and non-renewable, in megawatt-hours.",
+      "unit_label": "MWh"
+    },
+    "E1-5A": {
+      "label": "Total energy consumption from non-renewable sources",
+      "description": "Energy consumption from fossil fuels and other non-renewable sources.",
+      "unit_label": "MWh"
+    },
+    "E1-5B": {
+      "label": "Non-renewable energy consumption breakdown by source",
+      "description": "Breakdown of non-renewable energy consumption by fuel type (coal, oil, natural gas, other).",
+      "unit_label": "MWh"
+    },
+    "E1-6": {
+      "label": "Renewable energy consumption",
+      "description": "Total energy consumption from renewable sources including solar, wind, hydro, geothermal, and biomass.",
+      "unit_label": "MWh"
+    },
+    "E1-6A": {
+      "label": "Renewable energy consumption breakdown by source",
+      "description": "Breakdown of renewable energy consumption by source type (solar, wind, hydro, geothermal, biomass).",
+      "unit_label": "MWh"
+    },
+    "E1-7": {
+      "label": "Renewable energy percentage",
+      "description": "Percentage of total energy consumption from renewable sources.",
+      "unit_label": "percentage"
+    },
+    "E1-8": {
+      "label": "GHG intensity per revenue",
+      "description": "GHG emissions intensity expressed as metric tonnes of CO2 equivalent per million EUR revenue.",
+      "unit_label": "tCO\u2082e/EUR million"
+    },
+    "E1-8A": {
+      "label": "GHG intensity per net revenue",
+      "description": "GHG emissions intensity expressed as metric tonnes of CO2 equivalent per million EUR net revenue.",
+      "unit_label": "tCO\u2082e/EUR million"
+    },
+    "E1-9": {
+      "label": "GHG removals and carbon credits",
+      "description": "GHG removals and carbon credits from mitigation projects financed through carbon credits.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-9A": {
+      "label": "GHG removals from own operations",
+      "description": "GHG removals and storage from the undertaking's own operations and upstream/downstream value chain.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-9B": {
+      "label": "Carbon credits purchased",
+      "description": "Amount of carbon credits purchased and cancelled during the reporting period.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-10": {
+      "label": "Internal carbon price",
+      "description": "Description of the internal carbon pricing mechanisms applied by the undertaking.",
+      "unit_label": "EUR/tCO\u2082e"
+    },
+    "E1-11": {
+      "label": "Transition plan for climate change mitigation",
+      "description": "Description of the undertaking's transition plan for climate change mitigation aligned with limiting global warming to 1.5 degrees Celsius.",
+      "unit_label": "narrative"
+    },
+    "E1-12": {
+      "label": "Locked-in GHG emissions from existing assets",
+      "description": "Estimated amount of locked-in GHG emissions from existing or planned key assets and products.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-13": {
+      "label": "CapEx and OpEx related to taxonomy-aligned activities",
+      "description": "Amount of CapEx and OpEx related to EU Taxonomy-aligned economic activities in the reporting period.",
+      "unit_label": "EUR"
+    },
+    "E1-14": {
+      "label": "Anticipated financial effects from physical climate risks",
+      "description": "Estimated financial effects of material physical climate risks on the undertaking's operations and financial position.",
+      "unit_label": "EUR"
+    },
+    "E1-15": {
+      "label": "Anticipated financial effects from transition risks",
+      "description": "Estimated financial effects of material climate transition risks on the undertaking's strategy and business model.",
+      "unit_label": "EUR"
+    },
+    "E1-16": {
+      "label": "Anticipated financial effects from climate-related opportunities",
+      "description": "Estimated financial effects of material climate-related opportunities on the undertaking.",
+      "unit_label": "EUR"
+    },
+    "E1-17": {
+      "label": "Scope 1 GHG emissions by country",
+      "description": "Breakdown of gross Scope 1 GHG emissions by country of operation.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-18": {
+      "label": "Scope 1 GHG emissions by operating segment",
+      "description": "Breakdown of gross Scope 1 GHG emissions by significant operating segment or economic activity.",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-19": {
+      "label": "Scope 1 GHG emissions by GHG type",
+      "description": "Breakdown of gross Scope 1 GHG emissions by greenhouse gas type (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3).",
+      "unit_label": "tonnes CO\u2082e"
+    },
+    "E1-20": {
+      "label": "GHG emissions reduction targets",
+      "description": "Description of GHG emission reduction targets including baseline year, target year, percentage reduction, and scope coverage.",
+      "unit_label": "percentage"
+    },
+    "E1-21": {
+      "label": "Progress against GHG reduction targets",
+      "description": "Progress towards achieving GHG emission reduction targets expressed as percentage achieved.",
+      "unit_label": "percentage"
+    },
+    "E1-22": {
+      "label": "Science-based target status",
+      "description": "Whether the undertaking has set science-based targets validated by the SBTi or equivalent body.",
+      "unit_label": "narrative"
+    },
+    "E1-23": {
+      "label": "Energy efficiency improvement target",
+      "description": "Energy efficiency improvement target as percentage reduction from baseline year.",
+      "unit_label": "percentage"
+    },
+    "E1-24": {
+      "label": "Renewable energy target",
+      "description": "Target for share of renewable energy in total energy consumption.",
+      "unit_label": "percentage"
+    },
+    "E1-25": {
+      "label": "GHG emissions from biogenic sources",
+      "description": "CO2 emissions from biogenic sources (e.g., combustion of biomass), reported separately from the scopes.",
+      "unit_label": "tonnes CO\u2082"
+    },
+    "E2-1": {
+      "label": "Emissions of air pollutants",
+      "description": "Total emissions to air of: NOx, SOx, particulate matter (PM2.5, PM10), and other significant air pollutants in metric tonnes.",
+      "unit_label": "tonnes"
+    },
+    "E2-1A": {
+      "label": "NOx emissions",
+      "description": "Total nitrogen oxides (NOx) emissions to air.",
+      "unit_label": "tonnes"
+    },
+    "E2-1B": {
+      "label": "SOx emissions",
+      "description": "Total sulphur oxides (SOx) emissions to air.",
+      "unit_label": "tonnes"
+    },
+    "E2-1C": {
+      "label": "Particulate matter emissions (PM2.5)",
+      "description": "Total fine particulate matter (PM2.5) emissions to air.",
+      "unit_label": "tonnes"
+    },
+    "E2-1D": {
+      "label": "Particulate matter emissions (PM10)",
+      "description": "Total coarse particulate matter (PM10) emissions to air.",
+      "unit_label": "tonnes"
+    },
+    "E2-2": {
+      "label": "Emissions of ozone-depleting substances",
+      "description": "Total emissions of ozone-depleting substances (ODS) in kg CFC-11 equivalent.",
+      "unit_label": "kg CFC-11e"
+    },
+    "E2-3": {
+      "label": "Emissions to water",
+      "description": "Total discharge of priority substances, heavy metals, and nutrients to water bodies.",
+      "unit_label": "tonnes"
+    },
+    "E2-3A": {
+      "label": "Heavy metals discharge to water",
+      "description": "Total discharge of heavy metals (mercury, lead, cadmium, etc.) to water bodies.",
+      "unit_label": "kg"
+    },
+    "E2-3B": {
+      "label": "Nutrient discharge to water",
+      "description": "Total discharge of nutrients (nitrogen, phosphorus) to water bodies.",
+      "unit_label": "tonnes"
+    },
+    "E2-4": {
+      "label": "Emissions to soil",
+      "description": "Total discharge of pollutants to soil including hazardous substances.",
+      "unit_label": "tonnes"
+    },
+    "E2-5": {
+      "label": "Substances of concern produced or used",
+      "description": "Total production and use of substances of concern (SoC) and substances of very high concern (SVHC) as defined by REACH.",
+      "unit_label": "tonnes"
+    },
+    "E2-5A": {
+      "label": "Substances of very high concern (SVHC)",
+      "description": "Total amount of substances of very high concern as defined by ECHA REACH Regulation.",
+      "unit_label": "tonnes"
+    },
+    "E2-6": {
+      "label": "Microplastics generated",
+      "description": "Amount of microplastics generated or released by the undertaking's operations.",
+      "unit_label": "tonnes"
+    },
+    "E2-7": {
+      "label": "Pollution-related fines and penalties",
+      "description": "Total monetary value of fines and penalties for pollution-related non-compliance.",
+      "unit_label": "EUR"
+    },
+    "E2-8": {
+      "label": "Anticipated financial effects from pollution risks",
+      "description": "Estimated financial effects of material pollution-related risks and opportunities.",
+      "unit_label": "EUR"
+    },
+    "E3-1": {
+      "label": "Total water consumption",
+      "description": "Total water consumption across all operations in cubic metres.",
+      "unit_label": "m\u00b3"
+    },
+    "E3-2": {
+      "label": "Water consumption in water-stressed areas",
+      "description": "Water consumption in areas classified as high or extremely high water stress according to WRI Aqueduct.",
+      "unit_label": "m\u00b3"
+    },
+    "E3-2A": {
+      "label": "Percentage of water consumption in water-stressed areas",
+      "description": "Percentage of total water consumption that occurs in water-stressed areas.",
+      "unit_label": "percentage"
+    },
+    "E3-3": {
+      "label": "Water withdrawals",
+      "description": "Total water withdrawals by source (surface water, groundwater, seawater, produced water, third-party water).",
+      "unit_label": "m\u00b3"
+    },
+    "E3-3A": {
+      "label": "Water withdrawal from surface water",
+      "description": "Total water withdrawn from surface water sources (rivers, lakes, reservoirs).",
+      "unit_label": "m\u00b3"
+    },
+    "E3-3B": {
+      "label": "Water withdrawal from groundwater",
+      "description": "Total water withdrawn from groundwater sources (wells, aquifers).",
+      "unit_label": "m\u00b3"
+    },
+    "E3-3C": {
+      "label": "Water withdrawal from third-party sources",
+      "description": "Total water withdrawn from third-party municipal or industrial sources.",
+      "unit_label": "m\u00b3"
+    },
+    "E3-4": {
+      "label": "Water discharge",
+      "description": "Total water discharge to surface water, groundwater, seawater, and third parties.",
+      "unit_label": "m\u00b3"
+    },
+    "E3-4A": {
+      "label": "Water discharge by quality",
+      "description": "Water discharge broken down by quality level (treated, untreated).",
+      "unit_label": "m\u00b3"
+    },
+    "E3-5": {
+      "label": "Water recycling and reuse",
+      "description": "Total water recycled and reused across all operations.",
+      "unit_label": "m\u00b3"
+    },
+    "E3-5A": {
+      "label": "Water recycling rate",
+      "description": "Percentage of total water consumption that is recycled or reused.",
+      "unit_label": "percentage"
+    },
+    "E3-6": {
+      "label": "Water storage change",
+      "description": "Net change in water storage during the reporting period.",
+      "unit_label": "m\u00b3"
+    },
+    "E3-7": {
+      "label": "Water-related targets",
+      "description": "Description of water consumption reduction and efficiency targets.",
+      "unit_label": "narrative"
+    },
+    "E3-8": {
+      "label": "Anticipated financial effects from water risks",
+      "description": "Estimated financial effects of material water and marine resource-related risks and opportunities.",
+      "unit_label": "EUR"
+    },
+    "E4-1": {
+      "label": "Sites in or near biodiversity-sensitive areas",
+      "description": "Number and location of operational sites owned, leased, managed in, or adjacent to protected areas and areas of high biodiversity value.",
+      "unit_label": "count"
+    },
+    "E4-1A": {
+      "label": "Total area of sites in biodiversity-sensitive areas",
+      "description": "Total area in hectares of operational sites in or near biodiversity-sensitive areas.",
+      "unit_label": "ha"
+    },
+    "E4-2": {
+      "label": "Land-use change",
+      "description": "Total area of land-use change including deforestation, conversion, and restoration.",
+      "unit_label": "ha"
+    },
+    "E4-2A": {
+      "label": "Deforestation-free status",
+      "description": "Whether the undertaking's operations and supply chain are deforestation-free (yes/no and description).",
+      "unit_label": "narrative"
+    },
+    "E4-2B": {
+      "label": "Land degradation",
+      "description": "Total area of land degraded during the reporting period.",
+      "unit_label": "ha"
+    },
+    "E4-2C": {
+      "label": "Land restored or rehabilitated",
+      "description": "Total area of land restored or rehabilitated during the reporting period.",
+      "unit_label": "ha"
+    },
+    "E4-3": {
+      "label": "Species at risk affected",
+      "description": "Number of IUCN Red List species and national conservation list species with habitats in areas affected by operations.",
+      "unit_label": "count"
+    },
+    "E4-3A": {
+      "label": "Critically endangered species affected",
+      "description": "Number of IUCN Critically Endangered species affected by operations.",
+      "unit_label": "count"
+    },
+    "E4-3B": {
+      "label": "Endangered species affected",
+      "description": "Number of IUCN Endangered species affected by operations.",
+      "unit_label": "count"
+    },
+    "E4-3C": {
+      "label": "Vulnerable species affected",
+      "description": "Number of IUCN Vulnerable species affected by operations.",
+      "unit_label": "count"
+    },
+    "E4-4": {
+      "label": "Ecosystem services dependencies",
+      "description": "Description of the undertaking's dependencies on ecosystem services.",
+      "unit_label": "narrative"
+    },
+    "E4-5": {
+      "label": "Biodiversity offsets",
+      "description": "Area and type of biodiversity offsets implemented during the reporting period.",
+      "unit_label": "ha"
+    },
+    "E4-6": {
+      "label": "Biodiversity-related targets",
+      "description": "Description of targets related to biodiversity and ecosystems, including no-net-loss or net-positive targets.",
+      "unit_label": "narrative"
+    },
+    "E4-7": {
+      "label": "Anticipated financial effects from biodiversity risks",
+      "description": "Estimated financial effects of material biodiversity and ecosystem-related risks and opportunities.",
+      "unit_label": "EUR"
+    },
+    "E5-1": {
+      "label": "Total waste generated",
+      "description": "Total weight of waste generated across all operations in metric tonnes.",
+      "unit_label": "tonnes"
+    },
+    "E5-1A": {
+      "label": "Waste generated by type",
+      "description": "Breakdown of total waste generated by waste classification type.",
+      "unit_label": "tonnes"
+    },
+    "E5-2": {
+      "label": "Hazardous waste",
+      "description": "Total weight of hazardous waste generated as classified by applicable regulations.",
+      "unit_label": "tonnes"
+    },
+    "E5-2A": {
+      "label": "Hazardous waste by disposal method",
+      "description": "Breakdown of hazardous waste by disposal method (landfill, incineration, recycling, other).",
+      "unit_label": "tonnes"
+    },
+    "E5-3": {
+      "label": "Non-hazardous waste",
+      "description": "Total weight of non-hazardous waste generated.",
+      "unit_label": "tonnes"
+    },
+    "E5-3A": {
+      "label": "Non-hazardous waste by disposal method",
+      "description": "Breakdown of non-hazardous waste by disposal method (landfill, incineration, recycling, composting, other).",
+      "unit_label": "tonnes"
+    },
+    "E5-4": {
+      "label": "Waste diverted from disposal",
+      "description": "Total weight of waste diverted from disposal through recycling, reuse, or other recovery operations.",
+      "unit_label": "tonnes"
+    },
+    "E5-4A": {
+      "label": "Waste diverted from disposal by recovery operation",
+      "description": "Breakdown of waste diverted from disposal by type of recovery operation.",
+      "unit_label": "tonnes"
+    },
+    "E5-5": {
+      "label": "Waste recycling rate",
+      "description": "Percentage of total waste that is recycled.",
+      "unit_label": "percentage"
+    },
+    "E5-6": {
+      "label": "Material inflows",
+      "description": "Total weight of materials used in production and packaging, including virgin and recycled content.",
+      "unit_label": "tonnes"
+    },
+    "E5-6A": {
+      "label": "Recycled content in material inflows",
+      "description": "Percentage of material inflows from recycled sources.",
+      "unit_label": "percentage"
+    },
+    "E5-6B": {
+      "label": "Renewable material inflows",
+      "description": "Percentage of material inflows from renewable biological sources.",
+      "unit_label": "percentage"
+    },
+    "E5-7": {
+      "label": "Products designed for circularity",
+      "description": "Percentage or number of products designed for durability, reuse, repair, remanufacturing, or recycling.",
+      "unit_label": "percentage"
+    },
+    "E5-8": {
+      "label": "Material outflows",
+      "description": "Total weight of materials leaving the undertaking including products and packaging.",
+      "unit_label": "tonnes"
+    },
+    "E5-9": {
+      "label": "Waste reduction targets",
+      "description": "Description of waste reduction and circular economy targets.",
+      "unit_label": "narrative"
+    },
+    "E5-10": {
+      "label": "Anticipated financial effects from resource use risks",
+      "description": "Estimated financial effects of material resource use and circular economy-related risks and opportunities.",
+      "unit_label": "EUR"
+    },
+    "S1-1": {
+      "label": "Total number of employees",
+      "description": "Total headcount of employees at the end of the reporting period.",
+      "unit_label": "headcount"
+    },
+    "S1-1A": {
+      "label": "Total number of employees (FTE)",
+      "description": "Total number of employees expressed as full-time equivalents.",
+      "unit_label": "FTE"
+    },
+    "S1-2": {
+      "label": "Employees by gender",
+      "description": "Breakdown of total employees by gender (female, male, other/not disclosed).",
+      "unit_label": "headcount"
+    },
+    "S1-2A": {
+      "label": "Female employees percentage",
+      "description": "Percentage of total employees who are female.",
+      "unit_label": "percentage"
+    },
+    "S1-2B": {
+      "label": "Female employees in management",
+      "description": "Percentage of management positions held by female employees.",
+      "unit_label": "percentage"
+    },
+    "S1-3": {
+      "label": "Employees by region",
+      "description": "Breakdown of total employees by region or country of operation.",
+      "unit_label": "headcount"
+    },
+    "S1-4": {
+      "label": "Employees by contract type",
+      "description": "Breakdown of employees by contract type (permanent, temporary, full-time, part-time).",
+      "unit_label": "headcount"
+    },
+    "S1-4A": {
+      "label": "Permanent employees",
+      "description": "Total number of employees on permanent contracts.",
+      "unit_label": "headcount"
+    },
+    "S1-4B": {
+      "label": "Temporary employees",
+      "description": "Total number of employees on temporary contracts.",
+      "unit_label": "headcount"
+    },
+    "S1-4C": {
+      "label": "Full-time employees",
+      "description": "Total number of full-time employees.",
+      "unit_label": "headcount"
+    },
+    "S1-4D": {
+      "label": "Part-time employees",
+      "description": "Total number of part-time employees.",
+      "unit_label": "headcount"
+    },
+    "S1-5": {
+      "label": "Employee turnover rate",
+      "description": "Employee voluntary and involuntary turnover rate as a percentage of total workforce.",
+      "unit_label": "percentage"
+    },
+    "S1-5A": {
+      "label": "Voluntary turnover rate",
+      "description": "Rate of employees who left voluntarily during the reporting period.",
+      "unit_label": "percentage"
+    },
+    "S1-5B": {
+      "label": "New hires during reporting period",
+      "description": "Total number of new employees hired during the reporting period.",
+      "unit_label": "headcount"
+    },
+    "S1-6": {
+      "label": "Gender pay gap",
+      "description": "Difference between the average gross hourly pay of male and female employees, expressed as a percentage of male gross hourly pay.",
+      "unit_label": "percentage"
+    },
+    "S1-6A": {
+      "label": "Gender pay gap by employee category",
+      "description": "Gender pay gap broken down by employee category (management, professional, operational).",
+      "unit_label": "percentage"
+    },
+    "S1-7": {
+      "label": "Training hours per employee",
+      "description": "Average number of training and skills development hours per employee during the reporting period.",
+      "unit_label": "hours"
+    },
+    "S1-7A": {
+      "label": "Training hours by gender",
+      "description": "Average training hours per employee broken down by gender.",
+      "unit_label": "hours"
+    },
+    "S1-7B": {
+      "label": "Training hours by employee category",
+      "description": "Average training hours per employee broken down by employee category.",
+      "unit_label": "hours"
+    },
+    "S1-7C": {
+      "label": "Training investment per employee",
+      "description": "Average investment in training per employee during the reporting period.",
+      "unit_label": "EUR"
+    },
+    "S1-8": {
+      "label": "Work-related injuries",
+      "description": "Total number of recordable work-related injuries during the reporting period.",
+      "unit_label": "count"
+    },
+    "S1-8A": {
+      "label": "High-consequence work-related injuries",
+      "description": "Number of high-consequence work-related injuries (excluding fatalities).",
+      "unit_label": "count"
+    },
+    "S1-9": {
+      "label": "Work-related fatalities",
+      "description": "Total number of work-related fatalities during the reporting period.",
+      "unit_label": "count"
+    },
+    "S1-10": {
+      "label": "Lost time injury frequency rate (LTIFR)",
+      "description": "Number of lost time injuries per million hours worked.",
+      "unit_label": "per million hours"
+    },
+    "S1-10A": {
+      "label": "Total recordable incident rate (TRIR)",
+      "description": "Number of total recordable incidents per million hours worked.",
+      "unit_label": "per million hours"
+    },
+    "S1-11": {
+      "label": "Work-related ill health",
+      "description": "Number of cases of recordable work-related ill health during the reporting period.",
+      "unit_label": "count"
+    },
+    "S1-12": {
+      "label": "Days lost to work-related injuries and ill health",
+      "description": "Total number of working days lost due to work-related injuries and ill health.",
+      "unit_label": "days"
+    },
+    "S1-13": {
+      "label": "Collective bargaining coverage",
+      "description": "Percentage of employees covered by collective bargaining agreements.",
+      "unit_label": "percentage"
+    },
+    "S1-14": {
+      "label": "Social dialogue coverage",
+      "description": "Percentage of employees covered by workers' representatives or social dialogue forums.",
+      "unit_label": "percentage"
+    },
+    "S1-15": {
+      "label": "Adequate wages assessment",
+      "description": "Whether the undertaking's employees are paid adequate wages benchmarked against applicable standards.",
+      "unit_label": "narrative"
+    },
+    "S1-15A": {
+      "label": "Lowest wage as percentage of minimum wage",
+      "description": "The lowest entry-level wage expressed as a percentage of the applicable legal minimum wage.",
+      "unit_label": "percentage"
+    },
+    "S1-16": {
+      "label": "Social protection coverage",
+      "description": "Percentage of employees covered by social protection against loss of income from major life events.",
+      "unit_label": "percentage"
+    },
+    "S1-17": {
+      "label": "Employees with disabilities",
+      "description": "Number or percentage of employees with disabilities.",
+      "unit_label": "percentage"
+    },
+    "S1-18": {
+      "label": "Age diversity of employees",
+      "description": "Breakdown of employees by age group (under 30, 30-50, over 50).",
+      "unit_label": "headcount"
+    },
+    "S1-19": {
+      "label": "Work-life balance: parental leave",
+      "description": "Number of employees that took parental leave, by gender, and return-to-work rate.",
+      "unit_label": "count"
+    },
+    "S1-19A": {
+      "label": "Parental leave return-to-work rate",
+      "description": "Percentage of employees who returned to work after parental leave.",
+      "unit_label": "percentage"
+    },
+    "S1-20": {
+      "label": "CEO-to-median-worker pay ratio",
+      "description": "Ratio of the annual total compensation of the highest-paid individual to the median annual total compensation of all employees.",
+      "unit_label": "ratio"
+    },
+    "S1-21": {
+      "label": "Incidents of discrimination",
+      "description": "Number of incidents of discrimination reported during the reporting period and actions taken.",
+      "unit_label": "count"
+    },
+    "S1-22": {
+      "label": "Complaints filed through grievance mechanisms",
+      "description": "Number of complaints filed through formal grievance mechanisms and their resolution status.",
+      "unit_label": "count"
+    },
+    "S1-23": {
+      "label": "Severe human rights impacts on own workforce",
+      "description": "Number and description of severe human rights incidents, impacts and abuses connected with the undertaking's own workforce.",
+      "unit_label": "count"
+    },
+    "S2-1": {
+      "label": "Workers in value chain at risk of child labor",
+      "description": "Number or percentage of operations and suppliers identified as having significant risk of incidents of child labor.",
+      "unit_label": "count"
+    },
+    "S2-1A": {
+      "label": "Child labor risk assessment coverage",
+      "description": "Percentage of suppliers assessed for child labor risk.",
+      "unit_label": "percentage"
+    },
+    "S2-2": {
+      "label": "Workers in value chain at risk of forced labor",
+      "description": "Number or percentage of operations and suppliers identified as having significant risk of incidents of forced or compulsory labor.",
+      "unit_label": "count"
+    },
+    "S2-2A": {
+      "label": "Forced labor risk assessment coverage",
+      "description": "Percentage of suppliers assessed for forced labor risk.",
+      "unit_label": "percentage"
+    },
+    "S2-3": {
+      "label": "Value chain workers covered by social audits",
+      "description": "Number or percentage of value chain workers whose working conditions have been assessed through social audits.",
+      "unit_label": "percentage"
+    },
+    "S2-4": {
+      "label": "Value chain worker grievance mechanisms",
+      "description": "Number of grievances filed by value chain workers and their resolution status.",
+      "unit_label": "count"
+    },
+    "S2-5": {
+      "label": "Living wage assessment in value chain",
+      "description": "Whether value chain workers are paid a living wage, and the methodology for assessment.",
+      "unit_label": "narrative"
+    },
+    "S3-1": {
+      "label": "Communities affected by operations",
+      "description": "Number and description of communities affected by the undertaking's operations, including indigenous peoples and local communities.",
+      "unit_label": "count"
+    },
+    "S3-1A": {
+      "label": "Free, prior and informed consent processes",
+      "description": "Whether and how free, prior and informed consent (FPIC) processes are implemented for affected indigenous peoples.",
+      "unit_label": "narrative"
+    },
+    "S3-2": {
+      "label": "Indigenous peoples affected",
+      "description": "Number of operations or activities that affect indigenous peoples and the nature of impacts.",
+      "unit_label": "count"
+    },
+    "S3-2A": {
+      "label": "Land rights disputes",
+      "description": "Number of disputes related to land use and land rights with local communities.",
+      "unit_label": "count"
+    },
+    "S3-3": {
+      "label": "Community investment and contributions",
+      "description": "Total monetary value of community investments and voluntary contributions.",
+      "unit_label": "EUR"
+    },
+    "S3-4": {
+      "label": "Community grievance mechanisms",
+      "description": "Number of community-related grievances filed and their resolution status.",
+      "unit_label": "count"
+    },
+    "S3-5": {
+      "label": "Negative impacts on communities",
+      "description": "Description of actual and potential negative impacts on affected communities and actions taken.",
+      "unit_label": "narrative"
+    },
+    "S4-1": {
+      "label": "Product safety incidents",
+      "description": "Total number of incidents of non-compliance with product and service health and safety regulations.",
+      "unit_label": "count"
+    },
+    "S4-1A": {
+      "label": "Product safety incidents resulting in injury",
+      "description": "Number of product safety incidents resulting in injury or illness to consumers.",
+      "unit_label": "count"
+    },
+    "S4-2": {
+      "label": "Product recalls",
+      "description": "Total number and volume of products recalled during the reporting period.",
+      "unit_label": "count"
+    },
+    "S4-2A": {
+      "label": "Percentage of products assessed for safety",
+      "description": "Percentage of significant product and service categories for which health and safety impacts are assessed.",
+      "unit_label": "percentage"
+    },
+    "S4-3": {
+      "label": "Data privacy complaints",
+      "description": "Total number of substantiated complaints concerning breaches of customer privacy received from outside parties and regulatory bodies.",
+      "unit_label": "count"
+    },
+    "S4-3A": {
+      "label": "Data breaches involving personal data",
+      "description": "Number of identified data breaches involving personal data of consumers or end-users.",
+      "unit_label": "count"
+    },
+    "S4-3B": {
+      "label": "Data privacy-related fines",
+      "description": "Total monetary value of fines for data privacy or security violations.",
+      "unit_label": "EUR"
+    },
+    "S4-4": {
+      "label": "Responsible marketing practices",
+      "description": "Description of policies and incidents related to responsible marketing and advertising practices.",
+      "unit_label": "narrative"
+    },
+    "S4-5": {
+      "label": "Consumer satisfaction metrics",
+      "description": "Results of surveys or measures of consumer satisfaction.",
+      "unit_label": "percentage"
+    },
+    "S4-6": {
+      "label": "Access to products and services",
+      "description": "Description of how the undertaking ensures access to essential products and services for vulnerable groups.",
+      "unit_label": "narrative"
+    },
+    "G1-1": {
+      "label": "Convictions for corruption and bribery",
+      "description": "Number of confirmed incidents of corruption or bribery and related convictions during the reporting period.",
+      "unit_label": "count"
+    },
+    "G1-1A": {
+      "label": "Monetary losses from corruption",
+      "description": "Total monetary losses resulting from corruption or bribery incidents, including fines and settlements.",
+      "unit_label": "EUR"
+    },
+    "G1-2": {
+      "label": "Anti-corruption training coverage",
+      "description": "Percentage of employees and governance body members who have received anti-corruption training.",
+      "unit_label": "percentage"
+    },
+    "G1-2A": {
+      "label": "Anti-corruption training by region",
+      "description": "Anti-corruption training coverage broken down by region.",
+      "unit_label": "percentage"
+    },
+    "G1-3": {
+      "label": "Political contributions",
+      "description": "Total monetary value of financial and in-kind political contributions made during the reporting period.",
+      "unit_label": "EUR"
+    },
+    "G1-3A": {
+      "label": "Political contributions by country",
+      "description": "Political contributions broken down by country and recipient.",
+      "unit_label": "EUR"
+    },
+    "G1-4": {
+      "label": "Fines for regulatory non-compliance",
+      "description": "Total monetary value of significant fines and number of non-monetary sanctions for non-compliance with laws and regulations.",
+      "unit_label": "EUR"
+    },
+    "G1-4A": {
+      "label": "Number of non-compliance incidents",
+      "description": "Total number of significant instances of non-compliance with laws and regulations.",
+      "unit_label": "count"
+    },
+    "G1-5": {
+      "label": "Lobbying expenditures",
+      "description": "Total expenditures on lobbying activities during the reporting period.",
+      "unit_label": "EUR"
+    },
+    "G1-5A": {
+      "label": "Trade association memberships",
+      "description": "List and total fees of trade association memberships where lobbying is a significant function.",
+      "unit_label": "EUR"
+    },
+    "G1-6": {
+      "label": "Whistleblower reports",
+      "description": "Number of reports received through whistleblower mechanisms and their resolution status.",
+      "unit_label": "count"
+    },
+    "G1-7": {
+      "label": "Anti-competitive behavior incidents",
+      "description": "Number of legal actions pending or completed regarding anti-competitive behavior and violations of anti-trust and monopoly legislation.",
+      "unit_label": "count"
+    },
+    "G1-8": {
+      "label": "Payment practices",
+      "description": "Description of the undertaking's payment practices, including average payment terms and on-time payment rate to suppliers.",
+      "unit_label": "narrative"
+    },
+    "G1-8A": {
+      "label": "Average payment terms to suppliers",
+      "description": "Average number of days from invoice receipt to payment for suppliers.",
+      "unit_label": "days"
+    },
+    "G1-8B": {
+      "label": "On-time payment rate",
+      "description": "Percentage of invoices paid within the agreed payment terms.",
+      "unit_label": "percentage"
+    },
+    "G1-9": {
+      "label": "Tax transparency",
+      "description": "Country-by-country reporting of income, taxes paid, and related economic indicators.",
+      "unit_label": "EUR"
+    },
+    "G1-10": {
+      "label": "Board diversity",
+      "description": "Composition of the highest governance body and its committees by gender, age group, minority or vulnerable group membership, and other indicators of diversity.",
+      "unit_label": "percentage"
+    },
+    "G1-10A": {
+      "label": "Independent board members",
+      "description": "Percentage of independent members on the highest governance body.",
+      "unit_label": "percentage"
+    },
+    "G1-10B": {
+      "label": "Female board members",
+      "description": "Percentage of female members on the highest governance body.",
+      "unit_label": "percentage"
+    }
+  }
+}

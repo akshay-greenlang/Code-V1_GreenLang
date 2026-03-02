@@ -1,0 +1,382 @@
+{
+  "metadata": {
+    "locale": "de",
+    "version": "1.1.0",
+    "language": "Deutsch",
+    "description": "Glossar der CSRD/ESRS-Fachbegriffe in deutscher Sprache mit offizieller EU-Terminologie"
+  },
+  "terms": {
+    "csrd": {
+      "term": "CSRD (Corporate Sustainability Reporting Directive)",
+      "definition": "Richtlinie (EU) 2022/2464 zur Aenderung der Verordnung (EU) Nr. 537/2014 und der Richtlinien 2004/109/EG, 2006/43/EG und 2013/34/EU hinsichtlich der Nachhaltigkeitsberichterstattung von Unternehmen.",
+      "abbreviation": "CSRD",
+      "category": "regulation"
+    },
+    "esrs": {
+      "term": "ESRS (European Sustainability Reporting Standards)",
+      "definition": "Europaeische Standards fuer die Nachhaltigkeitsberichterstattung, die von der EFRAG entwickelt und als Delegierte Verordnung (EU) 2023/2772 angenommen wurden.",
+      "abbreviation": "ESRS",
+      "category": "standard"
+    },
+    "efrag": {
+      "term": "EFRAG (European Financial Reporting Advisory Group)",
+      "definition": "Europaeische Beratungsgruppe fuer die Finanzberichterstattung; hat die technischen Empfehlungen fuer die ESRS entwickelt.",
+      "abbreviation": "EFRAG",
+      "category": "organization"
+    },
+    "double_materiality": {
+      "term": "Doppelte Wesentlichkeit",
+      "definition": "Prinzip der gleichzeitigen Bewertung der Auswirkungswesentlichkeit (Inside-out-Perspektive: Auswirkungen des Unternehmens auf Mensch und Umwelt) und der finanziellen Wesentlichkeit (Outside-in-Perspektive: Auswirkungen von Nachhaltigkeitsaspekten auf das Unternehmen).",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "impact_materiality": {
+      "term": "Auswirkungswesentlichkeit",
+      "definition": "Ein Nachhaltigkeitsaspekt ist aus der Auswirkungsperspektive wesentlich, wenn er mit tatsaechlichen oder potenziellen, positiven oder negativen Auswirkungen des Unternehmens auf Mensch und Umwelt verbunden ist.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "financial_materiality": {
+      "term": "Finanzielle Wesentlichkeit",
+      "definition": "Ein Nachhaltigkeitsaspekt ist aus der finanziellen Perspektive wesentlich, wenn er finanzielle Risiken oder Chancen ausloest oder ausloesen koennte, die die Finanzlage, die Ertragslage, die Cashflows oder den Zugang zu Finanzierungen des Unternehmens wesentlich beeinflussen.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "sustainability_statement": {
+      "term": "Nachhaltigkeitserklaerung",
+      "definition": "Pflichtbestandteil des Lageberichts, in dem Unternehmen gemaess CSRD ueber Nachhaltigkeitsaspekte berichten.",
+      "abbreviation": null,
+      "category": "reporting"
+    },
+    "sustainability_report": {
+      "term": "Nachhaltigkeitsbericht",
+      "definition": "Umfassender Bericht ueber die Nachhaltigkeitsleistung eines Unternehmens, der gemaess den ESRS erstellt wird.",
+      "abbreviation": null,
+      "category": "reporting"
+    },
+    "ghg_emissions": {
+      "term": "Treibhausgasemissionen",
+      "definition": "Emissionen der sieben im Kyoto-Protokoll genannten Treibhausgase (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3), ausgedrueckt in Tonnen CO2-Aequivalent.",
+      "abbreviation": "THG-Emissionen",
+      "category": "environment"
+    },
+    "scope_1": {
+      "term": "Scope-1-Emissionen (direkte Emissionen)",
+      "definition": "Direkte Treibhausgasemissionen aus Quellen, die sich im Eigentum oder unter der Kontrolle des Unternehmens befinden (z. B. stationaere und mobile Verbrennung, Prozessemissionen, fluechtige Emissionen).",
+      "abbreviation": "Scope 1",
+      "category": "environment"
+    },
+    "scope_2": {
+      "term": "Scope-2-Emissionen (indirekte energiebedingte Emissionen)",
+      "definition": "Indirekte Treibhausgasemissionen aus der Erzeugung bezogener Energie (Strom, Waerme, Dampf und Kuehlung).",
+      "abbreviation": "Scope 2",
+      "category": "environment"
+    },
+    "scope_3": {
+      "term": "Scope-3-Emissionen (sonstige indirekte Emissionen)",
+      "definition": "Alle sonstigen indirekten Treibhausgasemissionen in der Wertschoepfungskette, die in 15 Kategorien unterteilt werden (vor- und nachgelagert).",
+      "abbreviation": "Scope 3",
+      "category": "environment"
+    },
+    "tco2e": {
+      "term": "Tonnen CO2-Aequivalent",
+      "definition": "Masseinheit fuer Treibhausgasemissionen, die verschiedene Treibhausgase anhand ihres Treibhauspotenzials (GWP) in eine gemeinsame Einheit umrechnet.",
+      "abbreviation": "t CO2e",
+      "category": "environment"
+    },
+    "ghg_protocol": {
+      "term": "GHG Protocol (Greenhouse Gas Protocol)",
+      "definition": "Internationaler Standard fuer die Bilanzierung und Berichterstattung von Treibhausgasemissionen, bestehend aus dem Corporate Standard, dem Scope 2 Guidance und dem Corporate Value Chain Standard.",
+      "abbreviation": "GHG Protocol",
+      "category": "standard"
+    },
+    "location_based": {
+      "term": "Standortbezogener Ansatz",
+      "definition": "Methode zur Berechnung der Scope-2-Emissionen auf Grundlage der durchschnittlichen Emissionsfaktoren des Stromnetzes am Verbrauchsort.",
+      "abbreviation": null,
+      "category": "methodology"
+    },
+    "market_based": {
+      "term": "Marktbezogener Ansatz",
+      "definition": "Methode zur Berechnung der Scope-2-Emissionen auf Grundlage vertraglicher Instrumente (Herkunftsnachweise, Stromliefervertraege, PPA).",
+      "abbreviation": null,
+      "category": "methodology"
+    },
+    "transition_plan": {
+      "term": "Uebergangsplan",
+      "definition": "Plan des Unternehmens fuer den Uebergang zu einer nachhaltigen Wirtschaft, einschliesslich der Vereinbarkeit mit dem 1,5-Grad-Ziel des Pariser Uebereinkommens.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "climate_change_mitigation": {
+      "term": "Klimaschutz",
+      "definition": "Massnahmen zur Verringerung der Treibhausgasemissionen und zur Begrenzung des Klimawandels.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "climate_change_adaptation": {
+      "term": "Anpassung an den Klimawandel",
+      "definition": "Massnahmen zur Anpassung an die Auswirkungen des Klimawandels und zur Verringerung der Verwundbarkeit.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "physical_risk": {
+      "term": "Physisches Risiko",
+      "definition": "Risiko, das sich aus den physischen Auswirkungen des Klimawandels ergibt (akute Risiken wie Extremwetterereignisse und chronische Risiken wie steigende Temperaturen).",
+      "abbreviation": null,
+      "category": "risk"
+    },
+    "transition_risk": {
+      "term": "Uebergangsrisiko",
+      "definition": "Risiko, das sich aus dem Uebergang zu einer kohlenstoffarmen Wirtschaft ergibt (regulatorische, technologische, Markt- und Reputationsrisiken).",
+      "abbreviation": null,
+      "category": "risk"
+    },
+    "sbti": {
+      "term": "Science Based Targets initiative (SBTi)",
+      "definition": "Initiative zur Validierung wissenschaftsbasierter Klimaziele von Unternehmen im Einklang mit dem Pariser Uebereinkommen.",
+      "abbreviation": "SBTi",
+      "category": "organization"
+    },
+    "paris_agreement": {
+      "term": "Pariser Uebereinkommen",
+      "definition": "Internationales Klimaschutzabkommen von 2015, das die Begrenzung der globalen Erwaermung auf deutlich unter 2 Grad Celsius gegenueber dem vorindustriellen Niveau vorsieht.",
+      "abbreviation": null,
+      "category": "regulation"
+    },
+    "eu_taxonomy": {
+      "term": "EU-Taxonomie",
+      "definition": "Klassifikationssystem der EU fuer oekologisch nachhaltige Wirtschaftstaetigkeiten gemaess Verordnung (EU) 2020/852.",
+      "abbreviation": null,
+      "category": "regulation"
+    },
+    "taxonomy_alignment": {
+      "term": "Taxonomie-Konformitaet",
+      "definition": "Grad, in dem die Wirtschaftstaetigkeiten eines Unternehmens die Kriterien der EU-Taxonomie fuer oekologisch nachhaltige Taetigkeiten erfuellen.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "circular_economy": {
+      "term": "Kreislaufwirtschaft",
+      "definition": "Wirtschaftsmodell, das auf die Vermeidung von Abfaellen, die Wiederverwendung von Ressourcen und die Regeneration natuerlicher Systeme ausgerichtet ist.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "biodiversity": {
+      "term": "Biologische Vielfalt (Biodiversitaet)",
+      "definition": "Vielfalt des Lebens auf allen Ebenen: genetische Vielfalt, Artenvielfalt und Oekosystemvielfalt.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "water_stress": {
+      "term": "Wasserstress",
+      "definition": "Situation, in der die Wasserentnahme einen erheblichen Anteil der verfuegbaren Suesswasserressourcen ausmacht, definiert nach dem WRI Aqueduct-Tool.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "substances_of_concern": {
+      "term": "Besorgniserregende Stoffe",
+      "definition": "Stoffe, die moeglicherweise schaedliche Auswirkungen auf die menschliche Gesundheit oder die Umwelt haben, einschliesslich SVHC gemaess der REACH-Verordnung.",
+      "abbreviation": "SoC/SVHC",
+      "category": "environment"
+    },
+    "own_workforce": {
+      "term": "Eigene Belegschaft",
+      "definition": "Alle Beschaeftigten des Unternehmens, einschliesslich fest angestellter, befristet beschaeftigter und nicht angestellter Arbeitskraefte (z. B. Leiharbeitnehmer).",
+      "abbreviation": null,
+      "category": "social"
+    },
+    "value_chain_workers": {
+      "term": "Arbeitskraefte in der Wertschoepfungskette",
+      "definition": "Beschaeftigte der vor- und nachgelagerten Wertschoepfungskette, die nicht zur eigenen Belegschaft gehoeren.",
+      "abbreviation": null,
+      "category": "social"
+    },
+    "gender_pay_gap": {
+      "term": "Geschlechtsspezifisches Verdienstgefaelle",
+      "definition": "Unterschied zwischen dem durchschnittlichen Bruttostundenverdienst maennlicher und weiblicher Beschaeftigter, ausgedrueckt als Prozentsatz des maennlichen Durchschnittsverdiensts.",
+      "abbreviation": "GPG",
+      "category": "social"
+    },
+    "ltifr": {
+      "term": "Haeufigkeitsrate von Arbeitsunfaellen mit Ausfallzeit",
+      "definition": "Anzahl der Arbeitsunfaelle mit Ausfallzeit je Million geleisteter Arbeitsstunden.",
+      "abbreviation": "LTIFR",
+      "category": "social"
+    },
+    "collective_bargaining": {
+      "term": "Tarifverhandlungen",
+      "definition": "Verhandlungen zwischen Arbeitgebern und Gewerkschaften oder Arbeitnehmervertretungen ueber Arbeitsbedingungen und Entlohnung.",
+      "abbreviation": null,
+      "category": "social"
+    },
+    "adequate_wage": {
+      "term": "Angemessener Lohn",
+      "definition": "Lohn, der den Lebensunterhalt der Beschaeftigten und ihrer Familien sichert (existenzsichernder Lohn), unter Beruecksichtigung des anwendbaren Mindestlohns.",
+      "abbreviation": null,
+      "category": "social"
+    },
+    "due_diligence": {
+      "term": "Sorgfaltspflicht",
+      "definition": "Systematischer Prozess zur Ermittlung, Verhinderung, Minderung und Rechenschaftslegung in Bezug auf tatsaechliche und potenzielle negative Auswirkungen auf Menschenrechte und Umwelt.",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "stakeholder": {
+      "term": "Interessentraeger",
+      "definition": "Einzelpersonen oder Gruppen, die die Taetigkeiten des Unternehmens beeinflussen koennen oder von ihnen betroffen sind oder sein koennten.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "value_chain": {
+      "term": "Wertschoepfungskette",
+      "definition": "Gesamte Bandbreite der Taetigkeiten, Ressourcen und Beziehungen, die mit dem Geschaeftsmodell und dem externen Umfeld des Unternehmens zusammenhaengen.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "governance": {
+      "term": "Governance (Unternehmensfuehrung)",
+      "definition": "System der Leitungs- und Kontrollstrukturen eines Unternehmens, einschliesslich der Verwaltungs-, Leitungs- und Aufsichtsorgane.",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "anti_corruption": {
+      "term": "Korruptionsbekaempfung",
+      "definition": "Massnahmen und Richtlinien zur Verhinderung, Aufdeckung und Bekaempfung von Korruption und Bestechung.",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "whistleblowing": {
+      "term": "Hinweisgeberschutz",
+      "definition": "Schutzmechanismen fuer Personen, die Verstaesse gegen Gesetze oder Vorschriften innerhalb des Unternehmens melden (Whistleblower-Schutz gemaess Richtlinie (EU) 2019/1937).",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "payment_practices": {
+      "term": "Zahlungspraktiken",
+      "definition": "Angaben zur Zahlungsmoral des Unternehmens gegenueber seinen Lieferanten, einschliesslich durchschnittlicher Zahlungsfristen und verspaeteter Zahlungen.",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "emission_factor": {
+      "term": "Emissionsfaktor",
+      "definition": "Koeffizient, der die Menge der pro Einheit einer Aktivitaet ausgestossenen Treibhausgase angibt (z. B. kg CO2 je kWh Strom).",
+      "abbreviation": "EF",
+      "category": "methodology"
+    },
+    "base_year": {
+      "term": "Basisjahr",
+      "definition": "Referenzjahr, gegen das die Leistung und der Fortschritt bei der Erreichung von Zielen gemessen werden.",
+      "abbreviation": null,
+      "category": "reporting"
+    },
+    "consolidation": {
+      "term": "Konsolidierung",
+      "definition": "Zusammenfassung der Daten aller in den Berichtskreis einbezogenen Unternehmen und Betriebsstaetten.",
+      "abbreviation": null,
+      "category": "reporting"
+    },
+    "operational_control": {
+      "term": "Betriebliche Kontrolle",
+      "definition": "Konsolidierungsansatz, bei dem ein Unternehmen 100 % der Emissionen einer Einrichtung bilanziert, ueber die es die betriebliche Kontrolle ausubt.",
+      "abbreviation": null,
+      "category": "methodology"
+    },
+    "limited_assurance": {
+      "term": "Pruefung mit begrenzter Sicherheit",
+      "definition": "Pruefungsniveau, bei dem der Pruefer eine negative Aussage (keine wesentlichen Falschaussagen festgestellt) trifft, basierend auf weniger umfangreichen Pruefungshandlungen als bei einer Pruefung mit hinreichender Sicherheit.",
+      "abbreviation": null,
+      "category": "assurance"
+    },
+    "reasonable_assurance": {
+      "term": "Pruefung mit hinreichender Sicherheit",
+      "definition": "Hoechstes Pruefungsniveau, bei dem der Pruefer eine positive Aussage (die Angaben sind frei von wesentlichen Falschaussagen) trifft.",
+      "abbreviation": null,
+      "category": "assurance"
+    },
+    "tcfd": {
+      "term": "TCFD (Task Force on Climate-related Financial Disclosures)",
+      "definition": "Rahmenwerk fuer die Offenlegung klimabezogener Finanzrisiken und -chancen, bestehend aus den Bereichen Governance, Strategie, Risikomanagement sowie Kennzahlen und Ziele.",
+      "abbreviation": "TCFD",
+      "category": "standard"
+    },
+    "gri": {
+      "term": "GRI (Global Reporting Initiative)",
+      "definition": "Internationaler Standard fuer die Nachhaltigkeitsberichterstattung, der ein umfassendes Set von Offenlegungsstandards bereitstellt.",
+      "abbreviation": "GRI",
+      "category": "standard"
+    },
+    "xbrl": {
+      "term": "XBRL (eXtensible Business Reporting Language)",
+      "definition": "Digitales Berichtsformat fuer die maschinenlesbare Bereitstellung von Finanz- und Nachhaltigkeitsinformationen, vorgeschrieben fuer die CSRD-Berichterstattung.",
+      "abbreviation": "XBRL/iXBRL",
+      "category": "technology"
+    },
+    "ixbrl": {
+      "term": "iXBRL (Inline XBRL)",
+      "definition": "Format, das menschenlesbare HTML-Berichte mit maschinenlesbaren XBRL-Tags kombiniert, vorgeschrieben fuer die CSRD-Berichterstattung.",
+      "abbreviation": "iXBRL",
+      "category": "technology"
+    },
+    "gwp": {
+      "term": "Treibhauspotenzial (GWP)",
+      "definition": "Mass fuer den relativen Beitrag eines Treibhausgases zur globalen Erwaermung im Vergleich zu CO2 ueber einen bestimmten Zeitraum (in der Regel 100 Jahre).",
+      "abbreviation": "GWP",
+      "category": "environment"
+    },
+    "carbon_credit": {
+      "term": "CO2-Gutschrift",
+      "definition": "Handelbare Berechtigung, die eine Tonne CO2-Aequivalent an vermiedenen oder entfernten Treibhausgasemissionen repraesentiert.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "carbon_pricing": {
+      "term": "CO2-Bepreisung",
+      "definition": "Mechanismus zur Bepreisung von Treibhausgasemissionen, entweder durch Emissionshandelssysteme (ETS) oder CO2-Steuern.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "net_zero": {
+      "term": "Netto-Null-Emissionen (Klimaneutralitaet)",
+      "definition": "Zustand, in dem die verbleibenden Treibhausgasemissionen durch Entnahmen aus der Atmosphaere vollstaendig ausgeglichen werden.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "decarbonization": {
+      "term": "Dekarbonisierung",
+      "definition": "Prozess der Verringerung der CO2-Intensitaet der Wirtschaft durch den Uebergang zu kohlenstoffarmen Technologien und Praktiken.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "fte": {
+      "term": "Vollzeitaequivalent (VZAe)",
+      "definition": "Masseinheit fuer die Arbeitskapazitaet, bei der eine Vollzeitstelle als 1,0 VZAe gezaehlt wird.",
+      "abbreviation": "VZAe",
+      "category": "social"
+    },
+    "disclosure_requirement": {
+      "term": "Angabepflicht",
+      "definition": "Spezifische Offenlegungsanforderung innerhalb der ESRS, die ein Unternehmen zu erfuellen hat.",
+      "abbreviation": "DR",
+      "category": "reporting"
+    },
+    "data_point": {
+      "term": "Datenpunkt",
+      "definition": "Einzelne, messbare Information innerhalb einer Angabepflicht, die quantitativ oder qualitativ sein kann.",
+      "abbreviation": null,
+      "category": "reporting"
+    },
+    "provenance": {
+      "term": "Herkunftsnachweis (Provenienz)",
+      "definition": "Dokumentation der Herkunft, Verarbeitung und Qualitaetssicherung eines Datenpunkts ueber die gesamte Wertschoepfungskette.",
+      "abbreviation": null,
+      "category": "methodology"
+    },
+    "esg": {
+      "term": "ESG (Umwelt, Soziales und Governance)",
+      "definition": "Abkuerzung fuer die drei Dimensionen der Nachhaltigkeit: Umwelt (Environment), Soziales (Social) und Unternehmensfuehrung (Governance).",
+      "abbreviation": "ESG",
+      "category": "concept"
+    }
+  }
+}

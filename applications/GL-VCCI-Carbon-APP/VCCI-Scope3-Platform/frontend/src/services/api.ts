@@ -224,6 +224,111 @@ export const api = {
   },
 
   // ============================================================================
+  // Uncertainty Analysis & Monte Carlo
+  // ============================================================================
+  getUncertaintyAnalysis: async (params?: {
+    category?: number;
+    period?: string;
+  }): Promise<any> => {
+    const response = await apiClient.get<ApiResponse<any>>('/uncertainty/analysis', { params });
+    return response.data.data;
+  },
+
+  runMonteCarloSimulation: async (params: {
+    category?: number;
+    iterations?: number;
+    confidence_level?: number;
+  }): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>(
+      '/uncertainty/monte-carlo',
+      params,
+      { timeout: 120000 } // 2 minutes for simulation
+    );
+    return response.data.data;
+  },
+
+  getSensitivityAnalysis: async (params?: {
+    category?: number;
+    top_n?: number;
+  }): Promise<any> => {
+    const response = await apiClient.get<ApiResponse<any>>('/uncertainty/sensitivity', { params });
+    return response.data.data;
+  },
+
+  compareScenarios: async (params: {
+    scenario_ids: string[];
+  }): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>('/uncertainty/scenarios/compare', params);
+    return response.data.data;
+  },
+
+  // ============================================================================
+  // User Settings
+  // ============================================================================
+  getUserSettings: async (): Promise<any> => {
+    const response = await apiClient.get<ApiResponse<any>>('/settings');
+    return response.data.data;
+  },
+
+  updateUserSettings: async (settings: any): Promise<any> => {
+    const response = await apiClient.put<ApiResponse<any>>('/settings', settings);
+    return response.data.data;
+  },
+
+  // ============================================================================
+  // CDP Questionnaire
+  // ============================================================================
+  getCDPQuestionnaire: async (year: number): Promise<any> => {
+    const response = await apiClient.get<ApiResponse<any>>(`/cdp/questionnaire/${year}`);
+    return response.data.data;
+  },
+
+  autoPopulateCDP: async (year: number): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>(`/cdp/questionnaire/${year}/auto-populate`);
+    return response.data.data;
+  },
+
+  saveCDPDraft: async (year: number, data: any): Promise<void> => {
+    await apiClient.put(`/cdp/questionnaire/${year}/draft`, data);
+  },
+
+  validateCDP: async (year: number): Promise<any> => {
+    const response = await apiClient.post<ApiResponse<any>>(`/cdp/questionnaire/${year}/validate`);
+    return response.data.data;
+  },
+
+  exportCDP: async (year: number, format: string): Promise<Blob> => {
+    const response = await apiClient.get(`/cdp/questionnaire/${year}/export`, {
+      params: { format },
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  getCDPProgress: async (year: number): Promise<any> => {
+    const response = await apiClient.get<ApiResponse<any>>(`/cdp/questionnaire/${year}/progress`);
+    return response.data.data;
+  },
+
+  getCDPScorePrediction: async (year: number): Promise<{ score: string }> => {
+    const response = await apiClient.get<ApiResponse<{ score: string }>>(`/cdp/questionnaire/${year}/score-prediction`);
+    return response.data.data;
+  },
+
+  // ============================================================================
+  // Compliance
+  // ============================================================================
+  getComplianceScorecard: async (): Promise<any> => {
+    const response = await apiClient.get<ApiResponse<any>>('/compliance/scorecard');
+    return response.data.data;
+  },
+
+  getComplianceGaps: async (): Promise<any[]> => {
+    const response = await apiClient.get<ApiResponse<any[]>>('/compliance/gaps');
+    return response.data.data;
+  },
+
+  // ============================================================================
   // Health & Status
   // ============================================================================
   checkHealth: async (): Promise<{ status: string; version: string }> => {

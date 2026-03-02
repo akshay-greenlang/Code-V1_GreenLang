@@ -13,6 +13,7 @@ import {
   CartesianGrid,
   LineChart,
   Line,
+  Area,
 } from 'recharts';
 import { Box, Typography, Paper } from '@mui/material';
 
@@ -22,6 +23,8 @@ interface ChartProps {
   data: any[];
   title?: string;
   height?: number;
+  showConfidenceInterval?: boolean;
+  confidenceLevel?: number;
 }
 
 export const CategoryPieChart: React.FC<ChartProps> = ({ data, title, height = 300 }) => {
@@ -51,10 +54,25 @@ export const CategoryPieChart: React.FC<ChartProps> = ({ data, title, height = 3
   );
 };
 
-export const MonthlyTrendChart: React.FC<ChartProps> = ({ data, title, height = 300 }) => {
+export const MonthlyTrendChart: React.FC<ChartProps> = ({
+  data,
+  title,
+  height = 300,
+  showConfidenceInterval = false,
+  confidenceLevel = 95,
+}) => {
   return (
     <Paper sx={{ p: 2 }}>
-      {title && <Typography variant="h6" gutterBottom>{title}</Typography>}
+      {title && (
+        <Typography variant="h6" gutterBottom>
+          {title}
+          {showConfidenceInterval && (
+            <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+              ({confidenceLevel}% CI)
+            </Typography>
+          )}
+        </Typography>
+      )}
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -63,6 +81,28 @@ export const MonthlyTrendChart: React.FC<ChartProps> = ({ data, title, height = 
           <YAxis yAxisId="right" orientation="right" label={{ value: 'USD', angle: 90, position: 'insideRight' }} />
           <Tooltip />
           <Legend />
+          {showConfidenceInterval && (
+            <Area
+              yAxisId="left"
+              type="monotone"
+              dataKey="ci_upper"
+              stroke="none"
+              fill="#4caf5020"
+              name={`${confidenceLevel}% CI Upper`}
+              legendType="none"
+            />
+          )}
+          {showConfidenceInterval && (
+            <Area
+              yAxisId="left"
+              type="monotone"
+              dataKey="ci_lower"
+              stroke="none"
+              fill="#ffffff"
+              name={`${confidenceLevel}% CI Lower`}
+              legendType="none"
+            />
+          )}
           <Line
             yAxisId="left"
             type="monotone"

@@ -19,6 +19,8 @@ import {
   Assessment as ReportIcon,
   Settings as SettingsIcon,
   Eco as EcoIcon,
+  Quiz as CDPIcon,
+  VerifiedUser as ComplianceIcon,
 } from '@mui/icons-material';
 
 interface SidebarProps {
@@ -32,6 +34,8 @@ const menuItems = [
   { text: 'Data Upload', icon: <UploadIcon />, path: '/data-upload' },
   { text: 'Suppliers', icon: <BusinessIcon />, path: '/suppliers' },
   { text: 'Reports', icon: <ReportIcon />, path: '/reports' },
+  { text: 'CDP Management', icon: <CDPIcon />, path: '/cdp' },
+  { text: 'Compliance', icon: <ComplianceIcon />, path: '/compliance' },
   { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
 ];
 

@@ -387,6 +387,114 @@ except ImportError:
     WASTE_GENERATED_AVAILABLE = False
     _wg_router = None
 
+# Business Travel imports (AGENT-MRV-019)
+try:
+    from greenlang.business_travel.setup import get_router as get_bt_router
+    BUSINESS_TRAVEL_AVAILABLE = True
+    _bt_router = get_bt_router()
+except ImportError:
+    BUSINESS_TRAVEL_AVAILABLE = False
+    _bt_router = None
+
+# Employee Commuting imports (AGENT-MRV-020)
+try:
+    from greenlang.employee_commuting.setup import get_router as get_ec_router
+    EMPLOYEE_COMMUTING_AVAILABLE = True
+    _ec_router = get_ec_router()
+except ImportError:
+    EMPLOYEE_COMMUTING_AVAILABLE = False
+    _ec_router = None
+
+# Upstream Leased Assets imports (AGENT-MRV-021)
+try:
+    from greenlang.upstream_leased_assets.setup import get_router as get_ula_router
+    UPSTREAM_LEASED_AVAILABLE = True
+    _ula_router = get_ula_router()
+except ImportError:
+    UPSTREAM_LEASED_AVAILABLE = False
+    _ula_router = None
+
+# Downstream Transportation imports (AGENT-MRV-022)
+try:
+    from greenlang.downstream_transportation.setup import get_router as get_dto_router
+    DOWNSTREAM_TRANSPORT_AVAILABLE = True
+    _dto_router = get_dto_router()
+except ImportError:
+    DOWNSTREAM_TRANSPORT_AVAILABLE = False
+    _dto_router = None
+
+# Processing of Sold Products imports (AGENT-MRV-023)
+try:
+    from greenlang.processing_sold_products.setup import get_router as get_psp_router
+    PROCESSING_SOLD_PRODUCTS_AVAILABLE = True
+    _psp_router = get_psp_router()
+except ImportError:
+    PROCESSING_SOLD_PRODUCTS_AVAILABLE = False
+    _psp_router = None
+
+# Use of Sold Products imports (AGENT-MRV-024)
+try:
+    from greenlang.use_of_sold_products.setup import get_router as get_usp_router
+    USE_OF_SOLD_PRODUCTS_AVAILABLE = True
+    _usp_router = get_usp_router()
+except ImportError:
+    USE_OF_SOLD_PRODUCTS_AVAILABLE = False
+    _usp_router = None
+
+# End-of-Life Treatment imports (AGENT-MRV-025)
+try:
+    from greenlang.end_of_life_treatment.setup import get_router as get_eol_router
+    END_OF_LIFE_TREATMENT_AVAILABLE = True
+    _eol_router = get_eol_router()
+except ImportError:
+    END_OF_LIFE_TREATMENT_AVAILABLE = False
+    _eol_router = None
+
+# Downstream Leased Assets imports (AGENT-MRV-026)
+try:
+    from greenlang.downstream_leased_assets.setup import get_router as get_dla_router
+    DOWNSTREAM_LEASED_ASSETS_AVAILABLE = True
+    _dla_router = get_dla_router()
+except ImportError:
+    DOWNSTREAM_LEASED_ASSETS_AVAILABLE = False
+    _dla_router = None
+
+# Franchises imports (AGENT-MRV-027)
+try:
+    from greenlang.franchises.setup import get_router as get_frn_router
+    FRANCHISES_AVAILABLE = True
+    _frn_router = get_frn_router()
+except ImportError:
+    FRANCHISES_AVAILABLE = False
+    _frn_router = None
+
+# Investments imports (AGENT-MRV-028)
+try:
+    from greenlang.investments.setup import get_router as get_inv_router
+    INVESTMENTS_AVAILABLE = True
+    _inv_router = get_inv_router()
+except ImportError:
+    INVESTMENTS_AVAILABLE = False
+    _inv_router = None
+
+# Scope 3 Category Mapper Agent imports (AGENT-MRV-029)
+try:
+    from greenlang.scope3_category_mapper.setup import get_router as get_scm_router
+    SCOPE3_CATEGORY_MAPPER_AVAILABLE = True
+    _scm_router = get_scm_router()
+except ImportError:
+    SCOPE3_CATEGORY_MAPPER_AVAILABLE = False
+    _scm_router = None
+
+# Audit Trail & Lineage Agent imports (AGENT-MRV-030)
+try:
+    from greenlang.audit_trail_lineage.setup import get_router as get_atl_router
+    AUDIT_TRAIL_LINEAGE_AVAILABLE = True
+    _atl_router = get_atl_router()
+except ImportError:
+    AUDIT_TRAIL_LINEAGE_AVAILABLE = False
+    _atl_router = None
+
 
 def configure_auth(
     app: "FastAPI",
@@ -860,6 +968,90 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("Waste Generated router included (AGENT-MRV-018)")
     else:
         logger.debug("Waste Generated router not available; skipping")
+
+    # Business Travel router (AGENT-MRV-019)
+    if BUSINESS_TRAVEL_AVAILABLE and _bt_router is not None:
+        app.include_router(_bt_router)
+        logger.info("Business Travel router included (AGENT-MRV-019)")
+    else:
+        logger.debug("Business Travel router not available; skipping")
+
+    # Employee Commuting router (AGENT-MRV-020)
+    if EMPLOYEE_COMMUTING_AVAILABLE and _ec_router is not None:
+        app.include_router(_ec_router)
+        logger.info("Employee Commuting router included (AGENT-MRV-020)")
+    else:
+        logger.debug("Employee Commuting router not available; skipping")
+
+    # Upstream Leased Assets router (AGENT-MRV-021)
+    if UPSTREAM_LEASED_AVAILABLE and _ula_router is not None:
+        app.include_router(_ula_router)
+        logger.info("Upstream Leased Assets router included (AGENT-MRV-021)")
+    else:
+        logger.debug("Upstream Leased Assets router not available; skipping")
+
+    # Downstream Transportation router (AGENT-MRV-022)
+    if DOWNSTREAM_TRANSPORT_AVAILABLE and _dto_router is not None:
+        app.include_router(_dto_router)
+        logger.info("Downstream Transportation router included (AGENT-MRV-022)")
+    else:
+        logger.debug("Downstream Transportation router not available; skipping")
+
+    # Processing of Sold Products router (AGENT-MRV-023)
+    if PROCESSING_SOLD_PRODUCTS_AVAILABLE and _psp_router is not None:
+        app.include_router(_psp_router)
+        logger.info("Processing of Sold Products router included (AGENT-MRV-023)")
+    else:
+        logger.debug("Processing of Sold Products router not available; skipping")
+
+    # Use of Sold Products router (AGENT-MRV-024)
+    if USE_OF_SOLD_PRODUCTS_AVAILABLE and _usp_router is not None:
+        app.include_router(_usp_router)
+        logger.info("Use of Sold Products router included (AGENT-MRV-024)")
+    else:
+        logger.debug("Use of Sold Products router not available; skipping")
+
+    # End-of-Life Treatment router (AGENT-MRV-025)
+    if END_OF_LIFE_TREATMENT_AVAILABLE and _eol_router is not None:
+        app.include_router(_eol_router)
+        logger.info("End-of-Life Treatment router included (AGENT-MRV-025)")
+    else:
+        logger.debug("End-of-Life Treatment router not available; skipping")
+
+    # Downstream Leased Assets router (AGENT-MRV-026)
+    if DOWNSTREAM_LEASED_ASSETS_AVAILABLE and _dla_router is not None:
+        app.include_router(_dla_router)
+        logger.info("Downstream Leased Assets router included (AGENT-MRV-026)")
+    else:
+        logger.debug("Downstream Leased Assets router not available; skipping")
+
+    # Franchises router (AGENT-MRV-027)
+    if FRANCHISES_AVAILABLE and _frn_router is not None:
+        app.include_router(_frn_router)
+        logger.info("Franchises router included (AGENT-MRV-027)")
+    else:
+        logger.debug("Franchises router not available; skipping")
+
+    # Investments router (AGENT-MRV-028)
+    if INVESTMENTS_AVAILABLE and _inv_router is not None:
+        app.include_router(_inv_router)
+        logger.info("Investments router included (AGENT-MRV-028)")
+    else:
+        logger.debug("Investments router not available; skipping")
+
+    # Scope 3 Category Mapper router (AGENT-MRV-029)
+    if SCOPE3_CATEGORY_MAPPER_AVAILABLE and _scm_router is not None:
+        app.include_router(_scm_router)
+        logger.info("Scope 3 Category Mapper router included (AGENT-MRV-029)")
+    else:
+        logger.debug("Scope 3 Category Mapper router not available; skipping")
+
+    # Audit Trail & Lineage router (AGENT-MRV-030)
+    if AUDIT_TRAIL_LINEAGE_AVAILABLE and _atl_router is not None:
+        app.include_router(_atl_router)
+        logger.info("Audit Trail & Lineage router included (AGENT-MRV-030)")
+    else:
+        logger.debug("Audit Trail & Lineage router not available; skipping")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

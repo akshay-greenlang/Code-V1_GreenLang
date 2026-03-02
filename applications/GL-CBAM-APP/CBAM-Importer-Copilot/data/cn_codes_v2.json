@@ -1,0 +1,638 @@
+{
+  "_metadata": {
+    "version": "2.0.0",
+    "last_updated": "2026-02-28",
+    "source": "EU CBAM Regulation (EU) 2023/956 - Annex I (as amended by Omnibus Simplification Oct 2025)",
+    "source_url": "https://eur-lex.europa.eu/eli/reg/2023/956/oj",
+    "disclaimer": "Complete CBAM Annex I CN codes covering all six product groups. For actual filings, cross-reference with the latest EU Combined Nomenclature.",
+    "total_codes": 56,
+    "product_groups": ["cement", "iron_steel", "aluminium", "fertilisers", "electricity", "hydrogen"]
+  },
+
+  "25070080": {
+    "cn_code": "2507 00 80",
+    "description": "Kaolin and other kaolinic clays (for cement production)",
+    "cbam_sector": "cement",
+    "product_group": "cement_precursor",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 0.020,
+    "notes": "Kaolinic clays used as supplementary cementitious material"
+  },
+
+  "25231000": {
+    "cn_code": "2523 10 00",
+    "description": "Cement clinker",
+    "cbam_sector": "cement",
+    "product_group": "clinker",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 0.950,
+    "notes": "Intermediate product; ~60-65% CaO content; highest emission intensity in cement sector"
+  },
+
+  "25232100": {
+    "cn_code": "2523 21 00",
+    "description": "White Portland cement, whether or not artificially coloured",
+    "cbam_sector": "cement",
+    "product_group": "cement",
+    "unit": "kg",
+    "precursor_cn_codes": ["25231000"],
+    "default_emission_factor_tco2e": 1.005,
+    "notes": "Higher energy input due to purity requirements (+12% vs grey cement)"
+  },
+
+  "25232900": {
+    "cn_code": "2523 29 00",
+    "description": "Portland cement, other than white (grey cement)",
+    "cbam_sector": "cement",
+    "product_group": "cement",
+    "unit": "kg",
+    "precursor_cn_codes": ["25231000"],
+    "default_emission_factor_tco2e": 0.900,
+    "notes": "Most common cement type globally; clinker ratio ~73%"
+  },
+
+  "25233000": {
+    "cn_code": "2523 30 00",
+    "description": "Aluminous cement",
+    "cbam_sector": "cement",
+    "product_group": "cement",
+    "unit": "kg",
+    "precursor_cn_codes": ["25231000"],
+    "default_emission_factor_tco2e": 0.850,
+    "notes": "Calcium aluminate cement; used for refractory applications"
+  },
+
+  "25239000": {
+    "cn_code": "2523 90 00",
+    "description": "Other hydraulic cements",
+    "cbam_sector": "cement",
+    "product_group": "cement",
+    "unit": "kg",
+    "precursor_cn_codes": ["25231000"],
+    "default_emission_factor_tco2e": 0.780,
+    "notes": "Includes slag cement, pozzolanic cement, composite cements; lower clinker ratio"
+  },
+
+  "25233010": {
+    "cn_code": "2523 30 10",
+    "description": "Supersulphated cement",
+    "cbam_sector": "cement",
+    "product_group": "cement",
+    "unit": "kg",
+    "precursor_cn_codes": ["25231000"],
+    "default_emission_factor_tco2e": 0.450,
+    "notes": "Low clinker content (~5%); mainly slag-based; low emission intensity"
+  },
+
+  "25239010": {
+    "cn_code": "2523 90 10",
+    "description": "Masonry cement",
+    "cbam_sector": "cement",
+    "product_group": "cement",
+    "unit": "kg",
+    "precursor_cn_codes": ["25231000"],
+    "default_emission_factor_tco2e": 0.650,
+    "notes": "Blended cement with limestone filler; medium clinker ratio"
+  },
+
+  "72011000": {
+    "cn_code": "7201 10 00",
+    "description": "Non-alloy pig iron containing by weight 0.5% or less of phosphorus",
+    "cbam_sector": "iron_steel",
+    "product_group": "pig_iron",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 1.900,
+    "notes": "Blast furnace output; primary input to BOF steelmaking"
+  },
+
+  "72012000": {
+    "cn_code": "7201 20 00",
+    "description": "Non-alloy pig iron containing by weight more than 0.5% of phosphorus",
+    "cbam_sector": "iron_steel",
+    "product_group": "pig_iron",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 1.900,
+    "notes": "High-phosphorus pig iron for foundry applications"
+  },
+
+  "72015000": {
+    "cn_code": "7201 50 00",
+    "description": "Alloy pig iron; spiegeleisen",
+    "cbam_sector": "iron_steel",
+    "product_group": "pig_iron",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 2.100,
+    "notes": "Specialty pig iron with manganese and other alloys"
+  },
+
+  "72021100": {
+    "cn_code": "7202 11 00",
+    "description": "Ferro-manganese containing by weight more than 2% of carbon",
+    "cbam_sector": "iron_steel",
+    "product_group": "ferro_alloys",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 3.500,
+    "notes": "High-carbon ferro-manganese; electric arc or blast furnace route"
+  },
+
+  "72022100": {
+    "cn_code": "7202 21 00",
+    "description": "Ferro-silicon containing by weight more than 55% of silicon",
+    "cbam_sector": "iron_steel",
+    "product_group": "ferro_alloys",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 5.000,
+    "notes": "High-silicon ferro-silicon; very electricity-intensive production"
+  },
+
+  "72023000": {
+    "cn_code": "7202 30 00",
+    "description": "Ferro-silico-manganese",
+    "cbam_sector": "iron_steel",
+    "product_group": "ferro_alloys",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 3.800,
+    "notes": "Combined Si+Mn alloy; submerged arc furnace production"
+  },
+
+  "72024100": {
+    "cn_code": "7202 41 00",
+    "description": "Ferro-chromium containing by weight more than 4% of carbon",
+    "cbam_sector": "iron_steel",
+    "product_group": "ferro_alloys",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 4.200,
+    "notes": "High-carbon ferro-chrome for stainless steel production"
+  },
+
+  "72061000": {
+    "cn_code": "7206 10 00",
+    "description": "Iron and non-alloy steel ingots",
+    "cbam_sector": "iron_steel",
+    "product_group": "crude_steel",
+    "unit": "kg",
+    "precursor_cn_codes": ["72011000"],
+    "default_emission_factor_tco2e": 2.000,
+    "notes": "BOF route crude steel ingots"
+  },
+
+  "72071100": {
+    "cn_code": "7207 11 00",
+    "description": "Semi-finished products of iron or non-alloy steel, rectangular cross-section, width >= 2x thickness",
+    "cbam_sector": "iron_steel",
+    "product_group": "semi_finished",
+    "unit": "kg",
+    "precursor_cn_codes": ["72061000"],
+    "default_emission_factor_tco2e": 2.050,
+    "notes": "Slabs for flat-rolled products"
+  },
+
+  "72081000": {
+    "cn_code": "7208 10 00",
+    "description": "Flat-rolled products of iron or non-alloy steel, in coils, hot-rolled, with patterns in relief",
+    "cbam_sector": "iron_steel",
+    "product_group": "flat_products",
+    "unit": "kg",
+    "precursor_cn_codes": ["72071100"],
+    "default_emission_factor_tco2e": 2.150,
+    "notes": "Hot-rolled coils; includes rolling energy"
+  },
+
+  "72082500": {
+    "cn_code": "7208 25 00",
+    "description": "Flat-rolled products of iron or non-alloy steel, hot-rolled, thickness >= 4.75mm",
+    "cbam_sector": "iron_steel",
+    "product_group": "flat_products",
+    "unit": "kg",
+    "precursor_cn_codes": ["72071100"],
+    "default_emission_factor_tco2e": 2.150,
+    "notes": "Heavy plate; structural applications"
+  },
+
+  "72091500": {
+    "cn_code": "7209 15 00",
+    "description": "Flat-rolled products of iron or non-alloy steel, cold-rolled, thickness >= 3mm",
+    "cbam_sector": "iron_steel",
+    "product_group": "flat_products",
+    "unit": "kg",
+    "precursor_cn_codes": ["72081000"],
+    "default_emission_factor_tco2e": 2.350,
+    "notes": "Cold-rolled; additional processing energy vs hot-rolled"
+  },
+
+  "72131000": {
+    "cn_code": "7213 10 00",
+    "description": "Bars and rods, hot-rolled, of iron or non-alloy steel, containing indentations",
+    "cbam_sector": "iron_steel",
+    "product_group": "long_products",
+    "unit": "kg",
+    "precursor_cn_codes": ["72071100"],
+    "default_emission_factor_tco2e": 2.100,
+    "notes": "Rebar for reinforced concrete construction"
+  },
+
+  "72142000": {
+    "cn_code": "7214 20 00",
+    "description": "Bars and rods of iron or non-alloy steel, with indentations, ribs, grooves",
+    "cbam_sector": "iron_steel",
+    "product_group": "long_products",
+    "unit": "kg",
+    "precursor_cn_codes": ["72071100"],
+    "default_emission_factor_tco2e": 2.100,
+    "notes": "Deformed bars; construction grade"
+  },
+
+  "72163100": {
+    "cn_code": "7216 31 00",
+    "description": "U sections of iron or non-alloy steel, hot-rolled, height >= 80mm",
+    "cbam_sector": "iron_steel",
+    "product_group": "long_products",
+    "unit": "kg",
+    "precursor_cn_codes": ["72071100"],
+    "default_emission_factor_tco2e": 2.200,
+    "notes": "Structural U-channels"
+  },
+
+  "72171000": {
+    "cn_code": "7217 10 00",
+    "description": "Wire of iron or non-alloy steel, not plated or coated",
+    "cbam_sector": "iron_steel",
+    "product_group": "wire_products",
+    "unit": "kg",
+    "precursor_cn_codes": ["72131000"],
+    "default_emission_factor_tco2e": 2.300,
+    "notes": "Steel wire; additional drawing energy"
+  },
+
+  "72193100": {
+    "cn_code": "7219 31 00",
+    "description": "Flat-rolled products of stainless steel, cold-rolled, width >= 600mm, thickness >= 4.75mm",
+    "cbam_sector": "iron_steel",
+    "product_group": "stainless_steel",
+    "unit": "kg",
+    "precursor_cn_codes": ["72024100"],
+    "default_emission_factor_tco2e": 5.500,
+    "notes": "Stainless steel plate; includes chromium-nickel alloy contribution"
+  },
+
+  "73041900": {
+    "cn_code": "7304 19 00",
+    "description": "Tubes, pipes and hollow profiles, seamless, of iron or steel, other",
+    "cbam_sector": "iron_steel",
+    "product_group": "tubes_pipes",
+    "unit": "kg",
+    "precursor_cn_codes": ["72081000"],
+    "default_emission_factor_tco2e": 2.500,
+    "notes": "Seamless tubes; additional hot piercing and elongation energy"
+  },
+
+  "76011000": {
+    "cn_code": "7601 10 00",
+    "description": "Aluminium, not alloyed, unwrought",
+    "cbam_sector": "aluminium",
+    "product_group": "unwrought_aluminium",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 11.500,
+    "notes": "Primary aluminium from Hall-Heroult smelting; global average including indirect"
+  },
+
+  "76012000": {
+    "cn_code": "7601 20 00",
+    "description": "Aluminium alloys, unwrought",
+    "cbam_sector": "aluminium",
+    "product_group": "unwrought_aluminium",
+    "unit": "kg",
+    "precursor_cn_codes": ["76011000"],
+    "default_emission_factor_tco2e": 11.100,
+    "notes": "Alloyed primary aluminium; minor alloy contribution"
+  },
+
+  "76020000": {
+    "cn_code": "7602 00 00",
+    "description": "Aluminium waste and scrap",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_scrap",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 0.600,
+    "notes": "Secondary aluminium; ~95% energy saving vs primary production"
+  },
+
+  "76041000": {
+    "cn_code": "7604 10 00",
+    "description": "Aluminium bars, rods and profiles, not alloyed",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_profiles",
+    "unit": "kg",
+    "precursor_cn_codes": ["76011000"],
+    "default_emission_factor_tco2e": 12.000,
+    "notes": "Extruded aluminium profiles; adds extrusion energy"
+  },
+
+  "76042100": {
+    "cn_code": "7604 21 00",
+    "description": "Aluminium hollow profiles, alloys",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_profiles",
+    "unit": "kg",
+    "precursor_cn_codes": ["76012000"],
+    "default_emission_factor_tco2e": 11.800,
+    "notes": "Hollow section extrusions"
+  },
+
+  "76051100": {
+    "cn_code": "7605 11 00",
+    "description": "Aluminium wire, not alloyed, maximum cross-sectional dimension > 7mm",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_wire",
+    "unit": "kg",
+    "precursor_cn_codes": ["76011000"],
+    "default_emission_factor_tco2e": 12.200,
+    "notes": "Aluminium wire rod; drawing and annealing energy"
+  },
+
+  "76061100": {
+    "cn_code": "7606 11 00",
+    "description": "Aluminium plates, sheets and strip, not alloyed, rectangular, thickness > 0.2mm",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_flat",
+    "unit": "kg",
+    "precursor_cn_codes": ["76011000"],
+    "default_emission_factor_tco2e": 12.500,
+    "notes": "Rolled aluminium sheet; hot and cold rolling energy"
+  },
+
+  "76071100": {
+    "cn_code": "7607 11 00",
+    "description": "Aluminium foil, not backed, rolled, thickness not exceeding 0.2mm",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_foil",
+    "unit": "kg",
+    "precursor_cn_codes": ["76061100"],
+    "default_emission_factor_tco2e": 13.000,
+    "notes": "Thin-gauge foil; very high rolling passes"
+  },
+
+  "76081000": {
+    "cn_code": "7608 10 00",
+    "description": "Aluminium tubes and pipes, not alloyed",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_tubes",
+    "unit": "kg",
+    "precursor_cn_codes": ["76011000"],
+    "default_emission_factor_tco2e": 12.800,
+    "notes": "Extruded or drawn aluminium tubes"
+  },
+
+  "76109000": {
+    "cn_code": "7610 90 00",
+    "description": "Aluminium structures and parts of structures, other",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_structures",
+    "unit": "kg",
+    "precursor_cn_codes": ["76041000", "76042100"],
+    "default_emission_factor_tco2e": 12.500,
+    "notes": "Fabricated aluminium structural components"
+  },
+
+  "76161000": {
+    "cn_code": "7616 10 00",
+    "description": "Aluminium nails, tacks, staples, screws, bolts",
+    "cbam_sector": "aluminium",
+    "product_group": "aluminium_fasteners",
+    "unit": "kg",
+    "precursor_cn_codes": ["76011000", "76012000"],
+    "default_emission_factor_tco2e": 13.500,
+    "notes": "Precision fasteners; high processing energy per unit mass"
+  },
+
+  "28080000": {
+    "cn_code": "2808 00 00",
+    "description": "Nitric acid; sulphonitric acids",
+    "cbam_sector": "fertilisers",
+    "product_group": "nitric_acid",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000"],
+    "default_emission_factor_tco2e": 1.050,
+    "notes": "Ammonia oxidation; includes N2O emissions (high GWP 265-298)"
+  },
+
+  "28141000": {
+    "cn_code": "2814 10 00",
+    "description": "Anhydrous ammonia",
+    "cbam_sector": "fertilisers",
+    "product_group": "ammonia",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 2.500,
+    "notes": "Haber-Bosch process; natural gas feedstock + process heat"
+  },
+
+  "28142000": {
+    "cn_code": "2814 20 00",
+    "description": "Ammonia in aqueous solution",
+    "cbam_sector": "fertilisers",
+    "product_group": "ammonia",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000"],
+    "default_emission_factor_tco2e": 0.750,
+    "notes": "Typically 25-30% NH3 concentration; lower EF per kg solution"
+  },
+
+  "31021000": {
+    "cn_code": "3102 10 00",
+    "description": "Urea, whether or not in aqueous solution",
+    "cbam_sector": "fertilisers",
+    "product_group": "urea",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000"],
+    "default_emission_factor_tco2e": 1.700,
+    "notes": "Most widely used nitrogen fertilizer globally; CO2 from ammonia process"
+  },
+
+  "31022100": {
+    "cn_code": "3102 21 00",
+    "description": "Ammonium sulphate",
+    "cbam_sector": "fertilisers",
+    "product_group": "ammonium_salts",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000"],
+    "default_emission_factor_tco2e": 1.200,
+    "notes": "Nitrogen + sulphur fertilizer; by-product of caprolactam production"
+  },
+
+  "31023000": {
+    "cn_code": "3102 30 00",
+    "description": "Ammonium nitrate, whether or not in aqueous solution",
+    "cbam_sector": "fertilisers",
+    "product_group": "ammonium_nitrate",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000", "28080000"],
+    "default_emission_factor_tco2e": 2.800,
+    "notes": "High nitrogen content (34%N); process combines ammonia and nitric acid"
+  },
+
+  "31024000": {
+    "cn_code": "3102 40 00",
+    "description": "Mixtures of ammonium nitrate with calcium carbonate or other inorganic non-fertilising substances",
+    "cbam_sector": "fertilisers",
+    "product_group": "calcium_ammonium_nitrate",
+    "unit": "kg",
+    "precursor_cn_codes": ["31023000"],
+    "default_emission_factor_tco2e": 2.200,
+    "notes": "CAN (27%N); diluted AN with limestone filler"
+  },
+
+  "31025000": {
+    "cn_code": "3102 50 00",
+    "description": "Sodium nitrate",
+    "cbam_sector": "fertilisers",
+    "product_group": "nitrate_fertilisers",
+    "unit": "kg",
+    "precursor_cn_codes": ["28080000"],
+    "default_emission_factor_tco2e": 1.400,
+    "notes": "Chilean saltpeter; naturally occurring or synthetic"
+  },
+
+  "31026000": {
+    "cn_code": "3102 60 00",
+    "description": "Double salts and mixtures of calcium nitrate and ammonium nitrate",
+    "cbam_sector": "fertilisers",
+    "product_group": "nitrate_fertilisers",
+    "unit": "kg",
+    "precursor_cn_codes": ["28080000", "28141000"],
+    "default_emission_factor_tco2e": 1.900,
+    "notes": "Complex nitrogen fertilizers"
+  },
+
+  "31031100": {
+    "cn_code": "3103 11 00",
+    "description": "Superphosphates containing by weight 35% or more of diphosphorus pentaoxide",
+    "cbam_sector": "fertilisers",
+    "product_group": "phosphate_fertilisers",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 0.500,
+    "notes": "Triple superphosphate (TSP); phosphate rock acidulation"
+  },
+
+  "31051000": {
+    "cn_code": "3105 10 00",
+    "description": "Products of this chapter in tablets or similar forms or in packages of a gross weight not exceeding 10 kg",
+    "cbam_sector": "fertilisers",
+    "product_group": "packaged_fertilisers",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000", "28080000"],
+    "default_emission_factor_tco2e": 1.800,
+    "notes": "Retail packaged fertilizers; weighted average EF"
+  },
+
+  "31052000": {
+    "cn_code": "3105 20 00",
+    "description": "Mineral or chemical fertilisers containing nitrogen, phosphorus and potassium (NPK)",
+    "cbam_sector": "fertilisers",
+    "product_group": "npk_compound",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000", "28080000"],
+    "default_emission_factor_tco2e": 1.600,
+    "notes": "NPK compound fertilizers; emission factor depends on N content"
+  },
+
+  "31053000": {
+    "cn_code": "3105 30 00",
+    "description": "Diammonium hydrogenorthophosphate (DAP)",
+    "cbam_sector": "fertilisers",
+    "product_group": "dap",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000"],
+    "default_emission_factor_tco2e": 1.500,
+    "notes": "Di-ammonium phosphate (18-46-0); ammonia + phosphoric acid"
+  },
+
+  "31054000": {
+    "cn_code": "3105 40 00",
+    "description": "Ammonium dihydrogenorthophosphate (MAP)",
+    "cbam_sector": "fertilisers",
+    "product_group": "map",
+    "unit": "kg",
+    "precursor_cn_codes": ["28141000"],
+    "default_emission_factor_tco2e": 1.300,
+    "notes": "Mono-ammonium phosphate (11-52-0)"
+  },
+
+  "27160000": {
+    "cn_code": "2716 00 00",
+    "description": "Electrical energy",
+    "cbam_sector": "electricity",
+    "product_group": "electricity",
+    "unit": "MWh",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 0.400,
+    "notes": "Grid electricity; EF depends on exporting country grid mix. Excluded from de minimis threshold."
+  },
+
+  "27160010": {
+    "cn_code": "2716 00 10",
+    "description": "Electrical energy from renewable sources (with guarantees of origin)",
+    "cbam_sector": "electricity",
+    "product_group": "electricity_renewable",
+    "unit": "MWh",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 0.000,
+    "notes": "Renewable electricity with valid EU-compliant GO. Zero CBAM obligation if criteria met."
+  },
+
+  "28041000": {
+    "cn_code": "2804 10 00",
+    "description": "Hydrogen",
+    "cbam_sector": "hydrogen",
+    "product_group": "hydrogen",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 11.000,
+    "notes": "Default for grey H2 (SMR without CCS). Excluded from de minimis threshold."
+  },
+
+  "28042100": {
+    "cn_code": "2804 21 00",
+    "description": "Hydrogen, blue (SMR with CCS)",
+    "cbam_sector": "hydrogen",
+    "product_group": "hydrogen_blue",
+    "unit": "kg",
+    "precursor_cn_codes": [],
+    "default_emission_factor_tco2e": 3.000,
+    "notes": "Blue hydrogen; SMR + carbon capture; depends on capture rate (85-95%)"
+  },
+
+  "28042900": {
+    "cn_code": "2804 29 00",
+    "description": "Hydrogen, green (electrolysis from renewable electricity)",
+    "cbam_sector": "hydrogen",
+    "product_group": "hydrogen_green",
+    "unit": "kg",
+    "precursor_cn_codes": ["27160010"],
+    "default_emission_factor_tco2e": 0.500,
+    "notes": "Green hydrogen; PEM or alkaline electrolysis; near-zero if fully renewable"
+  },
+
+  "28044000": {
+    "cn_code": "2804 40 00",
+    "description": "Hydrogen compounds (ammonia-based hydrogen carriers)",
+    "cbam_sector": "hydrogen",
+    "product_group": "hydrogen_carriers",
+    "unit": "kg",
+    "precursor_cn_codes": ["28041000"],
+    "default_emission_factor_tco2e": 8.000,
+    "notes": "Hydrogen transported as ammonia or LOHC; includes conversion losses"
+  }
+}

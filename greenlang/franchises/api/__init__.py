@@ -1,0 +1,1 @@
+"""Franchises API package."""

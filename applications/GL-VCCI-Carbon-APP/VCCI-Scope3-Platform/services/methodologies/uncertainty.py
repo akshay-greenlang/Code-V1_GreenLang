@@ -8,7 +8,7 @@ emissions calculations, including:
 - Category-based default uncertainties
 - Propagation through calculation chains
 - Confidence interval calculation
-- Sensitivity analysis stubs
+- Advanced sensitivity analysis (Sobol, Morris, Tornado)
 
 References:
 - GHG Protocol: Corporate Value Chain (Scope 3) Standard, Chapter 7
@@ -16,13 +16,13 @@ References:
 - ISO/TS 14067:2018: Greenhouse gases - Carbon footprint of products
 - Weidema et al. (2013): "Data quality management for LCA"
 
-Version: 1.0.0
-Date: 2025-10-30
+Version: 1.1.0
+Date: 2026-03-01
 """
 
 import math
 import logging
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Callable, Any
 from datetime import datetime
 
 from .models import UncertaintyResult, PedigreeScore, MonteCarloResult
@@ -37,6 +37,16 @@ from .constants import (
 from .config import get_config
 from .pedigree_matrix import PedigreeMatrixEvaluator
 from .monte_carlo import MonteCarloSimulator, AnalyticalPropagator
+from .sensitivity_analysis import (
+    SobolAnalyzer,
+    MorrisAnalyzer,
+    TornadoDiagramGenerator,
+    ConvergenceAnalyzer,
+    SobolResult,
+    MorrisResult,
+    TornadoData,
+    ConvergenceResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -572,12 +582,35 @@ class SensitivityAnalyzer:
     """
     Analyzer for sensitivity of results to input parameters.
 
-    Stub implementation for future expansion.
+    Provides a unified interface to multiple sensitivity analysis methods:
+    - Simple contribution analysis (magnitude-based).
+    - Sobol variance-based global sensitivity (first-order + total-order).
+    - Morris elementary effects screening.
+    - Tornado one-way sensitivity diagrams.
+    - Top-contributor extraction from any sensitivity index set.
+
+    All numerical computations delegate to the deterministic engines in
+    ``sensitivity_analysis.py`` (zero-hallucination, NumPy/SciPy only).
     """
 
-    def __init__(self):
-        """Initialize Sensitivity Analyzer."""
-        logger.info("Initialized SensitivityAnalyzer (stub)")
+    def __init__(self, seed: Optional[int] = None):
+        """
+        Initialize SensitivityAnalyzer.
+
+        Args:
+            seed: Random seed for reproducibility in Sobol / Morris
+                  analyses.  Defaults to None (non-deterministic).
+        """
+        self._seed = seed
+        self._sobol = SobolAnalyzer(seed=seed)
+        self._morris = MorrisAnalyzer(seed=seed)
+        self._tornado = TornadoDiagramGenerator()
+        self._convergence = ConvergenceAnalyzer()
+        logger.info(f"Initialized SensitivityAnalyzer with seed={seed}")
+
+    # ------------------------------------------------------------------
+    # Legacy interface (kept for backward compatibility)
+    # ------------------------------------------------------------------
 
     def analyze_contribution(
         self, parameters: Dict[str, float], result: float
@@ -585,14 +618,17 @@ class SensitivityAnalyzer:
         """
         Analyze contribution of each parameter to result.
 
+        Simple magnitude-based contribution (no model evaluations).
+        This is the original interface retained for backward compatibility.
+
         Args:
-            parameters: Dictionary of parameter values
-            result: Calculated result
+            parameters: Dictionary of parameter values.
+            result: Calculated result.
 
         Returns:
-            Dictionary of contribution percentages
+            Dictionary of contribution percentages (values sum to 1.0).
         """
-        contributions = {}
+        contributions: Dict[str, float] = {}
         total = sum(abs(v) for v in parameters.values())
 
         for name, value in parameters.items():
@@ -602,6 +638,193 @@ class SensitivityAnalyzer:
                 contributions[name] = 0.0
 
         return contributions
+
+    # ------------------------------------------------------------------
+    # Sobol analysis
+    # ------------------------------------------------------------------
+
+    def run_sobol_analysis(
+        self,
+        calculation_func: Callable[[Dict[str, float]], float],
+        parameters: List[Dict[str, Any]],
+        N: int = 1024,
+    ) -> SobolResult:
+        """
+        Run Sobol variance-based global sensitivity analysis.
+
+        Estimates first-order (Si) and total-order (STi) indices using
+        Saltelli's quasi-random sampling scheme.  Si measures the direct
+        contribution of parameter Xi to output variance; STi includes
+        all interactions involving Xi.
+
+        Args:
+            calculation_func: Deterministic model f(params) -> scalar.
+            parameters: List of parameter descriptors.  Each dict must
+                contain 'name', 'mean', 'std_dev', and optionally
+                'distribution', 'min', 'max'.
+            N: Base sample size (power of 2 recommended).  Total model
+                evaluations = N * (2k + 2).
+
+        Returns:
+            SobolResult with first_order_indices, total_order_indices,
+            interaction_effects, and convergence_info.
+
+        Example:
+            >>> analyzer = SensitivityAnalyzer(seed=42)
+            >>> def model(p):
+            ...     return p['activity'] * p['factor']
+            >>> params = [
+            ...     {'name': 'activity', 'mean': 1000, 'std_dev': 100},
+            ...     {'name': 'factor', 'mean': 2.5, 'std_dev': 0.25},
+            ... ]
+            >>> result = analyzer.run_sobol_analysis(model, params, N=512)
+            >>> result.first_order_indices
+        """
+        logger.info(
+            f"SensitivityAnalyzer: running Sobol analysis, "
+            f"N={N}, params={[p['name'] for p in parameters]}"
+        )
+        return self._sobol.run_analysis(calculation_func, parameters, N=N)
+
+    # ------------------------------------------------------------------
+    # Morris screening
+    # ------------------------------------------------------------------
+
+    def run_morris_screening(
+        self,
+        calculation_func: Callable[[Dict[str, float]], float],
+        parameters: List[Dict[str, Any]],
+        r: int = 10,
+        levels: int = 4,
+    ) -> MorrisResult:
+        """
+        Run Morris elementary effects screening.
+
+        Generates r OAT trajectories through the parameter space and
+        computes the mean absolute elementary effect (mu*) and its
+        standard deviation (sigma) for each parameter.  Parameters are
+        classified as important, non-important, or interactive.
+
+        Args:
+            calculation_func: Model f(params) -> scalar.
+            parameters: Parameter descriptors (name, mean, std_dev, ...).
+            r: Number of trajectories (default 10).
+            levels: Number of grid levels (default 4).
+
+        Returns:
+            MorrisResult with mu_star, sigma, mu_star_conf, and
+            classification per parameter.
+
+        Example:
+            >>> analyzer = SensitivityAnalyzer(seed=42)
+            >>> result = analyzer.run_morris_screening(model, params, r=20)
+            >>> result.classification
+        """
+        logger.info(
+            f"SensitivityAnalyzer: running Morris screening, "
+            f"r={r}, levels={levels}"
+        )
+        return self._morris.run_screening(
+            calculation_func, parameters, r=r, levels=levels
+        )
+
+    # ------------------------------------------------------------------
+    # Tornado diagram
+    # ------------------------------------------------------------------
+
+    def generate_tornado_data(
+        self,
+        calculation_func: Callable[[Dict[str, float]], float],
+        parameters: List[Dict[str, Any]],
+        baseline: Dict[str, float],
+        variation_pct: float = 0.10,
+    ) -> TornadoData:
+        """
+        Generate tornado diagram data via one-way parameter sweeps.
+
+        For each parameter, the model is evaluated at
+        baseline * (1 +/- variation_pct) while all other parameters
+        are held at their baseline values.  Results are sorted by
+        descending absolute impact.
+
+        Args:
+            calculation_func: Model f(params) -> scalar.
+            parameters: Parameter descriptors.
+            baseline: Nominal parameter values.
+            variation_pct: Fractional variation (default 0.10 = 10%).
+
+        Returns:
+            TornadoData sorted by descending impact.
+
+        Example:
+            >>> analyzer = SensitivityAnalyzer()
+            >>> tornado = analyzer.generate_tornado_data(
+            ...     model,
+            ...     params,
+            ...     baseline={'activity': 1000, 'factor': 2.5},
+            ... )
+            >>> tornado.parameters[0].name  # Most impactful parameter
+        """
+        logger.info(
+            f"SensitivityAnalyzer: generating tornado data, "
+            f"variation={variation_pct:.0%}"
+        )
+        return self._tornado.generate_one_way(
+            calculation_func, parameters, baseline, variation_pct
+        )
+
+    # ------------------------------------------------------------------
+    # Top contributors
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def get_top_contributors(
+        sensitivity_indices: Dict[str, float],
+        top_n: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """
+        Extract the top-N contributors from a set of sensitivity indices.
+
+        Works with any index type (Sobol Si, STi, Pearson r, or mu*).
+
+        Args:
+            sensitivity_indices: Dict mapping parameter name to its
+                sensitivity index value.
+            top_n: Number of top contributors to return (default 5).
+
+        Returns:
+            List of dicts with 'rank', 'name', 'index', and
+            'contribution_pct' keys, sorted by descending index.
+
+        Example:
+            >>> SensitivityAnalyzer.get_top_contributors(
+            ...     {'a': 0.5, 'b': 0.3, 'c': 0.1, 'd': 0.05, 'e': 0.03, 'f': 0.02},
+            ...     top_n=3,
+            ... )
+            [{'rank': 1, 'name': 'a', 'index': 0.5, 'contribution_pct': 51.02}, ...]
+        """
+        if not sensitivity_indices:
+            return []
+
+        sorted_items = sorted(
+            sensitivity_indices.items(),
+            key=lambda x: abs(x[1]),
+            reverse=True,
+        )
+
+        total = sum(abs(v) for _, v in sorted_items)
+        results: List[Dict[str, Any]] = []
+
+        for rank, (name, idx) in enumerate(sorted_items[:top_n], start=1):
+            pct = (abs(idx) / total * 100.0) if total > 0 else 0.0
+            results.append({
+                "rank": rank,
+                "name": name,
+                "index": round(idx, 6),
+                "contribution_pct": round(pct, 2),
+            })
+
+        return results
 
 
 # ============================================================================
@@ -663,4 +886,9 @@ __all__ = [
     "SensitivityAnalyzer",
     "quantify_uncertainty",
     "propagate_uncertainty",
+    # Re-exported from sensitivity_analysis for convenience
+    "SobolResult",
+    "MorrisResult",
+    "TornadoData",
+    "ConvergenceResult",
 ]

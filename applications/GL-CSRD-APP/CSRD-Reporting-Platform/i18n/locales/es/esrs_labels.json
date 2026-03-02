@@ -1,0 +1,946 @@
+{
+  "metadata": {
+    "locale": "es",
+    "version": "1.1.0",
+    "language": "Espanol",
+    "source": "EFRAG ESRS Set 1 (Reglamento Delegado (UE) 2023/2772 de la Comision)",
+    "total_data_points": 1082,
+    "standards_covered": ["ESRS-1", "ESRS-2", "E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1"],
+    "last_updated": "2026-03-01",
+    "description": "Catalogo completo de todos los puntos de datos ESRS de la directiva europea sobre informacion en materia de sostenibilidad (CSRD)"
+  },
+  "standards": {
+    "ESRS-1": {
+      "name": "Requisitos generales",
+      "short_name": "ESRS 1",
+      "description": "Principios generales para la elaboracion de la declaracion de sostenibilidad",
+      "full_title": "ESRS 1 - Requisitos generales",
+      "category": "Transversal"
+    },
+    "ESRS-2": {
+      "name": "Informacion general",
+      "short_name": "ESRS 2",
+      "description": "Informacion general que todas las empresas deben divulgar independientemente de la materialidad",
+      "full_title": "ESRS 2 - Informacion general",
+      "category": "Transversal"
+    },
+    "E1": {
+      "name": "Cambio climatico",
+      "short_name": "ESRS E1",
+      "description": "Informacion relativa al cambio climatico, incluida la mitigacion del cambio climatico y la adaptacion al mismo",
+      "full_title": "ESRS E1 - Cambio climatico",
+      "category": "Medioambiental"
+    },
+    "E2": {
+      "name": "Contaminacion",
+      "short_name": "ESRS E2",
+      "description": "Informacion relativa a la prevencion y el control de la contaminacion del aire, el agua y el suelo",
+      "full_title": "ESRS E2 - Contaminacion",
+      "category": "Medioambiental"
+    },
+    "E3": {
+      "name": "Recursos hidricos y marinos",
+      "short_name": "ESRS E3",
+      "description": "Informacion relativa al uso sostenible y la proteccion de los recursos hidricos y marinos",
+      "full_title": "ESRS E3 - Recursos hidricos y marinos",
+      "category": "Medioambiental"
+    },
+    "E4": {
+      "name": "Biodiversidad y ecosistemas",
+      "short_name": "ESRS E4",
+      "description": "Informacion relativa a las repercusiones sobre la biodiversidad y los ecosistemas",
+      "full_title": "ESRS E4 - Biodiversidad y ecosistemas",
+      "category": "Medioambiental"
+    },
+    "E5": {
+      "name": "Uso de recursos y economia circular",
+      "short_name": "ESRS E5",
+      "description": "Informacion relativa al uso de recursos y a la economia circular",
+      "full_title": "ESRS E5 - Uso de recursos y economia circular",
+      "category": "Medioambiental"
+    },
+    "S1": {
+      "name": "Plantilla propia",
+      "short_name": "ESRS S1",
+      "description": "Informacion relativa a las condiciones laborales, la igualdad de trato y otros derechos laborales de la plantilla propia",
+      "full_title": "ESRS S1 - Plantilla propia",
+      "category": "Social"
+    },
+    "S2": {
+      "name": "Trabajadores de la cadena de valor",
+      "short_name": "ESRS S2",
+      "description": "Informacion relativa a las condiciones laborales y los derechos humanos de los trabajadores de la cadena de valor",
+      "full_title": "ESRS S2 - Trabajadores de la cadena de valor",
+      "category": "Social"
+    },
+    "S3": {
+      "name": "Comunidades afectadas",
+      "short_name": "ESRS S3",
+      "description": "Informacion relativa a las repercusiones sobre las comunidades afectadas",
+      "full_title": "ESRS S3 - Comunidades afectadas",
+      "category": "Social"
+    },
+    "S4": {
+      "name": "Consumidores y usuarios finales",
+      "short_name": "ESRS S4",
+      "description": "Informacion relativa a las repercusiones sobre los consumidores y los usuarios finales",
+      "full_title": "ESRS S4 - Consumidores y usuarios finales",
+      "category": "Social"
+    },
+    "G1": {
+      "name": "Conducta empresarial",
+      "short_name": "ESRS G1",
+      "description": "Informacion relativa a la conducta empresarial, incluida la lucha contra la corrupcion, la influencia politica y las practicas de pago",
+      "full_title": "ESRS G1 - Conducta empresarial",
+      "category": "Gobernanza"
+    }
+  },
+  "categories": {
+    "environment": "Medioambiental",
+    "social": "Social",
+    "governance": "Gobernanza",
+    "cross_cutting": "Transversal"
+  },
+  "topics": {
+    "Climate Change": "Cambio climatico",
+    "Pollution": "Contaminacion",
+    "Water and Marine Resources": "Recursos hidricos y marinos",
+    "Biodiversity and Ecosystems": "Biodiversidad y ecosistemas",
+    "Resource Use and Circular Economy": "Uso de recursos y economia circular",
+    "Own Workforce": "Plantilla propia",
+    "Workers in the Value Chain": "Trabajadores de la cadena de valor",
+    "Affected Communities": "Comunidades afectadas",
+    "Consumers and End-users": "Consumidores y usuarios finales",
+    "Business Conduct": "Conducta empresarial"
+  },
+  "disclosure_requirements": {
+    "ESRS2-BP1": "ESRS 2 BP-1 Base de preparacion de la informacion de sostenibilidad",
+    "ESRS2-BP2": "ESRS 2 BP-2 Informacion relativa a circunstancias especificas",
+    "ESRS2-GOV1": "ESRS 2 GOV-1 Funcion de los organos de administracion, direccion y supervision",
+    "ESRS2-GOV2": "ESRS 2 GOV-2 Informacion facilitada y cuestiones de sostenibilidad abordadas por los organos de administracion, direccion y supervision",
+    "ESRS2-GOV3": "ESRS 2 GOV-3 Integracion del desempeno en materia de sostenibilidad en los sistemas de remuneracion",
+    "ESRS2-GOV4": "ESRS 2 GOV-4 Declaracion sobre la diligencia debida",
+    "ESRS2-GOV5": "ESRS 2 GOV-5 Gestion de riesgos y controles internos de la presentacion de informes de sostenibilidad",
+    "ESRS2-SBM1": "ESRS 2 SBM-1 Estrategia, modelo de negocio y cadena de valor",
+    "ESRS2-SBM2": "ESRS 2 SBM-2 Intereses y puntos de vista de las partes interesadas",
+    "ESRS2-SBM3": "ESRS 2 SBM-3 Repercusiones, riesgos y oportunidades materiales y su interaccion con la estrategia y el modelo de negocio",
+    "ESRS2-IRO1": "ESRS 2 IRO-1 Descripcion de los procesos de identificacion y evaluacion de las repercusiones, riesgos y oportunidades materiales",
+    "ESRS2-IRO2": "ESRS 2 IRO-2 Requisitos de divulgacion incluidos en las ESRS evaluados como no materiales",
+    "ESRS2-MDR-P": "ESRS 2 MDR-P Politicas relativas a las cuestiones de sostenibilidad materiales",
+    "ESRS2-MDR-A": "ESRS 2 MDR-A Acciones y recursos relativos a las cuestiones de sostenibilidad materiales",
+    "ESRS2-MDR-M": "ESRS 2 MDR-M Indicadores relativos a las cuestiones de sostenibilidad materiales",
+    "ESRS2-MDR-T": "ESRS 2 MDR-T Objetivos relativos a las cuestiones de sostenibilidad materiales",
+    "E1-1_DR": "E1-1 Plan de transicion para la mitigacion del cambio climatico",
+    "E1-2_DR": "E1-2 Politicas relativas a la mitigacion del cambio climatico y la adaptacion",
+    "E1-3_DR": "E1-3 Acciones y recursos relativos a las politicas climaticas",
+    "E1-4_DR": "E1-4 Objetivos relativos a la mitigacion del cambio climatico y la adaptacion",
+    "E1-5_DR": "E1-5 Consumo de energia y combinacion energetica",
+    "E1-6_DR": "E1-6 Emisiones brutas de GEI de los alcances 1, 2, 3 y emisiones totales de GEI",
+    "E1-7_DR": "E1-7 Absorciones de GEI y proyectos de mitigacion financiados mediante creditos de carbono",
+    "E1-8_DR": "E1-8 Precio interno del carbono",
+    "E1-9_DR": "E1-9 Efectos financieros previstos de los riesgos fisicos y de transicion materiales",
+    "E2-1_DR": "E2-1 Politicas relativas a la contaminacion",
+    "E2-2_DR": "E2-2 Acciones y recursos relativos a la contaminacion",
+    "E2-3_DR": "E2-3 Objetivos relativos a la contaminacion",
+    "E2-4_DR": "E2-4 Contaminacion del aire, el agua y el suelo",
+    "E2-5_DR": "E2-5 Sustancias preocupantes y sustancias extremadamente preocupantes",
+    "E2-6_DR": "E2-6 Efectos financieros previstos de los riesgos de contaminacion",
+    "E3-1_DR": "E3-1 Politicas relativas a los recursos hidricos y marinos",
+    "E3-2_DR": "E3-2 Acciones y recursos relativos a los recursos hidricos y marinos",
+    "E3-3_DR": "E3-3 Objetivos relativos a los recursos hidricos y marinos",
+    "E3-4_DR": "E3-4 Consumo de agua",
+    "E3-5_DR": "E3-5 Efectos financieros previstos de los riesgos relacionados con los recursos hidricos y marinos",
+    "E4-1_DR": "E4-1 Plan de transicion para la biodiversidad y los ecosistemas",
+    "E4-2_DR": "E4-2 Politicas relativas a la biodiversidad y los ecosistemas",
+    "E4-3_DR": "E4-3 Acciones y recursos relativos a la biodiversidad y los ecosistemas",
+    "E4-4_DR": "E4-4 Objetivos relativos a la biodiversidad y los ecosistemas",
+    "E4-5_DR": "E4-5 Indicadores de repercusion relacionados con la evolucion de la biodiversidad y los ecosistemas",
+    "E4-6_DR": "E4-6 Efectos financieros previstos de los riesgos de biodiversidad y ecosistemas",
+    "E5-1_DR": "E5-1 Politicas relativas al uso de recursos y la economia circular",
+    "E5-2_DR": "E5-2 Acciones y recursos relativos al uso de recursos y la economia circular",
+    "E5-3_DR": "E5-3 Objetivos relativos al uso de recursos y la economia circular",
+    "E5-4_DR": "E5-4 Flujos entrantes de recursos",
+    "E5-5_DR": "E5-5 Flujos salientes de recursos",
+    "E5-6_DR": "E5-6 Efectos financieros previstos de los riesgos relacionados con los recursos",
+    "S1-1_DR": "S1-1 Politicas relativas a la plantilla propia",
+    "S1-6_DR": "S1-6 Caracteristicas de los empleados de la empresa",
+    "S1-9_DR": "S1-9 Indicadores de diversidad",
+    "S1-13_DR": "S1-13 Indicadores de formacion y desarrollo de competencias",
+    "S1-14_DR": "S1-14 Indicadores de salud y seguridad",
+    "S1-16_DR": "S1-16 Indicadores de remuneracion (brecha salarial y remuneracion total)",
+    "S1-17_DR": "S1-17 Incidentes, quejas y repercusiones graves relacionadas con los derechos humanos",
+    "S2-1_DR": "S2-1 Politicas relativas a los trabajadores de la cadena de valor",
+    "S2-4_DR": "S2-4 Acciones relativas a las repercusiones materiales sobre los trabajadores de la cadena de valor",
+    "S3-1_DR": "S3-1 Politicas relativas a las comunidades afectadas",
+    "S3-4_DR": "S3-4 Acciones relativas a las repercusiones materiales sobre las comunidades afectadas",
+    "S4-1_DR": "S4-1 Politicas relativas a los consumidores y usuarios finales",
+    "S4-4_DR": "S4-4 Acciones relativas a las repercusiones materiales sobre los consumidores y usuarios finales",
+    "G1-1_DR": "G1-1 Cultura empresarial y politicas de conducta empresarial",
+    "G1-2_DR": "G1-2 Gestion de las relaciones con los proveedores",
+    "G1-3_DR": "G1-3 Prevencion y deteccion de la corrupcion y el soborno",
+    "G1-4_DR": "G1-4 Incidentes de corrupcion y soborno",
+    "G1-5_DR": "G1-5 Influencia politica y actividades de cabildeo",
+    "G1-6_DR": "G1-6 Practicas de pago"
+  },
+  "unit_labels": {
+    "tCO2e": "toneladas de CO2 equivalente",
+    "MWh": "megavatios-hora",
+    "GJ": "gigajulios",
+    "m3": "metros cubicos",
+    "tonnes": "toneladas",
+    "kg": "kilogramos",
+    "hectares": "hectareas",
+    "count": "numero",
+    "percentage": "porcentaje",
+    "EUR": "euros",
+    "EUR_million": "millones de euros",
+    "hours": "horas",
+    "days": "dias",
+    "rate_per_million_hours": "tasa por millon de horas trabajadas",
+    "years": "anos",
+    "kWh": "kilovatios-hora",
+    "tCO2e_per_EUR_million": "toneladas de CO2 equivalente por millon de euros de facturacion",
+    "tCO2e_per_FTE": "toneladas de CO2 equivalente por ETC",
+    "m3_per_EUR_million": "metros cubicos por millon de euros de facturacion",
+    "ratio": "ratio",
+    "score": "puntuacion",
+    "boolean": "si/no"
+  },
+  "data_points": {
+    "ESRS2-BP1-1": {
+      "label": "Base de preparacion de la declaracion de sostenibilidad",
+      "description": "Descripcion de la base general de preparacion de la declaracion de sostenibilidad",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-BP1",
+      "mandatory": true
+    },
+    "ESRS2-BP1-2": {
+      "label": "Perimetro de consolidacion de la informacion de sostenibilidad",
+      "description": "Indicacion del perimetro de consolidacion para la informacion de sostenibilidad y las diferencias con las cuentas consolidadas",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-BP1",
+      "mandatory": true
+    },
+    "ESRS2-BP1-3": {
+      "label": "Normas ESRS aplicadas",
+      "description": "Lista de las normas ESRS aplicadas e indicacion de las normas consideradas no materiales",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-BP1",
+      "mandatory": true
+    },
+    "ESRS2-BP1-4": {
+      "label": "Periodo de referencia de la informacion de sostenibilidad",
+      "description": "Indicacion del periodo de referencia y su concordancia con el ejercicio fiscal",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-BP1",
+      "mandatory": true
+    },
+    "ESRS2-GOV1-1": {
+      "label": "Composicion de los organos de direccion",
+      "description": "Composicion de los organos de administracion, direccion y supervision y su diversidad",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-GOV1",
+      "mandatory": true
+    },
+    "ESRS2-GOV1-2": {
+      "label": "Responsabilidad de las cuestiones de sostenibilidad",
+      "description": "Indicacion de los organos y personas responsables de las cuestiones de sostenibilidad",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-GOV1",
+      "mandatory": true
+    },
+    "ESRS2-GOV3-1": {
+      "label": "Remuneracion y desempeno en materia de sostenibilidad",
+      "description": "Indicacion de la integracion del desempeno en materia de sostenibilidad en los sistemas de remuneracion",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-GOV3",
+      "mandatory": true
+    },
+    "ESRS2-GOV4-1": {
+      "label": "Declaracion sobre la diligencia debida",
+      "description": "Correspondencia de la informacion sobre la diligencia debida con los elementos fundamentales y los requisitos de divulgacion ESRS correspondientes",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-GOV4",
+      "mandatory": true
+    },
+    "ESRS2-SBM1-1": {
+      "label": "Descripcion del modelo de negocio",
+      "description": "Descripcion de los elementos esenciales del modelo de negocio y la cadena de valor",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-SBM1",
+      "mandatory": true
+    },
+    "ESRS2-SBM1-4": {
+      "label": "Numero de empleados",
+      "description": "Numero total de empleados (plantilla y equivalentes a tiempo completo) por ubicacion",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-SBM1",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "ESRS2-SBM1-5": {
+      "label": "Cifra de negocios neta",
+      "description": "Cifra de negocios neta durante el periodo de referencia",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-SBM1",
+      "mandatory": true,
+      "unit_label": "euros"
+    },
+    "ESRS2-SBM3-1": {
+      "label": "Repercusiones, riesgos y oportunidades materiales",
+      "description": "Descripcion de las repercusiones, riesgos y oportunidades materiales en materia de sostenibilidad",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-SBM3",
+      "mandatory": true
+    },
+    "ESRS2-IRO1-1": {
+      "label": "Proceso de identificacion de aspectos materiales",
+      "description": "Descripcion de los procesos de identificacion y evaluacion de las repercusiones, riesgos y oportunidades materiales en materia de sostenibilidad",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-IRO1",
+      "mandatory": true
+    },
+    "ESRS2-IRO1-2": {
+      "label": "Criterios de la evaluacion de materialidad",
+      "description": "Descripcion de los criterios y umbrales utilizados para la evaluacion de la doble materialidad",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-IRO1",
+      "mandatory": true
+    },
+    "ESRS2-IRO2-1": {
+      "label": "Requisitos de divulgacion no materiales",
+      "description": "Lista de los requisitos de divulgacion ESRS evaluados como no materiales y justificacion",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-IRO2",
+      "mandatory": true
+    },
+    "ESRS2-MDR-T-1": {
+      "label": "Objetivos de sostenibilidad definidos",
+      "description": "Descripcion de los objetivos de sostenibilidad medibles, con plazos y orientados a resultados",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "ESRS2-MDR-T",
+      "mandatory": true
+    },
+    "E1-1": {
+      "label": "Emisiones brutas de GEI del alcance 1",
+      "description": "Emisiones brutas totales de GEI del alcance 1 en toneladas de CO2 equivalente provenientes de fuentes propias o controladas",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-2": {
+      "label": "Emisiones brutas de GEI del alcance 2 (basadas en la ubicacion)",
+      "description": "Emisiones brutas totales de GEI del alcance 2 basadas en la ubicacion en toneladas de CO2 equivalente provenientes de electricidad, calor, vapor y refrigeracion adquiridos",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-2A": {
+      "label": "Emisiones brutas de GEI del alcance 2 (basadas en el mercado)",
+      "description": "Emisiones brutas totales de GEI del alcance 2 basadas en el mercado que reflejan los instrumentos contractuales (garantias de origen, PPA)",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3": {
+      "label": "Emisiones brutas de GEI del alcance 3",
+      "description": "Emisiones brutas totales de GEI del alcance 3 en las 15 categorias",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C1": {
+      "label": "Alcance 3 Categoria 1: Bienes y servicios adquiridos",
+      "description": "Emisiones de GEI provenientes de bienes y servicios adquiridos",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C2": {
+      "label": "Alcance 3 Categoria 2: Bienes de equipo",
+      "description": "Emisiones de GEI provenientes de bienes de equipo",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C3": {
+      "label": "Alcance 3 Categoria 3: Actividades relacionadas con combustibles y energia",
+      "description": "Emisiones de GEI de actividades ascendentes relacionadas con combustibles y energia",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C4": {
+      "label": "Alcance 3 Categoria 4: Transporte y distribucion ascendente",
+      "description": "Emisiones de GEI provenientes del transporte y la distribucion ascendente",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C5": {
+      "label": "Alcance 3 Categoria 5: Residuos generados en las operaciones",
+      "description": "Emisiones de GEI provenientes de la eliminacion y el tratamiento de residuos",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C6": {
+      "label": "Alcance 3 Categoria 6: Viajes de negocios",
+      "description": "Emisiones de GEI provenientes de los viajes de negocios",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C7": {
+      "label": "Alcance 3 Categoria 7: Desplazamiento de los empleados",
+      "description": "Emisiones de GEI provenientes del desplazamiento domicilio-trabajo de los empleados",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C8": {
+      "label": "Alcance 3 Categoria 8: Activos arrendados ascendentes",
+      "description": "Emisiones de GEI provenientes de activos arrendados ascendentes",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C9": {
+      "label": "Alcance 3 Categoria 9: Transporte y distribucion descendente",
+      "description": "Emisiones de GEI provenientes del transporte y la distribucion descendente",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C10": {
+      "label": "Alcance 3 Categoria 10: Procesamiento de productos vendidos",
+      "description": "Emisiones de GEI provenientes del procesamiento de productos vendidos",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C11": {
+      "label": "Alcance 3 Categoria 11: Uso de productos vendidos",
+      "description": "Emisiones de GEI provenientes del uso de productos vendidos",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C12": {
+      "label": "Alcance 3 Categoria 12: Fin de vida de productos vendidos",
+      "description": "Emisiones de GEI provenientes del tratamiento al final de su vida util de los productos vendidos",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C13": {
+      "label": "Alcance 3 Categoria 13: Activos arrendados descendentes",
+      "description": "Emisiones de GEI provenientes de activos arrendados descendentes",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C14": {
+      "label": "Alcance 3 Categoria 14: Franquicias",
+      "description": "Emisiones de GEI provenientes de franquicias",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-3-C15": {
+      "label": "Alcance 3 Categoria 15: Inversiones",
+      "description": "Emisiones de GEI provenientes de inversiones financieras",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-4": {
+      "label": "Emisiones totales de GEI",
+      "description": "Emisiones totales de gases de efecto invernadero (alcance 1 + alcance 2 + alcance 3)",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-5": {
+      "label": "Consumo total de energia",
+      "description": "Consumo total de energia de fuentes renovables y no renovables",
+      "standard": "E1",
+      "disclosure_requirement": "E1-5_DR",
+      "mandatory": true,
+      "unit_label": "megavatios-hora"
+    },
+    "E1-6": {
+      "label": "Consumo de energia renovable",
+      "description": "Consumo total de energia de fuentes renovables (solar, eolica, hidraulica, biomasa, geotermica)",
+      "standard": "E1",
+      "disclosure_requirement": "E1-5_DR",
+      "mandatory": true,
+      "unit_label": "megavatios-hora"
+    },
+    "E1-7": {
+      "label": "Porcentaje de energia renovable",
+      "description": "Porcentaje del consumo de energia renovable sobre el consumo total de energia",
+      "standard": "E1",
+      "disclosure_requirement": "E1-5_DR",
+      "mandatory": true,
+      "unit_label": "porcentaje"
+    },
+    "E1-8": {
+      "label": "Intensidad de GEI por facturacion",
+      "description": "Intensidad de las emisiones de GEI por unidad de cifra de negocios neta",
+      "standard": "E1",
+      "disclosure_requirement": "E1-6_DR",
+      "mandatory": false,
+      "unit_label": "toneladas de CO2 equivalente por millon de euros de facturacion"
+    },
+    "E1-9": {
+      "label": "Absorciones de GEI y creditos de carbono",
+      "description": "Absorciones de GEI y creditos de carbono provenientes de proyectos de mitigacion",
+      "standard": "E1",
+      "disclosure_requirement": "E1-7_DR",
+      "mandatory": true,
+      "unit_label": "toneladas de CO2 equivalente"
+    },
+    "E1-10": {
+      "label": "Precio interno del carbono",
+      "description": "Indicacion de si la empresa aplica un precio interno del carbono y su importe",
+      "standard": "E1",
+      "disclosure_requirement": "E1-8_DR",
+      "mandatory": false,
+      "unit_label": "euros por tonelada de CO2 equivalente"
+    },
+    "E1-11": {
+      "label": "Plan de transicion climatica",
+      "description": "Descripcion del plan de transicion para la mitigacion del cambio climatico, incluidos los hitos y las acciones",
+      "standard": "E1",
+      "disclosure_requirement": "E1-1_DR",
+      "mandatory": true
+    },
+    "E1-12": {
+      "label": "Objetivos climaticos",
+      "description": "Objetivos de reduccion de GEI (absolutos y de intensidad)",
+      "standard": "E1",
+      "disclosure_requirement": "E1-4_DR",
+      "mandatory": true
+    },
+    "E1-13": {
+      "label": "Efectos financieros de los riesgos fisicos climaticos",
+      "description": "Efectos financieros previstos de los riesgos fisicos materiales relacionados con el cambio climatico",
+      "standard": "E1",
+      "disclosure_requirement": "E1-9_DR",
+      "mandatory": true,
+      "unit_label": "euros"
+    },
+    "E1-14": {
+      "label": "Efectos financieros de los riesgos de transicion",
+      "description": "Efectos financieros previstos de los riesgos de transicion materiales",
+      "standard": "E1",
+      "disclosure_requirement": "E1-9_DR",
+      "mandatory": true,
+      "unit_label": "euros"
+    },
+    "E2-1": {
+      "label": "Emisiones de contaminantes atmosfericos",
+      "description": "Emisiones de contaminantes atmosfericos: NOx, SOx, particulas finas (PM2,5, PM10) y otros contaminantes significativos",
+      "standard": "E2",
+      "disclosure_requirement": "E2-4_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E2-2": {
+      "label": "Emisiones de sustancias que agotan la capa de ozono",
+      "description": "Emisiones totales de sustancias que agotan la capa de ozono (SAO)",
+      "standard": "E2",
+      "disclosure_requirement": "E2-4_DR",
+      "mandatory": true,
+      "unit_label": "kilogramos"
+    },
+    "E2-3": {
+      "label": "Emisiones al agua",
+      "description": "Vertidos totales de sustancias prioritarias y nutrientes a las masas de agua",
+      "standard": "E2",
+      "disclosure_requirement": "E2-4_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E2-4": {
+      "label": "Emisiones al suelo",
+      "description": "Vertidos de contaminantes al suelo",
+      "standard": "E2",
+      "disclosure_requirement": "E2-4_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E2-5": {
+      "label": "Sustancias preocupantes",
+      "description": "Produccion y uso de sustancias preocupantes (SoC) y sustancias extremadamente preocupantes (SVHC)",
+      "standard": "E2",
+      "disclosure_requirement": "E2-5_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E3-1": {
+      "label": "Consumo total de agua",
+      "description": "Consumo total de agua de todas las operaciones",
+      "standard": "E3",
+      "disclosure_requirement": "E3-4_DR",
+      "mandatory": true,
+      "unit_label": "metros cubicos"
+    },
+    "E3-2": {
+      "label": "Consumo de agua en zonas de estres hidrico",
+      "description": "Consumo de agua en zonas de estres hidrico alto o extremadamente alto",
+      "standard": "E3",
+      "disclosure_requirement": "E3-4_DR",
+      "mandatory": true,
+      "unit_label": "metros cubicos"
+    },
+    "E3-3": {
+      "label": "Extracciones de agua",
+      "description": "Extracciones totales de agua por fuente (aguas superficiales, aguas subterraneas, agua de mar, agua producida, agua de terceros)",
+      "standard": "E3",
+      "disclosure_requirement": "E3-4_DR",
+      "mandatory": false,
+      "unit_label": "metros cubicos"
+    },
+    "E3-4": {
+      "label": "Vertidos de agua",
+      "description": "Vertidos totales de agua a aguas superficiales, aguas subterraneas, mar y terceros",
+      "standard": "E3",
+      "disclosure_requirement": "E3-4_DR",
+      "mandatory": false,
+      "unit_label": "metros cubicos"
+    },
+    "E3-5": {
+      "label": "Reciclaje y reutilizacion de agua",
+      "description": "Volumen total de agua reciclada y reutilizada",
+      "standard": "E3",
+      "disclosure_requirement": "E3-4_DR",
+      "mandatory": false,
+      "unit_label": "metros cubicos"
+    },
+    "E4-1": {
+      "label": "Emplazamientos situados en o cerca de zonas sensibles para la biodiversidad",
+      "description": "Numero y superficie de los emplazamientos situados en o cerca de zonas protegidas y zonas de alto valor de biodiversidad",
+      "standard": "E4",
+      "disclosure_requirement": "E4-5_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "E4-2": {
+      "label": "Cambio de uso del suelo",
+      "description": "Extension del uso del suelo y del cambio de uso del suelo",
+      "standard": "E4",
+      "disclosure_requirement": "E4-5_DR",
+      "mandatory": true,
+      "unit_label": "hectareas"
+    },
+    "E4-3": {
+      "label": "Especies amenazadas afectadas por las operaciones",
+      "description": "Numero de especies de la lista roja de la UICN y de las listas nacionales de conservacion afectadas por las operaciones",
+      "standard": "E4",
+      "disclosure_requirement": "E4-5_DR",
+      "mandatory": false,
+      "unit_label": "numero"
+    },
+    "E5-1": {
+      "label": "Residuos totales generados",
+      "description": "Volumen total de residuos generados en toneladas",
+      "standard": "E5",
+      "disclosure_requirement": "E5-5_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E5-2": {
+      "label": "Residuos peligrosos",
+      "description": "Volumen total de residuos peligrosos generados",
+      "standard": "E5",
+      "disclosure_requirement": "E5-5_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E5-3": {
+      "label": "Residuos no peligrosos",
+      "description": "Volumen total de residuos no peligrosos generados",
+      "standard": "E5",
+      "disclosure_requirement": "E5-5_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E5-4": {
+      "label": "Residuos desviados de la eliminacion",
+      "description": "Volumen total de residuos desviados de la eliminacion (reciclados, reutilizados, compostados)",
+      "standard": "E5",
+      "disclosure_requirement": "E5-5_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "E5-5": {
+      "label": "Tasa de reciclaje de residuos",
+      "description": "Porcentaje de residuos reciclados",
+      "standard": "E5",
+      "disclosure_requirement": "E5-5_DR",
+      "mandatory": false,
+      "unit_label": "porcentaje"
+    },
+    "E5-6": {
+      "label": "Flujos entrantes de materiales",
+      "description": "Flujos entrantes totales de materiales (productos y materias primas, envases, otros)",
+      "standard": "E5",
+      "disclosure_requirement": "E5-5_DR",
+      "mandatory": true,
+      "unit_label": "toneladas"
+    },
+    "S1-1": {
+      "label": "Plantilla total",
+      "description": "Numero total de empleados (plantilla y equivalentes a tiempo completo)",
+      "standard": "S1",
+      "disclosure_requirement": "S1-6_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S1-2": {
+      "label": "Empleados por genero",
+      "description": "Numero de empleados por genero (hombres, mujeres, otros/no comunicado)",
+      "standard": "S1",
+      "disclosure_requirement": "S1-6_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S1-3": {
+      "label": "Empleados por region",
+      "description": "Numero de empleados por region y pais",
+      "standard": "S1",
+      "disclosure_requirement": "S1-6_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S1-4": {
+      "label": "Empleados por tipo de contrato",
+      "description": "Numero de empleados por tipo de contrato (indefinido, temporal)",
+      "standard": "S1",
+      "disclosure_requirement": "S1-6_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S1-5": {
+      "label": "Tasa de rotacion de personal",
+      "description": "Tasa de rotacion de personal",
+      "standard": "S1",
+      "disclosure_requirement": "S1-6_DR",
+      "mandatory": true,
+      "unit_label": "porcentaje"
+    },
+    "S1-6": {
+      "label": "Brecha salarial de genero",
+      "description": "Brecha salarial de genero (no ajustada)",
+      "standard": "S1",
+      "disclosure_requirement": "S1-16_DR",
+      "mandatory": true,
+      "unit_label": "porcentaje"
+    },
+    "S1-7": {
+      "label": "Horas de formacion por empleado",
+      "description": "Numero medio de horas de formacion por empleado al ano",
+      "standard": "S1",
+      "disclosure_requirement": "S1-13_DR",
+      "mandatory": true,
+      "unit_label": "horas"
+    },
+    "S1-8": {
+      "label": "Lesiones laborales",
+      "description": "Numero de lesiones laborales",
+      "standard": "S1",
+      "disclosure_requirement": "S1-14_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S1-9": {
+      "label": "Fallecimientos laborales",
+      "description": "Numero de fallecimientos relacionados con el trabajo",
+      "standard": "S1",
+      "disclosure_requirement": "S1-14_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S1-10": {
+      "label": "Indice de frecuencia de accidentes con baja laboral",
+      "description": "Indice de frecuencia de accidentes laborales con baja por millon de horas trabajadas",
+      "standard": "S1",
+      "disclosure_requirement": "S1-14_DR",
+      "mandatory": true,
+      "unit_label": "tasa por millon de horas trabajadas"
+    },
+    "S2-1": {
+      "label": "Trabajadores de la cadena de valor en riesgo de trabajo infantil",
+      "description": "Numero de trabajadores de la cadena de valor expuestos a un riesgo significativo de trabajo infantil",
+      "standard": "S2",
+      "disclosure_requirement": "S2-4_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S2-2": {
+      "label": "Trabajadores de la cadena de valor en riesgo de trabajo forzoso",
+      "description": "Numero de trabajadores de la cadena de valor expuestos a un riesgo significativo de trabajo forzoso",
+      "standard": "S2",
+      "disclosure_requirement": "S2-4_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S3-1": {
+      "label": "Comunidades afectadas por las operaciones",
+      "description": "Numero de comunidades afectadas y partes interesadas",
+      "standard": "S3",
+      "disclosure_requirement": "S3-4_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S3-2": {
+      "label": "Pueblos indigenas afectados",
+      "description": "Numero de pueblos indigenas y comunidades afectados por las operaciones",
+      "standard": "S3",
+      "disclosure_requirement": "S3-4_DR",
+      "mandatory": false,
+      "unit_label": "numero"
+    },
+    "S4-1": {
+      "label": "Incidentes de seguridad de los productos",
+      "description": "Numero de incidentes de incumplimiento relativos a los impactos en la salud y la seguridad de los productos y servicios",
+      "standard": "S4",
+      "disclosure_requirement": "S4-4_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S4-2": {
+      "label": "Retiradas de productos",
+      "description": "Numero de retiradas de productos",
+      "standard": "S4",
+      "disclosure_requirement": "S4-4_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "S4-3": {
+      "label": "Quejas sobre proteccion de datos",
+      "description": "Numero de quejas fundamentadas relativas a violaciones de la privacidad y la seguridad de los datos de los clientes",
+      "standard": "S4",
+      "disclosure_requirement": "S4-4_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "G1-1": {
+      "label": "Condenas por corrupcion y soborno",
+      "description": "Numero de condenas y multas por violaciones de las leyes anticorrupcion y antisoborno",
+      "standard": "G1",
+      "disclosure_requirement": "G1-4_DR",
+      "mandatory": true,
+      "unit_label": "numero"
+    },
+    "G1-2": {
+      "label": "Formacion anticorrupcion",
+      "description": "Porcentaje de empleados formados en politicas anticorrupcion",
+      "standard": "G1",
+      "disclosure_requirement": "G1-3_DR",
+      "mandatory": true,
+      "unit_label": "porcentaje"
+    },
+    "G1-3": {
+      "label": "Contribuciones politicas",
+      "description": "Valor monetario total de las contribuciones politicas",
+      "standard": "G1",
+      "disclosure_requirement": "G1-5_DR",
+      "mandatory": true,
+      "unit_label": "euros"
+    },
+    "G1-4": {
+      "label": "Multas por incumplimiento normativo",
+      "description": "Valor monetario total de las multas y sanciones significativas por incumplimiento de leyes y reglamentos",
+      "standard": "G1",
+      "disclosure_requirement": "G1-6_DR",
+      "mandatory": true,
+      "unit_label": "euros"
+    },
+    "G1-5": {
+      "label": "Practicas de pago",
+      "description": "Plazo medio de pago y porcentaje de pagos atrasados a proveedores",
+      "standard": "G1",
+      "disclosure_requirement": "G1-6_DR",
+      "mandatory": true,
+      "unit_label": "dias"
+    }
+  },
+  "common_labels": {
+    "reporting_period": "Periodo de referencia",
+    "fiscal_year": "Ejercicio fiscal (EF)",
+    "base_year": "Ano base",
+    "target_year": "Ano objetivo",
+    "current_value": "Valor actual",
+    "previous_value": "Valor del ano anterior",
+    "target_value": "Valor objetivo",
+    "progress": "Progreso",
+    "methodology": "Metodologia",
+    "data_source": "Fuente de datos",
+    "verification_status": "Estado de verificacion",
+    "materiality": "Materialidad",
+    "double_materiality": "Doble materialidad",
+    "impact_materiality": "Materialidad de impacto",
+    "financial_materiality": "Materialidad financiera",
+    "mandatory": "Divulgacion obligatoria",
+    "voluntary": "Divulgacion voluntaria",
+    "not_applicable": "No aplicable",
+    "not_material": "No material",
+    "scope_1": "Alcance 1 (emisiones directas)",
+    "scope_2": "Alcance 2 (emisiones indirectas energeticas)",
+    "scope_3": "Alcance 3 (otras emisiones indirectas)",
+    "location_based": "Basado en la ubicacion",
+    "market_based": "Basado en el mercado",
+    "absolute_target": "Objetivo absoluto",
+    "intensity_target": "Objetivo de intensidad",
+    "short_term": "Corto plazo (hasta 2025)",
+    "medium_term": "Medio plazo (hasta 2030)",
+    "long_term": "Largo plazo (hasta 2050)",
+    "year_on_year_change": "Variacion interanual",
+    "trend": "Tendencia",
+    "increasing": "Al alza",
+    "decreasing": "A la baja",
+    "stable": "Estable",
+    "data_quality": "Calidad de los datos",
+    "high_quality": "Alta calidad",
+    "medium_quality": "Calidad media",
+    "low_quality": "Baja calidad",
+    "estimated": "Estimado",
+    "measured": "Medido",
+    "calculated": "Calculado",
+    "assured": "Verificado",
+    "limited_assurance": "Seguridad limitada",
+    "reasonable_assurance": "Seguridad razonable",
+    "not_assured": "No verificado",
+    "consolidated": "Consolidado",
+    "parent_company": "Sociedad matriz",
+    "subsidiary": "Filial",
+    "joint_venture": "Empresa conjunta",
+    "value_chain": "Cadena de valor",
+    "upstream": "Ascendente",
+    "downstream": "Descendente",
+    "own_operations": "Operaciones propias"
+  }
+}

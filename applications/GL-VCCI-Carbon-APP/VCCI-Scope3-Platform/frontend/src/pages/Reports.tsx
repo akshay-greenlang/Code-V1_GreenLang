@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -19,7 +20,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { GridColDef } from '@mui/x-data-grid';
-import { Add, Download, Delete, Refresh } from '@mui/icons-material';
+import { Add, Download, Delete, Refresh, Quiz as QuizIcon } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchReports, generateReport, downloadReport, deleteReport, setPage, setPageSize } from '../store/slices/reportsSlice';
 import DataTable from '../components/DataTable';
@@ -29,6 +30,7 @@ import type { ReportRequest, Report } from '../types';
 
 const Reports: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { reports, pagination, loading, generating, error } = useAppSelector((state) => state.reports);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reportRequest, setReportRequest] = useState<Partial<ReportRequest>>({
@@ -151,6 +153,14 @@ const Reports: React.FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Reports</Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<QuizIcon />}
+            onClick={() => navigate('/cdp')}
+          >
+            CDP Questionnaire
+          </Button>
           <Button
             variant="outlined"
             startIcon={<Refresh />}

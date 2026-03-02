@@ -1,0 +1,298 @@
+{
+  "metadata": {
+    "locale": "es",
+    "version": "1.1.0",
+    "language": "Espanol",
+    "description": "Glosario de terminos CSRD/ESRS en espanol con la terminologia oficial de la UE"
+  },
+  "terms": {
+    "csrd": {
+      "term": "CSRD (Corporate Sustainability Reporting Directive)",
+      "definition": "Directiva (UE) 2022/2464 por la que se modifican el Reglamento (UE) n. 537/2014 y las Directivas 2004/109/CE, 2006/43/CE y 2013/34/UE en lo que respecta a la presentacion de informacion sobre sostenibilidad por parte de las empresas.",
+      "abbreviation": "CSRD",
+      "category": "regulation"
+    },
+    "esrs": {
+      "term": "ESRS (European Sustainability Reporting Standards)",
+      "definition": "Normas europeas de informacion en materia de sostenibilidad, elaboradas por EFRAG y adoptadas mediante el Reglamento Delegado (UE) 2023/2772.",
+      "abbreviation": "ESRS",
+      "category": "standard"
+    },
+    "efrag": {
+      "term": "EFRAG (European Financial Reporting Advisory Group)",
+      "definition": "Grupo consultivo europeo en materia de informacion financiera; ha elaborado las recomendaciones tecnicas para las ESRS.",
+      "abbreviation": "EFRAG",
+      "category": "organization"
+    },
+    "double_materiality": {
+      "term": "Doble materialidad",
+      "definition": "Principio de evaluacion simultanea de la materialidad de impacto (perspectiva inside-out: repercusiones de la empresa sobre las personas y el medio ambiente) y la materialidad financiera (perspectiva outside-in: repercusiones de los aspectos de sostenibilidad sobre la empresa).",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "impact_materiality": {
+      "term": "Materialidad de impacto",
+      "definition": "Un aspecto de sostenibilidad es material desde el punto de vista del impacto cuando esta vinculado a repercusiones reales o potenciales, positivas o negativas, de la empresa sobre las personas y el medio ambiente.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "financial_materiality": {
+      "term": "Materialidad financiera",
+      "definition": "Un aspecto de sostenibilidad es material desde el punto de vista financiero cuando genera o podria generar riesgos u oportunidades financieros que influyan de manera significativa en la situacion financiera, los resultados, los flujos de efectivo o el acceso a la financiacion de la empresa.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "sustainability_statement": {
+      "term": "Declaracion de sostenibilidad",
+      "definition": "Seccion obligatoria del informe de gestion en la que las empresas informan sobre los aspectos de sostenibilidad de conformidad con la CSRD.",
+      "abbreviation": null,
+      "category": "reporting"
+    },
+    "sustainability_report": {
+      "term": "Informe de sostenibilidad",
+      "definition": "Informe integral sobre el desempeno en materia de sostenibilidad de una empresa, elaborado de conformidad con las ESRS.",
+      "abbreviation": null,
+      "category": "reporting"
+    },
+    "ghg_emissions": {
+      "term": "Emisiones de gases de efecto invernadero",
+      "definition": "Emisiones de los siete gases de efecto invernadero contemplados en el Protocolo de Kioto (CO2, CH4, N2O, HFC, PFC, SF6, NF3), expresadas en toneladas de CO2 equivalente.",
+      "abbreviation": "Emisiones de GEI",
+      "category": "environment"
+    },
+    "scope_1": {
+      "term": "Emisiones del alcance 1 (emisiones directas)",
+      "definition": "Emisiones directas de gases de efecto invernadero provenientes de fuentes que son propiedad de la empresa o estan controladas por ella (combustion fija y movil, emisiones de procesos, emisiones fugitivas).",
+      "abbreviation": "Alcance 1",
+      "category": "environment"
+    },
+    "scope_2": {
+      "term": "Emisiones del alcance 2 (emisiones indirectas energeticas)",
+      "definition": "Emisiones indirectas de gases de efecto invernadero provenientes de la generacion de energia adquirida (electricidad, calor, vapor y refrigeracion).",
+      "abbreviation": "Alcance 2",
+      "category": "environment"
+    },
+    "scope_3": {
+      "term": "Emisiones del alcance 3 (otras emisiones indirectas)",
+      "definition": "Todas las demas emisiones indirectas de gases de efecto invernadero en la cadena de valor, distribuidas en 15 categorias (ascendente y descendente).",
+      "abbreviation": "Alcance 3",
+      "category": "environment"
+    },
+    "tco2e": {
+      "term": "Toneladas de CO2 equivalente",
+      "definition": "Unidad de medida de las emisiones de gases de efecto invernadero que convierte los distintos gases en una unidad comun mediante su potencial de calentamiento global (PCG).",
+      "abbreviation": "t CO2e",
+      "category": "environment"
+    },
+    "ghg_protocol": {
+      "term": "GHG Protocol (Greenhouse Gas Protocol)",
+      "definition": "Norma internacional para la contabilizacion y la presentacion de informes de emisiones de gases de efecto invernadero, que comprende el Corporate Standard, el Scope 2 Guidance y el Corporate Value Chain Standard.",
+      "abbreviation": "GHG Protocol",
+      "category": "standard"
+    },
+    "location_based": {
+      "term": "Enfoque basado en la ubicacion",
+      "definition": "Metodo de calculo de las emisiones del alcance 2 basado en los factores de emision promedio de la red electrica en el lugar de consumo.",
+      "abbreviation": null,
+      "category": "methodology"
+    },
+    "market_based": {
+      "term": "Enfoque basado en el mercado",
+      "definition": "Metodo de calculo de las emisiones del alcance 2 basado en los instrumentos contractuales (garantias de origen, contratos de suministro electrico, PPA).",
+      "abbreviation": null,
+      "category": "methodology"
+    },
+    "transition_plan": {
+      "term": "Plan de transicion",
+      "definition": "Plan de la empresa para la transicion hacia una economia sostenible, incluida la compatibilidad con el objetivo de 1,5 grados centigrados del Acuerdo de Paris.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "climate_change_mitigation": {
+      "term": "Mitigacion del cambio climatico",
+      "definition": "Acciones destinadas a reducir las emisiones de gases de efecto invernadero y a limitar el cambio climatico.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "climate_change_adaptation": {
+      "term": "Adaptacion al cambio climatico",
+      "definition": "Acciones destinadas a adaptarse a los efectos del cambio climatico y a reducir la vulnerabilidad.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "physical_risk": {
+      "term": "Riesgo fisico",
+      "definition": "Riesgo derivado de los efectos fisicos del cambio climatico (riesgos agudos como fenomenos meteorologicos extremos y riesgos cronicos como el aumento de las temperaturas).",
+      "abbreviation": null,
+      "category": "risk"
+    },
+    "transition_risk": {
+      "term": "Riesgo de transicion",
+      "definition": "Riesgo derivado de la transicion hacia una economia con bajas emisiones de carbono (riesgos regulatorios, tecnologicos, de mercado y reputacionales).",
+      "abbreviation": null,
+      "category": "risk"
+    },
+    "sbti": {
+      "term": "Science Based Targets initiative (SBTi)",
+      "definition": "Iniciativa de validacion de objetivos climaticos basados en la ciencia de las empresas de conformidad con el Acuerdo de Paris.",
+      "abbreviation": "SBTi",
+      "category": "organization"
+    },
+    "paris_agreement": {
+      "term": "Acuerdo de Paris",
+      "definition": "Acuerdo internacional sobre el clima de 2015 que tiene como objetivo limitar el calentamiento global a un nivel significativamente inferior a 2 grados centigrados respecto a los niveles preindustriales.",
+      "abbreviation": null,
+      "category": "regulation"
+    },
+    "eu_taxonomy": {
+      "term": "Taxonomia de la UE",
+      "definition": "Sistema de clasificacion de las actividades economicas ambientalmente sostenibles de la UE conforme al Reglamento (UE) 2020/852.",
+      "abbreviation": null,
+      "category": "regulation"
+    },
+    "circular_economy": {
+      "term": "Economia circular",
+      "definition": "Modelo economico orientado a evitar los residuos, reutilizar los recursos y regenerar los sistemas naturales.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "biodiversity": {
+      "term": "Biodiversidad",
+      "definition": "Diversidad de la vida a todos los niveles: diversidad genetica, diversidad de especies y diversidad de ecosistemas.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "water_stress": {
+      "term": "Estres hidrico",
+      "definition": "Situacion en la que las extracciones de agua representan una proporcion significativa de los recursos de agua dulce disponibles, definida segun la herramienta WRI Aqueduct.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "substances_of_concern": {
+      "term": "Sustancias preocupantes",
+      "definition": "Sustancias que pueden tener efectos nocivos sobre la salud humana o el medio ambiente, incluidas las SVHC conforme al reglamento REACH.",
+      "abbreviation": "SoC/SVHC",
+      "category": "environment"
+    },
+    "own_workforce": {
+      "term": "Plantilla propia",
+      "definition": "Todos los trabajadores de la empresa, incluidos los empleados permanentes, los trabajadores temporales y los trabajadores no asalariados (por ejemplo, trabajadores de empresas de trabajo temporal).",
+      "abbreviation": null,
+      "category": "social"
+    },
+    "value_chain_workers": {
+      "term": "Trabajadores de la cadena de valor",
+      "definition": "Trabajadores de la cadena de valor ascendente y descendente que no forman parte de la plantilla propia de la empresa.",
+      "abbreviation": null,
+      "category": "social"
+    },
+    "gender_pay_gap": {
+      "term": "Brecha salarial de genero",
+      "definition": "Diferencia entre el salario bruto por hora medio de hombres y mujeres, expresada como porcentaje del salario medio masculino.",
+      "abbreviation": "BSG",
+      "category": "social"
+    },
+    "ltifr": {
+      "term": "Indice de frecuencia de accidentes con baja laboral",
+      "definition": "Numero de accidentes laborales con baja por millon de horas trabajadas.",
+      "abbreviation": "IF",
+      "category": "social"
+    },
+    "due_diligence": {
+      "term": "Diligencia debida",
+      "definition": "Proceso sistematico de identificacion, prevencion, mitigacion y rendicion de cuentas respecto a las repercusiones negativas reales y potenciales sobre los derechos humanos y el medio ambiente.",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "stakeholder": {
+      "term": "Parte interesada",
+      "definition": "Individuo o grupo que puede influir en las actividades de la empresa o verse afectado por ellas.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "value_chain": {
+      "term": "Cadena de valor",
+      "definition": "Conjunto de actividades, recursos y relaciones vinculados al modelo de negocio y al entorno externo de la empresa.",
+      "abbreviation": null,
+      "category": "concept"
+    },
+    "anti_corruption": {
+      "term": "Lucha contra la corrupcion",
+      "definition": "Medidas y politicas destinadas a prevenir, detectar y combatir la corrupcion y el soborno.",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "whistleblowing": {
+      "term": "Proteccion de denunciantes",
+      "definition": "Mecanismos de proteccion de las personas que denuncian infracciones de leyes o reglamentos dentro de la empresa (proteccion de denunciantes conforme a la Directiva (UE) 2019/1937).",
+      "abbreviation": null,
+      "category": "governance"
+    },
+    "emission_factor": {
+      "term": "Factor de emision",
+      "definition": "Coeficiente que indica la cantidad de gases de efecto invernadero emitidos por unidad de actividad (por ejemplo, kg de CO2 por kWh de electricidad).",
+      "abbreviation": "FE",
+      "category": "methodology"
+    },
+    "limited_assurance": {
+      "term": "Seguridad limitada",
+      "definition": "Nivel de verificacion en el que el verificador emite una conclusion en forma negativa (no se han identificado anomalias significativas), basada en procedimientos de verificacion menos exhaustivos que la seguridad razonable.",
+      "abbreviation": null,
+      "category": "assurance"
+    },
+    "reasonable_assurance": {
+      "term": "Seguridad razonable",
+      "definition": "Nivel de verificacion mas elevado, en el que el verificador emite una conclusion en forma positiva (la informacion esta libre de anomalias significativas).",
+      "abbreviation": null,
+      "category": "assurance"
+    },
+    "xbrl": {
+      "term": "XBRL (eXtensible Business Reporting Language)",
+      "definition": "Formato de informes digitales para la puesta a disposicion de informacion financiera y de sostenibilidad legible por maquina, requerido para la presentacion de informes CSRD.",
+      "abbreviation": "XBRL/iXBRL",
+      "category": "technology"
+    },
+    "net_zero": {
+      "term": "Cero emisiones netas (neutralidad climatica)",
+      "definition": "Estado en el que las emisiones residuales de gases de efecto invernadero se compensan integramente mediante absorciones de la atmosfera.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "decarbonization": {
+      "term": "Descarbonizacion",
+      "definition": "Proceso de reduccion de la intensidad de carbono de la economia mediante la transicion a tecnologias y practicas con bajas emisiones de carbono.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "fte": {
+      "term": "Equivalente a tiempo completo (ETC)",
+      "definition": "Unidad de medida de la capacidad de trabajo, en la que un puesto a tiempo completo se cuenta como 1,0 ETC.",
+      "abbreviation": "ETC",
+      "category": "social"
+    },
+    "esg": {
+      "term": "ESG (Medioambiental, Social y Gobernanza)",
+      "definition": "Abreviatura que designa las tres dimensiones de la sostenibilidad: Medioambiental (Environmental), Social y Gobernanza (Governance).",
+      "abbreviation": "ESG",
+      "category": "concept"
+    },
+    "carbon_credit": {
+      "term": "Credito de carbono",
+      "definition": "Derecho negociable que representa una tonelada de CO2 equivalente de emisiones de gases de efecto invernadero evitadas o eliminadas.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "carbon_pricing": {
+      "term": "Tarificacion del carbono",
+      "definition": "Mecanismo de tarificacion de las emisiones de gases de efecto invernadero, ya sea mediante sistemas de comercio de emisiones (RCDE) o impuestos al carbono.",
+      "abbreviation": null,
+      "category": "environment"
+    },
+    "gwp": {
+      "term": "Potencial de calentamiento global (PCG)",
+      "definition": "Medida de la contribucion relativa de un gas de efecto invernadero al calentamiento global en comparacion con el CO2 durante un periodo determinado (generalmente 100 anos).",
+      "abbreviation": "PCG",
+      "category": "environment"
+    }
+  }
+}

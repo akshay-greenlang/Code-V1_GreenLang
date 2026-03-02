@@ -34,9 +34,13 @@ License: MIT
 """
 
 import asyncio
+import hashlib
 import json
 import logging
+import math
 import os
+import re
+from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -248,6 +252,34 @@ class LLMClient:
 
 
 # ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
+
+def _flatten_dict(d: Dict[str, Any], parent_key: str = "", sep: str = ".") -> Dict[str, str]:
+    """
+    Recursively flatten a nested dictionary into dot-separated key-value pairs.
+
+    Args:
+        d: Dictionary to flatten
+        parent_key: Prefix for nested keys
+        sep: Separator between key levels
+
+    Returns:
+        Flat dictionary with string keys and string values
+    """
+    items: List[Tuple[str, str]] = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if isinstance(v, dict):
+            items.extend(_flatten_dict(v, new_key, sep).items())
+        elif isinstance(v, list):
+            items.append((new_key, " ".join(str(i) for i in v)))
+        else:
+            items.append((new_key, str(v)))
+    return dict(items)
+
+
+# ============================================================================
 # RAG SYSTEM (Using GreenLang Infrastructure)
 # ============================================================================
 
@@ -300,34 +332,391 @@ class RAGSystem:
             logger.warning("Falling back to simple keyword-based retrieval")
             self.rag_engine = None
 
-    def _index_documents(self):
-        """Index documents into RAG engine (placeholder for now)."""
-        # NOTE: Document indexing implementation pending
-        # When implementing:
-        # 1. Convert dictionary documents to RAGEngine document format
-        # 2. Call RAGEngine.ingest_document() for each document
-        # 3. Create embeddings for semantic search
-        # 4. Store in vector database (Weaviate)
-        # 5. Track indexing statistics
-        # Example:
-        #   if self.rag_engine:
-        #       for doc_type, docs in self.documents.items():
-        #           for doc in docs:
-        #               # Convert to RAGEngine format
-        #               rag_doc = {
-        #                   "content": doc.get("content", ""),
-        #                   "metadata": {
-        #                       "type": doc_type,
-        #                       "source": doc.get("source"),
-        #                       "date": doc.get("date")
-        #                   }
-        #               }
-        #               # Ingest into RAG engine
-        #               self.rag_engine.ingest_document(rag_doc)
-        #       logger.info(f"Indexed {len(self.documents)} documents into RAG engine")
+    # ------------------------------------------------------------------
+    # Tokenization helpers (used for inverted index and keyword search)
+    # ------------------------------------------------------------------
 
-        # Placeholder - replace with actual RAGEngine integration
-        pass
+    @staticmethod
+    def _tokenize(text: str) -> List[str]:
+        """
+        Tokenize text into lowercase alphanumeric tokens.
+
+        Args:
+            text: Raw text string
+
+        Returns:
+            List of lowercase tokens
+        """
+        return re.findall(r"[a-z0-9]+", text.lower())
+
+    @staticmethod
+    def _compute_tf(tokens: List[str]) -> Dict[str, float]:
+        """
+        Compute term frequency for a token list.
+
+        Args:
+            tokens: List of tokens
+
+        Returns:
+            Dict mapping token to its term frequency
+        """
+        counts = Counter(tokens)
+        total = len(tokens) if tokens else 1
+        return {t: c / total for t, c in counts.items()}
+
+    # ------------------------------------------------------------------
+    # Document content extraction
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _extract_text(document: Dict[str, Any]) -> str:
+        """
+        Extract searchable text content from a document dictionary.
+
+        Supports document types: PDF (pre-extracted text), DOCX (pre-extracted),
+        CSV (row serialization), JSON (recursive key-value flattening), and
+        plain text.
+
+        Args:
+            document: Document dictionary with at least a "content" key.
+                      Optionally contains "doc_type" to hint extraction.
+
+        Returns:
+            Extracted plain-text string
+        """
+        content = document.get("content", "")
+        doc_type = document.get("doc_type", document.get("type", "text")).lower()
+
+        # For PDF/DOCX the intake pipeline should already have extracted text.
+        # If content is a file path, we cannot read it here -- return as-is.
+        if doc_type in ("pdf", "docx", "text", "stakeholder_input"):
+            return str(content)
+
+        # CSV: if content is a list of rows, join them
+        if doc_type == "csv":
+            if isinstance(content, list):
+                return " ".join(
+                    " ".join(str(v) for v in row.values()) if isinstance(row, dict) else str(row)
+                    for row in content
+                )
+            return str(content)
+
+        # JSON: recursively flatten
+        if doc_type == "json":
+            if isinstance(content, dict):
+                return " ".join(f"{k} {v}" for k, v in _flatten_dict(content).items())
+            if isinstance(content, list):
+                parts = []
+                for item in content:
+                    if isinstance(item, dict):
+                        parts.append(" ".join(f"{k} {v}" for k, v in _flatten_dict(item).items()))
+                    else:
+                        parts.append(str(item))
+                return " ".join(parts)
+            return str(content)
+
+        return str(content)
+
+    # ------------------------------------------------------------------
+    # Indexing
+    # ------------------------------------------------------------------
+
+    def _index_documents(self) -> None:
+        """
+        Index documents for retrieval.
+
+        Performs the following steps:
+        1. Extract text content from each document (PDF, DOCX, CSV, JSON, text)
+        2. Attempt to ingest into GreenLang RAGEngine for vector search
+        3. Build an inverted index for keyword-based fallback search
+        4. Compute IDF weights across the corpus
+
+        The inverted index enables fast keyword retrieval when the RAGEngine
+        is unavailable or returns no results (hybrid scoring).
+        """
+        if not self.documents:
+            logger.info("No documents to index")
+            return
+
+        indexed_count = 0
+        rag_indexed = 0
+
+        # Data structures for inverted index
+        self._doc_texts: List[str] = []
+        self._doc_tokens: List[List[str]] = []
+        self._doc_tf: List[Dict[str, float]] = []
+        self._inverted_index: Dict[str, List[int]] = defaultdict(list)
+        self._idf: Dict[str, float] = {}
+
+        for idx, doc in enumerate(self.documents):
+            try:
+                # Step 1: extract text
+                text = self._extract_text(doc)
+                self._doc_texts.append(text)
+
+                # Step 2: tokenize and compute TF
+                tokens = self._tokenize(text)
+                self._doc_tokens.append(tokens)
+                tf = self._compute_tf(tokens)
+                self._doc_tf.append(tf)
+
+                # Step 3: populate inverted index
+                for token in set(tokens):
+                    self._inverted_index[token].append(idx)
+
+                indexed_count += 1
+
+                # Step 4: ingest into RAGEngine if available
+                if self.rag_engine is not None:
+                    try:
+                        doc_meta = DocMeta(
+                            doc_id=doc.get("id", f"doc_{idx}"),
+                            source=doc.get("source", "unknown"),
+                            doc_type=doc.get("doc_type", doc.get("type", "text")),
+                        )
+                        self.rag_engine.ingest_document(
+                            text=text,
+                            metadata=doc_meta,
+                            collection="stakeholder_input",
+                        )
+                        rag_indexed += 1
+                    except Exception as e:
+                        logger.debug(f"RAGEngine ingest failed for doc {idx}: {e}")
+
+            except Exception as e:
+                logger.warning(f"Failed to index document {idx}: {e}")
+                # Append empty placeholders so indices stay aligned
+                self._doc_texts.append("")
+                self._doc_tokens.append([])
+                self._doc_tf.append({})
+
+        # Step 5: compute IDF across the corpus
+        n_docs = max(len(self.documents), 1)
+        for token, posting_list in self._inverted_index.items():
+            df = len(posting_list)
+            self._idf[token] = math.log((n_docs + 1) / (df + 1)) + 1.0  # smoothed IDF
+
+        logger.info(
+            f"Indexed {indexed_count}/{len(self.documents)} documents "
+            f"(inverted index terms: {len(self._inverted_index)}, "
+            f"RAGEngine: {rag_indexed})"
+        )
+
+    # ------------------------------------------------------------------
+    # Retrieval
+    # ------------------------------------------------------------------
+
+    def search_relevant_context(
+        self,
+        query: str,
+        top_k: int = 5,
+        filter_type: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Search for relevant document context using hybrid scoring.
+
+        Combines semantic search (via RAGEngine when available) with
+        keyword-based TF-IDF scoring using Reciprocal Rank Fusion (RRF).
+
+        Args:
+            query: Natural-language search query
+            top_k: Maximum number of results to return
+            filter_type: Optional document type filter (e.g., "stakeholder_input")
+
+        Returns:
+            List of result dicts sorted by relevance, each containing:
+            - content: matched document text
+            - type: document type
+            - source: document source identifier
+            - relevance_score: combined relevance score (0-1)
+            - match_method: "hybrid", "semantic", or "keyword"
+        """
+        semantic_results = self._search_semantic(query, top_k=top_k * 2, filter_type=filter_type)
+        keyword_results = self._search_keyword(query, top_k=top_k * 2, filter_type=filter_type)
+
+        # Reciprocal Rank Fusion (k=60 per standard RRF practice)
+        rrf_k = 60
+        combined_scores: Dict[int, float] = defaultdict(float)
+
+        for rank, (doc_idx, _score) in enumerate(semantic_results):
+            combined_scores[doc_idx] += 1.0 / (rrf_k + rank + 1)
+
+        for rank, (doc_idx, _score) in enumerate(keyword_results):
+            combined_scores[doc_idx] += 1.0 / (rrf_k + rank + 1)
+
+        # Sort by combined RRF score descending
+        ranked = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
+
+        # Determine match method per result
+        semantic_set = {idx for idx, _ in semantic_results}
+        keyword_set = {idx for idx, _ in keyword_results}
+
+        results: List[Dict[str, Any]] = []
+        max_score = ranked[0][1] if ranked else 1.0
+
+        for doc_idx, score in ranked[:top_k]:
+            if doc_idx < 0 or doc_idx >= len(self.documents):
+                continue
+
+            doc = self.documents[doc_idx]
+
+            if doc_idx in semantic_set and doc_idx in keyword_set:
+                match_method = "hybrid"
+            elif doc_idx in semantic_set:
+                match_method = "semantic"
+            else:
+                match_method = "keyword"
+
+            results.append({
+                "content": self._doc_texts[doc_idx] if doc_idx < len(self._doc_texts) else str(doc.get("content", "")),
+                "type": doc.get("type", filter_type or "unknown"),
+                "source": doc.get("source", doc.get("id", f"doc_{doc_idx}")),
+                "relevance_score": round(score / max_score, 4) if max_score > 0 else 0.0,
+                "match_method": match_method,
+            })
+
+        logger.info(
+            f"search_relevant_context: query='{query[:60]}...' "
+            f"returned {len(results)} results (semantic={len(semantic_results)}, "
+            f"keyword={len(keyword_results)})"
+        )
+        return results
+
+    def _search_semantic(
+        self,
+        query: str,
+        top_k: int = 10,
+        filter_type: Optional[str] = None
+    ) -> List[Tuple[int, float]]:
+        """
+        Semantic search using GreenLang RAGEngine embeddings.
+
+        Args:
+            query: Search query
+            top_k: Number of results
+            filter_type: Optional document type filter
+
+        Returns:
+            List of (doc_index, score) tuples
+        """
+        if self.rag_engine is None:
+            return []
+
+        try:
+            # Run async query synchronously
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            result = loop.run_until_complete(
+                self.rag_engine.query(
+                    query=query,
+                    collection="stakeholder_input",
+                    top_k=top_k,
+                )
+            )
+
+            # Map RAGEngine results back to document indices
+            doc_id_to_idx = {}
+            for idx, doc in enumerate(self.documents):
+                doc_id = doc.get("id", f"doc_{idx}")
+                doc_id_to_idx[doc_id] = idx
+
+            results: List[Tuple[int, float]] = []
+            for citation in result.citations:
+                doc_idx = doc_id_to_idx.get(citation.doc_id)
+                if doc_idx is not None:
+                    if filter_type and self.documents[doc_idx].get("type") != filter_type:
+                        continue
+                    results.append((doc_idx, citation.relevance_score))
+
+            return results
+
+        except Exception as e:
+            logger.debug(f"Semantic search failed: {e}")
+            return []
+
+    def _search_keyword(
+        self,
+        query: str,
+        top_k: int = 10,
+        filter_type: Optional[str] = None
+    ) -> List[Tuple[int, float]]:
+        """
+        Keyword-based search using TF-IDF over the inverted index.
+
+        Args:
+            query: Search query
+            top_k: Number of results
+            filter_type: Optional document type filter
+
+        Returns:
+            List of (doc_index, score) tuples sorted by TF-IDF score descending
+        """
+        if not hasattr(self, "_inverted_index") or not self._inverted_index:
+            # Inverted index not built -- fall back to simple keyword match
+            return self._search_keyword_simple(query, top_k, filter_type)
+
+        query_tokens = self._tokenize(query)
+        if not query_tokens:
+            return []
+
+        # Compute TF-IDF scores per candidate document
+        candidate_scores: Dict[int, float] = defaultdict(float)
+
+        for token in query_tokens:
+            idf = self._idf.get(token, 0.0)
+            if idf == 0.0:
+                continue
+            for doc_idx in self._inverted_index.get(token, []):
+                tf = self._doc_tf[doc_idx].get(token, 0.0)
+                candidate_scores[doc_idx] += tf * idf
+
+        # Apply filter
+        if filter_type:
+            candidate_scores = {
+                idx: score for idx, score in candidate_scores.items()
+                if idx < len(self.documents) and self.documents[idx].get("type") == filter_type
+            }
+
+        # Sort by score descending
+        ranked = sorted(candidate_scores.items(), key=lambda x: x[1], reverse=True)
+        return ranked[:top_k]
+
+    def _search_keyword_simple(
+        self,
+        query: str,
+        top_k: int = 10,
+        filter_type: Optional[str] = None
+    ) -> List[Tuple[int, float]]:
+        """
+        Simple keyword matching fallback (original implementation).
+
+        Args:
+            query: Search query
+            top_k: Number of results
+            filter_type: Optional document type filter
+
+        Returns:
+            List of (doc_index, score) tuples
+        """
+        query_lower = query.lower()
+        scored: List[Tuple[int, float]] = []
+
+        for idx, doc in enumerate(self.documents):
+            if filter_type and doc.get("type") != filter_type:
+                continue
+
+            text = str(doc.get("content", "")).lower()
+            score = sum(1 for word in query_lower.split() if word in text)
+
+            if score > 0:
+                scored.append((idx, float(score)))
+
+        scored.sort(key=lambda x: x[1], reverse=True)
+        return scored[:top_k]
 
     async def retrieve(
         self,
@@ -336,7 +725,11 @@ class RAGSystem:
         filter_type: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve relevant documents for query using GreenLang RAGEngine.
+        Retrieve relevant documents for query (async interface).
+
+        Delegates to search_relevant_context for hybrid retrieval when the
+        inverted index is available. Falls back to direct RAGEngine or
+        simple keyword matching otherwise.
 
         Args:
             query: Search query
@@ -346,16 +739,19 @@ class RAGSystem:
         Returns:
             List of relevant documents
         """
+        # Use the new hybrid search when inverted index is built
+        if hasattr(self, "_inverted_index") and self._inverted_index:
+            return self.search_relevant_context(query, top_k=top_k, filter_type=filter_type)
+
+        # Legacy path: try RAGEngine directly
         if self.rag_engine:
             try:
-                # Use GreenLang RAGEngine for semantic retrieval
                 result = await self.rag_engine.query(
                     query=query,
-                    collection="stakeholder_input",  # Collection name
+                    collection="stakeholder_input",
                     top_k=top_k,
                 )
 
-                # Convert QueryResult to dict format
                 retrieved_docs = []
                 for citation in result.citations:
                     retrieved_docs.append({
@@ -370,7 +766,7 @@ class RAGSystem:
             except Exception as e:
                 logger.warning(f"GreenLang RAGEngine query failed: {e}, falling back to keyword search")
 
-        # Fallback: Simple keyword-based retrieval (original implementation)
+        # Final fallback: simple keyword-based retrieval
         query_lower = query.lower()
         scored_docs = []
 
@@ -378,14 +774,12 @@ class RAGSystem:
             if filter_type and doc.get("type") != filter_type:
                 continue
 
-            # Simple keyword matching score
             text = str(doc.get("content", "")).lower()
             score = sum(1 for word in query_lower.split() if word in text)
 
             if score > 0:
                 scored_docs.append((score, doc))
 
-        # Sort by score and return top_k
         scored_docs.sort(key=lambda x: x[0], reverse=True)
         return [doc for _, doc in scored_docs[:top_k]]
 
@@ -845,7 +1239,7 @@ Provide your assessment in JSON format."""
 
         # Retrieve relevant stakeholder input
         query = f"{topic['name']} stakeholder concerns consultation feedback"
-        relevant_docs = self.rag_system.retrieve(query, top_k=5, filter_type="stakeholder_input")
+        relevant_docs = self.rag_system.search_relevant_context(query, top_k=5, filter_type="stakeholder_input")
 
         if not relevant_docs:
             return StakeholderPerspective(

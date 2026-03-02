@@ -26,7 +26,7 @@ Security Features:
 - Input Validation: File size limits and content validation
 - Network Isolation: External entity resolution disabled
 
-Version: 1.0.1
+Version: 1.1.0
 Author: GreenLang CSRD Team
 License: MIT
 """
@@ -55,6 +55,30 @@ from utils.validation import (
     validate_string_length,
     ValidationError as InputValidationError
 )
+
+# v1.1 module imports - XBRL taxonomy, iXBRL generation, validation
+try:
+    from ..xbrl.taxonomy_mapper import TaxonomyMapper
+    from ..xbrl.ixbrl_generator import IXBRLGenerator as IXBRLGeneratorV2
+    from ..xbrl.xbrl_validator import XBRLValidator as XBRLValidatorV2
+    XBRL_MODULE_AVAILABLE = True
+except ImportError:
+    XBRL_MODULE_AVAILABLE = False
+
+# v1.1 module imports - PDF generation
+try:
+    from ..pdf.pdf_generator import PDFGenerator as PDFGen
+    PDF_MODULE_AVAILABLE = True
+except ImportError:
+    PDF_MODULE_AVAILABLE = False
+
+# v1.1 module imports - Internationalization
+try:
+    from ..i18n.locale_manager import LocaleManager as LM
+    from ..i18n import NumberFormatter, DateFormatter
+    I18N_MODULE_AVAILABLE = True
+except ImportError:
+    I18N_MODULE_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(
@@ -283,6 +307,9 @@ class XBRLTagger:
     Deterministic XBRL tagging engine.
 
     Maps ESRS metrics to XBRL taxonomy tags with zero hallucination.
+    When the v1.1 TaxonomyMapper module is available, delegates to it
+    for comprehensive taxonomy coverage. Otherwise falls back to the
+    built-in static mapping.
     """
 
     def __init__(self, taxonomy_mapping: Dict[str, Any]):
@@ -295,9 +322,23 @@ class XBRLTagger:
         self.taxonomy_mapping = taxonomy_mapping
         self.tagged_count = 0
 
+        # Delegate to TaxonomyMapper v1.1 when available
+        self._taxonomy_mapper: Optional[Any] = None
+        if XBRL_MODULE_AVAILABLE:
+            try:
+                self._taxonomy_mapper = TaxonomyMapper(taxonomy_mapping)
+                logger.info("XBRLTagger: Delegating to TaxonomyMapper v1.1 module")
+            except Exception as e:
+                logger.warning(f"XBRLTagger: TaxonomyMapper init failed, using built-in mapping: {e}")
+                self._taxonomy_mapper = None
+
     def map_metric_to_xbrl(self, metric_code: str) -> Optional[str]:
         """
         Map ESRS metric code to XBRL tag.
+
+        When the v1.1 TaxonomyMapper module is available, delegates to it
+        for expanded taxonomy coverage (1,000+ data points). Falls back to
+        the built-in static mapping otherwise.
 
         Args:
             metric_code: ESRS metric code (e.g., "E1-1")
@@ -305,7 +346,18 @@ class XBRLTagger:
         Returns:
             XBRL tag name or None
         """
-        # This is a simplified mapping - production version would use full taxonomy
+        # Delegate to TaxonomyMapper v1.1 when available
+        if self._taxonomy_mapper is not None:
+            try:
+                result = self._taxonomy_mapper.map_metric(metric_code)
+                if result is not None:
+                    return result
+                # Fall through to static mapping if TaxonomyMapper returns None
+                logger.debug(f"TaxonomyMapper returned None for {metric_code}, trying static mapping")
+            except Exception as e:
+                logger.warning(f"TaxonomyMapper.map_metric failed for {metric_code}: {e}")
+
+        # Built-in static mapping (fallback)
         mapping = {
             # Climate Change (E1)
             "E1-1": "esrs:Scope1GHGEmissions",
@@ -416,6 +468,10 @@ class XBRLTagger:
 class iXBRLGenerator:
     """
     Generate inline XBRL (iXBRL) documents for ESEF compliance.
+
+    When the v1.1 IXBRLGeneratorV2 module is available, delegates to it
+    for full ESEF-compliant iXBRL output. Otherwise uses the built-in
+    HTML-based generation.
     """
 
     def __init__(self, company_lei: str, reporting_period_end: str):
@@ -431,6 +487,19 @@ class iXBRLGenerator:
         self.contexts: List[XBRLContext] = []
         self.units: List[XBRLUnit] = []
         self.facts: List[XBRLFact] = []
+
+        # Delegate to v1.1 IXBRLGeneratorV2 when available
+        self._ixbrl_v2: Optional[Any] = None
+        if XBRL_MODULE_AVAILABLE:
+            try:
+                self._ixbrl_v2 = IXBRLGeneratorV2(
+                    company_lei=company_lei,
+                    reporting_period_end=reporting_period_end,
+                )
+                logger.info("iXBRLGenerator: Delegating to IXBRLGenerator v1.1 module")
+            except Exception as e:
+                logger.warning(f"iXBRLGenerator: v1.1 module init failed, using built-in: {e}")
+                self._ixbrl_v2 = None
 
     def create_default_contexts(self, start_date: str, end_date: str) -> None:
         """
@@ -476,16 +545,36 @@ class iXBRLGenerator:
         """Add XBRL fact to document."""
         self.facts.append(fact)
 
-    def generate_ixbrl_html(self, narrative_content: str = "") -> str:
+    def generate_ixbrl_html(self, narrative_content: str = "", locale: str = "en") -> str:
         """
         Generate complete iXBRL HTML document.
 
+        When the v1.1 IXBRLGeneratorV2 module is available, delegates to it
+        for full ESEF-compliant output. Otherwise uses the built-in
+        HTML-based generation.
+
         Args:
             narrative_content: HTML content for narrative sections
+            locale: Target locale for labels and formatting (default: "en")
 
         Returns:
             Complete iXBRL HTML as string
         """
+        # Delegate to v1.1 when available
+        if self._ixbrl_v2 is not None:
+            try:
+                logger.info(f"Generating iXBRL via v1.1 module (locale={locale})")
+                result = self._ixbrl_v2.generate(
+                    contexts=self.contexts,
+                    units=self.units,
+                    facts=self.facts,
+                    narrative_content=narrative_content,
+                    locale=locale,
+                )
+                return result
+            except Exception as e:
+                logger.warning(f"v1.1 IXBRLGenerator failed, falling back to built-in: {e}")
+
         # Sanitize narrative content to prevent HTML injection
         if narrative_content:
             try:
@@ -928,33 +1017,68 @@ class PDFGenerator:
     """
     Generate PDF reports.
 
-    NOTE: This is a simplified version. Production would use ReportLab or similar.
+    When the v1.1 pdf module (PDFGen) is available, delegates to it
+    for production-grade PDF generation using WeasyPrint. Otherwise
+    falls back to a simplified placeholder implementation.
     """
 
-    def __init__(self):
-        """Initialize PDF generator."""
-        pass
+    def __init__(self, locale: str = "en"):
+        """
+        Initialize PDF generator.
+
+        Args:
+            locale: Target locale for formatting (default: "en")
+        """
+        self.locale = locale
+
+        # Delegate to v1.1 PDFGen when available
+        self._pdf_gen: Optional[Any] = None
+        if PDF_MODULE_AVAILABLE:
+            try:
+                self._pdf_gen = PDFGen(locale=locale)
+                logger.info("PDFGenerator: Delegating to pdf.PDFGenerator v1.1 module")
+            except Exception as e:
+                logger.warning(f"PDFGenerator: v1.1 PDFGen init failed, using fallback: {e}")
+                self._pdf_gen = None
 
     def generate_pdf(
         self,
         content: str,
         output_path: Path,
-        metadata: Dict[str, Any]
+        metadata: Dict[str, Any],
+        locale: str = "en"
     ) -> Dict[str, Any]:
         """
         Generate PDF report.
+
+        When the v1.1 pdf module is available, uses WeasyPrint for
+        production-grade PDF/A-3 output. Otherwise writes a placeholder.
 
         Args:
             content: HTML/text content
             output_path: Output file path
             metadata: Report metadata
+            locale: Target locale for formatting
 
         Returns:
             PDF generation result
         """
-        # NOTE: Simplified implementation - just write metadata for now
-        # Production would convert HTML to PDF using ReportLab, WeasyPrint, or similar
+        # Delegate to v1.1 PDFGen when available
+        if self._pdf_gen is not None:
+            try:
+                logger.info(f"Generating PDF via v1.1 module (locale={locale})")
+                result = self._pdf_gen.generate(
+                    html_content=content,
+                    output_path=str(output_path),
+                    metadata=metadata,
+                    locale=locale,
+                )
+                logger.info(f"v1.1 PDFGen produced: {output_path}")
+                return result
+            except Exception as e:
+                logger.warning(f"v1.1 PDFGen failed, falling back to placeholder: {e}")
 
+        # Fallback: Simplified placeholder implementation
         pdf_info = {
             "file_path": str(output_path),
             "generated_at": DeterministicClock.now().isoformat(),
@@ -962,7 +1086,8 @@ class PDFGenerator:
             "reporting_period": metadata.get("reporting_period", ""),
             "page_count": 0,  # Would be actual page count in production
             "file_size_bytes": 0,
-            "format": "PDF/A-3"
+            "format": "PDF/A-3",
+            "locale": locale
         }
 
         # Create placeholder file
@@ -970,7 +1095,7 @@ class PDFGenerator:
         output_path.write_text(f"PDF Report Placeholder\n{json.dumps(metadata, indent=2)}")
         pdf_info["file_size_bytes"] = output_path.stat().st_size
 
-        logger.info(f"Generated PDF report: {output_path}")
+        logger.info(f"Generated PDF report (placeholder): {output_path}")
 
         return pdf_info
 
@@ -1090,7 +1215,8 @@ class ReportingAgent:
     def __init__(
         self,
         xbrl_validation_rules_path: Union[str, Path],
-        taxonomy_mapping: Optional[Dict[str, Any]] = None
+        taxonomy_mapping: Optional[Dict[str, Any]] = None,
+        default_locale: str = "en"
     ):
         """
         Initialize the ReportingAgent.
@@ -1098,8 +1224,10 @@ class ReportingAgent:
         Args:
             xbrl_validation_rules_path: Path to XBRL validation rules YAML
             taxonomy_mapping: ESRS to XBRL taxonomy mapping (optional)
+            default_locale: Default locale for report generation (default: "en")
         """
         self.xbrl_validation_rules_path = Path(xbrl_validation_rules_path)
+        self.default_locale = default_locale
 
         # Load validation rules
         self.validation_rules = self._load_validation_rules()
@@ -1108,7 +1236,29 @@ class ReportingAgent:
         self.taxonomy_mapping = taxonomy_mapping or {}
         self.xbrl_tagger = XBRLTagger(self.taxonomy_mapping)
         self.xbrl_validator = XBRLValidator(self._extract_validation_rules())
-        self.pdf_generator = PDFGenerator()
+        self.pdf_generator = PDFGenerator(locale=default_locale)
+
+        # Initialize v1.1 XBRL validator if available
+        self._xbrl_validator_v2: Optional[Any] = None
+        if XBRL_MODULE_AVAILABLE:
+            try:
+                self._xbrl_validator_v2 = XBRLValidatorV2()
+                logger.info("ReportingAgent: XBRL v1.1 validator available")
+            except Exception as e:
+                logger.warning(f"ReportingAgent: v1.1 XBRLValidator init failed: {e}")
+
+        # Initialize v1.1 locale manager if available
+        self._locale_manager: Optional[Any] = None
+        self._number_formatter: Optional[Any] = None
+        self._date_formatter: Optional[Any] = None
+        if I18N_MODULE_AVAILABLE:
+            try:
+                self._locale_manager = LM(default_locale=default_locale)
+                self._number_formatter = NumberFormatter(locale=default_locale)
+                self._date_formatter = DateFormatter(locale=default_locale)
+                logger.info(f"ReportingAgent: i18n v1.1 module available (locale={default_locale})")
+            except Exception as e:
+                logger.warning(f"ReportingAgent: v1.1 i18n init failed: {e}")
 
         # Statistics
         self.stats = {
@@ -1119,7 +1269,13 @@ class ReportingAgent:
             "validation_errors": 0
         }
 
-        logger.info("ReportingAgent initialized")
+        # Log module availability
+        logger.info(
+            f"ReportingAgent initialized "
+            f"(xbrl_v1.1={'yes' if XBRL_MODULE_AVAILABLE else 'no'}, "
+            f"pdf_v1.1={'yes' if PDF_MODULE_AVAILABLE else 'no'}, "
+            f"i18n_v1.1={'yes' if I18N_MODULE_AVAILABLE else 'no'})"
+        )
 
     # ========================================================================
     # DATA LOADING
@@ -1252,27 +1408,57 @@ class ReportingAgent:
     # REPORT GENERATION
     # ========================================================================
 
+    def _get_localized_label(self, key: str, locale: str, default: str = "") -> str:
+        """
+        Get a localized label from the i18n module when available.
+
+        Args:
+            key: Translation key (e.g., "report.title")
+            locale: Target locale
+            default: Fallback value when i18n is unavailable
+
+        Returns:
+            Localized string, or default if i18n is unavailable
+        """
+        if self._locale_manager is not None:
+            try:
+                return self._locale_manager.get(key, locale=locale, default=default)
+            except Exception:
+                pass
+        return default
+
     def generate_report(
         self,
         company_profile: Dict[str, Any],
         materiality_assessment: Dict[str, Any],
         calculated_metrics: Dict[str, Any],
         output_dir: Union[str, Path],
-        language: str = "en"
+        language: str = "en",
+        locale: str = ""
     ) -> Dict[str, Any]:
         """
         Generate complete CSRD report with XBRL tagging.
+
+        When v1.1 modules are available:
+        - Uses IXBRLGeneratorV2 for ESEF-compliant iXBRL output
+        - Uses PDFGen for production PDF/A-3 output
+        - Uses LocaleManager for all text labels
+        - Uses XBRLValidatorV2 for enhanced validation
 
         Args:
             company_profile: Company profile and metadata
             materiality_assessment: Double materiality assessment
             calculated_metrics: Calculated ESRS metrics
             output_dir: Output directory
-            language: Report language
+            language: Report language (deprecated, use locale)
+            locale: Report locale (e.g., "en", "de", "fr", "es"). Falls back
+                    to language if empty, then to default_locale.
 
         Returns:
             Report generation result
         """
+        # Resolve locale: prefer explicit locale, then language, then default
+        effective_locale = locale or language or self.default_locale
         self.stats["start_time"] = DeterministicClock.now()
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -1308,25 +1494,45 @@ class ReportingAgent:
             company_profile=company_profile,
             materiality_assessment=materiality_assessment,
             metrics_by_standard=metrics_by_standard,
-            language=language
+            language=effective_locale
         )
 
         # Combine narratives into HTML
         narrative_html = "\n".join([n.content for n in narratives])
 
-        # Generate iXBRL document
-        ixbrl_content = ixbrl_gen.generate_ixbrl_html(narrative_content=narrative_html)
-
-        # Validate XBRL
-        validation_result = self.xbrl_validator.validate_all(
-            contexts=ixbrl_gen.contexts,
-            units=ixbrl_gen.units,
-            facts=ixbrl_gen.facts
+        # Generate iXBRL document (delegates to v1.1 if available)
+        ixbrl_content = ixbrl_gen.generate_ixbrl_html(
+            narrative_content=narrative_html,
+            locale=effective_locale,
         )
+
+        # Validate XBRL -- use v1.1 validator if available, else built-in
+        if self._xbrl_validator_v2 is not None:
+            try:
+                logger.info("Validating XBRL via v1.1 XBRLValidator module")
+                validation_result = self._xbrl_validator_v2.validate(
+                    ixbrl_content=ixbrl_content,
+                    contexts=ixbrl_gen.contexts,
+                    units=ixbrl_gen.units,
+                    facts=ixbrl_gen.facts,
+                )
+            except Exception as e:
+                logger.warning(f"v1.1 XBRLValidator failed, falling back to built-in: {e}")
+                validation_result = self.xbrl_validator.validate_all(
+                    contexts=ixbrl_gen.contexts,
+                    units=ixbrl_gen.units,
+                    facts=ixbrl_gen.facts
+                )
+        else:
+            validation_result = self.xbrl_validator.validate_all(
+                contexts=ixbrl_gen.contexts,
+                units=ixbrl_gen.units,
+                facts=ixbrl_gen.facts
+            )
 
         self.stats["validation_errors"] = validation_result["error_count"]
 
-        # Generate PDF report
+        # Generate PDF report (delegates to v1.1 if available)
         pdf_path = output_dir / f"{company_lei}_{reporting_period_end}_report.pdf"
         pdf_info = self.pdf_generator.generate_pdf(
             content=ixbrl_content,
@@ -1335,7 +1541,8 @@ class ReportingAgent:
                 "company_name": company_name,
                 "reporting_period": f"{reporting_period_start} to {reporting_period_end}",
                 "lei": company_lei
-            }
+            },
+            locale=effective_locale
         )
 
         # Create ESEF package
@@ -1352,7 +1559,8 @@ class ReportingAgent:
             "reporting_period_start": reporting_period_start,
             "reporting_period_end": reporting_period_end,
             "generated_at": DeterministicClock.now().isoformat(),
-            "language": language,
+            "language": effective_locale,
+            "locale": effective_locale,
             "total_facts": len(facts),
             "validation_status": validation_result["validation_status"]
         }
@@ -1367,6 +1575,13 @@ class ReportingAgent:
         self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
 
+        # Localized title for report metadata (uses i18n when available)
+        report_title = self._get_localized_label(
+            "report.sustainability_statement_title",
+            effective_locale,
+            default="Sustainability Statement"
+        )
+
         # Build result
         result = {
             "metadata": {
@@ -1378,7 +1593,14 @@ class ReportingAgent:
                 "validation_status": validation_result["validation_status"],
                 "validation_errors": validation_result["error_count"],
                 "validation_warnings": validation_result["warning_count"],
-                "language": language
+                "language": effective_locale,
+                "locale": effective_locale,
+                "report_title": report_title,
+                "v1_1_modules": {
+                    "xbrl": XBRL_MODULE_AVAILABLE,
+                    "pdf": PDF_MODULE_AVAILABLE,
+                    "i18n": I18N_MODULE_AVAILABLE,
+                }
             },
             "outputs": {
                 "esef_package": {
@@ -1388,7 +1610,7 @@ class ReportingAgent:
                     "files": esef_package.files
                 },
                 "ixbrl_report": {
-                    "file_path": str(output_dir / f"{company_lei}-{reporting_period_end}-en.xhtml"),
+                    "file_path": str(output_dir / f"{company_lei}-{reporting_period_end}-{effective_locale}.xhtml"),
                     "total_facts": len(facts)
                 },
                 "pdf_report": pdf_info,
@@ -1412,6 +1634,7 @@ class ReportingAgent:
         logger.info(f"Report generation complete in {processing_time:.2f}s ({processing_time/60:.2f} min)")
         logger.info(f"XBRL facts tagged: {self.stats['total_facts_tagged']}")
         logger.info(f"Validation status: {validation_result['validation_status']}")
+        logger.info(f"Locale: {effective_locale}")
 
         return result
 

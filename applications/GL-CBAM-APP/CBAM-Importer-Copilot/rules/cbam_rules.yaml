@@ -1,5 +1,5 @@
 # CBAM TRANSITIONAL REGISTRY RULES SPECIFICATION
-# Version: 1.0.0-demo
+# Version: 1.1.0-demo
 # Based on: EU Regulation (EU) 2023/956 - CBAM Transitional Period
 # Last Updated: 2025-10-15
 
@@ -292,6 +292,253 @@ validation_rules:
       - "ES" # Spain
       - "SE" # Sweden
 
+  # =========================================================================
+  # v1.1 SUPPLIER PORTAL VALIDATION RULES (10 rules)
+  # =========================================================================
+
+  - rule_id: "VAL-SP-001"
+    rule_name: "Supplier EORI Valid"
+    severity: "critical"
+    description: "Supplier EORI number must conform to ISO format (2-letter country code + alphanumeric)"
+    check: "supplier.eori_number matches ^[A-Z]{2}[A-Z0-9]{1,15}$"
+    applies_to: ["supplier_portal"]
+    reference: "CBAM Implementing Regulation Art. 8"
+
+  - rule_id: "VAL-SP-002"
+    rule_name: "Supplier Installation Registered"
+    severity: "critical"
+    description: "Each supplier must have at least one registered installation"
+    check: "supplier.installations.length >= 1"
+    applies_to: ["supplier_portal"]
+    reference: "CBAM Regulation Art. 10(1)"
+
+  - rule_id: "VAL-SP-003"
+    rule_name: "Installation Country Non-EU"
+    severity: "error"
+    description: "Supplier installations must be in non-EU countries (CBAM applies to imports)"
+    check: "installation.country_iso NOT IN [EU27 country codes]"
+    applies_to: ["supplier_portal"]
+    reference: "CBAM Regulation Art. 2(1)"
+
+  - rule_id: "VAL-SP-004"
+    rule_name: "Emissions Data Completeness"
+    severity: "error"
+    description: "Supplier emissions submission must include both direct and indirect emissions"
+    check: "submission.direct_emissions_tco2_per_ton IS NOT NULL AND submission.indirect_emissions_tco2_per_ton IS NOT NULL"
+    applies_to: ["supplier_portal"]
+    reference: "CBAM Regulation Art. 7(2)"
+
+  - rule_id: "VAL-SP-005"
+    rule_name: "Emissions Data Positive"
+    severity: "error"
+    description: "All submitted emissions values must be non-negative"
+    check: "submission.direct_emissions_tco2_per_ton >= 0 AND submission.indirect_emissions_tco2_per_ton >= 0"
+    applies_to: ["supplier_portal"]
+
+  - rule_id: "VAL-SP-006"
+    rule_name: "Reporting Year Valid"
+    severity: "warning"
+    description: "Supplier emissions data should be from current or previous reporting year"
+    check: "submission.reporting_year >= (current_year - 2)"
+    applies_to: ["supplier_portal"]
+
+  - rule_id: "VAL-SP-007"
+    rule_name: "Verification Status Present"
+    severity: "warning"
+    description: "Supplier emissions should indicate verification status"
+    check: "submission.verified IS NOT NULL (boolean)"
+    applies_to: ["supplier_portal"]
+
+  - rule_id: "VAL-SP-008"
+    rule_name: "CN Codes Produced Listed"
+    severity: "error"
+    description: "Installation must declare CN codes of goods produced"
+    check: "installation.cn_codes_produced.length >= 1"
+    applies_to: ["supplier_portal"]
+
+  - rule_id: "VAL-SP-009"
+    rule_name: "Installation Name Non-Empty"
+    severity: "error"
+    description: "Installation must have a non-empty name for identification"
+    check: "installation.name IS NOT NULL AND installation.name.length > 0"
+    applies_to: ["supplier_portal"]
+
+  - rule_id: "VAL-SP-010"
+    rule_name: "Supplier Contact Information"
+    severity: "warning"
+    description: "Supplier should provide contact email for data exchange"
+    check: "supplier.contact_email IS NOT NULL AND supplier.contact_email matches email pattern"
+    applies_to: ["supplier_portal"]
+
+  # =========================================================================
+  # v1.1 CERTIFICATE CALCULATION VALIDATION RULES (8 rules)
+  # =========================================================================
+
+  - rule_id: "VAL-CERT-001"
+    rule_name: "Certificate Obligation Non-Negative"
+    severity: "critical"
+    description: "Net CBAM certificate obligation must be zero or positive"
+    check: "net_certificates_required >= 0"
+    applies_to: ["certificate"]
+    reference: "CBAM Regulation Art. 22(1)"
+
+  - rule_id: "VAL-CERT-002"
+    rule_name: "ETS Price Valid"
+    severity: "critical"
+    description: "EU ETS price used for certificate calculation must be positive"
+    check: "ets_price_eur_per_tco2 > 0"
+    applies_to: ["certificate"]
+    reference: "CBAM Regulation Art. 21(1)"
+
+  - rule_id: "VAL-CERT-003"
+    rule_name: "Carbon Price Deduction Documented"
+    severity: "error"
+    description: "Carbon price deductions must reference the originating country carbon pricing scheme"
+    check: "IF carbon_price_deduction_tco2 > 0 THEN carbon_price_country IS NOT NULL"
+    applies_to: ["certificate"]
+    reference: "CBAM Regulation Art. 9(1)"
+
+  - rule_id: "VAL-CERT-004"
+    rule_name: "Free Allocation Percentage Valid"
+    severity: "error"
+    description: "Free allocation deduction percentage must be between 0 and 1"
+    check: "free_allocation_pct >= 0 AND free_allocation_pct <= 1.0"
+    applies_to: ["certificate"]
+    reference: "CBAM Regulation Art. 31"
+
+  - rule_id: "VAL-CERT-005"
+    rule_name: "Quarterly Holding Met"
+    severity: "warning"
+    description: "Importer must hold at least 50% of estimated quarterly obligation by end of quarter"
+    check: "certificates_held >= (certificates_required * quarterly_holding_pct)"
+    applies_to: ["certificate"]
+    reference: "CBAM Regulation Art. 22(2)"
+    threshold: 0.50
+
+  - rule_id: "VAL-CERT-006"
+    rule_name: "Net Obligation Calculation Correct"
+    severity: "error"
+    description: "Net obligation must equal gross minus deductions (deterministic check)"
+    check: "abs(net_obligation_eur - (gross_obligation_eur - deductions_eur)) < 0.01"
+    applies_to: ["certificate"]
+    tolerance: 0.01
+
+  - rule_id: "VAL-CERT-007"
+    rule_name: "Certificate Count Integer"
+    severity: "error"
+    description: "Number of CBAM certificates required must be a whole number (ceiling of net emissions)"
+    check: "certificates_required == ceil(net_emissions_tco2)"
+    applies_to: ["certificate"]
+
+  - rule_id: "VAL-CERT-008"
+    rule_name: "Deductions Do Not Exceed Gross"
+    severity: "error"
+    description: "Total deductions cannot exceed the gross certificate obligation"
+    check: "deductions_eur <= gross_obligation_eur"
+    applies_to: ["certificate"]
+
+  # =========================================================================
+  # v1.1 DE MINIMIS VALIDATION RULES (5 rules)
+  # =========================================================================
+
+  - rule_id: "VAL-DM-001"
+    rule_name: "De Minimis Threshold Check"
+    severity: "warning"
+    description: "Alert when cumulative annual imports approach or exceed the de minimis threshold"
+    check: "cumulative_imports_mt checked against threshold (default 50 MT)"
+    applies_to: ["deminimis"]
+    threshold_mt: 50
+    reference: "CBAM Regulation Art. 2(3)"
+
+  - rule_id: "VAL-DM-002"
+    rule_name: "De Minimis Sector Exemption"
+    severity: "info"
+    description: "Certain sectors (electricity, hydrogen) have sector-specific thresholds"
+    check: "IF product_group IN exempt_sectors THEN apply sector-specific threshold"
+    applies_to: ["deminimis"]
+    exempt_sectors: ["electricity", "hydrogen"]
+
+  - rule_id: "VAL-DM-003"
+    rule_name: "De Minimis Cumulative Tracking"
+    severity: "warning"
+    description: "Cumulative imports must be tracked across all quarters in a calendar year"
+    check: "cumulative_mass_mt is sum of all quarterly masses for current calendar year"
+    applies_to: ["deminimis"]
+
+  - rule_id: "VAL-DM-004"
+    rule_name: "De Minimis Alert 80%"
+    severity: "warning"
+    description: "Issue warning when cumulative imports reach 80% of de minimis threshold"
+    check: "cumulative_imports_mt >= (threshold_mt * 0.80)"
+    applies_to: ["deminimis"]
+    alert_level: 80
+
+  - rule_id: "VAL-DM-005"
+    rule_name: "De Minimis Exceeded"
+    severity: "error"
+    description: "Full CBAM reporting obligations apply when de minimis threshold is exceeded"
+    check: "cumulative_imports_mt > threshold_mt"
+    applies_to: ["deminimis"]
+    reference: "CBAM Regulation Art. 2(3) - threshold breach triggers full obligation"
+
+  # =========================================================================
+  # v1.1 VERIFICATION VALIDATION RULES (7 rules)
+  # =========================================================================
+
+  - rule_id: "VAL-VER-001"
+    rule_name: "Verifier Accreditation Valid"
+    severity: "critical"
+    description: "Verifier must hold valid EU accreditation for CBAM verification"
+    check: "verifier.accreditation_status == 'active' AND verifier.accreditation_expiry > current_date"
+    applies_to: ["verification"]
+    reference: "CBAM Regulation Art. 18"
+
+  - rule_id: "VAL-VER-002"
+    rule_name: "Materiality Threshold Met"
+    severity: "error"
+    description: "Verification findings must not exceed the materiality threshold (default 5%)"
+    check: "abs(verified_emissions - reported_emissions) / reported_emissions <= materiality_threshold_pct / 100"
+    applies_to: ["verification"]
+    materiality_threshold_pct: 5
+    reference: "CBAM Implementing Regulation Art. 15"
+
+  - rule_id: "VAL-VER-003"
+    rule_name: "Conflict of Interest Check"
+    severity: "critical"
+    description: "Verifier must not have financial or personal conflicts of interest with the importer"
+    check: "verifier.coi_declaration == true AND verifier.coi_conflicts_found == false"
+    applies_to: ["verification"]
+    reference: "CBAM Regulation Art. 18(3)"
+
+  - rule_id: "VAL-VER-004"
+    rule_name: "Verification Scope Complete"
+    severity: "error"
+    description: "Verification must cover all goods types and origin countries in the report"
+    check: "verification.scope covers all product_groups AND all origin_countries in report"
+    applies_to: ["verification"]
+
+  - rule_id: "VAL-VER-005"
+    rule_name: "Verification Statement Signed"
+    severity: "critical"
+    description: "Verification statement must be signed and dated by the lead verifier"
+    check: "verification.statement_signed == true AND verification.statement_date IS NOT NULL"
+    applies_to: ["verification"]
+
+  - rule_id: "VAL-VER-006"
+    rule_name: "Site Visit Completed"
+    severity: "warning"
+    description: "At least one site visit should be completed per verification cycle"
+    check: "verification.site_visits_completed >= 1"
+    applies_to: ["verification"]
+    visit_schedule: "annual"
+
+  - rule_id: "VAL-VER-007"
+    rule_name: "Verification Timeliness"
+    severity: "warning"
+    description: "Verification must be completed within the reporting deadline for the quarter"
+    check: "verification.completion_date <= submission_deadline"
+    applies_to: ["verification"]
+
 # Business logic rules
 business_rules:
   reporting_deadlines:
@@ -333,20 +580,32 @@ business_rules:
       note: "Not required in transitional period, may be required post-2025"
 
   data_hierarchy:
-    description: "Preference order for emissions data sources"
+    description: "v1.1 Preference order for emissions data sources (4-priority hierarchy)"
     priority_order:
       - priority: 1
         source: "Supplier-provided verified actual data"
         quality: "high"
+        data_source_label: "supplier_actual"
+        markup_applied: false
       - priority: 2
         source: "Supplier-provided unverified actual data"
         quality: "medium"
+        data_source_label: "supplier_actual"
+        markup_applied: false
       - priority: 3
-        source: "EU Commission default values"
+        source: "Regional emission factor (country-specific)"
         quality: "medium"
+        data_source_label: "regional_factor"
+        markup_applied: false
       - priority: 4
-        source: "Estimated based on industry averages"
+        source: "EU Commission default values (with Omnibus markup)"
         quality: "low"
+        data_source_label: "default_value"
+        markup_applied: true
+        markup_schedule:
+          2026: "10%"
+          2027: "20%"
+          2028_plus: "30%"
 
   transitional_period_flexibilities:
     - "Third-party verification not mandatory (voluntary)"
@@ -392,9 +651,28 @@ error_codes:
   W004: "Using default values (actual data preferred)"
   W005: "Incomplete supplier data"
 
+  E011: "Invalid supplier installation"
+  E012: "Certificate obligation calculation error"
+  E013: "De minimis threshold exceeded"
+  E014: "Verification accreditation invalid"
+  E015: "Materiality threshold exceeded"
+  E016: "Conflict of interest detected"
+  E017: "Default markup calculation error"
+  E018: "Regional factor not available"
+
+  W006: "Supplier verification expiring soon"
+  W007: "Quarterly holding below 50%"
+  W008: "De minimis threshold approaching"
+  W009: "Amendment window closing"
+  W010: "Default value markup applied"
+
   I001: "Report generated successfully"
   I002: "Validation passed with warnings"
   I003: "Using estimation for complex goods"
+  I004: "Supplier portal data used"
+  I005: "Regional emission factor applied"
+  I006: "Certificate obligation calculated"
+  I007: "De minimis exemption active"
 
 # References
 references:

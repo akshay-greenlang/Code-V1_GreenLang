@@ -1,0 +1,220 @@
+{
+  "metadata": {
+    "description": "EFRAG ESRS Calculation Linkbase - parent-child sum relationships with weights",
+    "version": "2024.1.0",
+    "tolerance": 0.01,
+    "notes": "Weight +1 indicates additive; weight -1 indicates subtractive. Validation tolerance is 0.01 (absolute difference)."
+  },
+  "calculation_relationships": {
+    "energy_consumption_total": {
+      "parent": "E1_E15_001",
+      "parent_element": "esrs:EnergyConsumptionTotal",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-5",
+      "children": [
+        {"child": "E1_E15_002", "element": "esrs:EnergyConsumptionFromRenewableSources", "weight": 1.0},
+        {"child": "E1_E15_003", "element": "esrs:EnergyConsumptionFromNonRenewableSources", "weight": 1.0}
+      ],
+      "description": "Total energy = renewable + non-renewable"
+    },
+    "share_renewable_energy": {
+      "parent": "E1_E15_005",
+      "parent_element": "esrs:ShareOfRenewableEnergy",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-5",
+      "calculation_type": "ratio",
+      "numerator": "E1_E15_002",
+      "denominator": "E1_E15_001",
+      "description": "Share of renewable = renewable / total energy"
+    },
+    "total_ghg_emissions": {
+      "parent": "E1_E16_005",
+      "parent_element": "esrs:TotalGHGEmissions",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "children": [
+        {"child": "E1_E16_001", "element": "esrs:GrossScope1GHGEmissions", "weight": 1.0},
+        {"child": "E1_E16_002", "element": "esrs:GrossScope2LocationBasedGHGEmissions", "weight": 1.0},
+        {"child": "E1_E16_004", "element": "esrs:GrossScope3GHGEmissions", "weight": 1.0}
+      ],
+      "description": "Total GHG = Scope 1 + Scope 2 (location-based) + Scope 3"
+    },
+    "total_ghg_emissions_market": {
+      "parent": "E1_E16_005",
+      "parent_element": "esrs:TotalGHGEmissions",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "variant": "market_based",
+      "children": [
+        {"child": "E1_E16_001", "element": "esrs:GrossScope1GHGEmissions", "weight": 1.0},
+        {"child": "E1_E16_003", "element": "esrs:GrossScope2MarketBasedGHGEmissions", "weight": 1.0},
+        {"child": "E1_E16_004", "element": "esrs:GrossScope3GHGEmissions", "weight": 1.0}
+      ],
+      "description": "Total GHG = Scope 1 + Scope 2 (market-based) + Scope 3"
+    },
+    "scope3_total": {
+      "parent": "E1_E16_004",
+      "parent_element": "esrs:GrossScope3GHGEmissions",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "children": [
+        {"child": "E1_E16_004_cat1", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_1", "weight": 1.0},
+        {"child": "E1_E16_004_cat2", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_2", "weight": 1.0},
+        {"child": "E1_E16_004_cat3", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_3", "weight": 1.0},
+        {"child": "E1_E16_004_cat4", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_4", "weight": 1.0},
+        {"child": "E1_E16_004_cat5", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_5", "weight": 1.0},
+        {"child": "E1_E16_004_cat6", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_6", "weight": 1.0},
+        {"child": "E1_E16_004_cat7", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_7", "weight": 1.0},
+        {"child": "E1_E16_004_cat8", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_8", "weight": 1.0},
+        {"child": "E1_E16_004_cat9", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_9", "weight": 1.0},
+        {"child": "E1_E16_004_cat10", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_10", "weight": 1.0},
+        {"child": "E1_E16_004_cat11", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_11", "weight": 1.0},
+        {"child": "E1_E16_004_cat12", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_12", "weight": 1.0},
+        {"child": "E1_E16_004_cat13", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_13", "weight": 1.0},
+        {"child": "E1_E16_004_cat14", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_14", "weight": 1.0},
+        {"child": "E1_E16_004_cat15", "element": "esrs:GrossScope3GHGEmissions", "dimension": "scope3_category:cat_15", "weight": 1.0}
+      ],
+      "description": "Total Scope 3 = sum of all 15 categories"
+    },
+    "water_balance": {
+      "parent": "E3_E33_001",
+      "parent_element": "esrs:WaterConsumptionTotal",
+      "standard": "ESRS-E3",
+      "disclosure_requirement": "E3-4",
+      "children": [
+        {"child": "E3_E33_002", "element": "esrs:WaterWithdrawalTotal", "weight": 1.0},
+        {"child": "E3_E33_003", "element": "esrs:WaterDischargeTotal", "weight": -1.0}
+      ],
+      "description": "Water consumption = withdrawal - discharge"
+    },
+    "waste_total": {
+      "parent": "E5_E55_001",
+      "parent_element": "esrs:WasteGenerated",
+      "standard": "ESRS-E5",
+      "disclosure_requirement": "E5-5",
+      "children": [
+        {"child": "E5_E55_001_haz", "element": "esrs:WasteGenerated", "dimension": "waste_type:hazardous", "weight": 1.0},
+        {"child": "E5_E55_001_nonhaz", "element": "esrs:WasteGenerated", "dimension": "waste_type:non_hazardous", "weight": 1.0},
+        {"child": "E5_E55_001_radio", "element": "esrs:WasteGenerated", "dimension": "waste_type:radioactive", "weight": 1.0}
+      ],
+      "description": "Total waste = hazardous + non-hazardous + radioactive"
+    },
+    "employees_by_gender": {
+      "parent": "S1_S16_001",
+      "parent_element": "esrs:TotalEmployeesHeadcount",
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-6",
+      "dimension_aggregate": "gender",
+      "children": [
+        {"child": "S1_S16_001_male", "element": "esrs:TotalEmployeesHeadcount", "dimension": "gender:male", "weight": 1.0},
+        {"child": "S1_S16_001_female", "element": "esrs:TotalEmployeesHeadcount", "dimension": "gender:female", "weight": 1.0},
+        {"child": "S1_S16_001_other", "element": "esrs:TotalEmployeesHeadcount", "dimension": "gender:other", "weight": 1.0},
+        {"child": "S1_S16_001_undisclosed", "element": "esrs:TotalEmployeesHeadcount", "dimension": "gender:undisclosed", "weight": 1.0}
+      ],
+      "description": "Total employees = male + female + other + undisclosed"
+    },
+    "employees_by_age": {
+      "parent": "S1_S16_001",
+      "parent_element": "esrs:TotalEmployeesHeadcount",
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-6",
+      "dimension_aggregate": "age_group",
+      "children": [
+        {"child": "S1_S16_001_under30", "element": "esrs:TotalEmployeesHeadcount", "dimension": "age_group:under_30", "weight": 1.0},
+        {"child": "S1_S16_001_30to50", "element": "esrs:TotalEmployeesHeadcount", "dimension": "age_group:between_30_50", "weight": 1.0},
+        {"child": "S1_S16_001_over50", "element": "esrs:TotalEmployeesHeadcount", "dimension": "age_group:over_50", "weight": 1.0}
+      ],
+      "description": "Total employees = under 30 + 30-50 + over 50"
+    },
+    "employees_by_contract": {
+      "parent": "S1_S16_001",
+      "parent_element": "esrs:TotalEmployeesHeadcount",
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-6",
+      "dimension_aggregate": "employment_type",
+      "children": [
+        {"child": "S1_S16_001_permanent", "element": "esrs:TotalEmployeesHeadcount", "dimension": "employment_type:permanent", "weight": 1.0},
+        {"child": "S1_S16_001_temporary", "element": "esrs:TotalEmployeesHeadcount", "dimension": "employment_type:temporary", "weight": 1.0}
+      ],
+      "description": "Total employees = permanent + temporary"
+    },
+    "employees_by_work_type": {
+      "parent": "S1_S16_001",
+      "parent_element": "esrs:TotalEmployeesHeadcount",
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-6",
+      "dimension_aggregate": "employment_type_work",
+      "children": [
+        {"child": "S1_S16_001_fulltime", "element": "esrs:TotalEmployeesHeadcount", "dimension": "employment_type:full_time", "weight": 1.0},
+        {"child": "S1_S16_001_parttime", "element": "esrs:TotalEmployeesHeadcount", "dimension": "employment_type:part_time", "weight": 1.0}
+      ],
+      "description": "Total employees = full-time + part-time"
+    },
+    "pollutants_air_total": {
+      "parent": "E2_E24_001",
+      "parent_element": "esrs:PollutantsEmittedToAir",
+      "standard": "ESRS-E2",
+      "disclosure_requirement": "E2-4",
+      "dimension_aggregate": "pollutant",
+      "children": [
+        {"child": "E2_E24_001_nox", "element": "esrs:PollutantsEmittedToAir", "dimension": "pollutant:nox", "weight": 1.0},
+        {"child": "E2_E24_001_sox", "element": "esrs:PollutantsEmittedToAir", "dimension": "pollutant:sox", "weight": 1.0},
+        {"child": "E2_E24_001_pm", "element": "esrs:PollutantsEmittedToAir", "dimension": "pollutant:pm", "weight": 1.0},
+        {"child": "E2_E24_001_voc", "element": "esrs:PollutantsEmittedToAir", "dimension": "pollutant:voc", "weight": 1.0}
+      ],
+      "description": "Total air pollutants = NOx + SOx + PM + VOC"
+    },
+    "resource_inflow_total": {
+      "parent": "E5_E54_001",
+      "parent_element": "esrs:ResourceInflowTotal",
+      "standard": "ESRS-E5",
+      "disclosure_requirement": "E5-4",
+      "dimension_aggregate": "resource_type",
+      "children": [
+        {"child": "E5_E54_001_renewable", "element": "esrs:ResourceInflowTotal", "dimension": "resource_type:renewable_material", "weight": 1.0},
+        {"child": "E5_E54_001_nonrenewable", "element": "esrs:ResourceInflowTotal", "dimension": "resource_type:non_renewable_material", "weight": 1.0}
+      ],
+      "description": "Total resource inflow = renewable + non-renewable materials"
+    },
+    "water_withdrawal_by_source": {
+      "parent": "E3_E33_002",
+      "parent_element": "esrs:WaterWithdrawalTotal",
+      "standard": "ESRS-E3",
+      "disclosure_requirement": "E3-4",
+      "dimension_aggregate": "water_source",
+      "children": [
+        {"child": "E3_E33_002_surface", "element": "esrs:WaterWithdrawalTotal", "dimension": "water_source:surface_water", "weight": 1.0},
+        {"child": "E3_E33_002_ground", "element": "esrs:WaterWithdrawalTotal", "dimension": "water_source:groundwater", "weight": 1.0},
+        {"child": "E3_E33_002_sea", "element": "esrs:WaterWithdrawalTotal", "dimension": "water_source:seawater", "weight": 1.0},
+        {"child": "E3_E33_002_produced", "element": "esrs:WaterWithdrawalTotal", "dimension": "water_source:produced_water", "weight": 1.0},
+        {"child": "E3_E33_002_thirdparty", "element": "esrs:WaterWithdrawalTotal", "dimension": "water_source:third_party", "weight": 1.0}
+      ],
+      "description": "Total water withdrawal = surface + ground + sea + produced + third-party"
+    }
+  },
+  "validation_rules": {
+    "sum_consistency": {
+      "description": "Parent value must equal sum of weighted children within tolerance",
+      "tolerance_absolute": 0.01,
+      "tolerance_relative": 0.001,
+      "severity": "ERROR"
+    },
+    "ratio_consistency": {
+      "description": "Ratio calculations must be consistent with components",
+      "tolerance_absolute": 0.01,
+      "severity": "WARNING"
+    },
+    "sign_consistency": {
+      "description": "All emission values should be non-negative",
+      "allowed_negative": ["E1_E17_001"],
+      "severity": "ERROR"
+    },
+    "percentage_range": {
+      "description": "Percentage values must be between 0 and 1 (or 0 and 100)",
+      "applicable_types": ["xbrli:pureItemType"],
+      "min_value": 0.0,
+      "max_value": 1.0,
+      "severity": "WARNING"
+    }
+  }
+}

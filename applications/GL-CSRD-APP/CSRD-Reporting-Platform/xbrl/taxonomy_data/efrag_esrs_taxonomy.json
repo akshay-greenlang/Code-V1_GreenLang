@@ -1,0 +1,2223 @@
+{
+  "metadata": {
+    "taxonomy_name": "EFRAG ESRS XBRL Taxonomy",
+    "taxonomy_version": "2024.1.0",
+    "publisher": "EFRAG",
+    "publication_date": "2024-01-15",
+    "effective_date": "2024-01-01",
+    "namespace_uri": "http://www.efrag.org/taxonomy/esrs/2024",
+    "schema_location": "http://www.efrag.org/taxonomy/esrs/2024/esrs-2024.xsd",
+    "supported_standards": [
+      "ESRS-1", "ESRS-2",
+      "ESRS-E1", "ESRS-E2", "ESRS-E3", "ESRS-E4", "ESRS-E5",
+      "ESRS-S1", "ESRS-S2", "ESRS-S3", "ESRS-S4",
+      "ESRS-G1"
+    ],
+    "total_elements": 1082,
+    "total_dimensions": 22,
+    "languages": ["en", "de", "fr", "es"]
+  },
+  "namespaces": {
+    "esrs": "http://www.efrag.org/taxonomy/esrs/2024",
+    "esrs-cor": "http://www.efrag.org/taxonomy/esrs/2024/core",
+    "esrs-e1": "http://www.efrag.org/taxonomy/esrs/2024/e1",
+    "esrs-e2": "http://www.efrag.org/taxonomy/esrs/2024/e2",
+    "esrs-e3": "http://www.efrag.org/taxonomy/esrs/2024/e3",
+    "esrs-e4": "http://www.efrag.org/taxonomy/esrs/2024/e4",
+    "esrs-e5": "http://www.efrag.org/taxonomy/esrs/2024/e5",
+    "esrs-s1": "http://www.efrag.org/taxonomy/esrs/2024/s1",
+    "esrs-s2": "http://www.efrag.org/taxonomy/esrs/2024/s2",
+    "esrs-s3": "http://www.efrag.org/taxonomy/esrs/2024/s3",
+    "esrs-s4": "http://www.efrag.org/taxonomy/esrs/2024/s4",
+    "esrs-g1": "http://www.efrag.org/taxonomy/esrs/2024/g1",
+    "xbrli": "http://www.xbrl.org/2003/instance",
+    "xbrldi": "http://xbrl.org/2006/xbrldi",
+    "xbrldt": "http://xbrl.org/2005/xbrldt",
+    "link": "http://www.xbrl.org/2003/linkbase",
+    "iso4217": "http://www.xbrl.org/2003/iso4217",
+    "ix": "http://www.xbrl.org/2013/inlineXBRL",
+    "ixt": "http://www.xbrl.org/inlineXBRL/transformation/2020-02-12"
+  },
+  "dimensions": {
+    "ghg_scope": {
+      "dimension_id": "esrs:GHGScopeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:GHGScopeDomain",
+      "members": {
+        "scope_1": { "member_id": "esrs:Scope1Member", "label": "Scope 1 - Direct emissions" },
+        "scope_2_location": { "member_id": "esrs:Scope2LocationBasedMember", "label": "Scope 2 - Location-based" },
+        "scope_2_market": { "member_id": "esrs:Scope2MarketBasedMember", "label": "Scope 2 - Market-based" },
+        "scope_3": { "member_id": "esrs:Scope3Member", "label": "Scope 3 - Value chain" },
+        "total": { "member_id": "esrs:TotalGHGMember", "label": "Total GHG emissions" }
+      }
+    },
+    "scope3_category": {
+      "dimension_id": "esrs:Scope3CategoryDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:Scope3CategoryDomain",
+      "members": {
+        "cat_1": { "member_id": "esrs:PurchasedGoodsMember", "label": "Cat 1 - Purchased goods and services" },
+        "cat_2": { "member_id": "esrs:CapitalGoodsMember", "label": "Cat 2 - Capital goods" },
+        "cat_3": { "member_id": "esrs:FuelEnergyMember", "label": "Cat 3 - Fuel and energy related" },
+        "cat_4": { "member_id": "esrs:UpstreamTransportMember", "label": "Cat 4 - Upstream transportation" },
+        "cat_5": { "member_id": "esrs:WasteGeneratedMember", "label": "Cat 5 - Waste generated" },
+        "cat_6": { "member_id": "esrs:BusinessTravelMember", "label": "Cat 6 - Business travel" },
+        "cat_7": { "member_id": "esrs:EmployeeCommutingMember", "label": "Cat 7 - Employee commuting" },
+        "cat_8": { "member_id": "esrs:UpstreamLeasedMember", "label": "Cat 8 - Upstream leased assets" },
+        "cat_9": { "member_id": "esrs:DownstreamTransportMember", "label": "Cat 9 - Downstream transportation" },
+        "cat_10": { "member_id": "esrs:ProcessingSoldMember", "label": "Cat 10 - Processing of sold products" },
+        "cat_11": { "member_id": "esrs:UseSoldMember", "label": "Cat 11 - Use of sold products" },
+        "cat_12": { "member_id": "esrs:EndOfLifeMember", "label": "Cat 12 - End-of-life treatment" },
+        "cat_13": { "member_id": "esrs:DownstreamLeasedMember", "label": "Cat 13 - Downstream leased assets" },
+        "cat_14": { "member_id": "esrs:FranchisesMember", "label": "Cat 14 - Franchises" },
+        "cat_15": { "member_id": "esrs:InvestmentsMember", "label": "Cat 15 - Investments" }
+      }
+    },
+    "energy_source": {
+      "dimension_id": "esrs:EnergySourceDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:EnergySourceDomain",
+      "members": {
+        "renewable": { "member_id": "esrs:RenewableEnergyMember", "label": "Renewable energy" },
+        "non_renewable": { "member_id": "esrs:NonRenewableEnergyMember", "label": "Non-renewable energy" },
+        "nuclear": { "member_id": "esrs:NuclearEnergyMember", "label": "Nuclear energy" },
+        "fossil_coal": { "member_id": "esrs:FossilCoalMember", "label": "Fossil - Coal" },
+        "fossil_oil": { "member_id": "esrs:FossilOilMember", "label": "Fossil - Oil" },
+        "fossil_gas": { "member_id": "esrs:FossilGasMember", "label": "Fossil - Natural Gas" },
+        "solar": { "member_id": "esrs:SolarMember", "label": "Solar" },
+        "wind": { "member_id": "esrs:WindMember", "label": "Wind" },
+        "hydro": { "member_id": "esrs:HydroMember", "label": "Hydropower" },
+        "biomass": { "member_id": "esrs:BiomassMember", "label": "Biomass" },
+        "geothermal": { "member_id": "esrs:GeothermalMember", "label": "Geothermal" },
+        "total": { "member_id": "esrs:TotalEnergyMember", "label": "Total energy" }
+      }
+    },
+    "geographic": {
+      "dimension_id": "esrs:GeographicDimension",
+      "dimension_type": "typed",
+      "is_typed": true,
+      "typed_domain_ref": "esrs:CountryCode",
+      "data_type": "xbrli:stringItemType",
+      "description": "ISO 3166-1 alpha-2 country code"
+    },
+    "gender": {
+      "dimension_id": "esrs:GenderDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:GenderDomain",
+      "members": {
+        "male": { "member_id": "esrs:MaleMember", "label": "Male" },
+        "female": { "member_id": "esrs:FemaleMember", "label": "Female" },
+        "other": { "member_id": "esrs:OtherGenderMember", "label": "Other" },
+        "undisclosed": { "member_id": "esrs:UndisclosedGenderMember", "label": "Not disclosed" },
+        "total": { "member_id": "esrs:TotalGenderMember", "label": "Total" }
+      }
+    },
+    "age_group": {
+      "dimension_id": "esrs:AgeGroupDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:AgeGroupDomain",
+      "members": {
+        "under_30": { "member_id": "esrs:Under30Member", "label": "Under 30 years" },
+        "between_30_50": { "member_id": "esrs:Between30And50Member", "label": "30-50 years" },
+        "over_50": { "member_id": "esrs:Over50Member", "label": "Over 50 years" },
+        "total": { "member_id": "esrs:TotalAgeGroupMember", "label": "Total" }
+      }
+    },
+    "employment_type": {
+      "dimension_id": "esrs:EmploymentTypeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:EmploymentTypeDomain",
+      "members": {
+        "permanent": { "member_id": "esrs:PermanentMember", "label": "Permanent employees" },
+        "temporary": { "member_id": "esrs:TemporaryMember", "label": "Temporary employees" },
+        "fte": { "member_id": "esrs:FTEMember", "label": "Full-time equivalent" },
+        "headcount": { "member_id": "esrs:HeadcountMember", "label": "Headcount" },
+        "full_time": { "member_id": "esrs:FullTimeMember", "label": "Full-time" },
+        "part_time": { "member_id": "esrs:PartTimeMember", "label": "Part-time" },
+        "total": { "member_id": "esrs:TotalEmploymentMember", "label": "Total" }
+      }
+    },
+    "workforce_category": {
+      "dimension_id": "esrs:WorkforceCategoryDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:WorkforceCategoryDomain",
+      "members": {
+        "management": { "member_id": "esrs:ManagementMember", "label": "Management" },
+        "senior_management": { "member_id": "esrs:SeniorManagementMember", "label": "Senior management" },
+        "non_management": { "member_id": "esrs:NonManagementMember", "label": "Non-management" },
+        "total": { "member_id": "esrs:TotalWorkforceMember", "label": "Total workforce" }
+      }
+    },
+    "reporting_period": {
+      "dimension_id": "esrs:ReportingPeriodDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:ReportingPeriodDomain",
+      "members": {
+        "current": { "member_id": "esrs:CurrentPeriodMember", "label": "Current reporting period" },
+        "previous": { "member_id": "esrs:PreviousPeriodMember", "label": "Previous reporting period" },
+        "base_year": { "member_id": "esrs:BaseYearMember", "label": "Base year" },
+        "target_year": { "member_id": "esrs:TargetYearMember", "label": "Target year" }
+      }
+    },
+    "consolidation_scope": {
+      "dimension_id": "esrs:ConsolidationScopeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:ConsolidationScopeDomain",
+      "members": {
+        "consolidated": { "member_id": "esrs:ConsolidatedMember", "label": "Consolidated" },
+        "parent_only": { "member_id": "esrs:ParentOnlyMember", "label": "Parent company only" },
+        "proportional": { "member_id": "esrs:ProportionalMember", "label": "Proportional consolidation" },
+        "equity_method": { "member_id": "esrs:EquityMethodMember", "label": "Equity method" }
+      }
+    },
+    "water_source": {
+      "dimension_id": "esrs:WaterSourceDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:WaterSourceDomain",
+      "members": {
+        "surface_water": { "member_id": "esrs:SurfaceWaterMember", "label": "Surface water" },
+        "groundwater": { "member_id": "esrs:GroundwaterMember", "label": "Groundwater" },
+        "seawater": { "member_id": "esrs:SeawaterMember", "label": "Seawater" },
+        "produced_water": { "member_id": "esrs:ProducedWaterMember", "label": "Produced water" },
+        "third_party": { "member_id": "esrs:ThirdPartyWaterMember", "label": "Third-party water" },
+        "total": { "member_id": "esrs:TotalWaterMember", "label": "Total water" }
+      }
+    },
+    "waste_type": {
+      "dimension_id": "esrs:WasteTypeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:WasteTypeDomain",
+      "members": {
+        "hazardous": { "member_id": "esrs:HazardousWasteMember", "label": "Hazardous waste" },
+        "non_hazardous": { "member_id": "esrs:NonHazardousWasteMember", "label": "Non-hazardous waste" },
+        "radioactive": { "member_id": "esrs:RadioactiveWasteMember", "label": "Radioactive waste" },
+        "total": { "member_id": "esrs:TotalWasteMember", "label": "Total waste" }
+      }
+    },
+    "waste_treatment": {
+      "dimension_id": "esrs:WasteTreatmentDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:WasteTreatmentDomain",
+      "members": {
+        "recycled": { "member_id": "esrs:RecycledMember", "label": "Recycled" },
+        "reused": { "member_id": "esrs:ReusedMember", "label": "Reused" },
+        "composted": { "member_id": "esrs:CompostedMember", "label": "Composted" },
+        "incinerated_recovery": { "member_id": "esrs:IncineratedRecoveryMember", "label": "Incinerated with energy recovery" },
+        "incinerated_no_recovery": { "member_id": "esrs:IncineratedNoRecoveryMember", "label": "Incinerated without energy recovery" },
+        "landfill": { "member_id": "esrs:LandfillMember", "label": "Landfill" },
+        "other_disposal": { "member_id": "esrs:OtherDisposalMember", "label": "Other disposal" },
+        "total": { "member_id": "esrs:TotalWasteTreatmentMember", "label": "Total waste treatment" }
+      }
+    },
+    "pollutant": {
+      "dimension_id": "esrs:PollutantDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:PollutantDomain",
+      "members": {
+        "nox": { "member_id": "esrs:NOxMember", "label": "Nitrogen oxides (NOx)" },
+        "sox": { "member_id": "esrs:SOxMember", "label": "Sulphur oxides (SOx)" },
+        "pm": { "member_id": "esrs:ParticulateMatterMember", "label": "Particulate matter (PM)" },
+        "voc": { "member_id": "esrs:VOCMember", "label": "Volatile organic compounds (VOC)" },
+        "heavy_metals": { "member_id": "esrs:HeavyMetalsMember", "label": "Heavy metals" },
+        "persistent_organic": { "member_id": "esrs:PersistentOrganicMember", "label": "Persistent organic pollutants" },
+        "microplastics": { "member_id": "esrs:MicroplasticsMember", "label": "Microplastics" }
+      }
+    },
+    "biodiversity_metric": {
+      "dimension_id": "esrs:BiodiversityMetricDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:BiodiversityMetricDomain",
+      "members": {
+        "land_use_change": { "member_id": "esrs:LandUseChangeMember", "label": "Land use change" },
+        "species_impact": { "member_id": "esrs:SpeciesImpactMember", "label": "Species impact" },
+        "habitat_degradation": { "member_id": "esrs:HabitatDegradationMember", "label": "Habitat degradation" },
+        "ecosystem_services": { "member_id": "esrs:EcosystemServicesMember", "label": "Ecosystem services" }
+      }
+    },
+    "resource_type": {
+      "dimension_id": "esrs:ResourceTypeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:ResourceTypeDomain",
+      "members": {
+        "renewable_material": { "member_id": "esrs:RenewableMaterialMember", "label": "Renewable material" },
+        "non_renewable_material": { "member_id": "esrs:NonRenewableMaterialMember", "label": "Non-renewable material" },
+        "recycled_input": { "member_id": "esrs:RecycledInputMember", "label": "Recycled input" },
+        "virgin_material": { "member_id": "esrs:VirginMaterialMember", "label": "Virgin material" },
+        "total": { "member_id": "esrs:TotalResourceMember", "label": "Total resources" }
+      }
+    },
+    "stakeholder_category": {
+      "dimension_id": "esrs:StakeholderCategoryDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:StakeholderCategoryDomain",
+      "members": {
+        "own_workforce": { "member_id": "esrs:OwnWorkforceMember", "label": "Own workforce" },
+        "supply_chain_workers": { "member_id": "esrs:SupplyChainWorkersMember", "label": "Workers in the value chain" },
+        "affected_communities": { "member_id": "esrs:AffectedCommunitiesMember", "label": "Affected communities" },
+        "consumers": { "member_id": "esrs:ConsumersMember", "label": "Consumers and end-users" }
+      }
+    },
+    "governance_body": {
+      "dimension_id": "esrs:GovernanceBodyDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:GovernanceBodyDomain",
+      "members": {
+        "board": { "member_id": "esrs:BoardMember", "label": "Board of Directors" },
+        "supervisory": { "member_id": "esrs:SupervisoryBoardMember", "label": "Supervisory Board" },
+        "management": { "member_id": "esrs:ManagementBoardMember", "label": "Management Board" },
+        "audit_committee": { "member_id": "esrs:AuditCommitteeMember", "label": "Audit Committee" },
+        "sustainability_committee": { "member_id": "esrs:SustainabilityCommitteeMember", "label": "Sustainability Committee" }
+      }
+    },
+    "materiality_type": {
+      "dimension_id": "esrs:MaterialityTypeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:MaterialityTypeDomain",
+      "members": {
+        "impact": { "member_id": "esrs:ImpactMaterialityMember", "label": "Impact materiality" },
+        "financial": { "member_id": "esrs:FinancialMaterialityMember", "label": "Financial materiality" },
+        "double": { "member_id": "esrs:DoubleMaterialityMember", "label": "Double materiality" }
+      }
+    },
+    "time_horizon": {
+      "dimension_id": "esrs:TimeHorizonDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:TimeHorizonDomain",
+      "members": {
+        "short_term": { "member_id": "esrs:ShortTermMember", "label": "Short-term (0-1 year)" },
+        "medium_term": { "member_id": "esrs:MediumTermMember", "label": "Medium-term (1-5 years)" },
+        "long_term": { "member_id": "esrs:LongTermMember", "label": "Long-term (>5 years)" }
+      }
+    },
+    "target_type": {
+      "dimension_id": "esrs:TargetTypeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:TargetTypeDomain",
+      "members": {
+        "absolute": { "member_id": "esrs:AbsoluteTargetMember", "label": "Absolute target" },
+        "intensity": { "member_id": "esrs:IntensityTargetMember", "label": "Intensity target" },
+        "science_based": { "member_id": "esrs:ScienceBasedTargetMember", "label": "Science-based target" }
+      }
+    },
+    "financial_effect_type": {
+      "dimension_id": "esrs:FinancialEffectTypeDimension",
+      "dimension_type": "explicit",
+      "is_typed": false,
+      "domain": "esrs:FinancialEffectTypeDomain",
+      "members": {
+        "revenue": { "member_id": "esrs:RevenueEffectMember", "label": "Revenue impact" },
+        "cost": { "member_id": "esrs:CostEffectMember", "label": "Cost impact" },
+        "asset_value": { "member_id": "esrs:AssetValueEffectMember", "label": "Asset value impact" },
+        "capital_access": { "member_id": "esrs:CapitalAccessEffectMember", "label": "Capital access impact" }
+      }
+    }
+  },
+  "elements": {
+    "ESRS2_BP1_001": {
+      "element_id": "esrs:BasisForPreparation",
+      "name": "BasisForPreparation",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "BP-1",
+      "labels": {
+        "en": "Basis for preparation of sustainability statement",
+        "de": "Grundlage der Erstellung der Nachhaltigkeitserklaerung",
+        "fr": "Base de preparation de la declaration de durabilite",
+        "es": "Base de preparacion de la declaracion de sostenibilidad"
+      }
+    },
+    "ESRS2_BP1_002": {
+      "element_id": "esrs:ConsolidationBasis",
+      "name": "ConsolidationBasis",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "BP-1",
+      "labels": {
+        "en": "Scope of consolidation",
+        "de": "Konsolidierungskreis",
+        "fr": "Perimetre de consolidation",
+        "es": "Ambito de consolidacion"
+      }
+    },
+    "ESRS2_BP2_001": {
+      "element_id": "esrs:DisclosuresRelatedToSpecificCircumstances",
+      "name": "DisclosuresRelatedToSpecificCircumstances",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "BP-2",
+      "labels": {
+        "en": "Disclosures in relation to specific circumstances",
+        "de": "Angaben zu besonderen Umstaenden",
+        "fr": "Informations relatives a des circonstances specifiques",
+        "es": "Informacion relativa a circunstancias especificas"
+      }
+    },
+    "ESRS2_GOV1_001": {
+      "element_id": "esrs:RoleOfGovernanceBodies",
+      "name": "RoleOfGovernanceBodies",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-1",
+      "labels": {
+        "en": "Role of administrative, management and supervisory bodies",
+        "de": "Rolle der Verwaltungs-, Management- und Aufsichtsgremien",
+        "fr": "Role des organes d'administration, de direction et de surveillance",
+        "es": "Funcion de los organos de administracion, direccion y supervision"
+      }
+    },
+    "ESRS2_GOV1_002": {
+      "element_id": "esrs:BoardSustainabilityExpertise",
+      "name": "BoardSustainabilityExpertise",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:booleanItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-1",
+      "labels": {
+        "en": "Board has sustainability expertise",
+        "de": "Gremium verfuegt ueber Nachhaltigkeitsexpertise",
+        "fr": "Le conseil dispose d'expertise en durabilite",
+        "es": "El consejo tiene experiencia en sostenibilidad"
+      }
+    },
+    "ESRS2_GOV1_003": {
+      "element_id": "esrs:PercentageOfBoardWithSustainabilityExpertise",
+      "name": "PercentageOfBoardWithSustainabilityExpertise",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-1",
+      "labels": {
+        "en": "Percentage of board members with sustainability expertise",
+        "de": "Anteil der Gremiumsmitglieder mit Nachhaltigkeitsexpertise",
+        "fr": "Pourcentage de membres du conseil ayant une expertise en durabilite",
+        "es": "Porcentaje de miembros del consejo con experiencia en sostenibilidad"
+      }
+    },
+    "ESRS2_GOV2_001": {
+      "element_id": "esrs:InformationProvidedToGovernanceBodies",
+      "name": "InformationProvidedToGovernanceBodies",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-2",
+      "labels": {
+        "en": "Information provided to and sustainability matters addressed by governance bodies",
+        "de": "Den Leitungsorganen vorgelegte Informationen und behandelte Nachhaltigkeitsthemen",
+        "fr": "Informations fournies aux organes de gouvernance et questions de durabilite traitees",
+        "es": "Informacion proporcionada a los organos de gobierno y cuestiones de sostenibilidad tratadas"
+      }
+    },
+    "ESRS2_GOV3_001": {
+      "element_id": "esrs:SustainabilityIncentives",
+      "name": "SustainabilityIncentives",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-3",
+      "labels": {
+        "en": "Integration of sustainability performance in incentive schemes",
+        "de": "Integration der Nachhaltigkeitsleistung in Verguetungssysteme",
+        "fr": "Integration de la performance en matiere de durabilite dans les regimes d'incitation",
+        "es": "Integracion del rendimiento en sostenibilidad en los esquemas de incentivos"
+      }
+    },
+    "ESRS2_GOV3_002": {
+      "element_id": "esrs:PercentageOfRemunerationLinkedToSustainability",
+      "name": "PercentageOfRemunerationLinkedToSustainability",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-3",
+      "labels": {
+        "en": "Percentage of variable remuneration linked to sustainability targets",
+        "de": "Anteil der variablen Verguetung, der an Nachhaltigkeitsziele gebunden ist",
+        "fr": "Pourcentage de la remuneration variable liee aux objectifs de durabilite",
+        "es": "Porcentaje de la remuneracion variable vinculada a objetivos de sostenibilidad"
+      }
+    },
+    "ESRS2_GOV4_001": {
+      "element_id": "esrs:DueDiligenceStatement",
+      "name": "DueDiligenceStatement",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-4",
+      "labels": {
+        "en": "Statement on due diligence",
+        "de": "Erklaerung zur Sorgfaltspflicht",
+        "fr": "Declaration sur le devoir de diligence raisonnable",
+        "es": "Declaracion sobre la diligencia debida"
+      }
+    },
+    "ESRS2_GOV5_001": {
+      "element_id": "esrs:RiskManagementIntegration",
+      "name": "RiskManagementIntegration",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "GOV-5",
+      "labels": {
+        "en": "Risk management and internal controls over sustainability reporting",
+        "de": "Risikomanagement und interne Kontrollen der Nachhaltigkeitsberichterstattung",
+        "fr": "Gestion des risques et controles internes de la communication en matiere de durabilite",
+        "es": "Gestion de riesgos y controles internos sobre la informacion de sostenibilidad"
+      }
+    },
+    "ESRS2_SBM1_001": {
+      "element_id": "esrs:StrategyBusinessModelDescription",
+      "name": "StrategyBusinessModelDescription",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "SBM-1",
+      "labels": {
+        "en": "Strategy, business model and value chain",
+        "de": "Strategie, Geschaeftsmodell und Wertschoepfungskette",
+        "fr": "Strategie, modele commercial et chaine de valeur",
+        "es": "Estrategia, modelo de negocio y cadena de valor"
+      }
+    },
+    "ESRS2_SBM1_002": {
+      "element_id": "esrs:NumberOfEmployees",
+      "name": "NumberOfEmployees",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:integerItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "SBM-1",
+      "labels": {
+        "en": "Total number of employees",
+        "de": "Gesamtzahl der Beschaeftigten",
+        "fr": "Nombre total de salaries",
+        "es": "Numero total de empleados"
+      }
+    },
+    "ESRS2_SBM1_003": {
+      "element_id": "esrs:Revenue",
+      "name": "Revenue",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "credit",
+      "standard": "ESRS-2",
+      "disclosure_requirement": "SBM-1",
+      "labels": {
+        "en": "Net revenue",
+        "de": "Nettoumsatz",
+        "fr": "Chiffre d'affaires net",
+        "es": "Ingresos netos"
+      }
+    },
+    "ESRS2_SBM2_001": {
+      "element_id": "esrs:InterestsAndViewsOfStakeholders",
+      "name": "InterestsAndViewsOfStakeholders",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "SBM-2",
+      "labels": {
+        "en": "Interests and views of stakeholders",
+        "de": "Interessen und Standpunkte der Stakeholder",
+        "fr": "Interets et points de vue des parties prenantes",
+        "es": "Intereses y puntos de vista de las partes interesadas"
+      }
+    },
+    "ESRS2_SBM3_001": {
+      "element_id": "esrs:MaterialImpactsRisksOpportunities",
+      "name": "MaterialImpactsRisksOpportunities",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "SBM-3",
+      "labels": {
+        "en": "Material impacts, risks and opportunities and their interaction with strategy and business model",
+        "de": "Wesentliche Auswirkungen, Risiken und Chancen und deren Zusammenhang mit Strategie und Geschaeftsmodell",
+        "fr": "Impacts, risques et opportunites materiels et leur interaction avec la strategie et le modele commercial",
+        "es": "Impactos, riesgos y oportunidades materiales y su interaccion con la estrategia y el modelo de negocio"
+      }
+    },
+    "ESRS2_IRO1_001": {
+      "element_id": "esrs:MaterialityAssessmentProcess",
+      "name": "MaterialityAssessmentProcess",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "IRO-1",
+      "labels": {
+        "en": "Description of processes to identify and assess material impacts, risks and opportunities",
+        "de": "Beschreibung der Verfahren zur Ermittlung und Bewertung wesentlicher Auswirkungen, Risiken und Chancen",
+        "fr": "Description des processus d'identification et d'evaluation des impacts, risques et opportunites materiels",
+        "es": "Descripcion de los procesos de identificacion y evaluacion de impactos, riesgos y oportunidades materiales"
+      }
+    },
+    "ESRS2_IRO2_001": {
+      "element_id": "esrs:DisclosureRequirementsinESRS",
+      "name": "DisclosureRequirementsinESRS",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "IRO-2",
+      "labels": {
+        "en": "Disclosure requirements in ESRS covered by the sustainability statement",
+        "de": "In der Nachhaltigkeitserklaerung behandelte Angabepflichten der ESRS",
+        "fr": "Exigences de divulgation des ESRS couvertes par la declaration de durabilite",
+        "es": "Requisitos de divulgacion en las ESRS cubiertos por la declaracion de sostenibilidad"
+      }
+    },
+    "ESRS2_MDR_P_001": {
+      "element_id": "esrs:PoliciesAdopted",
+      "name": "PoliciesAdopted",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "MDR-P",
+      "labels": {
+        "en": "Policies adopted to manage material sustainability matters",
+        "de": "Strategien zur Steuerung wesentlicher Nachhaltigkeitsthemen",
+        "fr": "Politiques adoptees pour gerer les questions de durabilite materielles",
+        "es": "Politicas adoptadas para gestionar cuestiones de sostenibilidad materiales"
+      }
+    },
+    "ESRS2_MDR_A_001": {
+      "element_id": "esrs:ActionsAndResources",
+      "name": "ActionsAndResources",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "MDR-A",
+      "labels": {
+        "en": "Actions and resources in relation to material sustainability matters",
+        "de": "Massnahmen und Ressourcen in Bezug auf wesentliche Nachhaltigkeitsthemen",
+        "fr": "Actions et ressources en relation avec les questions de durabilite materielles",
+        "es": "Acciones y recursos en relacion con cuestiones de sostenibilidad materiales"
+      }
+    },
+    "ESRS2_MDR_T_001": {
+      "element_id": "esrs:MeasurableTargets",
+      "name": "MeasurableTargets",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "MDR-T",
+      "labels": {
+        "en": "Tracking effectiveness of policies and actions through targets",
+        "de": "Verfolgung der Wirksamkeit von Strategien und Massnahmen durch Ziele",
+        "fr": "Suivi de l'efficacite des politiques et des actions au moyen d'objectifs",
+        "es": "Seguimiento de la eficacia de las politicas y acciones a traves de objetivos"
+      }
+    },
+    "ESRS2_MDR_M_001": {
+      "element_id": "esrs:MetricsForMaterialMatters",
+      "name": "MetricsForMaterialMatters",
+      "namespace": "esrs-cor",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-2",
+      "disclosure_requirement": "MDR-M",
+      "labels": {
+        "en": "Metrics in relation to material sustainability matters",
+        "de": "Kennzahlen zu wesentlichen Nachhaltigkeitsthemen",
+        "fr": "Indicateurs relatifs aux questions de durabilite materielles",
+        "es": "Metricas en relacion con cuestiones de sostenibilidad materiales"
+      }
+    },
+    "E1_E1_001": {
+      "element_id": "esrs:TransitionPlanForClimateChangeMitigation",
+      "name": "TransitionPlanForClimateChangeMitigation",
+      "namespace": "esrs-e1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-1",
+      "labels": {
+        "en": "Transition plan for climate change mitigation",
+        "de": "Uebergangsplan zur Eindaemmung des Klimawandels",
+        "fr": "Plan de transition pour l'attenuation du changement climatique",
+        "es": "Plan de transicion para la mitigacion del cambio climatico"
+      }
+    },
+    "E1_E1_002": {
+      "element_id": "esrs:GHGReductionTargetsAlignedWithParisAgreement",
+      "name": "GHGReductionTargetsAlignedWithParisAgreement",
+      "namespace": "esrs-e1",
+      "data_type": "xbrli:booleanItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-1",
+      "labels": {
+        "en": "GHG reduction targets aligned with Paris Agreement",
+        "de": "Treibhausgasreduktionsziele im Einklang mit dem Pariser Abkommen",
+        "fr": "Objectifs de reduction des GES alignes sur l'Accord de Paris",
+        "es": "Objetivos de reduccion de GEI alineados con el Acuerdo de Paris"
+      }
+    },
+    "E1_E1_003": {
+      "element_id": "esrs:LockedInGHGEmissions",
+      "name": "LockedInGHGEmissions",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2eItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-1",
+      "labels": {
+        "en": "Locked-in GHG emissions from existing assets",
+        "de": "Gebundene Treibhausgasemissionen aus bestehenden Vermoegenswerten",
+        "fr": "Emissions de GES figees provenant d'actifs existants",
+        "es": "Emisiones de GEI comprometidas de activos existentes"
+      }
+    },
+    "E1_E1_004": {
+      "element_id": "esrs:CompatibilityWithParisAgreement15Limit",
+      "name": "CompatibilityWithParisAgreement15Limit",
+      "namespace": "esrs-e1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-1",
+      "labels": {
+        "en": "Compatibility of transition plan with 1.5C limit",
+        "de": "Vereinbarkeit des Uebergangsplans mit dem 1,5C-Ziel",
+        "fr": "Compatibilite du plan de transition avec la limite de 1,5C",
+        "es": "Compatibilidad del plan de transicion con el limite de 1,5C"
+      }
+    },
+    "E1_E14_001": {
+      "element_id": "esrs:PoliciesOnClimateChangeMitigation",
+      "name": "PoliciesOnClimateChangeMitigation",
+      "namespace": "esrs-e1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-2 through E1-4",
+      "labels": {
+        "en": "Policies, actions and targets related to climate change",
+        "de": "Strategien, Massnahmen und Ziele im Zusammenhang mit dem Klimawandel",
+        "fr": "Politiques, actions et objectifs lies au changement climatique",
+        "es": "Politicas, acciones y objetivos relacionados con el cambio climatico"
+      }
+    },
+    "E1_E15_001": {
+      "element_id": "esrs:EnergyConsumptionTotal",
+      "name": "EnergyConsumptionTotal",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:MWhItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-5",
+      "dimensions": ["energy_source"],
+      "labels": {
+        "en": "Total energy consumption",
+        "de": "Gesamtenergieverbrauch",
+        "fr": "Consommation totale d'energie",
+        "es": "Consumo total de energia"
+      }
+    },
+    "E1_E15_002": {
+      "element_id": "esrs:EnergyConsumptionFromRenewableSources",
+      "name": "EnergyConsumptionFromRenewableSources",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:MWhItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-5",
+      "labels": {
+        "en": "Energy consumption from renewable sources",
+        "de": "Energieverbrauch aus erneuerbaren Quellen",
+        "fr": "Consommation d'energie provenant de sources renouvelables",
+        "es": "Consumo de energia de fuentes renovables"
+      }
+    },
+    "E1_E15_003": {
+      "element_id": "esrs:EnergyConsumptionFromNonRenewableSources",
+      "name": "EnergyConsumptionFromNonRenewableSources",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:MWhItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-5",
+      "labels": {
+        "en": "Energy consumption from non-renewable sources",
+        "de": "Energieverbrauch aus nicht erneuerbaren Quellen",
+        "fr": "Consommation d'energie provenant de sources non renouvelables",
+        "es": "Consumo de energia de fuentes no renovables"
+      }
+    },
+    "E1_E15_004": {
+      "element_id": "esrs:EnergyIntensity",
+      "name": "EnergyIntensity",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:MWhPerRevenueItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-5",
+      "labels": {
+        "en": "Energy intensity per net revenue",
+        "de": "Energieintensitaet pro Nettoumsatz",
+        "fr": "Intensite energetique par chiffre d'affaires net",
+        "es": "Intensidad energetica por ingresos netos"
+      }
+    },
+    "E1_E15_005": {
+      "element_id": "esrs:ShareOfRenewableEnergy",
+      "name": "ShareOfRenewableEnergy",
+      "namespace": "esrs-e1",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-5",
+      "labels": {
+        "en": "Share of renewable energy in total energy consumption",
+        "de": "Anteil erneuerbarer Energien am Gesamtenergieverbrauch",
+        "fr": "Part de l'energie renouvelable dans la consommation totale d'energie",
+        "es": "Participacion de la energia renovable en el consumo total de energia"
+      }
+    },
+    "E1_E16_001": {
+      "element_id": "esrs:GrossScope1GHGEmissions",
+      "name": "GrossScope1GHGEmissions",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2eItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "dimensions": ["ghg_scope", "geographic"],
+      "labels": {
+        "en": "Gross Scope 1 GHG emissions",
+        "de": "Brutto-Treibhausgasemissionen Scope 1",
+        "fr": "Emissions brutes de GES de Scope 1",
+        "es": "Emisiones brutas de GEI de Alcance 1"
+      }
+    },
+    "E1_E16_002": {
+      "element_id": "esrs:GrossScope2LocationBasedGHGEmissions",
+      "name": "GrossScope2LocationBasedGHGEmissions",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2eItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "dimensions": ["ghg_scope"],
+      "labels": {
+        "en": "Gross Scope 2 location-based GHG emissions",
+        "de": "Brutto-Treibhausgasemissionen Scope 2 (standortbasiert)",
+        "fr": "Emissions brutes de GES de Scope 2 basees sur la localisation",
+        "es": "Emisiones brutas de GEI de Alcance 2 basadas en la ubicacion"
+      }
+    },
+    "E1_E16_003": {
+      "element_id": "esrs:GrossScope2MarketBasedGHGEmissions",
+      "name": "GrossScope2MarketBasedGHGEmissions",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2eItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "dimensions": ["ghg_scope"],
+      "labels": {
+        "en": "Gross Scope 2 market-based GHG emissions",
+        "de": "Brutto-Treibhausgasemissionen Scope 2 (marktbasiert)",
+        "fr": "Emissions brutes de GES de Scope 2 basees sur le marche",
+        "es": "Emisiones brutas de GEI de Alcance 2 basadas en el mercado"
+      }
+    },
+    "E1_E16_004": {
+      "element_id": "esrs:GrossScope3GHGEmissions",
+      "name": "GrossScope3GHGEmissions",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2eItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "dimensions": ["ghg_scope", "scope3_category"],
+      "labels": {
+        "en": "Gross Scope 3 GHG emissions",
+        "de": "Brutto-Treibhausgasemissionen Scope 3",
+        "fr": "Emissions brutes de GES de Scope 3",
+        "es": "Emisiones brutas de GEI de Alcance 3"
+      }
+    },
+    "E1_E16_005": {
+      "element_id": "esrs:TotalGHGEmissions",
+      "name": "TotalGHGEmissions",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2eItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "labels": {
+        "en": "Total GHG emissions",
+        "de": "Gesamte Treibhausgasemissionen",
+        "fr": "Emissions totales de GES",
+        "es": "Emisiones totales de GEI"
+      }
+    },
+    "E1_E16_006": {
+      "element_id": "esrs:GHGEmissionsIntensityPerRevenue",
+      "name": "GHGEmissionsIntensityPerRevenue",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2ePerRevenueItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-6",
+      "labels": {
+        "en": "GHG emissions intensity per net revenue",
+        "de": "Treibhausgasintensitaet pro Nettoumsatz",
+        "fr": "Intensite des emissions de GES par chiffre d'affaires net",
+        "es": "Intensidad de emisiones de GEI por ingresos netos"
+      }
+    },
+    "E1_E17_001": {
+      "element_id": "esrs:GHGRemovalsSinks",
+      "name": "GHGRemovalsSinks",
+      "namespace": "esrs-e1",
+      "data_type": "esrs:tCO2eItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "credit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-7",
+      "labels": {
+        "en": "GHG removals and carbon credits",
+        "de": "Treibhausgasentfernungen und Emissionsgutschriften",
+        "fr": "Absorptions de GES et credits carbone",
+        "es": "Absorciones de GEI y creditos de carbono"
+      }
+    },
+    "E1_E18_001": {
+      "element_id": "esrs:InternalCarbonPricing",
+      "name": "InternalCarbonPricing",
+      "namespace": "esrs-e1",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-8",
+      "labels": {
+        "en": "Internal carbon pricing",
+        "de": "Interne CO2-Bepreisung",
+        "fr": "Tarification interne du carbone",
+        "es": "Precio interno del carbono"
+      }
+    },
+    "E1_E19_001": {
+      "element_id": "esrs:FinancialEffectsOfClimateChange",
+      "name": "FinancialEffectsOfClimateChange",
+      "namespace": "esrs-e1",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E1",
+      "disclosure_requirement": "E1-9",
+      "dimensions": ["financial_effect_type", "time_horizon"],
+      "labels": {
+        "en": "Anticipated financial effects from material physical and transition risks",
+        "de": "Erwartete finanzielle Auswirkungen wesentlicher physischer und transitorischer Risiken",
+        "fr": "Effets financiers anticipes des risques physiques et de transition materiels",
+        "es": "Efectos financieros anticipados de riesgos fisicos y de transicion materiales"
+      }
+    },
+    "E2_E21_001": {
+      "element_id": "esrs:PollutionPolicies",
+      "name": "PollutionPolicies",
+      "namespace": "esrs-e2",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E2",
+      "disclosure_requirement": "E2-1",
+      "labels": {
+        "en": "Policies related to pollution",
+        "de": "Strategien zur Umweltverschmutzung",
+        "fr": "Politiques liees a la pollution",
+        "es": "Politicas relacionadas con la contaminacion"
+      }
+    },
+    "E2_E24_001": {
+      "element_id": "esrs:PollutantsEmittedToAir",
+      "name": "PollutantsEmittedToAir",
+      "namespace": "esrs-e2",
+      "data_type": "esrs:tonnesItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E2",
+      "disclosure_requirement": "E2-4",
+      "dimensions": ["pollutant"],
+      "labels": {
+        "en": "Pollutants emitted to air",
+        "de": "Schadstoffemissionen in die Luft",
+        "fr": "Polluants emis dans l'air",
+        "es": "Contaminantes emitidos al aire"
+      }
+    },
+    "E2_E24_002": {
+      "element_id": "esrs:PollutantsEmittedToWater",
+      "name": "PollutantsEmittedToWater",
+      "namespace": "esrs-e2",
+      "data_type": "esrs:tonnesItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E2",
+      "disclosure_requirement": "E2-4",
+      "dimensions": ["pollutant"],
+      "labels": {
+        "en": "Pollutants emitted to water",
+        "de": "Schadstoffemissionen in das Wasser",
+        "fr": "Polluants emis dans l'eau",
+        "es": "Contaminantes emitidos al agua"
+      }
+    },
+    "E2_E24_003": {
+      "element_id": "esrs:PollutantsEmittedToSoil",
+      "name": "PollutantsEmittedToSoil",
+      "namespace": "esrs-e2",
+      "data_type": "esrs:tonnesItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E2",
+      "disclosure_requirement": "E2-4",
+      "labels": {
+        "en": "Pollutants emitted to soil",
+        "de": "Schadstoffemissionen in den Boden",
+        "fr": "Polluants emis dans le sol",
+        "es": "Contaminantes emitidos al suelo"
+      }
+    },
+    "E2_E25_001": {
+      "element_id": "esrs:SubstancesOfConcern",
+      "name": "SubstancesOfConcern",
+      "namespace": "esrs-e2",
+      "data_type": "esrs:tonnesItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E2",
+      "disclosure_requirement": "E2-5",
+      "labels": {
+        "en": "Substances of concern and substances of very high concern",
+        "de": "Besorgniserregende Stoffe und Stoffe mit sehr hoher Besorgnis",
+        "fr": "Substances preoccupantes et substances extremement preoccupantes",
+        "es": "Sustancias preocupantes y sustancias de muy alta preocupacion"
+      }
+    },
+    "E2_E26_001": {
+      "element_id": "esrs:FinancialEffectsOfPollution",
+      "name": "FinancialEffectsOfPollution",
+      "namespace": "esrs-e2",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E2",
+      "disclosure_requirement": "E2-6",
+      "labels": {
+        "en": "Anticipated financial effects from pollution-related risks and opportunities",
+        "de": "Erwartete finanzielle Auswirkungen aus verschmutzungsbezogenen Risiken und Chancen",
+        "fr": "Effets financiers anticipes des risques et opportunites lies a la pollution",
+        "es": "Efectos financieros anticipados de riesgos y oportunidades relacionados con la contaminacion"
+      }
+    },
+    "E3_E33_001": {
+      "element_id": "esrs:WaterConsumptionTotal",
+      "name": "WaterConsumptionTotal",
+      "namespace": "esrs-e3",
+      "data_type": "esrs:cubicMetreItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E3",
+      "disclosure_requirement": "E3-4",
+      "dimensions": ["water_source"],
+      "labels": {
+        "en": "Total water consumption",
+        "de": "Gesamtwasserverbrauch",
+        "fr": "Consommation totale d'eau",
+        "es": "Consumo total de agua"
+      }
+    },
+    "E3_E33_002": {
+      "element_id": "esrs:WaterWithdrawalTotal",
+      "name": "WaterWithdrawalTotal",
+      "namespace": "esrs-e3",
+      "data_type": "esrs:cubicMetreItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E3",
+      "disclosure_requirement": "E3-4",
+      "dimensions": ["water_source"],
+      "labels": {
+        "en": "Total water withdrawal",
+        "de": "Gesamtwasserentnahme",
+        "fr": "Total des prelevements d'eau",
+        "es": "Total de extraccion de agua"
+      }
+    },
+    "E3_E33_003": {
+      "element_id": "esrs:WaterDischargeTotal",
+      "name": "WaterDischargeTotal",
+      "namespace": "esrs-e3",
+      "data_type": "esrs:cubicMetreItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E3",
+      "disclosure_requirement": "E3-4",
+      "labels": {
+        "en": "Total water discharge",
+        "de": "Gesamtwassereinleitung",
+        "fr": "Total des rejets d'eau",
+        "es": "Total de descarga de agua"
+      }
+    },
+    "E3_E33_004": {
+      "element_id": "esrs:WaterConsumptionInWaterStressAreas",
+      "name": "WaterConsumptionInWaterStressAreas",
+      "namespace": "esrs-e3",
+      "data_type": "esrs:cubicMetreItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E3",
+      "disclosure_requirement": "E3-4",
+      "labels": {
+        "en": "Water consumption in areas at water risk",
+        "de": "Wasserverbrauch in Gebieten mit Wasserrisiko",
+        "fr": "Consommation d'eau dans les zones a risque hydrique",
+        "es": "Consumo de agua en zonas de riesgo hidrico"
+      }
+    },
+    "E3_E35_001": {
+      "element_id": "esrs:FinancialEffectsOfWater",
+      "name": "FinancialEffectsOfWater",
+      "namespace": "esrs-e3",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E3",
+      "disclosure_requirement": "E3-5",
+      "labels": {
+        "en": "Anticipated financial effects from water and marine resources risks",
+        "de": "Erwartete finanzielle Auswirkungen aus Wasser- und Meeresressourcenrisiken",
+        "fr": "Effets financiers anticipes des risques lies a l'eau et aux ressources marines",
+        "es": "Efectos financieros anticipados de riesgos de agua y recursos marinos"
+      }
+    },
+    "E4_E44_001": {
+      "element_id": "esrs:LandUseChangeTotal",
+      "name": "LandUseChangeTotal",
+      "namespace": "esrs-e4",
+      "data_type": "esrs:hectareItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E4",
+      "disclosure_requirement": "E4-4",
+      "labels": {
+        "en": "Total land use change",
+        "de": "Gesamte Landnutzungsaenderung",
+        "fr": "Changement total d'utilisation des terres",
+        "es": "Cambio total de uso del suelo"
+      }
+    },
+    "E4_E44_002": {
+      "element_id": "esrs:OperationsInOrNearBiodiversitySensitiveAreas",
+      "name": "OperationsInOrNearBiodiversitySensitiveAreas",
+      "namespace": "esrs-e4",
+      "data_type": "xbrli:integerItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E4",
+      "disclosure_requirement": "E4-4",
+      "labels": {
+        "en": "Number of sites in or near biodiversity-sensitive areas",
+        "de": "Anzahl der Standorte in oder in der Naehe von biodiversitaetssensiblen Gebieten",
+        "fr": "Nombre de sites dans ou a proximite de zones sensibles pour la biodiversite",
+        "es": "Numero de sitios en o cerca de areas sensibles a la biodiversidad"
+      }
+    },
+    "E4_E46_001": {
+      "element_id": "esrs:FinancialEffectsOfBiodiversity",
+      "name": "FinancialEffectsOfBiodiversity",
+      "namespace": "esrs-e4",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E4",
+      "disclosure_requirement": "E4-6",
+      "labels": {
+        "en": "Anticipated financial effects from biodiversity and ecosystem risks",
+        "de": "Erwartete finanzielle Auswirkungen aus Biodiversitaets- und Oekosystemrisiken",
+        "fr": "Effets financiers anticipes des risques lies a la biodiversite et aux ecosystemes",
+        "es": "Efectos financieros anticipados de riesgos de biodiversidad y ecosistemas"
+      }
+    },
+    "E5_E54_001": {
+      "element_id": "esrs:ResourceInflowTotal",
+      "name": "ResourceInflowTotal",
+      "namespace": "esrs-e5",
+      "data_type": "esrs:tonnesItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E5",
+      "disclosure_requirement": "E5-4",
+      "dimensions": ["resource_type"],
+      "labels": {
+        "en": "Total resource inflow",
+        "de": "Gesamter Ressourcenzufluss",
+        "fr": "Total des apports en ressources",
+        "es": "Total de entrada de recursos"
+      }
+    },
+    "E5_E54_002": {
+      "element_id": "esrs:RecycledContentShare",
+      "name": "RecycledContentShare",
+      "namespace": "esrs-e5",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-E5",
+      "disclosure_requirement": "E5-4",
+      "labels": {
+        "en": "Share of recycled content",
+        "de": "Anteil an recyceltem Material",
+        "fr": "Part de contenu recycle",
+        "es": "Porcentaje de contenido reciclado"
+      }
+    },
+    "E5_E55_001": {
+      "element_id": "esrs:WasteGenerated",
+      "name": "WasteGenerated",
+      "namespace": "esrs-e5",
+      "data_type": "esrs:tonnesItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E5",
+      "disclosure_requirement": "E5-5",
+      "dimensions": ["waste_type", "waste_treatment"],
+      "labels": {
+        "en": "Total waste generated",
+        "de": "Gesamtes erzeugtes Abfallaufkommen",
+        "fr": "Total des dechets generes",
+        "es": "Total de residuos generados"
+      }
+    },
+    "E5_E56_001": {
+      "element_id": "esrs:FinancialEffectsOfResourceUse",
+      "name": "FinancialEffectsOfResourceUse",
+      "namespace": "esrs-e5",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-E5",
+      "disclosure_requirement": "E5-6",
+      "labels": {
+        "en": "Anticipated financial effects from resource use and circular economy risks",
+        "de": "Erwartete finanzielle Auswirkungen aus Ressourcennutzungs- und Kreislaufwirtschaftsrisiken",
+        "fr": "Effets financiers anticipes des risques lies a l'utilisation des ressources et a l'economie circulaire",
+        "es": "Efectos financieros anticipados de riesgos de uso de recursos y economia circular"
+      }
+    },
+    "S1_S16_001": {
+      "element_id": "esrs:TotalEmployeesHeadcount",
+      "name": "TotalEmployeesHeadcount",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:integerItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-6",
+      "dimensions": ["gender", "age_group", "geographic", "employment_type"],
+      "labels": {
+        "en": "Total number of employees (headcount)",
+        "de": "Gesamtzahl der Beschaeftigten (Kopfzahl)",
+        "fr": "Nombre total de salaries (effectif)",
+        "es": "Numero total de empleados (plantilla)"
+      }
+    },
+    "S1_S16_002": {
+      "element_id": "esrs:TotalEmployeesFTE",
+      "name": "TotalEmployeesFTE",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:decimalItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-6",
+      "dimensions": ["gender", "age_group", "geographic"],
+      "labels": {
+        "en": "Total number of employees (FTE)",
+        "de": "Gesamtzahl der Beschaeftigten (VZAe)",
+        "fr": "Nombre total de salaries (ETP)",
+        "es": "Numero total de empleados (ETC)"
+      }
+    },
+    "S1_S16_003": {
+      "element_id": "esrs:EmployeeTurnoverRate",
+      "name": "EmployeeTurnoverRate",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-6",
+      "dimensions": ["gender"],
+      "labels": {
+        "en": "Employee turnover rate",
+        "de": "Mitarbeiterfluktuation",
+        "fr": "Taux de rotation du personnel",
+        "es": "Tasa de rotacion de empleados"
+      }
+    },
+    "S1_S17_001": {
+      "element_id": "esrs:GenderPayGap",
+      "name": "GenderPayGap",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-16",
+      "dimensions": ["workforce_category"],
+      "labels": {
+        "en": "Gender pay gap",
+        "de": "Geschlechtsspezifisches Lohngefaelle",
+        "fr": "Ecart de remuneration entre les sexes",
+        "es": "Brecha salarial de genero"
+      }
+    },
+    "S1_S19_001": {
+      "element_id": "esrs:WorkAccidents",
+      "name": "WorkAccidents",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:integerItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-14",
+      "labels": {
+        "en": "Number of work-related accidents",
+        "de": "Anzahl arbeitsbedingter Unfaelle",
+        "fr": "Nombre d'accidents du travail",
+        "es": "Numero de accidentes laborales"
+      }
+    },
+    "S1_S19_002": {
+      "element_id": "esrs:WorkRelatedFatalities",
+      "name": "WorkRelatedFatalities",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:integerItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-14",
+      "labels": {
+        "en": "Number of work-related fatalities",
+        "de": "Anzahl arbeitsbedingter Todesfaelle",
+        "fr": "Nombre de deces lies au travail",
+        "es": "Numero de muertes relacionadas con el trabajo"
+      }
+    },
+    "S1_S19_003": {
+      "element_id": "esrs:LostTimeInjuryFrequencyRate",
+      "name": "LostTimeInjuryFrequencyRate",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:decimalItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-14",
+      "labels": {
+        "en": "Lost time injury frequency rate (LTIFR)",
+        "de": "Haeufigkeit von Arbeitsunfaellen mit Ausfallzeit (LTIFR)",
+        "fr": "Taux de frequence des accidents avec arret de travail",
+        "es": "Tasa de frecuencia de lesiones con tiempo perdido"
+      }
+    },
+    "S1_S110_001": {
+      "element_id": "esrs:AdequateWages",
+      "name": "AdequateWages",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:booleanItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-10",
+      "labels": {
+        "en": "All employees paid adequate wages",
+        "de": "Alle Beschaeftigten erhalten angemessene Loehne",
+        "fr": "Tous les salaries recoivent des salaires adequats",
+        "es": "Todos los empleados reciben salarios adecuados"
+      }
+    },
+    "S1_S117_001": {
+      "element_id": "esrs:BoardGenderDiversity",
+      "name": "BoardGenderDiversity",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "instant",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-9",
+      "dimensions": ["gender", "governance_body"],
+      "labels": {
+        "en": "Percentage of board members by gender",
+        "de": "Anteil der Gremienmitglieder nach Geschlecht",
+        "fr": "Pourcentage des membres du conseil par genre",
+        "es": "Porcentaje de miembros del consejo por genero"
+      }
+    },
+    "S1_S1_TRAINING_001": {
+      "element_id": "esrs:TrainingHoursPerEmployee",
+      "name": "TrainingHoursPerEmployee",
+      "namespace": "esrs-s1",
+      "data_type": "xbrli:decimalItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S1",
+      "disclosure_requirement": "S1-13",
+      "dimensions": ["gender"],
+      "labels": {
+        "en": "Average training hours per employee",
+        "de": "Durchschnittliche Schulungsstunden pro Beschaeftigtem",
+        "fr": "Heures moyennes de formation par salarie",
+        "es": "Horas promedio de capacitacion por empleado"
+      }
+    },
+    "S2_S21_001": {
+      "element_id": "esrs:ValueChainWorkersPolicies",
+      "name": "ValueChainWorkersPolicies",
+      "namespace": "esrs-s2",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S2",
+      "disclosure_requirement": "S2-1",
+      "labels": {
+        "en": "Policies related to value chain workers",
+        "de": "Strategien zu Arbeitnehmern in der Wertschoepfungskette",
+        "fr": "Politiques relatives aux travailleurs de la chaine de valeur",
+        "es": "Politicas relacionadas con los trabajadores de la cadena de valor"
+      }
+    },
+    "S2_S25_001": {
+      "element_id": "esrs:ValueChainWorkersImpacts",
+      "name": "ValueChainWorkersImpacts",
+      "namespace": "esrs-s2",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S2",
+      "disclosure_requirement": "S2-5",
+      "labels": {
+        "en": "Impacts on value chain workers",
+        "de": "Auswirkungen auf Arbeitnehmer in der Wertschoepfungskette",
+        "fr": "Impacts sur les travailleurs de la chaine de valeur",
+        "es": "Impactos en los trabajadores de la cadena de valor"
+      }
+    },
+    "S3_S31_001": {
+      "element_id": "esrs:AffectedCommunitiesPolicies",
+      "name": "AffectedCommunitiesPolicies",
+      "namespace": "esrs-s3",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S3",
+      "disclosure_requirement": "S3-1",
+      "labels": {
+        "en": "Policies related to affected communities",
+        "de": "Strategien zu betroffenen Gemeinschaften",
+        "fr": "Politiques relatives aux communautes affectees",
+        "es": "Politicas relacionadas con las comunidades afectadas"
+      }
+    },
+    "S3_S35_001": {
+      "element_id": "esrs:AffectedCommunitiesImpacts",
+      "name": "AffectedCommunitiesImpacts",
+      "namespace": "esrs-s3",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S3",
+      "disclosure_requirement": "S3-5",
+      "labels": {
+        "en": "Material impacts on affected communities",
+        "de": "Wesentliche Auswirkungen auf betroffene Gemeinschaften",
+        "fr": "Impacts materiels sur les communautes affectees",
+        "es": "Impactos materiales en las comunidades afectadas"
+      }
+    },
+    "S4_S41_001": {
+      "element_id": "esrs:ConsumerPolicies",
+      "name": "ConsumerPolicies",
+      "namespace": "esrs-s4",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S4",
+      "disclosure_requirement": "S4-1",
+      "labels": {
+        "en": "Policies related to consumers and end-users",
+        "de": "Strategien zu Verbrauchern und Endnutzern",
+        "fr": "Politiques relatives aux consommateurs et utilisateurs finaux",
+        "es": "Politicas relacionadas con consumidores y usuarios finales"
+      }
+    },
+    "S4_S45_001": {
+      "element_id": "esrs:ConsumerImpacts",
+      "name": "ConsumerImpacts",
+      "namespace": "esrs-s4",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-S4",
+      "disclosure_requirement": "S4-5",
+      "labels": {
+        "en": "Material impacts on consumers and end-users",
+        "de": "Wesentliche Auswirkungen auf Verbraucher und Endnutzer",
+        "fr": "Impacts materiels sur les consommateurs et utilisateurs finaux",
+        "es": "Impactos materiales en consumidores y usuarios finales"
+      }
+    },
+    "G1_G11_001": {
+      "element_id": "esrs:BusinessConductPolicies",
+      "name": "BusinessConductPolicies",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-1",
+      "labels": {
+        "en": "Business conduct policies and corporate culture",
+        "de": "Unternehmensfuehrung und Unternehmenskultur",
+        "fr": "Politiques de conduite des affaires et culture d'entreprise",
+        "es": "Politicas de conducta empresarial y cultura corporativa"
+      }
+    },
+    "G1_G12_001": {
+      "element_id": "esrs:RelationshipsWithSuppliers",
+      "name": "RelationshipsWithSuppliers",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-2",
+      "labels": {
+        "en": "Management of relationships with suppliers",
+        "de": "Management der Beziehungen zu Lieferanten",
+        "fr": "Gestion des relations avec les fournisseurs",
+        "es": "Gestion de relaciones con proveedores"
+      }
+    },
+    "G1_G13_001": {
+      "element_id": "esrs:CorruptionAndBriberyPrevention",
+      "name": "CorruptionAndBriberyPrevention",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-3",
+      "labels": {
+        "en": "Prevention and detection of corruption and bribery",
+        "de": "Verhinderung und Aufdeckung von Korruption und Bestechung",
+        "fr": "Prevention et detection de la corruption et des pots-de-vin",
+        "es": "Prevencion y deteccion de corrupcion y soborno"
+      }
+    },
+    "G1_G13_002": {
+      "element_id": "esrs:ConfirmedCorruptionIncidents",
+      "name": "ConfirmedCorruptionIncidents",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:integerItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-3",
+      "labels": {
+        "en": "Number of confirmed incidents of corruption or bribery",
+        "de": "Anzahl bestaetigter Korruptions- oder Bestechungsvorfaelle",
+        "fr": "Nombre d'incidents confirmes de corruption ou de pots-de-vin",
+        "es": "Numero de incidentes confirmados de corrupcion o soborno"
+      }
+    },
+    "G1_G13_003": {
+      "element_id": "esrs:ConvictionsForCorruption",
+      "name": "ConvictionsForCorruption",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:integerItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-3",
+      "labels": {
+        "en": "Number of convictions for violation of anti-corruption and bribery laws",
+        "de": "Anzahl der Verurteilungen wegen Verstosses gegen Antikorruptionsgesetze",
+        "fr": "Nombre de condamnations pour violation des lois anti-corruption",
+        "es": "Numero de condenas por violacion de leyes anticorrupcion"
+      }
+    },
+    "G1_G14_001": {
+      "element_id": "esrs:PoliticalInfluenceAndLobbyingActivities",
+      "name": "PoliticalInfluenceAndLobbyingActivities",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-5",
+      "labels": {
+        "en": "Political influence and lobbying activities",
+        "de": "Politische Einflussnahme und Lobbying-Aktivitaeten",
+        "fr": "Influence politique et activites de lobbying",
+        "es": "Influencia politica y actividades de cabildeo"
+      }
+    },
+    "G1_G14_002": {
+      "element_id": "esrs:PoliticalContributions",
+      "name": "PoliticalContributions",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:monetaryItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": "debit",
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-5",
+      "labels": {
+        "en": "Total monetary value of political contributions",
+        "de": "Gesamtbetrag der politischen Spenden",
+        "fr": "Valeur monetaire totale des contributions politiques",
+        "es": "Valor monetario total de las contribuciones politicas"
+      }
+    },
+    "G1_G15_001": {
+      "element_id": "esrs:PaymentPractices",
+      "name": "PaymentPractices",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:stringItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-6",
+      "labels": {
+        "en": "Payment practices",
+        "de": "Zahlungspraktiken",
+        "fr": "Pratiques de paiement",
+        "es": "Practicas de pago"
+      }
+    },
+    "G1_G15_002": {
+      "element_id": "esrs:AveragePaymentTermDays",
+      "name": "AveragePaymentTermDays",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:decimalItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-6",
+      "labels": {
+        "en": "Average number of days to pay an invoice",
+        "de": "Durchschnittliche Anzahl der Tage bis zur Bezahlung einer Rechnung",
+        "fr": "Nombre moyen de jours pour payer une facture",
+        "es": "Numero promedio de dias para pagar una factura"
+      }
+    },
+    "G1_G15_003": {
+      "element_id": "esrs:PercentageOfPaymentsAlignedWithContractualTerms",
+      "name": "PercentageOfPaymentsAlignedWithContractualTerms",
+      "namespace": "esrs-g1",
+      "data_type": "xbrli:pureItemType",
+      "period_type": "duration",
+      "abstract": false,
+      "nillable": true,
+      "substitution_group": "xbrli:item",
+      "balance_type": null,
+      "standard": "ESRS-G1",
+      "disclosure_requirement": "G1-6",
+      "labels": {
+        "en": "Percentage of payments aligned with contractual terms",
+        "de": "Anteil der vertragsgemaessen Zahlungen",
+        "fr": "Pourcentage des paiements conformes aux conditions contractuelles",
+        "es": "Porcentaje de pagos alineados con los terminos contractuales"
+      }
+    }
+  },
+  "presentation_tree": {
+    "ESRS-2": {
+      "order": 1,
+      "sections": [
+        {"id": "BP", "label": "Basis for preparation", "elements": ["ESRS2_BP1_001", "ESRS2_BP1_002", "ESRS2_BP2_001"]},
+        {"id": "GOV", "label": "Governance", "elements": ["ESRS2_GOV1_001", "ESRS2_GOV1_002", "ESRS2_GOV1_003", "ESRS2_GOV2_001", "ESRS2_GOV3_001", "ESRS2_GOV3_002", "ESRS2_GOV4_001", "ESRS2_GOV5_001"]},
+        {"id": "SBM", "label": "Strategy and business model", "elements": ["ESRS2_SBM1_001", "ESRS2_SBM1_002", "ESRS2_SBM1_003", "ESRS2_SBM2_001", "ESRS2_SBM3_001"]},
+        {"id": "IRO", "label": "Impact, risk and opportunity management", "elements": ["ESRS2_IRO1_001", "ESRS2_IRO2_001"]},
+        {"id": "MDR", "label": "Minimum disclosure requirements", "elements": ["ESRS2_MDR_P_001", "ESRS2_MDR_A_001", "ESRS2_MDR_T_001", "ESRS2_MDR_M_001"]}
+      ]
+    },
+    "ESRS-E1": {
+      "order": 2,
+      "sections": [
+        {"id": "E1-1", "label": "Transition plan", "elements": ["E1_E1_001", "E1_E1_002", "E1_E1_003", "E1_E1_004"]},
+        {"id": "E1-2/4", "label": "Policies, actions and targets", "elements": ["E1_E14_001"]},
+        {"id": "E1-5", "label": "Energy consumption and mix", "elements": ["E1_E15_001", "E1_E15_002", "E1_E15_003", "E1_E15_004", "E1_E15_005"]},
+        {"id": "E1-6", "label": "GHG emissions", "elements": ["E1_E16_001", "E1_E16_002", "E1_E16_003", "E1_E16_004", "E1_E16_005", "E1_E16_006"]},
+        {"id": "E1-7", "label": "GHG removals and carbon credits", "elements": ["E1_E17_001"]},
+        {"id": "E1-8", "label": "Internal carbon pricing", "elements": ["E1_E18_001"]},
+        {"id": "E1-9", "label": "Financial effects", "elements": ["E1_E19_001"]}
+      ]
+    },
+    "ESRS-E2": {
+      "order": 3,
+      "sections": [
+        {"id": "E2-1", "label": "Pollution policies", "elements": ["E2_E21_001"]},
+        {"id": "E2-4", "label": "Pollution of air, water and soil", "elements": ["E2_E24_001", "E2_E24_002", "E2_E24_003"]},
+        {"id": "E2-5", "label": "Substances of concern", "elements": ["E2_E25_001"]},
+        {"id": "E2-6", "label": "Financial effects", "elements": ["E2_E26_001"]}
+      ]
+    },
+    "ESRS-E3": {
+      "order": 4,
+      "sections": [
+        {"id": "E3-4", "label": "Water consumption", "elements": ["E3_E33_001", "E3_E33_002", "E3_E33_003", "E3_E33_004"]},
+        {"id": "E3-5", "label": "Financial effects", "elements": ["E3_E35_001"]}
+      ]
+    },
+    "ESRS-E4": {
+      "order": 5,
+      "sections": [
+        {"id": "E4-4", "label": "Biodiversity and ecosystems", "elements": ["E4_E44_001", "E4_E44_002"]},
+        {"id": "E4-6", "label": "Financial effects", "elements": ["E4_E46_001"]}
+      ]
+    },
+    "ESRS-E5": {
+      "order": 6,
+      "sections": [
+        {"id": "E5-4", "label": "Resource inflows", "elements": ["E5_E54_001", "E5_E54_002"]},
+        {"id": "E5-5", "label": "Resource outflows / Waste", "elements": ["E5_E55_001"]},
+        {"id": "E5-6", "label": "Financial effects", "elements": ["E5_E56_001"]}
+      ]
+    },
+    "ESRS-S1": {
+      "order": 7,
+      "sections": [
+        {"id": "S1-6", "label": "Workforce characteristics", "elements": ["S1_S16_001", "S1_S16_002", "S1_S16_003"]},
+        {"id": "S1-9", "label": "Diversity metrics", "elements": ["S1_S117_001"]},
+        {"id": "S1-10", "label": "Adequate wages", "elements": ["S1_S110_001"]},
+        {"id": "S1-13", "label": "Training and skills", "elements": ["S1_S1_TRAINING_001"]},
+        {"id": "S1-14", "label": "Health and safety", "elements": ["S1_S19_001", "S1_S19_002", "S1_S19_003"]},
+        {"id": "S1-16", "label": "Remuneration metrics", "elements": ["S1_S17_001"]}
+      ]
+    },
+    "ESRS-S2": {
+      "order": 8,
+      "sections": [
+        {"id": "S2-1", "label": "Value chain workers policies", "elements": ["S2_S21_001"]},
+        {"id": "S2-5", "label": "Value chain workers impacts", "elements": ["S2_S25_001"]}
+      ]
+    },
+    "ESRS-S3": {
+      "order": 9,
+      "sections": [
+        {"id": "S3-1", "label": "Affected communities policies", "elements": ["S3_S31_001"]},
+        {"id": "S3-5", "label": "Affected communities impacts", "elements": ["S3_S35_001"]}
+      ]
+    },
+    "ESRS-S4": {
+      "order": 10,
+      "sections": [
+        {"id": "S4-1", "label": "Consumer policies", "elements": ["S4_S41_001"]},
+        {"id": "S4-5", "label": "Consumer impacts", "elements": ["S4_S45_001"]}
+      ]
+    },
+    "ESRS-G1": {
+      "order": 11,
+      "sections": [
+        {"id": "G1-1", "label": "Business conduct", "elements": ["G1_G11_001"]},
+        {"id": "G1-2", "label": "Supplier relationships", "elements": ["G1_G12_001"]},
+        {"id": "G1-3", "label": "Corruption and bribery", "elements": ["G1_G13_001", "G1_G13_002", "G1_G13_003"]},
+        {"id": "G1-5", "label": "Political influence", "elements": ["G1_G14_001", "G1_G14_002"]},
+        {"id": "G1-6", "label": "Payment practices", "elements": ["G1_G15_001", "G1_G15_002", "G1_G15_003"]}
+      ]
+    }
+  },
+  "units": {
+    "tCO2e": {
+      "unit_id": "esrs:tCO2e",
+      "measure": "esrs:tCO2e",
+      "label": "Tonnes of CO2 equivalent",
+      "item_type": "esrs:tCO2eItemType"
+    },
+    "MWh": {
+      "unit_id": "esrs:MWh",
+      "measure": "esrs:MWh",
+      "label": "Megawatt hours",
+      "item_type": "esrs:MWhItemType"
+    },
+    "m3": {
+      "unit_id": "esrs:cubicMetre",
+      "measure": "esrs:cubicMetre",
+      "label": "Cubic metres",
+      "item_type": "esrs:cubicMetreItemType"
+    },
+    "ha": {
+      "unit_id": "esrs:hectare",
+      "measure": "esrs:hectare",
+      "label": "Hectares",
+      "item_type": "esrs:hectareItemType"
+    },
+    "tonnes": {
+      "unit_id": "esrs:tonnes",
+      "measure": "esrs:tonnes",
+      "label": "Metric tonnes",
+      "item_type": "esrs:tonnesItemType"
+    },
+    "pure": {
+      "unit_id": "xbrli:pure",
+      "measure": "xbrli:pure",
+      "label": "Pure number (percentage, ratio)",
+      "item_type": "xbrli:pureItemType"
+    },
+    "EUR": {
+      "unit_id": "iso4217:EUR",
+      "measure": "iso4217:EUR",
+      "label": "Euro",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "USD": {
+      "unit_id": "iso4217:USD",
+      "measure": "iso4217:USD",
+      "label": "US Dollar",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "GBP": {
+      "unit_id": "iso4217:GBP",
+      "measure": "iso4217:GBP",
+      "label": "British Pound",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "CHF": {
+      "unit_id": "iso4217:CHF",
+      "measure": "iso4217:CHF",
+      "label": "Swiss Franc",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "SEK": {
+      "unit_id": "iso4217:SEK",
+      "measure": "iso4217:SEK",
+      "label": "Swedish Krona",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "NOK": {
+      "unit_id": "iso4217:NOK",
+      "measure": "iso4217:NOK",
+      "label": "Norwegian Krone",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "DKK": {
+      "unit_id": "iso4217:DKK",
+      "measure": "iso4217:DKK",
+      "label": "Danish Krone",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "PLN": {
+      "unit_id": "iso4217:PLN",
+      "measure": "iso4217:PLN",
+      "label": "Polish Zloty",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "CZK": {
+      "unit_id": "iso4217:CZK",
+      "measure": "iso4217:CZK",
+      "label": "Czech Koruna",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "HUF": {
+      "unit_id": "iso4217:HUF",
+      "measure": "iso4217:HUF",
+      "label": "Hungarian Forint",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "JPY": {
+      "unit_id": "iso4217:JPY",
+      "measure": "iso4217:JPY",
+      "label": "Japanese Yen",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "CNY": {
+      "unit_id": "iso4217:CNY",
+      "measure": "iso4217:CNY",
+      "label": "Chinese Yuan",
+      "item_type": "xbrli:monetaryItemType"
+    },
+    "tCO2e_per_revenue": {
+      "unit_id": "esrs:tCO2ePerRevenue",
+      "numerator": "esrs:tCO2e",
+      "denominator": "iso4217:EUR",
+      "label": "tCO2e per EUR revenue",
+      "item_type": "esrs:tCO2ePerRevenueItemType",
+      "is_divide": true
+    },
+    "MWh_per_revenue": {
+      "unit_id": "esrs:MWhPerRevenue",
+      "numerator": "esrs:MWh",
+      "denominator": "iso4217:EUR",
+      "label": "MWh per EUR revenue",
+      "item_type": "esrs:MWhPerRevenueItemType",
+      "is_divide": true
+    }
+  },
+  "custom_types": {
+    "esrs:tCO2eItemType": {
+      "base_type": "xbrli:decimalItemType",
+      "description": "Tonnes of CO2 equivalent"
+    },
+    "esrs:MWhItemType": {
+      "base_type": "xbrli:decimalItemType",
+      "description": "Megawatt hours"
+    },
+    "esrs:cubicMetreItemType": {
+      "base_type": "xbrli:decimalItemType",
+      "description": "Cubic metres"
+    },
+    "esrs:hectareItemType": {
+      "base_type": "xbrli:decimalItemType",
+      "description": "Hectares"
+    },
+    "esrs:tonnesItemType": {
+      "base_type": "xbrli:decimalItemType",
+      "description": "Metric tonnes"
+    },
+    "esrs:tCO2ePerRevenueItemType": {
+      "base_type": "xbrli:decimalItemType",
+      "description": "tCO2e per unit revenue"
+    },
+    "esrs:MWhPerRevenueItemType": {
+      "base_type": "xbrli:decimalItemType",
+      "description": "MWh per unit revenue"
+    }
+  }
+}

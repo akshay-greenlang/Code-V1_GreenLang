@@ -1,0 +1,274 @@
+# ===========================================================================
+# GL-EUDR-APP Configuration - EU Deforestation Regulation Compliance Platform
+# ===========================================================================
+#
+# This file defines the default configuration for the GL-EUDR-APP platform.
+# Values can be overridden by environment variables with the EUDR_APP_ prefix.
+#
+# Application: GL-EUDR-APP v1.0
+# Author: GreenLang Platform Team
+# Date: March 2026
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Application Metadata
+# ---------------------------------------------------------------------------
+application:
+  name: "GL-EUDR-APP"
+  version: "1.0.0"
+  description: "EU Deforestation Regulation Compliance Platform"
+  regulation: "EU Regulation 2023/1115"
+  agents:
+    - id: "GL-DATA-EUDR-001"
+      name: "EUDR Traceability Connector Agent"
+      package: "greenlang.eudr_traceability"
+      role: "Plot registry, chain of custody, DDS, risk assessment"
+    - id: "GL-DATA-GEO-003"
+      name: "Deforestation Satellite Connector Agent"
+      package: "greenlang.deforestation_satellite"
+      role: "Satellite imagery, NDVI, change detection, baseline assessment"
+
+# ---------------------------------------------------------------------------
+# Database
+# ---------------------------------------------------------------------------
+database:
+  url: "postgresql://localhost:5432/eudr_app"
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 1800
+  echo: false
+
+# ---------------------------------------------------------------------------
+# Redis
+# ---------------------------------------------------------------------------
+redis:
+  url: "redis://localhost:6379/0"
+  max_connections: 50
+  socket_timeout: 5
+  socket_connect_timeout: 5
+  retry_on_timeout: true
+
+# ---------------------------------------------------------------------------
+# Pipeline Configuration
+# ---------------------------------------------------------------------------
+pipeline:
+  max_concurrent: 10
+  retry_max: 3
+  timeout_seconds: 300
+  stages:
+    - name: "intake"
+      description: "Supplier data normalization and validation"
+      timeout_seconds: 60
+    - name: "geo_validation"
+      description: "Plot coordinate validation via AGENT-DATA-005"
+      timeout_seconds: 120
+      agent: "GL-DATA-EUDR-001"
+    - name: "deforestation_risk"
+      description: "Satellite risk assessment via AGENT-DATA-007"
+      timeout_seconds: 180
+      agent: "GL-DATA-GEO-003"
+    - name: "document_verification"
+      description: "Compliance document verification"
+      timeout_seconds: 90
+    - name: "dds_reporting"
+      description: "DDS generation and EU submission"
+      timeout_seconds: 120
+
+# ---------------------------------------------------------------------------
+# Due Diligence Statement (DDS) Configuration
+# ---------------------------------------------------------------------------
+dds:
+  reference_prefix: "EUDR"
+  auto_submit: false
+  required_sections:
+    - "operator_information"
+    - "product_description"
+    - "country_of_production"
+    - "geolocation_data"
+    - "risk_assessment"
+    - "risk_mitigation"
+    - "conclusion"
+  lifecycle:
+    - from: "draft"
+      to: ["review"]
+    - from: "review"
+      to: ["validated", "draft"]
+    - from: "validated"
+      to: ["submitted", "review"]
+    - from: "submitted"
+      to: ["accepted", "rejected"]
+    - from: "accepted"
+      to: []
+    - from: "rejected"
+      to: ["amended"]
+    - from: "amended"
+      to: ["submitted", "review"]
+
+# ---------------------------------------------------------------------------
+# EU Information System
+# ---------------------------------------------------------------------------
+eu_system:
+  endpoint: "https://eudr.ec.europa.eu/api/v1"
+  api_key: ""  # Set via EUDR_APP_EU_SYSTEM_API_KEY env var
+  timeout_seconds: 30
+  retry_max: 3
+  retry_backoff_seconds: 5
+
+# ---------------------------------------------------------------------------
+# Satellite / Deforestation Assessment
+# ---------------------------------------------------------------------------
+satellite:
+  ndvi_change_threshold: -0.15
+  deforestation_cutoff_date: "2020-12-31"
+  cache_days: 30
+  sources:
+    - "Sentinel-2 L2A"
+    - "Landsat-8 OLI"
+    - "Landsat-9 OLI-2"
+    - "MODIS Terra"
+  indices:
+    - "NDVI"
+    - "EVI"
+    - "NBR"
+  alert_sources:
+    - "GLAD"
+    - "RADD"
+    - "FIRMS"
+    - "GFW"
+
+# ---------------------------------------------------------------------------
+# Risk Assessment Configuration
+# ---------------------------------------------------------------------------
+risk:
+  weights:
+    satellite: 0.35
+    country: 0.25
+    supplier: 0.20
+    document: 0.20
+  thresholds:
+    high: 0.70
+    critical: 0.90
+  levels:
+    - name: "low"
+      range: [0.00, 0.29]
+      color: "#10B981"
+    - name: "standard"
+      range: [0.30, 0.69]
+      color: "#F59E0B"
+    - name: "high"
+      range: [0.70, 0.89]
+      color: "#F97316"
+    - name: "critical"
+      range: [0.90, 1.00]
+      color: "#EF4444"
+  high_risk_countries:
+    - "BRA"
+    - "IDN"
+    - "COD"
+    - "COG"
+    - "CMR"
+    - "MYS"
+    - "PNG"
+    - "BOL"
+    - "PER"
+    - "COL"
+
+# ---------------------------------------------------------------------------
+# EUDR Commodities (Regulation 2023/1115 Annex I)
+# ---------------------------------------------------------------------------
+commodities:
+  - id: "cattle"
+    name: "Cattle"
+    cn_codes: ["0102", "0201", "0202", "4101", "4104"]
+    high_risk_origins: ["BRA", "COL", "BOL", "PRY", "ARG"]
+  - id: "cocoa"
+    name: "Cocoa"
+    cn_codes: ["1801", "1802", "1803", "1804", "1805", "1806"]
+    high_risk_origins: ["GHA", "CIV", "CMR", "NGA", "IDN"]
+  - id: "coffee"
+    name: "Coffee"
+    cn_codes: ["0901", "2101"]
+    high_risk_origins: ["BRA", "VNM", "COL", "IDN", "ETH"]
+  - id: "palm_oil"
+    name: "Palm Oil"
+    cn_codes: ["1511", "1513"]
+    high_risk_origins: ["IDN", "MYS", "PNG", "COL", "NGA"]
+  - id: "rubber"
+    name: "Rubber"
+    cn_codes: ["4001", "4002", "4005", "4006", "4007"]
+    high_risk_origins: ["THA", "IDN", "VNM", "CIV", "MYS"]
+  - id: "soy"
+    name: "Soy"
+    cn_codes: ["1201", "1208", "1507", "2304"]
+    high_risk_origins: ["BRA", "ARG", "PRY", "BOL", "USA"]
+  - id: "wood"
+    name: "Wood"
+    cn_codes: ["4401", "4403", "4407", "4408", "4409", "4410", "4411"]
+    high_risk_origins: ["BRA", "COD", "IDN", "MYS", "PNG"]
+
+# ---------------------------------------------------------------------------
+# Document Verification
+# ---------------------------------------------------------------------------
+documents:
+  max_upload_size_mb: 50
+  allowed_extensions:
+    - ".pdf"
+    - ".jpg"
+    - ".png"
+    - ".xlsx"
+    - ".csv"
+    - ".xml"
+  retention_days: 3650  # EUDR requires 5 years minimum
+  required_types:
+    - "CERTIFICATE"
+    - "LAND_TITLE"
+    - "TRANSPORT"
+  recommended_types:
+    - "PERMIT"
+    - "INVOICE"
+
+# ---------------------------------------------------------------------------
+# Compliance Rules (EUDR Articles)
+# ---------------------------------------------------------------------------
+compliance_rules:
+  - id: "EUDR-ART-3"
+    name: "Deforestation-free"
+    article: 3
+    severity: "critical"
+    description: "Products must not originate from deforested land after 2020-12-31"
+  - id: "EUDR-ART-4"
+    name: "Legal compliance"
+    article: 4
+    severity: "critical"
+    description: "Products must be legally produced per country legislation"
+  - id: "EUDR-ART-9"
+    name: "Due diligence"
+    article: 9
+    severity: "error"
+    description: "Operators must exercise due diligence"
+  - id: "EUDR-ART-10"
+    name: "Geolocation"
+    article: 10
+    severity: "error"
+    description: "Geolocation of production plots must be provided"
+  - id: "EUDR-ART-11"
+    name: "Risk assessment"
+    article: 11
+    severity: "error"
+    description: "Risk assessment must be carried out"
+  - id: "EUDR-ART-12"
+    name: "Risk mitigation"
+    article: 12
+    severity: "warning"
+    description: "Risk mitigation measures must be adopted where needed"
+
+# ---------------------------------------------------------------------------
+# Logging & Observability
+# ---------------------------------------------------------------------------
+logging:
+  level: "INFO"
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+  enable_metrics: true
+  enable_tracing: false
+  metrics_prefix: "eudr_app_"

@@ -12,9 +12,12 @@
 #
 # The CLI will automatically load this config and use your defaults.
 #
-# Version: 1.0.0
+# Version: 1.1.0
 #
 # ============================================================================
+
+# Configuration version
+version: "1.1.0"
 
 # ----------------------------------------------------------------------------
 # EU IMPORTER INFORMATION (Required)
@@ -74,7 +77,7 @@ preferences:
   save_intermediate: false
 
   # Report format version
-  format_version: "1.0"
+  format_version: "1.1"
 
   # Default quarter (leave empty to auto-detect from shipment dates)
   # Format: YYYYQN (e.g., 2025Q4)
@@ -97,6 +100,109 @@ advanced:
   # Logging
   log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
   log_file: null  # Path to log file (null = console only)
+
+# ----------------------------------------------------------------------------
+# v1.1: SUPPLIER PORTAL CONFIGURATION
+# ----------------------------------------------------------------------------
+
+supplier_portal:
+  # Enable supplier portal integration
+  enabled: true
+
+  # EORI validation mode: "strict" requires valid format, "lenient" allows partial
+  eori_validation: strict
+
+  # Maximum number of installations a single supplier can register
+  max_installations_per_supplier: 50
+
+  # Years to retain supplier emissions data (EU CBAM record retention)
+  emissions_data_retention_years: 7
+
+  # Automatically link shipments to suppliers based on origin + CN code
+  auto_link_suppliers: true
+
+  # Days before verification expiry to send alert notifications
+  verification_expiry_alert_days: 90
+
+# ----------------------------------------------------------------------------
+# v1.1: QUARTERLY AUTOMATION ENGINE
+# ----------------------------------------------------------------------------
+
+quarterly_engine:
+  # Enable automatic quarterly report generation
+  enabled: true
+
+  # Auto-generate quarterly reports when data is ready
+  auto_generate: true
+
+  # Days after quarter end to trigger report generation
+  generation_trigger_days: 15
+
+  # Submission deadline in days after quarter end
+  submission_deadline_days: 30
+
+  # Amendment window in days after submission deadline
+  amendment_window_days: 60
+
+  # Notification channels for deadlines and alerts
+  notification_channels: ["email", "webhook"]
+
+  # Alert thresholds: days before submission deadline to send reminders
+  alert_thresholds: [30, 14, 7, 3, 1]
+
+# ----------------------------------------------------------------------------
+# v1.1: CERTIFICATE ENGINE CONFIGURATION
+# ----------------------------------------------------------------------------
+
+certificate_engine:
+  # Enable CBAM certificate calculation
+  enabled: true
+
+  # Source for EU ETS price data: "weekly_auction" or "daily_close"
+  ets_price_source: "weekly_auction"
+
+  # Minimum quarterly certificate holding as percentage of obligation
+  quarterly_holding_pct: 0.50
+
+  # Enable free allocation deductions for countries with carbon pricing
+  free_allocation_enabled: true
+
+  # Enable carbon price deductions for non-EU carbon pricing schemes
+  carbon_price_deductions_enabled: true
+
+# ----------------------------------------------------------------------------
+# v1.1: DE MINIMIS THRESHOLD CONFIGURATION
+# ----------------------------------------------------------------------------
+
+deminimis:
+  # Enable de minimis exemption checking
+  enabled: true
+
+  # Annual threshold in metric tonnes for de minimis exemption
+  threshold_mt: 50
+
+  # Sectors exempt from de minimis threshold
+  exempt_sectors: ["electricity", "hydrogen"]
+
+  # Alert when cumulative imports reach these percentages of threshold
+  alert_percentages: [80, 90, 95, 100]
+
+# ----------------------------------------------------------------------------
+# v1.1: VERIFICATION CONFIGURATION
+# ----------------------------------------------------------------------------
+
+verification:
+  # Enable verification workflow
+  enabled: true
+
+  # Materiality threshold percentage for verification findings
+  materiality_threshold_pct: 5
+
+  # Verification visit frequency
+  visit_schedule: "annual"
+
+  # Enable conflict-of-interest checks for verifiers
+  coi_check_enabled: true
 
 # ============================================================================
 # EXAMPLE CONFIGURATIONS

@@ -1,0 +1,385 @@
+{
+  "metadata": {
+    "locale": "de",
+    "version": "1.1.0",
+    "language": "Deutsch",
+    "description": "Deutsche Berichtsvorlagen fuer die CSRD-Nachhaltigkeitsberichterstattung"
+  },
+  "cover_page": {
+    "title": "Nachhaltigkeitsbericht",
+    "subtitle": "gemaess der EU-Richtlinie zur Nachhaltigkeitsberichterstattung (CSRD)",
+    "standard_reference": "Erstellt in Uebereinstimmung mit den European Sustainability Reporting Standards (ESRS)",
+    "regulation_reference": "Delegierte Verordnung (EU) 2023/2772 der Kommission",
+    "fiscal_year_label": "Geschaeftsjahr",
+    "company_name_label": "Unternehmensname",
+    "report_date_label": "Datum des Berichts",
+    "prepared_by_label": "Erstellt von",
+    "approved_by_label": "Genehmigt von",
+    "version_label": "Version",
+    "confidentiality_notice": "Vertraulich - Nur fuer den internen Gebrauch bestimmt",
+    "draft_watermark": "ENTWURF",
+    "final_watermark": "ENDGUELTIG"
+  },
+  "table_of_contents": {
+    "title": "Inhaltsverzeichnis",
+    "section_label": "Abschnitt",
+    "page_label": "Seite"
+  },
+  "sections": {
+    "executive_summary": {
+      "title": "Zusammenfassung",
+      "subtitle": "Wesentliche Nachhaltigkeitskennzahlen und -ergebnisse",
+      "intro_template": "Dieser Nachhaltigkeitsbericht wird von {company_name} fuer das Geschaeftsjahr {fiscal_year} vorgelegt. Er wurde gemaess den European Sustainability Reporting Standards (ESRS) erstellt, die in der Delegierten Verordnung (EU) 2023/2772 der Kommission festgelegt sind.",
+      "highlights_title": "Wesentliche Ergebnisse",
+      "kpi_summary_title": "Zusammenfassung der Leistungsindikatoren"
+    },
+    "general_information": {
+      "title": "Allgemeine Angaben (ESRS 2)",
+      "subtitle": "Grundlagen der Berichterstattung, Governance und Strategie",
+      "basis_of_preparation": {
+        "title": "Grundlagen der Berichtserstellung (BP-1/BP-2)",
+        "template": "Die Nachhaltigkeitserklaerung von {company_name} wurde gemaess den ESRS erstellt. Der Konsolidierungskreis der Nachhaltigkeitsberichterstattung entspricht {consolidation_scope}. Der Berichtszeitraum umfasst {reporting_period}."
+      },
+      "governance": {
+        "title": "Governance (GOV-1 bis GOV-5)",
+        "gov1_title": "Rolle der Verwaltungs-, Leitungs- und Aufsichtsorgane",
+        "gov1_template": "Die Verantwortung fuer Nachhaltigkeitsaspekte liegt bei {responsible_body}. Das Gremium besteht aus {member_count} Mitgliedern und befasst sich {frequency} mit Nachhaltigkeitsaspekten.",
+        "gov2_title": "Im Fokus stehende Nachhaltigkeitsaspekte",
+        "gov3_title": "Verguetung und Nachhaltigkeit",
+        "gov3_template": "{percentage}% der variablen Verguetung der Fuehrungskraefte sind an nachhaltigkeitsbezogene Leistungsindikatoren gekoppelt.",
+        "gov4_title": "Erklaerung zur Sorgfaltspflicht",
+        "gov5_title": "Risikomanagement und interne Kontrollen"
+      },
+      "strategy": {
+        "title": "Strategie und Geschaeftsmodell (SBM-1 bis SBM-3)",
+        "sbm1_title": "Strategie, Geschaeftsmodell und Wertschoepfungskette",
+        "sbm1_template": "{company_name} ist in {sector} taetig und beschaeftigt {employee_count} Mitarbeiterinnen und Mitarbeiter. Der Nettoumsatz im Berichtszeitraum betrug {revenue}.",
+        "sbm2_title": "Interessen und Standpunkte der Interessentraeger",
+        "sbm3_title": "Wesentliche Auswirkungen, Risiken und Chancen"
+      },
+      "materiality": {
+        "title": "Wesentlichkeitsbewertung (IRO-1/IRO-2)",
+        "iro1_title": "Verfahren zur Ermittlung wesentlicher Aspekte",
+        "iro1_template": "Die Doppelte Wesentlichkeitsbewertung wurde im {assessment_period} durchgefuehrt. Es wurden {stakeholder_count} Interessentraeger einbezogen und {topic_count} Nachhaltigkeitsaspekte bewertet.",
+        "iro2_title": "Als nicht wesentlich bewertete Angabepflichten",
+        "matrix_title": "Wesentlichkeitsmatrix",
+        "impact_axis": "Auswirkungswesentlichkeit",
+        "financial_axis": "Finanzielle Wesentlichkeit",
+        "material_label": "Wesentlich",
+        "not_material_label": "Nicht wesentlich"
+      }
+    },
+    "environment": {
+      "title": "Umweltaspekte (ESRS E1-E5)",
+      "subtitle": "Angaben zu Klimawandel, Umweltverschmutzung, Wasser, Biodiversitaet und Kreislaufwirtschaft",
+      "e1": {
+        "title": "Klimawandel (ESRS E1)",
+        "transition_plan": {
+          "title": "Uebergangsplan fuer den Klimaschutz (E1-1)",
+          "template": "{company_name} hat einen Uebergangsplan fuer den Klimaschutz entwickelt, der {compatibility} mit dem 1,5-Grad-Ziel des Pariser Uebereinkommens ist."
+        },
+        "policies": {
+          "title": "Klimaschutzstrategien (E1-2)",
+          "template": "Das Unternehmen verfolgt folgende Strategien im Zusammenhang mit dem Klimaschutz und der Anpassung an den Klimawandel:"
+        },
+        "actions": {
+          "title": "Massnahmen und Ressourcen (E1-3)",
+          "template": "Im Berichtszeitraum wurden folgende Klimaschutzmassnahmen umgesetzt. Die Gesamtinvestitionen in Klimaschutzmassnahmen betrugen {investment_amount}."
+        },
+        "targets": {
+          "title": "Klimaschutzziele (E1-4)",
+          "template": "{company_name} hat sich folgende THG-Reduktionsziele gesetzt:",
+          "sbti_note": "Die Ziele wurden {sbti_status} von der Science Based Targets initiative validiert."
+        },
+        "energy": {
+          "title": "Energieverbrauch und Energiemix (E1-5)",
+          "template": "Der Gesamtenergieverbrauch im Berichtszeitraum betrug {total_energy} MWh, wovon {renewable_pct}% aus erneuerbaren Quellen stammten.",
+          "table_headers": {
+            "source": "Energiequelle",
+            "consumption": "Verbrauch (MWh)",
+            "share": "Anteil (%)",
+            "change": "Veraenderung zum Vorjahr (%)"
+          }
+        },
+        "emissions": {
+          "title": "Treibhausgasemissionen (E1-6)",
+          "template": "Die THG-Gesamtemissionen von {company_name} beliefen sich im Berichtszeitraum auf {total_emissions} Tonnen CO2-Aequivalent.",
+          "scope1_title": "Scope-1-Emissionen (direkt)",
+          "scope2_title": "Scope-2-Emissionen (indirekt, energiebedingt)",
+          "scope3_title": "Scope-3-Emissionen (sonstige indirekte Emissionen)",
+          "total_title": "THG-Gesamtemissionen",
+          "intensity_title": "THG-Intensitaet",
+          "table_headers": {
+            "category": "Kategorie",
+            "current_year": "Berichtsjahr",
+            "previous_year": "Vorjahr",
+            "change": "Veraenderung (%)",
+            "unit": "Einheit"
+          }
+        },
+        "removals": {
+          "title": "THG-Abbau und CO2-Gutschriften (E1-7)",
+          "template": "Im Berichtszeitraum betrug der THG-Abbau {removal_amount} Tonnen CO2-Aequivalent."
+        },
+        "carbon_pricing": {
+          "title": "Interne CO2-Bepreisung (E1-8)",
+          "template": "{company_name} wendet {carbon_pricing_status} eine interne CO2-Bepreisung an."
+        },
+        "financial_effects": {
+          "title": "Erwartete finanzielle Auswirkungen (E1-9)",
+          "physical_risks_title": "Physische Risiken",
+          "transition_risks_title": "Uebergangsrisiken",
+          "template": "Die erwarteten finanziellen Auswirkungen wesentlicher klimabezogener Risiken werden auf {amount} geschaetzt."
+        }
+      },
+      "e2": {
+        "title": "Umweltverschmutzung (ESRS E2)",
+        "policies_title": "Strategien zur Vermeidung von Umweltverschmutzung (E2-1)",
+        "actions_title": "Massnahmen und Ressourcen (E2-2)",
+        "targets_title": "Ziele (E2-3)",
+        "pollutants_title": "Verschmutzung von Luft, Wasser und Boden (E2-4)",
+        "pollutants_template": "Im Berichtszeitraum betrugen die Emissionen von Luftschadstoffen insgesamt {air_emissions} Tonnen.",
+        "substances_title": "Besorgniserregende Stoffe (E2-5)",
+        "financial_effects_title": "Erwartete finanzielle Auswirkungen (E2-6)",
+        "table_headers": {
+          "pollutant": "Schadstoff",
+          "amount": "Menge",
+          "unit": "Einheit",
+          "change": "Veraenderung (%)"
+        }
+      },
+      "e3": {
+        "title": "Wasser- und Meeresressourcen (ESRS E3)",
+        "policies_title": "Strategien (E3-1)",
+        "actions_title": "Massnahmen und Ressourcen (E3-2)",
+        "targets_title": "Ziele (E3-3)",
+        "consumption_title": "Wasserverbrauch (E3-4)",
+        "consumption_template": "Der Gesamtwasserverbrauch betrug {total_water} Kubikmeter, davon {stressed_water} Kubikmeter in wasserbelasteten Gebieten.",
+        "financial_effects_title": "Erwartete finanzielle Auswirkungen (E3-5)",
+        "table_headers": {
+          "source": "Wasserquelle",
+          "withdrawal": "Entnahme (m3)",
+          "discharge": "Einleitung (m3)",
+          "consumption": "Verbrauch (m3)"
+        }
+      },
+      "e4": {
+        "title": "Biologische Vielfalt und Oekosysteme (ESRS E4)",
+        "transition_plan_title": "Uebergangsplan (E4-1)",
+        "policies_title": "Strategien (E4-2)",
+        "actions_title": "Massnahmen und Ressourcen (E4-3)",
+        "targets_title": "Ziele (E4-4)",
+        "metrics_title": "Auswirkungsparameter (E4-5)",
+        "metrics_template": "{company_name} betreibt {site_count} Standorte in oder in der Naehe biodiversitaetssensibler Gebiete.",
+        "financial_effects_title": "Erwartete finanzielle Auswirkungen (E4-6)"
+      },
+      "e5": {
+        "title": "Ressourcennutzung und Kreislaufwirtschaft (ESRS E5)",
+        "policies_title": "Strategien (E5-1)",
+        "actions_title": "Massnahmen und Ressourcen (E5-2)",
+        "targets_title": "Ziele (E5-3)",
+        "inflows_title": "Ressourcenzufluesse (E5-4)",
+        "outflows_title": "Ressourcenabfluesse (E5-5)",
+        "outflows_template": "Das Gesamtabfallaufkommen betrug {total_waste} Tonnen, wovon {recycling_rate}% recycelt wurden.",
+        "financial_effects_title": "Erwartete finanzielle Auswirkungen (E5-6)",
+        "table_headers": {
+          "waste_type": "Abfallart",
+          "amount": "Menge (Tonnen)",
+          "treatment": "Behandlungsmethode",
+          "share": "Anteil (%)"
+        }
+      }
+    },
+    "social": {
+      "title": "Soziale Aspekte (ESRS S1-S4)",
+      "subtitle": "Angaben zu Belegschaft, Wertschoepfungskette, Gemeinschaften und Verbrauchern",
+      "s1": {
+        "title": "Eigene Belegschaft (ESRS S1)",
+        "policies_title": "Strategien (S1-1)",
+        "engagement_title": "Einbeziehung der Belegschaft (S1-2)",
+        "remediation_title": "Behebung negativer Auswirkungen (S1-3)",
+        "actions_title": "Massnahmen (S1-4)",
+        "targets_title": "Ziele (S1-5)",
+        "characteristics_title": "Merkmale der Beschaeftigten (S1-6)",
+        "characteristics_template": "{company_name} beschaeftigte im Berichtszeitraum insgesamt {total_employees} Mitarbeiterinnen und Mitarbeiter ({fte} Vollzeitaequivalente).",
+        "non_employees_title": "Nicht angestellte Beschaeftigte (S1-7)",
+        "collective_bargaining_title": "Tarifvertragliche Abdeckung (S1-8)",
+        "diversity_title": "Diversitaetskennzahlen (S1-9)",
+        "wages_title": "Angemessene Entlohnung (S1-10)",
+        "social_protection_title": "Sozialschutz (S1-11)",
+        "disability_title": "Menschen mit Behinderungen (S1-12)",
+        "training_title": "Aus- und Weiterbildung (S1-13)",
+        "training_template": "Die durchschnittliche Anzahl der Aus- und Weiterbildungsstunden je Beschaeftigtem betrug {training_hours} Stunden.",
+        "health_safety_title": "Gesundheit und Sicherheit (S1-14)",
+        "health_safety_template": "Im Berichtszeitraum wurden {injuries} arbeitsbedingte Verletzungen und {fatalities} arbeitsbedingte Todesfaelle verzeichnet. Die LTIFR betrug {ltifr}.",
+        "work_life_title": "Vereinbarkeit von Berufs- und Privatleben (S1-15)",
+        "remuneration_title": "Verguetungskennzahlen (S1-16)",
+        "remuneration_template": "Das geschlechtsspezifische Verdienstgefaelle (unbereinigt) betraegt {gender_pay_gap}%.",
+        "incidents_title": "Menschenrechtsvorfaelle (S1-17)",
+        "table_headers": {
+          "category": "Kategorie",
+          "male": "Maennlich",
+          "female": "Weiblich",
+          "other": "Sonstige",
+          "total": "Gesamt",
+          "percentage": "Anteil (%)"
+        }
+      },
+      "s2": {
+        "title": "Arbeitskraefte in der Wertschoepfungskette (ESRS S2)",
+        "policies_title": "Strategien (S2-1)",
+        "engagement_title": "Einbeziehung (S2-2)",
+        "remediation_title": "Behebung und Beschwerdemechanismen (S2-3)",
+        "actions_title": "Massnahmen (S2-4)",
+        "targets_title": "Ziele (S2-5)",
+        "template": "Im Berichtszeitraum wurden {audit_count} Lieferantenaudits zu Arbeitnehmerrechten durchgefuehrt."
+      },
+      "s3": {
+        "title": "Betroffene Gemeinschaften (ESRS S3)",
+        "policies_title": "Strategien (S3-1)",
+        "engagement_title": "Einbeziehung (S3-2)",
+        "remediation_title": "Behebung und Beschwerdemechanismen (S3-3)",
+        "actions_title": "Massnahmen (S3-4)",
+        "targets_title": "Ziele (S3-5)",
+        "template": "{affected_communities} Gemeinschaften sind von den Taetigkeiten des Unternehmens betroffen."
+      },
+      "s4": {
+        "title": "Verbraucher und Endnutzer (ESRS S4)",
+        "policies_title": "Strategien (S4-1)",
+        "engagement_title": "Einbeziehung (S4-2)",
+        "remediation_title": "Behebung und Beschwerdemechanismen (S4-3)",
+        "actions_title": "Massnahmen (S4-4)",
+        "targets_title": "Ziele (S4-5)",
+        "template": "Im Berichtszeitraum wurden {safety_incidents} Vorfaelle bei der Produktsicherheit und {recalls} Rueckrufe verzeichnet."
+      }
+    },
+    "governance": {
+      "title": "Governance (ESRS G1)",
+      "subtitle": "Angaben zur Unternehmensfuehrung",
+      "g1": {
+        "title": "Unternehmensfuehrung (ESRS G1)",
+        "culture_title": "Unternehmenspolitik und -kultur (G1-1)",
+        "supplier_title": "Management der Lieferantenbeziehungen (G1-2)",
+        "anticorruption_title": "Korruptionsbekaempfung (G1-3)",
+        "anticorruption_template": "{training_pct}% der Beschaeftigten wurden im Berichtszeitraum zu Anti-Korruptionsrichtlinien geschult.",
+        "incidents_title": "Vorfaelle (G1-4)",
+        "incidents_template": "Im Berichtszeitraum wurden {conviction_count} Verurteilungen wegen Korruption und Bestechung verzeichnet. Die Geldbussen beliefen sich auf insgesamt {fine_amount}.",
+        "lobbying_title": "Politische Einflussnahme (G1-5)",
+        "lobbying_template": "Die politischen Zuwendungen beliefen sich auf {political_amount} und die Lobbyausgaben auf {lobby_amount}.",
+        "payment_title": "Zahlungspraktiken (G1-6)",
+        "payment_template": "Die durchschnittliche Zahlungsfrist betrug {avg_payment_days} Tage. {late_payment_pct}% der Zahlungen erfolgten verspaetet."
+      }
+    },
+    "methodology": {
+      "title": "Methodik und Datenqualitaet",
+      "subtitle": "Beschreibung der verwendeten Methoden und Datenquellen",
+      "intro_template": "Dieser Abschnitt beschreibt die Methodik und die Datenquellen, die fuer die Erstellung dieses Nachhaltigkeitsberichts verwendet wurden.",
+      "ghg_methodology": {
+        "title": "Methodik der THG-Bilanzierung",
+        "template": "Die Berechnung der Treibhausgasemissionen erfolgte gemaess dem GHG Protocol Corporate Standard (Scope 1 und 2) und dem GHG Protocol Corporate Value Chain Standard (Scope 3). Die Konsolidierung basiert auf dem {consolidation_approach}-Ansatz.",
+        "consolidation_approaches": {
+          "operational_control": "betrieblichen Kontroll",
+          "financial_control": "finanziellen Kontroll",
+          "equity_share": "Eigenkapitalanteils"
+        }
+      },
+      "emission_factors": {
+        "title": "Verwendete Emissionsfaktoren",
+        "template": "Die folgenden Emissionsfaktorquellen wurden verwendet:",
+        "sources_template": "{source_name} (Version {version}, Stand {date})"
+      },
+      "data_quality": {
+        "title": "Datenqualitaet",
+        "template": "Die Datenqualitaet wurde anhand der folgenden Kriterien bewertet: Genauigkeit, Vollstaendigkeit, Konsistenz, Transparenz und Vergleichbarkeit.",
+        "coverage_label": "Datenabdeckung",
+        "accuracy_label": "Genauigkeit",
+        "completeness_label": "Vollstaendigkeit",
+        "consistency_label": "Konsistenz"
+      },
+      "assumptions": {
+        "title": "Wesentliche Annahmen und Schaetzungen",
+        "template": "Bei der Erstellung dieses Berichts wurden folgende wesentliche Annahmen und Schaetzungen zugrunde gelegt:"
+      },
+      "limitations": {
+        "title": "Einschraenkungen und Ausschluesse",
+        "template": "Die folgenden Einschraenkungen und Ausschluesse sind bei der Interpretation dieses Berichts zu beachten:"
+      }
+    },
+    "assurance": {
+      "title": "Pruefungsvermerk",
+      "subtitle": "Unabhaengige Pruefung der Nachhaltigkeitsberichterstattung",
+      "intro_template": "Die Nachhaltigkeitserklaerung wurde einer {assurance_level} durch {auditor_name} unterzogen.",
+      "limited_assurance": "Pruefung mit begrenzter Sicherheit",
+      "reasonable_assurance": "Pruefung mit hinreichender Sicherheit",
+      "scope_title": "Umfang der Pruefung",
+      "opinion_title": "Pruefungsurteil",
+      "standard_reference": "Die Pruefung wurde gemaess ISAE 3000 (ueberarbeitet) durchgefuehrt.",
+      "auditor_label": "Unabhaengiger Pruefer",
+      "date_label": "Datum des Pruefungsvermerks",
+      "signature_label": "Unterschrift"
+    },
+    "appendices": {
+      "title": "Anhang",
+      "taxonomy_title": "EU-Taxonomie-Berichterstattung",
+      "taxonomy_template": "Die EU-Taxonomie-Berichterstattung erfolgt gemaess der Delegierten Verordnung (EU) 2021/2178.",
+      "gri_index_title": "GRI-Inhaltsindex",
+      "ungc_title": "UN Global Compact Fortschrittsbericht",
+      "sdg_title": "Beitrag zu den UN-Nachhaltigkeitszielen (SDGs)",
+      "tcfd_title": "TCFD-Berichterstattung",
+      "data_tables_title": "Vollstaendige Datentabellen",
+      "glossary_reference": "Siehe Glossar fuer Definitionen der verwendeten Fachbegriffe."
+    },
+    "disclaimers": {
+      "forward_looking": {
+        "title": "Zukunftsgerichtete Aussagen",
+        "text": "Dieser Bericht enthaelt zukunftsgerichtete Aussagen, die auf den derzeitigen Erwartungen und Annahmen des Managements beruhen. Diese Aussagen sind mit Risiken und Unsicherheiten verbunden, die dazu fuehren koennten, dass die tatsaechlichen Ergebnisse erheblich von den in den zukunftsgerichteten Aussagen enthaltenen Erwartungen abweichen. Das Unternehmen uebernimmt keine Verpflichtung, zukunftsgerichtete Aussagen zu aktualisieren."
+      },
+      "data_disclaimer": {
+        "title": "Datenhinweis",
+        "text": "Die in diesem Bericht enthaltenen Daten wurden nach bestem Wissen und Gewissen erhoben und aufbereitet. Trotz sorgfaeltiger Pruefung koennen Ungenauigkeiten nicht vollstaendig ausgeschlossen werden."
+      },
+      "regulatory_disclaimer": {
+        "title": "Regulatorischer Hinweis",
+        "text": "Dieser Nachhaltigkeitsbericht wurde gemaess den Anforderungen der Richtlinie (EU) 2022/2464 (CSRD) und den European Sustainability Reporting Standards (ESRS) erstellt."
+      }
+    }
+  },
+  "formatting": {
+    "date_format": "DD.MM.YYYY",
+    "number_format": {
+      "decimal_separator": ",",
+      "thousands_separator": ".",
+      "currency_symbol": "EUR",
+      "currency_position": "after",
+      "percentage_format": "{value} %"
+    },
+    "page_labels": {
+      "page": "Seite",
+      "of": "von",
+      "continued": "(Fortsetzung)"
+    },
+    "table_labels": {
+      "table": "Tabelle",
+      "figure": "Abbildung",
+      "source": "Quelle",
+      "note": "Anmerkung",
+      "total": "Gesamt",
+      "subtotal": "Zwischensumme",
+      "average": "Durchschnitt",
+      "n_a": "k.A.",
+      "tbd": "n.b."
+    },
+    "status_labels": {
+      "complete": "Vollstaendig",
+      "in_progress": "In Bearbeitung",
+      "pending": "Ausstehend",
+      "not_started": "Nicht begonnen",
+      "overdue": "Ueberfaellig",
+      "on_track": "Im Plan",
+      "at_risk": "Gefaehrdet",
+      "achieved": "Erreicht",
+      "not_achieved": "Nicht erreicht",
+      "partially_achieved": "Teilweise erreicht"
+    }
+  }
+}

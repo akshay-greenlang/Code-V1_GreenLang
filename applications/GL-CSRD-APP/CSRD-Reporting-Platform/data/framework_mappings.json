@@ -1,248 +1,3214 @@
 {
   "metadata": {
     "title": "Multi-Framework ESG Mappings",
-    "version": "1.0.0",
-    "description": "Cross-reference mappings between ESRS, TCFD, GRI, and SASB standards",
-    "frameworks_covered": ["ESRS", "TCFD", "GRI", "SASB"],
-    "total_mappings": 350,
-    "last_updated": "2025-10-18",
-    "purpose": "Enable companies to leverage existing TCFD/GRI/SASB data for CSRD compliance"
+    "version": "2.0.0",
+    "description": "Cross-reference mappings between ESRS, TCFD, GRI, SASB, and CDP standards",
+    "frameworks_covered": ["ESRS", "TCFD", "GRI", "SASB", "CDP"],
+    "total_mappings": 355,
+    "last_updated": "2026-03-01",
+    "purpose": "Enable companies to leverage existing TCFD/GRI/SASB/CDP data for CSRD compliance"
   },
   "esrs_to_tcfd": [
     {
-      "esrs_code": "E1-1",
-      "esrs_disclosure": "E1-6 Gross Scopes 1, 2, 3 and Total GHG emissions",
-      "tcfd_pillar": "Metrics and Targets",
-      "tcfd_reference": "Metrics a) - Scope 1, 2 emissions",
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "TCFD",
+      "target_reference": "Governance a)",
+      "target_name": "Board oversight of climate-related risks and opportunities",
       "mapping_quality": "direct",
-      "notes": "ESRS requires all 3 scopes; TCFD recommends Scope 3"
+      "notes": "Both require disclosure of board-level oversight of sustainability/climate matters"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "TCFD",
+      "target_reference": "Governance b)",
+      "target_name": "Management role in assessing and managing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "ESRS GOV-1 covers broader sustainability governance; TCFD focuses on climate"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-2",
+      "esrs_disclosure": "Information provided to and sustainability matters addressed by the undertaking's governance bodies",
+      "target_framework": "TCFD",
+      "target_reference": "Governance a)",
+      "target_name": "Board oversight of climate-related risks and opportunities",
+      "mapping_quality": "high",
+      "notes": "ESRS GOV-2 details information flow to board; TCFD asks how board is informed"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-2",
+      "esrs_disclosure": "Information provided to and sustainability matters addressed by the undertaking's governance bodies",
+      "target_framework": "TCFD",
+      "target_reference": "Governance b)",
+      "target_name": "Management role in assessing and managing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "Both address how governance bodies receive and process sustainability/climate information"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-3",
+      "esrs_disclosure": "Integration of sustainability-related performance in incentive schemes",
+      "target_framework": "TCFD",
+      "target_reference": "Governance a)",
+      "target_name": "Board oversight of climate-related risks and opportunities",
+      "mapping_quality": "partial",
+      "notes": "ESRS requires incentive scheme details; TCFD asks about oversight processes"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-4",
+      "esrs_disclosure": "Statement on due diligence",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management a)",
+      "target_name": "Process for identifying and assessing climate-related risks",
+      "mapping_quality": "partial",
+      "notes": "ESRS due diligence is broader; TCFD risk identification is climate-specific"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-5",
+      "esrs_disclosure": "Risk management and internal controls over sustainability reporting",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management b)",
+      "target_name": "Process for managing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "Both address risk management processes; ESRS includes internal controls"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy a)",
+      "target_name": "Climate-related risks and opportunities identified over short, medium, and long term",
+      "mapping_quality": "high",
+      "notes": "ESRS broader business model description; TCFD focused on climate risks/opportunities"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-3",
+      "esrs_disclosure": "Material impacts, risks and opportunities and their interaction with strategy and business model",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy b)",
+      "target_name": "Impact of climate-related risks and opportunities on business, strategy, and financial planning",
+      "mapping_quality": "direct",
+      "notes": "Both require analysis of how sustainability/climate issues affect strategy"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-3",
+      "esrs_disclosure": "Material impacts, risks and opportunities and their interaction with strategy and business model",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy c)",
+      "target_name": "Resilience of strategy under different climate scenarios",
+      "mapping_quality": "high",
+      "notes": "ESRS SBM-3 covers resilience broadly; TCFD Strategy c) requires scenario analysis"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-1",
+      "esrs_disclosure": "Description of the processes to identify and assess material impacts, risks and opportunities",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management a)",
+      "target_name": "Process for identifying and assessing climate-related risks",
+      "mapping_quality": "direct",
+      "notes": "Both require description of risk identification processes"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-1",
+      "esrs_disclosure": "Description of the processes to identify and assess material impacts, risks and opportunities",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management b)",
+      "target_name": "Process for managing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "ESRS IRO-1 covers identification; closely linked to TCFD risk management"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-2",
+      "esrs_disclosure": "Disclosure requirements in ESRS covered by the undertaking's sustainability statement",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management c)",
+      "target_name": "Integration of climate risk into overall risk management",
+      "mapping_quality": "partial",
+      "notes": "ESRS IRO-2 describes disclosure scope; TCFD asks about integration into enterprise risk"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy b)",
+      "target_name": "Impact of climate-related risks and opportunities on business, strategy, and financial planning",
+      "mapping_quality": "direct",
+      "notes": "Both require detailed climate transition plans with milestones"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy c)",
+      "target_name": "Resilience of strategy under different climate scenarios",
+      "mapping_quality": "high",
+      "notes": "Transition plan demonstrates strategic resilience under climate scenarios"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics c)",
+      "target_name": "Targets used to manage climate-related risks and opportunities",
+      "mapping_quality": "high",
+      "notes": "Transition plan includes targets that map to TCFD Metrics c)"
     },
     {
       "esrs_code": "E1-2",
-      "esrs_disclosure": "E1-6 Gross Scopes 1, 2, 3 and Total GHG emissions",
-      "tcfd_pillar": "Metrics and Targets",
-      "tcfd_reference": "Metrics a) - Scope 1, 2 emissions",
-      "mapping_quality": "direct",
-      "notes": "Both location-based and market-based required for ESRS"
+      "esrs_disclosure": "Policies related to climate change mitigation and adaptation",
+      "target_framework": "TCFD",
+      "target_reference": "Governance b)",
+      "target_name": "Management role in assessing and managing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "Climate policies reflect management approach to climate risks"
     },
     {
       "esrs_code": "E1-3",
-      "esrs_disclosure": "E1-6 Gross Scopes 1, 2, 3 and Total GHG emissions",
-      "tcfd_pillar": "Metrics and Targets",
-      "tcfd_reference": "Metrics a) - Scope 3 emissions (recommended)",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy a)",
+      "target_name": "Climate-related risks and opportunities identified over short, medium, and long term",
+      "mapping_quality": "high",
+      "notes": "ESRS actions address identified risks; TCFD asks about risk identification"
+    },
+    {
+      "esrs_code": "E1-3",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy b)",
+      "target_name": "Impact of climate-related risks and opportunities on business, strategy, and financial planning",
+      "mapping_quality": "high",
+      "notes": "Resource allocation for climate actions reflects financial planning impact"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics c)",
+      "target_name": "Targets used to manage climate-related risks and opportunities",
+      "mapping_quality": "direct",
+      "notes": "Direct alignment on climate target setting and progress reporting"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics a)",
+      "target_name": "Metrics used to assess climate-related risks and opportunities",
+      "mapping_quality": "direct",
+      "notes": "Energy metrics are core TCFD cross-industry metrics"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics a)",
+      "target_name": "GHG emissions - Scope 1",
+      "mapping_quality": "direct",
+      "notes": "Both require Scope 1 GHG emissions using GHG Protocol"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics a)",
+      "target_name": "GHG emissions - Scope 2",
+      "mapping_quality": "direct",
+      "notes": "Both require Scope 2 using location-based and market-based methods"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics a)",
+      "target_name": "GHG emissions - Scope 3",
+      "mapping_quality": "high",
+      "notes": "ESRS mandates all Scope 3 categories; TCFD recommends Scope 3"
+    },
+    {
+      "esrs_code": "E1-7",
+      "esrs_disclosure": "GHG removals and GHG mitigation projects financed through carbon credits",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics a)",
+      "target_name": "Metrics used to assess climate-related risks and opportunities",
       "mapping_quality": "partial",
-      "notes": "ESRS mandatory, TCFD recommended"
+      "notes": "ESRS specifically addresses carbon credits; TCFD metrics are broader"
     },
     {
-      "esrs_code": "E1",
-      "esrs_disclosure": "E1-1 Transition plan for climate change mitigation",
-      "tcfd_pillar": "Strategy",
-      "tcfd_reference": "Strategy b) - Transition plan",
-      "mapping_quality": "direct",
-      "notes": "Both require detailed climate transition plans"
-    },
-    {
-      "esrs_code": "E1",
-      "esrs_disclosure": "E1-3 Actions and resources in relation to climate policies",
-      "tcfd_pillar": "Strategy",
-      "tcfd_reference": "Strategy a) - Climate-related risks and opportunities",
+      "esrs_code": "E1-8",
+      "esrs_disclosure": "Internal carbon pricing",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics b)",
+      "target_name": "Scope 1 and 2 emissions and related risks",
       "mapping_quality": "high",
-      "notes": "TCFD risk/opportunity analysis maps to ESRS actions"
+      "notes": "Internal carbon pricing is a key TCFD-recommended metric"
     },
     {
-      "esrs_code": "ESRS-2",
-      "esrs_disclosure": "IRO-1 Description of processes to identify and assess material IROs",
-      "tcfd_pillar": "Risk Management",
-      "tcfd_reference": "Risk Management a) - Process to identify climate risks",
-      "mapping_quality": "high",
-      "notes": "ESRS broader scope (all sustainability), TCFD climate-focused"
-    },
-    {
-      "esrs_code": "ESRS-2",
-      "esrs_disclosure": "GOV-1 The role of governance bodies",
-      "tcfd_pillar": "Governance",
-      "tcfd_reference": "Governance a) - Board oversight",
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy a)",
+      "target_name": "Climate-related risks and opportunities identified over short, medium, and long term",
       "mapping_quality": "direct",
-      "notes": "Both require board-level climate governance"
+      "notes": "Both require financial quantification of physical and transition risks"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management a)",
+      "target_name": "Process for identifying and assessing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "Financial effects disclosure requires risk identification and assessment"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy c)",
+      "target_name": "Resilience of strategy under different climate scenarios",
+      "mapping_quality": "high",
+      "notes": "Financial effects analysis supports resilience assessment under scenarios"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics a)",
+      "target_name": "Metrics used to assess climate-related risks and opportunities",
+      "mapping_quality": "partial",
+      "notes": "Water stress is a physical climate risk metric relevant to TCFD"
+    },
+    {
+      "esrs_code": "E3-5",
+      "esrs_disclosure": "Anticipated financial effects from water and marine resources related risks",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy a)",
+      "target_name": "Climate-related risks and opportunities identified over short, medium, and long term",
+      "mapping_quality": "partial",
+      "notes": "Water-related financial effects are a subset of climate physical risks"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "TCFD",
+      "target_reference": "Governance a)",
+      "target_name": "Board oversight of climate-related risks and opportunities",
+      "mapping_quality": "high",
+      "notes": "Transition plan approval implies board oversight"
+    },
+    {
+      "esrs_code": "E1-2",
+      "esrs_disclosure": "Policies related to climate change mitigation and adaptation",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management b)",
+      "target_name": "Process for managing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "Climate policies are a key component of risk management processes"
+    },
+    {
+      "esrs_code": "E1-3",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics c)",
+      "target_name": "Targets used to manage climate-related risks and opportunities",
+      "mapping_quality": "partial",
+      "notes": "Actions and resources support target achievement"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy b)",
+      "target_name": "Impact of climate-related risks and opportunities on business, strategy, and financial planning",
+      "mapping_quality": "high",
+      "notes": "Climate targets reflect strategic response to climate risks"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics b)",
+      "target_name": "Scope 1 and 2 emissions and related risks",
+      "mapping_quality": "high",
+      "notes": "Energy mix directly relates to emissions profile"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics b)",
+      "target_name": "Scope 1 and 2 emissions and related risks",
+      "mapping_quality": "direct",
+      "notes": "Core metric alignment between frameworks"
+    },
+    {
+      "esrs_code": "E1-7",
+      "esrs_disclosure": "GHG removals and GHG mitigation projects financed through carbon credits",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics c)",
+      "target_name": "Targets used to manage climate-related risks and opportunities",
+      "mapping_quality": "partial",
+      "notes": "Carbon credits contribute to net-zero targets"
+    },
+    {
+      "esrs_code": "E1-8",
+      "esrs_disclosure": "Internal carbon pricing",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy b)",
+      "target_name": "Impact of climate-related risks and opportunities on business, strategy, and financial planning",
+      "mapping_quality": "high",
+      "notes": "Internal carbon pricing reflects strategic financial planning for climate"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-5",
+      "esrs_disclosure": "Risk management and internal controls over sustainability reporting",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management c)",
+      "target_name": "Integration of climate risk into overall risk management",
+      "mapping_quality": "direct",
+      "notes": "Both address integration of sustainability/climate risk into enterprise risk management"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy c)",
+      "target_name": "Resilience of strategy under different climate scenarios",
+      "mapping_quality": "partial",
+      "notes": "Business model description provides context for resilience analysis"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy b)",
+      "target_name": "Impact of climate-related risks and opportunities on business, strategy, and financial planning",
+      "mapping_quality": "direct",
+      "notes": "Both require quantification of financial effects from climate risks"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-3",
+      "esrs_disclosure": "Integration of sustainability-related performance in incentive schemes",
+      "target_framework": "TCFD",
+      "target_reference": "Governance b)",
+      "target_name": "Management role in assessing and managing climate-related risks",
+      "mapping_quality": "high",
+      "notes": "Climate-linked incentives demonstrate management accountability"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-4",
+      "esrs_disclosure": "Statement on due diligence",
+      "target_framework": "TCFD",
+      "target_reference": "Governance a)",
+      "target_name": "Board oversight of climate-related risks and opportunities",
+      "mapping_quality": "partial",
+      "notes": "Due diligence statement implies board awareness of sustainability risks"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics a)",
+      "target_name": "Metrics used to assess climate-related risks and opportunities",
+      "mapping_quality": "high",
+      "notes": "Climate targets require underlying metrics for tracking progress"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics c)",
+      "target_name": "Targets used to manage climate-related risks and opportunities",
+      "mapping_quality": "partial",
+      "notes": "Energy mix targets support emissions reduction targets"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "TCFD",
+      "target_reference": "Metrics c)",
+      "target_name": "Targets used to manage climate-related risks and opportunities",
+      "mapping_quality": "high",
+      "notes": "GHG emissions data is essential for tracking progress against targets"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-2",
+      "esrs_disclosure": "Disclosure requirements in ESRS covered by the undertaking's sustainability statement",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management b)",
+      "target_name": "Process for managing climate-related risks",
+      "mapping_quality": "partial",
+      "notes": "Disclosure scope decisions reflect risk management priorities"
+    },
+    {
+      "esrs_code": "E3-5",
+      "esrs_disclosure": "Anticipated financial effects from water and marine resources related risks",
+      "target_framework": "TCFD",
+      "target_reference": "Risk Management a)",
+      "target_name": "Process for identifying and assessing climate-related risks",
+      "mapping_quality": "partial",
+      "notes": "Water risk financial effects inform climate physical risk assessment"
+    },
+    {
+      "esrs_code": "E1-7",
+      "esrs_disclosure": "GHG removals and GHG mitigation projects financed through carbon credits",
+      "target_framework": "TCFD",
+      "target_reference": "Strategy b)",
+      "target_name": "Impact of climate-related risks and opportunities on business, strategy, and financial planning",
+      "mapping_quality": "partial",
+      "notes": "Carbon credit strategy reflects financial planning for emissions management"
     }
   ],
   "esrs_to_gri": [
     {
-      "esrs_code": "E1-1",
-      "esrs_disclosure": "E1-6 Gross Scopes 1, 2, 3 and Total GHG emissions",
-      "gri_standard": "GRI 305",
-      "gri_disclosure": "305-1 Direct (Scope 1) GHG emissions",
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-9",
+      "target_name": "Governance structure and composition",
       "mapping_quality": "direct",
-      "notes": "Methodologies aligned (GHG Protocol)"
+      "notes": "Both require description of governance body composition and structure"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-10",
+      "target_name": "Nomination and selection of the highest governance body",
+      "mapping_quality": "high",
+      "notes": "ESRS GOV-1 covers roles; GRI 2-10 covers selection processes"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-11",
+      "target_name": "Chair of the highest governance body",
+      "mapping_quality": "high",
+      "notes": "Both address leadership of governance bodies"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-12",
+      "target_name": "Role of the highest governance body in overseeing the management of impacts",
+      "mapping_quality": "direct",
+      "notes": "Direct alignment on governance body oversight responsibilities"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-13",
+      "target_name": "Delegation of responsibility for managing impacts",
+      "mapping_quality": "high",
+      "notes": "ESRS GOV-1 includes delegation; GRI 2-13 focuses specifically on delegation"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-14",
+      "target_name": "Role of the highest governance body in sustainability reporting",
+      "mapping_quality": "direct",
+      "notes": "Both require governance body role in sustainability reporting"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-2",
+      "esrs_disclosure": "Information provided to and sustainability matters addressed by governance bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-12",
+      "target_name": "Role of the highest governance body in overseeing the management of impacts",
+      "mapping_quality": "high",
+      "notes": "Both address information flow and oversight by governance bodies"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-2",
+      "esrs_disclosure": "Information provided to and sustainability matters addressed by governance bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-16",
+      "target_name": "Communication of critical concerns",
+      "mapping_quality": "high",
+      "notes": "Both address how critical sustainability concerns are communicated upward"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-3",
+      "esrs_disclosure": "Integration of sustainability-related performance in incentive schemes",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-19",
+      "target_name": "Remuneration policies",
+      "mapping_quality": "high",
+      "notes": "ESRS focuses on sustainability-linked incentives; GRI covers broader remuneration"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-3",
+      "esrs_disclosure": "Integration of sustainability-related performance in incentive schemes",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-20",
+      "target_name": "Process to determine remuneration",
+      "mapping_quality": "partial",
+      "notes": "GRI addresses remuneration process broadly; ESRS specifically sustainability linkage"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-3",
+      "esrs_disclosure": "Integration of sustainability-related performance in incentive schemes",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-21",
+      "target_name": "Annual total compensation ratio",
+      "mapping_quality": "partial",
+      "notes": "Related compensation disclosure but different focus"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-4",
+      "esrs_disclosure": "Statement on due diligence",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-23",
+      "target_name": "Policy commitments",
+      "mapping_quality": "high",
+      "notes": "Due diligence relates to policy commitments on responsible business conduct"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-4",
+      "esrs_disclosure": "Statement on due diligence",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-24",
+      "target_name": "Embedding policy commitments",
+      "mapping_quality": "high",
+      "notes": "Both address how policies are implemented through due diligence"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-5",
+      "esrs_disclosure": "Risk management and internal controls over sustainability reporting",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-15",
+      "target_name": "Conflicts of interest",
+      "mapping_quality": "partial",
+      "notes": "Internal controls address conflicts; GRI 2-15 is specifically about conflicts"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-1",
+      "target_name": "Organizational details",
+      "mapping_quality": "high",
+      "notes": "Both require organizational profile and business context"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-2",
+      "target_name": "Entities included in the organization's sustainability reporting",
+      "mapping_quality": "high",
+      "notes": "Value chain description includes reporting boundary"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-6",
+      "target_name": "Activities, value chain and other business relationships",
+      "mapping_quality": "direct",
+      "notes": "Direct alignment on business model and value chain description"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-22",
+      "target_name": "Statement on sustainable development strategy",
+      "mapping_quality": "high",
+      "notes": "Both include strategic direction on sustainability"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-2",
+      "esrs_disclosure": "Interests and views of stakeholders",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-29",
+      "target_name": "Approach to stakeholder engagement",
+      "mapping_quality": "direct",
+      "notes": "Both require description of stakeholder engagement processes"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-2",
+      "esrs_disclosure": "Interests and views of stakeholders",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-30",
+      "target_name": "Collective bargaining agreements",
+      "mapping_quality": "partial",
+      "notes": "Stakeholder views include worker representation; GRI 2-30 is specific"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-3",
+      "esrs_disclosure": "Material impacts, risks and opportunities and their interaction with strategy",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-1",
+      "target_name": "Process to determine material topics",
+      "mapping_quality": "direct",
+      "notes": "Both require description of materiality assessment process"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-3",
+      "esrs_disclosure": "Material impacts, risks and opportunities and their interaction with strategy",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-2",
+      "target_name": "List of material topics",
+      "mapping_quality": "direct",
+      "notes": "Both require listing of material topics identified"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-1",
+      "esrs_disclosure": "Description of the processes to identify and assess material IROs",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-1",
+      "target_name": "Process to determine material topics",
+      "mapping_quality": "direct",
+      "notes": "Both describe materiality assessment methodology"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-1",
+      "esrs_disclosure": "Description of the processes to identify and assess material IROs",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics",
+      "mapping_quality": "high",
+      "notes": "IRO assessment informs topic management approach"
+    },
+    {
+      "esrs_code": "ESRS-2 BP-1",
+      "esrs_disclosure": "General basis for preparation of the sustainability statement",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-3",
+      "target_name": "Reporting period, frequency and contact point",
+      "mapping_quality": "direct",
+      "notes": "Both specify reporting period and preparation basis"
+    },
+    {
+      "esrs_code": "ESRS-2 BP-1",
+      "esrs_disclosure": "General basis for preparation of the sustainability statement",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-4",
+      "target_name": "Restatements of information",
+      "mapping_quality": "high",
+      "notes": "Both address restatements and changes in reporting"
+    },
+    {
+      "esrs_code": "ESRS-2 BP-2",
+      "esrs_disclosure": "Disclosures in relation to specific circumstances",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-5",
+      "target_name": "External assurance",
+      "mapping_quality": "high",
+      "notes": "Both address assurance and verification of disclosures"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-7",
+      "target_name": "Employees",
+      "mapping_quality": "partial",
+      "notes": "Business model description includes workforce context"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-8",
+      "target_name": "Workers who are not employees",
+      "mapping_quality": "partial",
+      "notes": "Value chain includes non-employee workers"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-4",
+      "esrs_disclosure": "Statement on due diligence",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-25",
+      "target_name": "Processes to remediate negative impacts",
+      "mapping_quality": "high",
+      "notes": "Due diligence includes remediation processes"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-4",
+      "esrs_disclosure": "Statement on due diligence",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-26",
+      "target_name": "Mechanisms for seeking advice and raising concerns",
+      "mapping_quality": "high",
+      "notes": "Due diligence encompasses grievance mechanisms"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-2",
+      "esrs_disclosure": "Interests and views of stakeholders",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-17",
+      "target_name": "Collective knowledge of the highest governance body",
+      "mapping_quality": "partial",
+      "notes": "Stakeholder views inform governance body expertise needs"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-1",
+      "esrs_disclosure": "Strategy, business model and value chain",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-18",
+      "target_name": "Evaluation of the performance of the highest governance body",
+      "mapping_quality": "partial",
+      "notes": "Strategy context relates to governance body performance evaluation"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-5",
+      "esrs_disclosure": "Risk management and internal controls over sustainability reporting",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-27",
+      "target_name": "Compliance with laws and regulations",
+      "mapping_quality": "high",
+      "notes": "Internal controls support regulatory compliance"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-4",
+      "esrs_disclosure": "Statement on due diligence",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-28",
+      "target_name": "Membership associations",
+      "mapping_quality": "partial",
+      "notes": "Due diligence may include industry association participation"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics - Climate",
+      "mapping_quality": "high",
+      "notes": "Transition plan is the management approach for climate topic"
     },
     {
       "esrs_code": "E1-2",
-      "esrs_disclosure": "E1-6 Gross Scopes 1, 2, 3 and Total GHG emissions",
-      "gri_standard": "GRI 305",
-      "gri_disclosure": "305-2 Energy indirect (Scope 2) GHG emissions",
-      "mapping_quality": "direct",
-      "notes": "Both location-based and market-based methods"
+      "esrs_disclosure": "Policies related to climate change mitigation and adaptation",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics - Climate policies",
+      "mapping_quality": "high",
+      "notes": "Climate policies form part of topic management approach"
     },
     {
       "esrs_code": "E1-3",
-      "esrs_disclosure": "E1-6 Gross Scopes 1, 2, 3 and Total GHG emissions",
-      "gri_standard": "GRI 305",
-      "gri_disclosure": "305-3 Other indirect (Scope 3) GHG emissions",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics - Climate actions",
+      "mapping_quality": "high",
+      "notes": "Actions and resources are part of topic management"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-5",
+      "target_name": "Reduction of GHG emissions",
       "mapping_quality": "direct",
-      "notes": "ESRS requires all 15 categories"
+      "notes": "Both require disclosure of emission reduction targets and progress"
     },
     {
       "esrs_code": "E1-5",
-      "esrs_disclosure": "E1-5 Energy consumption and mix",
-      "gri_standard": "GRI 302",
-      "gri_disclosure": "302-1 Energy consumption within the organization",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "GRI",
+      "target_reference": "GRI 302-1",
+      "target_name": "Energy consumption within the organization",
       "mapping_quality": "direct",
-      "notes": "Both measure total energy consumption"
+      "notes": "Both measure total energy consumption by source"
     },
     {
-      "esrs_code": "E1-8",
-      "esrs_disclosure": "E1-6 GHG emissions intensity",
-      "gri_standard": "GRI 305",
-      "gri_disclosure": "305-4 GHG emissions intensity",
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "GRI",
+      "target_reference": "GRI 302-2",
+      "target_name": "Energy consumption outside of the organization",
       "mapping_quality": "high",
-      "notes": "Both allow custom intensity metrics"
+      "notes": "ESRS energy mix may include value chain energy"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "GRI",
+      "target_reference": "GRI 302-3",
+      "target_name": "Energy intensity",
+      "mapping_quality": "high",
+      "notes": "Both allow energy intensity calculations"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "GRI",
+      "target_reference": "GRI 302-4",
+      "target_name": "Reduction of energy consumption",
+      "mapping_quality": "high",
+      "notes": "ESRS energy mix trends relate to GRI reduction reporting"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "GRI",
+      "target_reference": "GRI 302-5",
+      "target_name": "Reductions in energy requirements of products and services",
+      "mapping_quality": "partial",
+      "notes": "Product energy requirements partially covered in ESRS energy mix"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-1",
+      "target_name": "Direct (Scope 1) GHG emissions",
+      "mapping_quality": "direct",
+      "notes": "Both use GHG Protocol methodology for Scope 1"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-2",
+      "target_name": "Energy indirect (Scope 2) GHG emissions",
+      "mapping_quality": "direct",
+      "notes": "Both require location-based and market-based methods"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-3",
+      "target_name": "Other indirect (Scope 3) GHG emissions",
+      "mapping_quality": "direct",
+      "notes": "ESRS requires all 15 Scope 3 categories; GRI requires significant categories"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions - intensity",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-4",
+      "target_name": "GHG emissions intensity",
+      "mapping_quality": "direct",
+      "notes": "Both allow organization-specific intensity denominators"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-5",
+      "target_name": "Reduction of GHG emissions",
+      "mapping_quality": "high",
+      "notes": "Target progress tracking maps to emission reduction reporting"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-6",
+      "target_name": "Emissions of ozone-depleting substances (ODS)",
+      "mapping_quality": "partial",
+      "notes": "ESRS GHG reporting may include ODS; GRI 305-6 is specific to ODS"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-7",
+      "target_name": "Nitrogen oxides (NOx), sulfur oxides (SOx), and other significant air emissions",
+      "mapping_quality": "partial",
+      "notes": "ESRS E2 pollution covers these; listed here for completeness"
+    },
+    {
+      "esrs_code": "E2-1",
+      "esrs_disclosure": "Policies related to pollution",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics - Pollution",
+      "mapping_quality": "high",
+      "notes": "Pollution policies are the management approach for the topic"
+    },
+    {
+      "esrs_code": "E2-4",
+      "esrs_disclosure": "Pollution of air, water and soil",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-7",
+      "target_name": "NOx, SOx, and other significant air emissions",
+      "mapping_quality": "direct",
+      "notes": "Both require air pollutant emissions reporting"
+    },
+    {
+      "esrs_code": "E2-4",
+      "esrs_disclosure": "Pollution of air, water and soil",
+      "target_framework": "GRI",
+      "target_reference": "GRI 303-4",
+      "target_name": "Water discharge",
+      "mapping_quality": "high",
+      "notes": "Water pollution links to water discharge quality metrics"
+    },
+    {
+      "esrs_code": "E2-5",
+      "esrs_disclosure": "Substances of concern and substances of very high concern",
+      "target_framework": "GRI",
+      "target_reference": "GRI 306-3",
+      "target_name": "Waste generated",
+      "mapping_quality": "partial",
+      "notes": "Hazardous substances relate to waste classification"
     },
     {
       "esrs_code": "E3-1",
-      "esrs_disclosure": "E3-4 Water consumption",
-      "gri_standard": "GRI 303",
-      "gri_disclosure": "303-5 Water consumption",
-      "mapping_quality": "direct",
-      "notes": "Aligned definitions"
+      "esrs_disclosure": "Policies related to water and marine resources",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics - Water",
+      "mapping_quality": "high",
+      "notes": "Water policies form the management approach"
     },
     {
-      "esrs_code": "E3-3",
-      "esrs_disclosure": "E3-4 Water consumption",
-      "gri_standard": "GRI 303",
-      "gri_disclosure": "303-3 Water withdrawal",
+      "esrs_code": "E3-1",
+      "esrs_disclosure": "Policies related to water and marine resources",
+      "target_framework": "GRI",
+      "target_reference": "GRI 303-1",
+      "target_name": "Interactions with water as a shared resource",
+      "mapping_quality": "high",
+      "notes": "Both address water management approach and context"
+    },
+    {
+      "esrs_code": "E3-1",
+      "esrs_disclosure": "Policies related to water and marine resources",
+      "target_framework": "GRI",
+      "target_reference": "GRI 303-2",
+      "target_name": "Management of water discharge-related impacts",
+      "mapping_quality": "high",
+      "notes": "Water policies include discharge management"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "GRI",
+      "target_reference": "GRI 303-3",
+      "target_name": "Water withdrawal",
       "mapping_quality": "direct",
-      "notes": "Both report by source"
+      "notes": "Both report water withdrawal by source"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "GRI",
+      "target_reference": "GRI 303-4",
+      "target_name": "Water discharge",
+      "mapping_quality": "high",
+      "notes": "Water consumption analysis requires discharge data"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "GRI",
+      "target_reference": "GRI 303-5",
+      "target_name": "Water consumption",
+      "mapping_quality": "direct",
+      "notes": "Direct alignment on water consumption metrics and water-stressed areas"
+    },
+    {
+      "esrs_code": "E4-1",
+      "esrs_disclosure": "Transition plan on biodiversity and ecosystems",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics - Biodiversity",
+      "mapping_quality": "high",
+      "notes": "Biodiversity transition plan is the management approach"
+    },
+    {
+      "esrs_code": "E4-1",
+      "esrs_disclosure": "Transition plan on biodiversity and ecosystems",
+      "target_framework": "GRI",
+      "target_reference": "GRI 304-1",
+      "target_name": "Operational sites owned, leased, managed in, or adjacent to, protected areas",
+      "mapping_quality": "high",
+      "notes": "Transition plan includes site-level biodiversity assessment"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "GRI",
+      "target_reference": "GRI 304-2",
+      "target_name": "Significant impacts of activities, products and services on biodiversity",
+      "mapping_quality": "direct",
+      "notes": "Both require disclosure of biodiversity impacts"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "GRI",
+      "target_reference": "GRI 304-3",
+      "target_name": "Habitats protected or restored",
+      "mapping_quality": "high",
+      "notes": "Ecosystem change metrics include restoration efforts"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "GRI",
+      "target_reference": "GRI 304-4",
+      "target_name": "IUCN Red List species and national conservation list species",
+      "mapping_quality": "high",
+      "notes": "Both reference IUCN and protected species in impact areas"
     },
     {
       "esrs_code": "E5-1",
-      "esrs_disclosure": "E5-5 Resource inflows - Waste",
-      "gri_standard": "GRI 306",
-      "gri_disclosure": "306-3 Waste generated",
-      "mapping_quality": "direct",
-      "notes": "Both report hazardous/non-hazardous"
+      "esrs_disclosure": "Policies related to resource use and circular economy",
+      "target_framework": "GRI",
+      "target_reference": "GRI 301-1",
+      "target_name": "Materials used by weight or volume",
+      "mapping_quality": "high",
+      "notes": "Resource use policies encompass material consumption tracking"
+    },
+    {
+      "esrs_code": "E5-1",
+      "esrs_disclosure": "Policies related to resource use and circular economy",
+      "target_framework": "GRI",
+      "target_reference": "GRI 301-2",
+      "target_name": "Recycled input materials used",
+      "mapping_quality": "high",
+      "notes": "Circular economy policies include recycled material usage"
+    },
+    {
+      "esrs_code": "E5-1",
+      "esrs_disclosure": "Policies related to resource use and circular economy",
+      "target_framework": "GRI",
+      "target_reference": "GRI 301-3",
+      "target_name": "Reclaimed products and their packaging materials",
+      "mapping_quality": "high",
+      "notes": "Circular economy includes product reclamation"
     },
     {
       "esrs_code": "E5-4",
-      "esrs_disclosure": "E5-5 Resource inflows - Waste diverted",
-      "gri_standard": "GRI 306",
-      "gri_disclosure": "306-4 Waste diverted from disposal",
+      "esrs_disclosure": "Resource inflows",
+      "target_framework": "GRI",
+      "target_reference": "GRI 301-1",
+      "target_name": "Materials used by weight or volume",
       "mapping_quality": "direct",
-      "notes": "Aligned waste hierarchy"
+      "notes": "Both track material inputs by type and weight"
+    },
+    {
+      "esrs_code": "E5-4",
+      "esrs_disclosure": "Resource inflows",
+      "target_framework": "GRI",
+      "target_reference": "GRI 301-2",
+      "target_name": "Recycled input materials used",
+      "mapping_quality": "direct",
+      "notes": "Both track percentage of recycled inputs"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "GRI",
+      "target_reference": "GRI 306-1",
+      "target_name": "Waste generation and significant waste-related impacts",
+      "mapping_quality": "direct",
+      "notes": "Both require description of waste generation and impacts"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "GRI",
+      "target_reference": "GRI 306-2",
+      "target_name": "Management of significant waste-related impacts",
+      "mapping_quality": "high",
+      "notes": "Both address waste management approach"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "GRI",
+      "target_reference": "GRI 306-3",
+      "target_name": "Waste generated",
+      "mapping_quality": "direct",
+      "notes": "Both report total waste by type (hazardous/non-hazardous)"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste diverted from disposal",
+      "target_framework": "GRI",
+      "target_reference": "GRI 306-4",
+      "target_name": "Waste diverted from disposal",
+      "mapping_quality": "direct",
+      "notes": "Both report waste diverted by recovery method"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste directed to disposal",
+      "target_framework": "GRI",
+      "target_reference": "GRI 306-5",
+      "target_name": "Waste directed to disposal",
+      "mapping_quality": "direct",
+      "notes": "Both report waste by disposal method"
     },
     {
       "esrs_code": "S1-1",
-      "esrs_disclosure": "S1-6 Characteristics of employees",
-      "gri_standard": "GRI 2",
-      "gri_disclosure": "2-7 Employees",
-      "mapping_quality": "direct",
-      "notes": "Both report headcount and FTE"
-    },
-    {
-      "esrs_code": "S1-8",
-      "esrs_disclosure": "S1-14 Health and safety metrics",
-      "gri_standard": "GRI 403",
-      "gri_disclosure": "403-9 Work-related injuries",
+      "esrs_disclosure": "Policies related to own workforce",
+      "target_framework": "GRI",
+      "target_reference": "GRI 3-3",
+      "target_name": "Management of material topics - Employment",
       "mapping_quality": "high",
-      "notes": "Both report fatalities and injury rates"
+      "notes": "Workforce policies form the management approach for employment topics"
     },
     {
       "esrs_code": "S1-6",
-      "esrs_disclosure": "S1-16 Gender pay gap",
-      "gri_standard": "GRI 405",
-      "gri_disclosure": "405-2 Ratio of basic salary and remuneration",
+      "esrs_disclosure": "Characteristics of the undertaking's employees",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-7",
+      "target_name": "Employees",
+      "mapping_quality": "direct",
+      "notes": "Both report headcount, FTE, by gender and region"
+    },
+    {
+      "esrs_code": "S1-6",
+      "esrs_disclosure": "Characteristics of the undertaking's employees",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-8",
+      "target_name": "Workers who are not employees",
       "mapping_quality": "high",
-      "notes": "Similar but not identical methodologies"
+      "notes": "ESRS S1-6 may cover non-employee workers"
+    },
+    {
+      "esrs_code": "S1-6",
+      "esrs_disclosure": "Characteristics of the undertaking's employees",
+      "target_framework": "GRI",
+      "target_reference": "GRI 401-1",
+      "target_name": "New employee hires and employee turnover",
+      "mapping_quality": "high",
+      "notes": "Employee characteristics include turnover data"
+    },
+    {
+      "esrs_code": "S1-6",
+      "esrs_disclosure": "Characteristics of the undertaking's employees",
+      "target_framework": "GRI",
+      "target_reference": "GRI 401-2",
+      "target_name": "Benefits provided to full-time employees",
+      "mapping_quality": "partial",
+      "notes": "Employee characteristics context relates to benefits"
+    },
+    {
+      "esrs_code": "S1-6",
+      "esrs_disclosure": "Characteristics of the undertaking's employees",
+      "target_framework": "GRI",
+      "target_reference": "GRI 401-3",
+      "target_name": "Parental leave",
+      "mapping_quality": "partial",
+      "notes": "Employee demographics link to parental leave eligibility"
+    },
+    {
+      "esrs_code": "S1-7",
+      "esrs_disclosure": "Characteristics of non-employee workers in the undertaking's own workforce",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-8",
+      "target_name": "Workers who are not employees",
+      "mapping_quality": "direct",
+      "notes": "Both require disclosure of non-employee worker types and numbers"
+    },
+    {
+      "esrs_code": "S1-8",
+      "esrs_disclosure": "Collective bargaining coverage and social dialogue",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-30",
+      "target_name": "Collective bargaining agreements",
+      "mapping_quality": "direct",
+      "notes": "Both require percentage of employees covered by collective agreements"
+    },
+    {
+      "esrs_code": "S1-8",
+      "esrs_disclosure": "Collective bargaining coverage and social dialogue",
+      "target_framework": "GRI",
+      "target_reference": "GRI 402-1",
+      "target_name": "Minimum notice periods regarding operational changes",
+      "mapping_quality": "high",
+      "notes": "Social dialogue includes notification requirements"
+    },
+    {
+      "esrs_code": "S1-9",
+      "esrs_disclosure": "Diversity metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 405-1",
+      "target_name": "Diversity of governance bodies and employees",
+      "mapping_quality": "direct",
+      "notes": "Both report diversity by gender, age, and other categories"
+    },
+    {
+      "esrs_code": "S1-10",
+      "esrs_disclosure": "Adequate wages",
+      "target_framework": "GRI",
+      "target_reference": "GRI 202-1",
+      "target_name": "Ratios of standard entry level wage to local minimum wage",
+      "mapping_quality": "high",
+      "notes": "Both address wage adequacy relative to local standards"
+    },
+    {
+      "esrs_code": "S1-11",
+      "esrs_disclosure": "Social protection",
+      "target_framework": "GRI",
+      "target_reference": "GRI 401-2",
+      "target_name": "Benefits provided to full-time employees",
+      "mapping_quality": "high",
+      "notes": "Social protection encompasses employee benefits"
+    },
+    {
+      "esrs_code": "S1-13",
+      "esrs_disclosure": "Training and skills development",
+      "target_framework": "GRI",
+      "target_reference": "GRI 404-1",
+      "target_name": "Average hours of training per year per employee",
+      "mapping_quality": "direct",
+      "notes": "Both report training hours by gender and employee category"
+    },
+    {
+      "esrs_code": "S1-13",
+      "esrs_disclosure": "Training and skills development",
+      "target_framework": "GRI",
+      "target_reference": "GRI 404-2",
+      "target_name": "Programs for upgrading employee skills and transition assistance",
+      "mapping_quality": "high",
+      "notes": "Both address skills development programs"
+    },
+    {
+      "esrs_code": "S1-13",
+      "esrs_disclosure": "Training and skills development",
+      "target_framework": "GRI",
+      "target_reference": "GRI 404-3",
+      "target_name": "Percentage of employees receiving regular performance and career development reviews",
+      "mapping_quality": "high",
+      "notes": "Skills development includes performance reviews"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-1",
+      "target_name": "Occupational health and safety management system",
+      "mapping_quality": "high",
+      "notes": "H&S metrics require underlying management system"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-2",
+      "target_name": "Hazard identification, risk assessment, and incident investigation",
+      "mapping_quality": "high",
+      "notes": "Both address hazard identification processes"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-5",
+      "target_name": "Worker training on occupational health and safety",
+      "mapping_quality": "high",
+      "notes": "H&S metrics context includes training"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-8",
+      "target_name": "Workers covered by an occupational health and safety management system",
+      "mapping_quality": "high",
+      "notes": "Both track coverage of H&S management systems"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-9",
+      "target_name": "Work-related injuries",
+      "mapping_quality": "direct",
+      "notes": "Both report fatalities, high-consequence injuries, and recordable injuries"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-10",
+      "target_name": "Work-related ill health",
+      "mapping_quality": "direct",
+      "notes": "Both report occupational diseases and ill health"
+    },
+    {
+      "esrs_code": "S1-15",
+      "esrs_disclosure": "Work-life balance",
+      "target_framework": "GRI",
+      "target_reference": "GRI 401-3",
+      "target_name": "Parental leave",
+      "mapping_quality": "high",
+      "notes": "Work-life balance includes parental leave policies"
+    },
+    {
+      "esrs_code": "S1-16",
+      "esrs_disclosure": "Remuneration metrics (pay gap)",
+      "target_framework": "GRI",
+      "target_reference": "GRI 405-2",
+      "target_name": "Ratio of basic salary and remuneration of women to men",
+      "mapping_quality": "direct",
+      "notes": "Both report gender pay gap metrics"
+    },
+    {
+      "esrs_code": "S1-17",
+      "esrs_disclosure": "Incidents, complaints and severe human rights impacts",
+      "target_framework": "GRI",
+      "target_reference": "GRI 406-1",
+      "target_name": "Incidents of discrimination and corrective actions taken",
+      "mapping_quality": "high",
+      "notes": "Human rights incidents include discrimination"
+    },
+    {
+      "esrs_code": "S1-17",
+      "esrs_disclosure": "Incidents, complaints and severe human rights impacts",
+      "target_framework": "GRI",
+      "target_reference": "GRI 411-1",
+      "target_name": "Incidents of violations involving rights of indigenous peoples",
+      "mapping_quality": "high",
+      "notes": "Human rights impacts include indigenous rights violations"
+    },
+    {
+      "esrs_code": "S2-1",
+      "esrs_disclosure": "Policies related to value chain workers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 414-1",
+      "target_name": "New suppliers that were screened using social criteria",
+      "mapping_quality": "high",
+      "notes": "Value chain worker policies include supplier screening"
+    },
+    {
+      "esrs_code": "S2-1",
+      "esrs_disclosure": "Policies related to value chain workers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 414-2",
+      "target_name": "Negative social impacts in the supply chain and actions taken",
+      "mapping_quality": "direct",
+      "notes": "Both address supply chain social impacts and remediation"
+    },
+    {
+      "esrs_code": "S2-4",
+      "esrs_disclosure": "Material impacts on value chain workers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 408-1",
+      "target_name": "Operations and suppliers at significant risk for incidents of child labor",
+      "mapping_quality": "high",
+      "notes": "Value chain worker impacts include child labor risks"
+    },
+    {
+      "esrs_code": "S2-4",
+      "esrs_disclosure": "Material impacts on value chain workers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 409-1",
+      "target_name": "Operations and suppliers at significant risk for incidents of forced or compulsory labor",
+      "mapping_quality": "high",
+      "notes": "Value chain worker impacts include forced labor risks"
+    },
+    {
+      "esrs_code": "S3-1",
+      "esrs_disclosure": "Policies related to affected communities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 413-1",
+      "target_name": "Operations with local community engagement, impact assessments, and development programs",
+      "mapping_quality": "direct",
+      "notes": "Both require community engagement and impact assessment disclosures"
+    },
+    {
+      "esrs_code": "S3-1",
+      "esrs_disclosure": "Policies related to affected communities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 413-2",
+      "target_name": "Operations with significant actual and potential negative impacts on local communities",
+      "mapping_quality": "high",
+      "notes": "Community policies address negative impact mitigation"
+    },
+    {
+      "esrs_code": "S3-4",
+      "esrs_disclosure": "Material impacts on affected communities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 411-1",
+      "target_name": "Incidents of violations involving rights of indigenous peoples",
+      "mapping_quality": "high",
+      "notes": "Community impacts include indigenous peoples rights"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 416-1",
+      "target_name": "Assessment of the health and safety impacts of product and service categories",
+      "mapping_quality": "high",
+      "notes": "Consumer policies include product safety assessments"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 416-2",
+      "target_name": "Incidents of non-compliance concerning health and safety impacts of products and services",
+      "mapping_quality": "high",
+      "notes": "Consumer policies address product safety compliance"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 417-1",
+      "target_name": "Requirements for product and service information and labeling",
+      "mapping_quality": "high",
+      "notes": "Consumer policies include labeling and information requirements"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 418-1",
+      "target_name": "Substantiated complaints concerning breaches of customer privacy and losses of customer data",
+      "mapping_quality": "high",
+      "notes": "Consumer policies address data privacy and protection"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 417-2",
+      "target_name": "Incidents of non-compliance concerning product and service information and labeling",
+      "mapping_quality": "high",
+      "notes": "Consumer impacts include labeling compliance incidents"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 417-3",
+      "target_name": "Incidents of non-compliance concerning marketing communications",
+      "mapping_quality": "high",
+      "notes": "Consumer impacts include marketing compliance"
     },
     {
       "esrs_code": "G1-1",
-      "esrs_disclosure": "G1-4 Corruption and bribery",
-      "gri_standard": "GRI 205",
-      "gri_disclosure": "205-3 Confirmed incidents of corruption",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-23",
+      "target_name": "Policy commitments",
       "mapping_quality": "direct",
-      "notes": "Both track incidents and enforcement actions"
+      "notes": "Both require disclosure of ethics and conduct policies"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-26",
+      "target_name": "Mechanisms for seeking advice and raising concerns",
+      "mapping_quality": "high",
+      "notes": "Business conduct includes whistleblowing and grievance mechanisms"
+    },
+    {
+      "esrs_code": "G1-3",
+      "esrs_disclosure": "Prevention and detection of corruption and bribery",
+      "target_framework": "GRI",
+      "target_reference": "GRI 205-1",
+      "target_name": "Operations assessed for risks related to corruption",
+      "mapping_quality": "direct",
+      "notes": "Both require corruption risk assessment disclosure"
+    },
+    {
+      "esrs_code": "G1-3",
+      "esrs_disclosure": "Prevention and detection of corruption and bribery",
+      "target_framework": "GRI",
+      "target_reference": "GRI 205-2",
+      "target_name": "Communication and training about anti-corruption policies and procedures",
+      "mapping_quality": "direct",
+      "notes": "Both report anti-corruption training coverage"
+    },
+    {
+      "esrs_code": "G1-4",
+      "esrs_disclosure": "Confirmed incidents of corruption or bribery",
+      "target_framework": "GRI",
+      "target_reference": "GRI 205-3",
+      "target_name": "Confirmed incidents of corruption and actions taken",
+      "mapping_quality": "direct",
+      "notes": "Both track confirmed corruption incidents and consequences"
+    },
+    {
+      "esrs_code": "G1-5",
+      "esrs_disclosure": "Political influence and lobbying activities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 415-1",
+      "target_name": "Political contributions",
+      "mapping_quality": "high",
+      "notes": "ESRS covers broader political influence; GRI focuses on contributions"
     },
     {
       "esrs_code": "G1-2",
-      "esrs_disclosure": "G1-4 Anti-corruption training",
-      "gri_standard": "GRI 205",
-      "gri_disclosure": "205-2 Communication and training on anti-corruption",
+      "esrs_disclosure": "Management of relationships with suppliers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 204-1",
+      "target_name": "Proportion of spending on local suppliers",
+      "mapping_quality": "partial",
+      "notes": "Supplier management includes local procurement considerations"
+    },
+    {
+      "esrs_code": "G1-2",
+      "esrs_disclosure": "Management of relationships with suppliers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 308-1",
+      "target_name": "New suppliers that were screened using environmental criteria",
+      "mapping_quality": "high",
+      "notes": "Supplier relationship management includes environmental screening"
+    },
+    {
+      "esrs_code": "G1-2",
+      "esrs_disclosure": "Management of relationships with suppliers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 308-2",
+      "target_name": "Negative environmental impacts in the supply chain and actions taken",
+      "mapping_quality": "high",
+      "notes": "Supplier management addresses environmental supply chain impacts"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 206-1",
+      "target_name": "Legal actions for anti-competitive behavior, anti-trust, and monopoly practices",
+      "mapping_quality": "high",
+      "notes": "Business conduct encompasses competition law compliance"
+    },
+    {
+      "esrs_code": "G1-6",
+      "esrs_disclosure": "Payment practices",
+      "target_framework": "GRI",
+      "target_reference": "GRI 204-1",
+      "target_name": "Proportion of spending on local suppliers",
+      "mapping_quality": "partial",
+      "notes": "Payment practices relate to supplier spending patterns"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 207-1",
+      "target_name": "Approach to tax",
+      "mapping_quality": "high",
+      "notes": "Business conduct includes tax governance and transparency"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 207-2",
+      "target_name": "Tax governance, control, and risk management",
+      "mapping_quality": "high",
+      "notes": "Business conduct policies encompass tax governance"
+    },
+    {
+      "esrs_code": "G1-4",
+      "esrs_disclosure": "Confirmed incidents of corruption or bribery",
+      "target_framework": "GRI",
+      "target_reference": "GRI 207-3",
+      "target_name": "Stakeholder engagement and management of concerns related to tax",
+      "mapping_quality": "partial",
+      "notes": "Corruption incidents may involve tax-related misconduct"
+    },
+    {
+      "esrs_code": "S1-12",
+      "esrs_disclosure": "Persons with disabilities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 405-1",
+      "target_name": "Diversity of governance bodies and employees",
+      "mapping_quality": "high",
+      "notes": "Disability inclusion is a dimension of diversity reporting"
+    },
+    {
+      "esrs_code": "S1-10",
+      "esrs_disclosure": "Adequate wages",
+      "target_framework": "GRI",
+      "target_reference": "GRI 202-2",
+      "target_name": "Proportion of senior management hired from the local community",
+      "mapping_quality": "partial",
+      "notes": "Wage adequacy context includes local hiring practices"
+    },
+    {
+      "esrs_code": "S1-17",
+      "esrs_disclosure": "Incidents, complaints and severe human rights impacts",
+      "target_framework": "GRI",
+      "target_reference": "GRI 407-1",
+      "target_name": "Operations and suppliers in which the right to freedom of association may be at risk",
+      "mapping_quality": "high",
+      "notes": "Human rights incidents include freedom of association risks"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-3",
+      "target_name": "Occupational health services",
+      "mapping_quality": "high",
+      "notes": "H&S metrics context includes health service provision"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-4",
+      "target_name": "Worker participation, consultation, and communication on occupational H&S",
+      "mapping_quality": "high",
+      "notes": "H&S metrics include worker participation in safety"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-6",
+      "target_name": "Promotion of worker health",
+      "mapping_quality": "partial",
+      "notes": "H&S metrics context includes health promotion programs"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 403-7",
+      "target_name": "Prevention and mitigation of occupational H&S impacts linked to business relationships",
+      "mapping_quality": "high",
+      "notes": "H&S metrics include value chain health and safety"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "GRI",
+      "target_reference": "GRI 201-2",
+      "target_name": "Financial implications and other risks and opportunities due to climate change",
       "mapping_quality": "direct",
-      "notes": "Both report training coverage"
+      "notes": "Both require financial quantification of climate risks and opportunities"
+    },
+    {
+      "esrs_code": "ESRS-2 SBM-3",
+      "esrs_disclosure": "Material impacts, risks and opportunities and their interaction with strategy",
+      "target_framework": "GRI",
+      "target_reference": "GRI 201-1",
+      "target_name": "Direct economic value generated and distributed",
+      "mapping_quality": "partial",
+      "notes": "Strategic impacts include economic value considerations"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 201-4",
+      "target_name": "Financial assistance received from government",
+      "mapping_quality": "partial",
+      "notes": "Business conduct transparency includes government financial support"
+    },
+    {
+      "esrs_code": "S3-4",
+      "esrs_disclosure": "Material impacts on affected communities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 410-1",
+      "target_name": "Security personnel trained in human rights policies or procedures",
+      "mapping_quality": "partial",
+      "notes": "Community impacts may involve security operations"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 419-1",
+      "target_name": "Non-compliance with laws and regulations in the social and economic area",
+      "mapping_quality": "high",
+      "notes": "Consumer impacts include regulatory non-compliance"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-15",
+      "target_name": "Conflicts of interest",
+      "mapping_quality": "high",
+      "notes": "Governance body roles include conflict of interest management"
+    },
+    {
+      "esrs_code": "E2-4",
+      "esrs_disclosure": "Pollution of air, water and soil",
+      "target_framework": "GRI",
+      "target_reference": "GRI 306-1",
+      "target_name": "Waste generation and significant waste-related impacts",
+      "mapping_quality": "partial",
+      "notes": "Soil pollution relates to waste-related contamination"
+    },
+    {
+      "esrs_code": "E1-7",
+      "esrs_disclosure": "GHG removals and GHG mitigation projects financed through carbon credits",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-5",
+      "target_name": "Reduction of GHG emissions",
+      "mapping_quality": "high",
+      "notes": "Carbon credits and removals contribute to emission reductions"
+    },
+    {
+      "esrs_code": "S2-4",
+      "esrs_disclosure": "Material impacts on value chain workers",
+      "target_framework": "GRI",
+      "target_reference": "GRI 407-1",
+      "target_name": "Operations and suppliers in which the right to freedom of association may be at risk",
+      "mapping_quality": "high",
+      "notes": "Value chain impacts include freedom of association risks"
+    },
+    {
+      "esrs_code": "S1-1",
+      "esrs_disclosure": "Policies related to own workforce",
+      "target_framework": "GRI",
+      "target_reference": "GRI 406-1",
+      "target_name": "Incidents of discrimination and corrective actions taken",
+      "mapping_quality": "high",
+      "notes": "Workforce policies address non-discrimination"
+    },
+    {
+      "esrs_code": "E5-4",
+      "esrs_disclosure": "Resource inflows",
+      "target_framework": "GRI",
+      "target_reference": "GRI 301-3",
+      "target_name": "Reclaimed products and their packaging materials",
+      "mapping_quality": "high",
+      "notes": "Resource inflows include reclaimed material inputs"
+    },
+    {
+      "esrs_code": "S1-9",
+      "esrs_disclosure": "Diversity metrics",
+      "target_framework": "GRI",
+      "target_reference": "GRI 202-2",
+      "target_name": "Proportion of senior management hired from the local community",
+      "mapping_quality": "partial",
+      "notes": "Diversity includes local representation in management"
+    },
+    {
+      "esrs_code": "G1-5",
+      "esrs_disclosure": "Political influence and lobbying activities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 2-28",
+      "target_name": "Membership associations",
+      "mapping_quality": "high",
+      "notes": "Political influence includes industry association memberships"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 207-4",
+      "target_name": "Country-by-country reporting",
+      "mapping_quality": "partial",
+      "notes": "Business conduct transparency extends to tax reporting by jurisdiction"
+    },
+    {
+      "esrs_code": "S1-11",
+      "esrs_disclosure": "Social protection",
+      "target_framework": "GRI",
+      "target_reference": "GRI 401-3",
+      "target_name": "Parental leave",
+      "mapping_quality": "high",
+      "notes": "Social protection includes parental leave entitlements"
+    },
+    {
+      "esrs_code": "S1-10",
+      "esrs_disclosure": "Adequate wages",
+      "target_framework": "GRI",
+      "target_reference": "GRI 201-3",
+      "target_name": "Defined benefit plan obligations and other retirement plans",
+      "mapping_quality": "partial",
+      "notes": "Adequate wages context includes retirement benefit provision"
+    },
+    {
+      "esrs_code": "E1-3",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "GRI",
+      "target_reference": "GRI 302-4",
+      "target_name": "Reduction of energy consumption",
+      "mapping_quality": "high",
+      "notes": "Climate actions include energy consumption reduction initiatives"
+    },
+    {
+      "esrs_code": "E2-3",
+      "esrs_disclosure": "Targets related to pollution",
+      "target_framework": "GRI",
+      "target_reference": "GRI 305-7",
+      "target_name": "NOx, SOx, and other significant air emissions",
+      "mapping_quality": "high",
+      "notes": "Pollution targets encompass air emission reduction goals"
+    },
+    {
+      "esrs_code": "S3-3",
+      "esrs_disclosure": "Targets related to affected communities",
+      "target_framework": "GRI",
+      "target_reference": "GRI 413-1",
+      "target_name": "Operations with local community engagement, impact assessments, and development programs",
+      "mapping_quality": "high",
+      "notes": "Community targets include engagement and development program goals"
+    },
+    {
+      "esrs_code": "S4-3",
+      "esrs_disclosure": "Targets related to consumers and end-users",
+      "target_framework": "GRI",
+      "target_reference": "GRI 416-1",
+      "target_name": "Assessment of the health and safety impacts of product and service categories",
+      "mapping_quality": "high",
+      "notes": "Consumer targets include product safety improvement goals"
     }
   ],
   "esrs_to_sasb": [
     {
-      "esrs_code": "E1-1",
-      "esrs_disclosure": "E1-6 GHG emissions",
-      "sasb_category": "GHG Emissions",
-      "sasb_metric": "Gross global Scope 1 emissions",
-      "sasb_industries": "All",
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - Universal",
+      "target_name": "Gross global Scope 1 emissions (metric tons CO2-e)",
       "mapping_quality": "direct",
-      "notes": "Universal metric across SASB sectors"
+      "notes": "Universal SASB metric across all sectors; methodology aligned with GHG Protocol"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - Universal",
+      "target_name": "Scope 2 emissions - location-based and market-based",
+      "mapping_quality": "direct",
+      "notes": "Universal SASB metric; both frameworks require dual Scope 2 reporting"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions - Scope 3",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - Universal",
+      "target_name": "Discussion of long-term and short-term strategy to manage Scope 1 and 2 emissions",
+      "mapping_quality": "high",
+      "notes": "ESRS mandates Scope 3; SASB strategy discussion often references Scope 3"
     },
     {
       "esrs_code": "E1-5",
-      "esrs_disclosure": "E1-5 Energy consumption",
-      "sasb_category": "Energy Management",
-      "sasb_metric": "Total energy consumed",
-      "sasb_industries": "Multiple",
-      "mapping_quality": "high",
-      "notes": "Sector-specific SASB metrics"
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "SASB",
+      "target_reference": "SASB Energy Management - Universal",
+      "target_name": "Total energy consumed (GJ), percentage grid electricity, percentage renewable",
+      "mapping_quality": "direct",
+      "notes": "Universal SASB energy metric; both track consumption and renewable percentage"
     },
     {
-      "esrs_code": "E3-1",
-      "esrs_disclosure": "E3-4 Water consumption",
-      "sasb_category": "Water Management",
-      "sasb_metric": "Total water withdrawn/consumed",
-      "sasb_industries": ["Beverages", "Mining", "Food & Beverage"],
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - Universal",
+      "target_name": "Discussion of long-term and short-term strategy to manage Scope 1 and lifecycle GHG emissions",
       "mapping_quality": "high",
-      "notes": "Material for water-intensive industries"
+      "notes": "ESRS targets map to SASB strategy discussion on emissions management"
     },
     {
-      "esrs_code": "E5-1",
-      "esrs_disclosure": "E5-5 Waste",
-      "sasb_category": "Waste Management",
-      "sasb_metric": "Hazardous waste generated",
-      "sasb_industries": ["Chemicals", "Healthcare"],
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - Universal",
+      "target_name": "Emissions reduction targets and analysis of performance against those targets",
       "mapping_quality": "high",
-      "notes": "Industry-specific"
+      "notes": "Transition plan includes targets that map to SASB strategy metrics"
     },
     {
-      "esrs_code": "S1-8",
-      "esrs_disclosure": "S1-14 Occupational health and safety",
-      "sasb_category": "Employee Health & Safety",
-      "sasb_metric": "Total recordable incident rate (TRIR)",
-      "sasb_industries": "Multiple",
-      "mapping_quality": "high",
-      "notes": "LTIFR (ESRS) similar to TRIR (SASB)"
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "SASB",
+      "target_reference": "SASB Water Management - FB-AG",
+      "target_name": "Total water withdrawn/consumed, percentage in water-stressed regions",
+      "mapping_quality": "direct",
+      "notes": "Material for agricultural products; both track water stress areas"
     },
     {
-      "esrs_code": "S1-2",
-      "esrs_disclosure": "S1-9 Diversity metrics",
-      "sasb_category": "Employee Engagement, Diversity & Inclusion",
-      "sasb_metric": "Gender and racial diversity metrics",
-      "sasb_industries": "Financial Services",
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "SASB",
+      "target_reference": "SASB Water Management - EM-MM",
+      "target_name": "Total fresh water withdrawn/consumed (metals and mining)",
+      "mapping_quality": "direct",
+      "notes": "Critical metric for mining sector water management"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "SASB",
+      "target_reference": "SASB Water Management - FB-NB",
+      "target_name": "Total water withdrawn/consumed (non-alcoholic beverages)",
+      "mapping_quality": "direct",
+      "notes": "Material for beverages; water intensity per unit production"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "SASB",
+      "target_reference": "SASB Water Management - IF-EU",
+      "target_name": "Total water withdrawn/consumed (electric utilities)",
+      "mapping_quality": "direct",
+      "notes": "Material for utilities; cooling water usage tracking"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "SASB",
+      "target_reference": "SASB Water Management - RT-CH",
+      "target_name": "Total water withdrawn/consumed (chemicals)",
+      "mapping_quality": "direct",
+      "notes": "Material for chemicals sector; process water tracking"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "SASB",
+      "target_reference": "SASB Waste Management - RT-CH",
+      "target_name": "Amount of hazardous waste generated, percentage recycled (chemicals)",
+      "mapping_quality": "direct",
+      "notes": "Chemicals sector hazardous waste tracking aligns with ESRS"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "SASB",
+      "target_reference": "SASB Waste Management - HC-DY",
+      "target_name": "Amount of hazardous waste generated (healthcare delivery)",
+      "mapping_quality": "direct",
+      "notes": "Healthcare hazardous waste metrics"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "SASB",
+      "target_reference": "SASB Waste Management - EM-MM",
+      "target_name": "Total weight of tailings waste and percentage recycled (metals and mining)",
       "mapping_quality": "high",
-      "notes": "SASB more detailed for specific sectors"
+      "notes": "Mining-specific waste metrics partially align with ESRS waste reporting"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "SASB",
+      "target_reference": "SASB Waste Management - IF-WM",
+      "target_name": "Amount of waste incinerated, recycled, landfilled (waste management)",
+      "mapping_quality": "direct",
+      "notes": "Waste management sector aligns directly on disposal method tracking"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - EM-EP",
+      "target_name": "Gross global Scope 1 emissions and percentage methane/covered by regulations (oil and gas exploration)",
+      "mapping_quality": "direct",
+      "notes": "Oil and gas exploration specific GHG metrics including methane breakdown"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - EM-RM",
+      "target_name": "Gross global Scope 1 emissions and percentage covered by regulations (oil and gas refining)",
+      "mapping_quality": "direct",
+      "notes": "Refining and marketing sector GHG emissions with regulatory coverage"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - IF-EU",
+      "target_name": "Gross global Scope 1 emissions and percentage by ETS (electric utilities)",
+      "mapping_quality": "direct",
+      "notes": "Electric utilities GHG metrics with emissions trading scheme coverage"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - TR-AU",
+      "target_name": "Scope 1 emissions from fleet vehicles (automobiles)",
+      "mapping_quality": "high",
+      "notes": "Automotive sector fleet emissions align with ESRS Scope 1"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - TR-AL",
+      "target_name": "Gross global Scope 1 emissions (airlines)",
+      "mapping_quality": "direct",
+      "notes": "Airlines sector Scope 1 emissions including CO2 per revenue ton-km"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "SASB",
+      "target_reference": "SASB Energy Management - EM-EP",
+      "target_name": "Total energy consumed, percentage grid electricity, percentage renewable (oil and gas exploration)",
+      "mapping_quality": "direct",
+      "notes": "Energy sector energy management metrics"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "SASB",
+      "target_reference": "SASB Energy Management - IF-EU",
+      "target_name": "Total electricity generated, percentage by energy source (electric utilities)",
+      "mapping_quality": "high",
+      "notes": "Utilities generation mix maps to ESRS energy mix"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "SASB",
+      "target_reference": "SASB Energy Management - TC-SI",
+      "target_name": "Total energy consumed, percentage grid electricity, percentage renewable (software and IT services)",
+      "mapping_quality": "direct",
+      "notes": "Tech sector data center energy metrics align with ESRS"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "SASB",
+      "target_reference": "SASB Energy Management - TC-IM",
+      "target_name": "Total energy consumed, percentage grid electricity, percentage renewable (internet media)",
+      "mapping_quality": "direct",
+      "notes": "Internet media sector energy management"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "SASB",
+      "target_reference": "SASB Energy Management - TC-TL",
+      "target_name": "Total energy consumed, percentage grid electricity, percentage renewable (telecom)",
+      "mapping_quality": "direct",
+      "notes": "Telecom sector network energy consumption"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "SASB",
+      "target_reference": "SASB Energy Management - RT-CP",
+      "target_name": "Total energy consumed, percentage grid electricity, percentage renewable (containers and packaging)",
+      "mapping_quality": "direct",
+      "notes": "Packaging sector manufacturing energy metrics"
+    },
+    {
+      "esrs_code": "E2-4",
+      "esrs_disclosure": "Pollution of air, water and soil",
+      "target_framework": "SASB",
+      "target_reference": "SASB Air Quality - EM-EP",
+      "target_name": "Air emissions of NOx, SOx, VOCs, and particulate matter (oil and gas exploration)",
+      "mapping_quality": "direct",
+      "notes": "Oil and gas air quality metrics align with ESRS pollution reporting"
+    },
+    {
+      "esrs_code": "E2-4",
+      "esrs_disclosure": "Pollution of air, water and soil",
+      "target_framework": "SASB",
+      "target_reference": "SASB Air Quality - IF-EU",
+      "target_name": "Air emissions of NOx, SOx, particulate matter, lead, mercury (electric utilities)",
+      "mapping_quality": "direct",
+      "notes": "Utilities air pollutant emissions"
+    },
+    {
+      "esrs_code": "E2-4",
+      "esrs_disclosure": "Pollution of air, water and soil",
+      "target_framework": "SASB",
+      "target_reference": "SASB Air Quality - RT-CH",
+      "target_name": "Air emissions of NOx, SOx, VOCs, HAPs (chemicals)",
+      "mapping_quality": "direct",
+      "notes": "Chemicals sector air emissions tracking"
+    },
+    {
+      "esrs_code": "E2-5",
+      "esrs_disclosure": "Substances of concern and substances of very high concern",
+      "target_framework": "SASB",
+      "target_reference": "SASB Chemical Safety - RT-CH",
+      "target_name": "Percentage of products by revenue containing REACH SVHC substances (chemicals)",
+      "mapping_quality": "direct",
+      "notes": "Both address substances of very high concern under REACH"
+    },
+    {
+      "esrs_code": "E2-5",
+      "esrs_disclosure": "Substances of concern and substances of very high concern",
+      "target_framework": "SASB",
+      "target_reference": "SASB Chemical Safety - HC-BP",
+      "target_name": "Number of recalls, total units recalled (biotechnology and pharma)",
+      "mapping_quality": "partial",
+      "notes": "Product safety incidents may involve hazardous substances"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "SASB",
+      "target_reference": "SASB Ecological Impacts - EM-EP",
+      "target_name": "Description of environmental management policies for active sites (oil and gas)",
+      "mapping_quality": "high",
+      "notes": "Oil and gas ecological impact management aligns with ESRS biodiversity"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "SASB",
+      "target_reference": "SASB Ecological Impacts - EM-MM",
+      "target_name": "Percentage of mine sites where acid rock drainage is predicted/actively mitigated (mining)",
+      "mapping_quality": "high",
+      "notes": "Mining ecological impacts including land rehabilitation"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "SASB",
+      "target_reference": "SASB Ecological Impacts - RR-FM",
+      "target_name": "Area of forestland certified to third-party forest management standards (forestry)",
+      "mapping_quality": "high",
+      "notes": "Forestry certification relates to biodiversity management"
+    },
+    {
+      "esrs_code": "E5-4",
+      "esrs_disclosure": "Resource inflows",
+      "target_framework": "SASB",
+      "target_reference": "SASB Materials Sourcing - RT-CH",
+      "target_name": "Percentage of raw materials from recycled or renewable sources (chemicals)",
+      "mapping_quality": "high",
+      "notes": "Chemicals sector material sourcing aligns with circular economy"
+    },
+    {
+      "esrs_code": "E5-4",
+      "esrs_disclosure": "Resource inflows",
+      "target_framework": "SASB",
+      "target_reference": "SASB Materials Sourcing - RT-CP",
+      "target_name": "Percentage recycled and renewable material inputs (containers and packaging)",
+      "mapping_quality": "direct",
+      "notes": "Packaging sector recycled input metrics"
+    },
+    {
+      "esrs_code": "E5-4",
+      "esrs_disclosure": "Resource inflows",
+      "target_framework": "SASB",
+      "target_reference": "SASB Materials Sourcing - CG-AA",
+      "target_name": "Description of environmental and social risks in raw material supply chain (apparel)",
+      "mapping_quality": "high",
+      "notes": "Apparel sector raw material sourcing and circularity"
+    },
+    {
+      "esrs_code": "E5-5",
+      "esrs_disclosure": "Resource outflows - Waste",
+      "target_framework": "SASB",
+      "target_reference": "SASB Product Design - CG-HP",
+      "target_name": "Revenue from products designed for recyclability or reuse (household products)",
+      "mapping_quality": "partial",
+      "notes": "Consumer products circular design relates to waste reduction"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee H&S - EM-EP",
+      "target_name": "Total recordable incident rate (TRIR), fatality rate (oil and gas exploration)",
+      "mapping_quality": "direct",
+      "notes": "Oil and gas safety metrics align with ESRS H&S reporting"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee H&S - EM-MM",
+      "target_name": "MSHA all-incidence rate, fatality rate, near-miss frequency rate (metals and mining)",
+      "mapping_quality": "high",
+      "notes": "Mining sector safety metrics; MSHA vs ESRS methodology differences"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee H&S - IF-EU",
+      "target_name": "Total recordable incident rate (TRIR), fatality rate (electric utilities)",
+      "mapping_quality": "direct",
+      "notes": "Utilities safety metrics directly aligned"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee H&S - RT-CH",
+      "target_name": "Total recordable incident rate (TRIR), fatality rate (chemicals)",
+      "mapping_quality": "direct",
+      "notes": "Chemicals sector safety metrics"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee H&S - IF-EN",
+      "target_name": "Total recordable incident rate (TRIR), fatality rate (engineering and construction)",
+      "mapping_quality": "direct",
+      "notes": "Construction sector safety metrics"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee H&S - HC-DY",
+      "target_name": "Total recordable incident rate (TRIR), days away, restricted duty rate (healthcare)",
+      "mapping_quality": "direct",
+      "notes": "Healthcare worker safety metrics"
+    },
+    {
+      "esrs_code": "S1-9",
+      "esrs_disclosure": "Diversity metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - FN-CB",
+      "target_name": "Percentage of gender and racial/ethnic group representation (commercial banks)",
+      "mapping_quality": "high",
+      "notes": "Banking sector diversity metrics align with ESRS diversity reporting"
+    },
+    {
+      "esrs_code": "S1-9",
+      "esrs_disclosure": "Diversity metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - FN-IN",
+      "target_name": "Percentage of gender and racial/ethnic group representation (insurance)",
+      "mapping_quality": "high",
+      "notes": "Insurance sector diversity metrics"
+    },
+    {
+      "esrs_code": "S1-9",
+      "esrs_disclosure": "Diversity metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - FN-AC",
+      "target_name": "Percentage of gender and racial/ethnic group representation (asset management)",
+      "mapping_quality": "high",
+      "notes": "Asset management sector diversity metrics"
+    },
+    {
+      "esrs_code": "S1-9",
+      "esrs_disclosure": "Diversity metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - TC-SI",
+      "target_name": "Percentage of gender and racial/ethnic group representation (software and IT)",
+      "mapping_quality": "high",
+      "notes": "Tech sector diversity metrics including pay gap"
+    },
+    {
+      "esrs_code": "S1-6",
+      "esrs_disclosure": "Characteristics of the undertaking's employees",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - Universal",
+      "target_name": "Employee engagement percentage, voluntary and involuntary turnover rate",
+      "mapping_quality": "high",
+      "notes": "Employee characteristics include turnover data; engagement is SASB-specific"
+    },
+    {
+      "esrs_code": "S1-13",
+      "esrs_disclosure": "Training and skills development",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - TC-SI",
+      "target_name": "Employee engagement and development metrics (software and IT)",
+      "mapping_quality": "high",
+      "notes": "Tech sector skill development and retention metrics"
+    },
+    {
+      "esrs_code": "G1-3",
+      "esrs_disclosure": "Prevention and detection of corruption and bribery",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - Universal",
+      "target_name": "Description of policies and procedures for preventing corruption and bribery",
+      "mapping_quality": "direct",
+      "notes": "Universal SASB metric on anti-corruption aligned with ESRS"
+    },
+    {
+      "esrs_code": "G1-4",
+      "esrs_disclosure": "Confirmed incidents of corruption or bribery",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - Universal",
+      "target_name": "Total amount of monetary losses from legal proceedings related to business ethics",
+      "mapping_quality": "high",
+      "notes": "Both track corruption incidents; SASB focuses on monetary losses"
+    },
+    {
+      "esrs_code": "G1-4",
+      "esrs_disclosure": "Confirmed incidents of corruption or bribery",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - FN-CB",
+      "target_name": "Total monetary losses from legal proceedings related to fraud, insider trading, AML (commercial banks)",
+      "mapping_quality": "high",
+      "notes": "Banking sector legal/regulatory incidents overlap with corruption"
+    },
+    {
+      "esrs_code": "G1-4",
+      "esrs_disclosure": "Confirmed incidents of corruption or bribery",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - FN-IN",
+      "target_name": "Total monetary losses from legal proceedings (insurance)",
+      "mapping_quality": "high",
+      "notes": "Insurance sector regulatory violations and conduct issues"
+    },
+    {
+      "esrs_code": "G1-4",
+      "esrs_disclosure": "Confirmed incidents of corruption or bribery",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - FN-AC",
+      "target_name": "Total monetary losses from legal proceedings (asset management and custody)",
+      "mapping_quality": "high",
+      "notes": "Asset management sector fiduciary and conduct issues"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Customer Privacy - TC-SI",
+      "target_name": "Description of policies for collection, usage, and retention of customer data (software and IT)",
+      "mapping_quality": "high",
+      "notes": "Consumer data protection policies align across frameworks"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Customer Privacy - TC-IM",
+      "target_name": "Description of policies for collection, usage, and retention of customer data (internet media)",
+      "mapping_quality": "high",
+      "notes": "Internet media sector data privacy policies"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Customer Privacy - TC-TL",
+      "target_name": "Description of policies for collection, usage, and retention of customer data (telecom)",
+      "mapping_quality": "high",
+      "notes": "Telecom sector customer data policies"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Data Security - TC-SI",
+      "target_name": "Number of data breaches, percentage involving PII, number of users affected (software and IT)",
+      "mapping_quality": "high",
+      "notes": "Data breach reporting aligns with consumer impact assessment"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Data Security - TC-IM",
+      "target_name": "Number of data breaches, percentage involving PII (internet media)",
+      "mapping_quality": "high",
+      "notes": "Internet media data security incidents"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Data Security - FN-CB",
+      "target_name": "Number of data breaches, percentage involving PII (commercial banks)",
+      "mapping_quality": "high",
+      "notes": "Banking sector customer data security"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Data Security - HC-DY",
+      "target_name": "Number of data breaches involving PHI (healthcare delivery)",
+      "mapping_quality": "high",
+      "notes": "Healthcare patient data security"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Product Safety - FB-FR",
+      "target_name": "Number of recalls, total units recalled (food retailers)",
+      "mapping_quality": "high",
+      "notes": "Food safety recalls as consumer impact metric"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Product Safety - HC-BP",
+      "target_name": "Number of FDA enforcement actions, product recalls (biotech and pharma)",
+      "mapping_quality": "high",
+      "notes": "Pharma product safety and regulatory actions"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Product Safety - CG-HP",
+      "target_name": "Revenue from products containing substances of concern (household products)",
+      "mapping_quality": "high",
+      "notes": "Household product safety and hazardous substance content"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Product Safety - CG-AA",
+      "target_name": "Number of recalls, amount of products recalled (apparel, accessories and footwear)",
+      "mapping_quality": "high",
+      "notes": "Apparel product safety recalls"
+    },
+    {
+      "esrs_code": "S2-1",
+      "esrs_disclosure": "Policies related to value chain workers",
+      "target_framework": "SASB",
+      "target_reference": "SASB Supply Chain Management - CG-AA",
+      "target_name": "Percentage of Tier 1 suppliers audited, non-conformance rate (apparel)",
+      "mapping_quality": "high",
+      "notes": "Apparel sector supply chain social auditing"
+    },
+    {
+      "esrs_code": "S2-1",
+      "esrs_disclosure": "Policies related to value chain workers",
+      "target_framework": "SASB",
+      "target_reference": "SASB Supply Chain Management - FB-FR",
+      "target_name": "Revenue from third-party certified products (food retailers)",
+      "mapping_quality": "partial",
+      "notes": "Food retail supply chain certification as social impact proxy"
+    },
+    {
+      "esrs_code": "S2-4",
+      "esrs_disclosure": "Material impacts on value chain workers",
+      "target_framework": "SASB",
+      "target_reference": "SASB Supply Chain Management - CG-AA",
+      "target_name": "Priority non-conformance rate and corrective action rate (apparel)",
+      "mapping_quality": "high",
+      "notes": "Supply chain worker impact metrics in apparel sector"
+    },
+    {
+      "esrs_code": "S3-4",
+      "esrs_disclosure": "Material impacts on affected communities",
+      "target_framework": "SASB",
+      "target_reference": "SASB Community Relations - EM-EP",
+      "target_name": "Discussion of engagement with local communities (oil and gas exploration)",
+      "mapping_quality": "high",
+      "notes": "Oil and gas community engagement aligns with ESRS community impacts"
+    },
+    {
+      "esrs_code": "S3-4",
+      "esrs_disclosure": "Material impacts on affected communities",
+      "target_framework": "SASB",
+      "target_reference": "SASB Community Relations - EM-MM",
+      "target_name": "Number of non-technical delays, duration of delays (metals and mining)",
+      "mapping_quality": "high",
+      "notes": "Mining community-related operational disruptions"
+    },
+    {
+      "esrs_code": "S3-4",
+      "esrs_disclosure": "Material impacts on affected communities",
+      "target_framework": "SASB",
+      "target_reference": "SASB Human Rights - EM-EP",
+      "target_name": "Percentage of operations with indigenous community agreements (oil and gas)",
+      "mapping_quality": "high",
+      "notes": "Indigenous community engagement in extractive operations"
     },
     {
       "esrs_code": "G1-1",
-      "esrs_disclosure": "G1-4 Corruption",
-      "sasb_category": "Business Ethics",
-      "sasb_metric": "Corruption incidents",
-      "sasb_industries": "Multiple",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "SASB",
+      "target_reference": "SASB Competitive Behavior - TC-SI",
+      "target_name": "Total amount of monetary losses from anticompetitive practices (software and IT)",
       "mapping_quality": "high",
-      "notes": "Both track legal/regulatory incidents"
+      "notes": "Tech sector antitrust and competition law compliance"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "SASB",
+      "target_reference": "SASB Competitive Behavior - HC-BP",
+      "target_name": "Total amount of monetary losses from anticompetitive practices (biotech and pharma)",
+      "mapping_quality": "high",
+      "notes": "Pharma sector competition law and pricing conduct"
+    },
+    {
+      "esrs_code": "G1-5",
+      "esrs_disclosure": "Political influence and lobbying activities",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - IF-EU",
+      "target_name": "Amount of lobbying expenditures, description of policies (electric utilities)",
+      "mapping_quality": "direct",
+      "notes": "Utilities sector lobbying disclosure aligns with ESRS"
+    },
+    {
+      "esrs_code": "G1-5",
+      "esrs_disclosure": "Political influence and lobbying activities",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - EM-EP",
+      "target_name": "Description of management of political influence (oil and gas exploration)",
+      "mapping_quality": "high",
+      "notes": "Energy sector political influence management"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "SASB",
+      "target_reference": "SASB Physical Impacts - FN-IN",
+      "target_name": "Probable maximum loss from weather events, total losses from weather events (insurance)",
+      "mapping_quality": "high",
+      "notes": "Insurance sector physical risk financial effects"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "SASB",
+      "target_reference": "SASB Physical Impacts - IF-RE",
+      "target_name": "Area of properties in 100-year flood zones, value at risk (real estate)",
+      "mapping_quality": "high",
+      "notes": "Real estate climate physical risk exposure"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "SASB",
+      "target_reference": "SASB Physical Impacts - FN-CB",
+      "target_name": "Lending exposure to climate-related risks (commercial banks)",
+      "mapping_quality": "high",
+      "notes": "Banking sector climate risk in lending portfolio"
+    },
+    {
+      "esrs_code": "E1-8",
+      "esrs_disclosure": "Internal carbon pricing",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - EM-EP",
+      "target_name": "Amount of Scope 1 emissions from flared, vented hydrocarbons and process emissions (oil and gas)",
+      "mapping_quality": "partial",
+      "notes": "Internal carbon pricing influences emissions management in energy sector"
+    },
+    {
+      "esrs_code": "S1-16",
+      "esrs_disclosure": "Remuneration metrics (pay gap)",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - FN-CB",
+      "target_name": "Gender pay gap ratio (commercial banks)",
+      "mapping_quality": "direct",
+      "notes": "Banking sector pay gap reporting aligns with ESRS"
+    },
+    {
+      "esrs_code": "S1-16",
+      "esrs_disclosure": "Remuneration metrics (pay gap)",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee Engagement - TC-SI",
+      "target_name": "Gender pay gap ratio (software and IT services)",
+      "mapping_quality": "direct",
+      "notes": "Tech sector pay gap metrics"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - FB-AG",
+      "target_name": "Gross global Scope 1 emissions (agricultural products)",
+      "mapping_quality": "direct",
+      "notes": "Agricultural sector GHG emissions including methane and N2O"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - RT-CH",
+      "target_name": "Gross global Scope 1 emissions, percentage covered by regulations (chemicals)",
+      "mapping_quality": "direct",
+      "notes": "Chemicals sector GHG emissions with regulatory coverage"
+    },
+    {
+      "esrs_code": "E5-1",
+      "esrs_disclosure": "Policies related to resource use and circular economy",
+      "target_framework": "SASB",
+      "target_reference": "SASB Product Design - CG-AA",
+      "target_name": "Description of processes to assess and manage risks from environmental impacts of products (apparel)",
+      "mapping_quality": "high",
+      "notes": "Apparel circular economy policies and product lifecycle"
+    },
+    {
+      "esrs_code": "E5-1",
+      "esrs_disclosure": "Policies related to resource use and circular economy",
+      "target_framework": "SASB",
+      "target_reference": "SASB Product Design - RT-CP",
+      "target_name": "Percentage of packaging made from recycled or renewable materials (containers and packaging)",
+      "mapping_quality": "high",
+      "notes": "Packaging circularity metrics"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Selling Practices - FN-CB",
+      "target_name": "Percentage of total remuneration that is variable for covered employees (commercial banks)",
+      "mapping_quality": "partial",
+      "notes": "Consumer protection policies include responsible selling practices"
+    },
+    {
+      "esrs_code": "S4-1",
+      "esrs_disclosure": "Policies related to consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Selling Practices - FN-IN",
+      "target_name": "Complaints-to-claims ratio, customer retention rate (insurance)",
+      "mapping_quality": "partial",
+      "notes": "Insurance consumer fairness and complaints tracking"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "SASB",
+      "target_reference": "SASB GHG Emissions - IF-RE",
+      "target_name": "Energy consumption intensity by property subsector (real estate)",
+      "mapping_quality": "high",
+      "notes": "Real estate emissions intensity metrics"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "SASB",
+      "target_reference": "SASB Business Ethics - FN-CB",
+      "target_name": "Total amount of monetary losses from legal proceedings for business ethics violations (commercial banks)",
+      "mapping_quality": "high",
+      "notes": "Banking sector ethics and conduct violations"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "SASB",
+      "target_reference": "SASB Water Management - FB-AG",
+      "target_name": "Total water withdrawn, water consumed, water recycled (agricultural products)",
+      "mapping_quality": "direct",
+      "notes": "Agricultural water management metrics"
+    },
+    {
+      "esrs_code": "S1-14",
+      "esrs_disclosure": "Health and safety metrics",
+      "target_framework": "SASB",
+      "target_reference": "SASB Employee H&S - FB-MP",
+      "target_name": "Total recordable incident rate (TRIR), fatality rate (meat, poultry, dairy)",
+      "mapping_quality": "direct",
+      "notes": "Food processing sector worker safety"
+    },
+    {
+      "esrs_code": "G1-1",
+      "esrs_disclosure": "Business conduct policies",
+      "target_framework": "SASB",
+      "target_reference": "SASB Systemic Risk Management - FN-CB",
+      "target_name": "Global Systemically Important Bank (G-SIB) surcharge (commercial banks)",
+      "mapping_quality": "partial",
+      "notes": "Banking systemic risk management relates to broader conduct governance"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Access and Affordability - HC-DY",
+      "target_name": "Average length of stay, readmission rates (healthcare delivery)",
+      "mapping_quality": "partial",
+      "notes": "Healthcare service quality impacts on consumers"
+    },
+    {
+      "esrs_code": "S4-4",
+      "esrs_disclosure": "Material impacts on consumers and end-users",
+      "target_framework": "SASB",
+      "target_reference": "SASB Access and Affordability - HC-BP",
+      "target_name": "Percentage of drugs in pipeline targeting high disease burden (biotech and pharma)",
+      "mapping_quality": "partial",
+      "notes": "Pharma access and affordability as consumer impact"
+    }
+  ],
+  "esrs_to_cdp": [
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC1.1",
+      "target_name": "Board-level oversight of climate-related issues",
+      "mapping_quality": "direct",
+      "notes": "Both require description of board-level climate governance"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-1",
+      "esrs_disclosure": "Role of the administrative, management and supervisory bodies",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC1.2",
+      "target_name": "Highest management-level position with responsibility for climate-related issues",
+      "mapping_quality": "direct",
+      "notes": "Both identify management accountability for climate"
+    },
+    {
+      "esrs_code": "ESRS-2 GOV-3",
+      "esrs_disclosure": "Integration of sustainability-related performance in incentive schemes",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC1.3",
+      "target_name": "Incentives for management of climate-related issues",
+      "mapping_quality": "direct",
+      "notes": "Both require disclosure of climate-linked incentives"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-1",
+      "esrs_disclosure": "Description of the processes to identify and assess material IROs",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC2.1",
+      "target_name": "Climate-related risks and opportunities identified",
+      "mapping_quality": "high",
+      "notes": "ESRS broader scope; CDP focused on climate risks and opportunities"
+    },
+    {
+      "esrs_code": "ESRS-2 IRO-1",
+      "esrs_disclosure": "Description of the processes to identify and assess material IROs",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC2.2",
+      "target_name": "Process for identifying, assessing and responding to climate-related risks and opportunities",
+      "mapping_quality": "direct",
+      "notes": "Both describe risk identification and assessment processes"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC2.3",
+      "target_name": "Climate-related risks with potential to have a substantive financial impact",
+      "mapping_quality": "direct",
+      "notes": "Both require financial impact assessment of climate risks"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC2.4",
+      "target_name": "Climate-related opportunities with potential to have a substantive financial impact",
+      "mapping_quality": "high",
+      "notes": "ESRS covers financial effects of both risks and opportunities"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC3.1",
+      "target_name": "Strategy for managing climate-related risks and opportunities",
+      "mapping_quality": "direct",
+      "notes": "Both require strategic response to climate change"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC3.2",
+      "target_name": "Climate transition plan details",
+      "mapping_quality": "direct",
+      "notes": "Both require detailed transition plan with milestones"
+    },
+    {
+      "esrs_code": "E1-1",
+      "esrs_disclosure": "Transition plan for climate change mitigation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC3.3",
+      "target_name": "Scenario analysis for climate-related risks",
+      "mapping_quality": "high",
+      "notes": "Transition planning often incorporates scenario analysis"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC4.1",
+      "target_name": "Absolute emissions reduction targets",
+      "mapping_quality": "direct",
+      "notes": "Both require disclosure of absolute emissions reduction targets"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC4.2",
+      "target_name": "Emissions intensity reduction targets",
+      "mapping_quality": "direct",
+      "notes": "Both require disclosure of intensity-based targets"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC4.3",
+      "target_name": "Progress against emissions reduction targets",
+      "mapping_quality": "direct",
+      "notes": "Both require progress reporting against targets"
+    },
+    {
+      "esrs_code": "E1-3",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC4.5",
+      "target_name": "Low-carbon products and their contribution to emissions reduction",
+      "mapping_quality": "high",
+      "notes": "Climate actions include low-carbon product development"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC6.1",
+      "target_name": "Gross global Scope 1 emissions in metric tons CO2e",
+      "mapping_quality": "direct",
+      "notes": "Direct alignment on Scope 1 GHG emissions methodology"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC6.2",
+      "target_name": "Scope 1 emissions broken down by GHG type",
+      "mapping_quality": "high",
+      "notes": "CDP requires breakdown by gas type; ESRS requires total CO2e"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC6.3",
+      "target_name": "Scope 2 location-based emissions in metric tons CO2e",
+      "mapping_quality": "direct",
+      "notes": "Both require location-based Scope 2 reporting"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC6.4",
+      "target_name": "Scope 2 market-based emissions in metric tons CO2e",
+      "mapping_quality": "direct",
+      "notes": "Both require market-based Scope 2 reporting"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC6.5",
+      "target_name": "Scope 3 emissions by category",
+      "mapping_quality": "direct",
+      "notes": "Both require Scope 3 reporting by category; ESRS mandates all 15"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC8.2",
+      "target_name": "Energy consumption totals in MWh",
+      "mapping_quality": "direct",
+      "notes": "Both require total energy consumption disclosure"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC8.2a",
+      "target_name": "Energy consumption from renewable sources",
+      "mapping_quality": "direct",
+      "notes": "Both track renewable energy percentage"
+    },
+    {
+      "esrs_code": "E1-8",
+      "esrs_disclosure": "Internal carbon pricing",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC11.3",
+      "target_name": "Internal price on carbon used in decision-making",
+      "mapping_quality": "direct",
+      "notes": "Both require disclosure of internal carbon pricing mechanisms"
+    },
+    {
+      "esrs_code": "E1-7",
+      "esrs_disclosure": "GHG removals and GHG mitigation projects financed through carbon credits",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC11.2",
+      "target_name": "Carbon credits canceled or retired during the reporting year",
+      "mapping_quality": "direct",
+      "notes": "Both require carbon credit usage and quality disclosure"
+    },
+    {
+      "esrs_code": "E1-3",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC3.4",
+      "target_name": "Organization's climate strategy including financial planning",
+      "mapping_quality": "high",
+      "notes": "Resource allocation for climate reflects financial planning"
+    },
+    {
+      "esrs_code": "E1-2",
+      "esrs_disclosure": "Policies related to climate change mitigation and adaptation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC1.4",
+      "target_name": "Climate-related policy engagement activities",
+      "mapping_quality": "high",
+      "notes": "Climate policies include external engagement and advocacy"
+    },
+    {
+      "esrs_code": "S2-1",
+      "esrs_disclosure": "Policies related to value chain workers",
+      "target_framework": "CDP",
+      "target_reference": "CDP SC1.1",
+      "target_name": "Supplier engagement strategy on climate-related issues",
+      "mapping_quality": "high",
+      "notes": "Value chain worker policies include supply chain climate engagement"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP SC1.2",
+      "target_name": "Percentage of suppliers by emissions providing climate data through CDP",
+      "mapping_quality": "partial",
+      "notes": "Supply chain emissions data collection relates to Scope 3 reporting"
+    },
+    {
+      "esrs_code": "S2-4",
+      "esrs_disclosure": "Material impacts on value chain workers",
+      "target_framework": "CDP",
+      "target_reference": "CDP SC2.1",
+      "target_name": "Supply chain engagement on climate through training and incentives",
+      "mapping_quality": "partial",
+      "notes": "Value chain engagement includes climate capability building"
+    },
+    {
+      "esrs_code": "S2-4",
+      "esrs_disclosure": "Material impacts on value chain workers",
+      "target_framework": "CDP",
+      "target_reference": "CDP SC2.2",
+      "target_name": "Supply chain climate risk assessment and targets",
+      "mapping_quality": "partial",
+      "notes": "Supply chain climate impacts link to worker conditions"
+    },
+    {
+      "esrs_code": "E3-1",
+      "esrs_disclosure": "Policies related to water and marine resources",
+      "target_framework": "CDP",
+      "target_reference": "CDP W1.1",
+      "target_name": "Board-level oversight of water-related issues",
+      "mapping_quality": "high",
+      "notes": "Water policies include governance and oversight mechanisms"
+    },
+    {
+      "esrs_code": "E3-1",
+      "esrs_disclosure": "Policies related to water and marine resources",
+      "target_framework": "CDP",
+      "target_reference": "CDP W1.2",
+      "target_name": "Incentives for management of water-related issues",
+      "mapping_quality": "partial",
+      "notes": "Water policies may include performance-linked incentives"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "CDP",
+      "target_reference": "CDP W5.1",
+      "target_name": "Total water withdrawals from all sources by volume",
+      "mapping_quality": "direct",
+      "notes": "Both require total water withdrawal by source"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "CDP",
+      "target_reference": "CDP W5.1a",
+      "target_name": "Water withdrawals from water-stressed areas",
+      "mapping_quality": "direct",
+      "notes": "Both identify and report on water-stressed area consumption"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "CDP",
+      "target_reference": "CDP W5.2",
+      "target_name": "Total water discharges by quality and destination",
+      "mapping_quality": "high",
+      "notes": "Water consumption reporting requires discharge data"
+    },
+    {
+      "esrs_code": "E3-5",
+      "esrs_disclosure": "Anticipated financial effects from water and marine resources related risks",
+      "target_framework": "CDP",
+      "target_reference": "CDP W4.1",
+      "target_name": "Water-related risks with potential to have a substantive financial impact",
+      "mapping_quality": "direct",
+      "notes": "Both require financial assessment of water-related risks"
+    },
+    {
+      "esrs_code": "E3-5",
+      "esrs_disclosure": "Anticipated financial effects from water and marine resources related risks",
+      "target_framework": "CDP",
+      "target_reference": "CDP W4.2",
+      "target_name": "Water-related opportunities with potential to have a substantive financial impact",
+      "mapping_quality": "high",
+      "notes": "Financial effects include opportunities from water management"
+    },
+    {
+      "esrs_code": "E3-2",
+      "esrs_disclosure": "Actions and resources related to water and marine resources",
+      "target_framework": "CDP",
+      "target_reference": "CDP W3.3",
+      "target_name": "Water-related targets and goals",
+      "mapping_quality": "high",
+      "notes": "Actions relate to water target achievement"
+    },
+    {
+      "esrs_code": "E3-3",
+      "esrs_disclosure": "Targets related to water and marine resources",
+      "target_framework": "CDP",
+      "target_reference": "CDP W8.1",
+      "target_name": "Water targets and progress against targets",
+      "mapping_quality": "direct",
+      "notes": "Both require water target setting and progress reporting"
+    },
+    {
+      "esrs_code": "E3-1",
+      "esrs_disclosure": "Policies related to water and marine resources",
+      "target_framework": "CDP",
+      "target_reference": "CDP W2.1",
+      "target_name": "Water-related risk assessment process",
+      "mapping_quality": "high",
+      "notes": "Water policies include risk assessment methodology"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "CDP",
+      "target_reference": "CDP W5.4",
+      "target_name": "Total water consumption from all sources in megaliters",
+      "mapping_quality": "direct",
+      "notes": "Direct alignment on total water consumption metrics"
+    },
+    {
+      "esrs_code": "E4-1",
+      "esrs_disclosure": "Transition plan on biodiversity and ecosystems",
+      "target_framework": "CDP",
+      "target_reference": "CDP F1.1",
+      "target_name": "Board-level oversight of forest-related issues",
+      "mapping_quality": "high",
+      "notes": "Biodiversity transition includes forest governance"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "CDP",
+      "target_reference": "CDP F4.1",
+      "target_name": "Assessment of deforestation and forest degradation risk",
+      "mapping_quality": "high",
+      "notes": "Ecosystem change includes deforestation assessment"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "CDP",
+      "target_reference": "CDP F4.5",
+      "target_name": "Actions to eliminate or reduce deforestation and forest degradation",
+      "mapping_quality": "high",
+      "notes": "Biodiversity actions include anti-deforestation commitments"
+    },
+    {
+      "esrs_code": "E4-2",
+      "esrs_disclosure": "Policies related to biodiversity and ecosystems",
+      "target_framework": "CDP",
+      "target_reference": "CDP F2.1",
+      "target_name": "Forest-related risk management policies and procedures",
+      "mapping_quality": "high",
+      "notes": "Biodiversity policies include forest risk management"
+    },
+    {
+      "esrs_code": "E4-3",
+      "esrs_disclosure": "Actions and resources related to biodiversity and ecosystems",
+      "target_framework": "CDP",
+      "target_reference": "CDP F6.1",
+      "target_name": "Forest-related targets and progress",
+      "mapping_quality": "high",
+      "notes": "Biodiversity actions include forest conservation targets"
+    },
+    {
+      "esrs_code": "E4-5",
+      "esrs_disclosure": "Impact metrics related to biodiversity and ecosystems change",
+      "target_framework": "CDP",
+      "target_reference": "CDP F4.6",
+      "target_name": "Forest-related monitoring systems and results",
+      "mapping_quality": "high",
+      "notes": "Biodiversity impact monitoring includes forest monitoring"
+    },
+    {
+      "esrs_code": "E4-4",
+      "esrs_disclosure": "Biodiversity and ecosystem change",
+      "target_framework": "CDP",
+      "target_reference": "CDP F3.1",
+      "target_name": "Traceability systems for forest-risk commodities",
+      "mapping_quality": "partial",
+      "notes": "Ecosystem change assessment may include commodity traceability"
+    },
+    {
+      "esrs_code": "S2-1",
+      "esrs_disclosure": "Policies related to value chain workers",
+      "target_framework": "CDP",
+      "target_reference": "CDP SC0.1",
+      "target_name": "Supply chain program participation and disclosure",
+      "mapping_quality": "partial",
+      "notes": "Value chain policies include CDP supply chain program participation"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC7.1",
+      "target_name": "Emissions performance comparison with previous year",
+      "mapping_quality": "high",
+      "notes": "Both require year-over-year emissions comparison"
+    },
+    {
+      "esrs_code": "E1-6",
+      "esrs_disclosure": "Gross Scopes 1, 2, 3 and Total GHG emissions",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC6.10",
+      "target_name": "Emissions methodology, base year, and verification",
+      "mapping_quality": "high",
+      "notes": "Both require disclosure of methodology and third-party verification"
+    },
+    {
+      "esrs_code": "E1-3",
+      "esrs_disclosure": "Actions and resources in relation to climate change policies",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC12.1",
+      "target_name": "Climate-related engagement strategy with policy makers",
+      "mapping_quality": "high",
+      "notes": "Climate actions include policy engagement activities"
+    },
+    {
+      "esrs_code": "E1-5",
+      "esrs_disclosure": "Energy consumption and mix",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC8.1",
+      "target_name": "Energy-related activities that generate Scope 1 and 2 emissions",
+      "mapping_quality": "high",
+      "notes": "Energy mix directly drives emissions profile"
+    },
+    {
+      "esrs_code": "E1-4",
+      "esrs_disclosure": "Targets related to climate change mitigation and adaptation",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC4.9",
+      "target_name": "Net-zero target details and strategy",
+      "mapping_quality": "direct",
+      "notes": "Both address net-zero target setting and pathway"
+    },
+    {
+      "esrs_code": "E3-4",
+      "esrs_disclosure": "Water consumption",
+      "target_framework": "CDP",
+      "target_reference": "CDP W5.3",
+      "target_name": "Water recycled and reused volumes",
+      "mapping_quality": "high",
+      "notes": "Water consumption analysis includes recycling and reuse"
+    },
+    {
+      "esrs_code": "E1-9",
+      "esrs_disclosure": "Anticipated financial effects from material physical and transition risks",
+      "target_framework": "CDP",
+      "target_reference": "CDP CC3.5",
+      "target_name": "Financial impact of climate-related risks on business operations",
+      "mapping_quality": "direct",
+      "notes": "Both require quantification of financial effects from climate risks"
     }
   ],
   "mapping_guidelines": {
@@ -252,7 +3218,7 @@
     "low": "< 50% alignment - supplemental data needed"
   },
   "integration_strategy": {
-    "step_1": "Identify existing disclosures (TCFD, GRI, SASB)",
+    "step_1": "Identify existing disclosures (TCFD, GRI, SASB, CDP)",
     "step_2": "Map to ESRS using this cross-reference",
     "step_3": "Identify gaps where ESRS requires additional data",
     "step_4": "Collect supplemental data for gaps",
@@ -276,6 +3242,12 @@
       "materiality": "ESRS company-specific assessment; SASB pre-defined by industry",
       "metrics": "ESRS 1,082 data points; SASB varies by sector (avg 26 metrics)",
       "region": "ESRS EU-focused; SASB global/US-focused"
+    },
+    "esrs_vs_cdp": {
+      "scope": "ESRS covers all sustainability; CDP focuses on climate, water, and forests",
+      "mandatory": "ESRS legally binding in EU; CDP voluntary investor/customer-driven",
+      "materiality": "ESRS double materiality; CDP investor materiality",
+      "format": "ESRS XBRL digital taxonomy; CDP online questionnaire platform"
     }
   },
   "data_reuse_potential": {
@@ -286,20 +3258,25 @@
       "Waste generation",
       "Employee metrics (headcount, turnover)",
       "Health and safety incidents",
-      "Corruption and ethics violations"
+      "Corruption and ethics violations",
+      "Climate governance structures",
+      "Climate transition plans and targets"
     ],
     "moderate_reuse": [
       "Biodiversity metrics",
       "Circular economy indicators",
       "Supply chain social metrics",
       "Gender pay gap",
-      "Training hours"
+      "Training hours",
+      "CDP questionnaire responses",
+      "Scenario analysis results"
     ],
     "low_reuse": [
       "Double materiality assessment (ESRS-specific)",
       "XBRL tagging (ESRS-specific)",
       "EU-specific regulatory disclosures",
-      "Certain ESRS narrative requirements"
+      "Certain ESRS narrative requirements",
+      "ESRS value chain specific disclosures"
     ]
   }
 }

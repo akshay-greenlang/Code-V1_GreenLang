@@ -1,0 +1,330 @@
+# ============================================================================
+# GL-GHG-APP v1.0 -- Default Configuration
+# GHG Protocol Corporate Accounting and Reporting Standard
+# ============================================================================
+#
+# This file provides default configuration for the GHG Corporate Platform.
+# Values can be overridden by environment variables with the GHG_APP_ prefix.
+# Example: GHG_APP_DEFAULT_CONSOLIDATION_APPROACH=equity_share
+#
+
+# --- Application Metadata ---------------------------------------------------
+app:
+  name: GL-GHG-APP
+  version: 1.0.0
+  description: >
+    GHG Protocol Corporate Accounting and Reporting Standard platform
+    integrating 28 MRV agents across Scope 1, 2, and 3.
+
+# --- GWP Values (IPCC AR5, 100-year time horizon) ---------------------------
+gwp:
+  source: IPCC_AR5
+  time_horizon: 100  # years
+  values:
+    CO2: 1
+    CH4: 28
+    N2O: 265
+    HFCs: 1430        # Representative: HFC-134a
+    PFCs: 6630         # Representative: PFC-14 (CF4)
+    SF6: 23500
+    NF3: 16100
+  notes: >
+    HFCs and PFCs use representative values. Actual GWP depends on the
+    specific gas. For precise accounting, use individual HFC/PFC GWP values
+    from IPCC AR5 Table 8.A.1.
+
+# --- Organizational Boundary Defaults ----------------------------------------
+boundary:
+  default_consolidation_approach: operational_control
+  approaches:
+    - operational_control
+    - financial_control
+    - equity_share
+  default_reporting_period: calendar_year
+
+# --- Scopes and Categories ---------------------------------------------------
+scopes:
+  scope1:
+    enabled: true
+    mandatory: true
+    categories:
+      - name: stationary_combustion
+        agent: MRV-001
+        description: Combustion of fuels in stationary equipment
+      - name: refrigerants_fgas
+        agent: MRV-002
+        description: Release of refrigerants and fluorinated gases
+      - name: mobile_combustion
+        agent: MRV-003
+        description: Combustion of fuels in transportation
+      - name: process_emissions
+        agent: MRV-004
+        description: Chemical/physical process emissions
+      - name: fugitive_emissions
+        agent: MRV-005
+        description: Fugitive releases from equipment
+      - name: land_use
+        agent: MRV-006
+        description: Land use change and forestry emissions
+      - name: waste_treatment
+        agent: MRV-007
+        description: On-site waste treatment emissions
+      - name: agricultural
+        agent: MRV-008
+        description: Agricultural emissions (enteric, manure, soil)
+
+  scope2:
+    enabled: true
+    mandatory: true
+    dual_reporting_required: true  # GHG Protocol Scope 2 Guidance 2015
+    agents:
+      - name: location_based
+        agent: MRV-009
+        description: Grid-average emission factors
+      - name: market_based
+        agent: MRV-010
+        description: Contractual instruments hierarchy
+      - name: steam_heat
+        agent: MRV-011
+        description: Purchased steam and heat
+      - name: cooling
+        agent: MRV-012
+        description: Purchased cooling
+      - name: dual_reporting
+        agent: MRV-013
+        description: Dual reporting reconciliation
+
+  scope3:
+    enabled: true
+    mandatory: false
+    categories:
+      - name: cat1_purchased_goods
+        number: 1
+        agent: MRV-014
+        typically_material: true
+      - name: cat2_capital_goods
+        number: 2
+        agent: MRV-015
+        typically_material: false
+      - name: cat3_fuel_energy
+        number: 3
+        agent: MRV-016
+        typically_material: true
+      - name: cat4_upstream_transport
+        number: 4
+        agent: MRV-017
+        typically_material: true
+      - name: cat5_waste_generated
+        number: 5
+        agent: MRV-018
+        typically_material: true
+      - name: cat6_business_travel
+        number: 6
+        agent: MRV-019
+        typically_material: true
+      - name: cat7_employee_commuting
+        number: 7
+        agent: MRV-020
+        typically_material: true
+      - name: cat8_upstream_leased
+        number: 8
+        agent: MRV-021
+        typically_material: false
+      - name: cat9_downstream_transport
+        number: 9
+        agent: MRV-022
+        typically_material: false
+      - name: cat10_processing_sold
+        number: 10
+        agent: MRV-023
+        typically_material: false
+      - name: cat11_use_of_sold
+        number: 11
+        agent: MRV-024
+        typically_material: false
+      - name: cat12_end_of_life
+        number: 12
+        agent: MRV-025
+        typically_material: false
+      - name: cat13_downstream_leased
+        number: 13
+        agent: MRV-026
+        typically_material: false
+      - name: cat14_franchises
+        number: 14
+        agent: MRV-027
+        typically_material: false
+      - name: cat15_investments
+        number: 15
+        agent: MRV-028
+        typically_material: false
+
+# --- Base Year ---------------------------------------------------------------
+base_year:
+  significance_threshold_pct: 5.0
+  auto_recalculate: false
+  structural_change_triggers:
+    - merger
+    - acquisition
+    - divestiture
+    - outsourcing
+    - insourcing
+    - methodology_change
+    - error_correction
+    - boundary_change
+
+# --- Uncertainty Engine ------------------------------------------------------
+uncertainty:
+  method: monte_carlo
+  iterations: 10000
+  confidence_level_pct: 95.0
+  seed: 42  # For reproducibility in testing
+  cv_by_tier:
+    tier_1: 50.0   # Estimated / industry averages
+    tier_2: 20.0   # Activity data + published EFs
+    tier_3: 5.0    # Direct measurement / supplier-specific
+
+# --- Data Quality ------------------------------------------------------------
+data_quality:
+  default_tier: tier_1
+  minimum_completeness_pct: 95.0
+  tier_scores:
+    tier_1: 30
+    tier_2: 70
+    tier_3: 100
+
+# --- Sector Benchmarks (tCO2e per unit) --------------------------------------
+sector_benchmarks:
+  # Revenue benchmarks: tCO2e per million USD
+  # Employee benchmarks: tCO2e per FTE
+  energy:
+    revenue: 850.0
+    employees: 45.0
+  manufacturing:
+    revenue: 420.0
+    employees: 22.0
+  technology:
+    revenue: 28.0
+    employees: 3.5
+  finance:
+    revenue: 12.0
+    employees: 2.8
+  retail:
+    revenue: 65.0
+    employees: 5.2
+  transport:
+    revenue: 520.0
+    employees: 35.0
+  healthcare:
+    revenue: 95.0
+    employees: 8.5
+  agriculture:
+    revenue: 380.0
+    employees: 28.0
+  real_estate:
+    revenue: 40.0
+    employees: 6.0
+  mining:
+    revenue: 720.0
+    employees: 55.0
+
+# --- Mandatory Disclosures (GHG Protocol Corporate Standard) -----------------
+mandatory_disclosures:
+  - id: MD-01
+    name: Description of the company
+    category: general
+  - id: MD-02
+    name: Consolidation approach for emissions
+    category: boundary
+  - id: MD-03
+    name: Organizational boundary description
+    category: boundary
+  - id: MD-04
+    name: Operational boundary (scopes included)
+    category: boundary
+  - id: MD-05
+    name: Reporting period covered
+    category: general
+  - id: MD-06
+    name: Scope 1 emissions data in tCO2e
+    category: emissions
+  - id: MD-07
+    name: Scope 2 emissions (location-based) in tCO2e
+    category: emissions
+  - id: MD-08
+    name: Scope 2 emissions (market-based) in tCO2e
+    category: emissions
+  - id: MD-09
+    name: Year-over-year comparison data
+    category: tracking
+  - id: MD-10
+    name: Base year emissions and recalculation policy
+    category: tracking
+  - id: MD-11
+    name: Appropriate context for emissions data
+    category: context
+  - id: MD-12
+    name: Emissions disaggregated by GHG gas
+    category: emissions
+  - id: MD-13
+    name: Biogenic CO2 reported separately
+    category: emissions
+  - id: MD-14
+    name: Methodology description and emission factors used
+    category: methodology
+  - id: MD-15
+    name: Scope 2 contractual instruments description
+    category: scope2
+
+# --- SBTi Requirements -------------------------------------------------------
+sbti:
+  near_term:
+    timeframe_years: 5
+    min_reduction_1_5C_pct_yr: 4.2
+    min_reduction_2C_pct_yr: 2.5
+  long_term:
+    timeframe_years: 15
+    min_reduction_pct: 90.0
+  valid_pathways:
+    - 1.5C
+    - well-below-2C
+
+# --- Verification ------------------------------------------------------------
+verification:
+  default_level: internal_review
+  levels:
+    - none
+    - internal_review
+    - limited_assurance
+    - reasonable_assurance
+
+# --- Report Generation -------------------------------------------------------
+reports:
+  default_format: json
+  supported_formats:
+    - json
+    - csv
+    - excel
+    - pdf
+  storage_path: reports/
+  sections:
+    - executive_summary
+    - organizational_boundary
+    - operational_boundary
+    - base_year
+    - scope1_emissions
+    - scope2_emissions
+    - scope3_emissions
+    - total_emissions
+    - intensity_metrics
+    - trend_analysis
+    - uncertainty_assessment
+    - data_quality
+    - verification_statement
+    - methodology_notes
+    - appendices
+
+# --- Logging ------------------------------------------------------------------
+logging:
+  level: INFO
+  format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"

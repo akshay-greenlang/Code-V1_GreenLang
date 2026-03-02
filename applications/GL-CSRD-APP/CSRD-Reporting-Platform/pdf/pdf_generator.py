@@ -1,0 +1,1586 @@
+# -*- coding: utf-8 -*-
+"""
+PDFGenerator - WeasyPrint-Based Professional CSRD Report Generator
+
+This module replaces the placeholder PDF generator in reporting_agent.py with a
+production-grade WeasyPrint solution for generating ESEF/CSRD-compliant PDF reports.
+
+Capabilities:
+    - A4 professional layout with proper page margins, headers, and footers
+    - Inline SVG chart generation (bar, pie, line, stacked_bar, waterfall)
+    - Multi-language support with locale-aware number and date formatting
+    - Auto-generated table of contents with dotted leaders
+    - KPI dashboard with card grid layout
+    - Materiality matrix scatter plot
+    - Compliance summary with progress bars
+    - SHA-256 provenance hash for every generated report
+    - Thread-safe singleton pattern for WeasyPrint reuse
+
+Dependencies:
+    - weasyprint >= 60.0
+    - jinja2 >= 3.1
+    - pydantic >= 2.0
+
+Version: 1.1.0
+Author: GreenLang CSRD Team
+License: MIT
+"""
+
+from __future__ import annotations
+
+import hashlib
+import logging
+import math
+import threading
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+
+from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+_MODULE_DIR = Path(__file__).resolve().parent
+
+# GreenLang brand colours used in SVG charts
+BRAND_COLORS: List[str] = [
+    "#2D5016",  # green-900
+    "#4A7C2E",  # green-700
+    "#6BA344",  # green-500
+    "#8BC462",  # green-300
+    "#B8D89A",  # green-100
+    "#2563eb",  # info-blue
+    "#d97706",  # warning-amber
+    "#dc2626",  # danger-red
+    "#7c3aed",  # accent-violet
+    "#0891b2",  # accent-cyan
+]
+
+# Default i18n strings (English).  The generate_csrd_report method merges
+# locale-specific overrides on top of these so every key always has a value.
+_DEFAULT_TRANSLATIONS: Dict[str, str] = {
+    "report_title": "CSRD Sustainability Statement",
+    "report_subtitle": "In accordance with the European Sustainability Reporting Standards (ESRS)",
+    "reporting_period_label": "Reporting Period",
+    "generated_on": "Generated on",
+    "regulation_reference": (
+        "Prepared in compliance with Directive 2022/2464 (CSRD) and "
+        "Delegated Regulation 2023/2772 (ESRS)"
+    ),
+    "table_of_contents": "Table of Contents",
+    "executive_summary": "Executive Summary",
+    "general_information": "General Information",
+    "basis_of_preparation": "Basis of Preparation",
+    "governance": "Governance",
+    "strategy": "Strategy",
+    "impact_risk_management": "Impact, Risk and Opportunity Management",
+    "metrics_and_targets": "Metrics and Targets",
+    "environmental_information": "Environmental Information",
+    "climate_change": "Climate Change",
+    "pollution": "Pollution",
+    "water_marine": "Water and Marine Resources",
+    "biodiversity": "Biodiversity and Ecosystems",
+    "circular_economy": "Resource Use and Circular Economy",
+    "esrs_e1_ref": "ESRS E1 - Climate Change (Delegated Regulation Appendix A)",
+    "esrs_e2_ref": "ESRS E2 - Pollution",
+    "esrs_e3_ref": "ESRS E3 - Water and Marine Resources",
+    "esrs_e4_ref": "ESRS E4 - Biodiversity and Ecosystems",
+    "esrs_e5_ref": "ESRS E5 - Resource Use and Circular Economy",
+    "social_information": "Social Information",
+    "own_workforce": "Own Workforce",
+    "value_chain_workers": "Workers in the Value Chain",
+    "affected_communities": "Affected Communities",
+    "consumers_end_users": "Consumers and End-Users",
+    "esrs_s1_ref": "ESRS S1 - Own Workforce",
+    "esrs_s2_ref": "ESRS S2 - Workers in the Value Chain",
+    "esrs_s3_ref": "ESRS S3 - Affected Communities",
+    "esrs_s4_ref": "ESRS S4 - Consumers and End-Users",
+    "governance_information": "Governance Information",
+    "business_conduct": "Business Conduct",
+    "esrs_g1_ref": "ESRS G1 - Business Conduct",
+    "materiality_assessment": "Materiality Assessment",
+    "assessment_methodology": "Assessment Methodology",
+    "materiality_matrix": "Materiality Matrix",
+    "material_topics_identified": "Material Topics Identified",
+    "key_performance_indicators": "Key Performance Indicators",
+    "compliance_summary": "Compliance Summary",
+    "appendices": "Appendices",
+    "appendix_a_methodology": "Appendix A: Methodology Notes",
+    "appendix_b_data_sources": "Appendix B: Data Sources",
+    "appendix_c_glossary": "Appendix C: Glossary",
+    "appendix_d_esrs_index": "Appendix D: ESRS Disclosure Index",
+    "appendix_e_assurance": "Appendix E: Assurance Statement",
+    "confidential_notice": "Confidential - For authorised recipients only",
+    "back_cover_tagline": "Sustainability Intelligence Platform",
+    "back_cover_disclaimer": (
+        "This report was generated by the GreenLang CSRD Reporting Platform. "
+        "All calculations follow a zero-hallucination deterministic approach. "
+        "AI-generated narrative sections are clearly marked and require human review."
+    ),
+    # Chart axis labels
+    "chart_scope1": "Scope 1",
+    "chart_scope2": "Scope 2",
+    "chart_scope3": "Scope 3",
+    "chart_total": "Total",
+    "chart_unit_tco2e": "tCO2e",
+    "chart_yoy": "Year-over-Year",
+}
+
+
+# ---------------------------------------------------------------------------
+# Data-Transfer Objects
+# ---------------------------------------------------------------------------
+
+@dataclass
+class DataTable:
+    """Structured table to embed in a report section."""
+
+    headers: List[str]
+    rows: List[List[str]]
+    caption: str = ""
+    footnotes: List[str] = field(default_factory=list)
+    column_widths: List[str] = field(default_factory=list)
+    column_alignments: List[str] = field(default_factory=list)
+    highlight_rows: List[int] = field(default_factory=list)
+
+
+@dataclass
+class ChartSpec:
+    """Specification for an inline SVG chart."""
+
+    chart_type: str  # bar | pie | line | stacked_bar | waterfall
+    data: List[float]
+    labels: List[str]
+    colors: List[str] = field(default_factory=list)
+    title: str = ""
+    subtitle: str = ""
+    width_mm: float = 160.0
+    height_mm: float = 90.0
+    # Populated by the generator after rendering
+    svg_content: str = ""
+
+
+@dataclass
+class ReportSection:
+    """A single section inside the generated report."""
+
+    section_id: str
+    title: str
+    content: str  # raw HTML fragment
+    level: int = 1  # heading depth 1-4
+    data_tables: List[DataTable] = field(default_factory=list)
+    charts: List[ChartSpec] = field(default_factory=list)
+    esrs_standard: Optional[str] = None
+    page_break_before: bool = False
+
+
+class ReportStyles(BaseModel):
+    """Pydantic model wrapping the CSS stylesheet content."""
+
+    css: str = Field(default="", description="Raw CSS text for the report")
+    source_path: Optional[str] = Field(
+        default=None, description="Filesystem path the CSS was loaded from"
+    )
+
+
+class ReportTemplate(BaseModel):
+    """Pydantic model wrapping the Jinja2 HTML template."""
+
+    html: str = Field(default="", description="Raw Jinja2 template text")
+    source_path: Optional[str] = Field(
+        default=None, description="Filesystem path the template was loaded from"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Locale-aware helpers
+# ---------------------------------------------------------------------------
+
+def _format_number(value: float, locale: str = "en", decimals: int = 2) -> str:
+    """Format a number with locale-appropriate thousands/decimal separators."""
+    if locale.startswith("de"):
+        # German: 1.234,56
+        formatted = f"{value:,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    elif locale.startswith("fr"):
+        # French: 1 234,56 (thin space for thousands)
+        formatted = f"{value:,.{decimals}f}".replace(",", "\u202f").replace(".", ",")
+    elif locale.startswith("es"):
+        # Spanish: 1.234,56
+        formatted = f"{value:,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    else:
+        # English: 1,234.56
+        formatted = f"{value:,.{decimals}f}"
+    return formatted
+
+
+def _format_date(dt: datetime, locale: str = "en") -> str:
+    """Format a datetime as a human-readable string based on locale."""
+    if locale.startswith("de"):
+        return dt.strftime("%d.%m.%Y")
+    elif locale.startswith("fr"):
+        return dt.strftime("%d/%m/%Y")
+    elif locale.startswith("es"):
+        return dt.strftime("%d/%m/%Y")
+    return dt.strftime("%Y-%m-%d")
+
+
+# ---------------------------------------------------------------------------
+# SVG Chart Rendering Engine
+# ---------------------------------------------------------------------------
+
+class _SVGChartRenderer:
+    """
+    Pure-Python SVG generator for inline report charts.
+
+    No external charting library required.  Every chart method returns a
+    self-contained ``<svg>`` element that WeasyPrint renders natively.
+    """
+
+    # Pixel-per-mm multiplier for viewBox
+    PX_PER_MM = 3.7795
+
+    def render(self, spec: ChartSpec) -> str:
+        """Dispatch to the correct chart renderer."""
+        renderer_map = {
+            "bar": self._bar_chart,
+            "pie": self._pie_chart,
+            "line": self._line_chart,
+            "stacked_bar": self._stacked_bar_chart,
+            "waterfall": self._waterfall_chart,
+        }
+        renderer = renderer_map.get(spec.chart_type)
+        if renderer is None:
+            logger.warning("Unknown chart_type '%s'; falling back to bar", spec.chart_type)
+            renderer = self._bar_chart
+        return renderer(spec)
+
+    # ---- bar chart --------------------------------------------------------
+
+    def _bar_chart(self, spec: ChartSpec) -> str:
+        """Simple vertical bar chart."""
+        w = spec.width_mm * self.PX_PER_MM
+        h = spec.height_mm * self.PX_PER_MM
+        margin = {"top": 30, "right": 20, "bottom": 60, "left": 60}
+        plot_w = w - margin["left"] - margin["right"]
+        plot_h = h - margin["top"] - margin["bottom"]
+        colors = spec.colors or BRAND_COLORS
+
+        if not spec.data:
+            return self._empty_chart(w, h, "No data")
+
+        max_val = max(abs(v) for v in spec.data) or 1
+        bar_w = plot_w / len(spec.data) * 0.7
+        gap = plot_w / len(spec.data) * 0.3
+
+        parts: List[str] = [self._svg_open(w, h)]
+
+        # Y axis
+        for i in range(6):
+            y_val = max_val * i / 5
+            y_pos = margin["top"] + plot_h - (plot_h * i / 5)
+            parts.append(
+                f'<line x1="{margin["left"]}" y1="{y_pos}" '
+                f'x2="{w - margin["right"]}" y2="{y_pos}" '
+                f'stroke="#e5e7eb" stroke-width="0.5"/>'
+            )
+            parts.append(
+                f'<text x="{margin["left"] - 6}" y="{y_pos + 3}" '
+                f'text-anchor="end" font-size="9" fill="#6b7280">'
+                f'{y_val:,.0f}</text>'
+            )
+
+        # Bars
+        for i, (val, label) in enumerate(zip(spec.data, spec.labels)):
+            x = margin["left"] + i * (bar_w + gap) + gap / 2
+            bar_h = (abs(val) / max_val) * plot_h
+            y = margin["top"] + plot_h - bar_h
+            colour = colors[i % len(colors)]
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" '
+                f'height="{bar_h:.1f}" fill="{colour}" rx="2"/>'
+            )
+            # Value label
+            parts.append(
+                f'<text x="{x + bar_w / 2:.1f}" y="{y - 5:.1f}" '
+                f'text-anchor="middle" font-size="8" fill="#374151" '
+                f'font-weight="600">{val:,.1f}</text>'
+            )
+            # X axis label
+            lbl = label if len(label) <= 14 else label[:12] + ".."
+            parts.append(
+                f'<text x="{x + bar_w / 2:.1f}" '
+                f'y="{margin["top"] + plot_h + 16:.1f}" '
+                f'text-anchor="middle" font-size="8" fill="#6b7280" '
+                f'transform="rotate(-30,{x + bar_w / 2:.1f},'
+                f'{margin["top"] + plot_h + 16:.1f})">{lbl}</text>'
+            )
+
+        parts.append("</svg>")
+        return "\n".join(parts)
+
+    # ---- pie chart --------------------------------------------------------
+
+    def _pie_chart(self, spec: ChartSpec) -> str:
+        """Simple pie/donut chart."""
+        w = spec.width_mm * self.PX_PER_MM
+        h = spec.height_mm * self.PX_PER_MM
+        colors = spec.colors or BRAND_COLORS
+
+        if not spec.data or sum(spec.data) == 0:
+            return self._empty_chart(w, h, "No data")
+
+        cx, cy = w / 2, h / 2 - 10
+        r = min(cx, cy) - 40
+        total = sum(spec.data)
+
+        parts: List[str] = [self._svg_open(w, h)]
+        start_angle = -90.0  # 12 o'clock
+
+        for i, (val, label) in enumerate(zip(spec.data, spec.labels)):
+            if val == 0:
+                continue
+            pct = val / total
+            sweep = pct * 360.0
+            end_angle = start_angle + sweep
+            colour = colors[i % len(colors)]
+
+            # Arc path
+            x1 = cx + r * math.cos(math.radians(start_angle))
+            y1 = cy + r * math.sin(math.radians(start_angle))
+            x2 = cx + r * math.cos(math.radians(end_angle))
+            y2 = cy + r * math.sin(math.radians(end_angle))
+            large_arc = 1 if sweep > 180 else 0
+
+            parts.append(
+                f'<path d="M {cx},{cy} L {x1:.1f},{y1:.1f} '
+                f'A {r},{r} 0 {large_arc},1 {x2:.1f},{y2:.1f} Z" '
+                f'fill="{colour}" stroke="#fff" stroke-width="1.5"/>'
+            )
+
+            # Label line
+            mid_angle = start_angle + sweep / 2
+            lx = cx + (r + 18) * math.cos(math.radians(mid_angle))
+            ly = cy + (r + 18) * math.sin(math.radians(mid_angle))
+            anchor = "start" if lx > cx else "end"
+            lbl = label if len(label) <= 16 else label[:14] + ".."
+            parts.append(
+                f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
+                f'font-size="8" fill="#374151">{lbl} ({pct:.0%})</text>'
+            )
+
+            start_angle = end_angle
+
+        parts.append("</svg>")
+        return "\n".join(parts)
+
+    # ---- line chart -------------------------------------------------------
+
+    def _line_chart(self, spec: ChartSpec) -> str:
+        """Single-series line chart with data points."""
+        w = spec.width_mm * self.PX_PER_MM
+        h = spec.height_mm * self.PX_PER_MM
+        margin = {"top": 30, "right": 20, "bottom": 50, "left": 60}
+        plot_w = w - margin["left"] - margin["right"]
+        plot_h = h - margin["top"] - margin["bottom"]
+        colors = spec.colors or BRAND_COLORS
+
+        if not spec.data:
+            return self._empty_chart(w, h, "No data")
+
+        min_val = min(spec.data)
+        max_val = max(spec.data)
+        val_range = (max_val - min_val) or 1
+
+        parts: List[str] = [self._svg_open(w, h)]
+
+        # Grid lines
+        for i in range(6):
+            y_val = min_val + val_range * i / 5
+            y_pos = margin["top"] + plot_h - (plot_h * i / 5)
+            parts.append(
+                f'<line x1="{margin["left"]}" y1="{y_pos}" '
+                f'x2="{w - margin["right"]}" y2="{y_pos}" '
+                f'stroke="#e5e7eb" stroke-width="0.5"/>'
+            )
+            parts.append(
+                f'<text x="{margin["left"] - 6}" y="{y_pos + 3}" '
+                f'text-anchor="end" font-size="9" fill="#6b7280">'
+                f'{y_val:,.0f}</text>'
+            )
+
+        # Polyline
+        points: List[str] = []
+        n = len(spec.data)
+        for i, val in enumerate(spec.data):
+            x = margin["left"] + (plot_w * i / max(n - 1, 1))
+            y = margin["top"] + plot_h - ((val - min_val) / val_range * plot_h)
+            points.append(f"{x:.1f},{y:.1f}")
+
+        colour = colors[0]
+        parts.append(
+            f'<polyline points="{" ".join(points)}" fill="none" '
+            f'stroke="{colour}" stroke-width="2" stroke-linejoin="round"/>'
+        )
+
+        # Data dots and X labels
+        for i, (val, label) in enumerate(zip(spec.data, spec.labels)):
+            x = margin["left"] + (plot_w * i / max(n - 1, 1))
+            y = margin["top"] + plot_h - ((val - min_val) / val_range * plot_h)
+            parts.append(
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.5" '
+                f'fill="{colour}" stroke="#fff" stroke-width="1.5"/>'
+            )
+            parts.append(
+                f'<text x="{x:.1f}" y="{margin["top"] + plot_h + 14}" '
+                f'text-anchor="middle" font-size="8" fill="#6b7280">{label}</text>'
+            )
+
+        parts.append("</svg>")
+        return "\n".join(parts)
+
+    # ---- stacked bar chart ------------------------------------------------
+
+    def _stacked_bar_chart(self, spec: ChartSpec) -> str:
+        """
+        Stacked bar chart.
+
+        spec.data is expected to be a *flat* list whose length is
+        ``len(labels) * number_of_series``.  The first ``len(labels)``
+        values are series 0, the next are series 1, and so on.
+        If spec.data length equals labels, a single-series bar chart is drawn.
+        """
+        w = spec.width_mm * self.PX_PER_MM
+        h = spec.height_mm * self.PX_PER_MM
+        margin = {"top": 30, "right": 20, "bottom": 60, "left": 60}
+        plot_w = w - margin["left"] - margin["right"]
+        plot_h = h - margin["top"] - margin["bottom"]
+        colors = spec.colors or BRAND_COLORS
+
+        n_labels = len(spec.labels) or 1
+        n_series = len(spec.data) // n_labels if spec.labels else 1
+        if n_series < 1:
+            n_series = 1
+
+        # Reshape data into series_data[series][label_idx]
+        series_data: List[List[float]] = []
+        for s in range(n_series):
+            start = s * n_labels
+            series_data.append(spec.data[start:start + n_labels])
+
+        # Compute per-bar totals for Y scale
+        totals = [
+            sum(series_data[s][i] for s in range(n_series))
+            for i in range(n_labels)
+        ]
+        max_total = max(totals) if totals else 1
+
+        bar_w = plot_w / n_labels * 0.65
+        gap = plot_w / n_labels * 0.35
+
+        parts: List[str] = [self._svg_open(w, h)]
+
+        # Grid
+        for i in range(6):
+            y_val = max_total * i / 5
+            y_pos = margin["top"] + plot_h - (plot_h * i / 5)
+            parts.append(
+                f'<line x1="{margin["left"]}" y1="{y_pos}" '
+                f'x2="{w - margin["right"]}" y2="{y_pos}" '
+                f'stroke="#e5e7eb" stroke-width="0.5"/>'
+            )
+            parts.append(
+                f'<text x="{margin["left"] - 6}" y="{y_pos + 3}" '
+                f'text-anchor="end" font-size="9" fill="#6b7280">'
+                f'{y_val:,.0f}</text>'
+            )
+
+        # Stacked bars
+        for i in range(n_labels):
+            x = margin["left"] + i * (bar_w + gap) + gap / 2
+            cumulative = 0.0
+            for s in range(n_series):
+                val = series_data[s][i] if i < len(series_data[s]) else 0
+                bar_h = (val / max_total) * plot_h if max_total else 0
+                y = margin["top"] + plot_h - cumulative - bar_h
+                colour = colors[s % len(colors)]
+                parts.append(
+                    f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" '
+                    f'height="{bar_h:.1f}" fill="{colour}" rx="1"/>'
+                )
+                cumulative += bar_h
+
+            # X label
+            lbl = spec.labels[i] if i < len(spec.labels) else ""
+            lbl = lbl if len(lbl) <= 14 else lbl[:12] + ".."
+            parts.append(
+                f'<text x="{x + bar_w / 2:.1f}" '
+                f'y="{margin["top"] + plot_h + 16}" '
+                f'text-anchor="middle" font-size="8" fill="#6b7280" '
+                f'transform="rotate(-30,{x + bar_w / 2:.1f},'
+                f'{margin["top"] + plot_h + 16})">{lbl}</text>'
+            )
+
+        parts.append("</svg>")
+        return "\n".join(parts)
+
+    # ---- waterfall chart --------------------------------------------------
+
+    def _waterfall_chart(self, spec: ChartSpec) -> str:
+        """
+        Waterfall chart showing incremental changes.
+
+        Positive values are rendered upward (green); negatives downward (red).
+        The last bar is treated as the net total.
+        """
+        w = spec.width_mm * self.PX_PER_MM
+        h = spec.height_mm * self.PX_PER_MM
+        margin = {"top": 30, "right": 20, "bottom": 60, "left": 60}
+        plot_w = w - margin["left"] - margin["right"]
+        plot_h = h - margin["top"] - margin["bottom"]
+
+        if not spec.data:
+            return self._empty_chart(w, h, "No data")
+
+        # Running cumulative for waterfall positioning
+        cumulative: List[float] = []
+        running = 0.0
+        for val in spec.data[:-1]:
+            cumulative.append(running)
+            running += val
+        cumulative.append(0.0)  # last bar starts from zero (total)
+
+        all_tops = [c + max(v, 0) for c, v in zip(cumulative, spec.data)]
+        all_bottoms = [c + min(v, 0) for c, v in zip(cumulative, spec.data)]
+        max_val = max(all_tops) if all_tops else 1
+        min_val = min(all_bottoms) if all_bottoms else 0
+        val_range = (max_val - min_val) or 1
+
+        bar_w = plot_w / len(spec.data) * 0.65
+        gap_w = plot_w / len(spec.data) * 0.35
+
+        parts: List[str] = [self._svg_open(w, h)]
+
+        def y_for(v: float) -> float:
+            return margin["top"] + plot_h - ((v - min_val) / val_range * plot_h)
+
+        # Grid
+        for i in range(6):
+            grid_val = min_val + val_range * i / 5
+            y_pos = y_for(grid_val)
+            parts.append(
+                f'<line x1="{margin["left"]}" y1="{y_pos:.1f}" '
+                f'x2="{w - margin["right"]}" y2="{y_pos:.1f}" '
+                f'stroke="#e5e7eb" stroke-width="0.5"/>'
+            )
+            parts.append(
+                f'<text x="{margin["left"] - 6}" y="{y_pos + 3:.1f}" '
+                f'text-anchor="end" font-size="9" fill="#6b7280">'
+                f'{grid_val:,.0f}</text>'
+            )
+
+        # Bars
+        for i, (val, label) in enumerate(zip(spec.data, spec.labels)):
+            x = margin["left"] + i * (bar_w + gap_w) + gap_w / 2
+            is_last = i == len(spec.data) - 1
+
+            if is_last:
+                # Total bar from zero
+                bar_bottom = min(0, val)
+                bar_top = max(0, val)
+                colour = "#2D5016"
+            elif val >= 0:
+                bar_bottom = cumulative[i]
+                bar_top = cumulative[i] + val
+                colour = "#6BA344"
+            else:
+                bar_top = cumulative[i]
+                bar_bottom = cumulative[i] + val
+                colour = "#dc2626"
+
+            y_top = y_for(bar_top)
+            y_bottom = y_for(bar_bottom)
+            bar_h = max(y_bottom - y_top, 0.5)
+
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" '
+                f'height="{bar_h:.1f}" fill="{colour}" rx="1"/>'
+            )
+
+            # Value label
+            parts.append(
+                f'<text x="{x + bar_w / 2:.1f}" y="{y_top - 4:.1f}" '
+                f'text-anchor="middle" font-size="8" fill="#374151" '
+                f'font-weight="600">{val:+,.0f}</text>'
+            )
+
+            # X label
+            lbl = label if len(label) <= 14 else label[:12] + ".."
+            parts.append(
+                f'<text x="{x + bar_w / 2:.1f}" '
+                f'y="{margin["top"] + plot_h + 16}" '
+                f'text-anchor="middle" font-size="8" fill="#6b7280" '
+                f'transform="rotate(-30,{x + bar_w / 2:.1f},'
+                f'{margin["top"] + plot_h + 16})">{lbl}</text>'
+            )
+
+            # Connector line (except last)
+            if not is_last and i < len(spec.data) - 1:
+                next_x = margin["left"] + (i + 1) * (bar_w + gap_w) + gap_w / 2
+                conn_y = y_for(cumulative[i] + val)
+                parts.append(
+                    f'<line x1="{x + bar_w:.1f}" y1="{conn_y:.1f}" '
+                    f'x2="{next_x:.1f}" y2="{conn_y:.1f}" '
+                    f'stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="3,2"/>'
+                )
+
+        parts.append("</svg>")
+        return "\n".join(parts)
+
+    # ---- helpers ----------------------------------------------------------
+
+    @staticmethod
+    def _svg_open(w: float, h: float) -> str:
+        """Return the opening <svg> tag with proper viewBox."""
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" '
+            f'viewBox="0 0 {w:.0f} {h:.0f}" '
+            f'width="{w:.0f}" height="{h:.0f}" '
+            f'style="font-family: Inter, Helvetica, Arial, sans-serif;">'
+        )
+
+    @staticmethod
+    def _empty_chart(w: float, h: float, message: str) -> str:
+        """Return a placeholder SVG when no data is available."""
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" '
+            f'viewBox="0 0 {w:.0f} {h:.0f}" width="{w:.0f}" height="{h:.0f}">'
+            f'<rect width="{w}" height="{h}" fill="#f9fafb" rx="4"/>'
+            f'<text x="{w / 2}" y="{h / 2}" text-anchor="middle" '
+            f'font-size="12" fill="#9ca3af">{message}</text>'
+            f'</svg>'
+        )
+
+
+# ---------------------------------------------------------------------------
+# PDFGenerator - Thread-Safe Singleton
+# ---------------------------------------------------------------------------
+
+class PDFGenerator:
+    """
+    WeasyPrint-based PDF generator for CSRD sustainability reports.
+
+    Thread-safe singleton: calling ``PDFGenerator()`` twice returns the same
+    instance so WeasyPrint configuration is loaded only once.
+
+    Example::
+
+        gen = PDFGenerator()
+        pdf_bytes = gen.generate_csrd_report(
+            report_data=report_data,
+            company_profile=company_profile,
+            materiality=materiality_data,
+            metrics=calculated_metrics,
+            locale="en",
+        )
+        Path("report.pdf").write_bytes(pdf_bytes)
+    """
+
+    _instance: Optional["PDFGenerator"] = None
+    _lock = threading.Lock()
+
+    def __new__(
+        cls,
+        template_path: Optional[Union[str, Path]] = None,
+        styles_path: Optional[Union[str, Path]] = None,
+        locale: str = "en",
+    ) -> "PDFGenerator":
+        """Return the singleton instance, creating it on first call."""
+        with cls._lock:
+            if cls._instance is None:
+                instance = super().__new__(cls)
+                instance._initialized = False
+                cls._instance = instance
+            return cls._instance
+
+    def __init__(
+        self,
+        template_path: Optional[Union[str, Path]] = None,
+        styles_path: Optional[Union[str, Path]] = None,
+        locale: str = "en",
+    ) -> None:
+        """
+        Configure the generator (only runs once due to singleton).
+
+        Args:
+            template_path: Path to Jinja2 HTML template.
+                           Defaults to ``pdf/report_template.html``.
+            styles_path:   Path to CSS stylesheet.
+                           Defaults to ``pdf/styles.css``.
+            locale:        Default locale code (en, de, fr, es).
+        """
+        if getattr(self, "_initialized", False):
+            return
+        self._initialized = True
+
+        self._template_path = Path(template_path) if template_path else _MODULE_DIR / "report_template.html"
+        self._styles_path = Path(styles_path) if styles_path else _MODULE_DIR / "styles.css"
+        self._locale = locale
+
+        # Load template and styles from disk
+        self._template_text = self._load_text_file(self._template_path, "template")
+        self._styles_text = self._load_text_file(self._styles_path, "styles")
+
+        # Pydantic wrappers for external consumers
+        self.template = ReportTemplate(
+            html=self._template_text,
+            source_path=str(self._template_path),
+        )
+        self.styles = ReportStyles(
+            css=self._styles_text,
+            source_path=str(self._styles_path),
+        )
+
+        self._chart_renderer = _SVGChartRenderer()
+
+        logger.info(
+            "PDFGenerator initialised (template=%s, styles=%s, locale=%s)",
+            self._template_path.name,
+            self._styles_path.name,
+            self._locale,
+        )
+
+    @classmethod
+    def reset_singleton(cls) -> None:
+        """Reset the singleton, useful for testing."""
+        with cls._lock:
+            cls._instance = None
+
+    # ------------------------------------------------------------------
+    # PUBLIC API
+    # ------------------------------------------------------------------
+
+    def generate_csrd_report(
+        self,
+        report_data: Dict[str, Any],
+        company_profile: Dict[str, Any],
+        materiality: Optional[Dict[str, Any]] = None,
+        metrics: Optional[Dict[str, Any]] = None,
+        locale: Optional[str] = None,
+        translations: Optional[Dict[str, str]] = None,
+        watermark_text: Optional[str] = None,
+    ) -> bytes:
+        """
+        Generate a complete CSRD PDF report and return raw PDF bytes.
+
+        Args:
+            report_data:     Full pipeline output from ReportingAgent.
+            company_profile: Company profile dictionary.
+            materiality:     Materiality assessment output (optional).
+            metrics:         Calculated ESRS metrics output (optional).
+            locale:          Override locale for this report (default: init locale).
+            translations:    Override/extend i18n translations dict.
+            watermark_text:  E.g. "DRAFT" or "CONFIDENTIAL" (optional).
+
+        Returns:
+            Raw PDF bytes.  Write with ``Path(...).write_bytes(result)``.
+        """
+        start = datetime.now(timezone.utc)
+        locale = locale or self._locale
+
+        # Merge translations
+        t = dict(_DEFAULT_TRANSLATIONS)
+        if translations:
+            t.update(translations)
+
+        # Build template context
+        ctx = self._build_template_context(
+            report_data=report_data,
+            company_profile=company_profile,
+            materiality=materiality,
+            metrics=metrics,
+            locale=locale,
+            t=t,
+            watermark_text=watermark_text,
+        )
+
+        # Render Jinja2 template
+        html = self._render_jinja(self._template_text, ctx)
+
+        # Render to PDF via WeasyPrint
+        pdf_bytes = self._render_html_to_pdf(html, self._styles_text)
+
+        elapsed_ms = (datetime.now(timezone.utc) - start).total_seconds() * 1000
+        provenance = self._compute_provenance_hash(pdf_bytes)
+        logger.info(
+            "Generated CSRD PDF: %.1f KB in %.0f ms (hash=%s)",
+            len(pdf_bytes) / 1024,
+            elapsed_ms,
+            provenance[:16],
+        )
+
+        return pdf_bytes
+
+    # ------------------------------------------------------------------
+    # Section generators (return HTML fragments)
+    # ------------------------------------------------------------------
+
+    def generate_cover_page(
+        self,
+        company_name: str,
+        reporting_period: str,
+        locale: str = "en",
+    ) -> str:
+        """Return HTML for a standalone cover page."""
+        t = dict(_DEFAULT_TRANSLATIONS)
+        gen_date = _format_date(datetime.now(timezone.utc), locale)
+        return (
+            '<section class="cover-page">'
+            '<div class="cover-logo-placeholder">'
+            f'<span>{_safe(company_name[:2].upper())}</span></div>'
+            f'<h1 class="cover-title">{_safe(t["report_title"])}</h1>'
+            f'<p class="cover-subtitle">{_safe(t["report_subtitle"])}</p>'
+            f'<p class="cover-company">{_safe(company_name)}</p>'
+            f'<p class="cover-period">{_safe(t["reporting_period_label"])}: {_safe(reporting_period)}</p>'
+            f'<p class="cover-date">{_safe(t["generated_on"])}: {gen_date}</p>'
+            f'<p class="cover-regulation">{_safe(t["regulation_reference"])}</p>'
+            '</section>'
+        )
+
+    def generate_table_of_contents(
+        self,
+        sections: Sequence[ReportSection],
+    ) -> str:
+        """Return HTML for a table of contents derived from sections."""
+        entries: List[str] = []
+        for sec in sections:
+            lvl = min(sec.level, 3)
+            entries.append(
+                f'<div class="toc-entry toc-level-{lvl}">'
+                f'<span class="toc-title">{_safe(sec.title)}</span>'
+                f'<span class="toc-dots"></span>'
+                f'<span class="toc-page"></span>'
+                f'</div>'
+            )
+        return (
+            '<section class="toc section-break">'
+            f'<h1>{_DEFAULT_TRANSLATIONS["table_of_contents"]}</h1>'
+            + "\n".join(entries)
+            + '</section>'
+        )
+
+    def generate_esrs_section(
+        self,
+        standard: str,
+        data_points: List[Dict[str, Any]],
+        metrics: Optional[List[Dict[str, Any]]] = None,
+        locale: str = "en",
+    ) -> str:
+        """Return HTML fragment for a single ESRS topical standard."""
+        parts: List[str] = []
+        parts.append(f'<div class="esrs-section">')
+        parts.append(f'<h3>ESRS {_safe(standard)}</h3>')
+
+        if data_points:
+            parts.append(self.generate_data_table(
+                headers=["Data Point", "Value", "Unit", "Source"],
+                rows=[
+                    [
+                        dp.get("name", ""),
+                        _format_number(dp["value"], locale) if isinstance(dp.get("value"), (int, float)) else str(dp.get("value", "")),
+                        dp.get("unit", ""),
+                        dp.get("source", ""),
+                    ]
+                    for dp in data_points
+                ],
+                caption=f"ESRS {standard} Disclosure Data Points",
+            ))
+
+        if metrics:
+            for m in metrics:
+                parts.append(
+                    '<div class="esrs-disclosure-req">'
+                    f'<strong>{_safe(m.get("metric_code", ""))}</strong>: '
+                    f'{_safe(m.get("metric_name", ""))}<br/>'
+                    f'Value: <strong>{_format_number(m["value"], locale) if isinstance(m.get("value"), (int, float)) else m.get("value", "N/A")}</strong> '
+                    f'{_safe(m.get("unit", ""))}'
+                    '</div>'
+                )
+
+        parts.append('</div>')
+        return "\n".join(parts)
+
+    def generate_materiality_matrix(
+        self,
+        materiality_data: Dict[str, Any],
+    ) -> str:
+        """Return an SVG scatter plot of impact vs financial materiality."""
+        chart_data = materiality_data.get("chart_data", [])
+        if not chart_data:
+            return '<p class="text-muted">No materiality data available.</p>'
+
+        w = 160 * _SVGChartRenderer.PX_PER_MM
+        h = 120 * _SVGChartRenderer.PX_PER_MM
+        margin = {"top": 30, "right": 30, "bottom": 50, "left": 60}
+        plot_w = w - margin["left"] - margin["right"]
+        plot_h = h - margin["top"] - margin["bottom"]
+
+        parts: List[str] = [_SVGChartRenderer._svg_open(w, h)]
+
+        # Quadrant background shading
+        mid_x = margin["left"] + plot_w / 2
+        mid_y = margin["top"] + plot_h / 2
+        parts.append(
+            f'<rect x="{margin["left"]}" y="{margin["top"]}" '
+            f'width="{plot_w / 2}" height="{plot_h / 2}" fill="#fef3c7" opacity="0.3"/>'
+        )
+        parts.append(
+            f'<rect x="{mid_x}" y="{margin["top"]}" '
+            f'width="{plot_w / 2}" height="{plot_h / 2}" fill="#dcfce7" opacity="0.3"/>'
+        )
+
+        # Axes
+        parts.append(
+            f'<line x1="{margin["left"]}" y1="{margin["top"] + plot_h}" '
+            f'x2="{w - margin["right"]}" y2="{margin["top"] + plot_h}" '
+            f'stroke="#374151" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<line x1="{margin["left"]}" y1="{margin["top"]}" '
+            f'x2="{margin["left"]}" y2="{margin["top"] + plot_h}" '
+            f'stroke="#374151" stroke-width="1"/>'
+        )
+
+        # Axis labels
+        parts.append(
+            f'<text x="{margin["left"] + plot_w / 2}" '
+            f'y="{h - 8}" text-anchor="middle" font-size="10" '
+            f'fill="#374151" font-weight="600">Financial Materiality</text>'
+        )
+        parts.append(
+            f'<text x="14" y="{margin["top"] + plot_h / 2}" '
+            f'text-anchor="middle" font-size="10" fill="#374151" '
+            f'font-weight="600" transform="rotate(-90,14,{margin["top"] + plot_h / 2})">'
+            f'Impact Materiality</text>'
+        )
+
+        # Threshold lines
+        parts.append(
+            f'<line x1="{mid_x}" y1="{margin["top"]}" x2="{mid_x}" '
+            f'y2="{margin["top"] + plot_h}" stroke="#9ca3af" '
+            f'stroke-width="0.8" stroke-dasharray="4,3"/>'
+        )
+        parts.append(
+            f'<line x1="{margin["left"]}" y1="{mid_y}" '
+            f'x2="{w - margin["right"]}" y2="{mid_y}" '
+            f'stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="4,3"/>'
+        )
+
+        # Plot data points
+        colors_map = {
+            "E": "#2D5016",
+            "S": "#2563eb",
+            "G": "#7c3aed",
+        }
+        for item in chart_data:
+            fin = item.get("x_financial", 0)
+            imp = item.get("y_impact", 0)
+            label = item.get("label", "")
+            topic_id = item.get("topic_id", "")
+            colour = colors_map.get(topic_id[:1], "#4A7C2E")
+
+            x = margin["left"] + (fin / 10.0) * plot_w
+            y = margin["top"] + plot_h - (imp / 10.0) * plot_h
+
+            parts.append(
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="6" '
+                f'fill="{colour}" stroke="#fff" stroke-width="1.5" opacity="0.85"/>'
+            )
+            parts.append(
+                f'<text x="{x + 9:.1f}" y="{y + 3:.1f}" '
+                f'font-size="7" fill="#374151">{_safe(label)}</text>'
+            )
+
+        parts.append("</svg>")
+        return "\n".join(parts)
+
+    def generate_emissions_chart(
+        self,
+        emissions_data: Dict[str, Any],
+        locale: str = "en",
+    ) -> str:
+        """Return SVG bar chart comparing Scope 1/2/3 emissions."""
+        scope1 = emissions_data.get("scope1", 0)
+        scope2 = emissions_data.get("scope2", 0)
+        scope3 = emissions_data.get("scope3", 0)
+        total = emissions_data.get("total", scope1 + scope2 + scope3)
+
+        t = dict(_DEFAULT_TRANSLATIONS)
+        spec = ChartSpec(
+            chart_type="bar",
+            data=[scope1, scope2, scope3, total],
+            labels=[t["chart_scope1"], t["chart_scope2"], t["chart_scope3"], t["chart_total"]],
+            colors=["#4A7C2E", "#6BA344", "#8BC462", "#2D5016"],
+            title="GHG Emissions by Scope",
+            subtitle=f"Values in {t['chart_unit_tco2e']}",
+        )
+        return self._create_svg_chart(spec)
+
+    def generate_data_table(
+        self,
+        headers: List[str],
+        rows: List[List[str]],
+        caption: str = "",
+        footnotes: Optional[List[str]] = None,
+        column_alignments: Optional[List[str]] = None,
+    ) -> str:
+        """Return an HTML <table> with proper styling classes."""
+        parts: List[str] = []
+        if caption:
+            parts.append(f'<p class="table-caption">{_safe(caption)}</p>')
+
+        parts.append('<table>')
+        parts.append('<thead><tr>')
+        for i, h in enumerate(headers):
+            align_cls = ""
+            if column_alignments and i < len(column_alignments) and column_alignments[i] == "right":
+                align_cls = ' class="numeric"'
+            parts.append(f'<th{align_cls}>{_safe(h)}</th>')
+        parts.append('</tr></thead>')
+
+        parts.append('<tbody>')
+        for row in rows:
+            parts.append('<tr>')
+            for j, cell in enumerate(row):
+                align_cls = ""
+                if column_alignments and j < len(column_alignments) and column_alignments[j] == "right":
+                    align_cls = ' class="numeric"'
+                parts.append(f'<td{align_cls}>{_safe(str(cell))}</td>')
+            parts.append('</tr>')
+        parts.append('</tbody></table>')
+
+        if footnotes:
+            parts.append('<div class="table-footnotes">')
+            for idx, fn in enumerate(footnotes, 1):
+                parts.append(f'<p><sup>{idx}</sup> {_safe(fn)}</p>')
+            parts.append('</div>')
+
+        return "\n".join(parts)
+
+    def generate_kpi_dashboard(
+        self,
+        metrics: Dict[str, Any],
+        locale: str = "en",
+    ) -> str:
+        """Return HTML KPI card dashboard from metrics dict."""
+        kpi_list = metrics.get("kpis", [])
+        if not kpi_list and isinstance(metrics, dict):
+            # Try to extract common KPIs from metric structure
+            kpi_list = self._extract_kpis_from_metrics(metrics)
+
+        if not kpi_list:
+            return '<p class="text-muted">No KPI data available.</p>'
+
+        parts: List[str] = ['<div class="kpi-dashboard">']
+        for kpi in kpi_list:
+            label = kpi.get("label", "Metric")
+            value = kpi.get("value", 0)
+            unit = kpi.get("unit", "")
+            trend = kpi.get("trend", "")
+            trend_class = kpi.get("trend_class", "neutral")
+
+            formatted_val = _format_number(value, locale, kpi.get("decimals", 1)) if isinstance(value, (int, float)) else str(value)
+
+            parts.append('<div class="kpi-card">')
+            parts.append(f'<div class="kpi-label">{_safe(label)}</div>')
+            parts.append(
+                f'<div class="kpi-value">{formatted_val}'
+                f'<span class="kpi-unit">{_safe(unit)}</span></div>'
+            )
+            if trend:
+                parts.append(f'<div class="kpi-trend {trend_class}">{_safe(trend)}</div>')
+            parts.append('</div>')
+
+        parts.append('</div>')
+        return "\n".join(parts)
+
+    def generate_compliance_summary(
+        self,
+        audit_results: Dict[str, Any],
+    ) -> str:
+        """Return HTML compliance summary with progress bars."""
+        status = audit_results.get("compliance_status", "UNKNOWN")
+        badge_class = {
+            "PASS": "pass",
+            "WARNING": "warning",
+            "FAIL": "fail",
+        }.get(status, "warning")
+
+        total = audit_results.get("total_rules_checked", 0)
+        passed = audit_results.get("rules_passed", 0)
+        warnings = audit_results.get("rules_warning", 0)
+        failed = audit_results.get("rules_failed", 0)
+        pct = (passed / total * 100) if total > 0 else 0
+        bar_cls = "high" if pct >= 80 else ("medium" if pct >= 50 else "low")
+
+        parts: List[str] = ['<div class="compliance-summary">']
+        parts.append(
+            f'<p>Overall Status: <span class="compliance-badge {badge_class}">'
+            f'{_safe(status)}</span></p>'
+        )
+
+        parts.append('<div class="compliance-metric">')
+        parts.append(f'<span>Rules Passed: {passed}/{total}</span>')
+        parts.append(
+            f'<div class="compliance-bar">'
+            f'<div class="compliance-bar-fill {bar_cls}" style="width:{pct:.0f}%"></div>'
+            f'</div>'
+        )
+        parts.append('</div>')
+
+        if warnings > 0:
+            parts.append(
+                f'<div class="compliance-metric">'
+                f'<span>Warnings: {warnings}</span>'
+                f'</div>'
+            )
+        if failed > 0:
+            parts.append(
+                f'<div class="compliance-metric">'
+                f'<span>Failures: {failed}</span>'
+                f'</div>'
+            )
+
+        # Individual category breakdowns
+        categories = audit_results.get("categories", {})
+        for cat_name, cat_data in categories.items():
+            cat_total = cat_data.get("total", 0)
+            cat_passed = cat_data.get("passed", 0)
+            cat_pct = (cat_passed / cat_total * 100) if cat_total > 0 else 0
+            cat_bar = "high" if cat_pct >= 80 else ("medium" if cat_pct >= 50 else "low")
+            parts.append(
+                f'<div class="compliance-metric">'
+                f'<span>{_safe(cat_name)}: {cat_passed}/{cat_total}</span>'
+                f'<div class="compliance-bar">'
+                f'<div class="compliance-bar-fill {cat_bar}" '
+                f'style="width:{cat_pct:.0f}%"></div></div></div>'
+            )
+
+        parts.append('</div>')
+        return "\n".join(parts)
+
+    def add_watermark(self, html: str, text: str) -> str:
+        """Inject a watermark <div> after <body> in rendered HTML."""
+        watermark_div = f'<div class="watermark">{_safe(text)}</div>'
+        return html.replace("<body>", f"<body>\n{watermark_div}", 1)
+
+    def add_page_numbers(self, html: str) -> str:
+        """
+        Page numbers are handled by CSS @page @bottom-right counter.
+
+        This method is a no-op passthrough for API compatibility; WeasyPrint
+        renders page counters via the stylesheet automatically.
+        """
+        return html
+
+    def add_headers_footers(
+        self,
+        html: str,
+        company: str,
+        period: str,
+    ) -> str:
+        """
+        Inject running header/footer string-set elements into HTML.
+
+        WeasyPrint picks up these values via ``string-set`` in the CSS.
+        """
+        header_el = (
+            f'<div class="page-header">{_safe(company)} | '
+            f'CSRD Sustainability Statement | {_safe(period)}</div>'
+        )
+        footer_el = f'<div class="page-footer">{_DEFAULT_TRANSLATIONS["confidential_notice"]}</div>'
+        injection = header_el + "\n" + footer_el + "\n"
+        return html.replace("<body>", f"<body>\n{injection}", 1)
+
+    # ------------------------------------------------------------------
+    # Internal methods
+    # ------------------------------------------------------------------
+
+    def _build_template_context(
+        self,
+        report_data: Dict[str, Any],
+        company_profile: Dict[str, Any],
+        materiality: Optional[Dict[str, Any]],
+        metrics: Optional[Dict[str, Any]],
+        locale: str,
+        t: Dict[str, str],
+        watermark_text: Optional[str],
+    ) -> Dict[str, Any]:
+        """Assemble the full Jinja2 template context dictionary."""
+        company_name = company_profile.get("legal_name", company_profile.get("company_name", "Company"))
+        period_start = (metrics or {}).get("reporting_period_start", "")
+        period_end = (metrics or {}).get("reporting_period_end", "")
+        reporting_period = f"{period_start} to {period_end}" if period_start and period_end else ""
+
+        ctx: Dict[str, Any] = {
+            "locale": locale,
+            "company_name": company_name,
+            "report_title": t["report_title"],
+            "reporting_period": reporting_period,
+            "generation_date": _format_date(datetime.now(timezone.utc), locale),
+            "stylesheet": self._styles_text,
+            "t": _DictAccessor(t),
+            "watermark_text": watermark_text,
+            "toc_entries": [],
+            "executive_summary": None,
+            "section_general": None,
+            "section_environmental": None,
+            "section_social": None,
+            "section_governance": None,
+            "section_materiality": None,
+            "kpi_dashboard": None,
+            "compliance_summary": None,
+            "extra_sections": [],
+            "appendices": None,
+        }
+
+        # Build ToC entries
+        toc: List[Dict[str, Any]] = []
+        toc.append({"level": 1, "number": "", "title": t["executive_summary"], "page": ""})
+        toc.append({"level": 1, "number": "1", "title": t["general_information"], "page": ""})
+        toc.append({"level": 1, "number": "2", "title": t["environmental_information"], "page": ""})
+
+        env_standards = [
+            ("2.1", t["climate_change"]),
+            ("2.2", t["pollution"]),
+            ("2.3", t["water_marine"]),
+            ("2.4", t["biodiversity"]),
+            ("2.5", t["circular_economy"]),
+        ]
+        for num, name in env_standards:
+            toc.append({"level": 2, "number": num, "title": f"ESRS {name.split()[0] if ' ' in name else name[:2]} - {name}", "page": ""})
+
+        toc.append({"level": 1, "number": "3", "title": t["social_information"], "page": ""})
+        toc.append({"level": 1, "number": "4", "title": t["governance_information"], "page": ""})
+        toc.append({"level": 1, "number": "5", "title": t["materiality_assessment"], "page": ""})
+        toc.append({"level": 1, "number": "", "title": t["appendices"], "page": ""})
+        ctx["toc_entries"] = toc
+
+        # Executive summary
+        narratives = report_data.get("outputs", {}).get("narratives", [])
+        strategy_narratives = [n for n in narratives if n.get("section_id") == "strategy"]
+        if strategy_narratives:
+            ctx["executive_summary"] = strategy_narratives[0].get("content", "")
+        else:
+            ctx["executive_summary"] = (
+                "<p>This sustainability statement has been prepared in accordance with "
+                "the European Sustainability Reporting Standards (ESRS) as required "
+                "by the Corporate Sustainability Reporting Directive (CSRD).</p>"
+            )
+
+        # General section (from narratives)
+        governance_n = [n for n in narratives if n.get("section_id") == "governance"]
+        if governance_n:
+            ctx["section_general"] = {
+                "basis_of_preparation": (
+                    "<p>This report has been prepared in accordance with ESRS 1 General "
+                    "Requirements and covers the reporting period indicated on the cover page.</p>"
+                ),
+                "governance": governance_n[0].get("content", ""),
+                "strategy": strategy_narratives[0].get("content", "") if strategy_narratives else "",
+                "irm": None,
+                "metrics_targets": None,
+            }
+
+        # Environmental sections from narratives
+        env_sections: Dict[str, Optional[str]] = {}
+        for code in ["e1", "e2", "e3", "e4", "e5"]:
+            matching = [n for n in narratives if n.get("section_id") == f"esrs_{code}"]
+            env_sections[code] = matching[0].get("content", "") if matching else None
+
+        # If we have metrics, build data tables for environmental sections
+        metrics_by_standard = (metrics or {}).get("metrics_by_standard", {})
+        for code_upper, code_lower in [("E1", "e1"), ("E2", "e2"), ("E3", "e3"), ("E4", "e4"), ("E5", "e5")]:
+            if code_upper in metrics_by_standard:
+                std_metrics = metrics_by_standard[code_upper]
+                if isinstance(std_metrics, list) and std_metrics:
+                    table_html = self.generate_data_table(
+                        headers=["Metric Code", "Metric", "Value", "Unit"],
+                        rows=[
+                            [m.get("metric_code", ""), m.get("metric_name", ""),
+                             _format_number(m["value"], locale) if isinstance(m.get("value"), (int, float)) else str(m.get("value", "")),
+                             m.get("unit", "")]
+                            for m in std_metrics
+                        ],
+                        caption=f"ESRS {code_upper} Metrics",
+                        column_alignments=["left", "left", "right", "left"],
+                    )
+                    existing = env_sections.get(code_lower, "") or ""
+                    env_sections[code_lower] = existing + "\n" + table_html
+
+        if any(v for v in env_sections.values()):
+            ctx["section_environmental"] = env_sections
+
+        # Social / governance from narratives (similar pattern)
+        social_sections: Dict[str, Optional[str]] = {}
+        for code in ["s1", "s2", "s3", "s4"]:
+            matching = [n for n in narratives if n.get("section_id") == f"esrs_{code}"]
+            social_sections[code] = matching[0].get("content", "") if matching else None
+        if any(v for v in social_sections.values()):
+            ctx["section_social"] = social_sections
+
+        gov_sections: Dict[str, Optional[str]] = {}
+        for code in ["g1"]:
+            matching = [n for n in narratives if n.get("section_id") == f"esrs_{code}"]
+            gov_sections[code] = matching[0].get("content", "") if matching else None
+        if any(v for v in gov_sections.values()):
+            ctx["section_governance"] = gov_sections
+
+        # Materiality matrix
+        if materiality:
+            matrix_data = materiality.get("materiality_matrix", {})
+            matrix_svg = self.generate_materiality_matrix(matrix_data) if matrix_data.get("chart_data") else None
+
+            material_topics_list = materiality.get("material_topics", [])
+            topics_html = ""
+            if material_topics_list:
+                rows = [
+                    [
+                        mt.get("topic_id", ""),
+                        mt.get("topic_name", ""),
+                        str(round(mt.get("impact_materiality", {}).get("score", 0), 1)),
+                        str(round(mt.get("financial_materiality", {}).get("score", 0), 1)),
+                        mt.get("materiality_conclusion", ""),
+                    ]
+                    for mt in material_topics_list
+                ]
+                topics_html = self.generate_data_table(
+                    headers=["ID", "Topic", "Impact Score", "Financial Score", "Conclusion"],
+                    rows=rows,
+                    caption="Material Topics Assessment Results",
+                    column_alignments=["left", "left", "right", "right", "left"],
+                )
+
+            ctx["section_materiality"] = {
+                "methodology": (
+                    "<p>A double materiality assessment was conducted in accordance with "
+                    "ESRS 1, evaluating both impact materiality (severity, scope, irremediability) "
+                    "and financial materiality (magnitude, likelihood) for all ESRS topical standards.</p>"
+                ),
+                "matrix_chart": matrix_svg,
+                "material_topics": topics_html,
+            }
+
+        # KPI dashboard
+        if metrics:
+            kpi_html = self.generate_kpi_dashboard(metrics, locale)
+            if kpi_html:
+                ctx["kpi_dashboard"] = kpi_html
+
+        # Emissions chart as an extra section
+        if metrics and metrics_by_standard.get("E1"):
+            emissions_data = self._extract_emissions_from_metrics(metrics_by_standard["E1"])
+            if any(v > 0 for v in emissions_data.values()):
+                chart_svg = self.generate_emissions_chart(emissions_data, locale)
+                extra = ReportSection(
+                    section_id="emissions-chart",
+                    title="GHG Emissions Overview",
+                    content=f'<div class="chart-container">{chart_svg}</div>',
+                    level=2,
+                    page_break_before=False,
+                )
+                ctx["extra_sections"].append(extra)
+
+        # Compliance summary
+        validation = report_data.get("xbrl_validation", {})
+        if validation:
+            compliance_html = self.generate_compliance_summary(validation)
+            ctx["compliance_summary"] = compliance_html
+
+        # Appendices
+        ctx["appendices"] = {
+            "methodology": (
+                "<p>All quantitative metrics were calculated using deterministic formulas "
+                "with zero-hallucination guarantees. No AI/LLM was used for numeric "
+                "calculations. AI-generated narrative sections are clearly marked.</p>"
+                "<p>Emission factors sourced from: EPA, DEFRA, IPCC AR6, IEA, EXIOBASE.</p>"
+            ),
+            "data_sources": (
+                "<p>Data was collected from company ERP systems, sustainability management "
+                "platforms, and validated through the GreenLang IntakeAgent quality assessment.</p>"
+            ),
+            "glossary": [
+                {"term": "CSRD", "definition": "Corporate Sustainability Reporting Directive (EU 2022/2464)"},
+                {"term": "ESRS", "definition": "European Sustainability Reporting Standards"},
+                {"term": "ESEF", "definition": "European Single Electronic Format"},
+                {"term": "GHG", "definition": "Greenhouse Gas"},
+                {"term": "tCO2e", "definition": "Tonnes of CO2 equivalent"},
+                {"term": "Scope 1", "definition": "Direct GHG emissions from owned or controlled sources"},
+                {"term": "Scope 2", "definition": "Indirect GHG emissions from purchased energy"},
+                {"term": "Scope 3", "definition": "All other indirect GHG emissions in the value chain"},
+                {"term": "XBRL", "definition": "eXtensible Business Reporting Language"},
+                {"term": "iXBRL", "definition": "Inline XBRL"},
+            ],
+            "esrs_index": None,
+            "assurance": None,
+        }
+
+        return ctx
+
+    def _create_svg_chart(self, chart_spec: ChartSpec) -> str:
+        """Render a ChartSpec into an SVG string."""
+        svg = self._chart_renderer.render(chart_spec)
+        chart_spec.svg_content = svg
+        return svg
+
+    def _render_jinja(self, template_text: str, context: Dict[str, Any]) -> str:
+        """Render a Jinja2 template string with the given context."""
+        try:
+            from jinja2 import Environment, BaseLoader, select_autoescape
+        except ImportError as exc:
+            raise ImportError(
+                "jinja2 is required for PDF generation. Install with: pip install jinja2"
+            ) from exc
+
+        env = Environment(
+            loader=BaseLoader(),
+            autoescape=select_autoescape(["html"]),
+        )
+        # Disable autoescaping for our pre-sanitised HTML content
+        env.autoescape = False
+        template = env.from_string(template_text)
+        return template.render(**context)
+
+    def _render_html_to_pdf(self, html: str, styles: str) -> bytes:
+        """Convert a full HTML document string into PDF bytes via WeasyPrint."""
+        try:
+            from weasyprint import HTML as WeasyprintHTML
+        except (ImportError, OSError) as exc:
+            logger.warning(
+                "WeasyPrint is not available (%s). Returning HTML bytes as fallback. "
+                "Install with: pip install weasyprint  (requires system GTK/Pango libs)",
+                type(exc).__name__,
+            )
+            return html.encode("utf-8")
+
+        try:
+            wp_doc = WeasyprintHTML(string=html)
+            pdf_bytes: bytes = wp_doc.write_pdf()
+            return pdf_bytes
+        except Exception:
+            logger.exception("WeasyPrint PDF rendering failed; returning HTML bytes")
+            return html.encode("utf-8")
+
+    @staticmethod
+    def _compute_provenance_hash(data: bytes) -> str:
+        """Compute SHA-256 hash of the generated PDF for audit trail."""
+        return hashlib.sha256(data).hexdigest()
+
+    @staticmethod
+    def _load_text_file(path: Path, label: str) -> str:
+        """Read a text file from disk, logging errors."""
+        try:
+            return path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            logger.error("PDF %s file not found: %s", label, path)
+            return ""
+        except Exception:
+            logger.exception("Failed to load PDF %s: %s", label, path)
+            return ""
+
+    @staticmethod
+    def _extract_emissions_from_metrics(e1_metrics: List[Dict[str, Any]]) -> Dict[str, float]:
+        """Pull scope 1/2/3 values from E1 metric list."""
+        result: Dict[str, float] = {"scope1": 0, "scope2": 0, "scope3": 0, "total": 0}
+        code_map = {
+            "E1-1": "scope1",
+            "E1-2": "scope2",
+            "E1-3": "scope3",
+            "E1-4": "total",
+        }
+        for m in e1_metrics:
+            key = code_map.get(m.get("metric_code", ""))
+            if key and isinstance(m.get("value"), (int, float)):
+                result[key] = float(m["value"])
+        if result["total"] == 0:
+            result["total"] = result["scope1"] + result["scope2"] + result["scope3"]
+        return result
+
+    @staticmethod
+    def _extract_kpis_from_metrics(metrics: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Best-effort extraction of KPI cards from a metrics dict."""
+        kpis: List[Dict[str, Any]] = []
+        metadata = metrics.get("metadata", {})
+
+        if "total_xbrl_facts" in metadata:
+            kpis.append({
+                "label": "XBRL Facts Tagged",
+                "value": metadata["total_xbrl_facts"],
+                "unit": "",
+                "decimals": 0,
+            })
+        if "processing_time_seconds" in metadata:
+            kpis.append({
+                "label": "Processing Time",
+                "value": metadata["processing_time_seconds"],
+                "unit": "sec",
+                "decimals": 1,
+            })
+        if "validation_status" in metadata:
+            kpis.append({
+                "label": "Validation Status",
+                "value": metadata["validation_status"],
+                "unit": "",
+            })
+
+        metrics_by_standard = metrics.get("metrics_by_standard", {})
+        for std, std_metrics in metrics_by_standard.items():
+            if isinstance(std_metrics, list):
+                for m in std_metrics[:2]:
+                    val = m.get("value")
+                    if isinstance(val, (int, float)):
+                        kpis.append({
+                            "label": m.get("metric_name", m.get("metric_code", std)),
+                            "value": val,
+                            "unit": m.get("unit", ""),
+                            "decimals": 1,
+                        })
+            if len(kpis) >= 8:
+                break
+
+        return kpis
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _safe(text: str) -> str:
+    """Escape HTML entities in user-supplied text."""
+    return (
+        text
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+class _DictAccessor:
+    """
+    Allows Jinja2 templates to access translation dict via ``t.key``
+    instead of ``t['key']``, falling back to the key name itself.
+    """
+
+    def __init__(self, data: Dict[str, str]) -> None:
+        self._data = data
+
+    def __getattr__(self, name: str) -> str:
+        return self._data.get(name, name)
+
+    def __getitem__(self, name: str) -> str:
+        return self._data.get(name, name)

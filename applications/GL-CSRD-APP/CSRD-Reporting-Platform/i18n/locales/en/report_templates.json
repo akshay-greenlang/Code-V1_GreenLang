@@ -1,0 +1,279 @@
+{
+  "metadata": {
+    "locale": "en",
+    "version": "1.1.0",
+    "description": "English report templates for CSRD sustainability reporting"
+  },
+  "cover_page": {
+    "title": "CSRD Sustainability Report",
+    "subtitle": "European Sustainability Reporting Standards (ESRS)",
+    "prepared_for": "Prepared for {company_name}",
+    "reporting_period": "Reporting Period: {period}",
+    "prepared_by": "Prepared by {prepared_by}",
+    "date_generated": "Date Generated: {date}",
+    "confidentiality": "CONFIDENTIAL - For intended recipients only",
+    "version_label": "Version {version}",
+    "assurance_level": "Assurance Level: {level}"
+  },
+  "table_of_contents": {
+    "title": "Table of Contents",
+    "page_label": "Page"
+  },
+  "executive_summary": {
+    "title": "Executive Summary",
+    "overview": "This sustainability statement has been prepared in accordance with the European Sustainability Reporting Standards (ESRS) as adopted by the European Commission under the Corporate Sustainability Reporting Directive (CSRD).",
+    "materiality_summary": "Materiality Assessment Summary",
+    "key_highlights": "Key Sustainability Highlights",
+    "scope_description": "Scope and Boundary of This Report"
+  },
+  "sections": {
+    "general_information": {
+      "title": "General Information",
+      "subtitle": "ESRS 2 General Disclosures",
+      "description": "This section provides general information about the undertaking's governance, strategy, and approach to managing impacts, risks and opportunities related to sustainability matters.",
+      "subsections": {
+        "governance": {
+          "title": "Governance",
+          "description": "Description of the governance processes, controls and procedures used to monitor, manage and oversee sustainability matters.",
+          "gov_1": "Role of Administrative, Management and Supervisory Bodies",
+          "gov_2": "Information Provided to and Sustainability Matters Addressed by Governing Bodies",
+          "gov_3": "Integration of Sustainability-Related Performance in Incentive Schemes",
+          "gov_4": "Statement on Due Diligence",
+          "gov_5": "Risk Management and Internal Controls over Sustainability Reporting"
+        },
+        "strategy": {
+          "title": "Strategy",
+          "description": "How the undertaking's strategy and business model interact with its material sustainability matters.",
+          "sbm_1": "Market Position, Strategy, Business Model and Value Chain",
+          "sbm_2": "Interests and Views of Stakeholders",
+          "sbm_3": "Material Impacts, Risks and Opportunities and Their Interaction with Strategy and Business Model"
+        },
+        "impact_risk_opportunity": {
+          "title": "Impact, Risk and Opportunity Management",
+          "description": "How the undertaking identifies, assesses and manages sustainability-related impacts, risks and opportunities.",
+          "iro_1": "Description of Processes to Identify and Assess Material Impacts, Risks and Opportunities",
+          "iro_2": "Disclosure Requirements in ESRS Covered by the Sustainability Statement"
+        },
+        "metrics_targets": {
+          "title": "Metrics and Targets",
+          "description": "Metrics used by the undertaking to measure performance on material sustainability matters and progress towards targets.",
+          "mdr_p": "Minimum Disclosure Requirement - Policies",
+          "mdr_a": "Minimum Disclosure Requirement - Actions",
+          "mdr_m": "Minimum Disclosure Requirement - Metrics",
+          "mdr_t": "Minimum Disclosure Requirement - Targets"
+        },
+        "basis_preparation": {
+          "title": "Basis for Preparation",
+          "bp_1": "General Basis for Preparation of Sustainability Statement",
+          "bp_2": "Disclosures in Relation to Specific Circumstances"
+        }
+      }
+    },
+    "environmental": {
+      "title": "Environmental Information",
+      "subtitle": "ESRS E1-E5 Environmental Standards",
+      "description": "This section covers the undertaking's material environmental impacts, risks and opportunities across climate change, pollution, water, biodiversity and circular economy.",
+      "subsections": {
+        "E1": {
+          "title": "Climate Change (ESRS E1)",
+          "description": "Disclosures related to climate change mitigation and adaptation, including GHG emissions, energy consumption, and transition planning.",
+          "transition_plan": "Transition Plan for Climate Change Mitigation",
+          "policies": "Policies Related to Climate Change Mitigation and Adaptation",
+          "actions": "Actions and Resources in Relation to Climate Change Policies",
+          "targets": "Targets Related to Climate Change Mitigation and Adaptation",
+          "energy": "Energy Consumption and Mix",
+          "ghg_emissions": "Gross Scopes 1, 2, 3 and Total GHG Emissions",
+          "ghg_removals": "GHG Removals and GHG Mitigation Projects",
+          "carbon_pricing": "Internal Carbon Pricing",
+          "financial_effects": "Anticipated Financial Effects from Material Physical and Transition Risks"
+        },
+        "E2": {
+          "title": "Pollution (ESRS E2)",
+          "description": "Disclosures related to pollution of air, water and soil, including substances of concern.",
+          "policies": "Policies Related to Pollution",
+          "actions": "Actions and Resources Related to Pollution",
+          "targets": "Targets Related to Pollution",
+          "pollution_metrics": "Pollution of Air, Water and Soil",
+          "substances_concern": "Substances of Concern and Substances of Very High Concern",
+          "financial_effects": "Anticipated Financial Effects from Pollution-Related Impacts"
+        },
+        "E3": {
+          "title": "Water and Marine Resources (ESRS E3)",
+          "description": "Disclosures related to water consumption, withdrawal, discharge and impacts on marine resources.",
+          "policies": "Policies Related to Water and Marine Resources",
+          "actions": "Actions and Resources Related to Water and Marine Resources",
+          "targets": "Targets Related to Water and Marine Resources",
+          "water_consumption": "Water Consumption",
+          "financial_effects": "Anticipated Financial Effects from Water-Related Impacts"
+        },
+        "E4": {
+          "title": "Biodiversity and Ecosystems (ESRS E4)",
+          "description": "Disclosures related to biodiversity, ecosystems, and land-use change.",
+          "transition_plan": "Transition Plan on Biodiversity and Ecosystems",
+          "policies": "Policies Related to Biodiversity and Ecosystems",
+          "actions": "Actions and Resources Related to Biodiversity and Ecosystems",
+          "targets": "Targets Related to Biodiversity and Ecosystems",
+          "impact_metrics": "Impact Metrics Related to Biodiversity and Ecosystems",
+          "financial_effects": "Anticipated Financial Effects from Biodiversity-Related Impacts"
+        },
+        "E5": {
+          "title": "Resource Use and Circular Economy (ESRS E5)",
+          "description": "Disclosures related to resource inflows, outflows, waste, and circular economy strategies.",
+          "policies": "Policies Related to Resource Use and Circular Economy",
+          "actions": "Actions and Resources Related to Resource Use and Circular Economy",
+          "targets": "Targets Related to Resource Use and Circular Economy",
+          "resource_inflows": "Resource Inflows",
+          "resource_outflows": "Resource Outflows",
+          "financial_effects": "Anticipated Financial Effects from Resource Use-Related Impacts"
+        }
+      }
+    },
+    "social": {
+      "title": "Social Information",
+      "subtitle": "ESRS S1-S4 Social Standards",
+      "description": "This section covers the undertaking's material social impacts, risks and opportunities related to own workforce, value chain workers, affected communities, and consumers/end-users.",
+      "subsections": {
+        "S1": {
+          "title": "Own Workforce (ESRS S1)",
+          "description": "Disclosures related to working conditions, equal treatment, and other work-related rights for the undertaking's own employees and non-employee workers.",
+          "policies": "Policies Related to Own Workforce",
+          "engagement": "Processes for Engaging with Own Workforce",
+          "remediation": "Processes to Remediate Negative Impacts and Grievance Channels",
+          "actions": "Actions on Material Impacts and Managing Risks and Opportunities",
+          "targets": "Targets Related to Own Workforce",
+          "characteristics_employees": "Characteristics of the Undertaking's Employees",
+          "characteristics_nonemployees": "Characteristics of Non-Employee Workers",
+          "collective_bargaining": "Collective Bargaining Coverage and Social Dialogue",
+          "diversity": "Diversity Metrics",
+          "wages": "Adequate Wages",
+          "social_protection": "Social Protection",
+          "disabilities": "Persons with Disabilities",
+          "training": "Training and Skills Development Metrics",
+          "health_safety": "Health and Safety Metrics",
+          "work_life_balance": "Work-Life Balance Metrics",
+          "remuneration": "Remuneration Metrics (Pay Gap and Total Remuneration)",
+          "incidents": "Incidents, Complaints and Severe Human Rights Impacts"
+        },
+        "S2": {
+          "title": "Workers in the Value Chain (ESRS S2)",
+          "description": "Disclosures related to working conditions and rights of workers in the upstream and downstream value chain.",
+          "policies": "Policies Related to Value Chain Workers",
+          "engagement": "Processes for Engaging with Value Chain Workers",
+          "remediation": "Processes to Remediate Negative Impacts and Grievance Channels",
+          "actions": "Actions on Material Impacts on Value Chain Workers",
+          "targets": "Targets Related to Value Chain Workers"
+        },
+        "S3": {
+          "title": "Affected Communities (ESRS S3)",
+          "description": "Disclosures related to impacts on communities in areas where the undertaking operates.",
+          "policies": "Policies Related to Affected Communities",
+          "engagement": "Processes for Engaging with Affected Communities",
+          "remediation": "Processes to Remediate Negative Impacts and Grievance Channels",
+          "actions": "Actions on Material Impacts on Affected Communities",
+          "targets": "Targets Related to Affected Communities"
+        },
+        "S4": {
+          "title": "Consumers and End-Users (ESRS S4)",
+          "description": "Disclosures related to product safety, data privacy, and other consumer rights.",
+          "policies": "Policies Related to Consumers and End-Users",
+          "engagement": "Processes for Engaging with Consumers and End-Users",
+          "remediation": "Processes to Remediate Negative Impacts and Grievance Channels",
+          "actions": "Actions on Material Impacts on Consumers and End-Users",
+          "targets": "Targets Related to Consumers and End-Users"
+        }
+      }
+    },
+    "governance": {
+      "title": "Governance Information",
+      "subtitle": "ESRS G1 Governance Standard",
+      "description": "This section covers the undertaking's governance of business conduct, including anti-corruption, political engagement, and supply chain management.",
+      "subsections": {
+        "G1": {
+          "title": "Business Conduct (ESRS G1)",
+          "description": "Disclosures on corporate culture, anti-corruption and bribery, political influence, and payment practices.",
+          "policies": "Business Conduct Policies and Corporate Culture",
+          "suppliers": "Management of Relationships with Suppliers",
+          "corruption": "Prevention and Detection of Corruption and Bribery",
+          "incidents": "Confirmed Incidents of Corruption or Bribery",
+          "political": "Political Influence and Lobbying Activities",
+          "payment": "Payment Practices"
+        }
+      }
+    }
+  },
+  "appendices": {
+    "title": "Appendices",
+    "methodology": {
+      "title": "Appendix A: Methodology",
+      "description": "Detailed description of methodologies used for data collection, calculation, and estimation."
+    },
+    "data_quality": {
+      "title": "Appendix B: Data Quality Assessment",
+      "description": "Assessment of data quality across reported metrics including coverage, accuracy, and limitations."
+    },
+    "gri_mapping": {
+      "title": "Appendix C: GRI Content Index",
+      "description": "Cross-reference mapping of ESRS disclosures to GRI Standards."
+    },
+    "un_sdg_mapping": {
+      "title": "Appendix D: UN SDG Mapping",
+      "description": "Mapping of sustainability activities to United Nations Sustainable Development Goals."
+    },
+    "glossary": {
+      "title": "Appendix E: Glossary of Terms",
+      "description": "Definitions of key terms and abbreviations used in this report."
+    },
+    "assurance_report": {
+      "title": "Appendix F: Independent Assurance Report",
+      "description": "Independent third-party assurance opinion on selected sustainability information."
+    },
+    "eu_taxonomy": {
+      "title": "Appendix G: EU Taxonomy Alignment",
+      "description": "Disclosure of the undertaking's EU Taxonomy-eligible and Taxonomy-aligned economic activities."
+    }
+  },
+  "boilerplate": {
+    "methodology_note": "The data presented in this report has been prepared in accordance with the European Sustainability Reporting Standards (ESRS) as adopted under Commission Delegated Regulation (EU) 2023/2772. Quantitative metrics have been calculated using established methodologies including the GHG Protocol, IPCC guidelines, and relevant ISO standards. Where estimation has been used, the methodology and assumptions are disclosed alongside the relevant data points.",
+    "assurance_statement": "This sustainability statement has been subject to {assurance_level} assurance by {assurer_name} in accordance with ISAE 3000 (Revised). The assurance report is presented in Appendix F.",
+    "forward_looking_disclaimer": "This report contains forward-looking statements regarding the undertaking's sustainability strategy, targets, and anticipated outcomes. These statements are based on current expectations and assumptions and involve risks and uncertainties. Actual results may differ materially from those expressed or implied. The undertaking undertakes no obligation to update these statements.",
+    "basis_of_preparation": "This sustainability statement covers the reporting period from {start_date} to {end_date}. The consolidation scope is consistent with the financial statements unless otherwise stated. The reporting boundary includes all entities under the operational control of {company_name}.",
+    "materiality_note": "The content of this sustainability statement has been determined through a double materiality assessment conducted in accordance with ESRS 1 Chapter 3. Both impact materiality and financial materiality perspectives have been considered. Topics determined to be material are covered in detail; topics determined to be not material are briefly addressed with an explanation of the materiality assessment outcome.",
+    "data_quality_note": "The data quality of the information reported has been assessed using a five-point scale from Very High to Very Low. The data quality assessment considers the specificity, completeness, reliability, timeliness, and accuracy of the data sources. Any significant limitations or estimation uncertainties are disclosed alongside the relevant data points.",
+    "comparative_note": "Where applicable, comparative data for the prior reporting period is provided alongside current period figures. Restatements of prior period data, if any, are identified and explained.",
+    "value_chain_note": "Information on the value chain has been included where the undertaking has assessed that upstream or downstream activities are associated with material sustainability impacts, risks or opportunities. The approach to estimating value chain data is described in the methodology appendix."
+  },
+  "table_headers": {
+    "metric": "Metric",
+    "unit": "Unit",
+    "current_period": "Current Period ({year})",
+    "prior_period": "Prior Period ({prior_year})",
+    "change": "Change (%)",
+    "target": "Target ({target_year})",
+    "data_quality": "Data Quality",
+    "scope": "Scope",
+    "methodology": "Methodology",
+    "source": "Source",
+    "notes": "Notes"
+  },
+  "data_quality_labels": {
+    "very_high": "Very High",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "very_low": "Very Low",
+    "estimated": "Estimated",
+    "measured": "Measured",
+    "calculated": "Calculated",
+    "modeled": "Modelled",
+    "not_available": "Not Available"
+  },
+  "status_labels": {
+    "compliant": "Compliant",
+    "partially_compliant": "Partially Compliant",
+    "not_compliant": "Not Compliant",
+    "not_applicable": "Not Applicable",
+    "not_material": "Not Material",
+    "phase_in": "Phase-in Applicable",
+    "voluntary": "Voluntary Disclosure"
+  }
+}

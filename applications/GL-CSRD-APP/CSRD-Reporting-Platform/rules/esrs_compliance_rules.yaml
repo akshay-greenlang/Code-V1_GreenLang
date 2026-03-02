@@ -2,39 +2,55 @@
 # ESRS COMPLIANCE VALIDATION RULES
 # ============================================================================
 #
-# 200+ rules to validate CSRD report compliance with ESRS Set 1 requirements
+# 235 rules to validate CSRD report compliance with ESRS Set 1 requirements.
+# Uses all 12 audit-agent pattern types: EXISTS, comparison, RANGE,
+# IF/THEN conditional, COUNT, SUM/TOLERANCE, CROSS_REF, COMPLETE,
+# CONSISTENT, TEMPORAL, FORMAT, ENUM.
 #
-# Version: 1.0.0
+# Version: 1.1.0
 # Source: EFRAG ESRS Set 1 (Commission Delegated Regulation 2023/2772)
-# Total Rules: 215
+# Total Rules: 235
 # ============================================================================
 
 metadata:
   title: "ESRS Compliance Validation Rules"
-  version: "1.0.0"
-  total_rules: 215
-  standards_covered: ["E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1", "ESRS-1", "ESRS-2"]
-  last_updated: "2025-10-18"
+  version: "1.1.0"
+  total_rules: 235
+  standards_covered: ["ESRS-1", "ESRS-2", "E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1", "XBRL"]
+  last_updated: "2026-03-01"
+  pattern_types_used:
+    - "EXISTS"
+    - "comparison (>, <, >=, <=, ==, !=)"
+    - "RANGE(field, min, max)"
+    - "IF condition THEN assertion"
+    - "COUNT(collection WHERE cond) >= N"
+    - "SUM(items) == total TOLERANCE t"
+    - "CROSS_REF(source, target)"
+    - "COMPLETE(section: f1, f2, f3)"
+    - "CONSISTENT(path_a, path_b, tolerance)"
+    - "TEMPORAL(current, previous, low%, high%)"
+    - "FORMAT(field, pattern)"
+    - "ENUM(field, [values])"
 
 # ============================================================================
-# ESRS-1: GENERAL REQUIREMENTS
+# ESRS-1: GENERAL REQUIREMENTS (15 rules)
 # ============================================================================
 
 esrs1_rules:
   - rule_id: "ESRS1-001"
     rule_name: "Double Materiality Assessment Required"
     severity: "critical"
-    description: "Company must conduct double materiality assessment per ESRS 1"
+    description: "Company must conduct double materiality assessment per ESRS 1 Chapter 3"
     validation:
-      check: "materiality_assessment exists AND materiality_assessment.methodology == 'ESRS_1_Double_Materiality'"
+      check: "materiality_assessment EXISTS AND materiality_assessment.methodology == 'ESRS_1_Double_Materiality'"
       error_message: "Double materiality assessment is mandatory for CSRD compliance"
     references:
-      - "ESRS 1 - Chapter 3: Double materiality"
+      - "ESRS 1 Chapter 3: Double materiality"
 
   - rule_id: "ESRS1-002"
     rule_name: "Material Topics Identified"
     severity: "critical"
-    description: "At least one material topic must be identified"
+    description: "At least one material topic must be identified from the double materiality assessment"
     validation:
       check: "COUNT(materiality_assessment.material_topics WHERE is_material == true) >= 1"
       error_message: "No material topics identified - double materiality assessment incomplete"
@@ -44,48 +60,340 @@ esrs1_rules:
   - rule_id: "ESRS1-003"
     rule_name: "Materiality Thresholds Defined"
     severity: "major"
-    description: "Company must define and apply materiality thresholds"
+    description: "Company must define impact and financial materiality thresholds"
     validation:
       check: "materiality_assessment.methodology.materiality_thresholds.impact_threshold EXISTS AND materiality_assessment.methodology.materiality_thresholds.financial_threshold EXISTS"
-      error_message: "Materiality thresholds not defined"
+      error_message: "Materiality thresholds not defined for impact and financial dimensions"
+    references:
+      - "ESRS 1 para 21-22"
+
+  - rule_id: "ESRS1-004"
+    rule_name: "Materiality Methodology Documented"
+    severity: "major"
+    description: "The methodology for the materiality assessment must be documented including stakeholders consulted and scoring criteria"
+    validation:
+      check: "COMPLETE(materiality_assessment.methodology: description, scoring_criteria, stakeholder_involvement, data_sources)"
+      error_message: "Materiality assessment methodology is incomplete"
+    references:
+      - "ESRS 1 para 23-30"
+
+  - rule_id: "ESRS1-005"
+    rule_name: "Value Chain Boundaries Defined"
+    severity: "critical"
+    description: "Upstream and downstream value chain boundaries must be defined for each material topic"
+    validation:
+      check: "materiality_assessment.value_chain_scope EXISTS AND materiality_assessment.value_chain_scope.upstream_boundary EXISTS AND materiality_assessment.value_chain_scope.downstream_boundary EXISTS"
+      error_message: "Value chain boundaries not defined for materiality assessment"
+    references:
+      - "ESRS 1 para 63-67"
+
+  - rule_id: "ESRS1-006"
+    rule_name: "Time Horizons Specified"
+    severity: "major"
+    description: "Short-, medium- and long-term time horizons must be defined"
+    validation:
+      check: "COMPLETE(materiality_assessment.time_horizons: short_term, medium_term, long_term)"
+      error_message: "Time horizons (short/medium/long) not fully defined"
+    references:
+      - "ESRS 1 para 77-79"
+
+  - rule_id: "ESRS1-007"
+    rule_name: "Reporting Period Aligned"
+    severity: "critical"
+    description: "Sustainability reporting period must match the financial reporting period"
+    validation:
+      check: "CONSISTENT(reporting_period.start_date, financial_reporting.start_date, 0) AND CONSISTENT(reporting_period.end_date, financial_reporting.end_date, 0)"
+      error_message: "Sustainability reporting period must match the financial reporting period"
+    references:
+      - "ESRS 1 para 73"
+
+  - rule_id: "ESRS1-008"
+    rule_name: "Consolidation Scope Defined"
+    severity: "critical"
+    description: "Consolidation scope must be the same as for financial statements"
+    validation:
+      check: "company_profile.reporting_scope.consolidation_method EXISTS AND ENUM(company_profile.reporting_scope.consolidation_method, [full_consolidation, equity_method, proportional_consolidation])"
+      error_message: "Consolidation scope not defined or uses invalid method"
+    references:
+      - "ESRS 1 para 62"
+
+  - rule_id: "ESRS1-009"
+    rule_name: "Comparative Data Provided"
+    severity: "major"
+    description: "Comparative data from previous reporting period must be provided where available"
+    validation:
+      check: "historical_data.previous_year EXISTS"
+      error_message: "Prior year comparative data must be provided for comparability"
+    references:
+      - "ESRS 1 para 82-84"
+
+  - rule_id: "ESRS1-010"
+    rule_name: "Phase-In Provisions Applied Correctly"
+    severity: "major"
+    description: "Phase-in provisions are only applicable for companies and standards allowed by the regulation"
+    validation:
+      check: "IF phase_in_provisions.applied == true THEN phase_in_provisions.justification EXISTS AND phase_in_provisions.standards_deferred EXISTS"
+      error_message: "Phase-in provisions used without justification or standard list"
+    references:
+      - "ESRS 1 Appendix C"
+
+  - rule_id: "ESRS1-011"
+    rule_name: "Entity-Specific Disclosures Explained"
+    severity: "minor"
+    description: "Entity-specific disclosures beyond ESRS requirements must be clearly labelled"
+    validation:
+      check: "IF entity_specific_disclosures EXISTS THEN COUNT(entity_specific_disclosures WHERE label EXISTS AND rationale EXISTS) >= 1"
+      error_message: "Entity-specific disclosures must be labelled with rationale"
+    references:
+      - "ESRS 1 para 11"
+
+  - rule_id: "ESRS1-012"
+    rule_name: "Estimation Uncertainty Disclosed"
+    severity: "major"
+    description: "Sources of estimation uncertainty must be described for material metrics"
+    validation:
+      check: "IF data_quality_statement.estimation_methods EXISTS THEN data_quality_statement.estimation_methods.uncertainty_disclosure EXISTS"
+      error_message: "Estimation uncertainty not disclosed for material metrics"
+    references:
+      - "ESRS 1 para 87-89"
+
+  - rule_id: "ESRS1-013"
+    rule_name: "Omissions Justified"
+    severity: "major"
+    description: "Any omission of a mandatory disclosure must have a justification"
+    validation:
+      check: "IF omissions EXISTS THEN COUNT(omissions WHERE justification EXISTS) == COUNT(omissions)"
+      error_message: "Omissions found without justification"
+    references:
+      - "ESRS 1 para 35"
+
+  - rule_id: "ESRS1-014"
+    rule_name: "Connected Financial Statements"
+    severity: "major"
+    description: "Sustainability statement must be connected to financial statements where relevant"
+    validation:
+      check: "connectivity.financial_statements_reference EXISTS"
+      error_message: "No connectivity reference to financial statements"
+    references:
+      - "ESRS 1 para 115-118"
+
+  - rule_id: "ESRS1-015"
+    rule_name: "Reporting Format Validity"
+    severity: "critical"
+    description: "Report must be filed in valid ESEF/XHTML format with iXBRL markup"
+    validation:
+      check: "ENUM(report_format, [ESEF_XHTML, iXBRL])"
+      error_message: "Report format must be ESEF XHTML with iXBRL tagging"
+    references:
+      - "ESRS 1 para 119"
 
 # ============================================================================
-# ESRS-2: GENERAL DISCLOSURES
+# ESRS-2: GENERAL DISCLOSURES (20 rules)
 # ============================================================================
 
 esrs2_rules:
   - rule_id: "ESRS2-001"
-    rule_name: "Governance Structure Disclosed"
+    rule_name: "GOV-1 Board Oversight Disclosed"
     severity: "critical"
-    description: "Governance structure and oversight of sustainability matters required"
+    description: "Role of administrative, management and supervisory bodies in sustainability matters"
     validation:
-      check: "governance.board_oversight EXISTS"
-      error_message: "Board oversight of sustainability matters must be disclosed (ESRS 2 GOV-1)"
+      check: "COMPLETE(governance.board_oversight: body_name, responsibilities, expertise, meeting_frequency)"
+      error_message: "Board oversight of sustainability matters must be disclosed (GOV-1)"
     references:
-      - "ESRS 2 GOV-1"
+      - "ESRS 2 GOV-1 para 4-8"
 
   - rule_id: "ESRS2-002"
-    rule_name: "Strategy Disclosure"
-    severity: "critical"
-    description: "Business model and strategy including sustainability matters"
+    rule_name: "GOV-2 Information Provided to Board"
+    severity: "major"
+    description: "Information and sustainability matters addressed by the board must be disclosed"
     validation:
-      check: "company_profile.business_profile.business_model EXISTS"
-      error_message: "Business model must be disclosed (ESRS 2 SBM-1)"
+      check: "governance.board_information EXISTS AND governance.board_information.topics_addressed EXISTS"
+      error_message: "Information provided to board on sustainability must be disclosed (GOV-2)"
     references:
-      - "ESRS 2 SBM-1"
+      - "ESRS 2 GOV-2 para 9-12"
 
   - rule_id: "ESRS2-003"
-    rule_name: "IRO Process Description"
+    rule_name: "GOV-3 Incentive Schemes Linked to Sustainability"
+    severity: "major"
+    description: "Incentive schemes linked to sustainability performance must be disclosed"
+    validation:
+      check: "governance.incentive_schemes EXISTS AND governance.incentive_schemes.sustainability_linked EXISTS"
+      error_message: "Sustainability-linked incentive schemes must be disclosed (GOV-3)"
+    references:
+      - "ESRS 2 GOV-3 para 13-16"
+
+  - rule_id: "ESRS2-004"
+    rule_name: "GOV-4 Due Diligence Statement"
+    severity: "critical"
+    description: "Statement on due diligence including mapping, prevention and remediation"
+    validation:
+      check: "COMPLETE(governance.due_diligence: process_description, embedding_in_governance, identifying_impacts, preventing_mitigating, tracking_effectiveness, remediation)"
+      error_message: "Due diligence statement must cover all six steps (GOV-4)"
+    references:
+      - "ESRS 2 GOV-4 para 17-19"
+
+  - rule_id: "ESRS2-005"
+    rule_name: "GOV-5 Risk Management Integration"
+    severity: "critical"
+    description: "Risk management and internal controls over sustainability reporting"
+    validation:
+      check: "governance.risk_management EXISTS AND governance.risk_management.integration_with_erm EXISTS"
+      error_message: "Risk management and internal controls must be disclosed (GOV-5)"
+    references:
+      - "ESRS 2 GOV-5 para 20-23"
+
+  - rule_id: "ESRS2-006"
+    rule_name: "SBM-1 Market Position and Business Model"
+    severity: "critical"
+    description: "Description of strategy, business model and value chain"
+    validation:
+      check: "COMPLETE(company_profile.business_profile: business_model, value_chain, markets_served, revenue_by_segment)"
+      error_message: "Business model, value chain and market position must be disclosed (SBM-1)"
+    references:
+      - "ESRS 2 SBM-1 para 24-32"
+
+  - rule_id: "ESRS2-007"
+    rule_name: "SBM-1 Sector Classification"
+    severity: "major"
+    description: "Significant NACE sector codes must be listed"
+    validation:
+      check: "company_profile.sector_codes EXISTS AND COUNT(company_profile.sector_codes WHERE nace_code EXISTS) >= 1"
+      error_message: "At least one NACE sector code must be disclosed (SBM-1)"
+    references:
+      - "ESRS 2 SBM-1 para 25"
+
+  - rule_id: "ESRS2-008"
+    rule_name: "SBM-2 Stakeholder Interests"
+    severity: "major"
+    description: "Views of stakeholders and how they are taken into account"
+    validation:
+      check: "stakeholder_engagement EXISTS AND stakeholder_engagement.key_stakeholder_groups EXISTS"
+      error_message: "Stakeholder interests and engagement must be disclosed (SBM-2)"
+    references:
+      - "ESRS 2 SBM-2 para 33-38"
+
+  - rule_id: "ESRS2-009"
+    rule_name: "SBM-3 Material Impacts Interaction"
+    severity: "critical"
+    description: "Interaction of material impacts, risks and opportunities with strategy and business model"
+    validation:
+      check: "materiality_assessment.strategy_interaction EXISTS AND materiality_assessment.strategy_interaction.impacts_on_business_model EXISTS"
+      error_message: "Interaction of material IROs with strategy must be described (SBM-3)"
+    references:
+      - "ESRS 2 SBM-3 para 39-44"
+
+  - rule_id: "ESRS2-010"
+    rule_name: "IRO-1 Material IRO Identification Process"
     severity: "critical"
     description: "Process to identify and assess material impacts, risks, and opportunities"
     validation:
-      check: "iro_process_description EXISTS"
-      error_message: "IRO identification process must be described (ESRS 2 IRO-1)"
+      check: "COMPLETE(iro_process_description: process_steps, stakeholders_involved, frequency, scope_covered, tools_used)"
+      error_message: "IRO identification process must be fully described (IRO-1)"
     references:
-      - "ESRS 2 IRO-1"
+      - "ESRS 2 IRO-1 para 45-52"
+
+  - rule_id: "ESRS2-011"
+    rule_name: "IRO-2 Disclosure Requirements Coverage"
+    severity: "critical"
+    description: "Disclosure requirements included or omitted based on materiality must be listed"
+    validation:
+      check: "CROSS_REF(materiality_assessment.material_standards, disclosed_standards)"
+      error_message: "Material standards must be cross-referenced with disclosed standards (IRO-2)"
+    references:
+      - "ESRS 2 IRO-2 para 53-56"
+
+  - rule_id: "ESRS2-012"
+    rule_name: "MDR-P Policies Completeness"
+    severity: "major"
+    description: "Minimum Disclosure Requirement for policies adopted for each material standard"
+    validation:
+      check: "IF materiality_assessment.material_standards EXISTS THEN COUNT(policies WHERE standard_ref EXISTS) >= 1"
+      error_message: "Policies must be disclosed for each material topic (MDR-P)"
+    references:
+      - "ESRS 2 MDR-P para 65-69"
+
+  - rule_id: "ESRS2-013"
+    rule_name: "MDR-A Actions Completeness"
+    severity: "major"
+    description: "Minimum Disclosure Requirement for actions taken on each material topic"
+    validation:
+      check: "IF materiality_assessment.material_standards EXISTS THEN COUNT(actions WHERE standard_ref EXISTS) >= 1"
+      error_message: "Actions must be disclosed for each material topic (MDR-A)"
+    references:
+      - "ESRS 2 MDR-A para 68-71"
+
+  - rule_id: "ESRS2-014"
+    rule_name: "MDR-T Targets Completeness"
+    severity: "major"
+    description: "Minimum Disclosure Requirement for targets set for each material metric"
+    validation:
+      check: "IF materiality_assessment.material_standards EXISTS THEN COUNT(targets WHERE standard_ref EXISTS AND base_year EXISTS AND target_year EXISTS) >= 1"
+      error_message: "Targets with base year and target year must be disclosed for material topics (MDR-T)"
+    references:
+      - "ESRS 2 MDR-T para 72-83"
+
+  - rule_id: "ESRS2-015"
+    rule_name: "MDR-M Metrics Completeness"
+    severity: "major"
+    description: "Metrics must be disclosed for each material standard with methodology"
+    validation:
+      check: "IF materiality_assessment.material_standards EXISTS THEN COUNT(metrics WHERE methodology EXISTS) >= 1"
+      error_message: "Metrics with methodology must be disclosed for material topics (MDR-M)"
+    references:
+      - "ESRS 2 MDR-M para 74-77"
+
+  - rule_id: "ESRS2-016"
+    rule_name: "Employee Count Disclosed"
+    severity: "critical"
+    description: "Total number of employees by head count at reporting period end"
+    validation:
+      check: "company_profile.total_employees EXISTS AND company_profile.total_employees > 0"
+      error_message: "Total employee headcount must be disclosed (SBM-1 para 30)"
+    references:
+      - "ESRS 2 SBM-1 para 30"
+
+  - rule_id: "ESRS2-017"
+    rule_name: "Revenue Disclosed"
+    severity: "critical"
+    description: "Total revenue in reporting period"
+    validation:
+      check: "company_profile.revenue EXISTS AND company_profile.revenue.value > 0"
+      error_message: "Total revenue must be disclosed"
+    references:
+      - "ESRS 2 SBM-1 para 28"
+
+  - rule_id: "ESRS2-018"
+    rule_name: "LEI Code Valid Format"
+    severity: "major"
+    description: "Legal Entity Identifier must conform to ISO 17442 format"
+    validation:
+      check: "FORMAT(company_profile.lei_code, LEI)"
+      error_message: "LEI code must conform to ISO 17442 format (20 alphanumeric characters)"
+    references:
+      - "ESRS 2 BP-1"
+
+  - rule_id: "ESRS2-019"
+    rule_name: "Reporting Period Dates Valid"
+    severity: "critical"
+    description: "Reporting period start and end dates must be valid ISO dates"
+    validation:
+      check: "FORMAT(reporting_period.start_date, ISO_DATE) AND FORMAT(reporting_period.end_date, ISO_DATE)"
+      error_message: "Reporting period dates must be valid ISO 8601 format"
+    references:
+      - "ESRS 2 BP-2 para 8"
+
+  - rule_id: "ESRS2-020"
+    rule_name: "Reporting Currency Specified"
+    severity: "major"
+    description: "Reporting currency must be specified and be a valid ISO 4217 code"
+    validation:
+      check: "ENUM(company_profile.reporting_currency, [EUR, USD, GBP, CHF, SEK, DKK, NOK, PLN, CZK, HUF, RON, BGN, HRK, JPY, CNY, AUD, CAD, BRL, INR, KRW, ZAR])"
+      error_message: "Reporting currency must be a valid ISO 4217 code"
+    references:
+      - "ESRS 2 BP-2"
 
 # ============================================================================
-# E1: CLIMATE CHANGE
+# E1: CLIMATE CHANGE (25 rules)
 # ============================================================================
 
 e1_rules:
@@ -95,150 +403,687 @@ e1_rules:
     description: "Scope 1 GHG emissions must be disclosed if E1 is material"
     validation:
       check: "IF 'E1' IN material_standards THEN metrics.E1['E1-1'] EXISTS AND metrics.E1['E1-1'].value IS NOT NULL"
-      error_message: "Scope 1 GHG emissions must be reported (E1-6)"
+      error_message: "Scope 1 GHG emissions must be reported (E1-6 para 44)"
     references:
       - "ESRS E1-6 para 44"
 
   - rule_id: "E1-002"
-    rule_name: "Scope 2 GHG Emissions Reported (Location-Based)"
+    rule_name: "Scope 2 GHG Emissions Location-Based"
     severity: "critical"
     description: "Scope 2 location-based GHG emissions mandatory if E1 is material"
     validation:
       check: "IF 'E1' IN material_standards THEN metrics.E1['E1-2'] EXISTS"
-      error_message: "Scope 2 location-based emissions must be reported (E1-6)"
+      error_message: "Scope 2 location-based emissions must be reported (E1-6 para 44)"
     references:
       - "ESRS E1-6 para 44"
 
   - rule_id: "E1-003"
+    rule_name: "Scope 2 GHG Emissions Market-Based"
+    severity: "critical"
+    description: "Scope 2 market-based GHG emissions mandatory if E1 is material"
+    validation:
+      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-2-MB'] EXISTS"
+      error_message: "Scope 2 market-based emissions must be reported (E1-6 para 44)"
+    references:
+      - "ESRS E1-6 para 44"
+
+  - rule_id: "E1-004"
     rule_name: "Scope 3 GHG Emissions Reported"
     severity: "critical"
     description: "Scope 3 GHG emissions mandatory if E1 is material"
     validation:
       check: "IF 'E1' IN material_standards THEN metrics.E1['E1-3'] EXISTS"
-      error_message: "Scope 3 emissions must be reported (E1-6)"
+      error_message: "Scope 3 emissions must be reported (E1-6 para 51)"
+    references:
+      - "ESRS E1-6 para 51"
+
+  - rule_id: "E1-005"
+    rule_name: "Scope 3 Categories Broken Down"
+    severity: "major"
+    description: "Scope 3 emissions must be broken down by significant categories"
+    validation:
+      check: "IF metrics.E1['E1-3'] EXISTS THEN COUNT(metrics.E1['E1-3'].categories WHERE value > 0) >= 1"
+      error_message: "Scope 3 must be broken down by significant categories (E1-6 para 51)"
+    references:
+      - "ESRS E1-6 para 51-52"
+
+  - rule_id: "E1-006"
+    rule_name: "Total GHG Emissions Calculation"
+    severity: "critical"
+    description: "Total GHG emissions must equal sum of Scope 1 + Scope 2 location-based + Scope 3"
+    validation:
+      check: "SUM(metrics.E1['E1-1'].value, metrics.E1['E1-2'].value, metrics.E1['E1-3'].value) == metrics.E1['E1-4'].value TOLERANCE 0.01"
+      error_message: "Total GHG emissions must equal Scope 1 + Scope 2 (location) + Scope 3"
     references:
       - "ESRS E1-6 para 44"
 
-  - rule_id: "E1-004"
-    rule_name: "Total GHG Emissions Calculated"
-    severity: "critical"
-    description: "Total GHG emissions must equal sum of Scope 1, 2, 3"
-    validation:
-      check: "metrics.E1['E1-4'].value == (metrics.E1['E1-1'].value + metrics.E1['E1-2'].value + metrics.E1['E1-3'].value)"
-      error_message: "Total GHG emissions calculation error - must equal Scope 1 + 2 + 3"
-      tolerance: 0.01  # 1% tolerance for rounding
-
-  - rule_id: "E1-005"
-    rule_name: "GHG Emissions Methodology Disclosed"
+  - rule_id: "E1-007"
+    rule_name: "GHG Methodology Disclosed"
     severity: "major"
     description: "Methodology for calculating GHG emissions must be disclosed"
     validation:
-      check: "metrics.E1['E1-1'].calculation_method == 'GHG Protocol' OR disclosure.ghg_methodology EXISTS"
-      error_message: "GHG calculation methodology must be disclosed"
+      check: "IF 'E1' IN material_standards THEN disclosure.ghg_methodology EXISTS AND ENUM(disclosure.ghg_methodology.standard, [GHG_Protocol, ISO_14064])"
+      error_message: "GHG calculation methodology must be disclosed (E1-6 para 49)"
     references:
       - "ESRS E1-6 para 49"
 
-  - rule_id: "E1-006"
-    rule_name: "Energy Consumption Reported"
+  - rule_id: "E1-008"
+    rule_name: "GHG Emissions Non-Negative"
     severity: "critical"
-    description: "Total energy consumption required if E1 is material"
+    description: "GHG emissions values cannot be negative"
     validation:
-      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-5'] EXISTS"
-      error_message: "Total energy consumption must be reported (E1-5)"
+      check: "IF metrics.E1['E1-1'] EXISTS THEN metrics.E1['E1-1'].value >= 0"
+      error_message: "Scope 1 GHG emissions cannot be negative"
+    references:
+      - "ESRS E1-6"
+
+  - rule_id: "E1-009"
+    rule_name: "Energy Consumption Total Reported"
+    severity: "critical"
+    description: "Total energy consumption in MWh required if E1 is material"
+    validation:
+      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-5'] EXISTS AND metrics.E1['E1-5'].unit == 'MWh'"
+      error_message: "Total energy consumption in MWh must be reported (E1-5)"
+    references:
+      - "ESRS E1-5 para 35"
+
+  - rule_id: "E1-010"
+    rule_name: "Energy from Fossil Sources"
+    severity: "major"
+    description: "Energy consumption from fossil sources must be separately disclosed"
+    validation:
+      check: "IF metrics.E1['E1-5'] EXISTS THEN metrics.E1['E1-5-fossil'] EXISTS"
+      error_message: "Energy from fossil sources must be separately disclosed (E1-5 para 37)"
+    references:
+      - "ESRS E1-5 para 37"
+
+  - rule_id: "E1-011"
+    rule_name: "Energy from Renewable Sources"
+    severity: "major"
+    description: "Energy consumption from renewable sources must be separately disclosed"
+    validation:
+      check: "IF metrics.E1['E1-5'] EXISTS THEN metrics.E1['E1-5-renewable'] EXISTS"
+      error_message: "Energy from renewable sources must be separately disclosed (E1-5 para 38)"
+    references:
+      - "ESRS E1-5 para 38"
+
+  - rule_id: "E1-012"
+    rule_name: "Renewable Energy Percentage Calculation"
+    severity: "major"
+    description: "Renewable share must be consistent with absolute energy figures"
+    validation:
+      check: "IF metrics.E1['E1-5-renewable'] EXISTS AND metrics.E1['E1-5'] EXISTS THEN CONSISTENT(metrics.E1['E1-5-renewable-pct'].value, (metrics.E1['E1-5-renewable'].value / metrics.E1['E1-5'].value * 100), 0.5)"
+      error_message: "Renewable energy percentage does not match absolute figures"
     references:
       - "ESRS E1-5"
 
-  - rule_id: "E1-007"
-    rule_name: "Renewable Energy Percentage"
-    severity: "major"
-    description: "Renewable energy as % of total energy"
-    validation:
-      check: "IF metrics.E1['E1-7'] EXISTS THEN metrics.E1['E1-7'].value == (metrics.E1['E1-6'].value / metrics.E1['E1-5'].value * 100)"
-      error_message: "Renewable energy percentage calculation error"
-      tolerance: 0.1
-
-  - rule_id: "E1-008"
+  - rule_id: "E1-013"
     rule_name: "Climate Transition Plan Required"
     severity: "critical"
     description: "Transition plan for climate change mitigation required if E1 is material"
     validation:
       check: "IF 'E1' IN material_standards THEN transition_plan.climate EXISTS"
-      error_message: "Climate transition plan required (E1-1)"
+      error_message: "Climate transition plan is required when E1 is material (E1-1)"
     references:
-      - "ESRS E1-1"
+      - "ESRS E1-1 para 14-20"
+
+  - rule_id: "E1-014"
+    rule_name: "Transition Plan Completeness"
+    severity: "major"
+    description: "Transition plan must include targets, actions, resources, and timelines"
+    validation:
+      check: "IF transition_plan.climate EXISTS THEN COMPLETE(transition_plan.climate: ghg_reduction_targets, key_actions, resources_allocated, timeline, locked_in_emissions)"
+      error_message: "Transition plan incomplete - must include targets, actions, resources, timeline"
+    references:
+      - "ESRS E1-1 para 16"
+
+  - rule_id: "E1-015"
+    rule_name: "GHG Reduction Targets Set"
+    severity: "critical"
+    description: "GHG emission reduction targets must be set with base year and target year"
+    validation:
+      check: "IF 'E1' IN material_standards THEN targets.E1.ghg_reduction EXISTS AND targets.E1.ghg_reduction.base_year EXISTS AND targets.E1.ghg_reduction.target_year EXISTS"
+      error_message: "GHG reduction targets with base year and target year required (E1-4)"
+    references:
+      - "ESRS E1-4 para 30-33"
+
+  - rule_id: "E1-016"
+    rule_name: "SBTi Alignment Disclosed"
+    severity: "major"
+    description: "Whether GHG targets are aligned with SBTi must be stated"
+    validation:
+      check: "IF targets.E1.ghg_reduction EXISTS THEN targets.E1.ghg_reduction.sbti_alignment EXISTS"
+      error_message: "SBTi alignment status must be disclosed for GHG reduction targets (E1-4)"
+    references:
+      - "ESRS E1-4 para 34"
+
+  - rule_id: "E1-017"
+    rule_name: "Carbon Credits Disclosed Separately"
+    severity: "major"
+    description: "Carbon credits used may not be subtracted from gross emissions and must be disclosed separately"
+    validation:
+      check: "IF metrics.E1.carbon_credits EXISTS THEN metrics.E1.carbon_credits.separated_from_gross == true"
+      error_message: "Carbon credits must be disclosed separately from gross emissions (E1-7)"
+    references:
+      - "ESRS E1-7 para 56-58"
+
+  - rule_id: "E1-018"
+    rule_name: "Internal Carbon Pricing Disclosed"
+    severity: "minor"
+    description: "If internal carbon pricing is applied, details must be disclosed"
+    validation:
+      check: "IF disclosure.internal_carbon_price EXISTS THEN disclosure.internal_carbon_price.price_per_tco2e EXISTS AND disclosure.internal_carbon_price.scope_of_application EXISTS"
+      error_message: "Internal carbon pricing details must include price and scope of application (E1-8)"
+    references:
+      - "ESRS E1-8 para 59-63"
+
+  - rule_id: "E1-019"
+    rule_name: "Climate Financial Effects Disclosed"
+    severity: "major"
+    description: "Anticipated financial effects of physical and transition risks must be disclosed"
+    validation:
+      check: "IF 'E1' IN material_standards THEN disclosure.E1_financial_effects EXISTS AND disclosure.E1_financial_effects.physical_risks EXISTS AND disclosure.E1_financial_effects.transition_risks EXISTS"
+      error_message: "Financial effects of climate risks must be disclosed (E1-9)"
+    references:
+      - "ESRS E1-9 para 64-68"
+
+  - rule_id: "E1-020"
+    rule_name: "GHG Intensity Revenue Reported"
+    severity: "major"
+    description: "GHG intensity per net revenue in tCO2e/EUR million"
+    validation:
+      check: "IF 'E1' IN material_standards THEN metrics.E1['E1-intensity-revenue'] EXISTS"
+      error_message: "GHG intensity per net revenue must be reported (E1-6 para 53)"
+    references:
+      - "ESRS E1-6 para 53"
+
+  - rule_id: "E1-021"
+    rule_name: "Biogenic CO2 Disclosed Separately"
+    severity: "major"
+    description: "Biogenic CO2 emissions must be reported separately from Scope 1-3"
+    validation:
+      check: "IF metrics.E1.biogenic_co2 EXISTS THEN metrics.E1.biogenic_co2.separated == true"
+      error_message: "Biogenic CO2 must be disclosed separately from fossil GHG emissions (E1-6 para 50)"
+    references:
+      - "ESRS E1-6 para 50"
+
+  - rule_id: "E1-022"
+    rule_name: "Base Year Emissions Defined"
+    severity: "critical"
+    description: "Base year emissions must be defined for tracking progress against targets"
+    validation:
+      check: "IF targets.E1.ghg_reduction EXISTS THEN targets.E1.ghg_reduction.base_year_emissions EXISTS AND targets.E1.ghg_reduction.base_year_emissions > 0"
+      error_message: "Base year emissions must be defined and positive"
+    references:
+      - "ESRS E1-4 para 30"
+
+  - rule_id: "E1-023"
+    rule_name: "Base Year Recalculation Policy"
+    severity: "major"
+    description: "Policy for base year recalculation due to structural changes must be disclosed"
+    validation:
+      check: "IF targets.E1.ghg_reduction EXISTS THEN targets.E1.ghg_reduction.recalculation_policy EXISTS"
+      error_message: "Base year recalculation policy must be disclosed"
+    references:
+      - "ESRS E1-4 para 31"
+
+  - rule_id: "E1-024"
+    rule_name: "GHG Emissions Year-Over-Year Reasonableness"
+    severity: "major"
+    description: "Total GHG emissions should not change by more than 50% year-over-year without explanation"
+    validation:
+      check: "TEMPORAL(metrics.E1['E1-4'].value, historical_data.previous_year.E1['E1-4'].value, -50%, +200%)"
+      error_message: "Total GHG emissions changed by more than 50% YoY - explanation required"
+    references:
+      - "ESRS 1 para 82"
+
+  - rule_id: "E1-025"
+    rule_name: "Energy Consumption Positive"
+    severity: "critical"
+    description: "Total energy consumption must be a positive value"
+    validation:
+      check: "IF metrics.E1['E1-5'] EXISTS THEN metrics.E1['E1-5'].value > 0"
+      error_message: "Total energy consumption must be greater than zero"
+    references:
+      - "ESRS E1-5"
 
 # ============================================================================
-# E2: POLLUTION
+# E2: POLLUTION (15 rules)
 # ============================================================================
 
 e2_rules:
   - rule_id: "E2-001"
-    rule_name: "Air Pollutant Emissions"
+    rule_name: "Pollution Policy Disclosed"
+    severity: "major"
+    description: "Policies addressing pollution prevention and control"
+    validation:
+      check: "IF 'E2' IN material_standards THEN policies.E2 EXISTS"
+      error_message: "Pollution policies must be disclosed (E2-1)"
+    references:
+      - "ESRS E2-1 para 9-10"
+
+  - rule_id: "E2-002"
+    rule_name: "Air Pollutant Emissions Reported"
     severity: "critical"
     description: "Emissions of air pollutants required if E2 is material"
     validation:
-      check: "IF 'E2' IN material_standards THEN metrics.E2['E2-1'] EXISTS"
+      check: "IF 'E2' IN material_standards THEN metrics.E2['E2-air'] EXISTS"
       error_message: "Air pollutant emissions must be reported (E2-4)"
     references:
-      - "ESRS E2-4"
+      - "ESRS E2-4 para 28"
 
-  - rule_id: "E2-002"
-    rule_name: "Substances of Concern"
+  - rule_id: "E2-003"
+    rule_name: "Water Pollutant Emissions Reported"
+    severity: "critical"
+    description: "Emissions of water pollutants required if E2 is material"
+    validation:
+      check: "IF 'E2' IN material_standards THEN metrics.E2['E2-water'] EXISTS"
+      error_message: "Water pollutant emissions must be reported (E2-4)"
+    references:
+      - "ESRS E2-4 para 28"
+
+  - rule_id: "E2-004"
+    rule_name: "Soil Pollutant Emissions Reported"
     severity: "major"
-    description: "Production/use of substances of concern must be disclosed"
+    description: "Emissions to soil required if E2 is material"
+    validation:
+      check: "IF 'E2' IN material_standards THEN metrics.E2['E2-soil'] EXISTS"
+      error_message: "Soil pollutant emissions must be reported (E2-4)"
+    references:
+      - "ESRS E2-4 para 28"
+
+  - rule_id: "E2-005"
+    rule_name: "PRTR Substances Identified"
+    severity: "major"
+    description: "Pollutant Release and Transfer Register reportable substances must be listed"
+    validation:
+      check: "IF 'E2' IN material_standards THEN metrics.E2.prtr_substances EXISTS"
+      error_message: "PRTR reportable substances must be identified (E2-4 para 29)"
+    references:
+      - "ESRS E2-4 para 29"
+
+  - rule_id: "E2-006"
+    rule_name: "Substances of Concern Disclosed"
+    severity: "critical"
+    description: "Production and use of substances of concern must be disclosed"
     validation:
       check: "IF 'E2' IN material_standards THEN metrics.E2['E2-5'] EXISTS OR disclosure.no_substances_of_concern == true"
       error_message: "Substances of concern disclosure required (E2-5)"
+    references:
+      - "ESRS E2-5 para 31"
+
+  - rule_id: "E2-007"
+    rule_name: "Substances of Very High Concern (SVHC)"
+    severity: "critical"
+    description: "REACH Annex XIV SVHC must be separately disclosed"
+    validation:
+      check: "IF metrics.E2['E2-5'] EXISTS THEN metrics.E2['E2-5'].svhc_subset EXISTS"
+      error_message: "SVHC substances must be identified separately from SoC (E2-5 para 32)"
+    references:
+      - "ESRS E2-5 para 32"
+
+  - rule_id: "E2-008"
+    rule_name: "Microplastics Disclosure"
+    severity: "major"
+    description: "Microplastic emissions must be disclosed if relevant"
+    validation:
+      check: "IF 'E2' IN material_standards THEN metrics.E2.microplastics EXISTS OR disclosure.microplastics_not_relevant == true"
+      error_message: "Microplastics disclosure required or statement that it is not relevant (E2-4)"
+    references:
+      - "ESRS E2-4 para 30"
+
+  - rule_id: "E2-009"
+    rule_name: "Pollution Actions Disclosed"
+    severity: "major"
+    description: "Actions to prevent and mitigate pollution must be disclosed"
+    validation:
+      check: "IF 'E2' IN material_standards THEN actions.E2 EXISTS AND COUNT(actions.E2 WHERE description EXISTS) >= 1"
+      error_message: "Actions to address pollution must be disclosed (E2-2)"
+    references:
+      - "ESRS E2-2 para 14-17"
+
+  - rule_id: "E2-010"
+    rule_name: "Pollution Targets Set"
+    severity: "major"
+    description: "Targets related to pollution must be disclosed"
+    validation:
+      check: "IF 'E2' IN material_standards THEN targets.E2 EXISTS"
+      error_message: "Pollution targets must be disclosed (E2-3)"
+    references:
+      - "ESRS E2-3 para 20-27"
+
+  - rule_id: "E2-011"
+    rule_name: "Pollution Financial Effects"
+    severity: "major"
+    description: "Anticipated financial effects of pollution risks and opportunities"
+    validation:
+      check: "IF 'E2' IN material_standards THEN disclosure.E2_financial_effects EXISTS"
+      error_message: "Financial effects of pollution must be disclosed (E2-6)"
+    references:
+      - "ESRS E2-6 para 36-40"
+
+  - rule_id: "E2-012"
+    rule_name: "Air Pollutants Unit Validity"
+    severity: "major"
+    description: "Air pollutant emissions must be reported in tonnes"
+    validation:
+      check: "IF metrics.E2['E2-air'] EXISTS THEN ENUM(metrics.E2['E2-air'].unit, [tonnes, kg, metric_tonnes])"
+      error_message: "Air pollutant emissions must be reported in valid mass units"
+    references:
+      - "ESRS E2-4"
+
+  - rule_id: "E2-013"
+    rule_name: "Air Pollutant Non-Negative"
+    severity: "critical"
+    description: "Air pollutant emission values cannot be negative"
+    validation:
+      check: "IF metrics.E2['E2-air'] EXISTS THEN metrics.E2['E2-air'].value >= 0"
+      error_message: "Air pollutant emissions cannot be negative"
+    references:
+      - "ESRS E2-4"
+
+  - rule_id: "E2-014"
+    rule_name: "Pollution Year-Over-Year Check"
+    severity: "minor"
+    description: "Pollution metrics should be within reasonable YoY bounds"
+    validation:
+      check: "TEMPORAL(metrics.E2['E2-air'].value, historical_data.previous_year.E2['E2-air'].value, -50%, +200%)"
+      error_message: "Air pollution changed by more than 50% YoY - explanation may be needed"
+    references:
+      - "ESRS 1 para 82"
+
+  - rule_id: "E2-015"
+    rule_name: "SoC Inventory Complete"
+    severity: "major"
+    description: "Substances of Concern must include CAS number and volume"
+    validation:
+      check: "IF metrics.E2['E2-5'].substances EXISTS THEN COUNT(metrics.E2['E2-5'].substances WHERE cas_number EXISTS AND volume EXISTS) == COUNT(metrics.E2['E2-5'].substances)"
+      error_message: "Each Substance of Concern must have CAS number and volume"
+    references:
+      - "ESRS E2-5"
 
 # ============================================================================
-# E3: WATER AND MARINE RESOURCES
+# E3: WATER AND MARINE RESOURCES (12 rules)
 # ============================================================================
 
 e3_rules:
   - rule_id: "E3-001"
     rule_name: "Water Consumption Reported"
     severity: "critical"
-    description: "Total water consumption required if E3 is material"
+    description: "Total water consumption in m3 required if E3 is material"
     validation:
-      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-1'] EXISTS"
+      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-consumption'] EXISTS"
       error_message: "Water consumption must be reported (E3-4)"
+    references:
+      - "ESRS E3-4 para 28"
+
+  - rule_id: "E3-002"
+    rule_name: "Water Withdrawal Reported"
+    severity: "critical"
+    description: "Total water withdrawal must be disclosed"
+    validation:
+      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-withdrawal'] EXISTS"
+      error_message: "Water withdrawal must be reported (E3-4)"
+    references:
+      - "ESRS E3-4 para 28"
+
+  - rule_id: "E3-003"
+    rule_name: "Water Discharge Reported"
+    severity: "critical"
+    description: "Total water discharge must be disclosed"
+    validation:
+      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-discharge'] EXISTS"
+      error_message: "Water discharge must be reported (E3-4)"
+    references:
+      - "ESRS E3-4 para 28"
+
+  - rule_id: "E3-004"
+    rule_name: "Water Consumption Equals Withdrawal Minus Discharge"
+    severity: "major"
+    description: "Water consumption must equal total withdrawals minus total discharges"
+    validation:
+      check: "SUM(metrics.E3['E3-withdrawal'].value, -metrics.E3['E3-discharge'].value) == metrics.E3['E3-consumption'].value TOLERANCE 1.0"
+      error_message: "Water consumption must equal withdrawals minus discharges"
     references:
       - "ESRS E3-4"
 
-  - rule_id: "E3-002"
+  - rule_id: "E3-005"
     rule_name: "Water Consumption in Stress Areas"
     severity: "critical"
-    description: "Water consumption in water-stressed areas must be disclosed"
+    description: "Water consumption in water-stressed areas must be separately disclosed"
     validation:
-      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-2'] EXISTS"
-      error_message: "Water consumption in stressed areas required (E3-4)"
+      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-stress-area'] EXISTS"
+      error_message: "Water consumption in water-stressed areas required (E3-4)"
+    references:
+      - "ESRS E3-4 para 29"
 
-  - rule_id: "E3-003"
-    rule_name: "Water Consumption Calculation"
+  - rule_id: "E3-006"
+    rule_name: "Water Stress Percentage Valid"
     severity: "major"
-    description: "Water consumption = withdrawals - discharge"
+    description: "Percentage of water from stress areas must be between 0 and 100"
     validation:
-      check: "IF metrics.E3['E3-3'] EXISTS AND metrics.E3['E3-4'] EXISTS THEN metrics.E3['E3-1'].value == (metrics.E3['E3-3'].value - metrics.E3['E3-4'].value)"
-      error_message: "Water consumption must equal withdrawals minus discharge"
-      tolerance: 1  # Allow 1% tolerance
+      check: "IF metrics.E3['E3-stress-area-pct'] EXISTS THEN RANGE(metrics.E3['E3-stress-area-pct'].value, 0, 100)"
+      error_message: "Water stress area percentage must be between 0% and 100%"
+    references:
+      - "ESRS E3-4"
+
+  - rule_id: "E3-007"
+    rule_name: "Water Recycling Rate Reported"
+    severity: "major"
+    description: "Water recycled and reused as percentage of total must be disclosed"
+    validation:
+      check: "IF 'E3' IN material_standards THEN metrics.E3['E3-recycled'] EXISTS"
+      error_message: "Water recycling/reuse rate must be disclosed (E3-4)"
+    references:
+      - "ESRS E3-4 para 30"
+
+  - rule_id: "E3-008"
+    rule_name: "Water Policy Disclosed"
+    severity: "major"
+    description: "Policies addressing water and marine resources"
+    validation:
+      check: "IF 'E3' IN material_standards THEN policies.E3 EXISTS"
+      error_message: "Water and marine resources policies must be disclosed (E3-1)"
+    references:
+      - "ESRS E3-1"
+
+  - rule_id: "E3-009"
+    rule_name: "Water Targets Set"
+    severity: "major"
+    description: "Water-related targets must be disclosed"
+    validation:
+      check: "IF 'E3' IN material_standards THEN targets.E3 EXISTS"
+      error_message: "Water-related targets must be disclosed (E3-3)"
+    references:
+      - "ESRS E3-3"
+
+  - rule_id: "E3-010"
+    rule_name: "Water Financial Effects"
+    severity: "major"
+    description: "Anticipated financial effects from water risks"
+    validation:
+      check: "IF 'E3' IN material_standards THEN disclosure.E3_financial_effects EXISTS"
+      error_message: "Financial effects related to water must be disclosed (E3-5)"
+    references:
+      - "ESRS E3-5"
+
+  - rule_id: "E3-011"
+    rule_name: "Marine Resources Disclosure"
+    severity: "minor"
+    description: "Impact on marine resources must be disclosed if relevant"
+    validation:
+      check: "IF 'E3' IN material_standards THEN metrics.E3.marine_impact EXISTS OR disclosure.marine_not_relevant == true"
+      error_message: "Marine resources impact or non-relevance statement required"
+    references:
+      - "ESRS E3-4"
+
+  - rule_id: "E3-012"
+    rule_name: "Water Values Non-Negative"
+    severity: "critical"
+    description: "Water withdrawal and consumption values cannot be negative"
+    validation:
+      check: "IF metrics.E3['E3-withdrawal'] EXISTS THEN metrics.E3['E3-withdrawal'].value >= 0"
+      error_message: "Water withdrawal values cannot be negative"
+    references:
+      - "ESRS E3-4"
 
 # ============================================================================
-# E4: BIODIVERSITY
+# E4: BIODIVERSITY AND ECOSYSTEMS (15 rules)
 # ============================================================================
 
 e4_rules:
   - rule_id: "E4-001"
-    rule_name: "Biodiversity-Sensitive Sites"
+    rule_name: "Biodiversity-Sensitive Sites Disclosed"
     severity: "critical"
-    description: "Sites in/near biodiversity-sensitive areas must be disclosed"
+    description: "Operational sites owned, leased, or managed in or near biodiversity-sensitive areas"
     validation:
-      check: "IF 'E4' IN material_standards THEN metrics.E4['E4-1'] EXISTS"
+      check: "IF 'E4' IN material_standards THEN metrics.E4['E4-sites'] EXISTS"
       error_message: "Biodiversity-sensitive sites must be disclosed (E4-5)"
+    references:
+      - "ESRS E4-5 para 33"
+
+  - rule_id: "E4-002"
+    rule_name: "Land Use Change Disclosed"
+    severity: "critical"
+    description: "Land use change including deforestation must be disclosed"
+    validation:
+      check: "IF 'E4' IN material_standards THEN metrics.E4['E4-land-use-change'] EXISTS OR disclosure.no_land_use_change == true"
+      error_message: "Land use change (including deforestation) must be disclosed (E4-5)"
+    references:
+      - "ESRS E4-5 para 36"
+
+  - rule_id: "E4-003"
+    rule_name: "Species Impact Assessed"
+    severity: "major"
+    description: "Impact on species must be assessed where relevant"
+    validation:
+      check: "IF 'E4' IN material_standards THEN metrics.E4.species_impact EXISTS OR disclosure.species_impact_not_relevant == true"
+      error_message: "Impact on species must be assessed and disclosed (E4-5)"
+    references:
+      - "ESRS E4-5 para 35"
+
+  - rule_id: "E4-004"
+    rule_name: "Biodiversity Transition Plan"
+    severity: "major"
+    description: "Transition plan for biodiversity if E4 is material"
+    validation:
+      check: "IF 'E4' IN material_standards THEN transition_plan.biodiversity EXISTS OR disclosure.biodiversity_transition_plan_not_yet_adopted == true"
+      error_message: "Biodiversity transition plan required or statement of non-adoption (E4-1)"
+    references:
+      - "ESRS E4-1 para 11-17"
+
+  - rule_id: "E4-005"
+    rule_name: "Biodiversity Policy Disclosed"
+    severity: "major"
+    description: "Policies related to biodiversity and ecosystems"
+    validation:
+      check: "IF 'E4' IN material_standards THEN policies.E4 EXISTS"
+      error_message: "Biodiversity policies must be disclosed (E4-1)"
+    references:
+      - "ESRS E4-1"
+
+  - rule_id: "E4-006"
+    rule_name: "Biodiversity Targets Set"
+    severity: "major"
+    description: "Measurable targets for biodiversity and ecosystems"
+    validation:
+      check: "IF 'E4' IN material_standards THEN targets.E4 EXISTS"
+      error_message: "Biodiversity targets must be disclosed (E4-3)"
+    references:
+      - "ESRS E4-3"
+
+  - rule_id: "E4-007"
+    rule_name: "Biodiversity Actions Disclosed"
+    severity: "major"
+    description: "Actions taken on biodiversity and ecosystems"
+    validation:
+      check: "IF 'E4' IN material_standards THEN actions.E4 EXISTS AND COUNT(actions.E4 WHERE description EXISTS) >= 1"
+      error_message: "Biodiversity actions must be disclosed (E4-2)"
+    references:
+      - "ESRS E4-2"
+
+  - rule_id: "E4-008"
+    rule_name: "Biodiversity Offsets Disclosed Separately"
+    severity: "major"
+    description: "Biodiversity offsets must not substitute direct impact reduction and must be disclosed separately"
+    validation:
+      check: "IF metrics.E4.biodiversity_offsets EXISTS THEN metrics.E4.biodiversity_offsets.separated_from_direct_actions == true"
+      error_message: "Biodiversity offsets must be reported separately from direct actions (E4-2)"
+    references:
+      - "ESRS E4-2 para 24"
+
+  - rule_id: "E4-009"
+    rule_name: "TNFD Alignment Disclosed"
+    severity: "minor"
+    description: "Alignment with TNFD recommendations should be disclosed"
+    validation:
+      check: "IF 'E4' IN material_standards THEN disclosure.tnfd_alignment EXISTS"
+      error_message: "TNFD alignment status should be disclosed"
+    references:
+      - "ESRS E4 AR"
+
+  - rule_id: "E4-010"
+    rule_name: "Biodiversity Financial Effects"
+    severity: "major"
+    description: "Anticipated financial effects of biodiversity risks and opportunities"
+    validation:
+      check: "IF 'E4' IN material_standards THEN disclosure.E4_financial_effects EXISTS"
+      error_message: "Financial effects of biodiversity risks must be disclosed (E4-6)"
+    references:
+      - "ESRS E4-6"
+
+  - rule_id: "E4-011"
+    rule_name: "Sites Near Protected Areas Count"
+    severity: "major"
+    description: "Number of sites in or adjacent to protected areas and KBAs"
+    validation:
+      check: "IF metrics.E4['E4-sites'] EXISTS THEN metrics.E4['E4-sites'].count >= 0"
+      error_message: "Count of sites near protected areas must be non-negative"
     references:
       - "ESRS E4-5"
 
+  - rule_id: "E4-012"
+    rule_name: "Deforestation-Free Policy"
+    severity: "major"
+    description: "Deforestation-free commitment disclosed if applicable"
+    validation:
+      check: "IF 'E4' IN material_standards THEN disclosure.deforestation_free_commitment EXISTS OR disclosure.deforestation_not_relevant == true"
+      error_message: "Deforestation-free commitment or non-relevance statement required"
+    references:
+      - "ESRS E4-1"
+
+  - rule_id: "E4-013"
+    rule_name: "Ecosystem Extent Metrics"
+    severity: "minor"
+    description: "Metrics on ecosystem extent and condition where available"
+    validation:
+      check: "IF 'E4' IN material_standards THEN metrics.E4.ecosystem_extent EXISTS OR disclosure.ecosystem_extent_not_available == true"
+      error_message: "Ecosystem extent metrics or availability statement required (E4-5)"
+    references:
+      - "ESRS E4-5"
+
+  - rule_id: "E4-014"
+    rule_name: "Invasive Alien Species Disclosure"
+    severity: "minor"
+    description: "Activities related to invasive alien species must be disclosed if relevant"
+    validation:
+      check: "IF 'E4' IN material_standards THEN disclosure.invasive_species EXISTS OR disclosure.invasive_species_not_relevant == true"
+      error_message: "Invasive alien species disclosure required if relevant"
+    references:
+      - "ESRS E4-5"
+
+  - rule_id: "E4-015"
+    rule_name: "Biodiversity Sensitive Area Definition"
+    severity: "major"
+    description: "Definition of biodiversity-sensitive areas used must be consistent with ESRS"
+    validation:
+      check: "IF metrics.E4['E4-sites'] EXISTS THEN ENUM(metrics.E4['E4-sites'].area_classification, [Natura_2000, UNESCO_WHS, KBA, Ramsar, IUCN_I_IV, National_Protected, High_Conservation_Value])"
+      error_message: "Biodiversity-sensitive area classification must use recognized categories"
+    references:
+      - "ESRS E4-5 AR"
+
 # ============================================================================
-# E5: RESOURCE USE AND CIRCULAR ECONOMY
+# E5: RESOURCE USE AND CIRCULAR ECONOMY (15 rules)
 # ============================================================================
 
 e5_rules:
@@ -247,112 +1092,913 @@ e5_rules:
     severity: "critical"
     description: "Total waste generated must be reported if E5 is material"
     validation:
-      check: "IF 'E5' IN material_standards THEN metrics.E5['E5-1'] EXISTS"
-      error_message: "Total waste must be reported (E5-5)"
+      check: "IF 'E5' IN material_standards THEN metrics.E5['E5-waste-total'] EXISTS"
+      error_message: "Total waste generated must be reported (E5-5)"
     references:
-      - "ESRS E5-5"
+      - "ESRS E5-5 para 37"
 
   - rule_id: "E5-002"
-    rule_name: "Waste Breakdown Required"
+    rule_name: "Waste Hazardous Non-Hazardous Split"
     severity: "critical"
     description: "Waste must be broken down into hazardous and non-hazardous"
     validation:
-      check: "IF metrics.E5['E5-1'] EXISTS THEN (metrics.E5['E5-2'] EXISTS AND metrics.E5['E5-3'] EXISTS)"
-      error_message: "Waste must be split into hazardous/non-hazardous"
+      check: "IF metrics.E5['E5-waste-total'] EXISTS THEN metrics.E5['E5-waste-hazardous'] EXISTS AND metrics.E5['E5-waste-non-hazardous'] EXISTS"
+      error_message: "Waste must be split into hazardous and non-hazardous (E5-5)"
+    references:
+      - "ESRS E5-5 para 37"
 
   - rule_id: "E5-003"
     rule_name: "Waste Total Matches Breakdown"
     severity: "major"
-    description: "Total waste = hazardous + non-hazardous"
+    description: "Total waste must equal hazardous plus non-hazardous"
     validation:
-      check: "IF metrics.E5['E5-1'] EXISTS THEN metrics.E5['E5-1'].value == (metrics.E5['E5-2'].value + metrics.E5['E5-3'].value)"
-      error_message: "Waste totals do not match breakdown"
-      tolerance: 0.01
+      check: "SUM(metrics.E5['E5-waste-hazardous'].value, metrics.E5['E5-waste-non-hazardous'].value) == metrics.E5['E5-waste-total'].value TOLERANCE 0.01"
+      error_message: "Total waste does not match sum of hazardous and non-hazardous"
+    references:
+      - "ESRS E5-5"
+
+  - rule_id: "E5-004"
+    rule_name: "Resource Inflows Disclosed"
+    severity: "critical"
+    description: "Resource inflows including raw materials and products must be disclosed"
+    validation:
+      check: "IF 'E5' IN material_standards THEN metrics.E5['E5-inflows'] EXISTS"
+      error_message: "Resource inflows must be reported (E5-4)"
+    references:
+      - "ESRS E5-4 para 33"
+
+  - rule_id: "E5-005"
+    rule_name: "Resource Outflows Disclosed"
+    severity: "critical"
+    description: "Resource outflows including products and waste must be disclosed"
+    validation:
+      check: "IF 'E5' IN material_standards THEN metrics.E5['E5-outflows'] EXISTS"
+      error_message: "Resource outflows must be reported (E5-5)"
+    references:
+      - "ESRS E5-5 para 35"
+
+  - rule_id: "E5-006"
+    rule_name: "Recycled Content Percentage"
+    severity: "major"
+    description: "Percentage of recycled content in resource inflows"
+    validation:
+      check: "IF metrics.E5['E5-inflows'] EXISTS THEN metrics.E5['E5-recycled-content-pct'] EXISTS AND RANGE(metrics.E5['E5-recycled-content-pct'].value, 0, 100)"
+      error_message: "Recycled content percentage must be between 0% and 100% (E5-4)"
+    references:
+      - "ESRS E5-4 para 34"
+
+  - rule_id: "E5-007"
+    rule_name: "Waste Hierarchy Compliance"
+    severity: "major"
+    description: "Waste treatment by type must follow EU waste hierarchy reporting"
+    validation:
+      check: "IF metrics.E5['E5-waste-total'] EXISTS THEN metrics.E5.waste_by_treatment EXISTS AND COUNT(metrics.E5.waste_by_treatment WHERE ENUM(treatment, [prevention, reuse, recycling, recovery, disposal])) >= 1"
+      error_message: "Waste must be reported by treatment aligned with EU waste hierarchy"
+    references:
+      - "ESRS E5-5 para 38"
+
+  - rule_id: "E5-008"
+    rule_name: "Circular Economy Policy"
+    severity: "major"
+    description: "Policies on circular economy must be disclosed"
+    validation:
+      check: "IF 'E5' IN material_standards THEN policies.E5 EXISTS"
+      error_message: "Circular economy policies must be disclosed (E5-1)"
+    references:
+      - "ESRS E5-1"
+
+  - rule_id: "E5-009"
+    rule_name: "Product Design for Circularity"
+    severity: "major"
+    description: "Product design for durability, recyclability, and reuse"
+    validation:
+      check: "IF 'E5' IN material_standards THEN disclosure.product_design_circularity EXISTS"
+      error_message: "Product design for circularity must be disclosed (E5-2)"
+    references:
+      - "ESRS E5-2 para 18"
+
+  - rule_id: "E5-010"
+    rule_name: "Circular Economy Targets"
+    severity: "major"
+    description: "Targets related to resource use and circular economy"
+    validation:
+      check: "IF 'E5' IN material_standards THEN targets.E5 EXISTS"
+      error_message: "Circular economy targets must be disclosed (E5-3)"
+    references:
+      - "ESRS E5-3"
+
+  - rule_id: "E5-011"
+    rule_name: "Packaging Disclosure"
+    severity: "major"
+    description: "Total packaging used and recyclable percentage"
+    validation:
+      check: "IF 'E5' IN material_standards THEN metrics.E5.packaging EXISTS OR disclosure.packaging_not_relevant == true"
+      error_message: "Packaging metrics or non-relevance statement required"
+    references:
+      - "ESRS E5-4"
+
+  - rule_id: "E5-012"
+    rule_name: "Circular Economy Financial Effects"
+    severity: "major"
+    description: "Anticipated financial effects of resource use risks"
+    validation:
+      check: "IF 'E5' IN material_standards THEN disclosure.E5_financial_effects EXISTS"
+      error_message: "Financial effects of resource use must be disclosed (E5-6)"
+    references:
+      - "ESRS E5-6"
+
+  - rule_id: "E5-013"
+    rule_name: "Waste Diversion Rate"
+    severity: "major"
+    description: "Waste diverted from disposal as percentage of total"
+    validation:
+      check: "IF metrics.E5['E5-waste-total'] EXISTS THEN metrics.E5['E5-diversion-rate'] EXISTS AND RANGE(metrics.E5['E5-diversion-rate'].value, 0, 100)"
+      error_message: "Waste diversion rate must be between 0% and 100%"
+    references:
+      - "ESRS E5-5"
+
+  - rule_id: "E5-014"
+    rule_name: "Waste Values Non-Negative"
+    severity: "critical"
+    description: "Waste generation values cannot be negative"
+    validation:
+      check: "IF metrics.E5['E5-waste-total'] EXISTS THEN metrics.E5['E5-waste-total'].value >= 0"
+      error_message: "Waste generation values cannot be negative"
+    references:
+      - "ESRS E5-5"
+
+  - rule_id: "E5-015"
+    rule_name: "Resource Efficiency Actions"
+    severity: "major"
+    description: "Actions taken on resource efficiency"
+    validation:
+      check: "IF 'E5' IN material_standards THEN actions.E5 EXISTS"
+      error_message: "Resource efficiency actions must be disclosed (E5-2)"
+    references:
+      - "ESRS E5-2"
 
 # ============================================================================
-# S1: OWN WORKFORCE
+# S1: OWN WORKFORCE (35 rules)
 # ============================================================================
 
 s1_rules:
   - rule_id: "S1-001"
-    rule_name: "Total Workforce Disclosed"
+    rule_name: "Total Workforce Headcount"
     severity: "critical"
-    description: "Total workforce (headcount and FTE) required if S1 is material"
+    description: "Total number of employees by head count disclosed"
     validation:
-      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-1'] EXISTS"
-      error_message: "Total workforce must be disclosed (S1-6)"
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-headcount'] EXISTS AND metrics.S1['S1-headcount'].value > 0"
+      error_message: "Total workforce headcount must be disclosed (S1-6)"
+    references:
+      - "ESRS S1-6 para 44"
+
+  - rule_id: "S1-002"
+    rule_name: "Total Workforce FTE"
+    severity: "critical"
+    description: "Total number of employees by FTE disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-fte'] EXISTS AND metrics.S1['S1-fte'].value > 0"
+      error_message: "Total workforce FTE must be disclosed (S1-6)"
+    references:
+      - "ESRS S1-6 para 44"
+
+  - rule_id: "S1-003"
+    rule_name: "Gender Breakdown Employees"
+    severity: "critical"
+    description: "Employees broken down by gender"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-gender-male'] EXISTS AND metrics.S1['S1-gender-female'] EXISTS"
+      error_message: "Gender breakdown of employees required (S1-6 para 45)"
+    references:
+      - "ESRS S1-6 para 45"
+
+  - rule_id: "S1-004"
+    rule_name: "Gender Totals Match Headcount"
+    severity: "major"
+    description: "Sum of gender breakdown should equal total headcount (allowing for other/undisclosed)"
+    validation:
+      check: "IF metrics.S1['S1-gender-male'] EXISTS THEN SUM(metrics.S1['S1-gender-male'].value, metrics.S1['S1-gender-female'].value, metrics.S1['S1-gender-other'].value) == metrics.S1['S1-headcount'].value TOLERANCE 0.01"
+      error_message: "Gender breakdown does not sum to total headcount"
     references:
       - "ESRS S1-6"
 
-  - rule_id: "S1-002"
-    rule_name: "Gender Breakdown Required"
-    severity: "critical"
-    description: "Employees by gender must be disclosed"
-    validation:
-      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-2'] EXISTS"
-      error_message: "Gender breakdown required (S1-6)"
-
-  - rule_id: "S1-003"
-    rule_name: "Work-Related Fatalities Disclosed"
-    severity: "critical"
-    description: "Number of work-related fatalities must be zero or disclosed"
-    validation:
-      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-9'] EXISTS"
-      error_message: "Work-related fatalities must be disclosed (S1-14)"
-    references:
-      - "ESRS S1-14"
-
-  - rule_id: "S1-004"
-    rule_name: "Gender Pay Gap Reported"
+  - rule_id: "S1-005"
+    rule_name: "Employment Type Breakdown"
     severity: "major"
-    description: "Gender pay gap should be reported"
+    description: "Employees by permanent/temporary and full-time/part-time"
     validation:
-      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-6'] EXISTS"
-      error_message: "Gender pay gap disclosure required (S1-16)"
+      check: "IF 'S1' IN material_standards THEN COMPLETE(metrics.S1.employment_type: permanent, temporary, full_time, part_time)"
+      error_message: "Employment type breakdown (permanent/temporary, full/part-time) required (S1-6)"
+    references:
+      - "ESRS S1-6 para 46"
+
+  - rule_id: "S1-006"
+    rule_name: "Non-Employee Workers Disclosed"
+    severity: "major"
+    description: "Number of non-employee workers (contractors etc) must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-non-employees'] EXISTS"
+      error_message: "Non-employee workers must be disclosed (S1-7)"
+    references:
+      - "ESRS S1-7 para 50"
+
+  - rule_id: "S1-007"
+    rule_name: "Gender Pay Gap Reported"
+    severity: "critical"
+    description: "Gender pay gap as percentage of male pay must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-pay-gap'] EXISTS"
+      error_message: "Gender pay gap must be disclosed (S1-16 para 97)"
+    references:
+      - "ESRS S1-16 para 97"
+
+  - rule_id: "S1-008"
+    rule_name: "Gender Pay Gap Valid Range"
+    severity: "major"
+    description: "Gender pay gap percentage should be within plausible range"
+    validation:
+      check: "IF metrics.S1['S1-pay-gap'] EXISTS THEN RANGE(metrics.S1['S1-pay-gap'].value, -100, 100)"
+      error_message: "Gender pay gap percentage outside plausible range (-100% to +100%)"
     references:
       - "ESRS S1-16"
 
+  - rule_id: "S1-009"
+    rule_name: "Work-Related Fatalities"
+    severity: "critical"
+    description: "Number of work-related fatalities among employees must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-fatalities'] EXISTS AND metrics.S1['S1-fatalities'].value >= 0"
+      error_message: "Work-related fatalities must be disclosed (S1-14 para 88)"
+    references:
+      - "ESRS S1-14 para 88"
+
+  - rule_id: "S1-010"
+    rule_name: "Work-Related Accidents"
+    severity: "critical"
+    description: "Number of recordable work-related accidents must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-accidents'] EXISTS AND metrics.S1['S1-accidents'].value >= 0"
+      error_message: "Recordable work-related accidents must be disclosed (S1-14)"
+    references:
+      - "ESRS S1-14 para 88"
+
+  - rule_id: "S1-011"
+    rule_name: "Lost Days Due to Injury"
+    severity: "major"
+    description: "Number of days lost to work-related injuries and ill health"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-lost-days'] EXISTS"
+      error_message: "Lost days due to work-related injury must be disclosed (S1-14)"
+    references:
+      - "ESRS S1-14 para 89"
+
+  - rule_id: "S1-012"
+    rule_name: "LTIFR Calculation Consistency"
+    severity: "major"
+    description: "Lost Time Injury Frequency Rate calculation must be consistent with inputs"
+    validation:
+      check: "IF metrics.S1['S1-ltifr'] EXISTS THEN CONSISTENT(metrics.S1['S1-ltifr'].value, (metrics.S1['S1-accidents'].value / metrics.S1['S1-hours-worked'].value * 1000000), 0.1)"
+      error_message: "LTIFR calculation is inconsistent with accidents and hours worked"
+    references:
+      - "ESRS S1-14"
+
+  - rule_id: "S1-013"
+    rule_name: "Collective Bargaining Coverage"
+    severity: "critical"
+    description: "Percentage of employees covered by collective bargaining agreements"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-collective-bargaining-pct'] EXISTS AND RANGE(metrics.S1['S1-collective-bargaining-pct'].value, 0, 100)"
+      error_message: "Collective bargaining coverage percentage required (S1-8 para 60)"
+    references:
+      - "ESRS S1-8 para 60"
+
+  - rule_id: "S1-014"
+    rule_name: "Training Hours Per Employee"
+    severity: "major"
+    description: "Average training hours per employee must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-training-hours'] EXISTS AND metrics.S1['S1-training-hours'].value >= 0"
+      error_message: "Average training hours per employee must be disclosed (S1-13)"
+    references:
+      - "ESRS S1-13 para 83"
+
+  - rule_id: "S1-015"
+    rule_name: "Training Hours by Gender"
+    severity: "major"
+    description: "Training hours broken down by gender"
+    validation:
+      check: "IF metrics.S1['S1-training-hours'] EXISTS THEN metrics.S1['S1-training-hours-male'] EXISTS AND metrics.S1['S1-training-hours-female'] EXISTS"
+      error_message: "Training hours must be broken down by gender (S1-13)"
+    references:
+      - "ESRS S1-13 para 84"
+
+  - rule_id: "S1-016"
+    rule_name: "Adequate Wages Disclosure"
+    severity: "critical"
+    description: "Whether all employees receive adequate wages must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN disclosure.adequate_wages EXISTS"
+      error_message: "Adequate wages disclosure required (S1-10 para 69)"
+    references:
+      - "ESRS S1-10 para 69"
+
+  - rule_id: "S1-017"
+    rule_name: "Social Protection Coverage"
+    severity: "major"
+    description: "Whether all employees are covered by social protection must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN disclosure.social_protection EXISTS"
+      error_message: "Social protection coverage must be disclosed (S1-11)"
+    references:
+      - "ESRS S1-11 para 73"
+
+  - rule_id: "S1-018"
+    rule_name: "Persons With Disabilities"
+    severity: "major"
+    description: "Percentage of employees with disabilities"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-disability-pct'] EXISTS OR disclosure.disability_data_not_collected == true"
+      error_message: "Disability percentage or data availability statement required (S1-12)"
+    references:
+      - "ESRS S1-12 para 78"
+
+  - rule_id: "S1-019"
+    rule_name: "Freedom of Association"
+    severity: "critical"
+    description: "Operations at risk regarding freedom of association"
+    validation:
+      check: "IF 'S1' IN material_standards THEN disclosure.freedom_of_association EXISTS"
+      error_message: "Freedom of association risk disclosure required (S1-8)"
+    references:
+      - "ESRS S1-8 para 62"
+
+  - rule_id: "S1-020"
+    rule_name: "Work-Life Balance Policy"
+    severity: "major"
+    description: "Work-life balance policies disclosed including family leave"
+    validation:
+      check: "IF 'S1' IN material_standards THEN policies.S1.work_life_balance EXISTS"
+      error_message: "Work-life balance policies must be disclosed (S1-15)"
+    references:
+      - "ESRS S1-15 para 93"
+
+  - rule_id: "S1-021"
+    rule_name: "Family Leave Uptake"
+    severity: "major"
+    description: "Family-related leave (parental, paternity, maternity) days taken"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-family-leave'] EXISTS"
+      error_message: "Family-related leave uptake must be disclosed (S1-15)"
+    references:
+      - "ESRS S1-15 para 95"
+
+  - rule_id: "S1-022"
+    rule_name: "Workforce Turnover Rate"
+    severity: "major"
+    description: "Employee turnover rate disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-turnover-rate'] EXISTS AND RANGE(metrics.S1['S1-turnover-rate'].value, 0, 200)"
+      error_message: "Employee turnover rate must be disclosed (S1-6)"
+    references:
+      - "ESRS S1-6 para 48"
+
+  - rule_id: "S1-023"
+    rule_name: "Country Breakdown for Significant Locations"
+    severity: "major"
+    description: "Employee numbers by country for countries with 50+ employees"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1.employees_by_country EXISTS AND COUNT(metrics.S1.employees_by_country WHERE country EXISTS) >= 1"
+      error_message: "Employee breakdown by country required for significant locations (S1-6 para 47)"
+    references:
+      - "ESRS S1-6 para 47"
+
+  - rule_id: "S1-024"
+    rule_name: "Own Workforce Policy Disclosed"
+    severity: "critical"
+    description: "Policies on own workforce matters"
+    validation:
+      check: "IF 'S1' IN material_standards THEN policies.S1 EXISTS"
+      error_message: "Own workforce policies must be disclosed (S1-1)"
+    references:
+      - "ESRS S1-1 para 19"
+
+  - rule_id: "S1-025"
+    rule_name: "Workforce Engagement Process"
+    severity: "major"
+    description: "Process for engagement with own workforce"
+    validation:
+      check: "IF 'S1' IN material_standards THEN disclosure.workforce_engagement_process EXISTS"
+      error_message: "Workforce engagement processes must be disclosed (S1-2)"
+    references:
+      - "ESRS S1-2 para 22"
+
+  - rule_id: "S1-026"
+    rule_name: "Remediation Processes"
+    severity: "major"
+    description: "Processes for remediation of negative impacts on workforce"
+    validation:
+      check: "IF 'S1' IN material_standards THEN disclosure.remediation_processes EXISTS"
+      error_message: "Remediation processes for workforce impacts must be disclosed (S1-3)"
+    references:
+      - "ESRS S1-3 para 29"
+
+  - rule_id: "S1-027"
+    rule_name: "Workforce Targets Set"
+    severity: "major"
+    description: "Targets related to own workforce"
+    validation:
+      check: "IF 'S1' IN material_standards THEN targets.S1 EXISTS"
+      error_message: "Own workforce targets must be disclosed (S1-5)"
+    references:
+      - "ESRS S1-5 para 38"
+
+  - rule_id: "S1-028"
+    rule_name: "H&S Management System"
+    severity: "critical"
+    description: "Health and safety management system coverage"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-hs-coverage-pct'] EXISTS AND RANGE(metrics.S1['S1-hs-coverage-pct'].value, 0, 100)"
+      error_message: "H&S management system coverage percentage required (S1-14)"
+    references:
+      - "ESRS S1-14 para 85"
+
+  - rule_id: "S1-029"
+    rule_name: "Workforce Composition by Age"
+    severity: "major"
+    description: "Employee age group breakdown"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1.employees_by_age EXISTS"
+      error_message: "Employee age group breakdown required"
+    references:
+      - "ESRS S1-6 para 45"
+
+  - rule_id: "S1-030"
+    rule_name: "Board Gender Diversity"
+    severity: "critical"
+    description: "Gender diversity at board/management level"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-board-gender-pct'] EXISTS AND RANGE(metrics.S1['S1-board-gender-pct'].value, 0, 100)"
+      error_message: "Board/management gender diversity percentage required (S1-9)"
+    references:
+      - "ESRS S1-9 para 66"
+
+  - rule_id: "S1-031"
+    rule_name: "CEO Pay Ratio"
+    severity: "major"
+    description: "Ratio of annual total compensation of CEO to median employee"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-ceo-pay-ratio'] EXISTS AND metrics.S1['S1-ceo-pay-ratio'].value > 0"
+      error_message: "CEO to median employee pay ratio must be disclosed (S1-16)"
+    references:
+      - "ESRS S1-16 para 99"
+
+  - rule_id: "S1-032"
+    rule_name: "Incidents of Discrimination"
+    severity: "critical"
+    description: "Number of incidents of discrimination must be disclosed"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-discrimination-incidents'] EXISTS AND metrics.S1['S1-discrimination-incidents'].value >= 0"
+      error_message: "Incidents of discrimination must be disclosed (S1-17)"
+    references:
+      - "ESRS S1-17 para 103"
+
+  - rule_id: "S1-033"
+    rule_name: "Grievance Mechanisms"
+    severity: "major"
+    description: "Number of complaints filed through grievance mechanisms"
+    validation:
+      check: "IF 'S1' IN material_standards THEN metrics.S1['S1-grievances'] EXISTS"
+      error_message: "Grievance mechanism complaints must be disclosed (S1-17)"
+    references:
+      - "ESRS S1-17 para 104"
+
+  - rule_id: "S1-034"
+    rule_name: "Workforce YoY Reasonableness"
+    severity: "minor"
+    description: "Workforce headcount should not change by more than 50% YoY without explanation"
+    validation:
+      check: "TEMPORAL(metrics.S1['S1-headcount'].value, historical_data.previous_year.S1['S1-headcount'].value, -50%, +100%)"
+      error_message: "Workforce headcount changed significantly YoY - explanation may be needed"
+    references:
+      - "ESRS 1 para 82"
+
+  - rule_id: "S1-035"
+    rule_name: "Hours Worked Disclosed"
+    severity: "major"
+    description: "Total hours worked required for H&S rate calculations"
+    validation:
+      check: "IF metrics.S1['S1-ltifr'] EXISTS THEN metrics.S1['S1-hours-worked'] EXISTS AND metrics.S1['S1-hours-worked'].value > 0"
+      error_message: "Total hours worked required for LTIFR calculation (S1-14)"
+    references:
+      - "ESRS S1-14"
+
 # ============================================================================
-# S2: WORKERS IN VALUE CHAIN
+# S2: WORKERS IN VALUE CHAIN (15 rules)
 # ============================================================================
 
 s2_rules:
   - rule_id: "S2-001"
+    rule_name: "Value Chain Worker Policy"
+    severity: "critical"
+    description: "Policies related to value chain workers"
+    validation:
+      check: "IF 'S2' IN material_standards THEN policies.S2 EXISTS"
+      error_message: "Value chain worker policies must be disclosed (S2-1)"
+    references:
+      - "ESRS S2-1 para 14"
+
+  - rule_id: "S2-002"
+    rule_name: "Value Chain Due Diligence"
+    severity: "critical"
+    description: "Due diligence process on value chain workers"
+    validation:
+      check: "IF 'S2' IN material_standards THEN disclosure.S2_due_diligence EXISTS"
+      error_message: "Due diligence process for value chain workers must be disclosed (S2-1)"
+    references:
+      - "ESRS S2-1 para 16"
+
+  - rule_id: "S2-003"
     rule_name: "Value Chain Risk Assessment"
-    severity: "major"
+    severity: "critical"
     description: "Assessment of human rights risks in value chain"
     validation:
-      check: "IF 'S2' IN material_standards THEN value_chain_assessment EXISTS"
+      check: "IF 'S2' IN material_standards THEN value_chain_assessment EXISTS AND value_chain_assessment.human_rights_risks EXISTS"
       error_message: "Value chain worker risk assessment required (S2-1)"
+    references:
+      - "ESRS S2-1"
+
+  - rule_id: "S2-004"
+    rule_name: "Engagement with Value Chain Workers"
+    severity: "major"
+    description: "Process for engagement with value chain workers or their representatives"
+    validation:
+      check: "IF 'S2' IN material_standards THEN disclosure.S2_engagement_process EXISTS"
+      error_message: "Engagement process with value chain workers must be disclosed (S2-2)"
+    references:
+      - "ESRS S2-2 para 20"
+
+  - rule_id: "S2-005"
+    rule_name: "Remediation for Value Chain Workers"
+    severity: "major"
+    description: "Remediation processes for negative impacts on value chain workers"
+    validation:
+      check: "IF 'S2' IN material_standards THEN disclosure.S2_remediation EXISTS"
+      error_message: "Remediation processes for value chain workers must be disclosed (S2-3)"
+    references:
+      - "ESRS S2-3 para 25"
+
+  - rule_id: "S2-006"
+    rule_name: "Value Chain Worker Actions"
+    severity: "major"
+    description: "Actions taken regarding value chain workers"
+    validation:
+      check: "IF 'S2' IN material_standards THEN actions.S2 EXISTS AND COUNT(actions.S2 WHERE description EXISTS) >= 1"
+      error_message: "Actions on value chain workers must be disclosed (S2-4)"
+    references:
+      - "ESRS S2-4 para 29"
+
+  - rule_id: "S2-007"
+    rule_name: "Value Chain Worker Targets"
+    severity: "major"
+    description: "Targets related to value chain workers"
+    validation:
+      check: "IF 'S2' IN material_standards THEN targets.S2 EXISTS"
+      error_message: "Value chain worker targets must be disclosed (S2-5)"
+    references:
+      - "ESRS S2-5 para 35"
+
+  - rule_id: "S2-008"
+    rule_name: "Forced Labor Risk Assessment"
+    severity: "critical"
+    description: "Assessment of forced labor risks in value chain"
+    validation:
+      check: "IF 'S2' IN material_standards THEN value_chain_assessment.forced_labor_risk EXISTS"
+      error_message: "Forced labor risk assessment required for value chain"
+    references:
+      - "ESRS S2-1"
+
+  - rule_id: "S2-009"
+    rule_name: "Child Labor Risk Assessment"
+    severity: "critical"
+    description: "Assessment of child labor risks in value chain"
+    validation:
+      check: "IF 'S2' IN material_standards THEN value_chain_assessment.child_labor_risk EXISTS"
+      error_message: "Child labor risk assessment required for value chain"
+    references:
+      - "ESRS S2-1"
+
+  - rule_id: "S2-010"
+    rule_name: "Supply Chain Coverage Percentage"
+    severity: "major"
+    description: "Percentage of supply chain assessed for social risks"
+    validation:
+      check: "IF 'S2' IN material_standards THEN metrics.S2['S2-supply-chain-coverage-pct'] EXISTS AND RANGE(metrics.S2['S2-supply-chain-coverage-pct'].value, 0, 100)"
+      error_message: "Supply chain social risk assessment coverage percentage required"
+    references:
+      - "ESRS S2-4"
+
+  - rule_id: "S2-011"
+    rule_name: "Supplier Code of Conduct"
+    severity: "major"
+    description: "Whether a supplier code of conduct exists"
+    validation:
+      check: "IF 'S2' IN material_standards THEN disclosure.supplier_code_of_conduct EXISTS"
+      error_message: "Supplier code of conduct status must be disclosed"
+    references:
+      - "ESRS S2-1"
+
+  - rule_id: "S2-012"
+    rule_name: "Value Chain Incidents Reported"
+    severity: "major"
+    description: "Incidents and severe human rights impacts in value chain"
+    validation:
+      check: "IF 'S2' IN material_standards THEN metrics.S2['S2-incidents'] EXISTS"
+      error_message: "Value chain human rights incidents must be disclosed"
+    references:
+      - "ESRS S2-4"
+
+  - rule_id: "S2-013"
+    rule_name: "Geographical Risk Mapping"
+    severity: "major"
+    description: "Identification of geographical areas of high risk"
+    validation:
+      check: "IF 'S2' IN material_standards THEN value_chain_assessment.high_risk_geographies EXISTS"
+      error_message: "High-risk geographical areas must be identified"
+    references:
+      - "ESRS S2-1"
+
+  - rule_id: "S2-014"
+    rule_name: "Value Chain Workers Types"
+    severity: "major"
+    description: "Types of value chain workers addressed"
+    validation:
+      check: "IF 'S2' IN material_standards THEN ENUM(disclosure.S2_worker_types_covered, [direct_suppliers, indirect_suppliers, contractors, subcontractors, logistics_workers, informal_workers])"
+      error_message: "Types of value chain workers covered must be specified"
+    references:
+      - "ESRS S2-1"
+
+  - rule_id: "S2-015"
+    rule_name: "Living Wage in Value Chain"
+    severity: "major"
+    description: "Whether value chain workers receive a living wage"
+    validation:
+      check: "IF 'S2' IN material_standards THEN disclosure.S2_living_wage EXISTS"
+      error_message: "Living wage status for value chain workers should be disclosed"
+    references:
+      - "ESRS S2-4"
 
 # ============================================================================
-# S3: AFFECTED COMMUNITIES
+# S3: AFFECTED COMMUNITIES (12 rules)
 # ============================================================================
 
 s3_rules:
   - rule_id: "S3-001"
-    rule_name: "Community Impacts Assessed"
-    severity: "major"
+    rule_name: "Community Impact Assessment"
+    severity: "critical"
     description: "Impacts on affected communities must be assessed"
     validation:
       check: "IF 'S3' IN material_standards THEN community_impact_assessment EXISTS"
       error_message: "Community impact assessment required (S3-1)"
+    references:
+      - "ESRS S3-1 para 11"
+
+  - rule_id: "S3-002"
+    rule_name: "Community Policy Disclosed"
+    severity: "critical"
+    description: "Policies addressing affected communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN policies.S3 EXISTS"
+      error_message: "Policies on affected communities must be disclosed (S3-1)"
+    references:
+      - "ESRS S3-1 para 14"
+
+  - rule_id: "S3-003"
+    rule_name: "FPIC Process Disclosed"
+    severity: "critical"
+    description: "Free, Prior and Informed Consent processes for indigenous peoples"
+    validation:
+      check: "IF 'S3' IN material_standards THEN disclosure.fpic_process EXISTS OR disclosure.indigenous_peoples_not_affected == true"
+      error_message: "FPIC process or non-applicability statement required (S3-1)"
+    references:
+      - "ESRS S3-1"
+
+  - rule_id: "S3-004"
+    rule_name: "Community Engagement Process"
+    severity: "major"
+    description: "Process for engagement with affected communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN disclosure.S3_engagement_process EXISTS"
+      error_message: "Community engagement process must be disclosed (S3-2)"
+    references:
+      - "ESRS S3-2 para 19"
+
+  - rule_id: "S3-005"
+    rule_name: "Community Remediation"
+    severity: "major"
+    description: "Remediation processes for negative impacts on communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN disclosure.S3_remediation EXISTS"
+      error_message: "Remediation for community impacts must be disclosed (S3-3)"
+    references:
+      - "ESRS S3-3 para 25"
+
+  - rule_id: "S3-006"
+    rule_name: "Community Actions Disclosed"
+    severity: "major"
+    description: "Actions taken on affected communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN actions.S3 EXISTS"
+      error_message: "Actions on affected communities must be disclosed (S3-4)"
+    references:
+      - "ESRS S3-4"
+
+  - rule_id: "S3-007"
+    rule_name: "Community Targets Set"
+    severity: "major"
+    description: "Targets related to affected communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN targets.S3 EXISTS"
+      error_message: "Targets for affected communities must be disclosed (S3-5)"
+    references:
+      - "ESRS S3-5"
+
+  - rule_id: "S3-008"
+    rule_name: "Land Rights Disclosure"
+    severity: "critical"
+    description: "Impacts on land rights of communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN disclosure.land_rights_impact EXISTS OR disclosure.land_rights_not_relevant == true"
+      error_message: "Land rights impact or non-relevance statement required"
+    references:
+      - "ESRS S3-4"
+
+  - rule_id: "S3-009"
+    rule_name: "Local Employment Contribution"
+    severity: "minor"
+    description: "Contribution to local employment in communities of operation"
+    validation:
+      check: "IF 'S3' IN material_standards THEN metrics.S3.local_employment EXISTS"
+      error_message: "Local employment contribution should be disclosed"
+    references:
+      - "ESRS S3-4"
+
+  - rule_id: "S3-010"
+    rule_name: "Community Grievance Mechanism"
+    severity: "major"
+    description: "Availability of grievance mechanisms for communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN disclosure.S3_grievance_mechanism EXISTS"
+      error_message: "Community grievance mechanism must be disclosed"
+    references:
+      - "ESRS S3-3"
+
+  - rule_id: "S3-011"
+    rule_name: "Community Incidents"
+    severity: "major"
+    description: "Significant incidents affecting communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN metrics.S3['S3-incidents'] EXISTS"
+      error_message: "Incidents affecting communities must be disclosed"
+    references:
+      - "ESRS S3-4"
+
+  - rule_id: "S3-012"
+    rule_name: "Human Rights Due Diligence for Communities"
+    severity: "critical"
+    description: "Human rights due diligence covering communities"
+    validation:
+      check: "IF 'S3' IN material_standards THEN disclosure.S3_human_rights_dd EXISTS"
+      error_message: "Human rights due diligence for communities must be disclosed"
+    references:
+      - "ESRS S3-1"
 
 # ============================================================================
-# S4: CONSUMERS AND END-USERS
+# S4: CONSUMERS AND END-USERS (12 rules)
 # ============================================================================
 
 s4_rules:
   - rule_id: "S4-001"
-    rule_name: "Product Safety Incidents"
-    severity: "major"
-    description: "Product safety incidents must be disclosed"
+    rule_name: "Consumer Policy Disclosed"
+    severity: "critical"
+    description: "Policies addressing consumers and end-users"
     validation:
-      check: "IF 'S4' IN material_standards THEN metrics.S4['S4-1'] EXISTS"
+      check: "IF 'S4' IN material_standards THEN policies.S4 EXISTS"
+      error_message: "Policies on consumers and end-users must be disclosed (S4-1)"
+    references:
+      - "ESRS S4-1 para 13"
+
+  - rule_id: "S4-002"
+    rule_name: "Product Safety Incidents"
+    severity: "critical"
+    description: "Product safety incidents and recalls must be disclosed"
+    validation:
+      check: "IF 'S4' IN material_standards THEN metrics.S4['S4-safety-incidents'] EXISTS AND metrics.S4['S4-safety-incidents'].value >= 0"
       error_message: "Product safety incidents must be disclosed (S4-4)"
+    references:
+      - "ESRS S4-4 para 39"
+
+  - rule_id: "S4-003"
+    rule_name: "Privacy and Data Protection"
+    severity: "critical"
+    description: "Data protection and privacy measures for consumers"
+    validation:
+      check: "IF 'S4' IN material_standards THEN disclosure.S4_data_protection EXISTS"
+      error_message: "Data protection measures for consumers must be disclosed (S4-1)"
+    references:
+      - "ESRS S4-1"
+
+  - rule_id: "S4-004"
+    rule_name: "Data Breach Incidents"
+    severity: "critical"
+    description: "Number of data breach incidents affecting consumers"
+    validation:
+      check: "IF 'S4' IN material_standards THEN metrics.S4['S4-data-breaches'] EXISTS AND metrics.S4['S4-data-breaches'].value >= 0"
+      error_message: "Data breach incidents must be disclosed (S4-4)"
+    references:
+      - "ESRS S4-4"
+
+  - rule_id: "S4-005"
+    rule_name: "Accessibility of Products/Services"
+    severity: "major"
+    description: "Measures to ensure accessibility for persons with disabilities"
+    validation:
+      check: "IF 'S4' IN material_standards THEN disclosure.S4_accessibility EXISTS"
+      error_message: "Product/service accessibility measures must be disclosed (S4-1)"
+    references:
+      - "ESRS S4-1"
+
+  - rule_id: "S4-006"
+    rule_name: "Vulnerable Group Protection"
+    severity: "major"
+    description: "Measures to protect vulnerable consumer groups (children, elderly)"
+    validation:
+      check: "IF 'S4' IN material_standards THEN disclosure.S4_vulnerable_groups EXISTS"
+      error_message: "Protection measures for vulnerable consumer groups must be disclosed"
+    references:
+      - "ESRS S4-1"
+
+  - rule_id: "S4-007"
+    rule_name: "Consumer Engagement Process"
+    severity: "major"
+    description: "Process for engaging with consumers"
+    validation:
+      check: "IF 'S4' IN material_standards THEN disclosure.S4_engagement_process EXISTS"
+      error_message: "Consumer engagement process must be disclosed (S4-2)"
+    references:
+      - "ESRS S4-2"
+
+  - rule_id: "S4-008"
+    rule_name: "Consumer Remediation"
+    severity: "major"
+    description: "Remediation processes for consumer impacts"
+    validation:
+      check: "IF 'S4' IN material_standards THEN disclosure.S4_remediation EXISTS"
+      error_message: "Consumer remediation processes must be disclosed (S4-3)"
+    references:
+      - "ESRS S4-3"
+
+  - rule_id: "S4-009"
+    rule_name: "Consumer Actions Disclosed"
+    severity: "major"
+    description: "Actions taken on consumers and end-users"
+    validation:
+      check: "IF 'S4' IN material_standards THEN actions.S4 EXISTS"
+      error_message: "Actions on consumer impacts must be disclosed (S4-4)"
+    references:
+      - "ESRS S4-4"
+
+  - rule_id: "S4-010"
+    rule_name: "Consumer Targets Set"
+    severity: "major"
+    description: "Targets related to consumers and end-users"
+    validation:
+      check: "IF 'S4' IN material_standards THEN targets.S4 EXISTS"
+      error_message: "Consumer-related targets must be disclosed (S4-5)"
+    references:
+      - "ESRS S4-5"
+
+  - rule_id: "S4-011"
+    rule_name: "Consumer Complaint Mechanism"
+    severity: "major"
+    description: "Complaint mechanisms available for consumers"
+    validation:
+      check: "IF 'S4' IN material_standards THEN metrics.S4['S4-complaints'] EXISTS"
+      error_message: "Consumer complaint data must be disclosed (S4-4)"
+    references:
+      - "ESRS S4-4"
+
+  - rule_id: "S4-012"
+    rule_name: "Responsible Marketing Practices"
+    severity: "major"
+    description: "Information on responsible marketing and advertising"
+    validation:
+      check: "IF 'S4' IN material_standards THEN disclosure.S4_responsible_marketing EXISTS"
+      error_message: "Responsible marketing practices must be disclosed"
+    references:
+      - "ESRS S4-1"
 
 # ============================================================================
-# G1: BUSINESS CONDUCT
+# G1: BUSINESS CONDUCT (18 rules)
 # ============================================================================
 
 g1_rules:
@@ -364,45 +2010,212 @@ g1_rules:
       check: "IF 'G1' IN material_standards THEN policies.anti_corruption EXISTS"
       error_message: "Anti-corruption policy required (G1-1)"
     references:
-      - "ESRS G1-1"
+      - "ESRS G1-1 para 7"
 
   - rule_id: "G1-002"
+    rule_name: "Anti-Corruption Training Coverage"
+    severity: "major"
+    description: "Percentage of employees trained on anti-corruption"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-training-pct'] EXISTS AND RANGE(metrics.G1['G1-training-pct'].value, 0, 100)"
+      error_message: "Anti-corruption training coverage percentage required (G1-1)"
+    references:
+      - "ESRS G1-1 para 9"
+
+  - rule_id: "G1-003"
     rule_name: "Corruption Incidents Disclosed"
     severity: "critical"
-    description: "Convictions and fines for corruption must be disclosed"
+    description: "Confirmed incidents of corruption and actions taken"
     validation:
-      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-1'] EXISTS"
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-corruption-incidents'] EXISTS AND metrics.G1['G1-corruption-incidents'].value >= 0"
       error_message: "Corruption incidents must be disclosed (G1-4)"
+    references:
+      - "ESRS G1-4 para 24"
+
+  - rule_id: "G1-004"
+    rule_name: "Corruption Fines and Convictions"
+    severity: "critical"
+    description: "Fines and convictions for violations of anti-corruption laws"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-fines'] EXISTS"
+      error_message: "Fines for corruption/bribery violations must be disclosed (G1-4)"
+    references:
+      - "ESRS G1-4 para 25"
+
+  - rule_id: "G1-005"
+    rule_name: "Whistleblower Protection"
+    severity: "critical"
+    description: "Whistleblower protection mechanisms must be in place"
+    validation:
+      check: "IF 'G1' IN material_standards THEN disclosure.whistleblower_mechanism EXISTS AND disclosure.whistleblower_mechanism.protection_policy == true"
+      error_message: "Whistleblower protection mechanism required (G1-1)"
+    references:
+      - "ESRS G1-1 para 10"
+
+  - rule_id: "G1-006"
+    rule_name: "Political Engagement Disclosed"
+    severity: "major"
+    description: "Political contributions and lobbying activities"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-political-contributions'] EXISTS"
+      error_message: "Political contributions and lobbying must be disclosed (G1-5)"
+    references:
+      - "ESRS G1-5 para 28"
+
+  - rule_id: "G1-007"
+    rule_name: "Political Contributions Amount"
+    severity: "major"
+    description: "Total monetary value of political contributions"
+    validation:
+      check: "IF metrics.G1['G1-political-contributions'] EXISTS THEN metrics.G1['G1-political-contributions'].value >= 0"
+      error_message: "Political contributions amount must be non-negative"
+    references:
+      - "ESRS G1-5"
+
+  - rule_id: "G1-008"
+    rule_name: "Payment Practices Disclosed"
+    severity: "major"
+    description: "Payment practices including average payment times"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-payment-terms'] EXISTS"
+      error_message: "Payment practices must be disclosed (G1-6)"
+    references:
+      - "ESRS G1-6 para 32"
+
+  - rule_id: "G1-009"
+    rule_name: "Average Payment Days"
+    severity: "major"
+    description: "Average number of days to pay invoices to suppliers"
+    validation:
+      check: "IF metrics.G1['G1-payment-terms'] EXISTS THEN metrics.G1['G1-payment-terms'].average_days > 0"
+      error_message: "Average payment days must be a positive value"
+    references:
+      - "ESRS G1-6 para 33"
+
+  - rule_id: "G1-010"
+    rule_name: "Late Payment Percentage"
+    severity: "major"
+    description: "Percentage of invoices paid after due date"
+    validation:
+      check: "IF metrics.G1['G1-payment-terms'] EXISTS THEN metrics.G1['G1-late-payment-pct'] EXISTS AND RANGE(metrics.G1['G1-late-payment-pct'].value, 0, 100)"
+      error_message: "Late payment percentage required and must be between 0-100%"
+    references:
+      - "ESRS G1-6 para 34"
+
+  - rule_id: "G1-011"
+    rule_name: "Tax Transparency - Country-by-Country"
+    severity: "major"
+    description: "Country-by-country tax reporting for significant jurisdictions"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1.tax_by_country EXISTS AND COUNT(metrics.G1.tax_by_country WHERE jurisdiction EXISTS AND tax_paid EXISTS) >= 1"
+      error_message: "Country-by-country tax reporting required for significant jurisdictions"
+    references:
+      - "ESRS G1-4"
+
+  - rule_id: "G1-012"
+    rule_name: "Effective Tax Rate Disclosed"
+    severity: "major"
+    description: "Effective tax rate must be disclosed"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-effective-tax-rate'] EXISTS AND RANGE(metrics.G1['G1-effective-tax-rate'].value, -100, 100)"
+      error_message: "Effective tax rate must be disclosed"
+    references:
+      - "ESRS G1-4"
+
+  - rule_id: "G1-013"
+    rule_name: "Supplier Relationship Practices"
+    severity: "major"
+    description: "Practices for responsible supplier relationships"
+    validation:
+      check: "IF 'G1' IN material_standards THEN disclosure.supplier_relationship_practices EXISTS"
+      error_message: "Responsible supplier relationship practices must be disclosed"
+    references:
+      - "ESRS G1-6"
+
+  - rule_id: "G1-014"
+    rule_name: "Business Conduct Culture"
+    severity: "major"
+    description: "Corporate culture and approach to business ethics"
+    validation:
+      check: "IF 'G1' IN material_standards THEN disclosure.business_conduct_culture EXISTS"
+      error_message: "Business ethics culture and approach must be disclosed (G1-1)"
+    references:
+      - "ESRS G1-1"
+
+  - rule_id: "G1-015"
+    rule_name: "Legal Proceedings Disclosed"
+    severity: "critical"
+    description: "Material legal proceedings related to business conduct"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-legal-proceedings'] EXISTS"
+      error_message: "Material legal proceedings must be disclosed (G1-4)"
+    references:
+      - "ESRS G1-4"
+
+  - rule_id: "G1-016"
+    rule_name: "Total Fines Amount"
+    severity: "critical"
+    description: "Total monetary value of fines for business conduct violations"
+    validation:
+      check: "IF metrics.G1['G1-fines'] EXISTS THEN metrics.G1['G1-fines'].total_amount >= 0"
+      error_message: "Total fines amount must be non-negative"
+    references:
+      - "ESRS G1-4"
+
+  - rule_id: "G1-017"
+    rule_name: "Anti-Competitive Practices"
+    severity: "major"
+    description: "Incidents of anti-competitive behavior"
+    validation:
+      check: "IF 'G1' IN material_standards THEN metrics.G1['G1-anticompetitive'] EXISTS AND metrics.G1['G1-anticompetitive'].value >= 0"
+      error_message: "Anti-competitive behavior incidents must be disclosed"
+    references:
+      - "ESRS G1-4"
+
+  - rule_id: "G1-018"
+    rule_name: "Beneficial Ownership Transparency"
+    severity: "major"
+    description: "Beneficial ownership information disclosed"
+    validation:
+      check: "IF 'G1' IN material_standards THEN disclosure.beneficial_ownership EXISTS"
+      error_message: "Beneficial ownership transparency must be disclosed"
+    references:
+      - "ESRS G1-1"
 
 # ============================================================================
-# CROSS-CUTTING RULES
+# CROSS-CUTTING AND XBRL RULES (26 rules)
 # ============================================================================
 
 cross_cutting_rules:
   - rule_id: "CC-001"
     rule_name: "Reporting Boundary Defined"
     severity: "critical"
-    description: "Clear definition of reporting boundary required"
+    description: "Clear definition of reporting boundary matching financial consolidation"
     validation:
       check: "company_profile.reporting_scope.consolidation_method EXISTS"
       error_message: "Reporting boundary must be clearly defined"
+    references:
+      - "ESRS 1 para 62"
 
   - rule_id: "CC-002"
     rule_name: "Reporting Period Disclosed"
     severity: "critical"
-    description: "Reporting period must match financial reporting period"
+    description: "Reporting period must have valid start and end dates"
     validation:
       check: "reporting_period EXISTS AND reporting_period.start_date EXISTS AND reporting_period.end_date EXISTS"
-      error_message: "Reporting period must be disclosed"
+      error_message: "Reporting period start and end dates must be disclosed"
+    references:
+      - "ESRS 1 para 73"
 
   - rule_id: "CC-003"
     rule_name: "Prior Year Comparatives"
     severity: "major"
-    description: "Prior year data should be provided for comparability"
+    description: "Prior year data should be provided for all material quantitative metrics"
     validation:
       check: "historical_data.previous_year EXISTS"
-      error_message: "Prior year comparative data recommended"
-      severity: "warning"
+      error_message: "Prior year comparative data recommended for all material metrics"
+    references:
+      - "ESRS 1 para 82-84"
 
   - rule_id: "CC-004"
     rule_name: "Data Quality Disclosure"
@@ -411,23 +2224,240 @@ cross_cutting_rules:
     validation:
       check: "data_quality_statement EXISTS"
       error_message: "Data quality assessment recommended"
+    references:
+      - "ESRS 1 para 87"
 
   - rule_id: "CC-005"
-    rule_name: "External Assurance"
+    rule_name: "External Assurance Status"
     severity: "major"
-    description: "External assurance status must be disclosed"
+    description: "Whether sustainability report has been subject to external assurance"
     validation:
-      check: "assurance.status EXISTS"
+      check: "assurance.status EXISTS AND ENUM(assurance.status, [limited, reasonable, none, in_progress])"
       error_message: "External assurance status must be disclosed"
+    references:
+      - "ESRS 1 para 91"
+
+  - rule_id: "CC-006"
+    rule_name: "Assurance Provider Independence"
+    severity: "major"
+    description: "If assured, assurance provider independence must be confirmed"
+    validation:
+      check: "IF assurance.status != 'none' THEN assurance.provider EXISTS AND assurance.independence_confirmed == true"
+      error_message: "Assurance provider and independence status must be disclosed"
+    references:
+      - "ESRS 1 para 92"
+
+  - rule_id: "CC-007"
+    rule_name: "Material Standards Cross-Reference"
+    severity: "critical"
+    description: "Standards deemed material must have corresponding disclosures"
+    validation:
+      check: "CROSS_REF(materiality_assessment.material_standards, disclosed_standards)"
+      error_message: "All material standards must have corresponding disclosures"
+    references:
+      - "ESRS 2 IRO-2"
+
+  - rule_id: "CC-008"
+    rule_name: "Currency Consistency"
+    severity: "major"
+    description: "All monetary values must use the same reporting currency"
+    validation:
+      check: "CONSISTENT(company_profile.reporting_currency, metrics_currency, 0)"
+      error_message: "All monetary values must use the same reporting currency"
+    references:
+      - "ESRS 1"
+
+  - rule_id: "CC-009"
+    rule_name: "Metric Units Specified"
+    severity: "major"
+    description: "All quantitative metrics must have units specified"
+    validation:
+      check: "COUNT(metrics WHERE unit IS NULL) == 0"
+      error_message: "All quantitative metrics must have units specified"
+    references:
+      - "ESRS 1"
+
+  - rule_id: "CC-010"
+    rule_name: "Methodology Changes Disclosed"
+    severity: "major"
+    description: "Changes in methodology from prior period must be disclosed"
+    validation:
+      check: "IF methodology_changes EXISTS THEN COUNT(methodology_changes WHERE description EXISTS AND impact EXISTS) >= 1"
+      error_message: "Methodology changes must include description and impact assessment"
+    references:
+      - "ESRS 1 para 84"
+
+  - rule_id: "CC-011"
+    rule_name: "ESEF Package Structure Valid"
+    severity: "critical"
+    description: "ESEF reporting package must contain required files"
+    validation:
+      check: "COMPLETE(xbrl.esef_package: taxonomy_package, report_xhtml, linkbase_files, schema_ref)"
+      error_message: "ESEF package must contain taxonomy, XHTML report, linkbases, and schema reference"
+    references:
+      - "ESEF RTS Article 3"
+
+  - rule_id: "CC-012"
+    rule_name: "iXBRL Tags Valid"
+    severity: "critical"
+    description: "All iXBRL tags must reference valid ESRS taxonomy elements"
+    validation:
+      check: "COUNT(xbrl.ixbrl_tags WHERE taxonomy_element_valid == false) == 0"
+      error_message: "All iXBRL tags must reference valid ESRS taxonomy elements"
+    references:
+      - "ESEF RTS Article 4"
+
+  - rule_id: "CC-013"
+    rule_name: "Filing Indicators Present"
+    severity: "critical"
+    description: "XBRL filing indicators must match material standards"
+    validation:
+      check: "CROSS_REF(xbrl.filing_indicators, materiality_assessment.material_standards)"
+      error_message: "XBRL filing indicators must match material standards"
+    references:
+      - "ESRS XBRL taxonomy"
+
+  - rule_id: "CC-014"
+    rule_name: "XBRL Context Periods Match"
+    severity: "critical"
+    description: "XBRL context periods must match the reporting period"
+    validation:
+      check: "CONSISTENT(xbrl.context.period_start, reporting_period.start_date, 0) AND CONSISTENT(xbrl.context.period_end, reporting_period.end_date, 0)"
+      error_message: "XBRL context periods must match the declared reporting period"
+    references:
+      - "XBRL 2.1 specification"
+
+  - rule_id: "CC-015"
+    rule_name: "XBRL Entity Identifier Valid"
+    severity: "critical"
+    description: "XBRL entity identifier must match company LEI"
+    validation:
+      check: "CONSISTENT(xbrl.context.entity_identifier, company_profile.lei_code, 0)"
+      error_message: "XBRL entity identifier must match company LEI code"
+    references:
+      - "ESEF RTS Article 2"
+
+  - rule_id: "CC-016"
+    rule_name: "XBRL Mandatory Tags Present"
+    severity: "critical"
+    description: "All mandatory ESRS data points must have iXBRL tags"
+    validation:
+      check: "COUNT(xbrl.mandatory_tags WHERE tagged == false) == 0"
+      error_message: "All mandatory ESRS data points must be tagged in iXBRL"
+    references:
+      - "ESRS XBRL taxonomy"
+
+  - rule_id: "CC-017"
+    rule_name: "XBRL Calculation Linkbase Valid"
+    severity: "major"
+    description: "XBRL calculation linkbase sums must validate"
+    validation:
+      check: "COUNT(xbrl.calculation_linkbase_errors) == 0"
+      error_message: "XBRL calculation linkbase has validation errors"
+    references:
+      - "XBRL 2.1 specification"
+
+  - rule_id: "CC-018"
+    rule_name: "XBRL Duplicate Facts Check"
+    severity: "major"
+    description: "No duplicate facts with same context and concept"
+    validation:
+      check: "COUNT(xbrl.duplicate_facts) == 0"
+      error_message: "Duplicate XBRL facts detected for same context and concept"
+    references:
+      - "XBRL 2.1 specification"
+
+  - rule_id: "CC-019"
+    rule_name: "XBRL Negative Values Appropriate"
+    severity: "major"
+    description: "Negative values only allowed for credit/debit appropriate concepts"
+    validation:
+      check: "COUNT(xbrl.inappropriate_negatives) == 0"
+      error_message: "Negative values found for concepts that should be positive"
+    references:
+      - "ESEF filing rules"
+
+  - rule_id: "CC-020"
+    rule_name: "ESRS Standard Connectivity"
+    severity: "major"
+    description: "Cross-references between ESRS standards must be internally consistent"
+    validation:
+      check: "IF metrics.E1['E1-4'] EXISTS AND metrics.E5['E5-waste-total'] EXISTS THEN CROSS_REF(metrics.E1.value_chain_scope, metrics.E5.value_chain_scope)"
+      error_message: "Cross-standard references must be internally consistent"
+    references:
+      - "ESRS 1 para 115"
+
+  - rule_id: "CC-021"
+    rule_name: "XBRL Schema Version Correct"
+    severity: "critical"
+    description: "XBRL taxonomy schema version must match the current ESRS taxonomy"
+    validation:
+      check: "ENUM(xbrl.taxonomy_version, [ESRS_2024, ESRS_2025, ESRS_2026])"
+      error_message: "XBRL taxonomy version must be a recognized ESRS version"
+    references:
+      - "EFRAG ESRS XBRL taxonomy"
+
+  - rule_id: "CC-022"
+    rule_name: "Block Tags for Narrative Disclosures"
+    severity: "major"
+    description: "Narrative disclosures must use block-level iXBRL tags"
+    validation:
+      check: "COUNT(xbrl.narrative_disclosures WHERE block_tagged == false) == 0"
+      error_message: "Narrative disclosures must use block-level iXBRL tagging"
+    references:
+      - "ESEF RTS Article 6"
+
+  - rule_id: "CC-023"
+    rule_name: "XBRL Language Attribute Set"
+    severity: "major"
+    description: "All text-block facts must have xml:lang attribute"
+    validation:
+      check: "COUNT(xbrl.text_facts WHERE language_attribute IS NULL) == 0"
+      error_message: "All text-block XBRL facts must have xml:lang attribute"
+    references:
+      - "XBRL 2.1 specification"
+
+  - rule_id: "CC-024"
+    rule_name: "Sustainability Statement Location"
+    severity: "critical"
+    description: "Sustainability statement must be identifiable within management report"
+    validation:
+      check: "report_structure.sustainability_statement_location EXISTS"
+      error_message: "Sustainability statement must be clearly located within management report"
+    references:
+      - "CSRD Article 19a"
+
+  - rule_id: "CC-025"
+    rule_name: "XBRL Decimals Attribute Consistency"
+    severity: "major"
+    description: "Decimals attribute must be consistent for same-concept facts"
+    validation:
+      check: "COUNT(xbrl.inconsistent_decimals) == 0"
+      error_message: "Decimals attribute must be consistent across same-concept facts"
+    references:
+      - "ESEF filing rules"
+
+  - rule_id: "CC-026"
+    rule_name: "XBRL Anchoring Extensions"
+    severity: "major"
+    description: "Company-specific extensions must be anchored to closest base taxonomy element"
+    validation:
+      check: "COUNT(xbrl.unanchored_extensions) == 0"
+      error_message: "Extension elements must be anchored to base taxonomy (wider/narrower)"
+    references:
+      - "ESEF RTS Article 4(6)"
 
 # ============================================================================
 # VALIDATION EXECUTION NOTES
 # ============================================================================
 
 execution_notes:
-  - "Rules marked 'critical' will cause report to fail compliance"
+  - "Rules marked 'critical' will cause report to fail compliance check"
   - "Rules marked 'major' will generate warnings but allow submission"
-  - "Rules marked 'warning' are best practice recommendations"
+  - "Rules marked 'minor' are best-practice recommendations"
   - "Conditional rules (IF ... THEN) only apply when condition is met"
   - "Tolerance values allow for rounding differences in calculations"
   - "All rules reference ESRS disclosure requirements for traceability"
+  - "12 validation pattern types are used: EXISTS, comparison, RANGE, IF/THEN, COUNT, SUM/TOLERANCE, CROSS_REF, COMPLETE, CONSISTENT, TEMPORAL, FORMAT, ENUM"
+  - "XBRL rules (CC-011 to CC-026) validate the electronic filing package"
+  - "Total rules: ESRS-1(15) + ESRS-2(20) + E1(25) + E2(15) + E3(12) + E4(15) + E5(15) + S1(35) + S2(15) + S3(12) + S4(12) + G1(18) + CC/XBRL(26) = 235"

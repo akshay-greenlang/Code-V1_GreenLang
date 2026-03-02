@@ -1,0 +1,1343 @@
+{
+  "metadata": {
+    "version": "1.1.0",
+    "source": "World Bank Carbon Pricing Dashboard, ICAP ETS Map, national legislation",
+    "last_updated": "2026-02-26",
+    "description": "Carbon pricing schemes eligible for CBAM deductions per Article 26 of EU Regulation 2023/956. Prices are approximate EUR equivalents as of Q1 2026.",
+    "disclaimer": "For actual CBAM Article 26 deduction claims, verify scheme eligibility with the latest EU Commission implementing acts. Prices fluctuate; use the price actually paid at the time of production.",
+    "total_countries": 55,
+    "price_reference_date": "2026-01-15",
+    "eur_fx_reference": "ECB reference rates 2026-01-15"
+  },
+  "countries": {
+    "TR": {
+      "country_name": "Turkey (Turkiye)",
+      "iso_alpha2": "TR",
+      "iso_alpha3": "TUR",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Turkey Emissions Trading System",
+          "scheme_type": "ets",
+          "status": "pilot",
+          "start_date": "2024-01-01",
+          "expected_trading_date": "2026-07-01",
+          "carbon_price_per_tco2e": "12.00",
+          "currency": "EUR",
+          "price_local": "420.00",
+          "currency_local": "TRY",
+          "sectors_covered": ["power_generation", "cement", "iron_steel", "refining"],
+          "coverage_pct_national_emissions": 40,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "MRV phase began 2024. Aligned with EU ETS design. Trading expected H2 2026."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.480",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "cement", "aluminium"]
+    },
+    "GB": {
+      "country_name": "United Kingdom",
+      "iso_alpha2": "GB",
+      "iso_alpha3": "GBR",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "UK Emissions Trading Scheme (UK ETS)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2021-01-01",
+          "carbon_price_per_tco2e": "48.00",
+          "currency": "EUR",
+          "price_local": "41.00",
+          "currency_local": "GBP",
+          "sectors_covered": ["power_generation", "energy_intensive_industry", "aviation"],
+          "coverage_pct_national_emissions": 28,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Post-Brexit successor to EU ETS participation. Own CBAM under development."
+        },
+        {
+          "scheme_name": "UK Carbon Price Support (CPS)",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2013-04-01",
+          "carbon_price_per_tco2e": "21.50",
+          "currency": "EUR",
+          "price_local": "18.08",
+          "currency_local": "GBP",
+          "sectors_covered": ["power_generation"],
+          "coverage_pct_national_emissions": 23,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "Top-up tax on power generators; combined with UK ETS forms effective carbon price."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.207",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "aluminium", "fertilisers"]
+    },
+    "NO": {
+      "country_name": "Norway",
+      "iso_alpha2": "NO",
+      "iso_alpha3": "NOR",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "EU Emissions Trading System (EEA participation)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2008-01-01",
+          "carbon_price_per_tco2e": "68.00",
+          "currency": "EUR",
+          "price_local": "68.00",
+          "currency_local": "EUR",
+          "sectors_covered": ["power_generation", "energy_intensive_industry", "aviation"],
+          "coverage_pct_national_emissions": 50,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Norway participates in EU ETS via EEA Agreement. CBAM applies to EEA."
+        },
+        {
+          "scheme_name": "Norwegian Carbon Tax",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "1991-01-01",
+          "carbon_price_per_tco2e": "95.00",
+          "currency": "EUR",
+          "price_local": "952.00",
+          "currency_local": "NOK",
+          "sectors_covered": ["petroleum", "transport", "heating", "domestic_aviation"],
+          "coverage_pct_national_emissions": 62,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "One of the world's oldest carbon taxes. Rate varies by sector. Petroleum sector rate is highest."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.008",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["aluminium", "fertilisers"]
+    },
+    "CH": {
+      "country_name": "Switzerland",
+      "iso_alpha2": "CH",
+      "iso_alpha3": "CHE",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Swiss Emissions Trading System (CH ETS)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2008-01-01",
+          "carbon_price_per_tco2e": "68.00",
+          "currency": "EUR",
+          "price_local": "68.00",
+          "currency_local": "EUR",
+          "sectors_covered": ["energy_intensive_industry", "aviation"],
+          "coverage_pct_national_emissions": 10,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Linked to EU ETS since 2020. Covers ~55 installations."
+        },
+        {
+          "scheme_name": "Swiss CO2 Levy",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2008-01-01",
+          "carbon_price_per_tco2e": "120.00",
+          "currency": "EUR",
+          "price_local": "120.00",
+          "currency_local": "CHF",
+          "sectors_covered": ["heating_fuels", "process_fuels"],
+          "coverage_pct_national_emissions": 33,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "CHF 120/tCO2 since 2022. Exemptions for ETS participants. Revenue redistributed."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.013",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement", "iron_steel"]
+    },
+    "UA": {
+      "country_name": "Ukraine",
+      "iso_alpha2": "UA",
+      "iso_alpha3": "UKR",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Ukraine Carbon Tax",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2011-01-01",
+          "carbon_price_per_tco2e": "1.10",
+          "currency": "EUR",
+          "price_local": "43.56",
+          "currency_local": "UAH",
+          "sectors_covered": ["all_fossil_fuel_combustion"],
+          "coverage_pct_national_emissions": 71,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "Very low rate. Ukraine committed to ETS development under EU Association Agreement."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.600",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "aluminium", "cement"]
+    },
+    "RS": {
+      "country_name": "Serbia",
+      "iso_alpha2": "RS",
+      "iso_alpha3": "SRB",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.760",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "cement"],
+      "notes": "No carbon pricing. EU accession candidate; ETS development planned under Green Agenda for Western Balkans."
+    },
+    "ME": {
+      "country_name": "Montenegro",
+      "iso_alpha2": "ME",
+      "iso_alpha3": "MNE",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.520",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["aluminium"],
+      "notes": "No carbon pricing. EU accession candidate. Aluminium smelter (KAP) is significant exporter."
+    },
+    "BA": {
+      "country_name": "Bosnia and Herzegovina",
+      "iso_alpha2": "BA",
+      "iso_alpha3": "BIH",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.850",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "cement", "aluminium"],
+      "notes": "No carbon pricing. High grid emission factor due to coal dependence. Aluminij Mostar is key aluminium exporter."
+    },
+    "MK": {
+      "country_name": "North Macedonia",
+      "iso_alpha2": "MK",
+      "iso_alpha3": "MKD",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.700",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "cement"],
+      "notes": "No carbon pricing. EU accession candidate."
+    },
+    "AL": {
+      "country_name": "Albania",
+      "iso_alpha2": "AL",
+      "iso_alpha3": "ALB",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.015",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement", "iron_steel"],
+      "notes": "No carbon pricing. Very low grid EF due to near 100% hydropower. EU accession candidate."
+    },
+    "XK": {
+      "country_name": "Kosovo",
+      "iso_alpha2": "XK",
+      "iso_alpha3": "XKX",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "1.050",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement"],
+      "notes": "No carbon pricing. Extremely high grid EF due to lignite dependence. ISO 3166-1 alpha-2 XK is user-assigned."
+    },
+    "MD": {
+      "country_name": "Moldova",
+      "iso_alpha2": "MD",
+      "iso_alpha3": "MDA",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.540",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement"],
+      "notes": "No carbon pricing. EU association agreement. High import dependency for electricity."
+    },
+    "CN": {
+      "country_name": "China",
+      "iso_alpha2": "CN",
+      "iso_alpha3": "CHN",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "China National ETS",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2021-07-16",
+          "carbon_price_per_tco2e": "12.50",
+          "currency": "EUR",
+          "price_local": "96.00",
+          "currency_local": "CNY",
+          "sectors_covered": ["power_generation"],
+          "coverage_pct_national_emissions": 40,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "World's largest ETS by coverage (~4.5 GtCO2). Cement and aluminium sectors planned for 2026-2027 expansion."
+        },
+        {
+          "scheme_name": "China Regional Pilot ETS (8 pilots)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2013-06-18",
+          "carbon_price_per_tco2e": "7.50",
+          "currency": "EUR",
+          "price_local": "58.00",
+          "currency_local": "CNY",
+          "sectors_covered": ["industry", "power_generation", "buildings", "transport"],
+          "coverage_pct_national_emissions": 7,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "8 sub-national pilots (Beijing, Shanghai, Guangdong, Shenzhen, Tianjin, Hubei, Chongqing, Fujian). Being gradually absorbed into national ETS."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.555",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "aluminium", "cement", "fertilisers"]
+    },
+    "IN": {
+      "country_name": "India",
+      "iso_alpha2": "IN",
+      "iso_alpha3": "IND",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "India Carbon Credit Trading Scheme (CCTS)",
+          "scheme_type": "ets",
+          "status": "pilot",
+          "start_date": "2025-04-01",
+          "expected_trading_date": "2026-01-01",
+          "carbon_price_per_tco2e": "5.00",
+          "currency": "EUR",
+          "price_local": "460.00",
+          "currency_local": "INR",
+          "sectors_covered": ["power_generation", "iron_steel", "cement", "aluminium", "refining", "pulp_paper"],
+          "coverage_pct_national_emissions": 35,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Compliance mechanism replacing PAT scheme. Intensity-based with tradable certificates."
+        },
+        {
+          "scheme_name": "Coal Cess / GST Compensation Cess",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2010-07-01",
+          "carbon_price_per_tco2e": "2.00",
+          "currency": "EUR",
+          "price_local": "400.00",
+          "currency_local": "INR",
+          "sectors_covered": ["coal"],
+          "coverage_pct_national_emissions": 40,
+          "cbam_eligible": false,
+          "free_allocation": false,
+          "notes": "INR 400/tonne of coal (not CO2). Implicit carbon price ~$2/tCO2. Not structured as explicit carbon price."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.708",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "aluminium", "cement", "fertilisers"]
+    },
+    "KR": {
+      "country_name": "South Korea",
+      "iso_alpha2": "KR",
+      "iso_alpha3": "KOR",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Korea Emissions Trading Scheme (K-ETS)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2015-01-01",
+          "carbon_price_per_tco2e": "9.00",
+          "currency": "EUR",
+          "price_local": "13500.00",
+          "currency_local": "KRW",
+          "sectors_covered": ["power_generation", "industry", "buildings", "transport", "waste", "public_sector"],
+          "coverage_pct_national_emissions": 73,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Phase 3 (2021-2025). Broad coverage but low price. Phase 4 from 2026 with tighter caps."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.415",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "JP": {
+      "country_name": "Japan",
+      "iso_alpha2": "JP",
+      "iso_alpha3": "JPN",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Japan GX-ETS (GX League)",
+          "scheme_type": "ets",
+          "status": "pilot",
+          "start_date": "2023-04-01",
+          "expected_trading_date": "2026-04-01",
+          "carbon_price_per_tco2e": "15.00",
+          "currency": "EUR",
+          "price_local": "2400.00",
+          "currency_local": "JPY",
+          "sectors_covered": ["power_generation", "industry"],
+          "coverage_pct_national_emissions": 50,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Voluntary Phase 1 (2023-2025). Mandatory Phase 2 from FY2026. GX Surcharge on fossil fuels also planned."
+        },
+        {
+          "scheme_name": "Tax for Climate Change Mitigation",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2012-10-01",
+          "carbon_price_per_tco2e": "2.50",
+          "currency": "EUR",
+          "price_local": "289.00",
+          "currency_local": "JPY",
+          "sectors_covered": ["all_fossil_fuels"],
+          "coverage_pct_national_emissions": 68,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "JPY 289/tCO2. Low rate but broad coverage. Revenue funds green investment."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.457",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "RU": {
+      "country_name": "Russia",
+      "iso_alpha2": "RU",
+      "iso_alpha3": "RUS",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Sakhalin ETS Pilot",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2022-09-01",
+          "carbon_price_per_tco2e": "3.00",
+          "currency": "EUR",
+          "price_local": "300.00",
+          "currency_local": "RUB",
+          "sectors_covered": ["power_generation", "industry", "transport"],
+          "coverage_pct_national_emissions": 0.3,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Regional pilot on Sakhalin Island only. Not applicable to major industrial regions."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.390",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "aluminium", "fertilisers"],
+      "notes": "EU sanctions complicate CBAM interactions. No national carbon pricing. Sakhalin pilot too limited for CBAM deductions."
+    },
+    "US": {
+      "country_name": "United States",
+      "iso_alpha2": "US",
+      "iso_alpha3": "USA",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Regional Greenhouse Gas Initiative (RGGI)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2009-01-01",
+          "carbon_price_per_tco2e": "16.00",
+          "currency": "EUR",
+          "price_local": "17.50",
+          "currency_local": "USD",
+          "sectors_covered": ["power_generation"],
+          "coverage_pct_national_emissions": 6,
+          "cbam_eligible": false,
+          "free_allocation": false,
+          "notes": "12 northeastern states. Full auction. Not a national scheme; limited CBAM applicability."
+        },
+        {
+          "scheme_name": "California Cap-and-Trade Program",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2012-01-01",
+          "carbon_price_per_tco2e": "37.00",
+          "currency": "EUR",
+          "price_local": "40.00",
+          "currency_local": "USD",
+          "sectors_covered": ["power_generation", "industry", "transport_fuels"],
+          "coverage_pct_national_emissions": 6,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Linked with Quebec. Covers ~80% of CA emissions. Sub-national, so CBAM eligibility uncertain."
+        },
+        {
+          "scheme_name": "Washington State Climate Commitment Act (CCA)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2023-01-01",
+          "carbon_price_per_tco2e": "48.00",
+          "currency": "EUR",
+          "price_local": "52.00",
+          "currency_local": "USD",
+          "sectors_covered": ["power_generation", "industry", "transport_fuels"],
+          "coverage_pct_national_emissions": 1.5,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Sub-national scheme. High initial prices. Political uncertainty after ballot initiative."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.371",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium", "fertilisers"],
+      "notes": "No federal carbon price. Sub-national schemes have uncertain CBAM eligibility under Article 26."
+    },
+    "CA": {
+      "country_name": "Canada",
+      "iso_alpha2": "CA",
+      "iso_alpha3": "CAN",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Federal Carbon Pricing (Output-Based Pricing System)",
+          "scheme_type": "hybrid",
+          "status": "operational",
+          "start_date": "2019-01-01",
+          "carbon_price_per_tco2e": "58.00",
+          "currency": "EUR",
+          "price_local": "80.00",
+          "currency_local": "CAD",
+          "sectors_covered": ["all_fossil_fuels", "industry"],
+          "coverage_pct_national_emissions": 80,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Federal backstop at CAD 80/tCO2 (2024), rising CAD 15/yr to CAD 170 by 2030. OBPS for industry."
+        },
+        {
+          "scheme_name": "Quebec Cap-and-Trade System",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2013-01-01",
+          "carbon_price_per_tco2e": "37.00",
+          "currency": "EUR",
+          "price_local": "40.00",
+          "currency_local": "USD",
+          "sectors_covered": ["power_generation", "industry", "transport_fuels"],
+          "coverage_pct_national_emissions": 5,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Linked with California. Covers ~80% of Quebec emissions."
+        },
+        {
+          "scheme_name": "British Columbia Carbon Tax",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2008-07-01",
+          "carbon_price_per_tco2e": "52.00",
+          "currency": "EUR",
+          "price_local": "80.00",
+          "currency_local": "CAD",
+          "sectors_covered": ["all_fossil_fuels"],
+          "coverage_pct_national_emissions": 4,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "Pioneer carbon tax. Revenue neutral initially, now partially allocated to climate action."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.110",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium", "fertilisers"]
+    },
+    "BR": {
+      "country_name": "Brazil",
+      "iso_alpha2": "BR",
+      "iso_alpha3": "BRA",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Brazil ETS (SBCE - Sistema Brasileiro de Comercio de Emissoes)",
+          "scheme_type": "ets",
+          "status": "planned",
+          "start_date": "2026-01-01",
+          "expected_trading_date": "2027-01-01",
+          "carbon_price_per_tco2e": "0.00",
+          "currency": "EUR",
+          "price_local": "0.00",
+          "currency_local": "BRL",
+          "sectors_covered": ["power_generation", "industry", "refining"],
+          "coverage_pct_national_emissions": 25,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Legislation approved December 2024 (PL 182/2024). MRV phase 2026, trading 2027. Covers facilities >25ktCO2/yr."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.065",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium", "fertilisers"]
+    },
+    "MX": {
+      "country_name": "Mexico",
+      "iso_alpha2": "MX",
+      "iso_alpha3": "MEX",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Mexico Carbon Tax (IEPS on fossil fuels)",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2014-01-01",
+          "carbon_price_per_tco2e": "3.50",
+          "currency": "EUR",
+          "price_local": "70.00",
+          "currency_local": "MXN",
+          "sectors_covered": ["fossil_fuels"],
+          "coverage_pct_national_emissions": 46,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "Tax on fossil fuel sales. Natural gas exempt. Rate varies by fuel, approx MXN 70/tCO2 average."
+        },
+        {
+          "scheme_name": "Mexico ETS Pilot (SCE)",
+          "scheme_type": "ets",
+          "status": "pilot",
+          "start_date": "2020-01-01",
+          "carbon_price_per_tco2e": "4.00",
+          "currency": "EUR",
+          "price_local": "80.00",
+          "currency_local": "MXN",
+          "sectors_covered": ["power_generation", "industry"],
+          "coverage_pct_national_emissions": 37,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Pilot phase extended. Full operational phase delayed. Covers facilities >100ktCO2/yr."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.435",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "EG": {
+      "country_name": "Egypt",
+      "iso_alpha2": "EG",
+      "iso_alpha3": "EGY",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.470",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["fertilisers", "cement", "iron_steel"],
+      "notes": "No carbon pricing. Major fertiliser exporter (urea, ammonia). Exploring voluntary carbon market."
+    },
+    "DZ": {
+      "country_name": "Algeria",
+      "iso_alpha2": "DZ",
+      "iso_alpha3": "DZA",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.530",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["fertilisers", "iron_steel"],
+      "notes": "No carbon pricing. Gas-rich economy. Ammonia and urea production for export."
+    },
+    "MA": {
+      "country_name": "Morocco",
+      "iso_alpha2": "MA",
+      "iso_alpha3": "MAR",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Morocco Internal Carbon Price (voluntary)",
+          "scheme_type": "internal_pricing",
+          "status": "planned",
+          "start_date": "2026-01-01",
+          "carbon_price_per_tco2e": "0.00",
+          "currency": "EUR",
+          "price_local": "0.00",
+          "currency_local": "MAD",
+          "sectors_covered": [],
+          "coverage_pct_national_emissions": 0,
+          "cbam_eligible": false,
+          "free_allocation": false,
+          "notes": "Exploring carbon pricing under national climate strategy. No operational scheme."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.650",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["fertilisers", "cement", "iron_steel"]
+    },
+    "TN": {
+      "country_name": "Tunisia",
+      "iso_alpha2": "TN",
+      "iso_alpha3": "TUN",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.500",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["fertilisers", "cement", "iron_steel"],
+      "notes": "No carbon pricing. Significant exporter of phosphate fertilisers to EU."
+    },
+    "ZA": {
+      "country_name": "South Africa",
+      "iso_alpha2": "ZA",
+      "iso_alpha3": "ZAF",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "South Africa Carbon Tax",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2019-06-01",
+          "carbon_price_per_tco2e": "9.50",
+          "currency": "EUR",
+          "price_local": "190.00",
+          "currency_local": "ZAR",
+          "sectors_covered": ["industry", "power_generation", "transport"],
+          "coverage_pct_national_emissions": 80,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "Effective rate much lower due to allowances/offsets. Phase 2 (2026-2030) tightening. Base rate R190/tCO2 but effective rate ~R9-45/tCO2 after allowances."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.928",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["iron_steel", "aluminium", "fertilisers"]
+    },
+    "MZ": {
+      "country_name": "Mozambique",
+      "iso_alpha2": "MZ",
+      "iso_alpha3": "MOZ",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.110",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["aluminium"],
+      "notes": "No carbon pricing. Mozal aluminium smelter is one of Africa's largest; powered partly by Cahora Bassa hydro."
+    },
+    "ID": {
+      "country_name": "Indonesia",
+      "iso_alpha2": "ID",
+      "iso_alpha3": "IDN",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Indonesia Carbon Tax",
+          "scheme_type": "carbon_tax",
+          "status": "planned",
+          "start_date": "2025-01-01",
+          "carbon_price_per_tco2e": "2.00",
+          "currency": "EUR",
+          "price_local": "30000.00",
+          "currency_local": "IDR",
+          "sectors_covered": ["power_generation"],
+          "coverage_pct_national_emissions": 35,
+          "cbam_eligible": false,
+          "free_allocation": false,
+          "notes": "Repeatedly delayed from 2022. IDR 30,000/tCO2 (~EUR 2). Implementation uncertain."
+        },
+        {
+          "scheme_name": "Indonesia ETS (Cap-and-Tax)",
+          "scheme_type": "ets",
+          "status": "pilot",
+          "start_date": "2023-02-01",
+          "carbon_price_per_tco2e": "2.00",
+          "currency": "EUR",
+          "price_local": "30000.00",
+          "currency_local": "IDR",
+          "sectors_covered": ["power_generation"],
+          "coverage_pct_national_emissions": 35,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Mandatory for coal power plants >25MW. Cap-and-tax hybrid. Very low penalty rate."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.760",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "VN": {
+      "country_name": "Vietnam",
+      "iso_alpha2": "VN",
+      "iso_alpha3": "VNM",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Vietnam ETS",
+          "scheme_type": "ets",
+          "status": "planned",
+          "start_date": "2028-01-01",
+          "carbon_price_per_tco2e": "0.00",
+          "currency": "EUR",
+          "price_local": "0.00",
+          "currency_local": "VND",
+          "sectors_covered": ["power_generation", "iron_steel", "cement"],
+          "coverage_pct_national_emissions": 30,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Domestic carbon credit exchange launched 2025. Full ETS planned for 2028."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.560",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "cement"]
+    },
+    "TH": {
+      "country_name": "Thailand",
+      "iso_alpha2": "TH",
+      "iso_alpha3": "THA",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Thailand Voluntary ETS (V-ETS)",
+          "scheme_type": "ets",
+          "status": "pilot",
+          "start_date": "2023-01-01",
+          "carbon_price_per_tco2e": "3.00",
+          "currency": "EUR",
+          "price_local": "120.00",
+          "currency_local": "THB",
+          "sectors_covered": ["power_generation", "industry"],
+          "coverage_pct_national_emissions": 5,
+          "cbam_eligible": false,
+          "free_allocation": true,
+          "notes": "Voluntary pilot. Mandatory ETS under consideration. Low participation."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.470",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "MY": {
+      "country_name": "Malaysia",
+      "iso_alpha2": "MY",
+      "iso_alpha3": "MYS",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Bursa Carbon Exchange (BCX)",
+          "scheme_type": "voluntary_market",
+          "status": "operational",
+          "start_date": "2022-12-01",
+          "carbon_price_per_tco2e": "8.00",
+          "currency": "EUR",
+          "price_local": "35.00",
+          "currency_local": "MYR",
+          "sectors_covered": [],
+          "coverage_pct_national_emissions": 0,
+          "cbam_eligible": false,
+          "free_allocation": false,
+          "notes": "Voluntary carbon credit exchange, not a compliance scheme. Not eligible for CBAM deduction."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.580",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "PH": {
+      "country_name": "Philippines",
+      "iso_alpha2": "PH",
+      "iso_alpha3": "PHL",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.610",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "cement"],
+      "notes": "No carbon pricing. Exploring carbon credit market."
+    },
+    "TW": {
+      "country_name": "Taiwan",
+      "iso_alpha2": "TW",
+      "iso_alpha3": "TWN",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Taiwan Carbon Fee",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2025-01-01",
+          "carbon_price_per_tco2e": "8.50",
+          "currency": "EUR",
+          "price_local": "300.00",
+          "currency_local": "TWD",
+          "sectors_covered": ["power_generation", "iron_steel", "cement", "semiconductors", "refining"],
+          "coverage_pct_national_emissions": 54,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "TWD 300/tCO2 for direct emissions from facilities >25ktCO2/yr. Collected from 2025. Discounts for SBTi-aligned entities."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.495",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "AU": {
+      "country_name": "Australia",
+      "iso_alpha2": "AU",
+      "iso_alpha3": "AUS",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Safeguard Mechanism (reformed)",
+          "scheme_type": "hybrid",
+          "status": "operational",
+          "start_date": "2023-07-01",
+          "carbon_price_per_tco2e": "25.00",
+          "currency": "EUR",
+          "price_local": "38.00",
+          "currency_local": "AUD",
+          "sectors_covered": ["industry", "mining", "oil_gas"],
+          "coverage_pct_national_emissions": 28,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Reformed Safeguard Mechanism: declining baselines for facilities >100ktCO2/yr. SMCs tradeable. ACCU price ~AUD 38."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.620",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["aluminium", "iron_steel"]
+    },
+    "NZ": {
+      "country_name": "New Zealand",
+      "iso_alpha2": "NZ",
+      "iso_alpha3": "NZL",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "New Zealand Emissions Trading Scheme (NZ ETS)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2008-09-01",
+          "carbon_price_per_tco2e": "35.00",
+          "currency": "EUR",
+          "price_local": "55.00",
+          "currency_local": "NZD",
+          "sectors_covered": ["all_sectors_except_agriculture"],
+          "coverage_pct_national_emissions": 49,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Broad coverage. NZU price volatile. Agriculture entry postponed. Free allocation for EITE industries."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.080",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["aluminium"]
+    },
+    "AR": {
+      "country_name": "Argentina",
+      "iso_alpha2": "AR",
+      "iso_alpha3": "ARG",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Argentina Carbon Tax (Impuesto al CO2)",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2018-01-01",
+          "carbon_price_per_tco2e": "5.50",
+          "currency": "EUR",
+          "price_local": "6.00",
+          "currency_local": "USD",
+          "sectors_covered": ["liquid_fossil_fuels"],
+          "coverage_pct_national_emissions": 20,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "Tax on liquid fuels only. Natural gas and coal exempt. Real value eroded by inflation."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.350",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "aluminium"]
+    },
+    "CL": {
+      "country_name": "Chile",
+      "iso_alpha2": "CL",
+      "iso_alpha3": "CHL",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Chile Green Tax (Impuesto Verde)",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2017-01-01",
+          "carbon_price_per_tco2e": "5.00",
+          "currency": "EUR",
+          "price_local": "5.00",
+          "currency_local": "USD",
+          "sectors_covered": ["power_generation"],
+          "coverage_pct_national_emissions": 39,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "USD 5/tCO2 for facilities >25MW thermal. Offset mechanism introduced 2022."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.350",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel"]
+    },
+    "CO": {
+      "country_name": "Colombia",
+      "iso_alpha2": "CO",
+      "iso_alpha3": "COL",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Colombia Carbon Tax (Impuesto Nacional al Carbono)",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2017-01-01",
+          "carbon_price_per_tco2e": "5.00",
+          "currency": "EUR",
+          "price_local": "23500.00",
+          "currency_local": "COP",
+          "sectors_covered": ["fossil_fuels"],
+          "coverage_pct_national_emissions": 24,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "COP 23,500/tCO2 in 2024. Natural gas included since 2019. Offset mechanism available."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.140",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "cement"]
+    },
+    "KZ": {
+      "country_name": "Kazakhstan",
+      "iso_alpha2": "KZ",
+      "iso_alpha3": "KAZ",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Kazakhstan Emissions Trading Scheme (KZ ETS)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2013-01-01",
+          "carbon_price_per_tco2e": "1.50",
+          "currency": "EUR",
+          "price_local": "750.00",
+          "currency_local": "KZT",
+          "sectors_covered": ["power_generation", "industry", "mining", "oil_gas"],
+          "coverage_pct_national_emissions": 50,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "Restarted 2018 after 2016 suspension. Very low allowance prices. Over-allocation issues."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.650",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "aluminium", "fertilisers"]
+    },
+    "AE": {
+      "country_name": "United Arab Emirates",
+      "iso_alpha2": "AE",
+      "iso_alpha3": "ARE",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.450",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["aluminium", "iron_steel"],
+      "notes": "No carbon pricing. Emirates Global Aluminium (EGA) is major primary aluminium exporter to EU. Exploring internal carbon pricing."
+    },
+    "SA": {
+      "country_name": "Saudi Arabia",
+      "iso_alpha2": "SA",
+      "iso_alpha3": "SAU",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.650",
+      "cbam_relevance": "high",
+      "major_cbam_exports": ["fertilisers", "aluminium", "iron_steel", "hydrogen"],
+      "notes": "No carbon pricing. SABIC and Ma'aden are major fertiliser/aluminium exporters. Blue hydrogen ambitions."
+    },
+    "QA": {
+      "country_name": "Qatar",
+      "iso_alpha2": "QA",
+      "iso_alpha3": "QAT",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.480",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["fertilisers", "aluminium", "iron_steel"],
+      "notes": "No carbon pricing. QAFCO/QAFAC are major urea/ammonia producers. Qatar Aluminium (Qatalum) is significant."
+    },
+    "BH": {
+      "country_name": "Bahrain",
+      "iso_alpha2": "BH",
+      "iso_alpha3": "BHR",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.580",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["aluminium"],
+      "notes": "No carbon pricing. Aluminium Bahrain (Alba) is one of the world's largest aluminium smelters."
+    },
+    "OM": {
+      "country_name": "Oman",
+      "iso_alpha2": "OM",
+      "iso_alpha3": "OMN",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.520",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["aluminium", "iron_steel"],
+      "notes": "No carbon pricing. Sohar Aluminium is key exporter. Green hydrogen projects under development."
+    },
+    "PK": {
+      "country_name": "Pakistan",
+      "iso_alpha2": "PK",
+      "iso_alpha3": "PAK",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.440",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement", "iron_steel"],
+      "notes": "No carbon pricing. Considering carbon tax under climate legislation."
+    },
+    "BD": {
+      "country_name": "Bangladesh",
+      "iso_alpha2": "BD",
+      "iso_alpha3": "BGD",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.580",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "cement"],
+      "notes": "No carbon pricing. Growing steel industry (ship-breaking based)."
+    },
+    "LK": {
+      "country_name": "Sri Lanka",
+      "iso_alpha2": "LK",
+      "iso_alpha3": "LKA",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.430",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement"],
+      "notes": "No carbon pricing. Limited CBAM-relevant exports."
+    },
+    "NG": {
+      "country_name": "Nigeria",
+      "iso_alpha2": "NG",
+      "iso_alpha3": "NGA",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.430",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "fertilisers", "cement"],
+      "notes": "No carbon pricing. Dangote refinery/fertiliser complex may increase CBAM-relevant exports."
+    },
+    "KE": {
+      "country_name": "Kenya",
+      "iso_alpha2": "KE",
+      "iso_alpha3": "KEN",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.100",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement"],
+      "notes": "No carbon pricing. Very low grid EF due to geothermal/hydro. Limited CBAM-relevant exports."
+    },
+    "GH": {
+      "country_name": "Ghana",
+      "iso_alpha2": "GH",
+      "iso_alpha3": "GHA",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.300",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["aluminium"],
+      "notes": "No carbon pricing. Volta Aluminium Company (VALCO) smelter uses Akosombo hydro."
+    },
+    "PE": {
+      "country_name": "Peru",
+      "iso_alpha2": "PE",
+      "iso_alpha3": "PER",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.240",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "cement"],
+      "notes": "No carbon pricing. Exploring carbon market mechanisms."
+    },
+    "EC": {
+      "country_name": "Ecuador",
+      "iso_alpha2": "EC",
+      "iso_alpha3": "ECU",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.250",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel"],
+      "notes": "No carbon pricing. Hydro-dominant grid."
+    },
+    "SG": {
+      "country_name": "Singapore",
+      "iso_alpha2": "SG",
+      "iso_alpha3": "SGP",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "Singapore Carbon Tax",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2019-01-01",
+          "carbon_price_per_tco2e": "21.00",
+          "currency": "EUR",
+          "price_local": "25.00",
+          "currency_local": "SGD",
+          "sectors_covered": ["industry", "power_generation"],
+          "coverage_pct_national_emissions": 80,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "SGD 25/tCO2 from 2024-2025, rising to SGD 45 in 2026-2027, SGD 50-80 by 2030. Covers facilities >25ktCO2/yr."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.408",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel"],
+      "notes": "High carbon tax rate for Asia. Refining hub."
+    },
+    "IL": {
+      "country_name": "Israel",
+      "iso_alpha2": "IL",
+      "iso_alpha3": "ISR",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.490",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement", "fertilisers"],
+      "notes": "No carbon pricing. Considering ETS aligned with EU. ICL exports fertilisers."
+    },
+    "JO": {
+      "country_name": "Jordan",
+      "iso_alpha2": "JO",
+      "iso_alpha3": "JOR",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.510",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement", "fertilisers"],
+      "notes": "No carbon pricing. Limited industrial base. Lafarge Holcim cement plant."
+    },
+    "IS": {
+      "country_name": "Iceland",
+      "iso_alpha2": "IS",
+      "iso_alpha3": "ISL",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "EU Emissions Trading System (EEA participation)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2008-01-01",
+          "carbon_price_per_tco2e": "68.00",
+          "currency": "EUR",
+          "price_local": "68.00",
+          "currency_local": "EUR",
+          "sectors_covered": ["industry", "aviation"],
+          "coverage_pct_national_emissions": 40,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "EEA member. Aluminium smelting is major emitter. Geothermal/hydro grid."
+        },
+        {
+          "scheme_name": "Iceland Carbon Tax",
+          "scheme_type": "carbon_tax",
+          "status": "operational",
+          "start_date": "2010-01-01",
+          "carbon_price_per_tco2e": "33.00",
+          "currency": "EUR",
+          "price_local": "4740.00",
+          "currency_local": "ISK",
+          "sectors_covered": ["fossil_fuels"],
+          "coverage_pct_national_emissions": 55,
+          "cbam_eligible": true,
+          "free_allocation": false,
+          "notes": "Applies to liquid fossil fuels. ETS participants exempt from carbon tax on covered emissions."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.002",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["aluminium"]
+    },
+    "LI": {
+      "country_name": "Liechtenstein",
+      "iso_alpha2": "LI",
+      "iso_alpha3": "LIE",
+      "carbon_pricing_schemes": [
+        {
+          "scheme_name": "EU Emissions Trading System (EEA participation)",
+          "scheme_type": "ets",
+          "status": "operational",
+          "start_date": "2008-01-01",
+          "carbon_price_per_tco2e": "68.00",
+          "currency": "EUR",
+          "price_local": "120.00",
+          "currency_local": "CHF",
+          "sectors_covered": ["industry"],
+          "coverage_pct_national_emissions": 15,
+          "cbam_eligible": true,
+          "free_allocation": true,
+          "notes": "EEA member. Very few covered installations. Uses Swiss CO2 levy."
+        }
+      ],
+      "grid_emission_factor_tco2e_per_mwh": "0.013",
+      "cbam_relevance": "low",
+      "major_cbam_exports": []
+    },
+    "BY": {
+      "country_name": "Belarus",
+      "iso_alpha2": "BY",
+      "iso_alpha3": "BLR",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.420",
+      "cbam_relevance": "medium",
+      "major_cbam_exports": ["iron_steel", "fertilisers"],
+      "notes": "No carbon pricing. EU sanctions apply. Belaruskali potash/fertiliser exports historically significant."
+    },
+    "GE": {
+      "country_name": "Georgia",
+      "iso_alpha2": "GE",
+      "iso_alpha3": "GEO",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.120",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "cement"],
+      "notes": "No carbon pricing. Low grid EF due to hydropower."
+    },
+    "AZ": {
+      "country_name": "Azerbaijan",
+      "iso_alpha2": "AZ",
+      "iso_alpha3": "AZE",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.530",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["iron_steel", "cement", "aluminium"],
+      "notes": "No carbon pricing. Oil/gas economy. Growing aluminium production."
+    },
+    "AM": {
+      "country_name": "Armenia",
+      "iso_alpha2": "AM",
+      "iso_alpha3": "ARM",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.200",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["aluminium", "cement"],
+      "notes": "No carbon pricing. Armenian aluminium foil exports."
+    },
+    "UZ": {
+      "country_name": "Uzbekistan",
+      "iso_alpha2": "UZ",
+      "iso_alpha3": "UZB",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.550",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["fertilisers", "cement"],
+      "notes": "No carbon pricing. Navoi Mining fertiliser production."
+    },
+    "ET": {
+      "country_name": "Ethiopia",
+      "iso_alpha2": "ET",
+      "iso_alpha3": "ETH",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.020",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement"],
+      "notes": "No carbon pricing. Very low grid EF (hydropower dominant). Limited industrial exports."
+    },
+    "TZ": {
+      "country_name": "Tanzania",
+      "iso_alpha2": "TZ",
+      "iso_alpha3": "TZA",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.370",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement"],
+      "notes": "No carbon pricing."
+    },
+    "CI": {
+      "country_name": "Cote d'Ivoire",
+      "iso_alpha2": "CI",
+      "iso_alpha3": "CIV",
+      "carbon_pricing_schemes": [],
+      "grid_emission_factor_tco2e_per_mwh": "0.400",
+      "cbam_relevance": "low",
+      "major_cbam_exports": ["cement"],
+      "notes": "No carbon pricing."
+    }
+  },
+  "cbam_article_26_rules": {
+    "description": "Rules for deducting carbon prices paid in the country of origin from CBAM certificate obligations",
+    "legal_basis": "Regulation (EU) 2023/956, Article 26",
+    "key_requirements": [
+      "Carbon price must have been effectively paid in the country of origin",
+      "No free allocation or rebate was received for the exported goods",
+      "The carbon price was not subject to export rebate or compensation",
+      "The carbon price applies to greenhouse gas emissions embedded in the imported goods",
+      "Only explicit carbon pricing (ETS or carbon tax) is eligible, not implicit carbon costs"
+    ],
+    "calculation": {
+      "formula": "CBAM_certificates_required = (embedded_emissions * EU_ETS_price) - carbon_price_actually_paid_in_origin_country",
+      "unit": "EUR",
+      "notes": "If the carbon price paid in the country of origin exceeds the EU ETS price, no refund is given to the importer."
+    },
+    "documentation_required": [
+      "Proof of carbon price payment (tax receipt or allowance surrender record)",
+      "Confirmation that no free allocation was received for exported production",
+      "Confirmation that no export rebate was provided",
+      "Scheme details (type, coverage, price mechanism)"
+    ]
+  },
+  "grid_emission_factor_sources": {
+    "primary": "IEA CO2 Emissions from Fuel Combustion (2024 edition)",
+    "secondary": "Ember Global Electricity Review 2025",
+    "notes": "Grid emission factors represent national average generation-based intensity. For CBAM indirect emissions, use the factor applicable to the specific installation's electricity source where available."
+  }
+}

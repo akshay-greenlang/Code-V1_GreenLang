@@ -1,0 +1,296 @@
+{
+  "metadata": {
+    "locale": "fr",
+    "version": "1.1.0",
+    "language": "Francais",
+    "description": "Modeles de rapports en francais pour le reporting de durabilite CSRD"
+  },
+  "cover_page": {
+    "title": "Rapport de durabilite",
+    "subtitle": "conformement a la directive europeenne sur la publication d'informations en matiere de durabilite (CSRD)",
+    "standard_reference": "Etabli conformement aux normes europeennes d'information en matiere de durabilite (ESRS)",
+    "regulation_reference": "Reglement delegue (UE) 2023/2772 de la Commission",
+    "fiscal_year_label": "Exercice fiscal",
+    "company_name_label": "Nom de l'entreprise",
+    "report_date_label": "Date du rapport",
+    "prepared_by_label": "Prepare par",
+    "approved_by_label": "Approuve par",
+    "version_label": "Version",
+    "confidentiality_notice": "Confidentiel - Usage interne uniquement",
+    "draft_watermark": "PROJET",
+    "final_watermark": "DEFINITIF"
+  },
+  "table_of_contents": {
+    "title": "Table des matieres",
+    "section_label": "Section",
+    "page_label": "Page"
+  },
+  "sections": {
+    "executive_summary": {
+      "title": "Resume executif",
+      "subtitle": "Indicateurs et resultats cles en matiere de durabilite",
+      "intro_template": "Le present rapport de durabilite est presente par {company_name} pour l'exercice fiscal {fiscal_year}. Il a ete prepare conformement aux normes europeennes d'information en matiere de durabilite (ESRS), telles que definies dans le reglement delegue (UE) 2023/2772 de la Commission.",
+      "highlights_title": "Points saillants",
+      "kpi_summary_title": "Synthese des indicateurs cles de performance"
+    },
+    "general_information": {
+      "title": "Informations generales (ESRS 2)",
+      "subtitle": "Base de preparation, gouvernance et strategie",
+      "basis_of_preparation": {
+        "title": "Base de preparation (BP-1/BP-2)",
+        "template": "La declaration de durabilite de {company_name} a ete preparee conformement aux ESRS. Le perimetre de consolidation du reporting de durabilite correspond a {consolidation_scope}. La periode de reference couvre {reporting_period}."
+      },
+      "governance": {
+        "title": "Gouvernance (GOV-1 a GOV-5)",
+        "gov1_title": "Role des organes d'administration, de direction et de surveillance",
+        "gov1_template": "La responsabilite des questions de durabilite incombe a {responsible_body}. Cet organe est compose de {member_count} membres et traite {frequency} des questions de durabilite.",
+        "gov2_title": "Questions de durabilite traitees",
+        "gov3_title": "Remuneration et durabilite",
+        "gov3_template": "{percentage}% de la remuneration variable des dirigeants est liee a des indicateurs de performance en matiere de durabilite.",
+        "gov4_title": "Declaration sur le devoir de diligence",
+        "gov5_title": "Gestion des risques et controles internes"
+      },
+      "strategy": {
+        "title": "Strategie et modele d'affaires (SBM-1 a SBM-3)",
+        "sbm1_title": "Strategie, modele d'affaires et chaine de valeur",
+        "sbm1_template": "{company_name} opere dans le secteur {sector} et emploie {employee_count} collaborateurs. Le chiffre d'affaires net au cours de la periode de reference s'est eleve a {revenue}.",
+        "sbm2_title": "Interets et points de vue des parties prenantes",
+        "sbm3_title": "Incidences, risques et opportunites materiels"
+      },
+      "materiality": {
+        "title": "Evaluation de la materialite (IRO-1/IRO-2)",
+        "iro1_title": "Processus d'identification des aspects materiels",
+        "iro1_template": "L'evaluation de la double materialite a ete realisee au cours de la periode {assessment_period}. {stakeholder_count} parties prenantes ont ete consultees et {topic_count} aspects de durabilite ont ete evalues.",
+        "iro2_title": "Exigences de publication evaluees comme non materielles",
+        "matrix_title": "Matrice de materialite",
+        "impact_axis": "Materialite d'impact",
+        "financial_axis": "Materialite financiere",
+        "material_label": "Materiel",
+        "not_material_label": "Non materiel"
+      }
+    },
+    "environment": {
+      "title": "Aspects environnementaux (ESRS E1-E5)",
+      "subtitle": "Informations relatives au changement climatique, a la pollution, a l'eau, a la biodiversite et a l'economie circulaire",
+      "e1": {
+        "title": "Changement climatique (ESRS E1)",
+        "transition_plan": {
+          "title": "Plan de transition pour l'attenuation du changement climatique (E1-1)",
+          "template": "{company_name} a elabore un plan de transition pour l'attenuation du changement climatique qui est {compatibility} avec l'objectif de limitation du rechauffement a 1,5 degre Celsius de l'accord de Paris."
+        },
+        "policies": {
+          "title": "Politiques climatiques (E1-2)",
+          "template": "L'entreprise poursuit les politiques suivantes en matiere d'attenuation du changement climatique et d'adaptation a celui-ci :"
+        },
+        "actions": {
+          "title": "Actions et ressources (E1-3)",
+          "template": "Au cours de la periode de reference, les actions climatiques suivantes ont ete mises en oeuvre. Les investissements totaux dans les actions climatiques se sont eleves a {investment_amount}."
+        },
+        "targets": {
+          "title": "Objectifs climatiques (E1-4)",
+          "template": "{company_name} a defini les objectifs de reduction des GES suivants :",
+          "sbti_note": "Les objectifs ont ete {sbti_status} valides par la Science Based Targets initiative."
+        },
+        "energy": {
+          "title": "Consommation d'energie et mix energetique (E1-5)",
+          "template": "La consommation totale d'energie au cours de la periode de reference s'est elevee a {total_energy} MWh, dont {renewable_pct}% provenaient de sources renouvelables.",
+          "table_headers": {
+            "source": "Source d'energie",
+            "consumption": "Consommation (MWh)",
+            "share": "Part (%)",
+            "change": "Variation annuelle (%)"
+          }
+        },
+        "emissions": {
+          "title": "Emissions de gaz a effet de serre (E1-6)",
+          "template": "Les emissions totales de GES de {company_name} se sont elevees a {total_emissions} tonnes de CO2 equivalent au cours de la periode de reference.",
+          "scope1_title": "Emissions du scope 1 (directes)",
+          "scope2_title": "Emissions du scope 2 (indirectes liees a l'energie)",
+          "scope3_title": "Emissions du scope 3 (autres emissions indirectes)",
+          "total_title": "Emissions totales de GES",
+          "intensity_title": "Intensite des GES",
+          "table_headers": {
+            "category": "Categorie",
+            "current_year": "Annee de reference",
+            "previous_year": "Annee precedente",
+            "change": "Variation (%)",
+            "unit": "Unite"
+          }
+        },
+        "removals": {
+          "title": "Absorptions de GES et credits carbone (E1-7)",
+          "template": "Au cours de la periode de reference, les absorptions de GES se sont elevees a {removal_amount} tonnes de CO2 equivalent."
+        },
+        "carbon_pricing": {
+          "title": "Tarification interne du carbone (E1-8)",
+          "template": "{company_name} {carbon_pricing_status} applique une tarification interne du carbone."
+        },
+        "financial_effects": {
+          "title": "Effets financiers anticipes (E1-9)",
+          "physical_risks_title": "Risques physiques",
+          "transition_risks_title": "Risques de transition",
+          "template": "Les effets financiers anticipes des risques climatiques materiels sont estimes a {amount}."
+        }
+      },
+      "e2": {
+        "title": "Pollution (ESRS E2)",
+        "policies_title": "Politiques de prevention de la pollution (E2-1)",
+        "actions_title": "Actions et ressources (E2-2)",
+        "targets_title": "Objectifs (E2-3)",
+        "pollutants_title": "Pollution de l'air, de l'eau et du sol (E2-4)",
+        "pollutants_template": "Au cours de la periode de reference, les emissions de polluants atmospheriques se sont elevees a {air_emissions} tonnes.",
+        "substances_title": "Substances preoccupantes (E2-5)",
+        "financial_effects_title": "Effets financiers anticipes (E2-6)"
+      },
+      "e3": {
+        "title": "Ressources aquatiques et marines (ESRS E3)",
+        "policies_title": "Politiques (E3-1)",
+        "actions_title": "Actions et ressources (E3-2)",
+        "targets_title": "Objectifs (E3-3)",
+        "consumption_title": "Consommation d'eau (E3-4)",
+        "consumption_template": "La consommation totale d'eau s'est elevee a {total_water} metres cubes, dont {stressed_water} metres cubes dans les zones de stress hydrique.",
+        "financial_effects_title": "Effets financiers anticipes (E3-5)"
+      },
+      "e4": {
+        "title": "Biodiversite et ecosystemes (ESRS E4)",
+        "transition_plan_title": "Plan de transition (E4-1)",
+        "policies_title": "Politiques (E4-2)",
+        "actions_title": "Actions et ressources (E4-3)",
+        "targets_title": "Objectifs (E4-4)",
+        "metrics_title": "Indicateurs d'incidence (E4-5)",
+        "metrics_template": "{company_name} exploite {site_count} sites situes dans ou a proximite de zones sensibles pour la biodiversite.",
+        "financial_effects_title": "Effets financiers anticipes (E4-6)"
+      },
+      "e5": {
+        "title": "Utilisation des ressources et economie circulaire (ESRS E5)",
+        "policies_title": "Politiques (E5-1)",
+        "actions_title": "Actions et ressources (E5-2)",
+        "targets_title": "Objectifs (E5-3)",
+        "inflows_title": "Flux entrants de ressources (E5-4)",
+        "outflows_title": "Flux sortants de ressources (E5-5)",
+        "outflows_template": "Le volume total de dechets generes s'est eleve a {total_waste} tonnes, dont {recycling_rate}% ont ete recycles.",
+        "financial_effects_title": "Effets financiers anticipes (E5-6)"
+      }
+    },
+    "social": {
+      "title": "Aspects sociaux (ESRS S1-S4)",
+      "subtitle": "Informations relatives aux effectifs, a la chaine de valeur, aux communautes et aux consommateurs",
+      "s1": {
+        "title": "Effectifs de l'entreprise (ESRS S1)",
+        "policies_title": "Politiques (S1-1)",
+        "engagement_title": "Dialogue avec les effectifs (S1-2)",
+        "remediation_title": "Remediation des incidences negatives (S1-3)",
+        "actions_title": "Actions (S1-4)",
+        "targets_title": "Objectifs (S1-5)",
+        "characteristics_title": "Caracteristiques des salaries (S1-6)",
+        "characteristics_template": "{company_name} employait au total {total_employees} collaborateurs ({fte} equivalents temps plein) au cours de la periode de reference.",
+        "training_title": "Formation et developpement des competences (S1-13)",
+        "training_template": "Le nombre moyen d'heures de formation par salarie s'est eleve a {training_hours} heures.",
+        "health_safety_title": "Sante et securite (S1-14)",
+        "health_safety_template": "Au cours de la periode de reference, {injuries} accidents du travail et {fatalities} deces lies au travail ont ete enregistres. Le taux de frequence s'est eleve a {ltifr}.",
+        "remuneration_title": "Indicateurs de remuneration (S1-16)",
+        "remuneration_template": "L'ecart de remuneration entre les genres (non ajuste) est de {gender_pay_gap}%."
+      },
+      "s2": {
+        "title": "Travailleurs de la chaine de valeur (ESRS S2)",
+        "policies_title": "Politiques (S2-1)",
+        "template": "Au cours de la periode de reference, {audit_count} audits de fournisseurs relatifs aux droits des travailleurs ont ete realises."
+      },
+      "s3": {
+        "title": "Communautes affectees (ESRS S3)",
+        "policies_title": "Politiques (S3-1)",
+        "template": "{affected_communities} communautes sont affectees par les activites de l'entreprise."
+      },
+      "s4": {
+        "title": "Consommateurs et utilisateurs finaux (ESRS S4)",
+        "policies_title": "Politiques (S4-1)",
+        "template": "Au cours de la periode de reference, {safety_incidents} incidents de securite des produits et {recalls} rappels ont ete enregistres."
+      }
+    },
+    "governance": {
+      "title": "Gouvernance (ESRS G1)",
+      "subtitle": "Informations relatives a la conduite des affaires",
+      "g1": {
+        "title": "Conduite des affaires (ESRS G1)",
+        "culture_title": "Culture d'entreprise et politiques (G1-1)",
+        "supplier_title": "Gestion des relations avec les fournisseurs (G1-2)",
+        "anticorruption_title": "Lutte contre la corruption (G1-3)",
+        "anticorruption_template": "{training_pct}% des salaries ont ete formes aux politiques anti-corruption au cours de la periode de reference.",
+        "incidents_title": "Incidents (G1-4)",
+        "incidents_template": "Au cours de la periode de reference, {conviction_count} condamnations pour corruption et pots-de-vin ont ete enregistrees. Les amendes se sont elevees a {fine_amount}.",
+        "lobbying_title": "Influence politique (G1-5)",
+        "lobbying_template": "Les contributions politiques se sont elevees a {political_amount} et les depenses de lobbying a {lobby_amount}.",
+        "payment_title": "Pratiques de paiement (G1-6)",
+        "payment_template": "Le delai moyen de paiement etait de {avg_payment_days} jours. {late_payment_pct}% des paiements ont ete effectues en retard."
+      }
+    },
+    "methodology": {
+      "title": "Methodologie et qualite des donnees",
+      "subtitle": "Description des methodes et des sources de donnees utilisees",
+      "ghg_methodology": {
+        "title": "Methodologie du bilan carbone",
+        "template": "Le calcul des emissions de gaz a effet de serre a ete realise conformement au GHG Protocol Corporate Standard (scopes 1 et 2) et au GHG Protocol Corporate Value Chain Standard (scope 3). La consolidation est basee sur l'approche du {consolidation_approach}."
+      },
+      "data_quality": {
+        "title": "Qualite des donnees",
+        "template": "La qualite des donnees a ete evaluee selon les criteres suivants : exactitude, exhaustivite, coherence, transparence et comparabilite."
+      }
+    },
+    "assurance": {
+      "title": "Rapport de verification",
+      "subtitle": "Verification independante du reporting de durabilite",
+      "intro_template": "La declaration de durabilite a fait l'objet d'une {assurance_level} par {auditor_name}.",
+      "limited_assurance": "assurance limitee",
+      "reasonable_assurance": "assurance raisonnable",
+      "standard_reference": "La verification a ete realisee conformement a la norme ISAE 3000 (revisee)."
+    },
+    "disclaimers": {
+      "forward_looking": {
+        "title": "Declarations prospectives",
+        "text": "Le present rapport contient des declarations prospectives fondees sur les attentes et hypotheses actuelles de la direction. Ces declarations comportent des risques et des incertitudes susceptibles d'entrainer des ecarts significatifs entre les resultats reels et les attentes exprimees. L'entreprise n'assume aucune obligation de mettre a jour les declarations prospectives."
+      },
+      "regulatory_disclaimer": {
+        "title": "Avertissement reglementaire",
+        "text": "Le present rapport de durabilite a ete etabli conformement aux exigences de la directive (UE) 2022/2464 (CSRD) et des normes europeennes d'information en matiere de durabilite (ESRS)."
+      }
+    }
+  },
+  "formatting": {
+    "date_format": "DD/MM/YYYY",
+    "number_format": {
+      "decimal_separator": ",",
+      "thousands_separator": " ",
+      "currency_symbol": "EUR",
+      "currency_position": "after",
+      "percentage_format": "{value} %"
+    },
+    "page_labels": {
+      "page": "Page",
+      "of": "sur",
+      "continued": "(suite)"
+    },
+    "table_labels": {
+      "table": "Tableau",
+      "figure": "Figure",
+      "source": "Source",
+      "note": "Note",
+      "total": "Total",
+      "subtotal": "Sous-total",
+      "average": "Moyenne",
+      "n_a": "N/C",
+      "tbd": "A determiner"
+    },
+    "status_labels": {
+      "complete": "Termine",
+      "in_progress": "En cours",
+      "pending": "En attente",
+      "not_started": "Non commence",
+      "overdue": "En retard",
+      "on_track": "Conforme au plan",
+      "at_risk": "A risque",
+      "achieved": "Atteint",
+      "not_achieved": "Non atteint",
+      "partially_achieved": "Partiellement atteint"
+    }
+  }
+}

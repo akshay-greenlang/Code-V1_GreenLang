@@ -23,7 +23,7 @@ Responsibilities:
 Performance target: <3ms per shipment
 Accuracy target: 100% (within floating point precision)
 
-Version: 1.0.0
+Version: 1.1.0
 Author: GreenLang CBAM Team
 License: Proprietary
 """
@@ -32,12 +32,20 @@ import json
 import logging
 import sys
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field
 from greenlang.determinism import FinancialDecimal
+
+# v1.1: Supplier portal integration (optional)
+try:
+    from ..supplier_portal.emissions_submission import EmissionsSubmissionEngine
+    SUPPLIER_PORTAL_AVAILABLE = True
+except ImportError:
+    SUPPLIER_PORTAL_AVAILABLE = False
 
 # Add parent directory to path to import emission_factors
 sys.path.insert(0, str(Path(__file__).parent.parent / "data"))
@@ -83,9 +91,13 @@ class EmissionsCalculation(BaseModel):
     """Detailed emissions calculation for a single shipment."""
 
     # Calculation metadata
-    calculation_method: str  # "default_values", "actual_data", "complex_goods"
-    emission_factor_source: str  # "EU Default", "Supplier EPD", etc.
+    calculation_method: str  # "default_values", "actual_data", "regional_factor", "complex_goods"
+    emission_factor_source: str  # "EU Default", "Supplier EPD", "Regional Factor", etc.
     data_quality: str  # "high", "medium", "low"
+
+    # v1.1: Method hierarchy tracking
+    method_priority: int = 4  # 1=supplier_verified, 2=supplier_unverified, 3=regional, 4=default
+    data_source: str = "default_value"  # "supplier_actual", "regional_factor", "default_value"
 
     # Emission factors (per ton)
     emission_factor_direct_tco2_per_ton: float
@@ -98,8 +110,13 @@ class EmissionsCalculation(BaseModel):
     indirect_emissions_tco2: float
     total_emissions_tco2: float
 
+    # v1.1: Default value markup (Omnibus progressive)
+    default_markup_applied: bool = False
+    default_markup_pct: float = 0.0
+    pre_markup_emissions_tco2: Optional[float] = None
+
     # Audit trail
-    calculation_formula: str = "total = mass_tonnes × emission_factor"
+    calculation_formula: str = "total = mass_tonnes x emission_factor"
     calculation_timestamp: Optional[str] = None
 
     # Complex goods (if applicable)
@@ -137,10 +154,19 @@ class EmissionsCalculatorAgent:
     Accuracy: 100% within floating point precision
     """
 
+    # v1.1: Omnibus progressive default value markup schedule
+    DEFAULT_MARKUP_SCHEDULE = {
+        2026: Decimal("0.10"),  # +10% in 2026
+        2027: Decimal("0.20"),  # +20% in 2027
+    }
+    DEFAULT_MARKUP_FALLBACK = Decimal("0.30")  # +30% for 2028 and beyond
+
     def __init__(
         self,
         suppliers_path: Optional[Union[str, Path]] = None,
-        cbam_rules_path: Optional[Union[str, Path]] = None
+        cbam_rules_path: Optional[Union[str, Path]] = None,
+        regional_factors_path: Optional[Union[str, Path]] = None,
+        supplier_portal_config: Optional[Dict[str, Any]] = None
     ):
         """
         Initialize the EmissionsCalculatorAgent.
@@ -148,13 +174,28 @@ class EmissionsCalculatorAgent:
         Args:
             suppliers_path: Path to suppliers YAML (optional, for actual emissions)
             cbam_rules_path: Path to CBAM rules YAML (optional, for validation)
+            regional_factors_path: v1.1 path to regional emission factors (optional)
+            supplier_portal_config: v1.1 supplier portal configuration (optional)
         """
         self.suppliers_path = Path(suppliers_path) if suppliers_path else None
         self.cbam_rules_path = Path(cbam_rules_path) if cbam_rules_path else None
+        self.regional_factors_path = (
+            Path(regional_factors_path) if regional_factors_path else None
+        )
 
         # Load reference data
         self.suppliers = self._load_suppliers() if self.suppliers_path else {}
         self.cbam_rules = self._load_cbam_rules() if self.cbam_rules_path else {}
+        self.regional_factors = (
+            self._load_regional_factors() if self.regional_factors_path else {}
+        )
+
+        # v1.1: Supplier portal integration
+        self.supplier_portal_config = supplier_portal_config or {}
+        self.supplier_portal_enabled = (
+            SUPPLIER_PORTAL_AVAILABLE
+            and self.supplier_portal_config.get("enabled", False)
+        )
 
         # Check emission factors module
         if ef is None:
@@ -167,7 +208,11 @@ class EmissionsCalculatorAgent:
             "total_shipments": 0,
             "default_values_count": 0,
             "actual_data_count": 0,
+            "regional_factor_count": 0,
+            "supplier_verified_count": 0,
+            "supplier_unverified_count": 0,
             "complex_goods_count": 0,
+            "default_markup_applied_count": 0,
             "total_emissions_tco2": 0.0,
             "calculation_errors": 0,
             "start_time": None,
@@ -175,6 +220,8 @@ class EmissionsCalculatorAgent:
         }
 
         logger.info(f"EmissionsCalculatorAgent initialized with {len(self.suppliers)} suppliers")
+        if self.regional_factors:
+            logger.info(f"Loaded {len(self.regional_factors)} regional emission factor entries")
 
     # ========================================================================
     # DATA LOADING
@@ -214,6 +261,114 @@ class EmissionsCalculatorAgent:
         except Exception as e:
             logger.warning(f"Failed to load CBAM rules: {e}")
             return {}
+
+    def _load_regional_factors(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Load country-specific regional emission factors from YAML.
+
+        Returns:
+            Dict keyed by (cn_code, country_iso) with emission factor data.
+        """
+        if not self.regional_factors_path or not self.regional_factors_path.exists():
+            return {}
+
+        try:
+            with open(self.regional_factors_path, 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f)
+
+            factors = {}
+            for entry in data.get("regional_factors", []):
+                key = (entry.get("cn_code", ""), entry.get("country_iso", ""))
+                factors[key] = entry
+
+            logger.info(f"Loaded {len(factors)} regional emission factors")
+            return factors
+        except Exception as e:
+            logger.warning(f"Failed to load regional factors: {e}")
+            return {}
+
+    # ========================================================================
+    # v1.1: DEFAULT VALUE MARKUP (OMNIBUS PROGRESSIVE)
+    # ========================================================================
+
+    def apply_default_markup(
+        self,
+        emissions_tco2: float,
+        year: int
+    ) -> Tuple[float, float]:
+        """
+        Apply Omnibus progressive markup to default value emissions.
+
+        EU Regulation stipulates increasing markups when using default values:
+        - 2026: +10%
+        - 2027: +20%
+        - 2028 and beyond: +30%
+
+        This is a DETERMINISTIC calculation using Python arithmetic only.
+
+        Args:
+            emissions_tco2: Base emissions in tCO2
+            year: Reporting year
+
+        Returns:
+            Tuple of (marked-up emissions, markup percentage as decimal)
+        """
+        markup = self.DEFAULT_MARKUP_SCHEDULE.get(
+            year, self.DEFAULT_MARKUP_FALLBACK
+        )
+        markup_float = float(markup)
+        marked_up = round(emissions_tco2 * (1.0 + markup_float), 3)
+
+        logger.debug(
+            f"Applied default markup: {markup_float*100:.0f}% "
+            f"({emissions_tco2:.3f} -> {marked_up:.3f} tCO2)"
+        )
+        return marked_up, markup_float
+
+    # ========================================================================
+    # v1.1: REGIONAL EMISSION FACTOR LOOKUP
+    # ========================================================================
+
+    def get_regional_factor(
+        self,
+        cn_code: str,
+        country: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get country-specific emission factor instead of world average.
+
+        Regional factors are more accurate than global defaults because
+        they account for country-specific energy mixes and production methods.
+
+        This is a DETERMINISTIC lookup - NO LLM involved.
+
+        Args:
+            cn_code: 8-digit CN code
+            country: ISO 3166-1 alpha-2 country code
+
+        Returns:
+            Regional emission factor dict or None if not available
+        """
+        key = (cn_code, country)
+        factor = self.regional_factors.get(key)
+
+        if factor:
+            logger.debug(
+                f"Found regional emission factor for CN {cn_code} "
+                f"in {country}: {factor.get('total_tco2_per_ton')} tCO2/t"
+            )
+            return {
+                "product_name": factor.get("product_name", f"Regional factor for {cn_code}"),
+                "default_direct_tco2_per_ton": factor.get("direct_tco2_per_ton", 0),
+                "default_indirect_tco2_per_ton": factor.get("indirect_tco2_per_ton", 0),
+                "default_total_tco2_per_ton": factor.get("total_tco2_per_ton", 0),
+                "data_quality": "medium",
+                "source": f"Regional factor ({country})",
+                "country_iso": country,
+                "reporting_year": factor.get("reporting_year")
+            }
+
+        return None
 
     # ========================================================================
     # EMISSION FACTOR SELECTION (100% DETERMINISTIC)
@@ -296,51 +451,87 @@ class EmissionsCalculatorAgent:
     def select_emission_factor(
         self,
         shipment: Dict[str, Any]
-    ) -> Tuple[Optional[Dict[str, Any]], str, str]:
+    ) -> Tuple[Optional[Dict[str, Any]], str, str, int]:
         """
         Select appropriate emission factor for shipment.
 
-        Decision hierarchy (100% deterministic):
-        1. Supplier actual data (if available and valid)
-        2. EU default values (from database)
-        3. Error (no factor available)
+        v1.1 Decision hierarchy (100% deterministic, 4 priorities):
+        1. Supplier actual data (verified) - highest quality
+        2. Supplier actual data (unverified)
+        3. Regional emission factor (country-specific)
+        4. Default value (with year-based markup)
 
         Args:
             shipment: Shipment dictionary
 
         Returns:
-            Tuple of (emission_factor_dict, method, source)
-            method: "actual_data", "default_values", or "error"
+            Tuple of (emission_factor_dict, method, source, priority)
+            method: "actual_data", "regional_factor", "default_values", or "error"
             source: Description of data source
+            priority: 1-4 indicating the hierarchy level used
         """
         cn_code = str(shipment.get("cn_code", ""))
         supplier_id = shipment.get("supplier_id")
         has_actual = shipment.get("has_actual_emissions") == "YES"
+        data_source = shipment.get("data_source", "default_value")
+        origin_iso = shipment.get("origin_iso", "")
 
-        # Priority 1: Supplier actual data
+        # Priority 1: Supplier actual data (verified)
         if has_actual and supplier_id:
             actual_data = self._get_supplier_actual_emissions(supplier_id)
             if actual_data:
+                is_verified = actual_data.get("verified", False)
                 # Convert supplier actual data to emission factor format
                 factor = {
                     "product_name": f"Supplier {supplier_id} actual data",
                     "default_direct_tco2_per_ton": actual_data.get("direct_emissions_tco2_per_ton"),
                     "default_indirect_tco2_per_ton": actual_data.get("indirect_emissions_tco2_per_ton"),
                     "default_total_tco2_per_ton": actual_data.get("total_emissions_tco2_per_ton"),
-                    "data_quality": actual_data.get("data_quality", "medium"),
+                    "data_quality": "high" if is_verified else "medium",
                     "source": f"Supplier {supplier_id} EPD",
                     "reporting_year": actual_data.get("reporting_year"),
-                    "certifications": actual_data.get("certifications", [])
+                    "certifications": actual_data.get("certifications", []),
+                    "verified": is_verified
                 }
-                return factor, "actual_data", f"Supplier {supplier_id} EPD ({actual_data.get('data_quality')} quality)"
 
-        # Priority 2: EU default values from database
-        factor = self._get_emission_factor_from_database(cn_code, shipment.get("product_group"))
+                if is_verified:
+                    # Priority 1: verified supplier data
+                    return (
+                        factor, "actual_data",
+                        f"Supplier {supplier_id} verified EPD (high quality)",
+                        1
+                    )
+                else:
+                    # Priority 2: unverified supplier data
+                    return (
+                        factor, "actual_data",
+                        f"Supplier {supplier_id} unverified EPD (medium quality)",
+                        2
+                    )
+
+        # Priority 3: Regional emission factor (country-specific)
+        if origin_iso and self.regional_factors:
+            regional = self.get_regional_factor(cn_code, origin_iso)
+            if regional:
+                return (
+                    regional, "regional_factor",
+                    f"Regional factor for {cn_code} in {origin_iso}",
+                    3
+                )
+
+        # Priority 4: Default value (with year-based markup applied later)
+        factor = self._get_emission_factor_from_database(
+            cn_code, shipment.get("product_group")
+        )
         if factor:
-            return factor, "default_values", factor.get("source", "EU Default Values")
+            return (
+                factor, "default_values",
+                factor.get("source", "EU Default Values"),
+                4
+            )
 
         # No emission factor available
-        return None, "error", "No emission factor available"
+        return None, "error", "No emission factor available", 0
 
     # ========================================================================
     # EMISSIONS CALCULATION (100% DETERMINISTIC - ZERO HALLUCINATION)
@@ -353,11 +544,16 @@ class EmissionsCalculatorAgent:
         """
         Calculate emissions for a single shipment.
 
-        ⚠️ ZERO HALLUCINATION GUARANTEE ⚠️
+        ZERO HALLUCINATION GUARANTEE:
         This method uses ONLY deterministic operations:
         - Database lookups (no LLM)
         - Python arithmetic (no LLM)
         - No estimation or guessing
+
+        v1.1 enhancements:
+        - 4-priority method hierarchy with tracking
+        - Default value markup (Omnibus progressive)
+        - Regional emission factor support
 
         Args:
             shipment: Shipment dictionary
@@ -368,8 +564,8 @@ class EmissionsCalculatorAgent:
         warnings = []
         shipment_id = shipment.get("shipment_id", "UNKNOWN")
 
-        # Get emission factor (deterministic lookup)
-        emission_factor, method, source = self.select_emission_factor(shipment)
+        # Get emission factor (deterministic lookup with v1.1 4-priority hierarchy)
+        emission_factor, method, source, priority = self.select_emission_factor(shipment)
 
         if not emission_factor:
             logger.error(f"No emission factor for shipment {shipment_id}")
@@ -401,6 +597,48 @@ class EmissionsCalculatorAgent:
 
         # DETERMINISTIC CALCULATION ENDS HERE
 
+        # v1.1: Apply default value markup for Priority 4 (Omnibus progressive)
+        default_markup_applied = False
+        default_markup_pct = 0.0
+        pre_markup_emissions = None
+
+        if method == "default_values":
+            # Determine reporting year from quarter or import date
+            quarter = shipment.get("quarter", "")
+            reporting_year = self._extract_year(quarter, shipment.get("import_date"))
+
+            if reporting_year and reporting_year >= 2026:
+                pre_markup_emissions = total_emissions
+                total_emissions, default_markup_pct = self.apply_default_markup(
+                    total_emissions, reporting_year
+                )
+                # Also apply markup to direct and indirect proportionally
+                if pre_markup_emissions > 0:
+                    ratio = total_emissions / pre_markup_emissions
+                    direct_emissions = round(direct_emissions * ratio, 3)
+                    indirect_emissions = round(indirect_emissions * ratio, 3)
+
+                default_markup_applied = True
+                self.stats["default_markup_applied_count"] += 1
+
+                warnings.append(ValidationWarning(
+                    shipment_id=shipment_id,
+                    warning_code="W004",
+                    message=(
+                        f"Default value markup of {default_markup_pct*100:.0f}% "
+                        f"applied for year {reporting_year} "
+                        f"(pre-markup: {pre_markup_emissions:.3f} tCO2)"
+                    ),
+                    field="total_emissions_tco2"
+                ))
+
+        # Determine data source label for tracking
+        data_source_label = "default_value"
+        if method == "actual_data":
+            data_source_label = "supplier_actual"
+        elif method == "regional_factor":
+            data_source_label = "regional_factor"
+
         # Validation: Check that total = direct + indirect (within tolerance)
         calculated_total = round(direct_emissions + indirect_emissions, 3)
         if abs(total_emissions - calculated_total) > 0.001:
@@ -416,7 +654,6 @@ class EmissionsCalculatorAgent:
         # Validation: Check for reasonable ranges (from CBAM rules)
         product_group = shipment.get("product_group", "unknown")
         if self.cbam_rules and "validation_rules" in self.cbam_rules:
-            # Get expected range for product group
             ranges = {
                 "cement": {"min": 0.3, "max": 2.5},
                 "steel": {"min": 0.3, "max": 5.0},
@@ -441,13 +678,17 @@ class EmissionsCalculatorAgent:
         # Get data quality
         data_quality = emission_factor.get("data_quality", "medium")
         if method == "default_values":
-            data_quality = "medium"  # Defaults are medium quality
+            data_quality = "low" if default_markup_applied else "medium"
+        elif method == "regional_factor":
+            data_quality = "medium"
 
-        # Build calculation object
+        # Build calculation object (v1.1 with enhanced tracking)
         calculation = EmissionsCalculation(
             calculation_method=method,
             emission_factor_source=source,
             data_quality=data_quality,
+            method_priority=priority,
+            data_source=data_source_label,
             emission_factor_direct_tco2_per_ton=ef_direct,
             emission_factor_indirect_tco2_per_ton=ef_indirect,
             emission_factor_total_tco2_per_ton=ef_total,
@@ -455,12 +696,47 @@ class EmissionsCalculatorAgent:
             direct_emissions_tco2=direct_emissions,
             indirect_emissions_tco2=indirect_emissions,
             total_emissions_tco2=total_emissions,
+            default_markup_applied=default_markup_applied,
+            default_markup_pct=default_markup_pct,
+            pre_markup_emissions_tco2=pre_markup_emissions,
             calculation_timestamp=DeterministicClock.now().isoformat(),
             validation_status="valid" if not warnings else "warning",
-            notes=f"Calculated using {method}: {source}"
+            notes=f"Calculated using {method} (priority {priority}): {source}"
         )
 
         return calculation, warnings
+
+    def _extract_year(
+        self,
+        quarter: str,
+        import_date: Optional[str] = None
+    ) -> Optional[int]:
+        """
+        Extract reporting year from quarter string or import date.
+
+        Args:
+            quarter: Quarter string (e.g., '2026Q1')
+            import_date: Import date string (fallback)
+
+        Returns:
+            Year as integer, or None if unparseable
+        """
+        import re as re_mod
+
+        if quarter:
+            match = re_mod.match(r'^(\d{4})Q[1-4]$', quarter)
+            if match:
+                return int(match.group(1))
+
+        if import_date:
+            try:
+                from datetime import datetime as dt
+                parsed = dt.fromisoformat(str(import_date)[:10])
+                return parsed.year
+            except (ValueError, TypeError):
+                pass
+
+        return None
 
     # ========================================================================
     # BATCH PROCESSING
@@ -489,11 +765,17 @@ class EmissionsCalculatorAgent:
             calculation, warnings = self.calculate_emissions(shipment)
 
             if calculation:
-                # Track statistics
+                # Track statistics by method and priority
                 if calculation.calculation_method == "default_values":
                     self.stats["default_values_count"] += 1
                 elif calculation.calculation_method == "actual_data":
                     self.stats["actual_data_count"] += 1
+                    if calculation.method_priority == 1:
+                        self.stats["supplier_verified_count"] += 1
+                    elif calculation.method_priority == 2:
+                        self.stats["supplier_unverified_count"] += 1
+                elif calculation.calculation_method == "regional_factor":
+                    self.stats["regional_factor_count"] += 1
 
                 self.stats["total_emissions_tco2"] += calculation.total_emissions_tco2
 
@@ -518,12 +800,21 @@ class EmissionsCalculatorAgent:
                 "calculation_methods": {
                     "default_values": self.stats["default_values_count"],
                     "actual_data": self.stats["actual_data_count"],
+                    "regional_factor": self.stats["regional_factor_count"],
                     "complex_goods": self.stats["complex_goods_count"],
                     "errors": self.stats["calculation_errors"]
                 },
+                "method_hierarchy_breakdown": {
+                    "priority_1_supplier_verified": self.stats["supplier_verified_count"],
+                    "priority_2_supplier_unverified": self.stats["supplier_unverified_count"],
+                    "priority_3_regional_factor": self.stats["regional_factor_count"],
+                    "priority_4_default_values": self.stats["default_values_count"]
+                },
+                "default_markup_applied_count": self.stats["default_markup_applied_count"],
                 "total_emissions_tco2": round(self.stats["total_emissions_tco2"], 2),
                 "processing_time_seconds": round(processing_time, 3),
-                "ms_per_shipment": round(ms_per_shipment, 2)
+                "ms_per_shipment": round(ms_per_shipment, 2),
+                "agent_version": "1.1.0"
             },
             "shipments": shipments_with_emissions,
             "validation_warnings": all_warnings
@@ -561,13 +852,15 @@ if __name__ == "__main__":
     parser.add_argument("--output", help="Output JSON file path")
     parser.add_argument("--suppliers", help="Path to suppliers YAML (optional)")
     parser.add_argument("--rules", help="Path to CBAM rules YAML (optional)")
+    parser.add_argument("--regional-factors", help="Path to regional emission factors YAML (optional)")
 
     args = parser.parse_args()
 
     # Create agent
     agent = EmissionsCalculatorAgent(
         suppliers_path=args.suppliers,
-        cbam_rules_path=args.rules
+        cbam_rules_path=args.rules,
+        regional_factors_path=getattr(args, 'regional_factors', None)
     )
 
     # Load input
@@ -594,7 +887,16 @@ if __name__ == "__main__":
     print(f"\nCalculation Methods:")
     print(f"  Default Values: {result['metadata']['calculation_methods']['default_values']}")
     print(f"  Actual Data: {result['metadata']['calculation_methods']['actual_data']}")
+    print(f"  Regional Factor: {result['metadata']['calculation_methods']['regional_factor']}")
     print(f"  Errors: {result['metadata']['calculation_methods']['errors']}")
+    print(f"\nMethod Hierarchy (v1.1):")
+    hierarchy = result['metadata']['method_hierarchy_breakdown']
+    print(f"  P1 Supplier Verified: {hierarchy['priority_1_supplier_verified']}")
+    print(f"  P2 Supplier Unverified: {hierarchy['priority_2_supplier_unverified']}")
+    print(f"  P3 Regional Factor: {hierarchy['priority_3_regional_factor']}")
+    print(f"  P4 Default Values: {hierarchy['priority_4_default_values']}")
+    if result['metadata']['default_markup_applied_count'] > 0:
+        print(f"  Default Markup Applied: {result['metadata']['default_markup_applied_count']}")
 
     if result['validation_warnings']:
         print(f"\nWarnings: {len(result['validation_warnings'])}")

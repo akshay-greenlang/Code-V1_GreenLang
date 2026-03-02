@@ -10,7 +10,7 @@ This agent is responsible for:
 5. Flagging data quality issues
 6. Outputting validated shipment records in standard format
 
-Version: 1.0.0
+Version: 1.1.0
 Author: GreenLang CBAM Team
 License: Proprietary
 """
@@ -27,6 +27,15 @@ import yaml
 from jsonschema import Draft7Validator, ValidationError
 from pydantic import BaseModel, Field, validator
 from greenlang.determinism import DeterministicClock
+
+# v1.1: Supplier Portal Integration (optional dependency)
+try:
+    from ..supplier_portal.supplier_registry import SupplierRegistryEngine
+    from ..supplier_portal.emissions_submission import EmissionsSubmissionEngine
+    from ..supplier_portal.data_exchange import DataExchangeService
+    SUPPLIER_PORTAL_AVAILABLE = True
+except ImportError:
+    SUPPLIER_PORTAL_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(
@@ -89,6 +98,9 @@ class EnrichmentData(BaseModel):
     product_description: Optional[str] = None
     supplier_found: bool = False
     supplier_name: Optional[str] = None
+    supplier_installation_id: Optional[str] = None
+    data_source: str = "default_value"  # "supplier_actual", "regional_factor", "default_value"
+    supplier_verified: bool = False
     validation_status: str = "valid"  # "valid", "invalid", "warning"
 
 
@@ -112,6 +124,8 @@ class ShipmentRecord(BaseModel):
     importer_reference: Optional[str] = None
     has_actual_emissions: Optional[str] = "NO"
     supplier_id: Optional[str] = None
+    supplier_installation_id: Optional[str] = None
+    data_source: Optional[str] = "default_value"
     notes: Optional[str] = None
 
     # Enrichment (added by agent)
@@ -138,7 +152,8 @@ class ShipmentIntakeAgent:
         cn_codes_path: Union[str, Path],
         cbam_rules_path: Union[str, Path],
         suppliers_path: Optional[Union[str, Path]] = None,
-        schema_path: Optional[Union[str, Path]] = None
+        schema_path: Optional[Union[str, Path]] = None,
+        supplier_portal_config: Optional[Dict[str, Any]] = None
     ):
         """
         Initialize the ShipmentIntakeAgent.
@@ -148,6 +163,7 @@ class ShipmentIntakeAgent:
             cbam_rules_path: Path to CBAM rules YAML file
             suppliers_path: Path to suppliers YAML file (optional)
             schema_path: Path to shipment JSON schema (optional)
+            supplier_portal_config: v1.1 supplier portal configuration (optional)
         """
         self.cn_codes_path = Path(cn_codes_path)
         self.cbam_rules_path = Path(cbam_rules_path)
@@ -160,17 +176,29 @@ class ShipmentIntakeAgent:
         self.suppliers = self._load_suppliers() if self.suppliers_path else {}
         self.schema = self._load_schema() if self.schema_path else None
 
+        # v1.1: Initialize supplier portal engines (if available)
+        self.supplier_portal_config = supplier_portal_config or {}
+        self.supplier_portal_enabled = (
+            SUPPLIER_PORTAL_AVAILABLE
+            and self.supplier_portal_config.get("enabled", False)
+        )
+        self._init_supplier_portal()
+
         # Statistics
         self.stats = {
             "total_records": 0,
             "valid_records": 0,
             "invalid_records": 0,
             "warnings": 0,
+            "supplier_linked": 0,
+            "supplier_enriched": 0,
             "start_time": None,
             "end_time": None
         }
 
         logger.info(f"ShipmentIntakeAgent initialized with {len(self.cn_codes)} CN codes")
+        if self.supplier_portal_enabled:
+            logger.info("Supplier portal integration enabled (v1.1)")
 
     # ========================================================================
     # DATA LOADING
@@ -453,6 +481,287 @@ class ShipmentIntakeAgent:
             return True  # Don't fail validation on date check errors
 
     # ========================================================================
+    # v1.1: SUPPLIER PORTAL INTEGRATION
+    # ========================================================================
+
+    def _init_supplier_portal(self) -> None:
+        """Initialize supplier portal engines if available and enabled."""
+        self.supplier_registry = None
+        self.emissions_submission = None
+        self.data_exchange = None
+
+        if not self.supplier_portal_enabled:
+            return
+
+        try:
+            self.supplier_registry = SupplierRegistryEngine(
+                max_installations=self.supplier_portal_config.get(
+                    "max_installations_per_supplier", 50
+                )
+            )
+            self.emissions_submission = EmissionsSubmissionEngine(
+                retention_years=self.supplier_portal_config.get(
+                    "emissions_data_retention_years", 7
+                )
+            )
+            self.data_exchange = DataExchangeService()
+            logger.info("Supplier portal engines initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize supplier portal engines: {e}")
+            self.supplier_portal_enabled = False
+
+    def enrich_with_supplier_data(
+        self,
+        shipment: Dict[str, Any],
+        supplier_id: str
+    ) -> Tuple[Dict[str, Any], List[ValidationIssue]]:
+        """
+        Enrich shipment with verified supplier emissions data from the portal.
+
+        Prefers supplier actual data over default emission factors.
+        Tracks the data source for audit trail (supplier_actual vs
+        regional_factor vs default_value).
+
+        Args:
+            shipment: Shipment dictionary to enrich
+            supplier_id: Supplier identifier to look up
+
+        Returns:
+            Tuple of (enriched shipment, list of validation issues)
+        """
+        issues = []
+        shipment_id = shipment.get("shipment_id", "UNKNOWN")
+
+        if not self.supplier_portal_enabled or not self.supplier_registry:
+            return shipment, issues
+
+        try:
+            # Step 1: Look up supplier in registry
+            supplier_record = self.supplier_registry.get_supplier(supplier_id)
+            if not supplier_record:
+                issues.append(ValidationIssue(
+                    shipment_id=shipment_id,
+                    error_code="W005",
+                    severity="warning",
+                    message=f"Supplier {supplier_id} not found in portal registry",
+                    field="supplier_id",
+                    value=supplier_id
+                ))
+                return shipment, issues
+
+            # Step 2: Validate supplier EORI if strict mode
+            eori_mode = self.supplier_portal_config.get("eori_validation", "strict")
+            supplier_eori = supplier_record.get("eori_number", "")
+            if eori_mode == "strict" and not re.match(r'^[A-Z]{2}[A-Z0-9]{1,15}$', supplier_eori):
+                issues.append(ValidationIssue(
+                    shipment_id=shipment_id,
+                    error_code="E008",
+                    severity="error",
+                    message=f"Supplier {supplier_id} has invalid EORI: {supplier_eori}",
+                    field="supplier_eori",
+                    value=supplier_eori
+                ))
+
+            # Step 3: Find the installation matching this shipment
+            installation_id = shipment.get("supplier_installation_id")
+            if not installation_id:
+                installation_id = self._match_installation(
+                    supplier_record, shipment
+                )
+
+            if not installation_id:
+                issues.append(ValidationIssue(
+                    shipment_id=shipment_id,
+                    error_code="W005",
+                    severity="warning",
+                    message=f"No matching installation found for supplier {supplier_id}",
+                    field="supplier_installation_id"
+                ))
+                return shipment, issues
+
+            # Step 4: Retrieve verified emissions data for installation
+            emissions_data = self.emissions_submission.get_verified_emissions(
+                supplier_id=supplier_id,
+                installation_id=installation_id
+            )
+
+            if emissions_data and emissions_data.get("verified", False):
+                # Supplier actual verified data is highest quality
+                shipment["has_actual_emissions"] = "YES"
+                shipment["supplier_installation_id"] = installation_id
+                shipment["data_source"] = "supplier_actual"
+
+                # Check verification expiry
+                expiry_alert_days = self.supplier_portal_config.get(
+                    "verification_expiry_alert_days", 90
+                )
+                verification_date = emissions_data.get("verification_date")
+                if verification_date:
+                    try:
+                        v_date = pd.to_datetime(verification_date)
+                        days_since = (pd.Timestamp.now() - v_date).days
+                        if days_since > 365:
+                            issues.append(ValidationIssue(
+                                shipment_id=shipment_id,
+                                error_code="W003",
+                                severity="warning",
+                                message=f"Supplier verification is {days_since} days old",
+                                field="verification_date",
+                                value=verification_date,
+                                suggestion="Request updated verification from supplier"
+                            ))
+                        elif days_since > (365 - expiry_alert_days):
+                            issues.append(ValidationIssue(
+                                shipment_id=shipment_id,
+                                error_code="W003",
+                                severity="warning",
+                                message=f"Supplier verification expires in {365 - days_since} days",
+                                field="verification_date",
+                                value=verification_date
+                            ))
+                    except Exception:
+                        pass
+
+                self.stats["supplier_enriched"] += 1
+                logger.debug(
+                    f"Shipment {shipment_id} enriched with verified supplier data "
+                    f"from installation {installation_id}"
+                )
+
+            elif emissions_data and not emissions_data.get("verified", False):
+                # Supplier actual but unverified
+                shipment["has_actual_emissions"] = "YES"
+                shipment["supplier_installation_id"] = installation_id
+                shipment["data_source"] = "supplier_actual"
+
+                issues.append(ValidationIssue(
+                    shipment_id=shipment_id,
+                    error_code="W004",
+                    severity="warning",
+                    message="Supplier emissions data is unverified",
+                    field="data_source",
+                    suggestion="Request third-party verification from supplier"
+                ))
+                self.stats["supplier_enriched"] += 1
+            else:
+                # No emissions data from portal, fall back to default
+                shipment["data_source"] = "default_value"
+                issues.append(ValidationIssue(
+                    shipment_id=shipment_id,
+                    error_code="W004",
+                    severity="warning",
+                    message=f"No emissions data from supplier portal for {supplier_id}",
+                    field="data_source",
+                    suggestion="Using default emission factors"
+                ))
+
+        except Exception as e:
+            logger.error(f"Supplier portal enrichment failed for {shipment_id}: {e}")
+            issues.append(ValidationIssue(
+                shipment_id=shipment_id,
+                error_code="W005",
+                severity="warning",
+                message=f"Supplier portal lookup failed: {str(e)}",
+                field="supplier_id"
+            ))
+
+        return shipment, issues
+
+    def _match_installation(
+        self,
+        supplier_record: Dict[str, Any],
+        shipment: Dict[str, Any]
+    ) -> Optional[str]:
+        """
+        Match a supplier installation to a shipment based on country and CN code.
+
+        Args:
+            supplier_record: Supplier record from the registry
+            shipment: Shipment dictionary
+
+        Returns:
+            Installation ID if matched, None otherwise
+        """
+        installations = supplier_record.get("installations", [])
+        origin_iso = shipment.get("origin_iso", "")
+        cn_code = str(shipment.get("cn_code", ""))
+
+        for installation in installations:
+            inst_country = installation.get("country_iso", "")
+            inst_cn_codes = installation.get("cn_codes_produced", [])
+
+            if inst_country == origin_iso and cn_code in inst_cn_codes:
+                return installation.get("installation_id")
+
+        # Fallback: match by country only if single installation in that country
+        country_matches = [
+            inst for inst in installations
+            if inst.get("country_iso") == origin_iso
+        ]
+        if len(country_matches) == 1:
+            return country_matches[0].get("installation_id")
+
+        return None
+
+    def link_shipment_to_supplier(
+        self,
+        shipment: Dict[str, Any]
+    ) -> Optional[str]:
+        """
+        Auto-link a shipment to a supplier installation.
+
+        Matches based on origin country + CN code + installation name.
+        Uses the supplier portal registry when available, falls back to
+        local suppliers YAML otherwise.
+
+        Args:
+            shipment: Shipment dictionary
+
+        Returns:
+            Supplier ID if matched, None otherwise
+        """
+        origin_iso = shipment.get("origin_iso", "")
+        cn_code = str(shipment.get("cn_code", ""))
+        installation_name = shipment.get("installation_name", "")
+
+        # v1.1: Try supplier portal registry first
+        if self.supplier_portal_enabled and self.supplier_registry:
+            try:
+                match = self.supplier_registry.find_supplier_by_installation(
+                    country_iso=origin_iso,
+                    cn_code=cn_code,
+                    installation_name=installation_name
+                )
+                if match:
+                    self.stats["supplier_linked"] += 1
+                    logger.debug(
+                        f"Auto-linked shipment to supplier {match} "
+                        f"via portal (country={origin_iso}, cn={cn_code})"
+                    )
+                    return match
+            except Exception as e:
+                logger.warning(f"Portal supplier linking failed: {e}")
+
+        # Fallback: try local suppliers YAML
+        for supplier_id, supplier in self.suppliers.items():
+            supplier_country = supplier.get("country", "")
+            supplier_cn_codes = supplier.get("cn_codes_produced", [])
+            supplier_installation = supplier.get("installation_name", "")
+
+            # Match by country + CN code
+            if supplier_country == origin_iso and cn_code in supplier_cn_codes:
+                # If installation name provided, also match on that
+                if installation_name and supplier_installation:
+                    if installation_name.lower() == supplier_installation.lower():
+                        self.stats["supplier_linked"] += 1
+                        return supplier_id
+                else:
+                    self.stats["supplier_linked"] += 1
+                    return supplier_id
+
+        return None
+
+    # ========================================================================
     # ENRICHMENT
     # ========================================================================
 
@@ -556,6 +865,25 @@ class ShipmentIntakeAgent:
                 shipment, warnings = self.enrich_shipment(shipment)
                 issues.extend(warnings)
 
+                # v1.1: Supplier portal integration
+                if self.supplier_portal_enabled:
+                    # Auto-link to supplier if not already linked
+                    auto_link = self.supplier_portal_config.get(
+                        "auto_link_suppliers", True
+                    )
+                    if auto_link and not shipment.get("supplier_id"):
+                        linked_supplier = self.link_shipment_to_supplier(shipment)
+                        if linked_supplier:
+                            shipment["supplier_id"] = linked_supplier
+
+                    # Enrich with supplier portal data
+                    supplier_id = shipment.get("supplier_id")
+                    if supplier_id:
+                        shipment, portal_issues = self.enrich_with_supplier_data(
+                            shipment, supplier_id
+                        )
+                        issues.extend(portal_issues)
+
             # Track statistics
             if is_valid:
                 self.stats["valid_records"] += 1
@@ -583,8 +911,12 @@ class ShipmentIntakeAgent:
                 "valid_records": self.stats["valid_records"],
                 "invalid_records": self.stats["invalid_records"],
                 "warnings": self.stats["warnings"],
+                "supplier_linked": self.stats["supplier_linked"],
+                "supplier_enriched": self.stats["supplier_enriched"],
+                "supplier_portal_enabled": self.supplier_portal_enabled,
                 "processing_time_seconds": processing_time,
-                "records_per_second": self.stats["total_records"] / processing_time if processing_time > 0 else 0
+                "records_per_second": self.stats["total_records"] / processing_time if processing_time > 0 else 0,
+                "agent_version": "1.1.0"
             },
             "shipments": validated_shipments,
             "validation_errors": all_errors
@@ -646,15 +978,23 @@ if __name__ == "__main__":
     parser.add_argument("--rules", required=True, help="Path to CBAM rules YAML")
     parser.add_argument("--suppliers", help="Path to suppliers YAML (optional)")
     parser.add_argument("--schema", help="Path to shipment JSON schema (optional)")
+    parser.add_argument("--portal-config", help="Path to supplier portal config YAML (optional)")
 
     args = parser.parse_args()
+
+    # Load supplier portal config if provided
+    portal_config = None
+    if args.portal_config:
+        with open(args.portal_config, 'r', encoding='utf-8') as f:
+            portal_config = yaml.safe_load(f).get("supplier_portal", {})
 
     # Create agent
     agent = ShipmentIntakeAgent(
         cn_codes_path=args.cn_codes,
         cbam_rules_path=args.rules,
         suppliers_path=args.suppliers,
-        schema_path=args.schema
+        schema_path=args.schema,
+        supplier_portal_config=portal_config
     )
 
     # Process

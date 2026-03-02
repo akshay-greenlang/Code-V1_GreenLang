@@ -1,0 +1,284 @@
+{
+  "metadata": {
+    "locale": "en",
+    "version": "1.1.0",
+    "description": "CSRD/ESRS-specific terminology glossary in English"
+  },
+  "terms": {
+    "double_materiality": {
+      "term": "Double Materiality",
+      "definition": "Assessment of both impact materiality (the undertaking's impacts on people and the environment) and financial materiality (sustainability matters that create financial risks or opportunities for the undertaking). Required under ESRS 1 Chapter 3.",
+      "related_terms": ["impact_materiality", "financial_materiality"]
+    },
+    "impact_materiality": {
+      "term": "Impact Materiality",
+      "definition": "A sustainability matter is material from an impact perspective when it pertains to the undertaking's actual or potential, positive or negative impacts on people or the environment over the short, medium, or long term.",
+      "related_terms": ["double_materiality", "financial_materiality"]
+    },
+    "financial_materiality": {
+      "term": "Financial Materiality",
+      "definition": "A sustainability matter is material from a financial perspective when it triggers or may trigger material financial effects on the undertaking, including effects on cash flows, development, performance, position, cost of capital, or access to finance.",
+      "related_terms": ["double_materiality", "impact_materiality"]
+    },
+    "scope_1_emissions": {
+      "term": "Scope 1 Emissions",
+      "definition": "Direct greenhouse gas emissions that occur from sources owned or controlled by the reporting undertaking. Includes emissions from stationary combustion, mobile combustion, process emissions, and fugitive emissions.",
+      "related_terms": ["scope_2_emissions", "scope_3_emissions", "ghg_emissions"]
+    },
+    "scope_2_emissions": {
+      "term": "Scope 2 Emissions",
+      "definition": "Indirect greenhouse gas emissions from the generation of purchased electricity, steam, heating, and cooling consumed by the reporting undertaking. Can be reported using location-based or market-based methods.",
+      "related_terms": ["scope_1_emissions", "scope_3_emissions", "location_based", "market_based"]
+    },
+    "scope_3_emissions": {
+      "term": "Scope 3 Emissions",
+      "definition": "All other indirect greenhouse gas emissions that occur in the undertaking's value chain, including both upstream (supply chain) and downstream (product use and disposal) emissions across 15 categories as defined by the GHG Protocol.",
+      "related_terms": ["scope_1_emissions", "scope_2_emissions", "value_chain"]
+    },
+    "location_based": {
+      "term": "Location-Based Method",
+      "definition": "A method to quantify Scope 2 GHG emissions using average emission factors for the grid on which electricity consumption occurs, reflecting the average emissions intensity of the local grid.",
+      "related_terms": ["market_based", "scope_2_emissions"]
+    },
+    "market_based": {
+      "term": "Market-Based Method",
+      "definition": "A method to quantify Scope 2 GHG emissions using emission factors that reflect the specific contractual arrangements of the undertaking, such as renewable energy certificates (RECs) or power purchase agreements (PPAs).",
+      "related_terms": ["location_based", "scope_2_emissions"]
+    },
+    "ghg_emissions": {
+      "term": "Greenhouse Gas (GHG) Emissions",
+      "definition": "Emissions of the seven greenhouse gases covered by the Kyoto Protocol and Paris Agreement: carbon dioxide (CO2), methane (CH4), nitrous oxide (N2O), hydrofluorocarbons (HFCs), perfluorocarbons (PFCs), sulphur hexafluoride (SF6), and nitrogen trifluoride (NF3).",
+      "related_terms": ["scope_1_emissions", "scope_2_emissions", "scope_3_emissions", "co2_equivalent"]
+    },
+    "co2_equivalent": {
+      "term": "CO2 Equivalent (CO2e)",
+      "definition": "A metric measure used to compare the emissions from various greenhouse gases on the basis of their global warming potential (GWP), by converting amounts of other gases to the equivalent amount of carbon dioxide with the same global warming potential.",
+      "related_terms": ["ghg_emissions", "global_warming_potential"]
+    },
+    "global_warming_potential": {
+      "term": "Global Warming Potential (GWP)",
+      "definition": "A measure of how much energy the emissions of 1 tonne of a gas will absorb over a given period of time, relative to the emissions of 1 tonne of carbon dioxide. Typically expressed over a 100-year time horizon (GWP100) using IPCC AR5 or AR6 values.",
+      "related_terms": ["co2_equivalent", "ghg_emissions"]
+    },
+    "csrd": {
+      "term": "Corporate Sustainability Reporting Directive (CSRD)",
+      "definition": "EU Directive 2022/2464 that requires eligible companies to report on sustainability matters using the European Sustainability Reporting Standards (ESRS). It replaces the Non-Financial Reporting Directive (NFRD) and extends reporting obligations to a broader set of companies.",
+      "related_terms": ["esrs", "nfrd", "eu_taxonomy"]
+    },
+    "esrs": {
+      "term": "European Sustainability Reporting Standards (ESRS)",
+      "definition": "A set of 12 sustainability reporting standards adopted by the European Commission under the CSRD. Includes two cross-cutting standards (ESRS 1 and ESRS 2) and ten topical standards (E1-E5, S1-S4, G1) covering environmental, social, and governance matters.",
+      "related_terms": ["csrd", "efrag"]
+    },
+    "efrag": {
+      "term": "European Financial Reporting Advisory Group (EFRAG)",
+      "definition": "The organisation mandated by the European Commission to develop the ESRS. EFRAG provides technical advice on ESRS adoption and maintains implementation guidance.",
+      "related_terms": ["esrs", "csrd"]
+    },
+    "eu_taxonomy": {
+      "term": "EU Taxonomy",
+      "definition": "The EU classification system (Regulation 2020/852) establishing a list of environmentally sustainable economic activities. Companies subject to the CSRD must disclose the proportion of their turnover, CapEx, and OpEx that is Taxonomy-eligible and Taxonomy-aligned.",
+      "related_terms": ["csrd", "taxonomy_alignment"]
+    },
+    "taxonomy_alignment": {
+      "term": "Taxonomy Alignment",
+      "definition": "An economic activity is considered Taxonomy-aligned when it makes a substantial contribution to at least one of the six EU environmental objectives, does no significant harm to the others, and meets minimum social safeguards.",
+      "related_terms": ["eu_taxonomy", "do_no_significant_harm"]
+    },
+    "do_no_significant_harm": {
+      "term": "Do No Significant Harm (DNSH)",
+      "definition": "A criterion under the EU Taxonomy requiring that an economic activity making a substantial contribution to one environmental objective must not significantly harm any of the other five environmental objectives.",
+      "related_terms": ["eu_taxonomy", "taxonomy_alignment"]
+    },
+    "value_chain": {
+      "term": "Value Chain",
+      "definition": "The full range of activities, resources, and relationships related to the undertaking's business model and the external environment in which it operates, encompassing upstream (supply) and downstream (product use and disposal) activities.",
+      "related_terms": ["scope_3_emissions", "upstream", "downstream"]
+    },
+    "upstream": {
+      "term": "Upstream",
+      "definition": "Activities in the value chain that occur before the undertaking's own operations, including supply of raw materials, manufacturing of components, and transportation to the undertaking.",
+      "related_terms": ["value_chain", "downstream"]
+    },
+    "downstream": {
+      "term": "Downstream",
+      "definition": "Activities in the value chain that occur after the undertaking's own operations, including distribution, use of sold products, and end-of-life treatment.",
+      "related_terms": ["value_chain", "upstream"]
+    },
+    "due_diligence": {
+      "term": "Due Diligence",
+      "definition": "The process by which undertakings identify, prevent, mitigate, and account for how they address their actual and potential adverse impacts on human rights and the environment, as described in the UN Guiding Principles on Business and Human Rights and the OECD Guidelines for Multinational Enterprises.",
+      "related_terms": ["human_rights", "csrd"]
+    },
+    "transition_plan": {
+      "term": "Transition Plan",
+      "definition": "An aspect of the undertaking's overall strategy that lays out a set of targets and actions to support its transition towards a reduced negative impact on the environment and a climate-neutral economy by 2050, consistent with the goals of the Paris Agreement.",
+      "related_terms": ["sbti", "paris_agreement", "net_zero"]
+    },
+    "sbti": {
+      "term": "Science Based Targets initiative (SBTi)",
+      "definition": "A partnership between CDP, UN Global Compact, WRI, and WWF that drives ambitious climate action by enabling organisations to set science-based emissions reduction targets in line with the latest climate science and the goals of the Paris Agreement.",
+      "related_terms": ["transition_plan", "paris_agreement", "net_zero"]
+    },
+    "paris_agreement": {
+      "term": "Paris Agreement",
+      "definition": "An international treaty adopted in 2015 under the UNFCCC, aiming to limit global warming to well below 2 degrees Celsius above pre-industrial levels and pursuing efforts to limit it to 1.5 degrees Celsius.",
+      "related_terms": ["sbti", "transition_plan", "net_zero"]
+    },
+    "net_zero": {
+      "term": "Net Zero",
+      "definition": "A state in which the greenhouse gases going into the atmosphere are balanced by removal of greenhouse gases from the atmosphere. Net zero by 2050 is the long-term ambition under the Paris Agreement and the European Green Deal.",
+      "related_terms": ["paris_agreement", "carbon_neutrality", "ghg_removals"]
+    },
+    "carbon_neutrality": {
+      "term": "Carbon Neutrality",
+      "definition": "Achieving a balance between emitting carbon and absorbing carbon from the atmosphere through carbon sinks. Unlike net zero, carbon neutrality can be achieved through offsetting and may not require absolute emissions reductions.",
+      "related_terms": ["net_zero", "carbon_credits"]
+    },
+    "carbon_credits": {
+      "term": "Carbon Credits",
+      "definition": "Tradeable permits or certificates representing the right to emit one tonne of CO2 equivalent, or the removal of one tonne from the atmosphere through verified carbon reduction or removal projects.",
+      "related_terms": ["carbon_neutrality", "ghg_removals"]
+    },
+    "ghg_removals": {
+      "term": "GHG Removals",
+      "definition": "Activities that remove greenhouse gases from the atmosphere, including biological sequestration (e.g., afforestation) and technological removal (e.g., direct air capture with carbon storage). Under ESRS E1, these must be reported separately from gross emissions.",
+      "related_terms": ["net_zero", "carbon_credits"]
+    },
+    "ghg_protocol": {
+      "term": "GHG Protocol",
+      "definition": "The Greenhouse Gas Protocol provides the world's most widely used GHG accounting and reporting standards, forming the basis for GHG emissions measurement under ESRS E1. Includes the Corporate Standard, Scope 2 Guidance, and Corporate Value Chain (Scope 3) Standard.",
+      "related_terms": ["scope_1_emissions", "scope_2_emissions", "scope_3_emissions"]
+    },
+    "emission_factor": {
+      "term": "Emission Factor",
+      "definition": "A coefficient that relates the quantity of a pollutant released to the atmosphere with an activity associated with the release of that pollutant. Expressed as weight of pollutant divided by unit weight, volume, distance, or duration of the activity emitting the pollutant.",
+      "related_terms": ["ghg_emissions", "ghg_protocol"]
+    },
+    "circular_economy": {
+      "term": "Circular Economy",
+      "definition": "An economic model that aims to decouple economic growth from resource consumption by maintaining materials and products in use for as long as possible through strategies such as reduce, reuse, repair, remanufacture, and recycle.",
+      "related_terms": ["resource_use", "waste_management"]
+    },
+    "biodiversity": {
+      "term": "Biodiversity",
+      "definition": "The variability among living organisms from all sources including terrestrial, marine and other aquatic ecosystems and the ecological complexes of which they are part. This includes diversity within species, between species, and of ecosystems.",
+      "related_terms": ["ecosystem_services", "land_use_change"]
+    },
+    "ecosystem_services": {
+      "term": "Ecosystem Services",
+      "definition": "The benefits that people obtain from ecosystems, including provisioning services (food, water), regulating services (climate regulation, flood protection), cultural services (recreation, spiritual), and supporting services (nutrient cycling, soil formation).",
+      "related_terms": ["biodiversity", "natural_capital"]
+    },
+    "natural_capital": {
+      "term": "Natural Capital",
+      "definition": "The stock of renewable and non-renewable natural resources (e.g., plants, animals, air, water, soils, minerals) that combine to yield a flow of benefits to people (ecosystem services).",
+      "related_terms": ["ecosystem_services", "biodiversity"]
+    },
+    "water_stress": {
+      "term": "Water Stress",
+      "definition": "A condition where the demand for water exceeds the available amount during a certain period or when poor quality restricts its use. Typically measured using the WRI Aqueduct Water Risk Atlas with areas classified as high or extremely high water stress.",
+      "related_terms": ["water_consumption", "water_withdrawal"]
+    },
+    "water_consumption": {
+      "term": "Water Consumption",
+      "definition": "Water that is used and not returned to the original water source after being withdrawn. Calculated as total withdrawals minus total discharges.",
+      "related_terms": ["water_stress", "water_withdrawal"]
+    },
+    "water_withdrawal": {
+      "term": "Water Withdrawal",
+      "definition": "The total volume of water drawn from surface water, groundwater, seawater, or a third party for any use. Includes the water that is subsequently returned as discharge.",
+      "related_terms": ["water_consumption", "water_stress"]
+    },
+    "land_use_change": {
+      "term": "Land Use Change",
+      "definition": "A change in the use or management of land by humans, which may lead to a change in land cover. It includes deforestation, conversion of natural ecosystems, and restoration of degraded land.",
+      "related_terms": ["biodiversity", "deforestation"]
+    },
+    "deforestation": {
+      "term": "Deforestation",
+      "definition": "The conversion of forest to other land use, irrespective of whether human-induced. Particularly relevant under EUDR and ESRS E4 disclosures.",
+      "related_terms": ["land_use_change", "eudr"]
+    },
+    "eudr": {
+      "term": "EU Deforestation Regulation (EUDR)",
+      "definition": "Regulation (EU) 2023/1115 prohibiting the placing on or making available on the EU market of specified commodities and derived products unless they are deforestation-free, legally produced, and covered by a due diligence statement.",
+      "related_terms": ["deforestation", "land_use_change"]
+    },
+    "substances_of_concern": {
+      "term": "Substances of Concern",
+      "definition": "Substances that have a hazardous property or that may have adverse effects on human health or the environment. Under ESRS E2, this includes REACH SVHC candidates, POPs, and other classified hazardous substances.",
+      "related_terms": ["svhc", "reach"]
+    },
+    "svhc": {
+      "term": "Substances of Very High Concern (SVHC)",
+      "definition": "Substances listed on the ECHA Candidate List of SVHCs under the REACH Regulation due to their carcinogenic, mutagenic, toxic for reproduction, or persistent/bioaccumulative properties.",
+      "related_terms": ["substances_of_concern", "reach"]
+    },
+    "reach": {
+      "term": "Registration, Evaluation, Authorisation and Restriction of Chemicals (REACH)",
+      "definition": "EU Regulation (EC) 1907/2006 on the Registration, Evaluation, Authorisation and Restriction of Chemicals. Relevant for ESRS E2 disclosures on substances of concern.",
+      "related_terms": ["svhc", "substances_of_concern"]
+    },
+    "human_rights": {
+      "term": "Human Rights",
+      "definition": "Rights inherent to all human beings as set out in the International Bill of Human Rights, ILO core conventions, and other international instruments. ESRS social standards (S1-S4) address human rights in the context of own workforce, value chain workers, affected communities, and consumers.",
+      "related_terms": ["due_diligence", "living_wage"]
+    },
+    "living_wage": {
+      "term": "Living Wage",
+      "definition": "The remuneration received for a standard work week by a worker in a particular place sufficient to afford a decent standard of living for the worker and their family. Elements include food, water, housing, education, healthcare, transport, clothing, and other essential needs.",
+      "related_terms": ["human_rights", "adequate_wages"]
+    },
+    "adequate_wages": {
+      "term": "Adequate Wages",
+      "definition": "Wages that are at least equal to the applicable legal minimum wage or, where there is no legal minimum wage, the applicable adequate wage benchmark. ESRS S1 requires disclosure of whether all employees receive adequate wages.",
+      "related_terms": ["living_wage", "human_rights"]
+    },
+    "stakeholder": {
+      "term": "Stakeholder",
+      "definition": "An individual or group that has an interest that is or could be affected by the undertaking's activities. Under ESRS, stakeholders include affected stakeholders (who may be positively or negatively impacted) and users of sustainability statements.",
+      "related_terms": ["double_materiality"]
+    },
+    "assurance": {
+      "term": "Assurance",
+      "definition": "An engagement in which a practitioner aims to obtain sufficient appropriate evidence to express a conclusion designed to enhance the confidence of intended users about the information reported. CSRD initially requires limited assurance, with a transition to reasonable assurance planned.",
+      "related_terms": ["isae_3000", "limited_assurance", "reasonable_assurance"]
+    },
+    "limited_assurance": {
+      "term": "Limited Assurance",
+      "definition": "A level of assurance engagement where the practitioner performs fewer procedures than for reasonable assurance and expresses a conclusion in a negative form (e.g., 'nothing has come to our attention...'). This is the initial requirement under the CSRD.",
+      "related_terms": ["assurance", "reasonable_assurance"]
+    },
+    "reasonable_assurance": {
+      "term": "Reasonable Assurance",
+      "definition": "A higher level of assurance engagement involving more extensive procedures, resulting in a positive-form opinion (e.g., 'in our opinion, the information is fairly presented...'). Planned as the future requirement under the CSRD.",
+      "related_terms": ["assurance", "limited_assurance"]
+    },
+    "resource_use": {
+      "term": "Resource Use",
+      "definition": "The consumption of natural resources (materials, energy, water) in the production and delivery of goods and services. ESRS E5 addresses resource inflows, outflows, and circular economy strategies.",
+      "related_terms": ["circular_economy"]
+    },
+    "waste_management": {
+      "term": "Waste Management",
+      "definition": "The collection, transport, treatment, and disposal of waste, together with monitoring and regulation of the waste management process. Under ESRS E5, undertakings disclose waste generation, hazardous and non-hazardous waste, and diversion from disposal.",
+      "related_terms": ["circular_economy", "resource_use"]
+    },
+    "phase_in": {
+      "term": "Phase-in Provisions",
+      "definition": "Transitional arrangements under ESRS that allow certain undertakings to delay reporting on specific disclosure requirements. For example, undertakings with fewer than 750 employees may omit Scope 3 emissions in their first year of ESRS reporting.",
+      "related_terms": ["csrd", "esrs"]
+    },
+    "xbrl": {
+      "term": "XBRL (eXtensible Business Reporting Language)",
+      "definition": "A standardised electronic reporting format required for CSRD sustainability statements. EFRAG has developed an XBRL taxonomy to enable machine-readable tagging of ESRS data points.",
+      "related_terms": ["ixbrl", "efrag"]
+    },
+    "ixbrl": {
+      "term": "Inline XBRL (iXBRL)",
+      "definition": "A format that embeds XBRL tags within an HTML document, allowing sustainability reports to be both human-readable and machine-readable. The ESEF regulation requires the use of iXBRL for annual financial reports.",
+      "related_terms": ["xbrl", "esef"]
+    }
+  }
+}

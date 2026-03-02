@@ -3,6 +3,10 @@ import dashboardReducer from './slices/dashboardSlice';
 import transactionsReducer from './slices/transactionsSlice';
 import suppliersReducer from './slices/suppliersSlice';
 import reportsReducer from './slices/reportsSlice';
+import uncertaintyReducer from './slices/uncertaintySlice';
+import settingsReducer from './slices/settingsSlice';
+import cdpReducer from './slices/cdpSlice';
+import complianceReducer from './slices/complianceSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +14,10 @@ export const store = configureStore({
     transactions: transactionsReducer,
     suppliers: suppliersReducer,
     reports: reportsReducer,
+    uncertainty: uncertaintyReducer,
+    settings: settingsReducer,
+    cdp: cdpReducer,
+    compliance: complianceReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

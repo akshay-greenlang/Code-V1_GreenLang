@@ -1,0 +1,766 @@
+/* ==========================================================================
+   GL-CSRD-APP Professional CSRD Report Stylesheet
+   Version: 1.1.0
+   WeasyPrint-optimized A4 layout for EU CSRD sustainability reports.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   PAGE SETUP - A4 with WeasyPrint @page rules
+   -------------------------------------------------------------------------- */
+
+@page {
+    size: A4 portrait;               /* 210mm x 297mm */
+    margin: 25mm 20mm 30mm 20mm;     /* top right bottom left */
+
+    @top-center {
+        content: string(page-header);
+        font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #6b7280;
+        border-bottom: 0.5pt solid #d1d5db;
+        padding-bottom: 3mm;
+    }
+
+    @bottom-left {
+        content: string(page-footer);
+        font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 7pt;
+        color: #9ca3af;
+    }
+
+    @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 7pt;
+        color: #9ca3af;
+    }
+}
+
+@page :first {
+    margin-top: 0;
+    margin-bottom: 0;
+
+    @top-center {
+        content: none;
+    }
+    @bottom-left {
+        content: none;
+    }
+    @bottom-right {
+        content: none;
+    }
+}
+
+@page :blank {
+    @top-center { content: none; }
+    @bottom-left { content: none; }
+    @bottom-right { content: none; }
+}
+
+/* --------------------------------------------------------------------------
+   CSS VARIABLES - GreenLang brand palette
+   -------------------------------------------------------------------------- */
+
+:root {
+    /* GreenLang primary greens */
+    --gl-green-900: #2D5016;
+    --gl-green-700: #4A7C2E;
+    --gl-green-500: #6BA344;
+    --gl-green-300: #8BC462;
+    --gl-green-100: #B8D89A;
+    --gl-green-50:  #E8F5D6;
+
+    /* Neutral grays */
+    --gl-gray-900: #111827;
+    --gl-gray-800: #1f2937;
+    --gl-gray-700: #374151;
+    --gl-gray-600: #4b5563;
+    --gl-gray-500: #6b7280;
+    --gl-gray-400: #9ca3af;
+    --gl-gray-300: #d1d5db;
+    --gl-gray-200: #e5e7eb;
+    --gl-gray-100: #f3f4f6;
+    --gl-gray-50:  #f9fafb;
+
+    /* Semantic colours */
+    --gl-danger:  #dc2626;
+    --gl-warning: #d97706;
+    --gl-info:    #2563eb;
+    --gl-success: #16a34a;
+
+    /* Typography */
+    --font-body: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+}
+
+/* --------------------------------------------------------------------------
+   BASE TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+
+html {
+    font-size: 10pt;
+}
+
+body {
+    font-family: var(--font-body);
+    font-size: 10pt;
+    line-height: 1.6;
+    color: var(--gl-gray-800);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------------------
+   HEADING HIERARCHY
+   -------------------------------------------------------------------------- */
+
+h1, h2, h3, h4 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    color: var(--gl-green-900);
+    margin-top: 0;
+    line-height: 1.25;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-size: 22pt;
+    color: var(--gl-green-900);
+    border-bottom: 2pt solid var(--gl-green-700);
+    padding-bottom: 4mm;
+    margin-bottom: 6mm;
+}
+
+h2 {
+    font-size: 16pt;
+    color: var(--gl-green-700);
+    border-bottom: 1pt solid var(--gl-green-300);
+    padding-bottom: 2mm;
+    margin-bottom: 4mm;
+    margin-top: 8mm;
+}
+
+h3 {
+    font-size: 13pt;
+    color: var(--gl-green-700);
+    margin-bottom: 3mm;
+    margin-top: 6mm;
+}
+
+h4 {
+    font-size: 11pt;
+    color: var(--gl-gray-700);
+    margin-bottom: 2mm;
+    margin-top: 4mm;
+}
+
+p {
+    margin: 0 0 3mm 0;
+    text-align: justify;
+    orphans: 3;
+    widows: 3;
+}
+
+/* --------------------------------------------------------------------------
+   LINKS
+   -------------------------------------------------------------------------- */
+
+a {
+    color: var(--gl-green-700);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   COVER PAGE
+   -------------------------------------------------------------------------- */
+
+.cover-page {
+    page: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 297mm;
+    padding: 40mm 30mm;
+    text-align: center;
+    page-break-after: always;
+}
+
+.cover-logo-placeholder {
+    width: 60mm;
+    height: 60mm;
+    border: 2pt solid var(--gl-green-700);
+    border-radius: 8mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15mm;
+    background-color: var(--gl-green-50);
+}
+
+.cover-logo-placeholder span {
+    font-size: 14pt;
+    color: var(--gl-green-700);
+    font-weight: 700;
+}
+
+.cover-title {
+    font-size: 28pt;
+    font-weight: 800;
+    color: var(--gl-green-900);
+    margin-bottom: 5mm;
+    border: none;
+    padding: 0;
+    line-height: 1.2;
+}
+
+.cover-subtitle {
+    font-size: 16pt;
+    font-weight: 400;
+    color: var(--gl-gray-600);
+    margin-bottom: 15mm;
+}
+
+.cover-company {
+    font-size: 20pt;
+    font-weight: 700;
+    color: var(--gl-green-700);
+    margin-bottom: 5mm;
+}
+
+.cover-period {
+    font-size: 14pt;
+    color: var(--gl-gray-600);
+    margin-bottom: 10mm;
+}
+
+.cover-date {
+    font-size: 10pt;
+    color: var(--gl-gray-500);
+}
+
+.cover-regulation {
+    font-size: 9pt;
+    color: var(--gl-gray-500);
+    margin-top: 20mm;
+    border-top: 0.5pt solid var(--gl-gray-300);
+    padding-top: 5mm;
+}
+
+/* --------------------------------------------------------------------------
+   TABLE OF CONTENTS
+   -------------------------------------------------------------------------- */
+
+.toc {
+    page-break-after: always;
+}
+
+.toc h1 {
+    font-size: 20pt;
+    margin-bottom: 8mm;
+}
+
+.toc-entry {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 2mm;
+    font-size: 10pt;
+    line-height: 1.8;
+}
+
+.toc-entry.toc-level-1 {
+    font-weight: 700;
+    font-size: 11pt;
+    margin-top: 3mm;
+}
+
+.toc-entry.toc-level-2 {
+    padding-left: 8mm;
+    font-weight: 400;
+}
+
+.toc-entry.toc-level-3 {
+    padding-left: 16mm;
+    font-size: 9pt;
+    color: var(--gl-gray-600);
+}
+
+.toc-title {
+    flex-shrink: 0;
+}
+
+.toc-dots {
+    flex-grow: 1;
+    border-bottom: 1pt dotted var(--gl-gray-300);
+    margin: 0 2mm;
+    min-width: 10mm;
+}
+
+.toc-page {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    min-width: 8mm;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION LAYOUT
+   -------------------------------------------------------------------------- */
+
+.section {
+    margin-bottom: 8mm;
+}
+
+.section-break {
+    page-break-before: always;
+}
+
+.page-break {
+    page-break-before: always;
+}
+
+.avoid-break {
+    page-break-inside: avoid;
+}
+
+/* Running header and footer string setters */
+.page-header {
+    string-set: page-header content();
+    display: none;
+}
+
+.page-footer {
+    string-set: page-footer content();
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   TABLES
+   -------------------------------------------------------------------------- */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4mm 0 6mm 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+}
+
+thead {
+    display: table-header-group;
+}
+
+thead th {
+    background-color: var(--gl-green-900);
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+    padding: 2.5mm 3mm;
+    border: 0.5pt solid var(--gl-green-900);
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+}
+
+tbody td {
+    padding: 2mm 3mm;
+    border: 0.5pt solid var(--gl-gray-200);
+    vertical-align: top;
+}
+
+tbody tr:nth-child(even) {
+    background-color: var(--gl-gray-50);
+}
+
+tbody tr:hover {
+    background-color: var(--gl-green-50);
+}
+
+tbody tr.highlight-row {
+    background-color: #fef3c7;
+    font-weight: 600;
+}
+
+tbody tr.total-row {
+    background-color: var(--gl-green-50);
+    font-weight: 700;
+    border-top: 1.5pt solid var(--gl-green-700);
+}
+
+/* Numeric columns right-aligned */
+td.numeric, th.numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+}
+
+/* Table caption */
+.table-caption {
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--gl-gray-700);
+    margin-bottom: 2mm;
+    text-align: left;
+}
+
+/* Table footnotes */
+.table-footnotes {
+    font-size: 8pt;
+    color: var(--gl-gray-500);
+    margin-top: 1.5mm;
+    padding-top: 1.5mm;
+    border-top: 0.5pt solid var(--gl-gray-200);
+}
+
+.table-footnotes p {
+    margin: 0.5mm 0;
+    text-align: left;
+}
+
+/* --------------------------------------------------------------------------
+   KPI DASHBOARD
+   -------------------------------------------------------------------------- */
+
+.kpi-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4mm;
+    margin: 6mm 0;
+    page-break-inside: avoid;
+}
+
+.kpi-card {
+    flex: 1 1 45mm;
+    max-width: 50%;
+    background-color: var(--gl-gray-50);
+    border: 0.5pt solid var(--gl-gray-200);
+    border-left: 3pt solid var(--gl-green-700);
+    border-radius: 2mm;
+    padding: 3mm 4mm;
+    page-break-inside: avoid;
+}
+
+.kpi-label {
+    font-size: 7.5pt;
+    color: var(--gl-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+    margin-bottom: 1mm;
+}
+
+.kpi-value {
+    font-size: 18pt;
+    font-weight: 800;
+    color: var(--gl-green-900);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-unit {
+    font-size: 9pt;
+    font-weight: 400;
+    color: var(--gl-gray-500);
+    margin-left: 1mm;
+}
+
+.kpi-trend {
+    font-size: 8pt;
+    margin-top: 1mm;
+}
+
+.kpi-trend.positive {
+    color: var(--gl-success);
+}
+
+.kpi-trend.negative {
+    color: var(--gl-danger);
+}
+
+.kpi-trend.neutral {
+    color: var(--gl-gray-500);
+}
+
+/* --------------------------------------------------------------------------
+   CHART CONTAINERS
+   -------------------------------------------------------------------------- */
+
+.chart-container {
+    margin: 5mm 0;
+    text-align: center;
+    page-break-inside: avoid;
+}
+
+.chart-container svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.chart-title {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--gl-gray-700);
+    margin-bottom: 2mm;
+    text-align: center;
+}
+
+.chart-subtitle {
+    font-size: 8pt;
+    color: var(--gl-gray-500);
+    margin-bottom: 3mm;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   COMPLIANCE SUMMARY
+   -------------------------------------------------------------------------- */
+
+.compliance-summary {
+    margin: 5mm 0;
+    page-break-inside: avoid;
+}
+
+.compliance-badge {
+    display: inline-block;
+    padding: 1.5mm 4mm;
+    border-radius: 2mm;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+}
+
+.compliance-badge.pass {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 0.5pt solid #86efac;
+}
+
+.compliance-badge.warning {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 0.5pt solid #fcd34d;
+}
+
+.compliance-badge.fail {
+    background-color: #fecaca;
+    color: #991b1b;
+    border: 0.5pt solid #fca5a5;
+}
+
+.compliance-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2mm 0;
+    border-bottom: 0.5pt solid var(--gl-gray-200);
+    font-size: 9pt;
+}
+
+.compliance-metric:last-child {
+    border-bottom: none;
+}
+
+.compliance-bar {
+    height: 4mm;
+    background-color: var(--gl-gray-200);
+    border-radius: 1mm;
+    overflow: hidden;
+    width: 40mm;
+    margin-left: 3mm;
+}
+
+.compliance-bar-fill {
+    height: 100%;
+    border-radius: 1mm;
+    background-color: var(--gl-green-500);
+}
+
+.compliance-bar-fill.low {
+    background-color: var(--gl-danger);
+}
+
+.compliance-bar-fill.medium {
+    background-color: var(--gl-warning);
+}
+
+.compliance-bar-fill.high {
+    background-color: var(--gl-green-500);
+}
+
+/* --------------------------------------------------------------------------
+   ESRS SECTION STYLING
+   -------------------------------------------------------------------------- */
+
+.esrs-section {
+    margin-bottom: 6mm;
+}
+
+.esrs-standard-ref {
+    font-size: 8pt;
+    color: var(--gl-gray-500);
+    font-style: italic;
+    margin-bottom: 2mm;
+}
+
+.esrs-disclosure-req {
+    background-color: var(--gl-gray-50);
+    border-left: 3pt solid var(--gl-green-500);
+    padding: 3mm 4mm;
+    margin: 3mm 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+}
+
+.esrs-disclosure-req strong {
+    color: var(--gl-green-900);
+}
+
+/* --------------------------------------------------------------------------
+   MATERIALITY MATRIX
+   -------------------------------------------------------------------------- */
+
+.materiality-section {
+    page-break-inside: avoid;
+}
+
+.materiality-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3mm;
+    margin-top: 3mm;
+    font-size: 8pt;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5mm;
+}
+
+.legend-dot {
+    width: 3mm;
+    height: 3mm;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* --------------------------------------------------------------------------
+   WATERMARK
+   -------------------------------------------------------------------------- */
+
+.watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 60pt;
+    color: rgba(200, 200, 200, 0.15);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 5pt;
+    z-index: -1;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   FOOTNOTES
+   -------------------------------------------------------------------------- */
+
+.footnote-ref {
+    font-size: 7pt;
+    vertical-align: super;
+    color: var(--gl-green-700);
+    text-decoration: none;
+}
+
+.footnotes {
+    margin-top: 6mm;
+    padding-top: 3mm;
+    border-top: 0.5pt solid var(--gl-gray-300);
+    font-size: 8pt;
+    color: var(--gl-gray-600);
+}
+
+.footnotes ol {
+    margin: 0;
+    padding-left: 5mm;
+}
+
+.footnotes li {
+    margin-bottom: 1mm;
+}
+
+/* --------------------------------------------------------------------------
+   APPENDIX
+   -------------------------------------------------------------------------- */
+
+.appendix h2 {
+    color: var(--gl-gray-700);
+    border-bottom-color: var(--gl-gray-300);
+}
+
+.glossary-term {
+    font-weight: 700;
+    color: var(--gl-green-900);
+}
+
+.glossary-def {
+    margin-left: 5mm;
+    margin-bottom: 2mm;
+    font-size: 9pt;
+}
+
+/* --------------------------------------------------------------------------
+   BACK COVER
+   -------------------------------------------------------------------------- */
+
+.back-cover {
+    page-break-before: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200mm;
+    text-align: center;
+    color: var(--gl-gray-500);
+}
+
+.back-cover-brand {
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--gl-green-700);
+    margin-bottom: 3mm;
+}
+
+.back-cover-tagline {
+    font-size: 10pt;
+    color: var(--gl-gray-500);
+    margin-bottom: 10mm;
+}
+
+.back-cover-disclaimer {
+    font-size: 7.5pt;
+    color: var(--gl-gray-400);
+    max-width: 120mm;
+    line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   UTILITY CLASSES
+   -------------------------------------------------------------------------- */
+
+.text-right  { text-align: right; }
+.text-center { text-align: center; }
+.text-left   { text-align: left; }
+.text-muted  { color: var(--gl-gray-500); }
+.text-small  { font-size: 8pt; }
+.text-mono   { font-family: var(--font-mono); font-size: 9pt; }
+.fw-bold     { font-weight: 700; }
+.mt-0        { margin-top: 0; }
+.mb-0        { margin-bottom: 0; }
+.no-break    { page-break-inside: avoid; }

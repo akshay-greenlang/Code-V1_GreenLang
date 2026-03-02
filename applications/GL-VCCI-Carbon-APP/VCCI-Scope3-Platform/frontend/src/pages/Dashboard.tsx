@@ -1,20 +1,24 @@
 import React, { useEffect } from 'react';
-import { Grid, Typography, Box, Alert } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Grid, Typography, Box, Alert, Button } from '@mui/material';
 import {
   CloudQueue as EmissionsIcon,
   AttachMoney as SpendIcon,
   Business as SupplierIcon,
   Description as TransactionIcon,
+  QueryStats as UncertaintyIcon,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchDashboardMetrics, fetchHotspotAnalysis } from '../store/slices/dashboardSlice';
 import StatCard from '../components/StatCard';
 import { CategoryPieChart, MonthlyTrendChart, TopSuppliersChart } from '../components/EmissionsChart';
+import { UncertaintyMetricsCard } from '../components/uncertainty';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { formatCurrency, formatNumber } from '../utils/formatters';
 
 const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { metrics, hotspots, loading, error } = useAppSelector((state) => state.dashboard);
 
   useEffect(() => {
@@ -85,6 +89,55 @@ const Dashboard: React.FC = () => {
             color="warning"
             subtitle={`Avg DQI: ${metrics.dataQualityAvg.toFixed(2)}`}
           />
+        </Grid>
+      </Grid>
+
+      {/* Uncertainty Metrics */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <UncertaintyMetricsCard
+            title="Total Emissions"
+            value={metrics.totalEmissionsTCO2e}
+            unit="t CO₂e"
+            uncertaintyRange={metrics.uncertaintyRange}
+            variant="emissions"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <UncertaintyMetricsCard
+            title="Emission Intensity"
+            value={metrics.totalEmissionsTCO2e / (metrics.totalSpendUsd || 1)}
+            unit="t CO₂e / USD"
+            uncertaintyRange={metrics.intensityUncertaintyRange}
+            variant="intensity"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <UncertaintyMetricsCard
+            title="Data Quality Score"
+            value={metrics.dataQualityAvg}
+            unit="DQI"
+            variant="quality"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <UncertaintyMetricsCard
+            title="Monte Carlo Convergence"
+            value={metrics.monteCarloConvergence}
+            unit="%"
+            variant="convergence"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              startIcon={<UncertaintyIcon />}
+              onClick={() => navigate('/uncertainty')}
+            >
+              View Full Uncertainty Analysis
+            </Button>
+          </Box>
         </Grid>
       </Grid>
 

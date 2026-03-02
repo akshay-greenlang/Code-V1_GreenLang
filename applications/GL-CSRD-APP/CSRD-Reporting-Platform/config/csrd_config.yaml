@@ -1,8 +1,11 @@
 # ============================================================================
 # CSRD/ESRS DIGITAL REPORTING PLATFORM - CONFIGURATION
 # ============================================================================
-# Version: 1.0.0
+# Version: 1.1.0
 # Description: Main configuration file for CSRD pipeline
+
+# v1.1 additions
+version: "1.1.0"
 
 # ----------------------------------------------------------------------------
 # PATHS - Reference Data & Resources
@@ -99,7 +102,7 @@ agents:
 # ----------------------------------------------------------------------------
 pipeline:
   name: "csrd-end-to-end"
-  version: "1.0.0"
+  version: "1.1.0"
   target_total_time_minutes: 30
   enable_progress_reporting: true
   enable_provenance_tracking: true
@@ -114,6 +117,41 @@ pipeline:
   log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
   log_to_file: true
   log_file: "output/logs/csrd_pipeline.log"
+
+# ----------------------------------------------------------------------------
+# INTERNATIONALIZATION (v1.1)
+# ----------------------------------------------------------------------------
+i18n:
+  default_locale: "en"
+  supported_locales: ["en", "de", "fr", "es"]
+  locale_files_path: "i18n/locales"
+  fallback_locale: "en"
+  number_format:
+    en: { decimal: ".", thousands: "," }
+    de: { decimal: ",", thousands: "." }
+    fr: { decimal: ",", thousands: " " }
+    es: { decimal: ",", thousands: "." }
+
+# ----------------------------------------------------------------------------
+# XBRL / ESEF CONFIGURATION (v1.1)
+# ----------------------------------------------------------------------------
+xbrl:
+  taxonomy_version: "EFRAG_ESRS_2023"
+  taxonomy_data_path: "xbrl/taxonomy_data"
+  ixbrl_output_format: "xhtml"
+  esef_package: true
+  validation_strictness: "strict"
+  filing_indicators_required: true
+
+# ----------------------------------------------------------------------------
+# PDF GENERATION (v1.1)
+# ----------------------------------------------------------------------------
+pdf:
+  engine: "weasyprint"
+  template_path: "pdf/report_template.html"
+  styles_path: "pdf/styles.css"
+  page_size: "A4"
+  enable_charts: true
 
 # ----------------------------------------------------------------------------
 # AI/LLM CONFIGURATION
@@ -177,14 +215,18 @@ quality:
   compliance_validation_required: true
 
 # ----------------------------------------------------------------------------
-# SECURITY & PRIVACY
+# SECURITY & PRIVACY (v1.1 enhanced)
 # ----------------------------------------------------------------------------
 security:
-  encrypt_sensitive_data: false
+  encryption_enabled: true
   hash_algorithm: "sha256"
   audit_trail_retention_days: 2555  # 7 years
-  pii_detection: false
-  data_anonymization: false
+  pii_detection_enabled: true
+  data_anonymization: true
+  audit_trail: true
+  input_validation: "strict"
+  xxe_protection: true
+  max_file_size_mb: 500
 
 # ----------------------------------------------------------------------------
 # FEATURE FLAGS
@@ -223,9 +265,9 @@ esrs_coverage:
 # VERSION & METADATA
 # ----------------------------------------------------------------------------
 metadata:
-  config_version: "1.0.0"
+  config_version: "1.1.0"
   csrd_regulation: "2022/2464"
   esrs_set: "Set 1"
   esrs_regulation: "2023/2772"
   esef_regulation: "2019/815"
-  last_updated: "2025-10-18"
+  last_updated: "2026-03-01"
