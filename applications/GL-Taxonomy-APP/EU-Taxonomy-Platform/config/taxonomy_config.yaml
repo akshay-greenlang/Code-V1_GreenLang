@@ -1,0 +1,1189 @@
+# =============================================================================
+# GL-Taxonomy-APP v1.0 -- EU Taxonomy Alignment & Green Investment Ratio
+#                          Platform Configuration
+# =============================================================================
+# Standard: EU Taxonomy Regulation 2020/852 (June 2020)
+# Climate DA: Commission Delegated Regulation 2021/2139 (June 2021)
+# Environmental DA: Commission Delegated Regulation 2023/2486 (June 2023)
+# Article 8 DA: Commission Delegated Regulation 2021/4987 (July 2021)
+# EBA ITS: EBA ITS on Pillar 3 ESG Disclosures (CRR Article 449a)
+# Omnibus: Omnibus I Simplification Package (proposed Feb 2025)
+#
+# This file is the single source of truth for all EU Taxonomy-specific
+# configuration consumed by the activity screening engine, substantial
+# contribution engine, DNSH assessment engine, minimum safeguards engine,
+# KPI calculation engine, GAR calculation engine, alignment engine,
+# reporting engine, data quality engine, and regulatory update engine.
+#
+# IMPORTANT: All thresholds, criteria, and activity codes are sourced
+# directly from the official EU Taxonomy Delegated Acts and Technical
+# Screening Criteria Annexes.  The alignment engine performs deterministic
+# threshold checks -- zero hallucination for compliance values.
+#
+# Environment variable overrides use the TAXONOMY_APP_ prefix.
+# Example: TAXONOMY_APP_DEBUG=true, TAXONOMY_APP_LOG_LEVEL=DEBUG
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# 1. Application Metadata
+# ---------------------------------------------------------------------------
+application:
+  name: "GL-Taxonomy-APP"
+  version: "1.0.0"
+  description: "EU Taxonomy Alignment & Green Investment Ratio Platform"
+  standard: "EU Taxonomy Regulation 2020/852"
+  climate_da: "Commission Delegated Regulation 2021/2139"
+  environmental_da: "Commission Delegated Regulation 2023/2486"
+  article_8_da: "Commission Delegated Regulation 2021/4987"
+  eba_its: "EBA ITS on Pillar 3 ESG Disclosures"
+  supported_years: [2024, 2025, 2026]
+  default_year: 2026
+  log_level: INFO
+  debug: false
+  base_url: "https://api.greenlang.io/taxonomy/v1"
+
+# ---------------------------------------------------------------------------
+# 2. Environmental Objectives (Article 9, Regulation 2020/852)
+# ---------------------------------------------------------------------------
+# The EU Taxonomy defines 6 environmental objectives.  An economic activity
+# must make a substantial contribution to at least one objective, do no
+# significant harm (DNSH) to the remaining five, and comply with minimum
+# safeguards.
+# ---------------------------------------------------------------------------
+environmental_objectives:
+  climate_change_mitigation:
+    name: "Climate Change Mitigation"
+    abbreviation: "CCM"
+    article: "Article 10"
+    description: "Substantial contribution to stabilising GHG concentrations at a level consistent with the Paris Agreement long-term temperature goal of 1.5C"
+    delegated_act: "Climate DA 2021/2139, Annex I"
+    application_date: "2022-01-01"
+    activity_count: 88
+  climate_change_adaptation:
+    name: "Climate Change Adaptation"
+    abbreviation: "CCA"
+    article: "Article 11"
+    description: "Substantial contribution to reducing material physical climate risks through adaptation solutions and activities"
+    delegated_act: "Climate DA 2021/2139, Annex II"
+    application_date: "2022-01-01"
+    activity_count: 68
+  sustainable_use_water:
+    name: "Sustainable Use and Protection of Water and Marine Resources"
+    abbreviation: "WTR"
+    article: "Article 12"
+    description: "Substantial contribution to achieving good status of water bodies or preventing deterioration of marine environments"
+    delegated_act: "Environmental DA 2023/2486, Annex I"
+    application_date: "2024-01-01"
+    activity_count: 18
+  circular_economy:
+    name: "Transition to a Circular Economy"
+    abbreviation: "CE"
+    article: "Article 13"
+    description: "Substantial contribution to transitioning to circular economy through waste prevention, reuse, recycling, and resource efficiency"
+    delegated_act: "Environmental DA 2023/2486, Annex II"
+    application_date: "2024-01-01"
+    activity_count: 22
+  pollution_prevention:
+    name: "Pollution Prevention and Control"
+    abbreviation: "PPC"
+    article: "Article 14"
+    description: "Substantial contribution to preventing or reducing pollutant emissions to air, water, or land"
+    delegated_act: "Environmental DA 2023/2486, Annex III"
+    application_date: "2024-01-01"
+    activity_count: 12
+  biodiversity:
+    name: "Protection and Restoration of Biodiversity and Ecosystems"
+    abbreviation: "BIO"
+    article: "Article 15"
+    description: "Substantial contribution to protecting, conserving, or restoring biodiversity and ecosystem services"
+    delegated_act: "Environmental DA 2023/2486, Annex IV"
+    application_date: "2024-01-01"
+    activity_count: 14
+
+# ---------------------------------------------------------------------------
+# 3. Delegated Acts
+# ---------------------------------------------------------------------------
+# The EU Taxonomy is operationalized through Delegated Acts that define the
+# Technical Screening Criteria (TSC), DNSH criteria, and reporting templates
+# for each environmental objective.
+# ---------------------------------------------------------------------------
+delegated_acts:
+  climate_da:
+    name: "Climate Delegated Act"
+    regulation: "Commission Delegated Regulation (EU) 2021/2139"
+    effective_date: "2022-01-01"
+    version: "2.0"
+    objectives_covered: [climate_change_mitigation, climate_change_adaptation]
+    annex_count: 2
+    amendment_history:
+      - date: "2022-03-09"
+        regulation: "2022/631"
+        description: "Inclusion of certain nuclear and gas activities (Complementary DA)"
+      - date: "2023-06-27"
+        regulation: "2023/2485"
+        description: "Amendment adding manufacturing and transport activities"
+      - date: "2023-11-21"
+        regulation: "2023/2486"
+        description: "Technical corrections and clarifications"
+  environmental_da:
+    name: "Environmental Delegated Act"
+    regulation: "Commission Delegated Regulation (EU) 2023/2486"
+    effective_date: "2024-01-01"
+    version: "1.0"
+    objectives_covered: [sustainable_use_water, circular_economy, pollution_prevention, biodiversity]
+    annex_count: 4
+    amendment_history: []
+  article_8_da:
+    name: "Article 8 Delegated Act"
+    regulation: "Commission Delegated Regulation (EU) 2021/4987"
+    effective_date: "2022-01-01"
+    version: "1.1"
+    description: "Disclosure rules for non-financial and financial undertakings under Article 8 of the Taxonomy Regulation"
+    amendment_history:
+      - date: "2023-06-27"
+        regulation: "2023/2486"
+        description: "Extended to include 4 environmental objectives reporting"
+  eba_pillar_3:
+    name: "EBA Pillar 3 ESG ITS"
+    regulation: "EBA/ITS/2022/01"
+    effective_date: "2023-06-28"
+    version: "2.0"
+    description: "Implementing Technical Standards on prudential disclosures on ESG risks (CRR Article 449a)"
+    template_count: 10
+    amendment_history:
+      - date: "2024-01-01"
+        regulation: "EBA/ITS/2023/05"
+        description: "Updated GAR templates and BTAR introduction"
+
+# ---------------------------------------------------------------------------
+# 4. Sectors (NACE Level-1 Macro Sectors)
+# ---------------------------------------------------------------------------
+# The EU Taxonomy organizes 150+ economic activities into 13 macro sectors
+# aligned with NACE Rev. 2 statistical classification codes.  Each sector
+# contains multiple specific activities with individual TSC thresholds.
+# ---------------------------------------------------------------------------
+sectors:
+  forestry:
+    name: "Forestry"
+    nace_level_1: "A"
+    description: "Afforestation, reforestation, forest management, and conservation forestry"
+    activity_count: 4
+    objectives: [climate_change_mitigation, climate_change_adaptation, biodiversity]
+    key_activities: ["A.1 - Afforestation", "A.2 - Rehabilitation of forests", "A.3 - Forest management", "A.4 - Conservation forestry"]
+  environmental_protection:
+    name: "Environmental Protection and Restoration"
+    nace_level_1: "E"
+    description: "Restoration of wetlands, environmental remediation, water treatment"
+    activity_count: 5
+    objectives: [climate_change_mitigation, sustainable_use_water, biodiversity]
+    key_activities: ["E.1 - Wetland restoration", "E.2 - Nature-based solutions"]
+  manufacturing:
+    name: "Manufacturing"
+    nace_level_1: "C"
+    description: "Low-carbon technologies, cement, iron/steel, aluminium, hydrogen, chemicals, plastics"
+    activity_count: 24
+    objectives: [climate_change_mitigation, circular_economy, pollution_prevention]
+    key_activities: ["C.1 - Cement", "C.2 - Aluminium", "C.3 - Iron and steel", "C.4 - Hydrogen", "C.5 - Chemicals", "C.6 - Plastics"]
+  energy:
+    name: "Energy"
+    nace_level_1: "D"
+    description: "Electricity generation from renewables, nuclear, gas, storage, hydrogen, heat/cool networks"
+    activity_count: 18
+    objectives: [climate_change_mitigation, climate_change_adaptation]
+    key_activities: ["D.1 - Solar PV", "D.2 - Wind", "D.3 - Hydropower", "D.4 - Nuclear", "D.5 - Gas co-gen", "D.6 - Storage"]
+  water_supply:
+    name: "Water Supply, Sewerage, Waste Management"
+    nace_level_1: "E"
+    description: "Water collection/treatment, sewerage, waste management, material recovery"
+    activity_count: 8
+    objectives: [sustainable_use_water, circular_economy, pollution_prevention]
+    key_activities: ["E.3 - Water supply", "E.4 - Waste collection", "E.5 - Material recovery"]
+  transport:
+    name: "Transport"
+    nace_level_1: "H"
+    description: "Rail, road, waterborne, cycling, urban/interurban, freight, infrastructure"
+    activity_count: 17
+    objectives: [climate_change_mitigation, climate_change_adaptation, pollution_prevention]
+    key_activities: ["H.1 - Rail passenger", "H.2 - Rail freight", "H.3 - Urban transport", "H.4 - Low-emission vehicles", "H.5 - Cycling"]
+  construction:
+    name: "Construction and Real Estate"
+    nace_level_1: "F"
+    description: "New buildings, renovation, infrastructure for transport/water/energy, demolition"
+    activity_count: 10
+    objectives: [climate_change_mitigation, climate_change_adaptation, circular_economy]
+    key_activities: ["F.1 - New buildings", "F.2 - Renovation", "F.3 - Heating/cooling systems", "F.4 - EV charging"]
+  ict:
+    name: "Information and Communication"
+    nace_level_1: "J"
+    description: "Data centres, data-driven solutions, digital enabling activities"
+    activity_count: 4
+    objectives: [climate_change_mitigation, circular_economy]
+    key_activities: ["J.1 - Data centres", "J.2 - Data-driven solutions"]
+  professional_activities:
+    name: "Professional, Scientific and Technical Activities"
+    nace_level_1: "M"
+    description: "Climate-related R&D, engineering, consultancy services"
+    activity_count: 3
+    objectives: [climate_change_mitigation, climate_change_adaptation]
+    key_activities: ["M.1 - R&D for climate", "M.2 - Engineering for renewables"]
+  financial_insurance:
+    name: "Financial and Insurance Activities"
+    nace_level_1: "K"
+    description: "Lending, investment, insurance for taxonomy-aligned activities"
+    activity_count: 4
+    objectives: [climate_change_mitigation, climate_change_adaptation]
+    key_activities: ["K.1 - Non-life insurance", "K.2 - Reinsurance"]
+  education:
+    name: "Education"
+    nace_level_1: "P"
+    description: "Education and training activities related to environmental sustainability"
+    activity_count: 2
+    objectives: [climate_change_mitigation, climate_change_adaptation]
+    key_activities: ["P.1 - Education for sustainability"]
+  health:
+    name: "Human Health and Social Work"
+    nace_level_1: "Q"
+    description: "Healthcare and social services with environmental contribution"
+    activity_count: 2
+    objectives: [climate_change_adaptation, pollution_prevention]
+    key_activities: ["Q.1 - Healthcare services"]
+  arts_entertainment:
+    name: "Arts, Entertainment and Recreation"
+    nace_level_1: "R"
+    description: "Cultural, sports, and recreational activities with environmental contribution"
+    activity_count: 2
+    objectives: [biodiversity, climate_change_adaptation]
+    key_activities: ["R.1 - Nature-based recreation"]
+
+# ---------------------------------------------------------------------------
+# 5. Activity Catalog (Top-50 Representative Activities)
+# ---------------------------------------------------------------------------
+# Each activity has a unique code structured as <OBJECTIVE_ABBREV>-<SECTION.SUBSECTION>.
+# Activities may contribute substantially to one or more objectives.
+# The full catalog contains 150+ activities; this configuration includes
+# the 50 most commonly assessed activities.
+# ---------------------------------------------------------------------------
+activity_catalog:
+  # --- Climate Change Mitigation (CCM) ---
+  - code: "CCM-3.3"
+    name: "Manufacture of low carbon technologies for transport"
+    nace: ["C29.10", "C30.11", "C30.12", "C30.20"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 3.3"
+  - code: "CCM-3.4"
+    name: "Manufacture of batteries"
+    nace: ["C27.20"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 3.4"
+  - code: "CCM-3.5"
+    name: "Manufacture of energy efficiency equipment for buildings"
+    nace: ["C27.51", "C27.52", "C28.21", "C28.25"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 3.5"
+  - code: "CCM-3.6"
+    name: "Manufacture of other low carbon technologies"
+    nace: ["C22", "C25", "C26", "C27", "C28"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 3.6"
+  - code: "CCM-3.9"
+    name: "Manufacture of iron and steel"
+    nace: ["C24.10", "C24.20", "C24.31", "C24.32"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: transitional
+    tsc_reference: "Annex I, Section 3.9"
+  - code: "CCM-3.10"
+    name: "Manufacture of hydrogen"
+    nace: ["C20.11"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 3.10"
+  - code: "CCM-3.11"
+    name: "Manufacture of carbon black"
+    nace: ["C20.13"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 3.11"
+  - code: "CCM-3.12"
+    name: "Manufacture of soda ash"
+    nace: ["C20.13"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 3.12"
+  - code: "CCM-3.14"
+    name: "Manufacture of organic basic chemicals"
+    nace: ["C20.14"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 3.14"
+  - code: "CCM-3.17"
+    name: "Manufacture of plastics in primary form"
+    nace: ["C20.16"]
+    sector: manufacturing
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 3.17"
+  - code: "CCM-4.1"
+    name: "Electricity generation using solar photovoltaic technology"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.1"
+  - code: "CCM-4.2"
+    name: "Electricity generation using concentrated solar power technology"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.2"
+  - code: "CCM-4.3"
+    name: "Electricity generation from wind power"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.3"
+  - code: "CCM-4.4"
+    name: "Electricity generation from ocean energy technologies"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.4"
+  - code: "CCM-4.5"
+    name: "Electricity generation from hydropower"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.5"
+  - code: "CCM-4.7"
+    name: "Electricity generation from renewable non-fossil gaseous and liquid fuels"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.7"
+  - code: "CCM-4.8"
+    name: "Electricity generation from bioenergy"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.8"
+  - code: "CCM-4.9"
+    name: "Transmission and distribution of electricity"
+    nace: ["D35.12", "D35.13"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 4.9"
+  - code: "CCM-4.10"
+    name: "Storage of electricity"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 4.10"
+  - code: "CCM-4.13"
+    name: "Manufacture of biogas and biofuels for use in transport"
+    nace: ["D35.21"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.13"
+  - code: "CCM-4.15"
+    name: "District heating/cooling distribution"
+    nace: ["D35.30"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 4.15"
+  - code: "CCM-4.26"
+    name: "Pre-commercial stages of advanced technologies to produce energy from nuclear processes"
+    nace: ["D35.11", "M72.1"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Complementary DA, Annex I, Section 4.26"
+  - code: "CCM-4.29"
+    name: "Electricity generation from fossil gaseous fuels"
+    nace: ["D35.11"]
+    sector: energy
+    objective: climate_change_mitigation
+    type: transitional
+    tsc_reference: "Complementary DA, Annex I, Section 4.29"
+  - code: "CCM-5.1"
+    name: "Construction, extension and operation of water collection, treatment and supply systems"
+    nace: ["E36.00", "F42.99"]
+    sector: water_supply
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 5.1"
+  - code: "CCM-5.3"
+    name: "Construction, extension and operation of waste water collection and treatment"
+    nace: ["E37.00", "F42.99"]
+    sector: water_supply
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 5.3"
+  - code: "CCM-6.1"
+    name: "Passenger interurban rail transport"
+    nace: ["H49.10"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 6.1"
+  - code: "CCM-6.2"
+    name: "Freight rail transport"
+    nace: ["H49.20"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 6.2"
+  - code: "CCM-6.3"
+    name: "Urban and suburban transport, road passenger transport"
+    nace: ["H49.31", "H49.39"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 6.3"
+  - code: "CCM-6.4"
+    name: "Operation of personal mobility devices, cycle logistics"
+    nace: ["N77.11", "N77.21"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 6.4"
+  - code: "CCM-6.5"
+    name: "Transport by motorbikes, passenger cars and light commercial vehicles"
+    nace: ["H49.32", "H49.39", "N77.11"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: transitional
+    tsc_reference: "Annex I, Section 6.5"
+  - code: "CCM-6.6"
+    name: "Freight transport services by road"
+    nace: ["H49.41", "H49.42"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: transitional
+    tsc_reference: "Annex I, Section 6.6"
+  - code: "CCM-6.10"
+    name: "Sea and coastal freight water transport, vessels for port operations and auxiliary activities"
+    nace: ["H50.10", "H50.20", "H52.22"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: transitional
+    tsc_reference: "Annex I, Section 6.10"
+  - code: "CCM-6.14"
+    name: "Infrastructure for rail transport"
+    nace: ["F42.12"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 6.14"
+  - code: "CCM-6.15"
+    name: "Infrastructure enabling low-carbon road transport and public transport"
+    nace: ["F42.11", "F42.13"]
+    sector: transport
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 6.15"
+  - code: "CCM-7.1"
+    name: "Construction of new buildings"
+    nace: ["F41.10", "F41.20"]
+    sector: construction
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 7.1"
+  - code: "CCM-7.2"
+    name: "Renovation of existing buildings"
+    nace: ["F41.10", "F41.20", "F43"]
+    sector: construction
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 7.2"
+  - code: "CCM-7.3"
+    name: "Installation, maintenance and repair of energy efficiency equipment"
+    nace: ["F42", "F43"]
+    sector: construction
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 7.3"
+  - code: "CCM-7.4"
+    name: "Installation, maintenance and repair of charging stations for electric vehicles"
+    nace: ["F42", "F43"]
+    sector: construction
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 7.4"
+  - code: "CCM-7.5"
+    name: "Installation, maintenance and repair of instruments and devices for measuring, regulation and controlling energy performance of buildings"
+    nace: ["F42", "F43"]
+    sector: construction
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 7.5"
+  - code: "CCM-7.6"
+    name: "Installation, maintenance and repair of renewable energy technologies"
+    nace: ["F42", "F43"]
+    sector: construction
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 7.6"
+  - code: "CCM-7.7"
+    name: "Acquisition and ownership of buildings"
+    nace: ["L68"]
+    sector: construction
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 7.7"
+  - code: "CCM-8.1"
+    name: "Data processing, hosting and related activities"
+    nace: ["J63.11"]
+    sector: ict
+    objective: climate_change_mitigation
+    type: standard
+    tsc_reference: "Annex I, Section 8.1"
+  - code: "CCM-8.2"
+    name: "Data-driven solutions for GHG emissions reductions"
+    nace: ["J61", "J62", "J63.11"]
+    sector: ict
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 8.2"
+  - code: "CCM-9.1"
+    name: "Close to market research, development and innovation"
+    nace: ["M71", "M72"]
+    sector: professional_activities
+    objective: climate_change_mitigation
+    type: enabling
+    tsc_reference: "Annex I, Section 9.1"
+
+  # --- Climate Change Adaptation (CCA) ---
+  - code: "CCA-7.1"
+    name: "Construction of new buildings (adaptation)"
+    nace: ["F41.10", "F41.20"]
+    sector: construction
+    objective: climate_change_adaptation
+    type: standard
+    tsc_reference: "Annex II, Section 7.1"
+  - code: "CCA-10.1"
+    name: "Non-life insurance: underwriting of climate-related perils"
+    nace: ["K65.12"]
+    sector: financial_insurance
+    objective: climate_change_adaptation
+    type: standard
+    tsc_reference: "Annex II, Section 10.1"
+  - code: "CCA-10.2"
+    name: "Reinsurance"
+    nace: ["K65.20"]
+    sector: financial_insurance
+    objective: climate_change_adaptation
+    type: standard
+    tsc_reference: "Annex II, Section 10.2"
+
+  # --- Water (WTR) ---
+  - code: "WTR-1.1"
+    name: "Water supply"
+    nace: ["E36.00"]
+    sector: water_supply
+    objective: sustainable_use_water
+    type: standard
+    tsc_reference: "Environmental DA, Annex I, Section 1.1"
+
+  # --- Circular Economy (CE) ---
+  - code: "CE-1.1"
+    name: "Manufacture of plastic packaging goods"
+    nace: ["C22.22"]
+    sector: manufacturing
+    objective: circular_economy
+    type: standard
+    tsc_reference: "Environmental DA, Annex II, Section 1.1"
+  - code: "CE-2.3"
+    name: "Collection and transport of non-hazardous and hazardous waste"
+    nace: ["E38.11", "E38.12"]
+    sector: water_supply
+    objective: circular_economy
+    type: standard
+    tsc_reference: "Environmental DA, Annex II, Section 2.3"
+
+# ---------------------------------------------------------------------------
+# 6. Substantial Contribution Thresholds (Key Quantitative TSC)
+# ---------------------------------------------------------------------------
+# Selected quantitative thresholds from the Technical Screening Criteria.
+# Each threshold is the deterministic pass/fail value used by the
+# SubstantialContributionEngine.  Sector- and activity-specific.
+# ---------------------------------------------------------------------------
+sc_thresholds:
+  # Energy generation: lifecycle GHG emissions threshold
+  energy_generation_ghg:
+    threshold: 100
+    unit: "gCO2e/kWh"
+    description: "Lifecycle GHG emissions below 100 gCO2e/kWh for electricity generation"
+    applicable_activities: ["CCM-4.1", "CCM-4.2", "CCM-4.3", "CCM-4.4", "CCM-4.5", "CCM-4.7", "CCM-4.8"]
+    reference: "Climate DA Annex I, multiple sections"
+  # Gas co-generation: lifecycle and direct emission thresholds
+  gas_cogeneration_lifecycle:
+    threshold: 100
+    unit: "gCO2e/kWh"
+    description: "Lifecycle GHG below 100 gCO2e/kWh for gas co-generation or direct below 270 gCO2e/kWh"
+    applicable_activities: ["CCM-4.29"]
+    reference: "Complementary DA Annex I, Section 4.29"
+  gas_cogeneration_direct:
+    threshold: 270
+    unit: "gCO2e/kWh"
+    description: "Direct emissions below 270 gCO2e/kWh of output energy (gas activities)"
+    applicable_activities: ["CCM-4.29", "CCM-4.30", "CCM-4.31"]
+    reference: "Complementary DA Annex I"
+  # Transport: tailpipe CO2 for vehicles
+  passenger_cars_co2:
+    threshold: 0
+    unit: "gCO2/km (WLTP)"
+    description: "Zero direct tailpipe CO2 emissions for passenger cars (BEV/FCEV)"
+    applicable_activities: ["CCM-6.5"]
+    reference: "Climate DA Annex I, Section 6.5"
+  light_commercial_co2:
+    threshold: 0
+    unit: "gCO2/km (WLTP)"
+    description: "Zero direct tailpipe CO2 for light commercial vehicles category N1"
+    applicable_activities: ["CCM-6.5"]
+    reference: "Climate DA Annex I, Section 6.5"
+  heavy_duty_vehicles_co2:
+    threshold: 0
+    unit: "gCO2/km"
+    description: "Zero direct tailpipe CO2 for heavy-duty vehicles (Category N2, N3)"
+    applicable_activities: ["CCM-6.6"]
+    reference: "Climate DA Annex I, Section 6.6"
+  # Buildings: primary energy demand threshold
+  new_buildings_nzeb:
+    threshold: 10
+    unit: "% below NZEB"
+    description: "Primary energy demand at least 10% below NZEB threshold (national)"
+    applicable_activities: ["CCM-7.1"]
+    reference: "Climate DA Annex I, Section 7.1"
+  renovation_energy_reduction:
+    threshold: 30
+    unit: "% reduction"
+    description: "At least 30% reduction in primary energy demand for major renovation"
+    applicable_activities: ["CCM-7.2"]
+    reference: "Climate DA Annex I, Section 7.2"
+  building_acquisition_epc:
+    threshold: "A"
+    unit: "EPC rating"
+    description: "Buildings built before 2021 must have EPC A, or be in top 15% of national stock"
+    applicable_activities: ["CCM-7.7"]
+    reference: "Climate DA Annex I, Section 7.7"
+  # Data centres: PUE threshold
+  data_centre_pue:
+    threshold: 1.3
+    unit: "PUE (Power Usage Effectiveness)"
+    description: "Implement European Code of Conduct for Data Centre Energy Efficiency and meet PUE <= 1.3"
+    applicable_activities: ["CCM-8.1"]
+    reference: "Climate DA Annex I, Section 8.1"
+  # Iron and steel
+  iron_steel_ef:
+    threshold: 1.331
+    unit: "tCO2e/tonne product"
+    description: "GHG emissions per tonne of product below 1.331 tCO2e for integrated steelmaking"
+    applicable_activities: ["CCM-3.9"]
+    reference: "Climate DA Annex I, Section 3.9"
+  # Hydrogen: lifecycle emissions
+  hydrogen_lifecycle:
+    threshold: 3.0
+    unit: "tCO2e/tH2"
+    description: "Lifecycle GHG emissions below 3.0 tCO2e per tonne of hydrogen produced"
+    applicable_activities: ["CCM-3.10"]
+    reference: "Climate DA Annex I, Section 3.10"
+  # Cement
+  cement_clinker:
+    threshold: 0.498
+    unit: "tCO2/tonne clinker"
+    description: "Direct emissions per tonne of grey cement clinker below 0.498 tCO2"
+    applicable_activities: ["CCM-3.7"]
+    reference: "Climate DA Annex I, Section 3.7"
+  # Aluminium
+  aluminium_smelting:
+    threshold: 1.514
+    unit: "tCO2e/tonne"
+    description: "Direct emissions per tonne of primary aluminium below 1.514 tCO2e"
+    applicable_activities: ["CCM-3.8"]
+    reference: "Climate DA Annex I, Section 3.8"
+  # Maritime
+  maritime_co2_intensity:
+    threshold: -50
+    unit: "% vs IMO EEXI ref"
+    description: "At least 50% below IMO EEXI reference line for vessel CO2 intensity"
+    applicable_activities: ["CCM-6.10"]
+    reference: "Climate DA Annex I, Section 6.10"
+
+# ---------------------------------------------------------------------------
+# 7. DNSH Matrix Structure
+# ---------------------------------------------------------------------------
+# For each environmental objective, the DNSH assessment evaluates whether an
+# activity causes significant harm to the OTHER five objectives.  The matrix
+# structure defines criteria categories and evidence types per objective.
+# ---------------------------------------------------------------------------
+dnsh_matrix_structure:
+  objectives:
+    - climate_change_mitigation
+    - climate_change_adaptation
+    - sustainable_use_water
+    - circular_economy
+    - pollution_prevention
+    - biodiversity
+  criteria_categories:
+    quantitative:
+      description: "Numeric thresholds that must not be exceeded"
+      examples: ["GHG emissions intensity", "water consumption per unit", "waste recycling rate"]
+    qualitative:
+      description: "Process-based and management system requirements"
+      examples: ["Environmental management system", "Due diligence process", "Adaptation plan"]
+    regulatory:
+      description: "Compliance with specific EU or national legislation"
+      examples: ["Water Framework Directive", "REACH Regulation", "Habitats Directive", "Waste Framework Directive"]
+    climate_risk:
+      description: "Physical and transition climate risk assessment (Appendix A)"
+      examples: ["Climate risk and vulnerability assessment", "Adaptation measures", "Monitoring plan"]
+  evidence_types:
+    primary:
+      description: "Direct measurement or facility-level data"
+      examples: ["Metered consumption", "Emissions CEMS data", "Audit reports"]
+    secondary:
+      description: "Modelled or estimated data from recognised sources"
+      examples: ["LCA databases", "Industry benchmarks", "EF datasets"]
+    third_party:
+      description: "Independent verification or certification"
+      examples: ["ISO 14001 certificate", "EMAS registration", "Third-party assurance statement"]
+    self_declaration:
+      description: "Company self-assessment with documented evidence"
+      examples: ["Management questionnaire", "Board resolution", "Internal audit"]
+
+# ---------------------------------------------------------------------------
+# 8. Minimum Safeguards (Article 18, Regulation 2020/852)
+# ---------------------------------------------------------------------------
+# Minimum safeguards cover 4 topics derived from the OECD Guidelines for
+# Multinational Enterprises, UN Guiding Principles on Business and Human
+# Rights, ILO Declaration on Fundamental Principles and Rights at Work,
+# and the International Bill of Human Rights.
+# ---------------------------------------------------------------------------
+minimum_safeguards:
+  human_rights:
+    name: "Human Rights"
+    topic_number: 1
+    reference: "UN Guiding Principles on Business and Human Rights (2011), OECD MNE Guidelines Ch. IV"
+    procedural_checks:
+      - "Human rights due diligence policy in place"
+      - "Grievance mechanism accessible to affected stakeholders"
+      - "Supply chain human rights risk assessment conducted"
+      - "Remediation process for identified adverse impacts"
+    outcome_checks:
+      - "No adjudicated severe human rights violations in past 3 years"
+      - "No involvement in worst forms of child labour"
+      - "No systematic forced labour in operations or supply chain"
+    evidence_required: ["HR policy document", "Due diligence report", "Grievance mechanism documentation"]
+  labour_rights:
+    name: "Labour Rights"
+    topic_number: 2
+    reference: "ILO Declaration on Fundamental Principles and Rights at Work, OECD MNE Guidelines Ch. V"
+    procedural_checks:
+      - "Freedom of association and collective bargaining respected"
+      - "Non-discrimination policy covering all ILO grounds"
+      - "Fair wages policy (at least applicable minimum/living wage)"
+      - "Health and safety management system in place"
+    outcome_checks:
+      - "No adjudicated severe labour rights violations in past 3 years"
+      - "No use of forced or compulsory labour"
+      - "Compliance with applicable ILO conventions"
+    evidence_required: ["Labour policy", "H&S management system certificate", "Wage compliance documentation"]
+  anti_corruption:
+    name: "Anti-Corruption and Anti-Bribery"
+    topic_number: 3
+    reference: "UN Convention Against Corruption, OECD Anti-Bribery Convention, OECD MNE Guidelines Ch. VII"
+    procedural_checks:
+      - "Anti-corruption and anti-bribery policy adopted"
+      - "Compliance training programme for employees"
+      - "Whistleblower protection mechanism in place"
+      - "Third-party due diligence for high-risk transactions"
+    outcome_checks:
+      - "No adjudicated corruption or bribery convictions in past 3 years"
+      - "No ongoing investigations by competition authorities for serious violations"
+    evidence_required: ["Anti-corruption policy", "Training records", "Whistleblower mechanism documentation"]
+  taxation:
+    name: "Fair Taxation"
+    topic_number: 4
+    reference: "OECD MNE Guidelines Ch. XI, EU Anti-Tax Avoidance Directives (ATAD I/II)"
+    procedural_checks:
+      - "Tax governance policy adopted and board-approved"
+      - "Country-by-country reporting (CbCR) compliance where applicable"
+      - "Transfer pricing documentation maintained"
+      - "No structures in EU list of non-cooperative jurisdictions solely for tax advantage"
+    outcome_checks:
+      - "No adjudicated tax fraud convictions in past 3 years"
+      - "Compliance with DAC6 reporting obligations"
+    evidence_required: ["Tax governance policy", "CbCR filing", "Transfer pricing documentation"]
+
+# ---------------------------------------------------------------------------
+# 9. KPI Definitions (Article 8, Non-Financial Undertakings)
+# ---------------------------------------------------------------------------
+# Non-financial undertakings subject to NFRD/CSRD must disclose three
+# mandatory KPIs: proportion of Turnover, CapEx, and OpEx related to
+# taxonomy-eligible and taxonomy-aligned economic activities.
+# ---------------------------------------------------------------------------
+kpi_definitions:
+  turnover:
+    name: "Turnover KPI"
+    description: "Proportion of net turnover from taxonomy-aligned economic activities"
+    numerator: "Net turnover from taxonomy-aligned activities"
+    denominator: "Total net turnover per IAS 1.82(a)"
+    ias_reference: "IAS 1, paragraph 82(a)"
+    reporting_basis: "Consolidated group level"
+    double_counting_rule: "Each EUR of turnover counted once even if activity contributes to multiple objectives"
+    disclosure_format: "Percentage with one decimal place"
+  capex:
+    name: "CapEx KPI"
+    description: "Proportion of capital expenditure related to taxonomy-aligned activities"
+    numerator: "CapEx related to taxonomy-aligned assets or activities"
+    denominator: "Total CapEx per IAS 16 / IAS 38 / IFRS 16"
+    ias_reference: "IAS 16, IAS 38, IFRS 16"
+    reporting_basis: "Consolidated group level"
+    capex_plan: "CapEx plans for upgrading to taxonomy-aligned or climate-neutral included"
+    double_counting_rule: "Each EUR of CapEx counted once even if asset serves multiple aligned activities"
+    disclosure_format: "Percentage with one decimal place"
+  opex:
+    name: "OpEx KPI"
+    description: "Proportion of operating expenditure related to taxonomy-aligned activities"
+    numerator: "Direct non-capitalised costs for taxonomy-aligned asset maintenance/upgrade"
+    denominator: "Direct non-capitalised costs: R&D, building renovation, short-term leases, maintenance/repair"
+    ias_reference: "Article 8 DA, Article 1(1)(c)"
+    reporting_basis: "Consolidated group level"
+    materiality_threshold: "If total OpEx denominator is immaterial, undertaking may disclose zero"
+    double_counting_rule: "Each EUR of OpEx counted once"
+    disclosure_format: "Percentage with one decimal place"
+
+# ---------------------------------------------------------------------------
+# 10. GAR Methodology (Credit Institutions - EBA ITS)
+# ---------------------------------------------------------------------------
+# The Green Asset Ratio (GAR) is the mandatory Taxonomy KPI for credit
+# institutions.  It compares taxonomy-aligned on-balance-sheet exposures
+# to total covered assets.  The BTAR extends coverage to the banking book.
+# ---------------------------------------------------------------------------
+gar_methodology:
+  gar_stock:
+    name: "GAR Stock"
+    description: "Stock of taxonomy-aligned exposures relative to total covered assets"
+    numerator: "Carrying amount of taxonomy-aligned exposures at reporting date"
+    denominator: "Total covered assets (on-balance-sheet, excluding sovereigns, central banks, trading book)"
+    frequency: "Annual"
+    phasing:
+      - year: 2024
+        scope: "Eligibility reporting only"
+      - year: 2025
+        scope: "Full alignment reporting for CCM and CCA"
+      - year: 2026
+        scope: "Full alignment reporting for all 6 objectives"
+  gar_flow:
+    name: "GAR Flow"
+    description: "New taxonomy-aligned originations in the reporting period"
+    numerator: "New lending/investment originated in period that is taxonomy-aligned"
+    denominator: "Total new lending/investment originated in period"
+    frequency: "Annual"
+  btar:
+    name: "Banking Book Taxonomy Alignment Ratio"
+    description: "Extension of GAR to the full banking book including held-to-maturity"
+    numerator: "Banking book taxonomy-aligned exposures"
+    denominator: "Total banking book exposures"
+    frequency: "Annual"
+    effective_date: "2024-06-28"
+  exposure_types:
+    nfc_loans:
+      name: "Loans and advances to non-financial corporates"
+      inclusion: "Mandatory"
+      taxonomy_check: "Counterparty-level NFRD/CSRD disclosure"
+    household_mortgages:
+      name: "Loans collateralised by residential immovable property"
+      inclusion: "Mandatory"
+      taxonomy_check: "EPC rating of collateral property"
+    household_vehicle:
+      name: "Loans for motor vehicle purchase"
+      inclusion: "Mandatory"
+      taxonomy_check: "Vehicle CO2 class per EU type approval"
+    local_government:
+      name: "Exposures to local governments financing taxonomy-aligned"
+      inclusion: "Mandatory"
+      taxonomy_check: "Purpose-based assessment of financed activities"
+    interbank:
+      name: "Interbank loans and debt securities"
+      inclusion: "Included at counterparty level"
+      taxonomy_check: "Counterparty GAR if available"
+    equity_holdings:
+      name: "Equity holdings in non-financial corporates"
+      inclusion: "Mandatory"
+      taxonomy_check: "Counterparty-level taxonomy disclosure"
+  exclusions:
+    - "Exposures to central governments and central banks"
+    - "Exposures to supranational issuers"
+    - "Trading book positions"
+    - "On-demand interbank loans"
+    - "Derivatives (other than held for hedging)"
+    - "Cash and cash-related assets"
+
+# ---------------------------------------------------------------------------
+# 11. Reporting Templates
+# ---------------------------------------------------------------------------
+# Structured templates for Article 8 (non-financial and financial
+# undertakings) and EBA Pillar 3 ESG disclosures.
+# ---------------------------------------------------------------------------
+reporting_templates:
+  article_8_nfu_turnover:
+    name: "Article 8 NFU - Turnover"
+    description: "Non-financial undertaking Turnover KPI disclosure template"
+    entity_type: "non_financial_undertaking"
+    format: "Table with rows per activity, columns per objective + total"
+    columns: ["Activity", "NACE", "Absolute turnover EUR", "Proportion of turnover %", "CCM SC", "CCA SC", "WTR SC", "CE SC", "PPC SC", "BIO SC", "CCM DNSH", "CCA DNSH", "WTR DNSH", "CE DNSH", "PPC DNSH", "BIO DNSH", "Min Safeguards", "Aligned %", "Enabling", "Transitional"]
+  article_8_nfu_capex:
+    name: "Article 8 NFU - CapEx"
+    description: "Non-financial undertaking CapEx KPI disclosure template"
+    entity_type: "non_financial_undertaking"
+    format: "Table with rows per activity, columns per objective + total"
+    columns: ["Activity", "NACE", "Absolute CapEx EUR", "Proportion of CapEx %", "CCM SC", "CCA SC", "WTR SC", "CE SC", "PPC SC", "BIO SC", "CCM DNSH", "CCA DNSH", "WTR DNSH", "CE DNSH", "PPC DNSH", "BIO DNSH", "Min Safeguards", "Aligned %", "Enabling", "Transitional"]
+  article_8_nfu_opex:
+    name: "Article 8 NFU - OpEx"
+    description: "Non-financial undertaking OpEx KPI disclosure template"
+    entity_type: "non_financial_undertaking"
+    format: "Table with rows per activity, columns per objective + total"
+    columns: ["Activity", "NACE", "Absolute OpEx EUR", "Proportion of OpEx %", "CCM SC", "CCA SC", "WTR SC", "CE SC", "PPC SC", "BIO SC", "CCM DNSH", "CCA DNSH", "WTR DNSH", "CE DNSH", "PPC DNSH", "BIO DNSH", "Min Safeguards", "Aligned %", "Enabling", "Transitional"]
+  eba_template_1:
+    name: "EBA Template 1 - Banking Book Taxonomy Alignment"
+    description: "GAR for on-balance-sheet credit institutions exposures"
+    entity_type: "credit_institution"
+    format: "EBA ITS Annex XXXVII, Template 1"
+    rows: ["Loans/advances NFC", "Loans/advances households (mortgages)", "Loans/advances households (vehicles)", "Loans/advances local governments", "Debt securities", "Equity instruments", "Repossessed collateral"]
+  eba_template_2:
+    name: "EBA Template 2 - GAR Sector Information"
+    description: "Sector-level breakdown of GAR exposures"
+    entity_type: "credit_institution"
+    format: "EBA ITS Annex XXXVII, Template 2"
+    rows: ["By NACE macro-sector: A through R"]
+  eba_template_3:
+    name: "EBA Template 3 - BTAR"
+    description: "Banking Book Taxonomy Alignment Ratio template"
+    entity_type: "credit_institution"
+    format: "EBA ITS Annex XXXVII, Template 3"
+    rows: ["Total banking book aligned", "Total banking book eligible", "Total banking book covered"]
+  eba_template_4:
+    name: "EBA Template 4 - Summary"
+    description: "Summary of key ratios and KPIs"
+    entity_type: "credit_institution"
+    format: "EBA ITS Annex XXXVII, Template 4"
+    rows: ["GAR stock %", "GAR flow %", "BTAR %", "Total covered assets"]
+  eba_template_10:
+    name: "EBA Template 10 - Other Mitigating Actions"
+    description: "Qualitative disclosure of other climate mitigating actions"
+    entity_type: "credit_institution"
+    format: "EBA ITS Annex XXXVII, Template 10"
+    rows: ["Qualitative narrative"]
+
+# ---------------------------------------------------------------------------
+# 12. Regulatory Jurisdictions
+# ---------------------------------------------------------------------------
+# The EU Taxonomy applies at the EU level but certain thresholds and
+# implementation details vary by member state (e.g., NZEB definitions,
+# EPC systems, national renewable energy targets).
+# ---------------------------------------------------------------------------
+regulatory_jurisdictions:
+  eu_wide:
+    name: "EU-Wide"
+    description: "Common EU-level rules applicable to all member states"
+    scope: "All EU/EEA entities subject to NFRD/CSRD or CRR/CRD"
+    applicable_entity_types: ["non_financial_undertaking", "credit_institution", "investment_firm", "insurance_undertaking", "asset_manager"]
+    reporting_start_date: "2022-01-01"
+  national_implementations:
+    nzeb:
+      description: "Nearly Zero-Energy Building (NZEB) definitions vary by member state"
+      reference: "EPBD Article 9, national transposition"
+      variability: "Primary energy thresholds differ (e.g., DE: 45 kWh/m2, FR: 50 kWh/m2, NL: 25 kWh/m2)"
+    epc_systems:
+      description: "Energy Performance Certificate systems and scales vary by member state"
+      reference: "EPBD Article 11"
+      variability: "Label scales (A-G), calculation methodologies, and top-15% thresholds differ"
+    renewable_energy:
+      description: "National renewable energy mix and grid emission factors"
+      reference: "RED III national implementation"
+      variability: "Grid carbon intensity affects Scope 2 and DNSH climate mitigation assessments"
+
+# ---------------------------------------------------------------------------
+# 13. Data Quality (5 Dimensions)
+# ---------------------------------------------------------------------------
+# Data quality is assessed across 5 dimensions, each weighted to produce an
+# overall quality score.  Grades A through F are assigned based on thresholds.
+# ---------------------------------------------------------------------------
+data_quality:
+  dimensions:
+    completeness:
+      weight: 0.25
+      minimum_score: 50
+      description: "Percentage of required data fields populated for each activity, KPI, and DNSH criterion"
+    accuracy:
+      weight: 0.25
+      minimum_score: 50
+      description: "Data values within expected ranges, verified against external benchmarks or third-party sources"
+    timeliness:
+      weight: 0.20
+      minimum_score: 40
+      description: "Data currency relative to reporting period; staleness penalty for data older than 12 months"
+    consistency:
+      weight: 0.15
+      minimum_score: 40
+      description: "Internal consistency across activities, KPIs, and DNSH assessments; cross-validation checks"
+    traceability:
+      weight: 0.15
+      minimum_score: 40
+      description: "Audit trail completeness; provenance documentation linking data to source evidence"
+  overall_thresholds:
+    excellent: 90
+    good: 75
+    acceptable: 60
+    poor: 40
+    critical: 0
+  grade_mapping:
+    A: 90
+    B: 80
+    C: 70
+    D: 50
+    F: 0
+
+# ---------------------------------------------------------------------------
+# 14. De Minimis Threshold
+# ---------------------------------------------------------------------------
+# Under the Omnibus proposal, entities below certain size thresholds may
+# qualify for simplified reporting.  The de minimis provisions apply to
+# the assessment scope.
+# ---------------------------------------------------------------------------
+de_minimis:
+  threshold_employees: 750
+  threshold_net_turnover_eur: 50000000
+  threshold_balance_sheet_eur: 25000000
+  applicable_entities: "Non-financial undertakings that fall below two of three criteria"
+  effective_date: "2026-01-01"
+  description: "Entities below de minimis thresholds may use simplified Taxonomy disclosure (Omnibus I proposal)"
+
+# ---------------------------------------------------------------------------
+# 15. Omnibus Simplification
+# ---------------------------------------------------------------------------
+# The European Commission Omnibus I simplification package (proposed Feb 2025)
+# reduces reporting burden for smaller entities and simplifies Article 8
+# disclosure requirements.
+# ---------------------------------------------------------------------------
+omnibus_simplification:
+  proposal_date: "2025-02-26"
+  status: "legislative_proposal"
+  effective_date: "2026-01-01"
+  scope: "Simplification of CSRD/Taxonomy reporting for smaller listed companies and voluntary SMEs"
+  key_changes:
+    employee_threshold_raised: "From 500 to 1000 employees for mandatory CSRD scope"
+    template_reduction: "Reduction of mandatory Taxonomy datapoints by approximately 70%"
+    voluntary_framework: "Introduction of voluntary simplified standard (VSME) for SMEs"
+    phase_in_extension: "Extended phase-in for certain environmental objectives"
+    safe_harbour: "Cap on sanctions for misstatements in first 2 reporting years"
+    limited_assurance: "Limited assurance sufficient for first 3 years (no move to reasonable)"
+  impact_on_taxonomy:
+    kpi_simplification: "Reduced number of mandatory line items in Article 8 templates"
+    dnsh_simplified: "Simplified DNSH assessment for lower-risk activities"
+    eligibility_only: "Smaller entities may report eligibility only (no alignment required)"
+
+# ---------------------------------------------------------------------------
+# 16. Framework Alignment (Cross-References)
+# ---------------------------------------------------------------------------
+# The EU Taxonomy interacts with multiple EU and international regulatory
+# frameworks.  The platform maps Taxonomy data to these frameworks to
+# enable cross-reporting and avoid duplicate data collection.
+# ---------------------------------------------------------------------------
+framework_alignment:
+  csrd:
+    name: "CSRD / ESRS E1-E5"
+    version: "2023"
+    alignment_areas: [E1_climate, E2_pollution, E3_water, E4_biodiversity, E5_circular_economy]
+    esrs_datapoints:
+      - "E1-6: GHG emission reduction targets (mapped to Taxonomy-aligned activities)"
+      - "E1-9: Anticipated financial effects (linked to Taxonomy KPIs)"
+      - "ESRS 2-SBM3: Material impacts (activity-level eligibility/alignment)"
+    description: "CSRD/ESRS disclosures reference Taxonomy alignment for climate and environmental topics"
+  sfdr:
+    name: "Sustainable Finance Disclosure Regulation (SFDR)"
+    version: "2019/2088"
+    alignment_areas: [article_8_products, article_9_products, pai_indicators]
+    description: "SFDR Article 5/6 requires disclosure of Taxonomy alignment for sustainable investment products"
+    key_metrics: ["Proportion of investments in Taxonomy-aligned activities", "Share of eligible investments"]
+  eba_pillar_3:
+    name: "EBA Pillar 3 ESG Disclosures"
+    version: "CRR Article 449a"
+    alignment_areas: [gar, btar, sector_exposures, transition_risk]
+    description: "CRR Article 449a requires credit institutions to disclose GAR and ESG risk exposures"
+    templates: ["Template 1 - GAR", "Template 2 - Sectors", "Template 3 - BTAR", "Template 4 - Summary"]
+  ifrs_s2:
+    name: "IFRS S2 Climate-related Disclosures"
+    version: "2023"
+    alignment_areas: [strategy, metrics, targets, transition_plan]
+    description: "IFRS S2 climate disclosure cross-references Taxonomy for activity classification and targets"
+  ghg_protocol:
+    name: "GHG Protocol Corporate Standard"
+    version: "2015"
+    alignment_areas: [scope_1, scope_2, scope_3]
+    description: "GHG Protocol emissions data feeds into Taxonomy DNSH climate assessment and lifecycle calculations"
+  cdp:
+    name: "CDP Climate Change Questionnaire"
+    version: "2025/2026"
+    alignment_areas: [emissions, targets, governance, risks_opportunities]
+    description: "CDP questionnaire cross-references Taxonomy alignment for climate-related questions"
+  tcfd:
+    name: "TCFD Recommendations"
+    version: "2017"
+    alignment_areas: [governance, strategy, risk_management, metrics_targets]
+    description: "TCFD disclosures reference Taxonomy for climate risk classification and metrics"
+  iso14064:
+    name: "ISO 14064-1:2018"
+    version: "2018"
+    alignment_areas: [quantification, categories, verification]
+    description: "ISO 14064 GHG inventory data supports Taxonomy lifecycle emission calculations"
+
+# ---------------------------------------------------------------------------
+# 17. Defaults and Operational Thresholds
+# ---------------------------------------------------------------------------
+defaults:
+  assessment_status_default: "not_started"
+  confidence_threshold_eligible: 0.70
+  confidence_threshold_aligned: 0.85
+  evidence_required_minimum: 1
+  evidence_max_size_mb: 25
+  evidence_allowed_types: ["pdf", "xlsx", "csv", "png", "jpg", "docx", "xml"]
+  auto_save_interval_seconds: 30
+  max_activities_per_organization: 500
+  max_exposures_per_gar_calculation: 100000
+  mrv_data_freshness_max_days: 90
+  mrv_timeout_seconds: 30
+  mrv_retry_count: 3
+  historical_years_supported: 5
+  provenance_algorithm: "sha256"
+  provenance_include_in_all_exports: true
+  xbrl_taxonomy_version: "ESEF 2024"
+  currency_default: "EUR"
+  nace_revision: "Rev. 2.1"
+  reporting_decimal_places: 1
+  gar_minimum_exposure_eur: 1000
+  dnsh_climate_risk_appendix: "Appendix A to Climate DA Annex I"
+  safeguards_lookback_years: 3

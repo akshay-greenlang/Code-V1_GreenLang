@@ -495,6 +495,49 @@ except ImportError:
     AUDIT_TRAIL_LINEAGE_AVAILABLE = False
     _atl_router = None
 
+# ISO 14064 Compliance Platform imports (GL-ISO14064-APP)
+try:
+    from applications.gl_iso14064_app.api.router import router as _iso14064_router
+    ISO14064_APP_AVAILABLE = True
+except ImportError:
+    ISO14064_APP_AVAILABLE = False
+    _iso14064_router = None
+
+# CDP Disclosure Platform imports (GL-CDP-APP) - APP-007
+try:
+    from applications.GL_CDP_APP.CDP_Disclosure_Platform.services.setup import create_cdp_app
+    CDP_APP_AVAILABLE = True
+except ImportError:
+    CDP_APP_AVAILABLE = False
+    create_cdp_app = None
+
+# TCFD Climate Disclosure Platform imports (GL-TCFD-APP) - APP-008
+try:
+    from applications.GL_TCFD_APP.TCFD_Disclosure_Platform.services.setup import get_router as get_tcfd_router
+    _tcfd_router = get_tcfd_router()
+    TCFD_APP_AVAILABLE = True
+except ImportError:
+    TCFD_APP_AVAILABLE = False
+    _tcfd_router = None
+
+# SBTi Target Validation Platform imports (GL-SBTi-APP) - APP-009
+try:
+    from applications.GL_SBTi_APP.SBTi_Target_Platform.services.setup import get_router as get_sbti_router
+    _sbti_router = get_sbti_router()
+    SBTI_APP_AVAILABLE = True
+except ImportError:
+    SBTI_APP_AVAILABLE = False
+    _sbti_router = None
+
+# EU Taxonomy Alignment Platform imports (GL-Taxonomy-APP) - APP-010
+try:
+    from applications.GL_Taxonomy_APP.EU_Taxonomy_Platform.services.setup import get_router as get_taxonomy_router
+    _taxonomy_router = get_taxonomy_router()
+    TAXONOMY_APP_AVAILABLE = True
+except ImportError:
+    TAXONOMY_APP_AVAILABLE = False
+    _taxonomy_router = None
+
 
 def configure_auth(
     app: "FastAPI",
@@ -1052,6 +1095,79 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("Audit Trail & Lineage router included (AGENT-MRV-030)")
     else:
         logger.debug("Audit Trail & Lineage router not available; skipping")
+
+    # ISO 14064 Compliance Platform router (GL-ISO14064-APP)
+    if ISO14064_APP_AVAILABLE and _iso14064_router is not None:
+        app.include_router(
+            _iso14064_router,
+            prefix="/api/v1/iso14064",
+            tags=["iso14064"],
+        )
+        logger.info("ISO 14064 Compliance Platform router included (GL-ISO14064-APP)")
+    else:
+        logger.debug("ISO 14064 Compliance Platform router not available; skipping")
+
+    # CDP Disclosure Platform router (GL-CDP-APP) - APP-007
+    if CDP_APP_AVAILABLE and create_cdp_app is not None:
+        try:
+            from applications.GL_CDP_APP.CDP_Disclosure_Platform.services.api import (
+                questionnaire_router,
+                response_router,
+                scoring_router,
+                gap_analysis_router,
+                benchmarking_router,
+                supply_chain_router,
+                transition_plan_router,
+                reporting_router,
+                dashboard_router,
+                settings_router,
+            )
+            for _cdp_rtr in [
+                questionnaire_router, response_router, scoring_router,
+                gap_analysis_router, benchmarking_router, supply_chain_router,
+                transition_plan_router, reporting_router, dashboard_router,
+                settings_router,
+            ]:
+                if _cdp_rtr is not None:
+                    app.include_router(_cdp_rtr)
+            logger.info("CDP Disclosure Platform routers included (GL-CDP-APP)")
+        except ImportError:
+            logger.debug("CDP Disclosure Platform routers import failed; skipping")
+    else:
+        logger.debug("CDP Disclosure Platform not available; skipping")
+
+    # TCFD Climate Disclosure Platform router (GL-TCFD-APP) - APP-008
+    if TCFD_APP_AVAILABLE and _tcfd_router is not None:
+        app.include_router(
+            _tcfd_router,
+            prefix="/api/v1/tcfd",
+            tags=["tcfd"],
+        )
+        logger.info("TCFD Climate Disclosure Platform router included (GL-TCFD-APP)")
+    else:
+        logger.debug("TCFD Climate Disclosure Platform not available; skipping")
+
+    # SBTi Target Validation Platform router (GL-SBTi-APP) - APP-009
+    if SBTI_APP_AVAILABLE and _sbti_router is not None:
+        app.include_router(
+            _sbti_router,
+            prefix="/api/v1/sbti",
+            tags=["sbti"],
+        )
+        logger.info("SBTi Target Validation Platform router included (GL-SBTi-APP)")
+    else:
+        logger.debug("SBTi Target Validation Platform not available; skipping")
+
+    # EU Taxonomy Alignment Platform router (GL-Taxonomy-APP) - APP-010
+    if TAXONOMY_APP_AVAILABLE and _taxonomy_router is not None:
+        app.include_router(
+            _taxonomy_router,
+            prefix="/api/v1/taxonomy",
+            tags=["taxonomy"],
+        )
+        logger.info("EU Taxonomy Alignment Platform router included (GL-Taxonomy-APP)")
+    else:
+        logger.debug("EU Taxonomy Alignment Platform not available; skipping")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

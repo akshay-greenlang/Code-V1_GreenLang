@@ -1,0 +1,207 @@
+# ============================================================================
+# GL-ISO14064-APP v1.0 -- Configuration
+# ISO 14064-1:2018 Organization-level GHG Compliance Platform
+# ============================================================================
+
+app:
+  name: GL-ISO14064-APP
+  version: "1.0.0"
+  description: "ISO 14064-1:2018 organization-level GHG quantification and reporting"
+  standard: "ISO 14064-1:2018"
+  supported_standards:
+    - "ISO 14064-1:2018"
+    - "ISO 14064-3:2019"
+  log_level: INFO
+  debug: false
+
+# -- ISO 14064-1 Category Structure -----------------------------------------
+categories:
+  category_1_direct:
+    name: "Category 1 - Direct GHG emissions and removals"
+    iso_clause: "5.2.2"
+    mandatory: true
+    includes_removals: true
+    mrv_agents:
+      - stationary_combustion
+      - mobile_combustion
+      - process_emissions
+      - fugitive_emissions
+      - refrigerants
+      - land_use
+      - waste_treatment
+      - agricultural
+
+  category_2_energy:
+    name: "Category 2 - Indirect GHG emissions from imported energy"
+    iso_clause: "5.2.2"
+    mandatory: true
+    includes_removals: false
+    mrv_agents:
+      - scope2_location
+      - scope2_market
+      - steam_heat_purchase
+      - cooling_purchase
+
+  category_3_transport:
+    name: "Category 3 - Indirect GHG emissions from transportation"
+    iso_clause: "5.2.2"
+    mandatory: false
+    significance_required: true
+    mrv_agents:
+      - upstream_transportation
+      - downstream_transportation
+      - business_travel
+      - employee_commuting
+
+  category_4_products_used:
+    name: "Category 4 - Indirect GHG emissions from products used by organization"
+    iso_clause: "5.2.2"
+    mandatory: false
+    significance_required: true
+    mrv_agents:
+      - purchased_goods_services
+      - capital_goods
+      - fuel_energy_activities
+      - waste_generated
+      - upstream_leased_assets
+
+  category_5_products_from_org:
+    name: "Category 5 - Indirect GHG emissions from use of products from organization"
+    iso_clause: "5.2.2"
+    mandatory: false
+    significance_required: true
+    mrv_agents:
+      - processing_sold_products
+      - use_of_sold_products
+      - end_of_life_treatment
+      - downstream_leased_assets
+      - franchises
+
+  category_6_other:
+    name: "Category 6 - Indirect GHG emissions from other sources"
+    iso_clause: "5.2.2"
+    mandatory: false
+    significance_required: true
+    mrv_agents:
+      - investments
+
+# -- Significance Assessment Criteria ----------------------------------------
+significance:
+  threshold_percent: 1.0
+  criteria:
+    - name: "Magnitude"
+      weight: 0.30
+      description: "Size of the category's emissions relative to total"
+    - name: "Influence"
+      weight: 0.25
+      description: "Ability to influence or reduce the emissions"
+    - name: "Risk"
+      weight: 0.20
+      description: "Exposure to climate-related regulatory or market risk"
+    - name: "Stakeholder concern"
+      weight: 0.15
+      description: "Relevance to key stakeholders"
+    - name: "Data availability"
+      weight: 0.10
+      description: "Feasibility of obtaining reliable data"
+
+# -- GWP Configuration -------------------------------------------------------
+gwp:
+  default_source: ar5
+  sources:
+    ar5:
+      reference: "IPCC Fifth Assessment Report (2014)"
+      time_horizon: 100
+    ar6:
+      reference: "IPCC Sixth Assessment Report (2021)"
+      time_horizon: 100
+
+# -- Uncertainty Configuration ------------------------------------------------
+uncertainty:
+  monte_carlo_iterations: 10000
+  confidence_levels: [90, 95, 99]
+  cv_by_tier:
+    tier_1: 50.0
+    tier_2: 20.0
+    tier_3: 5.0
+    tier_4: 2.0
+
+# -- Base Year ----------------------------------------------------------------
+base_year:
+  recalculation_threshold_percent: 5.0
+  auto_recalculate: false
+  recalculation_policy: >-
+    Base year emissions shall be recalculated when structural changes,
+    methodology changes, or data corrections exceed the significance
+    threshold of 5% of base year total emissions.
+
+# -- Data Quality (ISO 14064-1 Clause 7) ------------------------------------
+data_quality:
+  default_tier: tier_1
+  minimum_completeness_pct: 95.0
+  dimensions:
+    - completeness
+    - accuracy
+    - consistency
+    - timeliness
+    - methodology
+
+# -- Removals Configuration --------------------------------------------------
+removals:
+  types:
+    - forestry
+    - soil_carbon
+    - ccs
+    - direct_air_capture
+    - beccs
+    - wetland_restoration
+    - ocean_based
+  permanence_discount:
+    permanent: 1.00
+    long_term: 0.95
+    medium_term: 0.80
+    short_term: 0.50
+    reversible: 0.20
+
+# -- Verification (ISO 14064-3:2019) ----------------------------------------
+verification:
+  default_level: not_verified
+  stages:
+    - draft
+    - internal_review
+    - approved
+    - external_verification
+    - verified
+  finding_categories:
+    - "Data accuracy"
+    - "Calculation methodology"
+    - "Emission factors"
+    - "Boundary completeness"
+    - "Documentation"
+    - "Internal controls"
+    - "Category classification"
+    - "Removal permanence"
+    - "Other"
+
+# -- Reporting (ISO 14064-1 Clause 9) ---------------------------------------
+reporting:
+  default_format: json
+  supported_formats: [pdf, excel, json, csv]
+  mandatory_elements: 14
+  storage_path: "reports/iso14064/"
+
+# -- MRV Agent Integration ---------------------------------------------------
+mrv_integration:
+  timeout_seconds: 30
+  retry_count: 3
+  total_agents_integrated: 28
+
+# -- Crosswalk Mapping -------------------------------------------------------
+crosswalk:
+  iso_to_ghg_protocol:
+    category_1_direct: "scope_1"
+    category_2_energy: "scope_2"
+    category_3_transport: "scope_3"
+    category_4_products_used: "scope_3"
+    category_5_products_from_org: "scope_3"
+    category_6_other: "scope_3"

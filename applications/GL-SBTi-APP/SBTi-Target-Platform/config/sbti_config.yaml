@@ -1,0 +1,900 @@
+# =============================================================================
+# GL-SBTi-APP v1.0 -- SBTi Target Validation Platform Configuration
+# =============================================================================
+# Standard: SBTi Corporate Manual V5.3 (2025)
+# Net-Zero: SBTi Corporate Net-Zero Standard V1.3 (2025)
+# Financial Institutions: SBTi FINZ V1.0 (2024)
+# FLAG: SBTi Forest, Land and Agriculture Guidance V1.1 (2024)
+# Aligned with: CDP, TCFD, CSRD/ESRS E1, GHG Protocol, ISO 14064, SB 253
+#
+# This file is the single source of truth for all SBTi-specific configuration
+# consumed by the target setting engine, pathway engine, validation engine,
+# scope 3 screening engine, FLAG engine, sector engine, progress tracking
+# engine, temperature scoring engine, recalculation engine, review engine,
+# FI engine, framework crosswalk engine, and data quality engine.
+#
+# IMPORTANT: Pathway annual reduction rates are sourced directly from the SBTi
+# Corporate Manual V5.3 and Net-Zero Standard V1.3. The validation engine
+# checks all targets against these rates and will reject non-compliant targets.
+#
+# Environment variable overrides use the SBTI_APP_ prefix.
+# Example: SBTI_APP_DEBUG=true, SBTI_APP_LOG_LEVEL=DEBUG
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# 1. Application Metadata
+# ---------------------------------------------------------------------------
+application:
+  name: "GL-SBTi-APP"
+  version: "1.0.0"
+  description: "SBTi Target Validation Platform"
+  standard: "SBTi Corporate V5.3 + Net-Zero V1.3"
+  fi_standard: "SBTi FINZ V1.0"
+  flag_guidance: "SBTi FLAG Guidance V1.1"
+  supported_years: [2024, 2025, 2026]
+  default_year: 2026
+  log_level: INFO
+  debug: false
+  base_url: "https://api.greenlang.io/sbti/v1"
+
+# ---------------------------------------------------------------------------
+# 2. Target Types
+# ---------------------------------------------------------------------------
+# SBTi defines three temporal target categories. Near-term targets must be
+# set within 5-10 years of the base year. Long-term targets must be no later
+# than 2050. Net-zero targets combine long-term deep decarbonization with
+# residual neutralization.
+# ---------------------------------------------------------------------------
+target_types:
+  near_term:
+    label: "Near-Term Target"
+    description: "5-10 year emission reduction target aligned with 1.5C or well-below 2C pathways"
+    min_timeframe_years: 5
+    max_timeframe_years: 10
+    scope1_2_coverage_min: 0.95
+    scope3_coverage_min: 0.67
+    ambition_floor: "well_below_2c"
+  long_term:
+    label: "Long-Term Target"
+    description: "Target year no later than 2050 with minimum 90% reduction from base year"
+    target_year_max: 2050
+    scope1_2_reduction_min: 0.90
+    scope3_reduction_min: 0.90
+    scope1_2_coverage_min: 0.95
+    scope3_coverage_min: 0.90
+  net_zero:
+    label: "Net-Zero Target"
+    description: "Deep decarbonization (>=90%) plus neutralization of residual emissions (<=10%)"
+    target_year_max: 2050
+    minimum_reduction: 0.90
+    max_residual_pct: 0.10
+    neutralization_required: true
+    requires_near_term: true
+    requires_long_term: true
+
+# ---------------------------------------------------------------------------
+# 3. Target Methods
+# ---------------------------------------------------------------------------
+# SBTi supports five target-setting approaches. ACA (Absolute Contraction
+# Approach) applies to all sectors. SDA (Sectoral Decarbonization Approach)
+# uses sector-specific intensity pathways. Physical and economic intensity
+# methods normalize emissions by output. Supplier engagement targets address
+# Scope 3 through value chain action.
+# ---------------------------------------------------------------------------
+target_methods:
+  aca:
+    label: "Absolute Contraction Approach"
+    description: "Linear annual reduction of absolute emissions across all scopes"
+    applicable_scopes: [scope1, scope2, scope3]
+    all_sectors: true
+  sda:
+    label: "Sectoral Decarbonization Approach"
+    description: "Sector-specific intensity pathway convergence by target year"
+    applicable_scopes: [scope1, scope2]
+    requires_intensity_metric: true
+    sector_specific: true
+  economic_intensity:
+    label: "Economic Intensity"
+    description: "Emissions per unit of economic output (e.g., tCO2e per $M revenue)"
+    applicable_scopes: [scope1, scope2, scope3]
+    metric: "tCO2e per $M revenue"
+    requires_revenue_growth_projection: true
+  physical_intensity:
+    label: "Physical Intensity"
+    description: "Emissions per unit of physical output (e.g., tCO2e per tonne product)"
+    applicable_scopes: [scope1, scope2]
+    requires_production_metric: true
+    sector_specific: true
+  supplier_engagement:
+    label: "Supplier Engagement Target"
+    description: "Percentage of suppliers by spend or emissions setting their own SBTs"
+    applicable_scopes: [scope3]
+    scope3_only: true
+    min_supplier_coverage_by_spend: 0.67
+    engagement_timeframe_years: 5
+
+# ---------------------------------------------------------------------------
+# 4. Pathways
+# ---------------------------------------------------------------------------
+# Annual linear reduction rates derived from IPCC AR6 carbon budgets and
+# SBTi pathway models. ACA rates apply to absolute targets. SDA rates are
+# sector-specific (see sectors section). FLAG uses a separate land-sector
+# pathway with a 2030 interim milestone.
+# ---------------------------------------------------------------------------
+pathways:
+  aca:
+    one_point_five_c:
+      annual_rate: 0.042
+      description: "4.2% annual linear reduction for 1.5C alignment"
+      reference: "SBTi Corporate Manual V5.3, Table 5.1"
+      carbon_budget_gt: 400
+      base_year_reference: 2020
+    well_below_2c:
+      annual_rate: 0.025
+      description: "2.5% annual linear reduction for well-below 2C alignment"
+      reference: "SBTi Corporate Manual V5.3, Table 5.1"
+      carbon_budget_gt: 800
+      base_year_reference: 2020
+  sda:
+    description: "Sector-specific convergence pathways (see sectors section for rates)"
+    reference: "SBTi SDA Tool V3.0"
+    convergence_year: 2050
+    method: "intensity_convergence"
+  flag_sector:
+    annual_rate: 0.0303
+    description: "FLAG sector 3.03% annual reduction from 2020 baseline"
+    reference: "SBTi FLAG Guidance V1.1"
+    interim_target_year: 2030
+    interim_reduction_min: 0.2394
+    long_term_reduction: 0.72
+    long_term_year: 2050
+    includes_land_use_change: true
+    includes_deforestation: true
+  net_zero:
+    scope1_2_floor: 0.90
+    scope3_floor: 0.90
+    residual_max: 0.10
+    neutralization: "permanent removal credits (BECCS, DACCS, or enhanced weathering)"
+    reference: "SBTi Corporate Net-Zero Standard V1.3, Section 6"
+
+# ---------------------------------------------------------------------------
+# 5. Thresholds
+# ---------------------------------------------------------------------------
+# Key numeric thresholds enforced by the validation engine. These thresholds
+# are referenced by criteria IDs (C1-C28, NZ-C1-NZ-C14) and determine
+# whether a target passes or fails SBTi validation.
+# ---------------------------------------------------------------------------
+thresholds:
+  # Scope 3 trigger: if Scope 3 >= 40% of total Scope 1+2+3, Scope 3 target required
+  scope3_trigger: 0.40
+  # Scope 3 near-term coverage: at least 67% of Scope 3 emissions must be covered
+  scope3_near_term_coverage: 0.67
+  # Scope 3 long-term coverage: at least 90% of Scope 3 emissions must be covered
+  scope3_long_term_coverage: 0.90
+  # Scope 1+2 boundary coverage: at least 95% of Scope 1+2 emissions
+  scope1_2_coverage_min: 0.95
+  # Long-term minimum reduction: 90% from base year
+  long_term_reduction_min: 0.90
+  # FLAG long-term reduction: 72% from 2020 baseline by 2050
+  flag_long_term_reduction: 0.72
+  # FLAG applicability trigger: FLAG emissions >= 20% of Scope 1+2
+  flag_trigger: 0.20
+  # Recalculation significance threshold: 5% change triggers base-year recalculation
+  recalculation: 0.05
+  # Financial institution portfolio target deadline
+  fi_portfolio_deadline: 2040
+  # Earliest allowable base year
+  base_year_earliest: 2015
+  # Target window: near-term must be 5-10 years from submission
+  target_window_min: 5
+  target_window_max: 10
+  # Net-zero maximum residual emissions
+  net_zero_residual_max: 0.10
+  # Minimum absolute reduction for near-term 1.5C (cumulative over target period)
+  near_term_1_5c_min_reduction: 0.42
+  # Minimum absolute reduction for near-term well-below 2C (cumulative)
+  near_term_wb2c_min_reduction: 0.25
+  # Supplier engagement: min 67% of suppliers by spend with SBTs
+  supplier_engagement_min: 0.67
+  # Annual progress reporting deadline (months after fiscal year end)
+  progress_reporting_deadline_months: 6
+  # Target revalidation cycle (years)
+  revalidation_cycle_years: 5
+
+# ---------------------------------------------------------------------------
+# 6. Sectors
+# ---------------------------------------------------------------------------
+# SBTi defines 12 SDA sectors with sector-specific intensity metrics and
+# decarbonization pathways. Each sector uses a unique intensity denominator
+# and has a pre-computed 2050 convergence target. Organizations in these
+# sectors may use SDA or ACA; cross-sector organizations must use ACA.
+# ---------------------------------------------------------------------------
+sectors:
+  power_generation:
+    name: "Power Generation"
+    intensity_metric: "tCO2e/MWh"
+    sda_pathway: "power_generation_sda"
+    convergence_2050: 0.0
+    description: "Electricity generation including fossil, nuclear, and renewables"
+    key_activities: ["coal", "gas", "wind", "solar", "hydro", "nuclear"]
+  iron_and_steel:
+    name: "Iron and Steel"
+    intensity_metric: "tCO2e/tonne crude steel"
+    sda_pathway: "iron_steel_sda"
+    convergence_2050: 0.14
+    description: "Primary and secondary steel production"
+    key_activities: ["blast_furnace", "electric_arc", "direct_reduced_iron"]
+  cement:
+    name: "Cement"
+    intensity_metric: "tCO2e/tonne cementitious product"
+    sda_pathway: "cement_sda"
+    convergence_2050: 0.12
+    description: "Clinker and cement production"
+    key_activities: ["clinker_production", "grinding", "blending"]
+  aluminum:
+    name: "Aluminum"
+    intensity_metric: "tCO2e/tonne primary aluminum"
+    sda_pathway: "aluminum_sda"
+    convergence_2050: 0.20
+    description: "Primary aluminum smelting and refining"
+    key_activities: ["smelting", "refining", "anode_production"]
+  pulp_and_paper:
+    name: "Pulp and Paper"
+    intensity_metric: "tCO2e/tonne product"
+    sda_pathway: "pulp_paper_sda"
+    convergence_2050: 0.06
+    description: "Pulp, paper, and paperboard manufacturing"
+    key_activities: ["pulping", "papermaking", "recycling"]
+  chemicals:
+    name: "Chemicals"
+    intensity_metric: "tCO2e/tonne production"
+    sda_pathway: "chemicals_sda"
+    convergence_2050: 0.18
+    description: "Petrochemicals, specialty chemicals, and fertilizers"
+    key_activities: ["petrochemicals", "specialty", "fertilizers", "industrial_gases"]
+  aviation:
+    name: "Aviation"
+    intensity_metric: "gCO2e/RTK"
+    sda_pathway: "aviation_sda"
+    convergence_2050: 13.3
+    description: "Passenger and freight aviation"
+    key_activities: ["passenger", "cargo", "ground_operations"]
+  maritime_transport:
+    name: "Maritime Transport"
+    intensity_metric: "gCO2e/dwt-nm"
+    sda_pathway: "maritime_sda"
+    convergence_2050: 1.2
+    description: "Shipping and marine freight transport"
+    key_activities: ["container", "bulk", "tanker", "cruise"]
+  road_transport:
+    name: "Road Transport (Light Duty)"
+    intensity_metric: "gCO2e/vkm"
+    sda_pathway: "road_transport_sda"
+    convergence_2050: 0.0
+    description: "Light-duty vehicles (passenger cars and light commercial)"
+    key_activities: ["passenger_vehicles", "light_commercial"]
+  buildings:
+    name: "Buildings (Commercial & Residential)"
+    intensity_metric: "kgCO2e/m2"
+    sda_pathway: "buildings_sda"
+    convergence_2050: 2.5
+    description: "Commercial and residential building operations"
+    key_activities: ["commercial", "residential", "data_centers"]
+  oil_and_gas:
+    name: "Oil and Gas"
+    intensity_metric: "tCO2e/TJ"
+    sda_pathway: "oil_gas_sda"
+    convergence_2050: 5.0
+    description: "Upstream, midstream, and downstream oil and gas operations"
+    key_activities: ["exploration", "production", "refining", "distribution"]
+  food_and_agriculture:
+    name: "Food, Beverage, and Agriculture"
+    intensity_metric: "tCO2e/tonne product"
+    sda_pathway: "food_agriculture_sda"
+    convergence_2050: 0.25
+    description: "Food processing, beverages, and agricultural products"
+    key_activities: ["processing", "packaging", "cold_chain", "agriculture"]
+
+# ---------------------------------------------------------------------------
+# 7. FLAG Commodities
+# ---------------------------------------------------------------------------
+# SBTi FLAG guidance covers 11 commodity categories where land-use change
+# and deforestation are material sources of emissions. Organizations with
+# FLAG emissions >= 20% of total Scope 1+2 must set a separate FLAG target
+# using the FLAG SDA pathway (3.03% annual reduction from 2020 baseline).
+# ---------------------------------------------------------------------------
+flag_commodities:
+  - key: cattle
+    name: "Cattle (beef and dairy)"
+    description: "Bovine livestock including beef cattle and dairy cows"
+    deforestation_risk: high
+    land_use_categories: ["pasture_expansion", "feed_crop_land"]
+  - key: soy
+    name: "Soy"
+    description: "Soybean cultivation and processing"
+    deforestation_risk: high
+    land_use_categories: ["cropland_expansion"]
+  - key: palm_oil
+    name: "Palm Oil"
+    description: "Oil palm cultivation and processing"
+    deforestation_risk: very_high
+    land_use_categories: ["tropical_deforestation", "peatland_conversion"]
+  - key: timber
+    name: "Timber and Forestry Products"
+    description: "Logging, wood products, and pulp feedstock"
+    deforestation_risk: high
+    land_use_categories: ["forest_degradation", "plantation_conversion"]
+  - key: cocoa
+    name: "Cocoa"
+    description: "Cocoa bean cultivation and processing"
+    deforestation_risk: high
+    land_use_categories: ["tropical_deforestation"]
+  - key: coffee
+    name: "Coffee"
+    description: "Coffee cultivation and processing"
+    deforestation_risk: medium
+    land_use_categories: ["forest_conversion", "shade_removal"]
+  - key: rubber
+    name: "Natural Rubber"
+    description: "Natural rubber plantation cultivation"
+    deforestation_risk: high
+    land_use_categories: ["tropical_deforestation", "monoculture_expansion"]
+  - key: rice
+    name: "Rice"
+    description: "Paddy rice cultivation (methane emissions)"
+    deforestation_risk: low
+    land_use_categories: ["wetland_conversion"]
+  - key: sugarcane
+    name: "Sugarcane"
+    description: "Sugarcane cultivation and processing"
+    deforestation_risk: medium
+    land_use_categories: ["cropland_expansion", "savanna_conversion"]
+  - key: maize
+    name: "Maize (Corn)"
+    description: "Maize cultivation for food, feed, and biofuel"
+    deforestation_risk: medium
+    land_use_categories: ["cropland_expansion", "grassland_conversion"]
+  - key: wheat
+    name: "Wheat"
+    description: "Wheat cultivation and processing"
+    deforestation_risk: low
+    land_use_categories: ["cropland_expansion"]
+
+# ---------------------------------------------------------------------------
+# 8. Criteria -- Near-Term (C1 through C28)
+# ---------------------------------------------------------------------------
+# Each criterion maps to a specific SBTi Corporate Manual V5.3 requirement.
+# The validation engine evaluates every criterion and returns PASS/FAIL for
+# each along with a reference to the manual section. All 28 criteria must
+# pass for SBTi near-term target approval.
+# ---------------------------------------------------------------------------
+criteria:
+  near_term:
+    C1:
+      description: "Company must have a GHG inventory covering Scope 1 and 2"
+      reference: "V5.3 Section 4.1"
+      category: "boundary"
+    C2:
+      description: "Base year must be no earlier than 2015"
+      reference: "V5.3 Section 4.2"
+      category: "base_year"
+    C3:
+      description: "Scope 1+2 boundary must cover at least 95% of company-wide emissions"
+      reference: "V5.3 Section 4.3"
+      category: "boundary"
+    C4:
+      description: "Target boundary must include all relevant GHG gases (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3)"
+      reference: "V5.3 Section 4.3"
+      category: "boundary"
+    C5:
+      description: "Near-term target timeframe must be 5-10 years from date of submission"
+      reference: "V5.3 Section 5.1"
+      category: "timeframe"
+    C6:
+      description: "Scope 1+2 target must be consistent with 1.5C or well-below 2C pathway"
+      reference: "V5.3 Section 5.2"
+      category: "ambition"
+    C7:
+      description: "Scope 1+2 minimum annual linear reduction rate of 4.2% (1.5C) or 2.5% (WB2C)"
+      reference: "V5.3 Table 5.1"
+      category: "ambition"
+    C8:
+      description: "If using intensity target, absolute emissions must also decrease"
+      reference: "V5.3 Section 5.3"
+      category: "ambition"
+    C9:
+      description: "Bioenergy accounting must follow GHG Protocol Scope 1 guidance"
+      reference: "V5.3 Section 4.5"
+      category: "methodology"
+    C10:
+      description: "Land-related emissions must use IPCC land-sector guidance"
+      reference: "V5.3 Section 4.6"
+      category: "methodology"
+    C11:
+      description: "Scope 3 screening must be completed using GHG Protocol categories"
+      reference: "V5.3 Section 6.1"
+      category: "scope3"
+    C12:
+      description: "If Scope 3 >= 40% of total, a Scope 3 target is required"
+      reference: "V5.3 Section 6.2"
+      category: "scope3"
+    C13:
+      description: "Scope 3 target must cover at least 67% of total Scope 3 emissions"
+      reference: "V5.3 Section 6.3"
+      category: "scope3"
+    C14:
+      description: "Scope 3 target must be consistent with well-below 2C pathway at minimum"
+      reference: "V5.3 Section 6.4"
+      category: "scope3"
+    C15:
+      description: "Companies may use supplier engagement targets for Scope 3 near-term"
+      reference: "V5.3 Section 6.5"
+      category: "scope3"
+    C16:
+      description: "Supplier engagement target: 67% of suppliers by spend must have SBTs within 5 years"
+      reference: "V5.3 Section 6.5"
+      category: "scope3"
+    C17:
+      description: "Offsets/credits cannot count toward near-term target achievement"
+      reference: "V5.3 Section 7.1"
+      category: "offsets"
+    C18:
+      description: "Renewable energy certificates (RECs) can count for Scope 2 market-based"
+      reference: "V5.3 Section 7.2"
+      category: "instruments"
+    C19:
+      description: "Target must be publicly disclosed within 6 months of approval"
+      reference: "V5.3 Section 8.1"
+      category: "disclosure"
+    C20:
+      description: "Annual progress reporting is required within 6 months of fiscal year end"
+      reference: "V5.3 Section 8.2"
+      category: "reporting"
+    C21:
+      description: "Base-year recalculation required for significant changes (>=5%)"
+      reference: "V5.3 Section 9.1"
+      category: "recalculation"
+    C22:
+      description: "Target revalidation required every 5 years"
+      reference: "V5.3 Section 9.2"
+      category: "revalidation"
+    C23:
+      description: "Mergers and acquisitions require base-year recalculation"
+      reference: "V5.3 Section 9.3"
+      category: "recalculation"
+    C24:
+      description: "Divestments require base-year recalculation if material"
+      reference: "V5.3 Section 9.3"
+      category: "recalculation"
+    C25:
+      description: "Methodology changes require base-year recalculation"
+      reference: "V5.3 Section 9.4"
+      category: "recalculation"
+    C26:
+      description: "FLAG-applicable companies must set separate FLAG targets (if FLAG >= 20%)"
+      reference: "V5.3 Section 10.1 / FLAG V1.1"
+      category: "flag"
+    C27:
+      description: "FLAG targets must use the FLAG SDA pathway (3.03% annual)"
+      reference: "FLAG Guidance V1.1 Section 4"
+      category: "flag"
+    C28:
+      description: "FLAG deforestation and land-use conversion emissions must reach zero by 2025"
+      reference: "FLAG Guidance V1.1 Section 5"
+      category: "flag"
+
+  # ---------------------------------------------------------------------------
+  # 9. Criteria -- Net-Zero (NZ-C1 through NZ-C14)
+  # ---------------------------------------------------------------------------
+  # Net-zero criteria layer on top of near-term criteria. All C1-C28 must also
+  # be met. These additional criteria address long-term deep decarbonization,
+  # residual neutralization, and interim milestones.
+  # ---------------------------------------------------------------------------
+  net_zero:
+    NZ-C1:
+      description: "Company must have an approved near-term SBT before setting net-zero"
+      reference: "Net-Zero V1.3 Section 3.1"
+      category: "prerequisite"
+    NZ-C2:
+      description: "Long-term target must reduce Scope 1+2 emissions by at least 90% from base year"
+      reference: "Net-Zero V1.3 Section 4.1"
+      category: "ambition"
+    NZ-C3:
+      description: "Long-term target must reduce Scope 3 emissions by at least 90% from base year"
+      reference: "Net-Zero V1.3 Section 4.2"
+      category: "ambition"
+    NZ-C4:
+      description: "Long-term target year must be no later than 2050"
+      reference: "Net-Zero V1.3 Section 4.3"
+      category: "timeframe"
+    NZ-C5:
+      description: "Scope 1+2 long-term boundary must cover at least 95% of emissions"
+      reference: "Net-Zero V1.3 Section 4.4"
+      category: "boundary"
+    NZ-C6:
+      description: "Scope 3 long-term boundary must cover at least 90% of emissions"
+      reference: "Net-Zero V1.3 Section 4.5"
+      category: "boundary"
+    NZ-C7:
+      description: "Residual emissions (max 10%) must be neutralized with permanent removals"
+      reference: "Net-Zero V1.3 Section 5.1"
+      category: "neutralization"
+    NZ-C8:
+      description: "Neutralization must use verifiable permanent carbon removal methods"
+      reference: "Net-Zero V1.3 Section 5.2"
+      category: "neutralization"
+    NZ-C9:
+      description: "BECCS, DACCS, or enhanced weathering qualify as permanent removals"
+      reference: "Net-Zero V1.3 Section 5.3"
+      category: "neutralization"
+    NZ-C10:
+      description: "Beyond value chain mitigation (BVCM) is recommended but does not count toward target"
+      reference: "Net-Zero V1.3 Section 6.1"
+      category: "bvcm"
+    NZ-C11:
+      description: "Transition plan must demonstrate feasible pathway to net-zero"
+      reference: "Net-Zero V1.3 Section 7.1"
+      category: "transition_plan"
+    NZ-C12:
+      description: "Interim milestones at 2030 and 2040 must be specified"
+      reference: "Net-Zero V1.3 Section 7.2"
+      category: "milestones"
+    NZ-C13:
+      description: "Annual progress disclosure required, consistent with near-term reporting"
+      reference: "Net-Zero V1.3 Section 8.1"
+      category: "reporting"
+    NZ-C14:
+      description: "Net-zero claim can only be made once all conditions are met and verified"
+      reference: "Net-Zero V1.3 Section 9.1"
+      category: "verification"
+
+# ---------------------------------------------------------------------------
+# 10. Scope 3 Categories
+# ---------------------------------------------------------------------------
+# All 15 GHG Protocol Scope 3 categories with SBTi-specific minimum boundary
+# guidance. The Scope 3 screening engine uses these to determine which
+# categories are material and whether coverage thresholds are met.
+# ---------------------------------------------------------------------------
+scope3_categories:
+  cat1:
+    name: "Purchased Goods and Services"
+    boundary: "upstream"
+    typically_material: true
+    minimum_boundary: "All purchased goods and services by spend or mass"
+    mrv_agent: "pgs"
+  cat2:
+    name: "Capital Goods"
+    boundary: "upstream"
+    typically_material: false
+    minimum_boundary: "Major capital expenditures"
+    mrv_agent: "cg"
+  cat3:
+    name: "Fuel- and Energy-Related Activities"
+    boundary: "upstream"
+    typically_material: true
+    minimum_boundary: "WTT fuels, upstream electricity, T&D losses"
+    mrv_agent: "fea"
+  cat4:
+    name: "Upstream Transportation and Distribution"
+    boundary: "upstream"
+    typically_material: true
+    minimum_boundary: "All purchased transportation and distribution"
+    mrv_agent: "uto"
+  cat5:
+    name: "Waste Generated in Operations"
+    boundary: "upstream"
+    typically_material: false
+    minimum_boundary: "All waste by type and treatment method"
+    mrv_agent: "wg"
+  cat6:
+    name: "Business Travel"
+    boundary: "upstream"
+    typically_material: false
+    minimum_boundary: "All employee business travel by mode"
+    mrv_agent: "bt"
+  cat7:
+    name: "Employee Commuting"
+    boundary: "upstream"
+    typically_material: false
+    minimum_boundary: "All employee commuting and telework"
+    mrv_agent: "ec"
+  cat8:
+    name: "Upstream Leased Assets"
+    boundary: "upstream"
+    typically_material: false
+    minimum_boundary: "All upstream leased assets not in Scope 1/2"
+    mrv_agent: "ula"
+  cat9:
+    name: "Downstream Transportation and Distribution"
+    boundary: "downstream"
+    typically_material: true
+    minimum_boundary: "All sold product transportation"
+    mrv_agent: "dto"
+  cat10:
+    name: "Processing of Sold Products"
+    boundary: "downstream"
+    typically_material: false
+    minimum_boundary: "Intermediate products requiring further processing"
+    mrv_agent: "psp"
+  cat11:
+    name: "Use of Sold Products"
+    boundary: "downstream"
+    typically_material: true
+    minimum_boundary: "Direct and indirect use-phase emissions"
+    mrv_agent: "usp"
+  cat12:
+    name: "End-of-Life Treatment of Sold Products"
+    boundary: "downstream"
+    typically_material: false
+    minimum_boundary: "All sold products by material and treatment"
+    mrv_agent: "eol"
+  cat13:
+    name: "Downstream Leased Assets"
+    boundary: "downstream"
+    typically_material: false
+    minimum_boundary: "All downstream leased assets"
+    mrv_agent: "dla"
+  cat14:
+    name: "Franchises"
+    boundary: "downstream"
+    typically_material: false
+    minimum_boundary: "All franchise operations (franchisor reporting)"
+    mrv_agent: "frn"
+  cat15:
+    name: "Investments"
+    boundary: "downstream"
+    typically_material: true
+    minimum_boundary: "All investments by asset class (PCAF methodology)"
+    mrv_agent: "inv"
+    fi_specific: true
+
+# ---------------------------------------------------------------------------
+# 11. Frameworks Alignment
+# ---------------------------------------------------------------------------
+# SBTi targets interact with multiple disclosure and reporting frameworks.
+# The crosswalk engine maps SBTi data to each framework's requirements,
+# enabling organizations to populate multiple reports from a single source.
+# ---------------------------------------------------------------------------
+frameworks_alignment:
+  cdp:
+    name: "CDP Climate Change Questionnaire"
+    version: "2025/2026"
+    alignment_areas: [targets, emissions_reduction, transition_plan, verification]
+    cdp_modules: [M5, M6, M7]
+    description: "SBTi targets are a key scoring element in CDP A-level requirements"
+    sbti_score_impact: "Required for A or A- level on CDP Climate Change"
+  tcfd:
+    name: "Task Force on Climate-related Financial Disclosures"
+    version: "2017"
+    alignment_areas: [metrics_targets, strategy, scenario_analysis]
+    tcfd_pillars: [metrics_and_targets, strategy]
+    description: "SBTi targets satisfy TCFD Metrics & Targets recommended disclosures"
+  csrd:
+    name: "CSRD / ESRS E1 Climate Change"
+    version: "2023"
+    alignment_areas: [E1_4_targets, E1_5_policies, E1_6_actions, E1_7_energy]
+    esrs_datapoints: ["E1-4.29", "E1-4.30", "E1-4.31", "E1-4.32"]
+    description: "ESRS E1-4 requires disclosure of SBTi-aligned targets"
+  ghg_protocol:
+    name: "GHG Protocol Corporate Standard"
+    version: "2015"
+    alignment_areas: [boundary, base_year, scope_1, scope_2, scope_3]
+    description: "SBTi requires GHG Protocol-compliant inventory as foundation"
+  iso14064:
+    name: "ISO 14064-1:2018"
+    version: "2018"
+    alignment_areas: [categories, quantification, uncertainty, verification]
+    description: "ISO 14064 inventory can serve as SBTi GHG inventory basis"
+  sb253:
+    name: "California SB 253 (Climate Corporate Data Accountability Act)"
+    version: "2023"
+    alignment_areas: [scope_1, scope_2, scope_3, assurance]
+    description: "SB 253 Scope 3 reporting aligns with SBTi Scope 3 coverage requirements"
+
+# ---------------------------------------------------------------------------
+# 12. MRV Agent Mapping
+# ---------------------------------------------------------------------------
+# Maps SBTi emission scopes to GreenLang MRV agent prefixes for automatic
+# data population. The platform queries the correct MRV agent APIs to fetch
+# emissions inventory data for target validation and progress tracking.
+#
+# Agent prefix legend:
+#   sc=Stationary Combustion, rf=Refrigerants, mc=Mobile Combustion,
+#   pe=Process Emissions, fue=Fugitive Emissions, lu=Land Use,
+#   wt=Waste Treatment, ag=Agricultural, s2l=Scope2 Location,
+#   s2m=Scope2 Market, shp=Steam/Heat Purchase, cp=Cooling Purchase,
+#   drr=Dual Reporting Reconciliation, pgs=Purchased Goods & Services,
+#   cg=Capital Goods, fea=Fuel & Energy Activities,
+#   uto=Upstream Transportation, wg=Waste Generated,
+#   bt=Business Travel, ec=Employee Commuting,
+#   ula=Upstream Leased Assets, dto=Downstream Transportation,
+#   psp=Processing of Sold Products, usp=Use of Sold Products,
+#   eol=End-of-Life Treatment, dla=Downstream Leased Assets,
+#   frn=Franchises, inv=Investments,
+#   scm=Scope 3 Category Mapper, atl=Audit Trail & Lineage
+# ---------------------------------------------------------------------------
+mrv_agent_mapping:
+  scope1:
+    agents: [sc, rf, mc, pe, fue, lu, wt, ag]
+    description: "Direct GHG emissions from owned/controlled sources"
+  scope2:
+    agents: [s2l, s2m, shp, cp, drr]
+    description: "Indirect GHG emissions from purchased energy"
+  scope3_upstream:
+    agents: [pgs, cg, fea, uto, wg, bt, ec, ula]
+    description: "Scope 3 upstream value chain categories 1-8"
+    category_range: [1, 2, 3, 4, 5, 6, 7, 8]
+  scope3_downstream:
+    agents: [dto, psp, usp, eol, dla, frn, inv]
+    description: "Scope 3 downstream value chain categories 9-15"
+    category_range: [9, 10, 11, 12, 13, 14, 15]
+  cross_cutting:
+    agents: [scm, atl]
+    description: "Cross-cutting agents for category mapping and audit lineage"
+
+# ---------------------------------------------------------------------------
+# 13. Financial Institutions (FINZ V1.0)
+# ---------------------------------------------------------------------------
+# SBTi FINZ (Financial Institutions Net-Zero) standard requires portfolio-
+# level target setting across asset classes using PCAF methodology. Portfolio
+# targets must cover financed and facilitated emissions with interim 2030
+# and long-term 2050 milestones.
+# ---------------------------------------------------------------------------
+financial_institutions:
+  standard: "SBTi FINZ V1.0"
+  portfolio_target_deadline: 2040
+  asset_classes:
+    - key: listed_equity
+      name: "Listed Equity and Corporate Bonds"
+      method: "SDA or portfolio temperature rating"
+      pcaf_data_quality: [1, 2, 3, 4, 5]
+    - key: corporate_loans
+      name: "Business Loans and Unlisted Equity"
+      method: "SDA or absolute contraction"
+      pcaf_data_quality: [1, 2, 3, 4, 5]
+    - key: project_finance
+      name: "Project Finance"
+      method: "SDA with project-level data"
+      pcaf_data_quality: [1, 2, 3]
+    - key: commercial_real_estate
+      name: "Commercial Real Estate"
+      method: "SDA (buildings pathway)"
+      pcaf_data_quality: [1, 2, 3, 4]
+    - key: mortgages
+      name: "Mortgages"
+      method: "SDA (residential buildings pathway)"
+      pcaf_data_quality: [1, 2, 3, 4, 5]
+    - key: motor_vehicle_loans
+      name: "Motor Vehicle Loans"
+      method: "SDA (road transport pathway)"
+      pcaf_data_quality: [1, 2, 3, 4]
+    - key: sovereign_bonds
+      name: "Sovereign Bonds"
+      method: "Portfolio temperature rating"
+      pcaf_data_quality: [1, 2, 3]
+    - key: insurance
+      name: "Insurance Underwriting"
+      method: "Absolute contraction or SDA"
+      pcaf_data_quality: [1, 2, 3, 4, 5]
+  metrics:
+    - waci: "Weighted Average Carbon Intensity"
+    - pcaf_attribution: "PCAF Financed Emissions Attribution"
+    - portfolio_temperature: "Portfolio Temperature Score"
+    - alignment_pct: "Portfolio Alignment Percentage"
+
+# ---------------------------------------------------------------------------
+# 14. Temperature Scoring Configuration
+# ---------------------------------------------------------------------------
+# Temperature scoring converts target ambition into an Implied Temperature
+# Rise (ITR) value. Uses SBTi Temperature Rating methodology with default
+# and fallback values for companies without targets.
+# ---------------------------------------------------------------------------
+temperature_scoring:
+  default_no_target_temp: 3.2
+  ambition_levels:
+    one_point_five_c:
+      min_temp: 1.2
+      max_temp: 1.5
+      label: "1.5C aligned"
+    well_below_2c:
+      min_temp: 1.5
+      max_temp: 1.75
+      label: "Well-below 2C"
+    below_2c:
+      min_temp: 1.75
+      max_temp: 2.0
+      label: "Below 2C"
+    above_2c:
+      min_temp: 2.0
+      max_temp: 3.2
+      label: "Above 2C (insufficient)"
+  weighting_methods:
+    - "WATS"    # Weighted Average Temperature Score
+    - "TETS"    # Total Emissions Weighted Temperature Score
+    - "MOTS"    # Market Ownership Temperature Score
+    - "EOTS"    # Enterprise Ownership Temperature Score
+    - "ECOTS"   # Enterprise and Cash flow Ownership Temperature Score
+    - "ROTS"    # Revenue Ownership Temperature Score
+
+# ---------------------------------------------------------------------------
+# 15. Report Export Formats
+# ---------------------------------------------------------------------------
+report_formats:
+  pdf:
+    name: "PDF Report"
+    description: "Formatted SBTi target validation report with pathway charts"
+    include_pathway_charts: true
+    include_progress_graphs: true
+  excel:
+    name: "Excel Export"
+    description: "Tabular target data with criteria validation worksheets"
+    sheets:
+      - "Target Summary"
+      - "Criteria Validation"
+      - "Pathway Alignment"
+      - "Scope 3 Screening"
+      - "FLAG Assessment"
+      - "Progress Tracking"
+      - "Temperature Scoring"
+      - "Framework Cross-walk"
+  json:
+    name: "JSON Export"
+    description: "Machine-readable JSON for API consumers and integrations"
+    include_metadata: true
+    include_provenance: true
+    pretty_print: true
+  xml:
+    name: "SBTi Submission XML"
+    description: "XML format for SBTi target submission portal"
+    schema_version: "2026.1"
+
+# ---------------------------------------------------------------------------
+# 16. Data Quality Thresholds
+# ---------------------------------------------------------------------------
+data_quality:
+  dimensions:
+    completeness:
+      weight: 0.30
+      minimum_score: 50
+      description: "Percentage of required emissions data populated"
+    accuracy:
+      weight: 0.30
+      minimum_score: 50
+      description: "Emissions values within expected ranges and verified"
+    timeliness:
+      weight: 0.20
+      minimum_score: 40
+      description: "Data currency relative to base year and target year"
+    consistency:
+      weight: 0.20
+      minimum_score: 40
+      description: "Internal consistency across scopes and categories"
+  overall_thresholds:
+    excellent: 90
+    good: 75
+    acceptable: 60
+    poor: 40
+    critical: 0
+  grade_mapping:
+    A: 90
+    B: 80
+    C: 70
+    D: 50
+    F: 0
+
+# ---------------------------------------------------------------------------
+# 17. Defaults and Operational Thresholds
+# ---------------------------------------------------------------------------
+defaults:
+  auto_save_interval_seconds: 30
+  max_targets_per_organization: 20
+  max_scope3_categories: 15
+  evidence_max_size_mb: 25
+  evidence_allowed_types: ["pdf", "xlsx", "csv", "png", "jpg", "docx"]
+  mrv_data_freshness_max_days: 90
+  mrv_timeout_seconds: 30
+  mrv_retry_count: 3
+  historical_years_supported: 10
+  progress_chart_years: 10
+  provenance_algorithm: "sha256"
+  provenance_include_in_all_exports: true

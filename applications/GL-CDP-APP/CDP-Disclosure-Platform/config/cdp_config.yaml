@@ -1,0 +1,641 @@
+# ============================================================================
+# GL-CDP-APP v1.0 -- CDP Climate Change Disclosure Platform Configuration
+# ============================================================================
+# Standard: CDP Climate Change Questionnaire (2025/2026 Integrated Format)
+# Aligned with: IFRS S2, ESRS E1, TCFD, GRI 305, SBTi, GHG Protocol, ISO 14064
+#
+# This file is the single source of truth for all CDP-specific configuration
+# consumed by the scoring simulator, questionnaire engine, gap analysis engine,
+# benchmarking engine, data auto-population connector, and report generator.
+#
+# IMPORTANT: Weights in the scoring.categories section MUST sum to 1.00 for
+# both management_weight and leadership_weight columns. The scoring simulator
+# validates this at startup and will refuse to run if the invariant is broken.
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# 1. Application Metadata
+# ---------------------------------------------------------------------------
+application:
+  name: "GL-CDP-APP"
+  version: "1.0.0"
+  description: "CDP Climate Change Disclosure Management Platform"
+  standard: "CDP Climate Change Questionnaire 2025/2026"
+  supported_years: [2024, 2025, 2026]
+  default_year: 2026
+  log_level: INFO
+  debug: false
+
+# ---------------------------------------------------------------------------
+# 2. Scoring Configuration
+# ---------------------------------------------------------------------------
+# CDP scores organizations on a D- to A scale across 17 weighted categories.
+# Management weights apply to B/B- band determination; leadership weights
+# apply to A/A- band determination. Both weight sets must independently
+# sum to 1.00.
+# ---------------------------------------------------------------------------
+scoring:
+
+  # -- 2a. Score Bands (8 levels) -------------------------------------------
+  # Each level maps to a percentage range. The scoring simulator computes a
+  # weighted composite score (0-100) then maps it to the appropriate level.
+  levels:
+    D_MINUS:
+      band: "Disclosure"
+      min_score: 0
+      max_score: 19
+      description: "Minimal or incomplete disclosure"
+    D:
+      band: "Disclosure"
+      min_score: 20
+      max_score: 29
+      description: "Basic disclosure provided"
+    C_MINUS:
+      band: "Awareness"
+      min_score: 30
+      max_score: 39
+      description: "Basic awareness demonstrated"
+    C:
+      band: "Awareness"
+      min_score: 40
+      max_score: 49
+      description: "Awareness of environmental issues and impacts"
+    B_MINUS:
+      band: "Management"
+      min_score: 50
+      max_score: 59
+      description: "Some management actions documented"
+    B:
+      band: "Management"
+      min_score: 60
+      max_score: 69
+      description: "Evidence of environmental management actions"
+    A_MINUS:
+      band: "Leadership"
+      min_score: 70
+      max_score: 79
+      description: "Full disclosure + strong management + most best practices"
+    A:
+      band: "Leadership"
+      min_score: 80
+      max_score: 100
+      description: "Full disclosure + best practice + 1.5C transition plan + verified emissions"
+
+  # -- 2b. 17 Scoring Categories with dual weight sets ----------------------
+  # management_weight: used for B/B- scoring (sums to 1.00)
+  # leadership_weight: used for A/A- scoring (sums to 1.00)
+  categories:
+    governance:
+      management_weight: 0.07
+      leadership_weight: 0.07
+      description: "Board oversight and management responsibility for climate"
+    risk_management_processes:
+      management_weight: 0.06
+      leadership_weight: 0.05
+      description: "Processes for identifying and managing climate-related risks"
+    risk_disclosure:
+      management_weight: 0.05
+      leadership_weight: 0.04
+      description: "Disclosure of identified climate-related risks"
+    opportunity_disclosure:
+      management_weight: 0.05
+      leadership_weight: 0.04
+      description: "Disclosure of identified climate-related opportunities"
+    business_strategy:
+      management_weight: 0.06
+      leadership_weight: 0.05
+      description: "Integration of climate considerations into business strategy"
+    scenario_analysis:
+      management_weight: 0.05
+      leadership_weight: 0.05
+      description: "Climate scenario analysis and resilience assessment"
+    targets:
+      management_weight: 0.08
+      leadership_weight: 0.08
+      description: "Emission reduction targets and progress tracking"
+    emissions_reduction_initiatives:
+      management_weight: 0.07
+      leadership_weight: 0.07
+      description: "Active emissions reduction projects and investments"
+    scope_1_2_emissions:
+      management_weight: 0.10
+      leadership_weight: 0.10
+      description: "Scope 1 and 2 GHG emissions reporting and verification"
+    scope_3_emissions:
+      management_weight: 0.08
+      leadership_weight: 0.08
+      description: "Scope 3 value chain emissions reporting and verification"
+    energy:
+      management_weight: 0.06
+      leadership_weight: 0.06
+      description: "Energy consumption, renewable energy, and efficiency reporting"
+    carbon_pricing:
+      management_weight: 0.04
+      leadership_weight: 0.04
+      description: "Internal carbon pricing mechanisms and shadow pricing"
+    value_chain_engagement:
+      management_weight: 0.06
+      leadership_weight: 0.06
+      description: "Supplier and customer engagement on climate action"
+    public_policy_engagement:
+      management_weight: 0.03
+      leadership_weight: 0.03
+      description: "Engagement with public policy and lobbying on climate"
+    transition_plan:
+      management_weight: 0.06
+      leadership_weight: 0.08
+      description: "1.5C-aligned transition plan and decarbonization roadmap"
+    portfolio_climate_performance:
+      management_weight: 0.05
+      leadership_weight: 0.07
+      description: "Financial services portfolio emissions and alignment"
+      sector_specific: true
+      applicable_sectors: ["financials"]
+    financial_impact_assessment:
+      management_weight: 0.03
+      leadership_weight: 0.03
+      description: "Financial quantification of climate risks and opportunities"
+
+  # -- 2c. A-Level Requirements (all must be met for A or A-) ---------------
+  # The scoring simulator checks these as hard gates: even if the weighted
+  # composite score exceeds 80, the organization cannot achieve A unless
+  # every requirement below evaluates to true.
+  a_level_requirements:
+    transition_plan_public: true
+    complete_emissions_inventory: true
+    scope_1_2_verification_100_pct: true
+    scope_3_verification_70_pct_one_category: true
+    sbti_or_1_5c_target: true
+    annual_absolute_reduction_pct: 4.2
+
+# ---------------------------------------------------------------------------
+# 3. Modules (13 CDP questionnaire modules: M0 through M13)
+# ---------------------------------------------------------------------------
+# Each module maps to one or more scoring categories. Modules with
+# scored: false contribute to completeness but not the weighted score.
+# sector_specific modules are only shown when the organization's GICS
+# sector matches.
+# ---------------------------------------------------------------------------
+modules:
+  M0:
+    name: "Introduction"
+    description: "Organization profile, reporting boundary, base year, currency"
+    questions: 15
+    scored: false
+    order: 0
+
+  M1:
+    name: "Governance"
+    description: "Board oversight, management responsibility, incentives"
+    questions: 20
+    scored: true
+    categories: [governance]
+    order: 1
+
+  M2:
+    name: "Policies & Commitments"
+    description: "Climate policies, commitments, deforestation-free pledges"
+    questions: 15
+    scored: true
+    categories: [business_strategy]
+    order: 2
+
+  M3:
+    name: "Risks & Opportunities"
+    description: "Climate risk assessment, physical and transition risks, opportunities"
+    questions: 25
+    scored: true
+    categories: [risk_management_processes, risk_disclosure, opportunity_disclosure]
+    order: 3
+
+  M4:
+    name: "Strategy"
+    description: "Business strategy alignment, scenario analysis, financial planning"
+    questions: 20
+    scored: true
+    categories: [business_strategy, scenario_analysis]
+    order: 4
+
+  M5:
+    name: "Transition Plans"
+    description: "1.5C pathway, decarbonization roadmap, milestones, board sign-off"
+    questions: 20
+    scored: true
+    categories: [transition_plan]
+    order: 5
+
+  M6:
+    name: "Implementation"
+    description: "Emissions reduction initiatives, investments, R&D, carbon pricing"
+    questions: 20
+    scored: true
+    categories: [emissions_reduction_initiatives, targets]
+    order: 6
+
+  M7:
+    name: "Environmental Performance - Climate Change"
+    description: "Scope 1/2/3 emissions, methodology, verification, energy"
+    questions: 35
+    scored: true
+    categories: [scope_1_2_emissions, scope_3_emissions, energy]
+    order: 7
+
+  M8:
+    name: "Environmental Performance - Forests"
+    description: "Commodity-driven deforestation (if applicable)"
+    questions: 15
+    scored: false
+    sector_specific: true
+    order: 8
+
+  M9:
+    name: "Environmental Performance - Water Security"
+    description: "Water dependencies and water-related risks (if applicable)"
+    questions: 15
+    scored: false
+    sector_specific: true
+    order: 9
+
+  M10:
+    name: "Supply Chain"
+    description: "Supplier engagement, Scope 3 collaboration, cascade requests"
+    questions: 15
+    scored: true
+    categories: [value_chain_engagement]
+    order: 10
+
+  M11:
+    name: "Additional Metrics"
+    description: "Sector-specific metrics, energy mix, carbon pricing details"
+    questions: 10
+    scored: true
+    categories: [energy, carbon_pricing]
+    order: 11
+
+  M12:
+    name: "Financial Services"
+    description: "Portfolio emissions, financed emissions, PCAF alignment"
+    questions: 20
+    scored: true
+    sector_specific: true
+    categories: [portfolio_climate_performance]
+    applicable_sectors: ["financials"]
+    order: 12
+
+  M13:
+    name: "Sign Off"
+    description: "Board-level authorization and verification statement"
+    questions: 5
+    scored: false
+    order: 13
+
+# ---------------------------------------------------------------------------
+# 4. Question Types
+# ---------------------------------------------------------------------------
+# Defines the permitted response types across all modules. The questionnaire
+# engine validates that each response conforms to its declared type.
+# ---------------------------------------------------------------------------
+question_types:
+  text:
+    description: "Free-text narrative response"
+    max_length: 5000
+  numeric:
+    description: "Numeric value with unit"
+    precision: 3
+  percentage:
+    description: "Percentage value (0-100)"
+    min: 0.0
+    max: 100.0
+    precision: 2
+  table:
+    description: "Tabular data with rows and columns"
+    max_rows: 100
+    max_columns: 20
+  multi_select:
+    description: "Multiple selections from predefined options"
+  single_select:
+    description: "Single selection from predefined options"
+  yes_no:
+    description: "Binary yes/no response"
+  date:
+    description: "Date value (ISO 8601 format)"
+    format: "YYYY-MM-DD"
+  file_upload:
+    description: "Document or evidence file upload"
+    max_size_mb: 25
+    allowed_types: ["pdf", "xlsx", "csv", "png", "jpg", "docx"]
+
+# ---------------------------------------------------------------------------
+# 5. Response Statuses
+# ---------------------------------------------------------------------------
+# Tracks the lifecycle of each question response from initial draft through
+# final CDP submission. The review workflow enforces this state machine.
+# ---------------------------------------------------------------------------
+response_statuses:
+  draft:
+    label: "Draft"
+    description: "Initial response being authored"
+    editable: true
+    next: [in_review]
+  in_review:
+    label: "In Review"
+    description: "Under review by sustainability manager or data owner"
+    editable: false
+    next: [draft, approved]
+  approved:
+    label: "Approved"
+    description: "Approved by authorized reviewer, ready for submission"
+    editable: false
+    next: [in_review, submitted]
+  submitted:
+    label: "Submitted"
+    description: "Submitted to CDP Online Response System"
+    editable: false
+    next: []
+
+# ---------------------------------------------------------------------------
+# 6. GICS Sectors
+# ---------------------------------------------------------------------------
+# CDP uses GICS (Global Industry Classification Standard) for sector-based
+# question routing, benchmarking peer groups, and sector-specific scoring.
+# ---------------------------------------------------------------------------
+sectors:
+  energy:
+    gics_code: "10"
+    name: "Energy"
+    sector_specific_modules: [M8]
+  materials:
+    gics_code: "15"
+    name: "Materials"
+    sector_specific_modules: [M8]
+  industrials:
+    gics_code: "20"
+    name: "Industrials"
+    sector_specific_modules: []
+  consumer_discretionary:
+    gics_code: "25"
+    name: "Consumer Discretionary"
+    sector_specific_modules: []
+  consumer_staples:
+    gics_code: "30"
+    name: "Consumer Staples"
+    sector_specific_modules: [M8, M9]
+  health_care:
+    gics_code: "35"
+    name: "Health Care"
+    sector_specific_modules: [M9]
+  financials:
+    gics_code: "40"
+    name: "Financials"
+    sector_specific_modules: [M12]
+  information_technology:
+    gics_code: "45"
+    name: "Information Technology"
+    sector_specific_modules: []
+  communication_services:
+    gics_code: "50"
+    name: "Communication Services"
+    sector_specific_modules: []
+  utilities:
+    gics_code: "55"
+    name: "Utilities"
+    sector_specific_modules: []
+  real_estate:
+    gics_code: "60"
+    name: "Real Estate"
+    sector_specific_modules: []
+
+# ---------------------------------------------------------------------------
+# 7. Deadlines -- 2026 CDP Cycle
+# ---------------------------------------------------------------------------
+# Key dates for the 2026 CDP Climate Change disclosure cycle. The dashboard
+# countdown timer and notification system reference these dates.
+# ---------------------------------------------------------------------------
+deadlines:
+  questionnaire_release: "2026-03-31"
+  response_window_open: "2026-06-16"
+  scoring_deadline: "2026-09-15"
+  final_deadline: "2026-11-17"
+  results_publication: "2027-02-15"
+  early_submission_bonus_cutoff: "2026-08-31"
+
+# ---------------------------------------------------------------------------
+# 8. Frameworks Alignment
+# ---------------------------------------------------------------------------
+# CDP's integrated questionnaire aligns with multiple international
+# disclosure and target-setting frameworks. This mapping enables the
+# crosswalk engine to auto-populate CDP responses from data already
+# reported under other standards via GreenLang apps.
+# ---------------------------------------------------------------------------
+frameworks_alignment:
+  ifrs_s2:
+    name: "IFRS S2 Climate-related Disclosures"
+    version: "2023"
+    alignment_areas: [governance, strategy, risk_management, metrics_targets]
+    cdp_modules: [M1, M3, M4, M5, M7]
+  esrs_e1:
+    name: "ESRS E1 Climate Change"
+    version: "2023"
+    alignment_areas: [mitigation, adaptation, energy, metrics]
+    cdp_modules: [M5, M6, M7, M11]
+  tcfd:
+    name: "Task Force on Climate-related Financial Disclosures"
+    version: "2017"
+    alignment_areas: [governance, strategy, risk_management, metrics_targets]
+    cdp_modules: [M1, M3, M4, M7]
+  gri_305:
+    name: "GRI 305: Emissions"
+    version: "2016"
+    alignment_areas: [scope_1, scope_2, scope_3, intensity, reduction]
+    cdp_modules: [M7]
+  sbti:
+    name: "Science Based Targets initiative"
+    version: "2024"
+    alignment_areas: [near_term, long_term, net_zero]
+    cdp_modules: [M5, M6]
+  ghg_protocol:
+    name: "GHG Protocol Corporate Standard"
+    version: "2015"
+    alignment_areas: [scope_1, scope_2, scope_3, boundary, base_year]
+    cdp_modules: [M0, M7]
+  iso_14064:
+    name: "ISO 14064-1:2018"
+    version: "2018"
+    alignment_areas: [categories, uncertainty, verification, reporting]
+    cdp_modules: [M0, M7, M13]
+
+# ---------------------------------------------------------------------------
+# 9. MRV Agent Mapping
+# ---------------------------------------------------------------------------
+# Maps CDP modules to GreenLang MRV agent prefixes for automatic data
+# population. The data connector uses these prefixes to query the correct
+# MRV agent APIs and transform their output into CDP table formats.
+#
+# Agent prefix legend:
+#   sc=Stationary Combustion, rf=Refrigerants, mc=Mobile Combustion,
+#   pe=Process Emissions, fue=Fugitive Emissions, lu=Land Use,
+#   wt=Waste Treatment, ag=Agricultural, s2l=Scope2 Location,
+#   s2m=Scope2 Market, shp=Steam/Heat Purchase, cp=Cooling Purchase,
+#   drr=Dual Reporting Reconciliation, pgs=Purchased Goods & Services,
+#   cg=Capital Goods, fea=Fuel & Energy Activities,
+#   uto=Upstream Transportation, wg=Waste Generated,
+#   bt=Business Travel, ec=Employee Commuting,
+#   ula=Upstream Leased Assets, dto=Downstream Transportation,
+#   psp=Processing of Sold Products, usp=Use of Sold Products,
+#   eol=End-of-Life Treatment, dla=Downstream Leased Assets,
+#   frn=Franchises, inv=Investments,
+#   scm=Scope 3 Category Mapper, atl=Audit Trail & Lineage
+# ---------------------------------------------------------------------------
+mrv_agent_mapping:
+  scope_1:
+    cdp_module: "M7"
+    cdp_table: "C6.1"
+    agents: [sc, rf, mc, pe, fue, lu, wt, ag]
+    description: "Direct GHG emissions from owned/controlled sources"
+  scope_2_location:
+    cdp_module: "M7"
+    cdp_table: "C6.3"
+    agents: [s2l]
+    description: "Location-based Scope 2 emissions from purchased electricity"
+  scope_2_market:
+    cdp_module: "M7"
+    cdp_table: "C6.3"
+    agents: [s2m, shp, cp, drr]
+    description: "Market-based Scope 2 emissions with contractual instruments"
+  scope_3_upstream:
+    cdp_module: "M7"
+    cdp_table: "C6.5"
+    agents: [pgs, cg, fea, uto, wg, bt, ec, ula]
+    description: "Scope 3 upstream categories 1-8"
+    category_range: [1, 2, 3, 4, 5, 6, 7, 8]
+  scope_3_downstream:
+    cdp_module: "M7"
+    cdp_table: "C6.5"
+    agents: [dto, psp, usp, eol, dla, frn, inv]
+    description: "Scope 3 downstream categories 9-15"
+    category_range: [9, 10, 11, 12, 13, 14, 15]
+  cross_cutting:
+    agents: [scm, atl]
+    description: "Cross-cutting agents for category mapping and audit lineage"
+  energy:
+    cdp_module: "M11"
+    agents: [s2l, s2m, shp, cp]
+    description: "Energy consumption data for Additional Metrics module"
+
+# ---------------------------------------------------------------------------
+# 10. Benchmarking Configuration
+# ---------------------------------------------------------------------------
+# Controls peer group formation, minimum sample sizes, and score band
+# definitions for the benchmarking engine's distribution analysis.
+# ---------------------------------------------------------------------------
+benchmarking:
+  default_peer_group_size: 50
+  minimum_respondents_for_benchmark: 10
+  max_custom_peer_group_size: 200
+  anonymization_threshold: 5
+
+  # Score bands used for histogram distribution analysis
+  score_bands:
+    - label: "D-"
+      min: 0
+      max: 19
+      color: "#d32f2f"
+    - label: "D"
+      min: 20
+      max: 29
+      color: "#e64a19"
+    - label: "C-"
+      min: 30
+      max: 39
+      color: "#f57c00"
+    - label: "C"
+      min: 40
+      max: 49
+      color: "#ffa000"
+    - label: "B-"
+      min: 50
+      max: 59
+      color: "#fbc02d"
+    - label: "B"
+      min: 60
+      max: 69
+      color: "#afb42b"
+    - label: "A-"
+      min: 70
+      max: 79
+      color: "#689f38"
+    - label: "A"
+      min: 80
+      max: 100
+      color: "#2e7d32"
+
+  # Peer group dimensions for multi-axis comparison
+  peer_group_dimensions:
+    - sector          # GICS sector peers
+    - region          # Geographic region peers
+    - revenue_band    # Revenue-size peers
+    - custom          # User-defined comparator set
+
+  # Global average baselines (updated annually from CDP statistics)
+  global_baselines:
+    mean_score: 42.5
+    median_score: 38.0
+    a_list_rate_pct: 2.1
+    response_rate_pct: 67.0
+    year: 2025
+
+# ---------------------------------------------------------------------------
+# 11. Report Export Formats
+# ---------------------------------------------------------------------------
+report_formats:
+  pdf:
+    name: "PDF Report"
+    description: "Formatted questionnaire with all responses and evidence"
+  excel:
+    name: "Excel Export"
+    description: "Tabular response data with per-module worksheets"
+  xml:
+    name: "CDP ORS XML"
+    description: "XML for CDP Online Response System submission"
+    schema_version: "2026.1"
+  json:
+    name: "JSON Export"
+    description: "Machine-readable JSON export for API consumers"
+
+# ---------------------------------------------------------------------------
+# 12. Verification Configuration
+# ---------------------------------------------------------------------------
+# Tracks third-party assurance of emissions data. A-level scoring requires
+# 100% Scope 1+2 verification and >= 70% of at least one Scope 3 category.
+# ---------------------------------------------------------------------------
+verification:
+  assurance_levels:
+    - limited
+    - reasonable
+  recognized_standards:
+    - "ISO 14064-3:2019"
+    - "ISAE 3000"
+    - "ISAE 3410"
+    - "AA1000AS"
+  a_level_thresholds:
+    scope_1_2_coverage_pct: 100.0
+    scope_3_category_coverage_pct: 70.0
+    scope_3_min_categories_verified: 1
+
+# ---------------------------------------------------------------------------
+# 13. Defaults and Operational Thresholds
+# ---------------------------------------------------------------------------
+defaults:
+  response_max_length: 5000
+  table_max_rows: 100
+  table_max_columns: 20
+  evidence_max_size_mb: 25
+  evidence_allowed_types: ["pdf", "xlsx", "csv", "png", "jpg", "docx"]
+  auto_save_interval_seconds: 30
+  max_reviewers_per_question: 5
+  score_confidence_min_completion: 0.30
+  supplier_invitation_expiry_days: 90
+  historical_years_supported: 5
+  mrv_data_freshness_max_days: 90
+  mrv_timeout_seconds: 30
+  mrv_retry_count: 3

@@ -1,0 +1,469 @@
+# =============================================================================
+# GL-TCFD-APP v1.0 -- TCFD Disclosure & Scenario Analysis Platform Configuration
+# =============================================================================
+#
+# This file defines all configuration parameters for the TCFD platform
+# including application settings, scenario defaults, risk thresholds,
+# financial modeling parameters, regulatory jurisdictions, SASB industry
+# mappings, data quality thresholds, and export format settings.
+#
+# Environment variable overrides use the TCFD_APP_ prefix.
+# Example: TCFD_APP_DEBUG=true, TCFD_APP_DEFAULT_CURRENCY=EUR
+#
+# Reference:
+#   - TCFD Final Report (June 2017)
+#   - IFRS S2 Climate-related Disclosures (June 2023)
+#   - NGFS Climate Scenarios (September 2022)
+#   - IEA World Energy Outlook (2023)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Application Settings
+# ---------------------------------------------------------------------------
+app:
+  name: "GL-TCFD-APP"
+  version: "1.0.0"
+  description: "TCFD Disclosure & Scenario Analysis Platform"
+  debug: false
+  log_level: "INFO"
+  reporting_year: 2025
+  base_url: "https://api.greenlang.io/tcfd/v1"
+
+# ---------------------------------------------------------------------------
+# Scenario Defaults
+# ---------------------------------------------------------------------------
+scenarios:
+  default_scenario_type: "iea_nze"
+  default_temperature_pathway: "below_1_5c"
+  default_time_horizons:
+    - "short_term"
+    - "medium_term"
+    - "long_term"
+  time_horizon_definitions:
+    short_term:
+      min_years: 0
+      max_years: 3
+      label: "Short-term (0-3 years)"
+    medium_term:
+      min_years: 3
+      max_years: 10
+      label: "Medium-term (3-10 years)"
+    long_term:
+      min_years: 10
+      max_years: 30
+      label: "Long-term (10-30+ years)"
+  monte_carlo_iterations: 10000
+  sensitivity_analysis_steps: 5
+  scenario_archetypes:
+    - id: "iea_nze"
+      name: "IEA Net Zero Emissions by 2050"
+      temperature: "1.5C"
+      transition_risk: "very_high"
+      physical_risk: "low"
+    - id: "iea_aps"
+      name: "IEA Announced Pledges Scenario"
+      temperature: "1.7C"
+      transition_risk: "high"
+      physical_risk: "medium"
+    - id: "iea_steps"
+      name: "IEA Stated Policies Scenario"
+      temperature: "2.5C"
+      transition_risk: "medium"
+      physical_risk: "high"
+    - id: "ngfs_current_policies"
+      name: "NGFS Current Policies"
+      temperature: "3.2C"
+      transition_risk: "low"
+      physical_risk: "very_high"
+    - id: "ngfs_delayed_transition"
+      name: "NGFS Delayed Transition"
+      temperature: "1.9C"
+      transition_risk: "very_high_disorderly"
+      physical_risk: "medium"
+    - id: "ngfs_below_2c"
+      name: "NGFS Below 2C"
+      temperature: "1.8C"
+      transition_risk: "high"
+      physical_risk: "medium"
+    - id: "ngfs_divergent_nz"
+      name: "NGFS Divergent Net Zero"
+      temperature: "1.5C"
+      transition_risk: "very_high_uneven"
+      physical_risk: "low"
+
+# ---------------------------------------------------------------------------
+# Carbon Price Trajectories (USD per tCO2e)
+# ---------------------------------------------------------------------------
+carbon_price:
+  default_trajectory:
+    2025: 75
+    2026: 82
+    2027: 90
+    2028: 100
+    2029: 115
+    2030: 130
+    2035: 170
+    2040: 205
+    2045: 230
+    2050: 250
+  social_cost_of_carbon:
+    2025: 51
+    2030: 62
+    2040: 82
+    2050: 105
+
+# ---------------------------------------------------------------------------
+# Risk Thresholds
+# ---------------------------------------------------------------------------
+risk_thresholds:
+  risk_matrix:
+    low:
+      min_score: 1
+      max_score: 5
+      color: "#22c55e"
+    medium:
+      min_score: 6
+      max_score: 12
+      color: "#f59e0b"
+    high:
+      min_score: 13
+      max_score: 19
+      color: "#f97316"
+    critical:
+      min_score: 20
+      max_score: 25
+      color: "#ef4444"
+  likelihood_scale:
+    rare: 1
+    unlikely: 2
+    possible: 3
+    likely: 4
+    almost_certain: 5
+  impact_scale:
+    insignificant: 1
+    minor: 2
+    moderate: 3
+    major: 4
+    catastrophic: 5
+  physical_risk_rcp_scenarios:
+    - "ssp1_26"
+    - "ssp2_45"
+    - "ssp5_85"
+  default_physical_risk_rcp: "ssp2_45"
+  hazard_types:
+    - "cyclone"
+    - "flood"
+    - "wildfire"
+    - "heatwave"
+    - "drought"
+    - "sea_level_rise"
+    - "water_stress"
+    - "temperature_rise"
+    - "precipitation_change"
+
+# ---------------------------------------------------------------------------
+# Financial Modeling Parameters
+# ---------------------------------------------------------------------------
+financial:
+  discount_rate: 0.08
+  discount_rate_range:
+    min: 0.01
+    max: 0.30
+  projection_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+    - 2050
+  default_currency: "USD"
+  supported_currencies:
+    - "USD"
+    - "EUR"
+    - "GBP"
+    - "JPY"
+    - "SGD"
+    - "HKD"
+    - "AUD"
+    - "NZD"
+    - "CAD"
+    - "CHF"
+  financial_statement_areas:
+    - "income_statement"
+    - "balance_sheet"
+    - "cash_flow"
+  npv_method: "discounted_cash_flow"
+  irr_max_iterations: 1000
+  macc_max_abatement_options: 50
+
+# ---------------------------------------------------------------------------
+# Regulatory Jurisdictions
+# ---------------------------------------------------------------------------
+regulatory:
+  supported_jurisdictions:
+    - id: "UK"
+      name: "United Kingdom"
+      regulator: "FCA"
+      regulation: "LR 9.8.6R(8)"
+      mandatory: true
+      effective_date: "2021-01-01"
+    - id: "EU"
+      name: "European Union"
+      regulator: "EFRAG"
+      regulation: "CSRD / ESRS E1"
+      mandatory: true
+      effective_date: "2024-01-01"
+    - id: "US"
+      name: "United States"
+      regulator: "SEC"
+      regulation: "Climate Disclosure Rules"
+      mandatory: true
+      effective_date: "2026-01-01"
+    - id: "JP"
+      name: "Japan"
+      regulator: "FSA"
+      regulation: "SSBJ Standards"
+      mandatory: true
+      effective_date: "2023-04-01"
+    - id: "SG"
+      name: "Singapore"
+      regulator: "SGX"
+      regulation: "LR 711A/711B"
+      mandatory: true
+      effective_date: "2022-01-01"
+    - id: "HK"
+      name: "Hong Kong"
+      regulator: "HKEX"
+      regulation: "Climate Disclosure Requirements"
+      mandatory: true
+      effective_date: "2025-01-01"
+    - id: "AU"
+      name: "Australia"
+      regulator: "AASB"
+      regulation: "ASRS 1 / ASRS 2"
+      mandatory: true
+      effective_date: "2025-01-01"
+    - id: "NZ"
+      name: "New Zealand"
+      regulator: "XRB"
+      regulation: "NZ CS1/CS2/CS3"
+      mandatory: true
+      effective_date: "2023-01-01"
+
+# ---------------------------------------------------------------------------
+# SASB Industry Mappings
+# ---------------------------------------------------------------------------
+sasb_industry_mappings:
+  energy:
+    gics_code: "10"
+    sasb_industries:
+      - "Oil & Gas - Exploration & Production"
+      - "Oil & Gas - Midstream"
+      - "Oil & Gas - Refining & Marketing"
+      - "Oil & Gas - Services"
+      - "Coal Operations"
+    key_metrics:
+      - "Gross global Scope 1 emissions"
+      - "Methane emissions"
+      - "Embedded CO2 in proved reserves"
+      - "Revenues from renewable energy"
+  transport:
+    gics_code: "20"
+    sasb_industries:
+      - "Airlines"
+      - "Road Transportation"
+      - "Marine Transportation"
+      - "Rail Transportation"
+    key_metrics:
+      - "Scope 1 emissions by fleet type"
+      - "Fuel consumed and energy efficiency"
+      - "Revenue ton-miles (RTM)"
+  materials:
+    gics_code: "15"
+    sasb_industries:
+      - "Iron & Steel Producers"
+      - "Construction Materials"
+      - "Chemicals"
+      - "Metals & Mining"
+    key_metrics:
+      - "Scope 1 emissions by process"
+      - "Scope 1 under emissions-limiting regulations"
+      - "Energy consumption in production"
+  banking:
+    gics_code: "40"
+    sasb_industries:
+      - "Commercial Banks"
+      - "Investment Banking & Brokerage"
+      - "Asset Management & Custody"
+    key_metrics:
+      - "Financed emissions (Scope 3 Cat 15)"
+      - "Exposure to carbon-related assets"
+      - "WACI of lending portfolio"
+  insurance:
+    gics_code: "40"
+    sasb_industries:
+      - "Insurance"
+    key_metrics:
+      - "Probable Maximum Loss from weather events"
+      - "Total invested in high physical risk assets"
+      - "Net premiums related to energy/weather"
+  technology:
+    gics_code: "45"
+    sasb_industries:
+      - "Software & IT Services"
+      - "Hardware"
+      - "Semiconductors"
+    key_metrics:
+      - "Data center energy consumption"
+      - "Renewable energy percentage"
+      - "PUE (Power Usage Effectiveness)"
+
+# ---------------------------------------------------------------------------
+# Data Quality Thresholds
+# ---------------------------------------------------------------------------
+data_quality:
+  dimensions:
+    completeness:
+      weight: 0.30
+      minimum_score: 50
+      description: "Percentage of required fields populated"
+    accuracy:
+      weight: 0.30
+      minimum_score: 50
+      description: "Values within expected ranges"
+    timeliness:
+      weight: 0.20
+      minimum_score: 40
+      description: "Data currency and freshness"
+    consistency:
+      weight: 0.20
+      minimum_score: 40
+      description: "Internal consistency across sections"
+  overall_thresholds:
+    excellent: 90
+    good: 75
+    acceptable: 60
+    poor: 40
+    critical: 0
+  grade_mapping:
+    A: 90
+    B: 80
+    C: 70
+    D: 50
+    F: 0
+  ghg_quality_levels:
+    pcaf_1:
+      description: "Audited emissions or primary data"
+      score: 5
+    pcaf_2:
+      description: "Non-audited energy data, supplier-specific"
+      score: 4
+    pcaf_3:
+      description: "Average data, physical activity-based"
+      score: 3
+    pcaf_4:
+      description: "Estimated, economic activity-based"
+      score: 2
+    pcaf_5:
+      description: "Estimated, sector/regional averages"
+      score: 1
+
+# ---------------------------------------------------------------------------
+# Export Format Settings
+# ---------------------------------------------------------------------------
+export:
+  formats:
+    pdf:
+      enabled: true
+      include_cover_page: true
+      include_toc: true
+      include_appendices: true
+      include_regulatory_crossref: true
+      font_family: "Helvetica"
+      page_size: "A4"
+    excel:
+      enabled: true
+      sheets:
+        - "Overview"
+        - "Governance"
+        - "Strategy"
+        - "Risk Management"
+        - "Metrics & Targets"
+        - "Compliance"
+        - "Evidence"
+        - "ISSB Cross-Walk"
+    json:
+      enabled: true
+      include_metadata: true
+      include_issb_crosswalk: true
+      include_regulatory_context: true
+      pretty_print: true
+    xbrl:
+      enabled: true
+      taxonomy: "ifrs-s2-2023"
+      format: "inline"
+      namespace: "http://greenlang.io/taxonomy/2026/tcfd"
+  provenance:
+    algorithm: "sha256"
+    include_in_all_exports: true
+
+# ---------------------------------------------------------------------------
+# Maturity Assessment Configuration
+# ---------------------------------------------------------------------------
+maturity:
+  levels:
+    initial:
+      score: 1
+      description: "Ad hoc, no formal processes"
+    developing:
+      score: 2
+      description: "Some processes, inconsistent"
+    defined:
+      score: 3
+      description: "Standardized, partial implementation"
+    managed:
+      score: 4
+      description: "Quantified, regularly reviewed"
+    optimized:
+      score: 5
+      description: "Continuous improvement, best-in-class"
+  dimensions_per_pillar: 10
+  total_dimensions: 40
+  compliance_threshold: 70
+  target_maturity_level: 3
+
+# ---------------------------------------------------------------------------
+# MRV Agent Integration
+# ---------------------------------------------------------------------------
+mrv_integration:
+  agent_timeout_seconds: 30
+  agent_retry_count: 3
+  batch_size: 100
+  agents:
+    scope_1:
+      - "stationary_combustion"
+      - "mobile_combustion"
+      - "process_emissions"
+      - "fugitive_emissions"
+      - "refrigerants"
+    scope_2:
+      - "scope2_location"
+      - "scope2_market"
+      - "steam_heat_purchase"
+      - "cooling_purchase"
+    scope_3:
+      - "purchased_goods_services"
+      - "capital_goods"
+      - "fuel_energy_activities"
+      - "upstream_transport"
+      - "waste_generated"
+      - "business_travel"
+      - "employee_commuting"
+      - "upstream_leased"
+      - "downstream_transport"
+      - "processing_sold_products"
+      - "use_sold_products"
+      - "end_of_life"
+      - "downstream_leased"
+      - "franchises"
+      - "investments"
