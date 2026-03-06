@@ -113,9 +113,9 @@ matplotlib==3.8.2 \
     --hash=sha256:01a978b871b881ee76017152f1f1a0cbf6bd5f7b8ff8c96df0df1bd57d8755a1 \
     --hash=sha256:d0f9ac9da740d511102f64f44b7c6e1c3cfc307e17f322af025e238496537bad  # Plotting library
 
-seaborn==0.13.1 \
-    --hash=sha256:030d9768b59807be7a369cf8c9b0303428e099ce8098b52b43473f9c7f38f79a \
-    --hash=sha256:e37e91f1a415e0a10e5ac276e2f3a2b66a6ad0c5b8848fb9295b36ad86e5afb8  # Statistical visualization
+seaborn==0.13.2 \
+    --hash=sha256:636f8336facf092165e27924f223d3c62ca560b1f2bb5dff7ab7fad265361987 \
+    --hash=sha256:93e60a40988f4d65e9f4885df477e2fdaff6b73a9ded434c1ab356dd57eefff7  # Statistical visualization
 
 openpyxl==3.1.2 \
     --hash=sha256:a6f5977418eff3b2d5500d54d9db50c8277a368436f4e4f8ddb1be3422870184 \
