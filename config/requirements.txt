@@ -4,151 +4,92 @@
 # Python >= 3.10 required
 # Last Security Audit: 2025-01-26
 # Last Dependabot Security Update: 2025-01-26
-
-# =============================================================================
-# CORE DEPENDENCIES
-# =============================================================================
-typer==0.9.0
-pydantic==2.12.5
-pyyaml==6.0.1
-rich==13.7.0
-jsonschema==4.21.1
-packaging==23.2
-python-dotenv==1.2.1
-typing-extensions==4.9.0
+annotated-types==0.7.0
+anyio==4.12.1
+async-timeout==5.0.1
+attrs==25.4.0
+beautifulsoup4==4.12.3
+blis==1.3.3
+catalogue==2.0.10
+certifi==2026.1.4
+cffi==2.0.0
+chardet==5.2.0
+charset-normalizer==3.4.4
+click==8.3.1
+cloudpathlib==0.23.0
+confection==0.1.5
+contourpy==1.3.2
+cryptography==46.0.3
+cycler==0.12.1
+cymem==2.0.13
+et-xmlfile==2.0.0
+exceptiongroup==1.3.1
+fonttools==4.61.1
+h11==0.16.0
+httpcore==1.0.9
 httpx==0.28.1
-requests==2.32.4  # Security update
+idna==3.11
+jinja2==3.1.6
+jsonschema==4.21.1
+jsonschema-specifications==2025.9.1
+kiwisolver==1.4.9
+lxml==6.0.2
+markdown-it-py==4.0.0
+markupsafe==3.0.3
+matplotlib==3.8.2
+mdurl==0.1.2
+murmurhash==1.0.15
+neo4j==5.16.0
 networkx==3.2.1
+numpy==1.26.3
+openpyxl==3.1.2
+packaging==23.2
+pandas==2.1.4
+pdfminer-six==20221105
+pdfplumber==0.10.3
+pillow==12.1.0
+preshed==3.0.12
+psutil==5.9.8
+pybreaker==1.0.2
+pycparser==3.0
+pydantic==2.12.5
+pydantic-core==2.41.5
+pygments==2.19.2
+pyjwt==2.8.0
+pyparsing==3.3.2
+pypdf2==3.0.1
+pypdfium2==5.3.0
+python-dateutil==2.9.0.post0
+python-docx==1.1.0
+python-dotenv==1.2.1
+pytz==2025.2
+pyyaml==6.0.1
+redis==5.0.1
+referencing==0.37.0
+reportlab==4.0.9
+requests==2.32.4
+rich==13.7.0
+rpds-py==0.30.0
+scipy==1.12.0
+seaborn==0.13.1
+simpleeval==0.9.13
+six==1.17.0
+smart-open==7.5.0
+soupsieve==2.8.3
+spacy==3.8.11
+spacy-legacy==3.0.12
+spacy-loggers==1.0.5
+srsly==2.5.2
 tenacity==8.2.3
-psutil>=5.9.0,<8.0  # Flexible version range for system monitoring (updated for 7.x)
-
-# =============================================================================
-# SHARED SERVICES DEPENDENCIES
-# =============================================================================
-
-# Factor Broker Service
-redis==5.0.1  # Caching layer (license-compliant 24h TTL)
-pandas==2.1.4  # Data handling
-
-# Entity MDM Service
-# MOVED TO OPTIONAL DEPENDENCIES [ml] and [vector-db]
-# Install with: pip install greenlang-cli[ml,vector-db]
-# sentence-transformers==2.3.1  # Vector embeddings for entity matching
-# weaviate-client==4.4.1  # Vector database for entity storage
-# torch==2.1.2  # PyTorch for BERT models
-# transformers==4.37.2  # BERT re-ranking models
-# scikit-learn==1.4.0  # ML utilities
-
-# Methodologies Service
-scipy==1.12.0  # Statistical distributions for Monte Carlo
-numpy==1.26.3  # Numerical computations
-matplotlib==3.8.2  # Visualization (optional)
-seaborn==0.13.1  # Statistical visualization (optional)
-
-# Agent Templates & Document Processing
-openpyxl==3.1.2  # Excel file handling
-xlrd==2.0.1  # Legacy Excel support
-lxml==5.1.0  # XML parsing
-pdfplumber==0.10.3  # PDF text extraction (optional)
-reportlab==4.0.9  # PDF generation (optional)
-
-# =============================================================================
-# RAG SYSTEM - DOCUMENT PROCESSING
-# =============================================================================
-PyPDF2==3.0.1  # PDF parsing (primary parser)
-beautifulsoup4==4.12.3  # HTML parsing and extraction
-python-docx==1.1.0  # Microsoft Word document processing
-spacy==3.8.11  # NLP for semantic chunking and entity extraction
-# Run after install: python -m spacy download en_core_web_sm
-
-# =============================================================================
-# RAG SYSTEM - KNOWLEDGE GRAPH
-# =============================================================================
-neo4j==5.16.0  # Neo4j graph database driver for knowledge graph storage
-
-# =============================================================================
-# RESILIENCE AND FAULT TOLERANCE
-# =============================================================================
-pybreaker==1.0.2  # Circuit breaker pattern for external service protection
-
-# =============================================================================
-# VECTOR DATABASE INTEGRATION
-# =============================================================================
-# MOVED TO OPTIONAL DEPENDENCY [vector-db]
-# Install with: pip install greenlang-cli[vector-db]
-# chromadb==0.4.22  # ChromaDB for development/local vector storage
-# pinecone-client==3.0.2  # Pinecone Serverless for production cloud deployment
-# faiss-cpu==1.7.4  # FAISS for fast local vector similarity search
-# qdrant-client==1.7.3  # Qdrant vector database (optional)
-
-# =============================================================================
-# JWT AUTHENTICATION
-# =============================================================================
-PyJWT==2.8.0  # JWT token encoding and validation with signature verification
-cryptography==46.0.3  # Cryptographic backend for JWT (UPDATED - Latest security patches)
-
-# =============================================================================
-# SECURITY - SAFE EXPRESSION EVALUATION
-# =============================================================================
-simpleeval==0.9.13  # Safe evaluation of Python expressions (replaces eval/exec)
-
-# =============================================================================
-# SECURITY NOTES
-# =============================================================================
-# CRITICAL UPDATES:
-# 1. cryptography==46.0.3 - Updated from 42.0.5 to latest (v46 series)
-#    - Includes all security patches from 43.x, 44.x, 45.x series
-#    - Improved cryptographic algorithm support
-#    - Better performance and compatibility
-# 2. All dependencies pinned to exact versions (==) to prevent supply chain attacks
-# 3. requests==2.31.0 - Latest stable with CVE fixes
-# 4. httpx==0.26.0 - Security patches included
-# 5. pyyaml==6.0.1 - Security improvements for safe loading
-# 6. lxml==5.1.0 - Latest with security patches
-#
-# AUDIT SCHEDULE:
-# - Daily automated scans via GitHub Actions
-# - Weekly Dependabot security updates
-# - Monthly manual security reviews
-# - Quarterly comprehensive audits
-#
-# For full security audit, see:
-# - GreenLang_2030/agent_foundation/SECURITY_AUDIT.md
-# - GreenLang_2030/agent_foundation/DEPENDENCY_SECURITY_GUIDE.md
-# - GreenLang_2030/agent_foundation/SECURITY_HARDENING_SUMMARY.md
-#
-# =============================================================================
-# INSTALLATION
-# =============================================================================
-# Minimal install (no ML/vector databases - saves 250MB):
-#   pip install greenlang-cli
-#
-# With ML capabilities (PyTorch, transformers, sentence-transformers):
-#   pip install greenlang-cli[ml]
-#
-# With vector databases (Weaviate, ChromaDB, Pinecone, Qdrant, FAISS):
-#   pip install greenlang-cli[vector-db]
-#
-# Full AI capabilities (LLM + ML + Vector DBs):
-#   pip install greenlang-cli[ai-full]
-#
-# All features (includes server, analytics, etc):
-#   pip install greenlang-cli[all]
-#
-# Development:
-#   pip install -e ".[dev,test]"
-#
-# Legacy requirements.txt install (for backwards compatibility):
-#   pip install -r requirements.txt
-#
-# With hash verification (maximum security):
-#   pip install --require-hashes -r requirements.txt
-#
-# =============================================================================
-# LICENSE COMPLIANCE
-# =============================================================================
-# All dependencies use permissive licenses (MIT, Apache 2.0, BSD)
-# No GPL/LGPL/AGPL dependencies in production
-# License audit: 100% compliant for commercial use
-#
-# =============================================================================
+thinc==8.3.10
+tqdm==4.67.1
+typer==0.9.0
+typer-slim==0.21.1
+typing-extensions==4.15.0
+typing-inspection==0.4.2
+tzdata==2025.3
+urllib3==2.6.3
+wasabi==1.1.3
+weasel==0.4.3
+wrapt==2.0.1
+xlrd==2.0.1
