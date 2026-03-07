@@ -1,0 +1,295 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "AGENT-EUDR-006: Plot Boundary Manager Agent - Monitoring Dashboard",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "title": "Boundaries Created (24h)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "increase(gl_eudr_pbm_boundaries_created_total[24h])",
+          "legendFormat": "Created"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "title": "Validation Pass Rate",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "100 * (1 - (rate(gl_eudr_pbm_validation_errors_total[1h]) / rate(gl_eudr_pbm_validations_total[1h])))",
+          "legendFormat": "Pass Rate %"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "title": "Overlaps Detected (24h)",
+      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "increase(gl_eudr_pbm_overlaps_detected_total[24h])",
+          "legendFormat": "Overlaps"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "title": "Exports (24h)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "increase(gl_eudr_pbm_exports_total[24h])",
+          "legendFormat": "Exports"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "id": 10,
+      "title": "Boundary Operations",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+      "id": 11,
+      "title": "Boundary CRUD (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_pbm_boundaries_created_total[5m]) * 60",
+          "legendFormat": "Created"
+        },
+        {
+          "expr": "rate(gl_eudr_pbm_boundaries_updated_total[5m]) * 60",
+          "legendFormat": "Updated"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+      "id": 12,
+      "title": "Validations & Repairs (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_pbm_validations_total[5m]) * 60",
+          "legendFormat": "Validations"
+        },
+        {
+          "expr": "rate(gl_eudr_pbm_repairs_total[5m]) * 60",
+          "legendFormat": "Repairs"
+        },
+        {
+          "expr": "rate(gl_eudr_pbm_validation_errors_total[5m]) * 60",
+          "legendFormat": "Errors"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 20,
+      "title": "Area & Overlap Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 21,
+      "title": "Area Calculations & Overlap Scans (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_pbm_area_calculations_total[5m]) * 60",
+          "legendFormat": "Area Calculations"
+        },
+        {
+          "expr": "rate(gl_eudr_pbm_overlap_scans_total[5m]) * 60",
+          "legendFormat": "Overlap Scans"
+        },
+        {
+          "expr": "rate(gl_eudr_pbm_overlaps_detected_total[5m]) * 60",
+          "legendFormat": "Overlaps Found"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 22,
+      "title": "Operation Latency (p99/p95/p50)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(gl_eudr_pbm_operation_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99 - {{operation}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(gl_eudr_pbm_operation_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95 - {{operation}}"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(gl_eudr_pbm_operation_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50 - {{operation}}"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 30,
+      "title": "Versioning & Simplification",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 25 },
+      "id": 31,
+      "title": "Versions Created (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_pbm_versions_created_total[5m]) * 60",
+          "legendFormat": "Versions"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 25 },
+      "id": 32,
+      "title": "Simplifications (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_pbm_simplifications_total[5m]) * 60",
+          "legendFormat": "Simplifications"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 25 },
+      "id": 33,
+      "title": "Splits & Merges (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_pbm_splits_total[5m]) * 60",
+          "legendFormat": "Splits"
+        },
+        {
+          "expr": "rate(gl_eudr_pbm_merges_total[5m]) * 60",
+          "legendFormat": "Merges"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "id": 40,
+      "title": "Exports & Data Quality",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 34 },
+      "id": 41,
+      "title": "Exports by Format & Errors",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_pbm_exports_total[5m]) * 60",
+          "legendFormat": "Exports - {{format}}"
+        },
+        {
+          "expr": "rate(gl_eudr_pbm_api_errors_total[5m]) * 60",
+          "legendFormat": "Errors - {{operation}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 34 },
+      "id": 42,
+      "title": "Area Distribution (histogram)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(gl_eudr_pbm_area_hectares_bucket[5m]))",
+          "legendFormat": "Median Area (ha)"
+        },
+        {
+          "expr": "histogram_quantile(0.90, rate(gl_eudr_pbm_area_hectares_bucket[5m]))",
+          "legendFormat": "p90 Area (ha)"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(gl_eudr_pbm_area_hectares_bucket[5m]))",
+          "legendFormat": "p99 Area (ha)"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "plot-boundary", "manager", "agent-eudr-006"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "AGENT-EUDR-006: Plot Boundary Manager",
+  "uid": "eudr-plot-boundary-manager",
+  "version": 1
+}

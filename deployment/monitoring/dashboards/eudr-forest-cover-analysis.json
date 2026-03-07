@@ -1,0 +1,269 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "AGENT-EUDR-004: Forest Cover Analysis Agent - Monitoring Dashboard",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Avg Confidence Score",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "gl_eudr_fca_avg_confidence_score",
+          "legendFormat": "Confidence"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Avg Canopy Density (%)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "gl_eudr_fca_avg_canopy_density",
+          "legendFormat": "Density %"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "title": "Total Forest Area (ha)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "gl_eudr_fca_forest_area_ha",
+          "legendFormat": "Forest Area"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "title": "Deforested Plots (24h)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "increase(gl_eudr_fca_deforested_plots_total[24h])",
+          "legendFormat": "Deforested"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "id": 10,
+      "title": "Canopy Density & Classification",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+      "id": 11,
+      "title": "Density Analyses (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_fca_density_analyses_total[5m]) * 60",
+          "legendFormat": "{{method}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+      "id": 12,
+      "title": "Forest Classifications (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_fca_classifications_total[5m]) * 60",
+          "legendFormat": "{{method}} - {{forest_type}}"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 20,
+      "title": "Historical Reconstruction & Verification",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 21,
+      "title": "Reconstructions & Verdicts (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_fca_reconstructions_total[5m]) * 60",
+          "legendFormat": "Reconstructions"
+        },
+        {
+          "expr": "rate(gl_eudr_fca_verdicts_total[5m]) * 60",
+          "legendFormat": "Verdicts - {{verdict}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 22,
+      "title": "Analysis Latency (p99/p95/p50)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(gl_eudr_fca_analysis_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99 - {{operation}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(gl_eudr_fca_analysis_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95 - {{operation}}"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(gl_eudr_fca_analysis_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50 - {{operation}}"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 30,
+      "title": "Height, Biomass & Fragmentation",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 25 },
+      "id": 31,
+      "title": "Height Estimates (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_fca_height_estimates_total[5m]) * 60",
+          "legendFormat": "{{source}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 25 },
+      "id": 32,
+      "title": "Biomass Estimates (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_fca_biomass_estimates_total[5m]) * 60",
+          "legendFormat": "{{source}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 25 },
+      "id": 33,
+      "title": "Fragmentation Analyses (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_fca_fragmentation_analyses_total[5m]) * 60",
+          "legendFormat": "Fragmentation"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "id": 40,
+      "title": "Reports & Data Quality",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 34 },
+      "id": 41,
+      "title": "Reports Generated & Errors",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_fca_reports_generated_total[5m]) * 60",
+          "legendFormat": "Reports - {{format}}"
+        },
+        {
+          "expr": "rate(gl_eudr_fca_api_errors_total[5m]) * 60",
+          "legendFormat": "Errors - {{operation}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 34 },
+      "id": 42,
+      "title": "Data Quality Score (by source)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "gl_eudr_fca_data_quality_score",
+          "legendFormat": "{{source}}"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "forest-cover", "analysis", "agent-eudr-004"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "AGENT-EUDR-004: Forest Cover Analysis",
+  "uid": "eudr-forest-cover-analysis",
+  "version": 1
+}

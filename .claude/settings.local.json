@@ -478,7 +478,13 @@
       "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\tests\\\\unit\\\\apps\\\\taxonomy\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\tests\\\\unit\\\\apps\\\\taxonomy\")",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\applications\\\\GL-Taxonomy-APP\\\\EU-Taxonomy-Platform\\\\services\" -Filter \"*.py\" -Recurse)",
       "Bash(Measure-Object)",
-      "Bash(Select-Object -ExpandProperty Count)"
+      "Bash(Select-Object -ExpandProperty Count)",
+      "WebFetch(domain:www.coolset.com)",
+      "WebFetch(domain:www.live-eo.com)",
+      "WebFetch(domain:www.global-traceability.com)",
+      "WebFetch(domain:tracextech.com)",
+      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\agents\\\\eudr\\\\supply_chain_mapper\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\greenlang\\\\agents\\\\eudr\\\\supply_chain_mapper\")",
+      "Bash(NUL -c \"from greenlang.agents.eudr.supply_chain_mapper.graph_engine import SupplyChainGraphEngine; import inspect; [print\\(f''{''ASYNC'' if inspect.iscoroutinefunction\\(m\\) else ''SYNC ''}  {n}{inspect.signature\\(m\\)}''\\) for n, m in inspect.getmembers\\(SupplyChainGraphEngine, predicate=inspect.isfunction\\) if not n.startswith\\(''_''\\)]\")"
     ],
     "deny": [],
     "ask": []

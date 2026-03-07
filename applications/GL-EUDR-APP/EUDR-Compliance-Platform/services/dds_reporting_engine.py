@@ -117,8 +117,8 @@ class DDSReportingEngine:
     """Due Diligence Statement generation and lifecycle management.
 
     Manages the complete DDS lifecycle from generation through EU system
-    submission. Integrates with the supplier, document, and risk engines
-    to populate DDS sections.
+    submission. Integrates with the supplier, document, risk, and
+    supply chain mapper engines to populate DDS sections.
 
     Attributes:
         _config: Application configuration.
@@ -128,6 +128,7 @@ class DDSReportingEngine:
         _supplier_engine: SupplierIntakeEngine for supplier data (optional).
         _document_engine: DocumentVerificationEngine for docs (optional).
         _risk_engine: RiskAggregator for risk scores (optional).
+        _supply_chain_service: SupplyChainAppService for AGENT-EUDR-001 (optional).
 
     Example:
         >>> engine = DDSReportingEngine(config)
@@ -143,6 +144,7 @@ class DDSReportingEngine:
         supplier_engine: Optional[Any] = None,
         document_engine: Optional[Any] = None,
         risk_engine: Optional[Any] = None,
+        supply_chain_service: Optional[Any] = None,
     ) -> None:
         """Initialize DDSReportingEngine.
 
@@ -151,6 +153,8 @@ class DDSReportingEngine:
             supplier_engine: Optional SupplierIntakeEngine reference.
             document_engine: Optional DocumentVerificationEngine reference.
             risk_engine: Optional RiskAggregator reference.
+            supply_chain_service: Optional SupplyChainAppService for
+                AGENT-EUDR-001 supply chain mapping data.
         """
         self._config = config
         self._lock = threading.RLock()
@@ -159,6 +163,7 @@ class DDSReportingEngine:
         self._supplier_engine = supplier_engine
         self._document_engine = document_engine
         self._risk_engine = risk_engine
+        self._supply_chain_service = supply_chain_service
         logger.info("DDSReportingEngine initialized")
 
     # -----------------------------------------------------------------------
@@ -271,6 +276,16 @@ class DDSReportingEngine:
         # Gather linked documents
         documents = self._gather_documents(supplier_id, plots)
 
+        # Build supply chain section from AGENT-EUDR-001 (if available)
+        supply_chain_section = self._build_supply_chain_section(
+            supplier_id, plots, commodity_enum
+        )
+        supply_chain_graph_id = (
+            supply_chain_section.get("graph_id")
+            if supply_chain_section
+            else None
+        )
+
         dds = DueDiligenceStatement(
             reference_number=reference_number,
             supplier_id=supplier_id,
@@ -288,6 +303,8 @@ class DDSReportingEngine:
             mitigation_measures=mitigation_measures,
             documents=documents,
             conclusion=conclusion,
+            supply_chain_section=supply_chain_section,
+            supply_chain_graph_id=supply_chain_graph_id,
         )
 
         with self._lock:
@@ -952,6 +969,199 @@ class DDSReportingEngine:
             "by_status": by_status,
             "by_commodity": by_commodity,
         }
+
+    # -----------------------------------------------------------------------
+    # Supply Chain Service Setter
+    # -----------------------------------------------------------------------
+
+    def set_supply_chain_service(self, service: Any) -> None:
+        """Inject or update the SupplyChainAppService reference.
+
+        Used during startup to wire the supply chain service into the
+        DDS engine after both are initialized.
+
+        Args:
+            service: SupplyChainAppService instance.
+        """
+        self._supply_chain_service = service
+        logger.info("DDSReportingEngine: Supply chain service connected")
+
+    # -----------------------------------------------------------------------
+    # Supply Chain Section Builder
+    # -----------------------------------------------------------------------
+
+    def _build_supply_chain_section(
+        self,
+        supplier_id: str,
+        plot_ids: List[str],
+        commodity: EUDRCommodity,
+    ) -> Optional[Dict[str, Any]]:
+        """Build the supply chain section for a DDS using AGENT-EUDR-001.
+
+        Calls the RegulatoryExporter via the SupplyChainAppService to
+        produce a DDS-compatible supply chain summary per EUDR Article
+        4(2). If the supply chain service is not available, returns None
+        and the DDS proceeds without a supply chain section.
+
+        The section includes:
+            - supply_chain_summary: node/edge counts, tier depth,
+              traceability score, gap count
+            - supply_chain_nodes: list of supply chain nodes with
+              role, country, and risk classification
+            - geolocation_references: plot geolocation data linked
+              from AGENT-DATA-005
+
+        Args:
+            supplier_id: Supplier the DDS covers.
+            plot_ids: Plot IDs included in the DDS.
+            commodity: Commodity covered by the DDS.
+
+        Returns:
+            Supply chain section dictionary for the DDS, or None if
+            the supply chain service is unavailable.
+        """
+        if self._supply_chain_service is None:
+            logger.debug(
+                "Supply chain service not available; "
+                "DDS will not include supply chain section"
+            )
+            return None
+
+        try:
+            # Attempt to find an existing graph for this supplier
+            scm_svc = self._supply_chain_service
+            if not scm_svc.is_initialized:
+                logger.debug(
+                    "Supply chain service not initialized; "
+                    "skipping supply chain section"
+                )
+                return None
+
+            # Try to get the underlying SCM service
+            inner_svc = scm_svc.scm_service
+            exporter = inner_svc.regulatory_exporter
+
+            if exporter is None:
+                logger.debug(
+                    "RegulatoryExporter not available; "
+                    "skipping supply chain section"
+                )
+                return None
+
+            # Look up graph for this supplier via graph engine
+            graph_engine = inner_svc.graph_engine
+            if graph_engine is None:
+                logger.debug(
+                    "Graph engine not available; "
+                    "skipping supply chain section"
+                )
+                return None
+
+            # Search for a graph associated with this supplier
+            graph = None
+            graph_id = None
+            if hasattr(graph_engine, "find_graph_by_supplier"):
+                graph = graph_engine.find_graph_by_supplier(supplier_id)
+            elif hasattr(graph_engine, "list_graphs"):
+                graphs = graph_engine.list_graphs()
+                for g in graphs:
+                    g_supplier = getattr(g, "supplier_id", None)
+                    if g_supplier == supplier_id:
+                        graph = g
+                        break
+
+            if graph is None:
+                logger.info(
+                    "No supply chain graph found for supplier %s; "
+                    "DDS supply chain section will be empty",
+                    supplier_id,
+                )
+                return {
+                    "graph_id": None,
+                    "status": "no_graph",
+                    "message": (
+                        "No supply chain graph available for this supplier. "
+                        "Create a supply chain mapping to include this section."
+                    ),
+                    "commodity": commodity.value,
+                    "supplier_id": supplier_id,
+                }
+
+            graph_id = getattr(graph, "graph_id", None) or getattr(
+                graph, "id", None
+            )
+
+            # Export DDS section via RegulatoryExporter
+            dds_data = exporter.export_dds_json(graph=graph)
+
+            # Build the section
+            section: Dict[str, Any] = {
+                "graph_id": graph_id,
+                "status": "available",
+                "commodity": commodity.value,
+                "supplier_id": supplier_id,
+            }
+
+            # Extract supply chain summary from export
+            if hasattr(dds_data, "model_dump"):
+                export_dict = dds_data.model_dump(mode="json")
+            elif isinstance(dds_data, dict):
+                export_dict = dds_data
+            else:
+                export_dict = {}
+
+            section["supply_chain_summary"] = export_dict.get(
+                "supply_chain_summary", {}
+            )
+            section["supply_chain_nodes"] = export_dict.get(
+                "supply_chain_nodes", []
+            )
+            section["traceability"] = export_dict.get("traceability", {})
+            section["provenance"] = export_dict.get("provenance", {})
+
+            # Link plot geolocation from AGENT-DATA-005
+            geo_linker = inner_svc.geolocation_linker
+            if geo_linker is not None and plot_ids:
+                try:
+                    geo_refs = []
+                    for plot_id in plot_ids:
+                        geo = geo_linker.get_plot_geolocation(plot_id)
+                        if geo is not None:
+                            geo_entry = (
+                                geo.model_dump(mode="json")
+                                if hasattr(geo, "model_dump")
+                                else geo
+                            )
+                            geo_refs.append(geo_entry)
+                    section["geolocation_references"] = geo_refs
+                except Exception as geo_exc:
+                    logger.warning(
+                        "Failed to link geolocation data: %s", geo_exc
+                    )
+                    section["geolocation_references"] = []
+            else:
+                section["geolocation_references"] = []
+
+            # Compute provenance hash
+            section["provenance_hash"] = _compute_hash(section)
+
+            logger.info(
+                "Supply chain section built for DDS: "
+                "supplier=%s, graph_id=%s, nodes=%d",
+                supplier_id,
+                graph_id,
+                len(section.get("supply_chain_nodes", [])),
+            )
+            return section
+
+        except Exception as exc:
+            logger.warning(
+                "Failed to build supply chain section for DDS "
+                "(supplier=%s): %s. DDS will proceed without it.",
+                supplier_id,
+                exc,
+            )
+            return None
 
     # -----------------------------------------------------------------------
     # Private Helpers

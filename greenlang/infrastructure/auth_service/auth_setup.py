@@ -538,6 +538,69 @@ except ImportError:
     TAXONOMY_APP_AVAILABLE = False
     _taxonomy_router = None
 
+# EUDR Supply Chain Mapper imports (AGENT-EUDR-001)
+try:
+    from greenlang.agents.eudr.supply_chain_mapper.api.router import get_router as get_eudr_scm_router
+    _eudr_scm_router = get_eudr_scm_router()
+    EUDR_SUPPLY_CHAIN_MAPPER_AVAILABLE = True
+except ImportError:
+    EUDR_SUPPLY_CHAIN_MAPPER_AVAILABLE = False
+    _eudr_scm_router = None
+
+# EUDR Geolocation Verification imports (AGENT-EUDR-002)
+try:
+    from greenlang.agents.eudr.geolocation_verification.api.router import get_router as get_eudr_geo_router
+    _eudr_geo_router = get_eudr_geo_router()
+    EUDR_GEOLOCATION_VERIFICATION_AVAILABLE = True
+except ImportError:
+    EUDR_GEOLOCATION_VERIFICATION_AVAILABLE = False
+    _eudr_geo_router = None
+
+# EUDR Satellite Monitoring imports (AGENT-EUDR-003)
+try:
+    from greenlang.agents.eudr.satellite_monitoring.api.router import get_router as get_eudr_sat_router
+    _eudr_sat_router = get_eudr_sat_router()
+    EUDR_SATELLITE_MONITORING_AVAILABLE = True
+except ImportError:
+    EUDR_SATELLITE_MONITORING_AVAILABLE = False
+    _eudr_sat_router = None
+
+# EUDR Forest Cover Analysis imports (AGENT-EUDR-004)
+try:
+    from greenlang.agents.eudr.forest_cover_analysis.api.router import get_router as get_eudr_fca_router
+    _eudr_fca_router = get_eudr_fca_router()
+    EUDR_FOREST_COVER_ANALYSIS_AVAILABLE = True
+except ImportError:
+    EUDR_FOREST_COVER_ANALYSIS_AVAILABLE = False
+    _eudr_fca_router = None
+
+# EUDR Land Use Change Detector imports (AGENT-EUDR-005)
+try:
+    from greenlang.agents.eudr.land_use_change.api.router import get_router as get_eudr_luc_router
+    _eudr_luc_router = get_eudr_luc_router()
+    EUDR_LAND_USE_CHANGE_AVAILABLE = True
+except ImportError:
+    EUDR_LAND_USE_CHANGE_AVAILABLE = False
+    _eudr_luc_router = None
+
+# EUDR Plot Boundary Manager imports (AGENT-EUDR-006)
+try:
+    from greenlang.agents.eudr.plot_boundary.api.router import get_router as get_eudr_pbm_router
+    _eudr_pbm_router = get_eudr_pbm_router()
+    EUDR_PLOT_BOUNDARY_AVAILABLE = True
+except ImportError:
+    EUDR_PLOT_BOUNDARY_AVAILABLE = False
+    _eudr_pbm_router = None
+
+# EUDR GPS Coordinate Validator imports (AGENT-EUDR-007)
+try:
+    from greenlang.agents.eudr.gps_coordinate_validator.api.router import get_router as get_eudr_gcv_router
+    _eudr_gcv_router = get_eudr_gcv_router()
+    EUDR_GPS_COORDINATE_AVAILABLE = True
+except ImportError:
+    EUDR_GPS_COORDINATE_AVAILABLE = False
+    _eudr_gcv_router = None
+
 
 def configure_auth(
     app: "FastAPI",
@@ -1168,6 +1231,83 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("EU Taxonomy Alignment Platform router included (GL-Taxonomy-APP)")
     else:
         logger.debug("EU Taxonomy Alignment Platform not available; skipping")
+
+    # EUDR Supply Chain Mapper router (AGENT-EUDR-001)
+    if EUDR_SUPPLY_CHAIN_MAPPER_AVAILABLE and _eudr_scm_router is not None:
+        app.include_router(
+            _eudr_scm_router,
+            prefix="/api",
+            tags=["eudr-supply-chain-mapper"],
+        )
+        logger.info("EUDR Supply Chain Mapper router included (AGENT-EUDR-001)")
+    else:
+        logger.debug("EUDR Supply Chain Mapper router not available; skipping")
+
+    # EUDR Geolocation Verification router (AGENT-EUDR-002)
+    if EUDR_GEOLOCATION_VERIFICATION_AVAILABLE and _eudr_geo_router is not None:
+        app.include_router(
+            _eudr_geo_router,
+            prefix="/api",
+            tags=["eudr-geolocation-verification"],
+        )
+        logger.info("EUDR Geolocation Verification router included (AGENT-EUDR-002)")
+    else:
+        logger.debug("EUDR Geolocation Verification router not available; skipping")
+
+    # EUDR Satellite Monitoring router (AGENT-EUDR-003)
+    if EUDR_SATELLITE_MONITORING_AVAILABLE and _eudr_sat_router is not None:
+        app.include_router(
+            _eudr_sat_router,
+            prefix="/api",
+            tags=["eudr-satellite-monitoring"],
+        )
+        logger.info("EUDR Satellite Monitoring router included (AGENT-EUDR-003)")
+    else:
+        logger.debug("EUDR Satellite Monitoring router not available; skipping")
+
+    # EUDR Forest Cover Analysis router (AGENT-EUDR-004)
+    if EUDR_FOREST_COVER_ANALYSIS_AVAILABLE and _eudr_fca_router is not None:
+        app.include_router(
+            _eudr_fca_router,
+            prefix="/api",
+            tags=["eudr-forest-cover-analysis"],
+        )
+        logger.info("EUDR Forest Cover Analysis router included (AGENT-EUDR-004)")
+    else:
+        logger.debug("EUDR Forest Cover Analysis router not available; skipping")
+
+    # EUDR Land Use Change Detector router (AGENT-EUDR-005)
+    if EUDR_LAND_USE_CHANGE_AVAILABLE and _eudr_luc_router is not None:
+        app.include_router(
+            _eudr_luc_router,
+            prefix="/api",
+            tags=["eudr-land-use-change"],
+        )
+        logger.info("EUDR Land Use Change Detector router included (AGENT-EUDR-005)")
+    else:
+        logger.debug("EUDR Land Use Change Detector router not available; skipping")
+
+    # EUDR Plot Boundary Manager router (AGENT-EUDR-006)
+    if EUDR_PLOT_BOUNDARY_AVAILABLE and _eudr_pbm_router is not None:
+        app.include_router(
+            _eudr_pbm_router,
+            prefix="/api",
+            tags=["eudr-plot-boundary"],
+        )
+        logger.info("EUDR Plot Boundary Manager router included (AGENT-EUDR-006)")
+    else:
+        logger.debug("EUDR Plot Boundary Manager router not available; skipping")
+
+    # EUDR GPS Coordinate Validator router (AGENT-EUDR-007)
+    if EUDR_GPS_COORDINATE_AVAILABLE and _eudr_gcv_router is not None:
+        app.include_router(
+            _eudr_gcv_router,
+            prefix="/api",
+            tags=["eudr-gps-coordinate-validator"],
+        )
+        logger.info("EUDR GPS Coordinate Validator router included (AGENT-EUDR-007)")
+    else:
+        logger.debug("EUDR GPS Coordinate Validator router not available; skipping")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

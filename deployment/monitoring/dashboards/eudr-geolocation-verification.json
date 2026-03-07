@@ -1,0 +1,268 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "AGENT-EUDR-002: Geolocation Verification Agent - Monitoring Dashboard",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Avg Accuracy Score",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "gl_eudr_geo_avg_accuracy_score",
+          "legendFormat": "Avg Score"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Active Batch Jobs",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "gl_eudr_geo_active_batch_jobs",
+          "legendFormat": "Active Jobs"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "title": "Plots Verified (24h)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "increase(gl_eudr_geo_plots_verified_total[24h])",
+          "legendFormat": "Plots Verified"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "title": "Issues Detected (24h)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "increase(gl_eudr_geo_issues_detected_total[24h])",
+          "legendFormat": "Issues"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "id": 10,
+      "title": "Verification Operations",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+      "id": 11,
+      "title": "Verification Rate (per minute)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_geo_coordinates_validated_total[5m]) * 60",
+          "legendFormat": "Coordinates"
+        },
+        {
+          "expr": "rate(gl_eudr_geo_polygons_verified_total[5m]) * 60",
+          "legendFormat": "Polygons"
+        },
+        {
+          "expr": "rate(gl_eudr_geo_protected_area_checks_total[5m]) * 60",
+          "legendFormat": "Protected Areas"
+        },
+        {
+          "expr": "rate(gl_eudr_geo_deforestation_checks_total[5m]) * 60",
+          "legendFormat": "Deforestation"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+      "id": 12,
+      "title": "Verification Latency (p99)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(gl_eudr_geo_verification_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99 Latency"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(gl_eudr_geo_verification_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95 Latency"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(gl_eudr_geo_verification_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50 Latency"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 20,
+      "title": "Batch Processing",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 21,
+      "title": "Batch Jobs (Rate)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_geo_batch_jobs_total[5m]) * 60",
+          "legendFormat": "Jobs Submitted"
+        },
+        {
+          "expr": "rate(gl_eudr_geo_batch_plots_processed_total[5m]) * 60",
+          "legendFormat": "Plots Processed"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 22,
+      "title": "Batch Duration (p99)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(gl_eudr_geo_batch_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99 Duration"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 30,
+      "title": "Issues & Errors",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "id": 31,
+      "title": "Issues by Type (Rate)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_geo_issues_detected_total[5m]) * 60",
+          "legendFormat": "{{type}} - {{severity}}"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "id": 32,
+      "title": "Errors by Operation",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_geo_errors_total[5m]) * 60",
+          "legendFormat": "{{operation}}"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "id": 40,
+      "title": "Compliance & Scoring",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 34 },
+      "id": 41,
+      "title": "Scores Calculated & Reports Generated",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gl_eudr_geo_scores_calculated_total[5m]) * 60",
+          "legendFormat": "Scores Calculated"
+        },
+        {
+          "expr": "rate(gl_eudr_geo_compliance_reports_total[5m]) * 60",
+          "legendFormat": "Reports Generated"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 34 },
+      "id": 42,
+      "title": "Average Accuracy Score (Trend)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "gl_eudr_geo_avg_accuracy_score",
+          "legendFormat": "Avg GAS Score"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "geolocation", "verification", "agent-eudr-002"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "AGENT-EUDR-002: Geolocation Verification",
+  "uid": "eudr-geo-verification",
+  "version": 1
+}

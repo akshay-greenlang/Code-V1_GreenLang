@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
 """
 API Routes for GL-EUDR-APP v1.0
 
 EU Deforestation Regulation (EUDR) Compliance Platform REST API.
 Implements FastAPI routers for supplier management, plot tracking,
 due diligence statements, document handling, pipeline orchestration,
-risk assessment, dashboard metrics, and application settings.
+risk assessment, dashboard metrics, application settings, and
+supply chain mapping (AGENT-EUDR-001).
 
 Built on GreenLang standard patterns: Pydantic validation, structured
 error responses, pagination, and audit-ready logging.

@@ -1902,6 +1902,279 @@ PERMISSION_MAP: Dict[str, str] = {
     "PUT:/api/v1/taxonomy/settings/{org_id}/thresholds": "taxonomy-settings:write",
     "GET:/api/v1/taxonomy/settings/{org_id}/mrv-mapping": "taxonomy-settings:read",
     "PUT:/api/v1/taxonomy/settings/{org_id}/mrv-mapping": "taxonomy-settings:write",
+    # ==========================================================================
+    # EUDR Supply Chain Mapper routes (/api/v1/eudr-scm) - AGENT-EUDR-001
+    # ==========================================================================
+    # Graph management (Feature 1)
+    "POST:/api/v1/eudr-scm/graphs": "eudr-supply-chain:write",
+    "GET:/api/v1/eudr-scm/graphs": "eudr-supply-chain:read",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}": "eudr-supply-chain:read",
+    "DELETE:/api/v1/eudr-scm/graphs/{graph_id}": "eudr-supply-chain:delete",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/export": "eudr-supply-chain:export",
+    # Multi-tier discovery (Feature 2)
+    "POST:/api/v1/eudr-scm/graphs/{graph_id}/discover": "eudr-supply-chain:map",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/tiers": "eudr-supply-chain:read",
+    # Batch traceability (Feature 4)
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/trace/forward/{node_id}": "eudr-supply-chain:read",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/trace/backward/{node_id}": "eudr-supply-chain:read",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/trace/batch/{batch_id}": "eudr-supply-chain:read",
+    # Risk propagation (Feature 5)
+    "POST:/api/v1/eudr-scm/graphs/{graph_id}/risk/propagate": "eudr-supply-chain:analyze",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/risk/summary": "eudr-supply-chain:read",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/risk/heatmap": "eudr-supply-chain:read",
+    # Gap analysis (Feature 6)
+    "POST:/api/v1/eudr-scm/graphs/{graph_id}/gaps/analyze": "eudr-supply-chain:analyze",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/gaps": "eudr-supply-chain:read",
+    "PUT:/api/v1/eudr-scm/graphs/{graph_id}/gaps/{gap_id}/resolve": "eudr-supply-chain:write",
+    # Visualization (Feature 7)
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/layout": "eudr-supply-chain:read",
+    "GET:/api/v1/eudr-scm/graphs/{graph_id}/sankey": "eudr-supply-chain:read",
+    # Supplier onboarding (Feature 9)
+    "POST:/api/v1/eudr-scm/onboarding/invite": "eudr-supply-chain:write",
+    "GET:/api/v1/eudr-scm/onboarding/{token}": "eudr-supply-chain:read",
+    "POST:/api/v1/eudr-scm/onboarding/{token}/submit": "eudr-supply-chain:write",
+    # Health check (no auth required but mapped for completeness)
+    "GET:/api/v1/eudr-scm/health": "eudr-supply-chain:read",
+    # ---- EUDR Geolocation Verification routes (/api/v1/verify) - AGENT-EUDR-002 ----
+    # Coordinate validation
+    "POST:/api/v1/verify/coordinates": "eudr-geo:coordinates:verify",
+    "POST:/api/v1/verify/coordinates/batch": "eudr-geo:coordinates:verify",
+    # Polygon verification
+    "POST:/api/v1/verify/polygon": "eudr-geo:polygon:verify",
+    "POST:/api/v1/verify/polygon/repair": "eudr-geo:polygon:repair",
+    # Protected area screening
+    "POST:/api/v1/verify/protected-areas": "eudr-geo:protected-areas:check",
+    "GET:/api/v1/verify/protected-areas/nearby": "eudr-geo:protected-areas:check",
+    # Deforestation verification
+    "POST:/api/v1/verify/deforestation": "eudr-geo:deforestation:verify",
+    "GET:/api/v1/verify/deforestation/{plot_id}/evidence": "eudr-geo:deforestation:verify",
+    # Full plot verification
+    "POST:/api/v1/verify/plot": "eudr-geo:plots:verify",
+    "GET:/api/v1/verify/plot/{plot_id}": "eudr-geo:plots:read",
+    "GET:/api/v1/verify/plot/{plot_id}/history": "eudr-geo:plots:read",
+    # Batch verification
+    "POST:/api/v1/verify/batch": "eudr-geo:batch:submit",
+    "GET:/api/v1/verify/batch/{batch_id}": "eudr-geo:batch:read",
+    "GET:/api/v1/verify/batch/{batch_id}/progress": "eudr-geo:batch:read",
+    "DELETE:/api/v1/verify/batch/{batch_id}": "eudr-geo:batch:cancel",
+    # Accuracy scoring
+    "GET:/api/v1/scores/{plot_id}": "eudr-geo:scores:read",
+    "GET:/api/v1/scores/{plot_id}/history": "eudr-geo:scores:read",
+    "GET:/api/v1/scores/summary": "eudr-geo:scores:read",
+    "PUT:/api/v1/scores/weights": "eudr-geo:scores:configure",
+    # Compliance reporting
+    "POST:/api/v1/compliance/report": "eudr-geo:compliance:generate",
+    "GET:/api/v1/compliance/report/{report_id}": "eudr-geo:compliance:read",
+    "GET:/api/v1/compliance/summary": "eudr-geo:compliance:read",
+    # Health check
+    "GET:/api/v1/eudr-geo/health": "eudr-geo:plots:read",
+
+    # ── AGENT-EUDR-003: Satellite Monitoring ──────────────────────────────
+    # Imagery
+    "POST:/api/v1/eudr-sat/imagery/search": "eudr-sat:imagery:search",
+    "POST:/api/v1/eudr-sat/imagery/download": "eudr-sat:imagery:download",
+    "GET:/api/v1/eudr-sat/imagery/{scene_id}": "eudr-sat:imagery:read",
+    "GET:/api/v1/eudr-sat/imagery/availability": "eudr-sat:imagery:read",
+    # Analysis
+    "POST:/api/v1/eudr-sat/analysis/ndvi": "eudr-sat:analysis:create",
+    "POST:/api/v1/eudr-sat/analysis/baseline": "eudr-sat:baseline:create",
+    "GET:/api/v1/eudr-sat/analysis/baseline/{plot_id}": "eudr-sat:baseline:read",
+    "POST:/api/v1/eudr-sat/analysis/change-detect": "eudr-sat:analysis:create",
+    "POST:/api/v1/eudr-sat/analysis/fusion": "eudr-sat:analysis:create",
+    "GET:/api/v1/eudr-sat/analysis/history/{plot_id}": "eudr-sat:analysis:read",
+    # Monitoring
+    "POST:/api/v1/eudr-sat/monitoring/schedule": "eudr-sat:monitoring:create",
+    "GET:/api/v1/eudr-sat/monitoring/schedule/{schedule_id}": "eudr-sat:monitoring:read",
+    "PUT:/api/v1/eudr-sat/monitoring/schedule/{schedule_id}": "eudr-sat:monitoring:update",
+    "DELETE:/api/v1/eudr-sat/monitoring/schedule/{schedule_id}": "eudr-sat:monitoring:delete",
+    "GET:/api/v1/eudr-sat/monitoring/results/{plot_id}": "eudr-sat:monitoring:read",
+    "POST:/api/v1/eudr-sat/monitoring/execute": "eudr-sat:monitoring:create",
+    # Alerts
+    "GET:/api/v1/eudr-sat/alerts": "eudr-sat:alerts:read",
+    "GET:/api/v1/eudr-sat/alerts/{alert_id}": "eudr-sat:alerts:read",
+    "PUT:/api/v1/eudr-sat/alerts/{alert_id}/acknowledge": "eudr-sat:alerts:acknowledge",
+    "GET:/api/v1/eudr-sat/alerts/summary": "eudr-sat:alerts:read",
+    # Evidence
+    "POST:/api/v1/eudr-sat/evidence/package": "eudr-sat:evidence:create",
+    "GET:/api/v1/eudr-sat/evidence/{package_id}": "eudr-sat:evidence:read",
+    "GET:/api/v1/eudr-sat/evidence/{package_id}/download": "eudr-sat:evidence:download",
+    # Batch
+    "POST:/api/v1/eudr-sat/batch": "eudr-sat:analysis:create",
+    "GET:/api/v1/eudr-sat/batch/{batch_id}": "eudr-sat:analysis:read",
+    "GET:/api/v1/eudr-sat/batch/{batch_id}/progress": "eudr-sat:analysis:read",
+    "DELETE:/api/v1/eudr-sat/batch/{batch_id}": "eudr-sat:analysis:create",
+    # Health
+    "GET:/api/v1/eudr-sat/health": "eudr-sat:imagery:read",
+    # -----------------------------------------------------------------------
+    # EUDR Forest Cover Analysis routes (AGENT-EUDR-004)
+    # -----------------------------------------------------------------------
+    # Canopy density
+    "POST:/api/v1/eudr-fca/density/analyze": "eudr-fca:density:analyze",
+    "POST:/api/v1/eudr-fca/density/batch": "eudr-fca:density:batch",
+    "GET:/api/v1/eudr-fca/density/{plot_id}": "eudr-fca:read",
+    "GET:/api/v1/eudr-fca/density/{plot_id}/history": "eudr-fca:read",
+    "POST:/api/v1/eudr-fca/density/compare": "eudr-fca:density:analyze",
+    # Classification
+    "POST:/api/v1/eudr-fca/classify": "eudr-fca:classify:run",
+    "POST:/api/v1/eudr-fca/classify/batch": "eudr-fca:classify:batch",
+    "GET:/api/v1/eudr-fca/classify/{plot_id}": "eudr-fca:read",
+    "GET:/api/v1/eudr-fca/classify/types": "eudr-fca:read",
+    # Historical reconstruction
+    "POST:/api/v1/eudr-fca/historical/reconstruct": "eudr-fca:historical:reconstruct",
+    "POST:/api/v1/eudr-fca/historical/batch": "eudr-fca:historical:reconstruct",
+    "GET:/api/v1/eudr-fca/historical/{plot_id}": "eudr-fca:read",
+    "POST:/api/v1/eudr-fca/historical/compare": "eudr-fca:historical:compare",
+    "GET:/api/v1/eudr-fca/historical/{plot_id}/sources": "eudr-fca:read",
+    # Verification
+    "POST:/api/v1/eudr-fca/verify": "eudr-fca:verify:single",
+    "POST:/api/v1/eudr-fca/verify/batch": "eudr-fca:verify:batch",
+    "GET:/api/v1/eudr-fca/verify/{plot_id}": "eudr-fca:read",
+    "GET:/api/v1/eudr-fca/verify/{plot_id}/evidence": "eudr-fca:read",
+    "POST:/api/v1/eudr-fca/verify/complete": "eudr-fca:verify:single",
+    # Analysis (height, fragmentation, biomass)
+    "POST:/api/v1/eudr-fca/analysis/height": "eudr-fca:height:estimate",
+    "POST:/api/v1/eudr-fca/analysis/fragmentation": "eudr-fca:fragmentation:analyze",
+    "POST:/api/v1/eudr-fca/analysis/biomass": "eudr-fca:biomass:estimate",
+    "GET:/api/v1/eudr-fca/analysis/{plot_id}/profile": "eudr-fca:read",
+    "POST:/api/v1/eudr-fca/analysis/compare": "eudr-fca:read",
+    # Reports
+    "POST:/api/v1/eudr-fca/reports/generate": "eudr-fca:reports:generate",
+    "GET:/api/v1/eudr-fca/reports/{report_id}": "eudr-fca:reports:download",
+    "GET:/api/v1/eudr-fca/reports/{report_id}/download": "eudr-fca:reports:download",
+    "POST:/api/v1/eudr-fca/reports/batch": "eudr-fca:reports:generate",
+    # Batch
+    "POST:/api/v1/eudr-fca/batch": "eudr-fca:batch:submit",
+    "DELETE:/api/v1/eudr-fca/batch/{batch_id}": "eudr-fca:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-fca/health": "eudr-fca:read",
+
+    # EUDR Land Use Change Detector routes (AGENT-EUDR-005)
+    # Classification (5 routes)
+    "POST:/api/v1/eudr-luc/classify": "eudr-luc:classify:run",
+    "POST:/api/v1/eudr-luc/classify/batch": "eudr-luc:classify:batch",
+    "GET:/api/v1/eudr-luc/classify/{plot_id}": "eudr-luc:read",
+    "GET:/api/v1/eudr-luc/classify/{plot_id}/history": "eudr-luc:read",
+    "POST:/api/v1/eudr-luc/classify/compare": "eudr-luc:classify:run",
+    # Transitions (5 routes)
+    "POST:/api/v1/eudr-luc/transitions/detect": "eudr-luc:transitions:detect",
+    "POST:/api/v1/eudr-luc/transitions/batch": "eudr-luc:transitions:batch",
+    "GET:/api/v1/eudr-luc/transitions/{plot_id}": "eudr-luc:read",
+    "POST:/api/v1/eudr-luc/transitions/matrix": "eudr-luc:transitions:detect",
+    "GET:/api/v1/eudr-luc/transitions/types": "eudr-luc:read",
+    # Trajectories (3 routes)
+    "POST:/api/v1/eudr-luc/trajectory/analyze": "eudr-luc:trajectory:analyze",
+    "POST:/api/v1/eudr-luc/trajectory/batch": "eudr-luc:trajectory:batch",
+    "GET:/api/v1/eudr-luc/trajectory/{plot_id}": "eudr-luc:read",
+    # Verification (5 routes)
+    "POST:/api/v1/eudr-luc/verify/cutoff": "eudr-luc:verify:cutoff",
+    "POST:/api/v1/eudr-luc/verify/batch": "eudr-luc:verify:batch",
+    "GET:/api/v1/eudr-luc/verify/{plot_id}": "eudr-luc:read",
+    "GET:/api/v1/eudr-luc/verify/{plot_id}/evidence": "eudr-luc:read",
+    "POST:/api/v1/eudr-luc/verify/complete": "eudr-luc:verify:cutoff",
+    # Risk & Urban (6 routes)
+    "POST:/api/v1/eudr-luc/risk/assess": "eudr-luc:risk:assess",
+    "POST:/api/v1/eudr-luc/risk/batch": "eudr-luc:risk:batch",
+    "GET:/api/v1/eudr-luc/risk/{plot_id}": "eudr-luc:read",
+    "POST:/api/v1/eudr-luc/urban/analyze": "eudr-luc:urban:analyze",
+    "POST:/api/v1/eudr-luc/urban/batch": "eudr-luc:urban:batch",
+    "GET:/api/v1/eudr-luc/urban/{plot_id}": "eudr-luc:read",
+    # Reports (4 routes)
+    "POST:/api/v1/eudr-luc/reports/generate": "eudr-luc:reports:generate",
+    "GET:/api/v1/eudr-luc/reports/{report_id}": "eudr-luc:reports:download",
+    "GET:/api/v1/eudr-luc/reports/{report_id}/download": "eudr-luc:reports:download",
+    "POST:/api/v1/eudr-luc/reports/batch": "eudr-luc:reports:generate",
+    # Batch
+    "POST:/api/v1/eudr-luc/batch": "eudr-luc:batch:submit",
+    "DELETE:/api/v1/eudr-luc/batch/{batch_id}": "eudr-luc:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-luc/health": "eudr-luc:read",
+
+    # EUDR Plot Boundary Manager routes (AGENT-EUDR-006)
+    # Boundary CRUD (6 routes)
+    "POST:/api/v1/eudr-pbm/boundaries": "eudr-pbm:write",
+    "GET:/api/v1/eudr-pbm/boundaries/{plot_id}": "eudr-pbm:read",
+    "PUT:/api/v1/eudr-pbm/boundaries/{plot_id}": "eudr-pbm:write",
+    "DELETE:/api/v1/eudr-pbm/boundaries/{plot_id}": "eudr-pbm:delete",
+    "POST:/api/v1/eudr-pbm/boundaries/batch": "eudr-pbm:batch:submit",
+    "POST:/api/v1/eudr-pbm/boundaries/search": "eudr-pbm:read",
+    # Validation (4 routes)
+    "POST:/api/v1/eudr-pbm/validate": "eudr-pbm:validate:run",
+    "POST:/api/v1/eudr-pbm/validate/batch": "eudr-pbm:validate:batch",
+    "POST:/api/v1/eudr-pbm/repair": "eudr-pbm:repair:run",
+    "POST:/api/v1/eudr-pbm/repair/batch": "eudr-pbm:repair:batch",
+    # Area (3 routes)
+    "POST:/api/v1/eudr-pbm/area/calculate": "eudr-pbm:area:calculate",
+    "POST:/api/v1/eudr-pbm/area/batch": "eudr-pbm:area:batch",
+    "POST:/api/v1/eudr-pbm/area/threshold": "eudr-pbm:area:calculate",
+    # Overlaps (4 routes)
+    "POST:/api/v1/eudr-pbm/overlaps/detect": "eudr-pbm:overlaps:detect",
+    "POST:/api/v1/eudr-pbm/overlaps/scan": "eudr-pbm:overlaps:scan",
+    "GET:/api/v1/eudr-pbm/overlaps/{plot_id}": "eudr-pbm:read",
+    "POST:/api/v1/eudr-pbm/overlaps/resolve": "eudr-pbm:overlaps:resolve",
+    # Versions (4 routes)
+    "GET:/api/v1/eudr-pbm/versions/{plot_id}": "eudr-pbm:read",
+    "GET:/api/v1/eudr-pbm/versions/{plot_id}/at": "eudr-pbm:read",
+    "GET:/api/v1/eudr-pbm/versions/{plot_id}/diff": "eudr-pbm:read",
+    "GET:/api/v1/eudr-pbm/versions/{plot_id}/lineage": "eudr-pbm:read",
+    # Export (6 routes)
+    "POST:/api/v1/eudr-pbm/export/geojson": "eudr-pbm:export:run",
+    "POST:/api/v1/eudr-pbm/export/kml": "eudr-pbm:export:run",
+    "POST:/api/v1/eudr-pbm/export/shapefile": "eudr-pbm:export:run",
+    "POST:/api/v1/eudr-pbm/export/eudr-xml": "eudr-pbm:export:run",
+    "POST:/api/v1/eudr-pbm/export/batch": "eudr-pbm:export:batch",
+    "GET:/api/v1/eudr-pbm/export/{export_id}": "eudr-pbm:export:download",
+    # Split/Merge (3 routes)
+    "POST:/api/v1/eudr-pbm/split": "eudr-pbm:split:run",
+    "POST:/api/v1/eudr-pbm/merge": "eudr-pbm:merge:run",
+    "GET:/api/v1/eudr-pbm/genealogy/{plot_id}": "eudr-pbm:read",
+    # Batch
+    "POST:/api/v1/eudr-pbm/batch": "eudr-pbm:batch:submit",
+    "DELETE:/api/v1/eudr-pbm/batch/{batch_id}": "eudr-pbm:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-pbm/health": "eudr-pbm:read",
+
+    # EUDR GPS Coordinate Validator routes (AGENT-EUDR-007)
+    # Parsing (4 routes)
+    "POST:/api/v1/eudr-gcv/parse": "eudr-gcv:parse:single",
+    "POST:/api/v1/eudr-gcv/parse/batch": "eudr-gcv:parse:batch",
+    "POST:/api/v1/eudr-gcv/parse/detect-format": "eudr-gcv:parse:detect",
+    "POST:/api/v1/eudr-gcv/parse/normalize": "eudr-gcv:parse:normalize",
+    # Validation (5 routes)
+    "POST:/api/v1/eudr-gcv/validate": "eudr-gcv:validate:single",
+    "POST:/api/v1/eudr-gcv/validate/batch": "eudr-gcv:validate:batch",
+    "POST:/api/v1/eudr-gcv/validate/range": "eudr-gcv:validate:single",
+    "POST:/api/v1/eudr-gcv/validate/swap-detect": "eudr-gcv:validate:swap",
+    "POST:/api/v1/eudr-gcv/validate/duplicates": "eudr-gcv:validate:duplicates",
+    # Plausibility (5 routes)
+    "POST:/api/v1/eudr-gcv/plausibility/check": "eudr-gcv:plausibility:check",
+    "POST:/api/v1/eudr-gcv/plausibility/land-ocean": "eudr-gcv:plausibility:land-ocean",
+    "POST:/api/v1/eudr-gcv/plausibility/country": "eudr-gcv:plausibility:country",
+    "POST:/api/v1/eudr-gcv/plausibility/commodity": "eudr-gcv:plausibility:commodity",
+    "POST:/api/v1/eudr-gcv/plausibility/elevation": "eudr-gcv:plausibility:elevation",
+    # Assessment (4 routes)
+    "POST:/api/v1/eudr-gcv/assess": "eudr-gcv:assess:single",
+    "POST:/api/v1/eudr-gcv/assess/batch": "eudr-gcv:assess:batch",
+    "GET:/api/v1/eudr-gcv/assess/{coord_id}": "eudr-gcv:read",
+    "POST:/api/v1/eudr-gcv/assess/precision": "eudr-gcv:assess:precision",
+    # Reporting (5 routes)
+    "POST:/api/v1/eudr-gcv/reports/compliance": "eudr-gcv:reports:generate",
+    "POST:/api/v1/eudr-gcv/reports/batch-summary": "eudr-gcv:reports:generate",
+    "POST:/api/v1/eudr-gcv/reports/remediation": "eudr-gcv:reports:generate",
+    "GET:/api/v1/eudr-gcv/reports/{report_id}": "eudr-gcv:reports:read",
+    "GET:/api/v1/eudr-gcv/reports/{report_id}/download": "eudr-gcv:reports:download",
+    # Reverse Geocoding (3 routes)
+    "POST:/api/v1/eudr-gcv/geocode/reverse": "eudr-gcv:geocode:reverse",
+    "POST:/api/v1/eudr-gcv/geocode/batch": "eudr-gcv:geocode:batch",
+    "POST:/api/v1/eudr-gcv/geocode/country": "eudr-gcv:geocode:country",
+    # Datum (3 routes)
+    "POST:/api/v1/eudr-gcv/datum/transform": "eudr-gcv:datum:transform",
+    "POST:/api/v1/eudr-gcv/datum/batch": "eudr-gcv:datum:batch",
+    "GET:/api/v1/eudr-gcv/datum/list": "eudr-gcv:read",
+    # Batch (2 routes)
+    "POST:/api/v1/eudr-gcv/batch": "eudr-gcv:batch:submit",
+    "DELETE:/api/v1/eudr-gcv/batch/{batch_id}": "eudr-gcv:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-gcv/health": "eudr-gcv:read",
 }
 
 

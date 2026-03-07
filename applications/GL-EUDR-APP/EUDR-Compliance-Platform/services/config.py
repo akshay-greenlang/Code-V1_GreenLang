@@ -357,6 +357,90 @@ class EUDRAppConfig(BaseSettings):
         description="Enable OpenTelemetry distributed tracing",
     )
 
+    # -----------------------------------------------------------------------
+    # Supply Chain Mapper (AGENT-EUDR-001) Integration
+    # -----------------------------------------------------------------------
+    scm_enabled: bool = Field(
+        default=True,
+        description="Enable AGENT-EUDR-001 Supply Chain Mapper integration",
+    )
+    scm_database_url: str = Field(
+        default="",
+        description=(
+            "PostgreSQL URL for the Supply Chain Mapper. "
+            "If empty, falls back to the main database_url."
+        ),
+    )
+    scm_redis_url: str = Field(
+        default="",
+        description=(
+            "Redis URL for the Supply Chain Mapper cache. "
+            "If empty, falls back to the main redis_url."
+        ),
+    )
+    scm_pool_size: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description="PostgreSQL connection pool size for the Supply Chain Mapper",
+    )
+    scm_cache_ttl: int = Field(
+        default=3600,
+        ge=60,
+        le=86400,
+        description="Cache TTL in seconds for supply chain graph queries",
+    )
+    scm_max_nodes_per_graph: int = Field(
+        default=100_000,
+        ge=1_000,
+        le=10_000_000,
+        description="Maximum nodes per supply chain graph",
+    )
+    scm_max_tier_depth: int = Field(
+        default=50,
+        ge=5,
+        le=1000,
+        description="Maximum tier depth for recursive supply chain discovery",
+    )
+    scm_risk_weight_country: float = Field(
+        default=0.30,
+        ge=0.0,
+        le=1.0,
+        description="Country risk weight for supply chain risk propagation",
+    )
+    scm_risk_weight_commodity: float = Field(
+        default=0.20,
+        ge=0.0,
+        le=1.0,
+        description="Commodity risk weight for supply chain risk propagation",
+    )
+    scm_risk_weight_supplier: float = Field(
+        default=0.25,
+        ge=0.0,
+        le=1.0,
+        description="Supplier risk weight for supply chain risk propagation",
+    )
+    scm_risk_weight_deforestation: float = Field(
+        default=0.25,
+        ge=0.0,
+        le=1.0,
+        description="Deforestation risk weight for supply chain risk propagation",
+    )
+    scm_rate_limit: int = Field(
+        default=1000,
+        ge=10,
+        le=10_000,
+        description="Maximum API requests per minute for supply chain mapper endpoints",
+    )
+    scm_enable_provenance: bool = Field(
+        default=True,
+        description="Enable SHA-256 provenance chain for supply chain mutations",
+    )
+    scm_route_prefix: str = Field(
+        default="/v1/supply-chain",
+        description="URL prefix for supply chain mapper API routes",
+    )
+
     model_config = {
         "env_prefix": "EUDR_APP_",
         "case_sensitive": False,

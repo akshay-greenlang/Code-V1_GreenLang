@@ -3,17 +3,20 @@
 GL-EUDR-APP Service Facade - EU Deforestation Regulation Compliance Platform
 
 Provides the ``EUDRComplianceService`` facade class that composes all five
-core engines into a single entry point for the EUDR compliance platform:
+core engines plus the AGENT-EUDR-001 supply chain mapper into a single
+entry point for the EUDR compliance platform:
 
 - SupplierIntakeEngine:         Supplier CRUD, bulk import, ERP normalization
 - DocumentVerificationEngine:   Document upload, OCR, verification, gap analysis
 - DDSReportingEngine:           DDS generation, validation, submission, lifecycle
 - RiskAggregator:               Multi-source risk scoring, alerts, heatmaps
 - PipelineOrchestrator:         5-stage compliance pipeline execution
+- SupplyChainAppService:        Supply chain mapping (AGENT-EUDR-001, 9 engines)
 
 Also provides:
 - ``configure_eudr_app(app)``:  FastAPI integration
 - ``get_eudr_service(app)``:    Retrieve service from app state
+- ``register_routes(app)``:     Register all API routers (core + SCM)
 - Dashboard metrics aggregation
 
 Example:
@@ -30,7 +33,7 @@ Example:
 
 Author: GreenLang Platform Team
 Date: March 2026
-Application: GL-EUDR-APP v1.0
+Application: GL-EUDR-APP v1.0 + AGENT-EUDR-001 Integration
 """
 
 from __future__ import annotations
@@ -70,9 +73,11 @@ def _utcnow() -> datetime:
 class EUDRComplianceService:
     """Facade for the GL-EUDR-APP compliance platform.
 
-    Composes all five core engines into a single service entry point.
-    Engines are cross-wired so the DDS engine can access supplier and
-    document data, and the risk aggregator can query both.
+    Composes all five core engines plus the AGENT-EUDR-001 supply chain
+    mapper into a single service entry point. Engines are cross-wired
+    so the DDS engine can access supplier, document, and supply chain
+    data, and the risk aggregator can query both supplier and document
+    engines.
 
     Attributes:
         config: Application configuration.
@@ -81,6 +86,7 @@ class EUDRComplianceService:
         document_engine: DocumentVerificationEngine for document management.
         dds_engine: DDSReportingEngine for DDS lifecycle.
         risk_engine: RiskAggregator for risk scoring.
+        supply_chain_service: SupplyChainAppService for AGENT-EUDR-001.
 
     Example:
         >>> service = EUDRComplianceService()
@@ -96,8 +102,12 @@ class EUDRComplianceService:
     ) -> None:
         """Initialize EUDRComplianceService with all engines.
 
-        Creates and cross-wires all five engines. If no config is
+        Creates and cross-wires all five core engines. If no config is
         provided, loads defaults from environment variables.
+
+        The AGENT-EUDR-001 SupplyChainAppService is created but NOT
+        initialized (async startup). Call ``initialize_supply_chain()``
+        during the app startup event to connect DB, Redis, and engines.
 
         Args:
             config: Optional application configuration. Defaults loaded
@@ -138,11 +148,91 @@ class EUDRComplianceService:
         # 5. Pipeline orchestrator (standalone, delegates to engines)
         self.pipeline = PipelineOrchestrator(self.config)
 
+        # 6. Supply Chain Mapper service (AGENT-EUDR-001)
+        #    Created here but async initialization must be called separately.
+        self.supply_chain_service: Optional[Any] = None
+        if self.config.scm_enabled:
+            try:
+                from services.supply_chain import SupplyChainAppService
+
+                self.supply_chain_service = SupplyChainAppService(
+                    config=self.config
+                )
+                logger.info(
+                    "SupplyChainAppService created (pending async init)"
+                )
+            except ImportError as exc:
+                logger.warning(
+                    "SupplyChainAppService not available: %s", exc
+                )
+                self.supply_chain_service = None
+
+        engine_count = 5 + (1 if self.supply_chain_service else 0)
         logger.info(
-            "EUDRComplianceService initialized with all 5 engines: "
+            "EUDRComplianceService initialized with %d components: "
             "SupplierIntake, DocumentVerification, RiskAggregator, "
-            "DDSReporting, PipelineOrchestrator"
+            "DDSReporting, PipelineOrchestrator%s",
+            engine_count,
+            ", SupplyChainMapper" if self.supply_chain_service else "",
         )
+
+    # -----------------------------------------------------------------------
+    # Supply Chain Lifecycle
+    # -----------------------------------------------------------------------
+
+    async def initialize_supply_chain(self) -> bool:
+        """Initialize the AGENT-EUDR-001 SupplyChainAppService.
+
+        Must be called during the async startup phase (e.g., FastAPI
+        lifespan or on_event("startup")). Connects DB, Redis, and
+        starts all 9 supply chain engines.
+
+        After initialization, the supply chain service is wired into
+        the DDS engine for automatic DDS supply chain section generation.
+
+        Returns:
+            True if initialization succeeded, False otherwise.
+        """
+        if self.supply_chain_service is None:
+            logger.info(
+                "Supply chain service not configured; skipping init"
+            )
+            return False
+
+        try:
+            await self.supply_chain_service.initialize()
+
+            # Wire supply chain service into DDS engine
+            self.dds_engine.set_supply_chain_service(
+                self.supply_chain_service
+            )
+
+            logger.info(
+                "Supply chain service initialized and wired to DDS engine"
+            )
+            return True
+
+        except Exception as exc:
+            logger.error(
+                "Failed to initialize supply chain service: %s",
+                exc,
+                exc_info=True,
+            )
+            return False
+
+    async def shutdown_supply_chain(self) -> None:
+        """Gracefully shut down the supply chain service.
+
+        Should be called during the async shutdown phase.
+        """
+        if self.supply_chain_service is not None:
+            try:
+                await self.supply_chain_service.shutdown()
+                logger.info("Supply chain service shut down")
+            except Exception as exc:
+                logger.error(
+                    "Error shutting down supply chain service: %s", exc
+                )
 
     # -----------------------------------------------------------------------
     # Dashboard Metrics
@@ -263,6 +353,14 @@ class EUDRComplianceService:
         Returns:
             Dictionary with engine status and version info.
         """
+        # Supply chain mapper status
+        scm_status = "disabled"
+        if self.supply_chain_service is not None:
+            if self.supply_chain_service.is_initialized:
+                scm_status = "healthy"
+            else:
+                scm_status = "not_initialized"
+
         return {
             "status": "healthy",
             "version": "1.0.0",
@@ -273,6 +371,7 @@ class EUDRComplianceService:
                 "dds_reporting": "ok",
                 "risk_aggregator": "ok",
                 "pipeline_orchestrator": "ok",
+                "supply_chain_mapper": scm_status,
             },
             "agents": {
                 "AGENT-DATA-005": {
@@ -285,6 +384,11 @@ class EUDRComplianceService:
                     "id": "GL-DATA-GEO-003",
                     "status": "available",
                 },
+                "AGENT-EUDR-001": {
+                    "name": "Supply Chain Mapping Master",
+                    "id": "GL-EUDR-SCM-001",
+                    "status": scm_status,
+                },
             },
             "config": {
                 "pipeline_max_concurrent": self.config.pipeline_max_concurrent,
@@ -292,6 +396,7 @@ class EUDRComplianceService:
                 "ndvi_threshold": self.config.ndvi_change_threshold,
                 "risk_threshold_high": self.config.risk_threshold_high,
                 "risk_threshold_critical": self.config.risk_threshold_critical,
+                "scm_enabled": self.config.scm_enabled,
             },
             "timestamp": _utcnow().isoformat(),
         }
@@ -328,8 +433,13 @@ _SERVICE_KEY = "eudr_compliance_service"
 def configure_eudr_app(app: Any) -> EUDRComplianceService:
     """Register the EUDR Compliance Service on a FastAPI application.
 
-    Creates the service, attaches it to ``app.state``, and logs
+    Creates the service, attaches it to ``app.state``, registers all
+    API routers (core + AGENT-EUDR-001 supply chain mapper), and logs
     the configuration.
+
+    NOTE: The supply chain mapper requires async initialization. Call
+    ``await service.initialize_supply_chain()`` during the FastAPI
+    startup event or lifespan context.
 
     Args:
         app: FastAPI application instance.
@@ -346,13 +456,85 @@ def configure_eudr_app(app: Any) -> EUDRComplianceService:
     service = EUDRComplianceService()
     setattr(app.state, _SERVICE_KEY, service)
 
+    # Register all routers (core platform + supply chain mapper)
+    try:
+        from services.api.routers import register_all_routers
+
+        route_summary = register_all_routers(
+            app,
+            scm_prefix=service.config.scm_route_prefix,
+            scm_enabled=service.config.scm_enabled,
+        )
+        logger.info(
+            "Routes registered: %s", route_summary
+        )
+    except ImportError:
+        logger.warning(
+            "Router registration module not available; "
+            "routes must be registered manually"
+        )
+
     logger.info(
         "EUDRComplianceService configured on FastAPI app: "
-        "pipeline_max_concurrent=%d, dds_auto_submit=%s",
+        "pipeline_max_concurrent=%d, dds_auto_submit=%s, "
+        "scm_enabled=%s",
         service.config.pipeline_max_concurrent,
         service.config.dds_auto_submit,
+        service.config.scm_enabled,
     )
     return service
+
+
+async def startup_eudr_app(app: Any) -> None:
+    """Async startup hook for the GL-EUDR-APP.
+
+    Initializes the AGENT-EUDR-001 SupplyChainMapperService, which
+    requires async operations for DB pool and Redis connections.
+
+    Should be called from FastAPI's startup event or lifespan context:
+
+        @app.on_event("startup")
+        async def on_startup():
+            await startup_eudr_app(app)
+
+    Args:
+        app: FastAPI application instance with EUDRComplianceService
+            already configured via ``configure_eudr_app(app)``.
+    """
+    service = get_eudr_service(app)
+    scm_ok = await service.initialize_supply_chain()
+    if scm_ok:
+        logger.info(
+            "GL-EUDR-APP async startup complete: "
+            "supply chain mapper initialized"
+        )
+    else:
+        logger.info(
+            "GL-EUDR-APP async startup complete: "
+            "supply chain mapper not available"
+        )
+
+
+async def shutdown_eudr_app(app: Any) -> None:
+    """Async shutdown hook for the GL-EUDR-APP.
+
+    Gracefully shuts down the AGENT-EUDR-001 SupplyChainMapperService.
+
+    Should be called from FastAPI's shutdown event or lifespan context:
+
+        @app.on_event("shutdown")
+        async def on_shutdown():
+            await shutdown_eudr_app(app)
+
+    Args:
+        app: FastAPI application instance.
+    """
+    try:
+        service = get_eudr_service(app)
+        await service.shutdown_supply_chain()
+        logger.info("GL-EUDR-APP async shutdown complete")
+    except RuntimeError:
+        pass  # Service was never configured
 
 
 def get_eudr_service(app: Any) -> EUDRComplianceService:

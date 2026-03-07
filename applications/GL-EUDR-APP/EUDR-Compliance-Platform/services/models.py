@@ -510,6 +510,18 @@ class DueDiligenceStatement(BaseModel):
     amendment_history: List[Dict[str, Any]] = Field(
         default_factory=list, description="Amendment history"
     )
+    supply_chain_section: Optional[Dict[str, Any]] = Field(
+        None,
+        description=(
+            "Supply chain mapping data from AGENT-EUDR-001 "
+            "RegulatoryExporter, including node list, tier depth, "
+            "traceability score, and gap counts per EUDR Article 4(2)."
+        ),
+    )
+    supply_chain_graph_id: Optional[str] = Field(
+        None,
+        description="Supply chain graph identifier linking to AGENT-EUDR-001",
+    )
     created_at: datetime = Field(default_factory=_utcnow, description="Created timestamp")
     updated_at: datetime = Field(default_factory=_utcnow, description="Updated timestamp")
 
