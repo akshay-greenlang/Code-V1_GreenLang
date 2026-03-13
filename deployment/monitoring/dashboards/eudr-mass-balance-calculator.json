@@ -1,0 +1,293 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-011: Mass Balance Calculator Agent -- ledger management, double-entry tracking, overdraft monitoring, conversion validation, loss recording, reconciliation, and consolidation reporting",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Active Ledgers",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mbc_active_ledgers)", "legendFormat": "Active" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1000,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 500 },
+              { "color": "red", "value": 900 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Total Balance (kg)",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mbc_current_balance_kg)", "legendFormat": "Balance" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "masskg",
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1000 },
+              { "color": "green", "value": 10000 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Entries / min",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_mbc_entries_recorded_total[5m])) * 60", "legendFormat": "Entries/min" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Entry Type Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mbc_entries_recorded_total{entry_type=\"input\"})", "legendFormat": "Input" },
+        { "expr": "sum(gl_eudr_mbc_entries_recorded_total{entry_type=\"output\"})", "legendFormat": "Output" },
+        { "expr": "sum(gl_eudr_mbc_entries_recorded_total{entry_type=\"loss\"})", "legendFormat": "Loss" },
+        { "expr": "sum(gl_eudr_mbc_entries_recorded_total{entry_type=\"waste\"})", "legendFormat": "Waste" },
+        { "expr": "sum(gl_eudr_mbc_entries_recorded_total{entry_type=\"adjustment\"})", "legendFormat": "Adjustment" },
+        { "expr": "sum(gl_eudr_mbc_entries_recorded_total{entry_type=\"carry_forward\"})", "legendFormat": "Carry Forward" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "title": "Overdraft Monitoring",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Overdraft Events Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_mbc_overdraft_events_total[5m])", "legendFormat": "Events/s" },
+        { "expr": "rate(gl_eudr_mbc_overdraft_resolved_total[5m])", "legendFormat": "Resolved/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Critical Overdrafts (Active)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mbc_overdraft_unresolved{severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_mbc_overdraft_unresolved{severity=\"high\"})", "legendFormat": "High" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Overdraft by Facility",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (facility_id) (increase(gl_eudr_mbc_overdraft_events_total[1h]))", "legendFormat": "{{facility_id}}" }
+      ]
+    },
+    {
+      "title": "Overdraft Resolution Time (p50/p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 15, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_mbc_overdraft_resolution_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_mbc_overdraft_resolution_duration_seconds_bucket[5m]))", "legendFormat": "p95" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Balance vs Threshold",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_mbc_current_balance_kg", "legendFormat": "Balance {{facility_id}}" },
+        { "expr": "gl_eudr_mbc_overdraft_threshold_kg", "legendFormat": "Threshold {{facility_id}}" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "masskg" } }
+    },
+    {
+      "title": "Operations",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Conversion Validations / Rejections",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_mbc_conversion_validations_total{status=\"approved\"}[5m])", "legendFormat": "Approved/s" },
+        { "expr": "rate(gl_eudr_mbc_conversion_validations_total{status=\"rejected\"}[5m])", "legendFormat": "Rejected/s" },
+        { "expr": "rate(gl_eudr_mbc_conversion_validations_total{status=\"pending\"}[5m])", "legendFormat": "Pending/s" }
+      ]
+    },
+    {
+      "title": "Loss Recording Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_mbc_loss_records_total[5m])", "legendFormat": "Losses/s" },
+        { "expr": "rate(gl_eudr_mbc_loss_records_total{within_tolerance=\"false\"}[5m])", "legendFormat": "Out of Tolerance/s" }
+      ]
+    },
+    {
+      "title": "Carry-Forward Status",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mbc_carry_forwards{status=\"active\"})", "legendFormat": "Active" },
+        { "expr": "sum(gl_eudr_mbc_carry_forwards{status=\"utilized\"})", "legendFormat": "Utilized" },
+        { "expr": "sum(gl_eudr_mbc_carry_forwards{status=\"expired\"})", "legendFormat": "Expired" },
+        { "expr": "sum(gl_eudr_mbc_carry_forwards{status=\"cancelled\"})", "legendFormat": "Cancelled" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "title": "Reconciliation Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 15, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_mbc_reconciliations_total[5m])", "legendFormat": "Reconciliations/s" },
+        { "expr": "rate(gl_eudr_mbc_reconciliations_total{classification=\"critical\"}[5m])", "legendFormat": "Critical/s" },
+        { "expr": "rate(gl_eudr_mbc_reconciliations_total{classification=\"warning\"}[5m])", "legendFormat": "Warning/s" }
+      ]
+    },
+    {
+      "title": "Report Generation",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_mbc_reports_generated_total[5m])", "legendFormat": "Reports/s" },
+        { "expr": "sum by (report_type) (increase(gl_eudr_mbc_reports_generated_total[1h]))", "legendFormat": "{{report_type}} (1h)" }
+      ]
+    },
+    {
+      "title": "Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Entry Recording Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_mbc_entry_recording_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_mbc_entry_recording_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_mbc_entry_recording_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Reconciliation Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_mbc_reconciliation_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_mbc_reconciliation_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_mbc_reconciliation_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Overdraft Check Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_mbc_overdraft_check_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_mbc_overdraft_check_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_mbc_overdraft_check_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "API Errors (1h)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_mbc_api_errors_total[1h]))", "legendFormat": "Total Errors" },
+        { "expr": "sum(increase(gl_eudr_mbc_api_errors_total{status_code=~\"5..\"}[1h]))", "legendFormat": "5xx Errors" },
+        { "expr": "sum(increase(gl_eudr_mbc_api_errors_total{status_code=~\"4..\"}[1h]))", "legendFormat": "4xx Errors" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "mass-balance-calculator", "agent-eudr-011", "greenlang"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EUDR Mass Balance Calculator (AGENT-EUDR-011)",
+  "uid": "eudr-mass-balance-calculator",
+  "version": 1
+}

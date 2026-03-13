@@ -2175,6 +2175,1743 @@ PERMISSION_MAP: Dict[str, str] = {
     "DELETE:/api/v1/eudr-gcv/batch/{batch_id}": "eudr-gcv:batch:cancel",
     # Health
     "GET:/api/v1/eudr-gcv/health": "eudr-gcv:read",
+
+    # EUDR Multi-Tier Supplier Tracker routes (AGENT-EUDR-008)
+    # Discovery (4 routes)
+    "POST:/api/v1/eudr-mst/discover": "eudr-mst:discover:single",
+    "POST:/api/v1/eudr-mst/discover/batch": "eudr-mst:discover:batch",
+    "POST:/api/v1/eudr-mst/discover/from-declaration": "eudr-mst:discover:declaration",
+    "POST:/api/v1/eudr-mst/discover/from-questionnaire": "eudr-mst:discover:questionnaire",
+    # Profiles (6 routes)
+    "POST:/api/v1/eudr-mst/suppliers": "eudr-mst:suppliers:create",
+    "GET:/api/v1/eudr-mst/suppliers/{supplier_id}": "eudr-mst:read",
+    "PUT:/api/v1/eudr-mst/suppliers/{supplier_id}": "eudr-mst:suppliers:update",
+    "DELETE:/api/v1/eudr-mst/suppliers/{supplier_id}": "eudr-mst:suppliers:delete",
+    "POST:/api/v1/eudr-mst/suppliers/search": "eudr-mst:read",
+    "POST:/api/v1/eudr-mst/suppliers/batch": "eudr-mst:suppliers:batch",
+    # Tiers (4 routes)
+    "GET:/api/v1/eudr-mst/tiers/{supplier_id}": "eudr-mst:tiers:read",
+    "POST:/api/v1/eudr-mst/tiers/assess": "eudr-mst:tiers:assess",
+    "GET:/api/v1/eudr-mst/tiers/visibility": "eudr-mst:tiers:read",
+    "GET:/api/v1/eudr-mst/tiers/gaps": "eudr-mst:tiers:gaps",
+    # Relationships (4 routes)
+    "POST:/api/v1/eudr-mst/relationships": "eudr-mst:relationships:create",
+    "PUT:/api/v1/eudr-mst/relationships/{rel_id}": "eudr-mst:relationships:update",
+    "GET:/api/v1/eudr-mst/relationships/{supplier_id}": "eudr-mst:relationships:read",
+    "POST:/api/v1/eudr-mst/relationships/history": "eudr-mst:relationships:read",
+    # Risk (4 routes)
+    "POST:/api/v1/eudr-mst/risk/assess": "eudr-mst:risk:assess",
+    "POST:/api/v1/eudr-mst/risk/propagate": "eudr-mst:risk:propagate",
+    "GET:/api/v1/eudr-mst/risk/{supplier_id}": "eudr-mst:risk:read",
+    "POST:/api/v1/eudr-mst/risk/batch": "eudr-mst:risk:batch",
+    # Compliance (4 routes)
+    "POST:/api/v1/eudr-mst/compliance/check": "eudr-mst:compliance:check",
+    "GET:/api/v1/eudr-mst/compliance/{supplier_id}": "eudr-mst:compliance:read",
+    "POST:/api/v1/eudr-mst/compliance/batch": "eudr-mst:compliance:batch",
+    "GET:/api/v1/eudr-mst/compliance/alerts": "eudr-mst:compliance:alerts",
+    # Reports (5 routes)
+    "POST:/api/v1/eudr-mst/reports/audit": "eudr-mst:reports:generate",
+    "POST:/api/v1/eudr-mst/reports/tier-summary": "eudr-mst:reports:generate",
+    "POST:/api/v1/eudr-mst/reports/gaps": "eudr-mst:reports:generate",
+    "GET:/api/v1/eudr-mst/reports/{report_id}": "eudr-mst:reports:read",
+    "GET:/api/v1/eudr-mst/reports/{report_id}/download": "eudr-mst:reports:download",
+    # Batch (2 routes)
+    "POST:/api/v1/eudr-mst/batch": "eudr-mst:batch:submit",
+    "DELETE:/api/v1/eudr-mst/batch/{batch_id}": "eudr-mst:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-mst/health": "eudr-mst:read",
+
+    # EUDR Chain of Custody routes (AGENT-EUDR-009)
+    # Events (5 routes)
+    "POST:/api/v1/eudr-coc/events": "eudr-coc:events:record",
+    "POST:/api/v1/eudr-coc/events/batch": "eudr-coc:events:bulk",
+    "GET:/api/v1/eudr-coc/events/{event_id}": "eudr-coc:read",
+    "GET:/api/v1/eudr-coc/events/chain/{batch_id}": "eudr-coc:events:chain",
+    "POST:/api/v1/eudr-coc/events/amend/{event_id}": "eudr-coc:events:amend",
+    # Batches (7 routes)
+    "POST:/api/v1/eudr-coc/batches": "eudr-coc:batches:create",
+    "GET:/api/v1/eudr-coc/batches/{batch_id}": "eudr-coc:read",
+    "POST:/api/v1/eudr-coc/batches/split": "eudr-coc:batches:split",
+    "POST:/api/v1/eudr-coc/batches/merge": "eudr-coc:batches:merge",
+    "POST:/api/v1/eudr-coc/batches/blend": "eudr-coc:batches:blend",
+    "GET:/api/v1/eudr-coc/batches/{batch_id}/genealogy": "eudr-coc:batches:genealogy",
+    "POST:/api/v1/eudr-coc/batches/search": "eudr-coc:read",
+    # Models (4 routes)
+    "POST:/api/v1/eudr-coc/models/assign": "eudr-coc:models:assign",
+    "GET:/api/v1/eudr-coc/models/{facility_id}": "eudr-coc:models:read",
+    "POST:/api/v1/eudr-coc/models/validate": "eudr-coc:models:validate",
+    "GET:/api/v1/eudr-coc/models/compliance/{facility_id}": "eudr-coc:models:compliance",
+    # Balance (5 routes)
+    "POST:/api/v1/eudr-coc/balance/input": "eudr-coc:balance:input",
+    "POST:/api/v1/eudr-coc/balance/output": "eudr-coc:balance:output",
+    "GET:/api/v1/eudr-coc/balance/{facility_id}": "eudr-coc:balance:read",
+    "POST:/api/v1/eudr-coc/balance/reconcile": "eudr-coc:balance:reconcile",
+    "GET:/api/v1/eudr-coc/balance/history/{facility_id}": "eudr-coc:balance:read",
+    # Transformations (3 routes)
+    "POST:/api/v1/eudr-coc/transform": "eudr-coc:transform:record",
+    "POST:/api/v1/eudr-coc/transform/batch": "eudr-coc:transform:bulk",
+    "GET:/api/v1/eudr-coc/transform/{transform_id}": "eudr-coc:read",
+    # Documents (3 routes)
+    "POST:/api/v1/eudr-coc/documents": "eudr-coc:documents:link",
+    "GET:/api/v1/eudr-coc/documents/{batch_id}": "eudr-coc:documents:read",
+    "POST:/api/v1/eudr-coc/documents/validate": "eudr-coc:documents:validate",
+    # Verification (3 routes)
+    "POST:/api/v1/eudr-coc/verify/chain": "eudr-coc:verify:chain",
+    "POST:/api/v1/eudr-coc/verify/batch": "eudr-coc:verify:batch",
+    "GET:/api/v1/eudr-coc/verify/{verification_id}": "eudr-coc:read",
+    # Reports (4 routes)
+    "POST:/api/v1/eudr-coc/reports/traceability": "eudr-coc:reports:generate",
+    "POST:/api/v1/eudr-coc/reports/mass-balance": "eudr-coc:reports:generate",
+    "GET:/api/v1/eudr-coc/reports/{report_id}": "eudr-coc:reports:read",
+    "GET:/api/v1/eudr-coc/reports/{report_id}/download": "eudr-coc:reports:download",
+    # Batch jobs (2 routes)
+    "POST:/api/v1/eudr-coc/batch": "eudr-coc:batch:submit",
+    "DELETE:/api/v1/eudr-coc/batch/{batch_id}": "eudr-coc:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-coc/health": "eudr-coc:read",
+
+    # -----------------------------------------------------------------------
+    # EUDR Segregation Verifier (AGENT-EUDR-010)  --  37 routes
+    # -----------------------------------------------------------------------
+    # SCPs (6 routes)
+    "POST:/api/v1/eudr-sgv/scp": "eudr-sgv:scp:register",
+    "GET:/api/v1/eudr-sgv/scp/{scp_id}": "eudr-sgv:read",
+    "PUT:/api/v1/eudr-sgv/scp/{scp_id}": "eudr-sgv:scp:update",
+    "POST:/api/v1/eudr-sgv/scp/validate": "eudr-sgv:scp:validate",
+    "POST:/api/v1/eudr-sgv/scp/batch-import": "eudr-sgv:scp:import",
+    "POST:/api/v1/eudr-sgv/scp/search": "eudr-sgv:read",
+    # Storage (5 routes)
+    "POST:/api/v1/eudr-sgv/storage/zones": "eudr-sgv:storage:register",
+    "GET:/api/v1/eudr-sgv/storage/zones/{facility_id}": "eudr-sgv:storage:read",
+    "POST:/api/v1/eudr-sgv/storage/events": "eudr-sgv:storage:record",
+    "POST:/api/v1/eudr-sgv/storage/audit": "eudr-sgv:storage:audit",
+    "GET:/api/v1/eudr-sgv/storage/score/{facility_id}": "eudr-sgv:storage:read",
+    # Transport (5 routes)
+    "POST:/api/v1/eudr-sgv/transport/vehicles": "eudr-sgv:transport:register",
+    "GET:/api/v1/eudr-sgv/transport/vehicles/{vehicle_id}": "eudr-sgv:transport:read",
+    "POST:/api/v1/eudr-sgv/transport/verify": "eudr-sgv:transport:verify",
+    "POST:/api/v1/eudr-sgv/transport/cleaning": "eudr-sgv:transport:cleaning",
+    "GET:/api/v1/eudr-sgv/transport/history/{vehicle_id}": "eudr-sgv:transport:read",
+    # Processing (5 routes)
+    "POST:/api/v1/eudr-sgv/processing/lines": "eudr-sgv:processing:register",
+    "GET:/api/v1/eudr-sgv/processing/lines/{line_id}": "eudr-sgv:processing:read",
+    "POST:/api/v1/eudr-sgv/processing/changeover": "eudr-sgv:processing:changeover",
+    "POST:/api/v1/eudr-sgv/processing/verify": "eudr-sgv:processing:verify",
+    "GET:/api/v1/eudr-sgv/processing/score/{facility_id}": "eudr-sgv:processing:read",
+    # Contamination (5 routes)
+    "POST:/api/v1/eudr-sgv/contamination/detect": "eudr-sgv:contamination:detect",
+    "POST:/api/v1/eudr-sgv/contamination/events": "eudr-sgv:contamination:record",
+    "GET:/api/v1/eudr-sgv/contamination/events/{event_id}": "eudr-sgv:contamination:read",
+    "POST:/api/v1/eudr-sgv/contamination/impact": "eudr-sgv:contamination:impact",
+    "GET:/api/v1/eudr-sgv/contamination/heatmap/{facility_id}": "eudr-sgv:contamination:read",
+    # Labels (3 routes)
+    "POST:/api/v1/eudr-sgv/labels": "eudr-sgv:labels:register",
+    "GET:/api/v1/eudr-sgv/labels/{scp_id}": "eudr-sgv:labels:read",
+    "POST:/api/v1/eudr-sgv/labels/audit": "eudr-sgv:labels:audit",
+    # Assessment (3 routes)
+    "POST:/api/v1/eudr-sgv/assessment": "eudr-sgv:assessment:run",
+    "GET:/api/v1/eudr-sgv/assessment/{facility_id}": "eudr-sgv:assessment:read",
+    "GET:/api/v1/eudr-sgv/assessment/history/{facility_id}": "eudr-sgv:assessment:read",
+    # Reports (5 routes)
+    "POST:/api/v1/eudr-sgv/reports/audit": "eudr-sgv:reports:generate",
+    "POST:/api/v1/eudr-sgv/reports/contamination": "eudr-sgv:reports:generate",
+    "POST:/api/v1/eudr-sgv/reports/evidence": "eudr-sgv:reports:generate",
+    "GET:/api/v1/eudr-sgv/reports/{report_id}": "eudr-sgv:reports:read",
+    "GET:/api/v1/eudr-sgv/reports/{report_id}/download": "eudr-sgv:reports:download",
+    # Batch jobs (2 routes)
+    "POST:/api/v1/eudr-sgv/batch": "eudr-sgv:batch:submit",
+    "DELETE:/api/v1/eudr-sgv/batch/{job_id}": "eudr-sgv:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-sgv/health": "eudr-sgv:read",
+
+    # ── AGENT-EUDR-011: Mass Balance Calculator (37 routes) ──────────────
+    # Ledger management (7 routes)
+    "POST:/api/v1/eudr-mbc/ledgers": "eudr-mbc:ledger:create",
+    "GET:/api/v1/eudr-mbc/ledgers/{ledger_id}": "eudr-mbc:read",
+    "POST:/api/v1/eudr-mbc/ledgers/entries": "eudr-mbc:ledger:record",
+    "POST:/api/v1/eudr-mbc/ledgers/entries/bulk": "eudr-mbc:ledger:bulk",
+    "GET:/api/v1/eudr-mbc/ledgers/{ledger_id}/balance": "eudr-mbc:read",
+    "GET:/api/v1/eudr-mbc/ledgers/{ledger_id}/history": "eudr-mbc:read",
+    "POST:/api/v1/eudr-mbc/ledgers/search": "eudr-mbc:read",
+    # Credit period management (5 routes)
+    "POST:/api/v1/eudr-mbc/periods": "eudr-mbc:period:create",
+    "GET:/api/v1/eudr-mbc/periods/{period_id}": "eudr-mbc:read",
+    "PUT:/api/v1/eudr-mbc/periods/{period_id}": "eudr-mbc:period:update",
+    "POST:/api/v1/eudr-mbc/periods/rollover": "eudr-mbc:period:rollover",
+    "GET:/api/v1/eudr-mbc/periods/active/{facility_id}": "eudr-mbc:read",
+    # Conversion factor validation (4 routes)
+    "POST:/api/v1/eudr-mbc/factors/validate": "eudr-mbc:factor:validate",
+    "GET:/api/v1/eudr-mbc/factors/reference/{commodity}": "eudr-mbc:read",
+    "POST:/api/v1/eudr-mbc/factors/custom": "eudr-mbc:factor:custom",
+    "GET:/api/v1/eudr-mbc/factors/history/{facility_id}": "eudr-mbc:read",
+    # Overdraft detection (5 routes)
+    "POST:/api/v1/eudr-mbc/overdraft/check": "eudr-mbc:overdraft:check",
+    "GET:/api/v1/eudr-mbc/overdraft/alerts/{facility_id}": "eudr-mbc:overdraft:read",
+    "POST:/api/v1/eudr-mbc/overdraft/forecast": "eudr-mbc:overdraft:forecast",
+    "POST:/api/v1/eudr-mbc/overdraft/exemption": "eudr-mbc:overdraft:exemption",
+    "GET:/api/v1/eudr-mbc/overdraft/history/{facility_id}": "eudr-mbc:overdraft:read",
+    # Loss and waste tracking (4 routes)
+    "POST:/api/v1/eudr-mbc/losses": "eudr-mbc:loss:record",
+    "GET:/api/v1/eudr-mbc/losses/{facility_id}": "eudr-mbc:loss:read",
+    "POST:/api/v1/eudr-mbc/losses/validate": "eudr-mbc:loss:validate",
+    "GET:/api/v1/eudr-mbc/losses/trends/{facility_id}": "eudr-mbc:loss:read",
+    # Reconciliation (4 routes)
+    "POST:/api/v1/eudr-mbc/reconciliation": "eudr-mbc:reconciliation:run",
+    "GET:/api/v1/eudr-mbc/reconciliation/{reconciliation_id}": "eudr-mbc:reconciliation:read",
+    "POST:/api/v1/eudr-mbc/reconciliation/sign-off": "eudr-mbc:reconciliation:sign_off",
+    "GET:/api/v1/eudr-mbc/reconciliation/history/{facility_id}": "eudr-mbc:reconciliation:read",
+    # Consolidation (5 routes)
+    "POST:/api/v1/eudr-mbc/consolidation/report": "eudr-mbc:consolidation:generate",
+    "POST:/api/v1/eudr-mbc/consolidation/groups": "eudr-mbc:consolidation:groups",
+    "GET:/api/v1/eudr-mbc/consolidation/dashboard": "eudr-mbc:consolidation:read",
+    "GET:/api/v1/eudr-mbc/consolidation/report/{report_id}": "eudr-mbc:consolidation:read",
+    "GET:/api/v1/eudr-mbc/consolidation/report/{report_id}/download": "eudr-mbc:consolidation:download",
+    # Batch jobs (2 routes)
+    "POST:/api/v1/eudr-mbc/batch": "eudr-mbc:batch:submit",
+    "DELETE:/api/v1/eudr-mbc/batch/{job_id}": "eudr-mbc:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-mbc/health": "eudr-mbc:read",
+    # ── Document Authentication (AGENT-EUDR-012) ─────────────────
+    # Classify
+    "POST:/api/v1/eudr-dav/classify": "eudr-dav:classify",
+    "POST:/api/v1/eudr-dav/classify/batch": "eudr-dav:classify:batch",
+    "GET:/api/v1/eudr-dav/classify/{document_id}": "eudr-dav:classify:read",
+    "GET:/api/v1/eudr-dav/classify/templates": "eudr-dav:templates:read",
+    "POST:/api/v1/eudr-dav/classify/templates": "eudr-dav:templates:register",
+    # Signature
+    "POST:/api/v1/eudr-dav/signatures/verify": "eudr-dav:signatures:verify",
+    "POST:/api/v1/eudr-dav/signatures/verify/batch": "eudr-dav:signatures:verify:batch",
+    "GET:/api/v1/eudr-dav/signatures/{verification_id}": "eudr-dav:signatures:read",
+    "GET:/api/v1/eudr-dav/signatures/history/{document_id}": "eudr-dav:signatures:read",
+    # Hash
+    "POST:/api/v1/eudr-dav/hashes/compute": "eudr-dav:hashes:compute",
+    "POST:/api/v1/eudr-dav/hashes/verify": "eudr-dav:hashes:verify",
+    "GET:/api/v1/eudr-dav/hashes/registry/{hash}": "eudr-dav:hashes:read",
+    "GET:/api/v1/eudr-dav/hashes/merkle/{dds_id}": "eudr-dav:hashes:read",
+    # Certificate
+    "POST:/api/v1/eudr-dav/certificates/validate": "eudr-dav:certificates:validate",
+    "GET:/api/v1/eudr-dav/certificates/{validation_id}": "eudr-dav:certificates:read",
+    "POST:/api/v1/eudr-dav/certificates/trusted-cas": "eudr-dav:certificates:trusted_cas:write",
+    "GET:/api/v1/eudr-dav/certificates/trusted-cas": "eudr-dav:certificates:trusted_cas:read",
+    # Metadata
+    "POST:/api/v1/eudr-dav/metadata/extract": "eudr-dav:metadata:extract",
+    "GET:/api/v1/eudr-dav/metadata/{document_id}": "eudr-dav:metadata:read",
+    "POST:/api/v1/eudr-dav/metadata/validate": "eudr-dav:metadata:validate",
+    # Fraud
+    "POST:/api/v1/eudr-dav/fraud/detect": "eudr-dav:fraud:detect",
+    "POST:/api/v1/eudr-dav/fraud/detect/batch": "eudr-dav:fraud:detect:batch",
+    "GET:/api/v1/eudr-dav/fraud/alerts/{document_id}": "eudr-dav:fraud:read",
+    "GET:/api/v1/eudr-dav/fraud/alerts/summary/{operator_id}": "eudr-dav:fraud:read",
+    "GET:/api/v1/eudr-dav/fraud/rules": "eudr-dav:fraud:rules:read",
+    # CrossRef
+    "POST:/api/v1/eudr-dav/crossref/verify": "eudr-dav:crossref:verify",
+    "POST:/api/v1/eudr-dav/crossref/verify/batch": "eudr-dav:crossref:verify:batch",
+    "GET:/api/v1/eudr-dav/crossref/{verification_id}": "eudr-dav:crossref:read",
+    "GET:/api/v1/eudr-dav/crossref/cache/stats": "eudr-dav:crossref:read",
+    # Report
+    "POST:/api/v1/eudr-dav/reports/authentication": "eudr-dav:reports:generate",
+    "POST:/api/v1/eudr-dav/reports/evidence-package": "eudr-dav:reports:generate",
+    "GET:/api/v1/eudr-dav/reports/{report_id}": "eudr-dav:reports:read",
+    "GET:/api/v1/eudr-dav/reports/{report_id}/download": "eudr-dav:reports:download",
+    "GET:/api/v1/eudr-dav/reports/dashboard/{operator_id}": "eudr-dav:reports:read",
+    # Batch
+    "POST:/api/v1/eudr-dav/batch": "eudr-dav:batch:submit",
+    "DELETE:/api/v1/eudr-dav/batch/{job_id}": "eudr-dav:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-dav/health": "eudr-dav:read",
+    # ---- AGENT-EUDR-013: Blockchain Integration (eudr-bci) ----
+    # Anchor
+    "POST:/api/v1/eudr-bci/anchors": "eudr-bci:anchors:create",
+    "POST:/api/v1/eudr-bci/anchors/batch": "eudr-bci:anchors:batch",
+    "GET:/api/v1/eudr-bci/anchors/{anchor_id}": "eudr-bci:anchors:read",
+    "GET:/api/v1/eudr-bci/anchors/status/{tx_hash}": "eudr-bci:anchors:read",
+    "GET:/api/v1/eudr-bci/anchors/history/{record_id}": "eudr-bci:anchors:read",
+    # Contract
+    "POST:/api/v1/eudr-bci/contracts/deploy": "eudr-bci:contracts:deploy",
+    "GET:/api/v1/eudr-bci/contracts/{contract_id}": "eudr-bci:contracts:read",
+    "POST:/api/v1/eudr-bci/contracts/{contract_id}/call": "eudr-bci:contracts:call",
+    "GET:/api/v1/eudr-bci/contracts/{contract_id}/state": "eudr-bci:contracts:read",
+    "GET:/api/v1/eudr-bci/contracts": "eudr-bci:contracts:read",
+    # Chain
+    "POST:/api/v1/eudr-bci/chains/connect": "eudr-bci:chains:connect",
+    "GET:/api/v1/eudr-bci/chains/{chain_id}/status": "eudr-bci:chains:read",
+    "GET:/api/v1/eudr-bci/chains": "eudr-bci:chains:read",
+    "POST:/api/v1/eudr-bci/chains/{chain_id}/estimate-gas": "eudr-bci:chains:estimate_gas",
+    # Verify
+    "POST:/api/v1/eudr-bci/verify": "eudr-bci:verify",
+    "POST:/api/v1/eudr-bci/verify/batch": "eudr-bci:verify:batch",
+    "POST:/api/v1/eudr-bci/verify/merkle-proof": "eudr-bci:verify:merkle_proof",
+    "GET:/api/v1/eudr-bci/verify/{verification_id}": "eudr-bci:verify:read",
+    # Event
+    "POST:/api/v1/eudr-bci/events/subscribe": "eudr-bci:events:subscribe",
+    "DELETE:/api/v1/eudr-bci/events/subscribe/{subscription_id}": "eudr-bci:events:unsubscribe",
+    "GET:/api/v1/eudr-bci/events": "eudr-bci:events:read",
+    "GET:/api/v1/eudr-bci/events/{event_id}": "eudr-bci:events:read",
+    "POST:/api/v1/eudr-bci/events/replay": "eudr-bci:events:replay",
+    # Merkle
+    "POST:/api/v1/eudr-bci/merkle/build": "eudr-bci:merkle:build",
+    "GET:/api/v1/eudr-bci/merkle/{tree_id}": "eudr-bci:merkle:read",
+    "POST:/api/v1/eudr-bci/merkle/{tree_id}/proof": "eudr-bci:merkle:proof",
+    "POST:/api/v1/eudr-bci/merkle/verify": "eudr-bci:merkle:verify",
+    # Sharing
+    "POST:/api/v1/eudr-bci/sharing/grant": "eudr-bci:sharing:grant",
+    "DELETE:/api/v1/eudr-bci/sharing/revoke/{grant_id}": "eudr-bci:sharing:revoke",
+    "GET:/api/v1/eudr-bci/sharing/grants/{record_id}": "eudr-bci:sharing:read",
+    "POST:/api/v1/eudr-bci/sharing/request": "eudr-bci:sharing:request",
+    "POST:/api/v1/eudr-bci/sharing/confirm": "eudr-bci:sharing:confirm",
+    # Evidence
+    "POST:/api/v1/eudr-bci/evidence/package": "eudr-bci:evidence:generate",
+    "GET:/api/v1/eudr-bci/evidence/{package_id}": "eudr-bci:evidence:read",
+    "GET:/api/v1/eudr-bci/evidence/{package_id}/download": "eudr-bci:evidence:download",
+    "POST:/api/v1/eudr-bci/evidence/verify": "eudr-bci:evidence:verify",
+    # Batch
+    "POST:/api/v1/eudr-bci/batch": "eudr-bci:batch:submit",
+    "DELETE:/api/v1/eudr-bci/batch/{job_id}": "eudr-bci:batch:cancel",
+    # Health
+    "GET:/api/v1/eudr-bci/health": "eudr-bci:read",
+
+    # ---- AGENT-EUDR-014: QR Code Generator (eudr-qrg) ----
+    # QR Codes
+    "POST:/api/v1/eudr-qrg/codes": "eudr-qrg:codes:create",
+    "POST:/api/v1/eudr-qrg/codes/batch": "eudr-qrg:codes:batch",
+    "GET:/api/v1/eudr-qrg/codes/{code_id}": "eudr-qrg:codes:read",
+    "GET:/api/v1/eudr-qrg/codes/{code_id}/image": "eudr-qrg:codes:download",
+    "PUT:/api/v1/eudr-qrg/codes/{code_id}/status": "eudr-qrg:codes:update",
+    "GET:/api/v1/eudr-qrg/codes": "eudr-qrg:codes:read",
+    # Payloads
+    "POST:/api/v1/eudr-qrg/payloads/compose": "eudr-qrg:payloads:compose",
+    "GET:/api/v1/eudr-qrg/payloads/{payload_id}": "eudr-qrg:payloads:read",
+    "POST:/api/v1/eudr-qrg/payloads/validate": "eudr-qrg:payloads:validate",
+    # Labels
+    "POST:/api/v1/eudr-qrg/labels/render": "eudr-qrg:labels:render",
+    "GET:/api/v1/eudr-qrg/labels/templates": "eudr-qrg:labels:read",
+    "GET:/api/v1/eudr-qrg/labels/templates/{template_id}": "eudr-qrg:labels:read",
+    "POST:/api/v1/eudr-qrg/labels/print-job": "eudr-qrg:labels:print",
+    # Batch generation
+    "POST:/api/v1/eudr-qrg/batch/generate": "eudr-qrg:batch:generate",
+    "GET:/api/v1/eudr-qrg/batch/{batch_id}": "eudr-qrg:batch:read",
+    "GET:/api/v1/eudr-qrg/batch/{batch_id}/download": "eudr-qrg:batch:download",
+    "DELETE:/api/v1/eudr-qrg/batch/{batch_id}": "eudr-qrg:batch:cancel",
+    # Verification URLs
+    "POST:/api/v1/eudr-qrg/verification/urls": "eudr-qrg:verification:create",
+    "GET:/api/v1/eudr-qrg/verification/{token}": "eudr-qrg:verification:read",
+    "POST:/api/v1/eudr-qrg/verification/validate": "eudr-qrg:verification:validate",
+    # Anti-counterfeit
+    "POST:/api/v1/eudr-qrg/anti-counterfeit/tokens": "eudr-qrg:anti-counterfeit:create",
+    "POST:/api/v1/eudr-qrg/anti-counterfeit/verify": "eudr-qrg:anti-counterfeit:verify",
+    "GET:/api/v1/eudr-qrg/anti-counterfeit/stats": "eudr-qrg:anti-counterfeit:read",
+    # Bulk pipeline
+    "POST:/api/v1/eudr-qrg/bulk/submit": "eudr-qrg:bulk:submit",
+    "GET:/api/v1/eudr-qrg/bulk/{job_id}": "eudr-qrg:bulk:read",
+    "GET:/api/v1/eudr-qrg/bulk/{job_id}/download": "eudr-qrg:bulk:download",
+    "DELETE:/api/v1/eudr-qrg/bulk/{job_id}": "eudr-qrg:bulk:cancel",
+    # Lifecycle
+    "POST:/api/v1/eudr-qrg/lifecycle/activate": "eudr-qrg:lifecycle:activate",
+    "POST:/api/v1/eudr-qrg/lifecycle/revoke": "eudr-qrg:lifecycle:revoke",
+    "POST:/api/v1/eudr-qrg/lifecycle/renew": "eudr-qrg:lifecycle:renew",
+    "GET:/api/v1/eudr-qrg/lifecycle/{code_id}/history": "eudr-qrg:lifecycle:read",
+    # Health
+    "GET:/api/v1/eudr-qrg/health": "eudr-qrg:read",
+
+    # ---- AGENT-EUDR-015: Mobile Data Collector (eudr-mdc) ----
+    # Forms
+    "POST:/api/v1/eudr-mdc/forms": "eudr-mdc:forms:submit",
+    "POST:/api/v1/eudr-mdc/forms/validate": "eudr-mdc:forms:validate",
+    "GET:/api/v1/eudr-mdc/forms/{form_id}": "eudr-mdc:forms:read",
+    "GET:/api/v1/eudr-mdc/forms": "eudr-mdc:forms:read",
+    "PUT:/api/v1/eudr-mdc/forms/{form_id}": "eudr-mdc:forms:update",
+    # GPS
+    "POST:/api/v1/eudr-mdc/gps/capture": "eudr-mdc:gps:capture",
+    "POST:/api/v1/eudr-mdc/gps/polygon": "eudr-mdc:gps:capture",
+    "GET:/api/v1/eudr-mdc/gps/{capture_id}": "eudr-mdc:gps:read",
+    "GET:/api/v1/eudr-mdc/gps/form/{form_id}": "eudr-mdc:gps:read",
+    # Photos
+    "POST:/api/v1/eudr-mdc/photos/upload": "eudr-mdc:photos:upload",
+    "GET:/api/v1/eudr-mdc/photos/{photo_id}": "eudr-mdc:photos:read",
+    "GET:/api/v1/eudr-mdc/photos/{photo_id}/download": "eudr-mdc:photos:download",
+    "POST:/api/v1/eudr-mdc/photos/validate": "eudr-mdc:photos:validate",
+    # Sync
+    "POST:/api/v1/eudr-mdc/sync/trigger": "eudr-mdc:sync:trigger",
+    "GET:/api/v1/eudr-mdc/sync/status/{device_id}": "eudr-mdc:sync:read",
+    "GET:/api/v1/eudr-mdc/sync/conflicts/{device_id}": "eudr-mdc:sync:read",
+    "POST:/api/v1/eudr-mdc/sync/conflicts/{conflict_id}/resolve": "eudr-mdc:sync:resolve",
+    "GET:/api/v1/eudr-mdc/sync/queue/{device_id}": "eudr-mdc:sync:read",
+    # Templates
+    "POST:/api/v1/eudr-mdc/templates": "eudr-mdc:templates:create",
+    "GET:/api/v1/eudr-mdc/templates": "eudr-mdc:templates:read",
+    "GET:/api/v1/eudr-mdc/templates/{template_id}": "eudr-mdc:templates:read",
+    "PUT:/api/v1/eudr-mdc/templates/{template_id}": "eudr-mdc:templates:update",
+    "DELETE:/api/v1/eudr-mdc/templates/{template_id}": "eudr-mdc:templates:delete",
+    # Signatures
+    "POST:/api/v1/eudr-mdc/signatures/capture": "eudr-mdc:signatures:capture",
+    "POST:/api/v1/eudr-mdc/signatures/verify": "eudr-mdc:signatures:verify",
+    "GET:/api/v1/eudr-mdc/signatures/{signature_id}": "eudr-mdc:signatures:read",
+    # Packages
+    "POST:/api/v1/eudr-mdc/packages/build": "eudr-mdc:packages:build",
+    "GET:/api/v1/eudr-mdc/packages/{package_id}": "eudr-mdc:packages:read",
+    "GET:/api/v1/eudr-mdc/packages/{package_id}/download": "eudr-mdc:packages:download",
+    "POST:/api/v1/eudr-mdc/packages/{package_id}/verify": "eudr-mdc:packages:verify",
+    # Devices
+    "POST:/api/v1/eudr-mdc/devices/register": "eudr-mdc:devices:register",
+    "GET:/api/v1/eudr-mdc/devices": "eudr-mdc:devices:read",
+    "GET:/api/v1/eudr-mdc/devices/{device_id}": "eudr-mdc:devices:read",
+    "PUT:/api/v1/eudr-mdc/devices/{device_id}": "eudr-mdc:devices:update",
+    "GET:/api/v1/eudr-mdc/devices/fleet/status": "eudr-mdc:devices:fleet",
+    # Health
+    "GET:/api/v1/eudr-mdc/health": "eudr-mdc:read",
+
+    # ── AGENT-EUDR-016: Country Risk Evaluator ──────────────────────────
+    # Countries
+    "POST:/api/v1/eudr-cre/countries/assess": "eudr-cre:countries:assess",
+    "GET:/api/v1/eudr-cre/countries": "eudr-cre:countries:read",
+    "GET:/api/v1/eudr-cre/countries/{country_code}": "eudr-cre:countries:read",
+    "POST:/api/v1/eudr-cre/countries/compare": "eudr-cre:countries:compare",
+    "GET:/api/v1/eudr-cre/countries/{country_code}/trends": "eudr-cre:countries:read",
+    # Commodities
+    "POST:/api/v1/eudr-cre/commodities/analyze": "eudr-cre:commodities:analyze",
+    "GET:/api/v1/eudr-cre/commodities/{commodity_type}": "eudr-cre:commodities:read",
+    "GET:/api/v1/eudr-cre/commodities/matrix": "eudr-cre:commodities:read",
+    "GET:/api/v1/eudr-cre/commodities/correlations": "eudr-cre:commodities:read",
+    # Hotspots
+    "POST:/api/v1/eudr-cre/hotspots/detect": "eudr-cre:hotspots:detect",
+    "GET:/api/v1/eudr-cre/hotspots/{hotspot_id}": "eudr-cre:hotspots:read",
+    "GET:/api/v1/eudr-cre/hotspots": "eudr-cre:hotspots:read",
+    "GET:/api/v1/eudr-cre/hotspots/alerts": "eudr-cre:hotspots:read",
+    "POST:/api/v1/eudr-cre/hotspots/clustering": "eudr-cre:hotspots:detect",
+    # Governance
+    "POST:/api/v1/eudr-cre/governance/evaluate": "eudr-cre:governance:evaluate",
+    "GET:/api/v1/eudr-cre/governance/{country_code}": "eudr-cre:governance:read",
+    "GET:/api/v1/eudr-cre/governance": "eudr-cre:governance:read",
+    "POST:/api/v1/eudr-cre/governance/compare": "eudr-cre:governance:compare",
+    # Due Diligence
+    "POST:/api/v1/eudr-cre/due-diligence/classify": "eudr-cre:due-diligence:classify",
+    "GET:/api/v1/eudr-cre/due-diligence/{classification_id}": "eudr-cre:due-diligence:read",
+    "GET:/api/v1/eudr-cre/due-diligence": "eudr-cre:due-diligence:read",
+    "POST:/api/v1/eudr-cre/due-diligence/cost-estimate": "eudr-cre:due-diligence:classify",
+    "GET:/api/v1/eudr-cre/due-diligence/audit-frequency": "eudr-cre:due-diligence:read",
+    # Trade Flows
+    "POST:/api/v1/eudr-cre/trade-flows/analyze": "eudr-cre:trade-flows:analyze",
+    "GET:/api/v1/eudr-cre/trade-flows/{flow_id}": "eudr-cre:trade-flows:read",
+    "GET:/api/v1/eudr-cre/trade-flows": "eudr-cre:trade-flows:read",
+    "GET:/api/v1/eudr-cre/trade-flows/routes": "eudr-cre:trade-flows:read",
+    "POST:/api/v1/eudr-cre/trade-flows/re-export-risk": "eudr-cre:trade-flows:analyze",
+    # Reports
+    "POST:/api/v1/eudr-cre/reports/generate": "eudr-cre:reports:generate",
+    "GET:/api/v1/eudr-cre/reports/{report_id}": "eudr-cre:reports:read",
+    "GET:/api/v1/eudr-cre/reports": "eudr-cre:reports:read",
+    "GET:/api/v1/eudr-cre/reports/{report_id}/download": "eudr-cre:reports:download",
+    "POST:/api/v1/eudr-cre/reports/executive-summary": "eudr-cre:reports:generate",
+    # Regulatory
+    "POST:/api/v1/eudr-cre/regulatory/track": "eudr-cre:regulatory:track",
+    "GET:/api/v1/eudr-cre/regulatory/{update_id}": "eudr-cre:regulatory:read",
+    "GET:/api/v1/eudr-cre/regulatory": "eudr-cre:regulatory:read",
+    "POST:/api/v1/eudr-cre/regulatory/impact-assessment": "eudr-cre:regulatory:assess",
+    # Health
+    "GET:/api/v1/eudr-cre/health": "eudr-cre:read",
+    # ── AGENT-EUDR-017: Supplier Risk Scorer ──────────────────────────────
+    # Suppliers
+    "POST:/api/v1/eudr-srs/suppliers/assess": "eudr-srs:suppliers:assess",
+    "POST:/api/v1/eudr-srs/suppliers/assess-batch": "eudr-srs:suppliers:assess",
+    "GET:/api/v1/eudr-srs/suppliers/{supplier_id}/risk": "eudr-srs:suppliers:read",
+    "GET:/api/v1/eudr-srs/suppliers/{supplier_id}/trend": "eudr-srs:suppliers:read",
+    "POST:/api/v1/eudr-srs/suppliers/compare": "eudr-srs:suppliers:compare",
+    "GET:/api/v1/eudr-srs/suppliers/rankings": "eudr-srs:suppliers:read",
+    # Due Diligence
+    "GET:/api/v1/eudr-srs/due-diligence/{supplier_id}": "eudr-srs:due-diligence:read",
+    "POST:/api/v1/eudr-srs/due-diligence/record": "eudr-srs:due-diligence:write",
+    "GET:/api/v1/eudr-srs/due-diligence/{supplier_id}/history": "eudr-srs:due-diligence:read",
+    "GET:/api/v1/eudr-srs/due-diligence/{supplier_id}/gaps": "eudr-srs:due-diligence:read",
+    "POST:/api/v1/eudr-srs/due-diligence/escalate": "eudr-srs:due-diligence:escalate",
+    # Documentation
+    "POST:/api/v1/eudr-srs/documentation/analyze": "eudr-srs:documentation:analyze",
+    "GET:/api/v1/eudr-srs/documentation/{supplier_id}": "eudr-srs:documentation:read",
+    "GET:/api/v1/eudr-srs/documentation/{supplier_id}/gaps": "eudr-srs:documentation:read",
+    "POST:/api/v1/eudr-srs/documentation/request": "eudr-srs:documentation:write",
+    "GET:/api/v1/eudr-srs/documentation/{supplier_id}/expiry": "eudr-srs:documentation:read",
+    # Certification
+    "POST:/api/v1/eudr-srs/certification/validate": "eudr-srs:certification:validate",
+    "GET:/api/v1/eudr-srs/certification/{supplier_id}": "eudr-srs:certification:read",
+    "GET:/api/v1/eudr-srs/certification/{supplier_id}/expiry": "eudr-srs:certification:read",
+    "POST:/api/v1/eudr-srs/certification/verify-scope": "eudr-srs:certification:validate",
+    "GET:/api/v1/eudr-srs/certification/schemes": "eudr-srs:certification:read",
+    # Geographic Sourcing
+    "POST:/api/v1/eudr-srs/geographic/analyze": "eudr-srs:geographic:analyze",
+    "GET:/api/v1/eudr-srs/geographic/{supplier_id}": "eudr-srs:geographic:read",
+    "GET:/api/v1/eudr-srs/geographic/{supplier_id}/risk-zones": "eudr-srs:geographic:read",
+    "POST:/api/v1/eudr-srs/geographic/concentration": "eudr-srs:geographic:analyze",
+    "GET:/api/v1/eudr-srs/geographic/{supplier_id}/changes": "eudr-srs:geographic:read",
+    # Network
+    "POST:/api/v1/eudr-srs/network/analyze": "eudr-srs:network:analyze",
+    "GET:/api/v1/eudr-srs/network/{supplier_id}": "eudr-srs:network:read",
+    "GET:/api/v1/eudr-srs/network/{supplier_id}/sub-suppliers": "eudr-srs:network:read",
+    "POST:/api/v1/eudr-srs/network/risk-propagation": "eudr-srs:network:analyze",
+    "GET:/api/v1/eudr-srs/network/{supplier_id}/graph": "eudr-srs:network:read",
+    # Monitoring
+    "POST:/api/v1/eudr-srs/monitoring/configure": "eudr-srs:monitoring:write",
+    "GET:/api/v1/eudr-srs/monitoring/{supplier_id}/alerts": "eudr-srs:monitoring:read",
+    "GET:/api/v1/eudr-srs/monitoring/watchlist": "eudr-srs:monitoring:read",
+    "POST:/api/v1/eudr-srs/monitoring/watchlist": "eudr-srs:monitoring:write",
+    "GET:/api/v1/eudr-srs/monitoring/portfolio-risk": "eudr-srs:monitoring:read",
+    # Reports
+    "POST:/api/v1/eudr-srs/reports/generate": "eudr-srs:reports:generate",
+    "POST:/api/v1/eudr-srs/reports/generate-batch": "eudr-srs:reports:generate",
+    "GET:/api/v1/eudr-srs/reports/{report_id}": "eudr-srs:reports:read",
+    "GET:/api/v1/eudr-srs/reports/{report_id}/download": "eudr-srs:reports:export",
+    "POST:/api/v1/eudr-srs/reports/portfolio": "eudr-srs:reports:generate",
+    # Health
+    "GET:/api/v1/eudr-srs/health": "eudr-srs:read",
+
+    # ── AGENT-EUDR-018: Commodity Risk Analyzer ──────────────────────────
+    # Commodity Profiles (6 routes)
+    "POST:/api/v1/eudr-cra/commodities/profile": "eudr-cra:commodities:profile",
+    "POST:/api/v1/eudr-cra/commodities/profile-batch": "eudr-cra:commodities:profile",
+    "GET:/api/v1/eudr-cra/commodities/{commodity_id}/risk": "eudr-cra:commodities:read",
+    "GET:/api/v1/eudr-cra/commodities/{commodity_id}/history": "eudr-cra:commodities:read",
+    "GET:/api/v1/eudr-cra/commodities/compare": "eudr-cra:commodities:compare",
+    "GET:/api/v1/eudr-cra/commodities/summary": "eudr-cra:commodities:read",
+    # Derived Products (5 routes)
+    "POST:/api/v1/eudr-cra/derived-products/analyze": "eudr-cra:derived-products:analyze",
+    "GET:/api/v1/eudr-cra/derived-products/{product_id}/chain": "eudr-cra:derived-products:read",
+    "GET:/api/v1/eudr-cra/derived-products/{product_id}/risk": "eudr-cra:derived-products:read",
+    "GET:/api/v1/eudr-cra/derived-products/mapping": "eudr-cra:derived-products:read",
+    "POST:/api/v1/eudr-cra/derived-products/trace": "eudr-cra:derived-products:analyze",
+    # Price & Market (5 routes)
+    "GET:/api/v1/eudr-cra/price/{commodity_id}/current": "eudr-cra:price:read",
+    "GET:/api/v1/eudr-cra/price/{commodity_id}/history": "eudr-cra:price:read",
+    "GET:/api/v1/eudr-cra/price/{commodity_id}/volatility": "eudr-cra:price:analyze",
+    "GET:/api/v1/eudr-cra/price/market-disruptions": "eudr-cra:price:read",
+    "POST:/api/v1/eudr-cra/price/forecast": "eudr-cra:price:analyze",
+    # Production Forecasts (5 routes)
+    "POST:/api/v1/eudr-cra/production/forecast": "eudr-cra:production:forecast",
+    "GET:/api/v1/eudr-cra/production/{commodity_id}/yield": "eudr-cra:production:read",
+    "GET:/api/v1/eudr-cra/production/{commodity_id}/climate-impact": "eudr-cra:production:read",
+    "GET:/api/v1/eudr-cra/production/{commodity_id}/seasonal": "eudr-cra:production:read",
+    "GET:/api/v1/eudr-cra/production/summary": "eudr-cra:production:read",
+    # Substitution Risk (5 routes)
+    "POST:/api/v1/eudr-cra/substitution/detect": "eudr-cra:substitution:analyze",
+    "GET:/api/v1/eudr-cra/substitution/{supplier_id}/history": "eudr-cra:substitution:read",
+    "GET:/api/v1/eudr-cra/substitution/alerts": "eudr-cra:substitution:read",
+    "POST:/api/v1/eudr-cra/substitution/verify": "eudr-cra:substitution:analyze",
+    "GET:/api/v1/eudr-cra/substitution/patterns": "eudr-cra:substitution:read",
+    # Regulatory Compliance (5 routes)
+    "GET:/api/v1/eudr-cra/regulatory/{commodity_id}/requirements": "eudr-cra:regulatory:read",
+    "POST:/api/v1/eudr-cra/regulatory/check-compliance": "eudr-cra:regulatory:analyze",
+    "GET:/api/v1/eudr-cra/regulatory/penalty-risk": "eudr-cra:regulatory:read",
+    "GET:/api/v1/eudr-cra/regulatory/updates": "eudr-cra:regulatory:read",
+    "GET:/api/v1/eudr-cra/regulatory/documentation-requirements": "eudr-cra:regulatory:read",
+    # Due Diligence (5 routes)
+    "POST:/api/v1/eudr-cra/due-diligence/initiate": "eudr-cra:due-diligence:write",
+    "GET:/api/v1/eudr-cra/due-diligence/{workflow_id}/status": "eudr-cra:due-diligence:read",
+    "POST:/api/v1/eudr-cra/due-diligence/{workflow_id}/evidence": "eudr-cra:due-diligence:write",
+    "GET:/api/v1/eudr-cra/due-diligence/pending": "eudr-cra:due-diligence:read",
+    "POST:/api/v1/eudr-cra/due-diligence/{workflow_id}/complete": "eudr-cra:due-diligence:write",
+    # Portfolio Aggregation (4 routes)
+    "POST:/api/v1/eudr-cra/portfolio/analyze": "eudr-cra:portfolio:analyze",
+    "GET:/api/v1/eudr-cra/portfolio/concentration": "eudr-cra:portfolio:read",
+    "GET:/api/v1/eudr-cra/portfolio/diversification": "eudr-cra:portfolio:read",
+    "GET:/api/v1/eudr-cra/portfolio/summary": "eudr-cra:portfolio:read",
+    # Health (1 route)
+    "GET:/api/v1/eudr-cra/health": "eudr-cra:read",
+
+    # ── AGENT-EUDR-019: Corruption Index Monitor ─────────────────────────
+    # CPI Monitoring (6 routes)
+    "GET:/api/v1/eudr-cim/cpi/{country_code}/score": "eudr-cim:cpi:read",
+    "GET:/api/v1/eudr-cim/cpi/{country_code}/history": "eudr-cim:cpi:read",
+    "GET:/api/v1/eudr-cim/cpi/rankings": "eudr-cim:cpi:read",
+    "GET:/api/v1/eudr-cim/cpi/regional": "eudr-cim:cpi:read",
+    "POST:/api/v1/eudr-cim/cpi/batch-query": "eudr-cim:cpi:read",
+    "GET:/api/v1/eudr-cim/cpi/summary": "eudr-cim:cpi:read",
+    # WGI Analysis (5 routes)
+    "GET:/api/v1/eudr-cim/wgi/{country_code}/indicators": "eudr-cim:wgi:read",
+    "GET:/api/v1/eudr-cim/wgi/{country_code}/history": "eudr-cim:wgi:read",
+    "GET:/api/v1/eudr-cim/wgi/{country_code}/dimension/{dimension}": "eudr-cim:wgi:read",
+    "POST:/api/v1/eudr-cim/wgi/compare": "eudr-cim:wgi:analyze",
+    "GET:/api/v1/eudr-cim/wgi/rankings": "eudr-cim:wgi:read",
+    # Bribery Risk (5 routes)
+    "POST:/api/v1/eudr-cim/bribery/assess": "eudr-cim:bribery:analyze",
+    "GET:/api/v1/eudr-cim/bribery/{country_code}/risk": "eudr-cim:bribery:read",
+    "GET:/api/v1/eudr-cim/bribery/{country_code}/sectors": "eudr-cim:bribery:read",
+    "GET:/api/v1/eudr-cim/bribery/high-risk-countries": "eudr-cim:bribery:read",
+    "POST:/api/v1/eudr-cim/bribery/sector-analysis": "eudr-cim:bribery:analyze",
+    # Institutional Quality (5 routes)
+    "GET:/api/v1/eudr-cim/institutional/{country_code}/quality": "eudr-cim:institutional:read",
+    "GET:/api/v1/eudr-cim/institutional/{country_code}/governance": "eudr-cim:institutional:read",
+    "POST:/api/v1/eudr-cim/institutional/assess": "eudr-cim:institutional:analyze",
+    "GET:/api/v1/eudr-cim/institutional/forest-governance": "eudr-cim:institutional:read",
+    "POST:/api/v1/eudr-cim/institutional/compare": "eudr-cim:institutional:analyze",
+    # Trend Analysis (5 routes)
+    "POST:/api/v1/eudr-cim/trends/analyze": "eudr-cim:trends:analyze",
+    "GET:/api/v1/eudr-cim/trends/{country_code}/trajectory": "eudr-cim:trends:read",
+    "GET:/api/v1/eudr-cim/trends/{country_code}/prediction": "eudr-cim:trends:read",
+    "GET:/api/v1/eudr-cim/trends/improving": "eudr-cim:trends:read",
+    "GET:/api/v1/eudr-cim/trends/deteriorating": "eudr-cim:trends:read",
+    # Deforestation Correlation (5 routes)
+    "POST:/api/v1/eudr-cim/correlation/analyze": "eudr-cim:correlation:analyze",
+    "GET:/api/v1/eudr-cim/correlation/{country_code}/deforestation": "eudr-cim:correlation:read",
+    "GET:/api/v1/eudr-cim/correlation/regression": "eudr-cim:correlation:read",
+    "GET:/api/v1/eudr-cim/correlation/heatmap": "eudr-cim:correlation:read",
+    "GET:/api/v1/eudr-cim/correlation/causal-pathways": "eudr-cim:correlation:read",
+    # Alert Management (5 routes)
+    "GET:/api/v1/eudr-cim/alerts": "eudr-cim:alerts:read",
+    "GET:/api/v1/eudr-cim/alerts/{alert_id}": "eudr-cim:alerts:read",
+    "POST:/api/v1/eudr-cim/alerts/configure": "eudr-cim:alerts:write",
+    "POST:/api/v1/eudr-cim/alerts/{alert_id}/acknowledge": "eudr-cim:alerts:write",
+    "GET:/api/v1/eudr-cim/alerts/summary": "eudr-cim:alerts:read",
+    # Compliance Impact (4 routes)
+    "POST:/api/v1/eudr-cim/compliance/assess-impact": "eudr-cim:compliance:analyze",
+    "GET:/api/v1/eudr-cim/compliance/{country_code}/impact": "eudr-cim:compliance:read",
+    "GET:/api/v1/eudr-cim/compliance/dd-recommendations": "eudr-cim:compliance:read",
+    "GET:/api/v1/eudr-cim/compliance/country-classifications": "eudr-cim:compliance:read",
+    # Health (1 route)
+    "GET:/api/v1/eudr-cim/health": "eudr-cim:read",
+
+    # =========================================================================
+    # AGENT-EUDR-020: Deforestation Alert System
+    # =========================================================================
+
+    # Satellite Change Detection (4 routes)
+    "POST:/api/v1/eudr-das/satellite/detect": "eudr-das:satellite:detect",
+    "POST:/api/v1/eudr-das/satellite/scan": "eudr-das:satellite:detect",
+    "GET:/api/v1/eudr-das/satellite/sources": "eudr-das:satellite:read",
+    "GET:/api/v1/eudr-das/satellite/{detection_id}/imagery": "eudr-das:satellite:read",
+
+    # Alert Management (6 routes)
+    "GET:/api/v1/eudr-das/alerts": "eudr-das:alerts:read",
+    "GET:/api/v1/eudr-das/alerts/{alert_id}": "eudr-das:alerts:read",
+    "POST:/api/v1/eudr-das/alerts": "eudr-das:alerts:write",
+    "POST:/api/v1/eudr-das/alerts/batch": "eudr-das:alerts:write",
+    "GET:/api/v1/eudr-das/alerts/summary": "eudr-das:alerts:read",
+    "GET:/api/v1/eudr-das/alerts/statistics": "eudr-das:alerts:read",
+
+    # Severity Classification (4 routes)
+    "POST:/api/v1/eudr-das/severity/classify": "eudr-das:severity:analyze",
+    "POST:/api/v1/eudr-das/severity/reclassify": "eudr-das:severity:analyze",
+    "GET:/api/v1/eudr-das/severity/thresholds": "eudr-das:severity:read",
+    "GET:/api/v1/eudr-das/severity/distribution": "eudr-das:severity:read",
+
+    # Spatial Buffer Management (5 routes)
+    "POST:/api/v1/eudr-das/buffer/create": "eudr-das:buffer:write",
+    "PUT:/api/v1/eudr-das/buffer/{buffer_id}": "eudr-das:buffer:write",
+    "POST:/api/v1/eudr-das/buffer/check": "eudr-das:buffer:read",
+    "GET:/api/v1/eudr-das/buffer/violations": "eudr-das:buffer:read",
+    "GET:/api/v1/eudr-das/buffer/zones": "eudr-das:buffer:read",
+
+    # Cutoff Date Verification (4 routes)
+    "POST:/api/v1/eudr-das/cutoff/verify": "eudr-das:cutoff:analyze",
+    "POST:/api/v1/eudr-das/cutoff/batch-verify": "eudr-das:cutoff:analyze",
+    "GET:/api/v1/eudr-das/cutoff/{detection_id}/evidence": "eudr-das:cutoff:read",
+    "GET:/api/v1/eudr-das/cutoff/{detection_id}/timeline": "eudr-das:cutoff:read",
+
+    # Historical Baseline (4 routes)
+    "POST:/api/v1/eudr-das/baseline/establish": "eudr-das:baseline:write",
+    "POST:/api/v1/eudr-das/baseline/compare": "eudr-das:baseline:analyze",
+    "PUT:/api/v1/eudr-das/baseline/{baseline_id}": "eudr-das:baseline:write",
+    "GET:/api/v1/eudr-das/baseline/coverage": "eudr-das:baseline:read",
+
+    # Alert Workflow (6 routes)
+    "POST:/api/v1/eudr-das/workflow/triage": "eudr-das:workflow:write",
+    "POST:/api/v1/eudr-das/workflow/assign": "eudr-das:workflow:write",
+    "POST:/api/v1/eudr-das/workflow/investigate": "eudr-das:workflow:write",
+    "POST:/api/v1/eudr-das/workflow/resolve": "eudr-das:workflow:write",
+    "POST:/api/v1/eudr-das/workflow/escalate": "eudr-das:workflow:write",
+    "GET:/api/v1/eudr-das/workflow/sla": "eudr-das:workflow:read",
+
+    # Compliance Impact (4 routes)
+    "POST:/api/v1/eudr-das/compliance/assess": "eudr-das:compliance:analyze",
+    "GET:/api/v1/eudr-das/compliance/{alert_id}/affected-products": "eudr-das:compliance:read",
+    "GET:/api/v1/eudr-das/compliance/recommendations": "eudr-das:compliance:read",
+    "POST:/api/v1/eudr-das/compliance/remediation": "eudr-das:compliance:write",
+
+    # Health (1 route)
+    "GET:/api/v1/eudr-das/health": "eudr-das:read",
+
+    # ── AGENT-EUDR-021: Indigenous Rights Checker ─────────────────────────
+    # Territory Management (5 routes)
+    "POST:/api/v1/eudr-irc/territories": "eudr-irc:territories:create",
+    "GET:/api/v1/eudr-irc/territories": "eudr-irc:territories:read",
+    "GET:/api/v1/eudr-irc/territories/{territory_id}": "eudr-irc:territories:read",
+    "PUT:/api/v1/eudr-irc/territories/{territory_id}": "eudr-irc:territories:update",
+    "DELETE:/api/v1/eudr-irc/territories/{territory_id}": "eudr-irc:territories:delete",
+
+    # FPIC Verification (4 routes)
+    "POST:/api/v1/eudr-irc/fpic/verify": "eudr-irc:fpic:verify",
+    "GET:/api/v1/eudr-irc/fpic/documents": "eudr-irc:fpic:read",
+    "GET:/api/v1/eudr-irc/fpic/documents/{doc_id}": "eudr-irc:fpic:read",
+    "POST:/api/v1/eudr-irc/fpic/score": "eudr-irc:fpic:verify",
+
+    # Land Rights Overlap (4 routes)
+    "POST:/api/v1/eudr-irc/overlap/analyze": "eudr-irc:overlap:analyze",
+    "GET:/api/v1/eudr-irc/overlap/by-plot/{plot_id}": "eudr-irc:overlap:read",
+    "GET:/api/v1/eudr-irc/overlap/by-territory/{territory_id}": "eudr-irc:overlap:read",
+    "POST:/api/v1/eudr-irc/overlap/bulk": "eudr-irc:overlap:analyze",
+
+    # Community Consultations (3 routes)
+    "POST:/api/v1/eudr-irc/consultations": "eudr-irc:consultations:create",
+    "GET:/api/v1/eudr-irc/consultations": "eudr-irc:consultations:read",
+    "GET:/api/v1/eudr-irc/consultations/{consultation_id}": "eudr-irc:consultations:read",
+
+    # Rights Violations (4 routes)
+    "POST:/api/v1/eudr-irc/violations/detect": "eudr-irc:violations:detect",
+    "GET:/api/v1/eudr-irc/violations": "eudr-irc:violations:read",
+    "GET:/api/v1/eudr-irc/violations/{violation_id}": "eudr-irc:violations:read",
+    "PUT:/api/v1/eudr-irc/violations/{violation_id}/resolve": "eudr-irc:violations:resolve",
+
+    # Indigenous Community Registry (3 routes)
+    "POST:/api/v1/eudr-irc/communities": "eudr-irc:consultations:create",
+    "GET:/api/v1/eudr-irc/communities": "eudr-irc:consultations:read",
+    "GET:/api/v1/eudr-irc/communities/{community_id}": "eudr-irc:consultations:read",
+
+    # Compliance Reporting (2 routes)
+    "GET:/api/v1/eudr-irc/compliance/report/{plot_id}": "eudr-irc:compliance:read",
+    "POST:/api/v1/eudr-irc/compliance/assess": "eudr-irc:compliance:read",
+
+    # Health (1 route)
+    "GET:/api/v1/eudr-irc/health": "eudr-irc:compliance:read",
+
+    # ── AGENT-EUDR-022: Protected Area Validator ──────────────────────────
+    # Protected Area Management (6 routes)
+    "POST:/api/v1/eudr-pav/protected-areas": "eudr-pav:protected-areas:create",
+    "GET:/api/v1/eudr-pav/protected-areas": "eudr-pav:protected-areas:read",
+    "GET:/api/v1/eudr-pav/protected-areas/{area_id}": "eudr-pav:protected-areas:read",
+    "PUT:/api/v1/eudr-pav/protected-areas/{area_id}": "eudr-pav:protected-areas:update",
+    "DELETE:/api/v1/eudr-pav/protected-areas/{area_id}": "eudr-pav:protected-areas:delete",
+    "POST:/api/v1/eudr-pav/protected-areas/search": "eudr-pav:protected-areas:read",
+
+    # Spatial Overlap Detection (5 routes)
+    "POST:/api/v1/eudr-pav/overlap/detect": "eudr-pav:overlap:analyze",
+    "POST:/api/v1/eudr-pav/overlap/analyze": "eudr-pav:overlap:analyze",
+    "POST:/api/v1/eudr-pav/overlap/bulk": "eudr-pav:overlap:analyze",
+    "GET:/api/v1/eudr-pav/overlap/by-plot/{plot_id}": "eudr-pav:overlap:read",
+    "GET:/api/v1/eudr-pav/overlap/by-area/{area_id}": "eudr-pav:overlap:read",
+
+    # Buffer Zone Monitoring (4 routes)
+    "POST:/api/v1/eudr-pav/buffer-zones/monitor": "eudr-pav:buffer-zones:monitor",
+    "GET:/api/v1/eudr-pav/buffer-zones/violations": "eudr-pav:buffer-zones:read",
+    "POST:/api/v1/eudr-pav/buffer-zones/analyze": "eudr-pav:buffer-zones:monitor",
+    "POST:/api/v1/eudr-pav/buffer-zones/bulk": "eudr-pav:buffer-zones:monitor",
+
+    # Designation Validation (3 routes)
+    "POST:/api/v1/eudr-pav/designation/validate": "eudr-pav:designation:validate",
+    "GET:/api/v1/eudr-pav/designation/status/{area_id}": "eudr-pav:designation:read",
+    "GET:/api/v1/eudr-pav/designation/history/{area_id}": "eudr-pav:designation:read",
+
+    # Risk Scoring (4 routes)
+    "POST:/api/v1/eudr-pav/risk/score": "eudr-pav:risk:score",
+    "GET:/api/v1/eudr-pav/risk/heatmap": "eudr-pav:risk:read",
+    "GET:/api/v1/eudr-pav/risk/summary": "eudr-pav:risk:read",
+    "GET:/api/v1/eudr-pav/risk/proximity-alerts": "eudr-pav:risk:read",
+
+    # Violation Management (4 routes)
+    "POST:/api/v1/eudr-pav/violations/detect": "eudr-pav:violations:detect",
+    "GET:/api/v1/eudr-pav/violations": "eudr-pav:violations:read",
+    "PUT:/api/v1/eudr-pav/violations/{violation_id}/resolve": "eudr-pav:violations:resolve",
+    "PUT:/api/v1/eudr-pav/violations/{violation_id}/escalate": "eudr-pav:violations:resolve",
+
+    # Compliance Reporting (3 routes)
+    "POST:/api/v1/eudr-pav/compliance/assess": "eudr-pav:compliance:read",
+    "GET:/api/v1/eudr-pav/compliance/report/{plot_id}": "eudr-pav:compliance:read",
+    "GET:/api/v1/eudr-pav/compliance/audit-trail/{plot_id}": "eudr-pav:compliance:read",
+
+    # PADDD Monitoring (3 routes)
+    "POST:/api/v1/eudr-pav/paddd/monitor": "eudr-pav:paddd:monitor",
+    "GET:/api/v1/eudr-pav/paddd/events": "eudr-pav:paddd:read",
+    "POST:/api/v1/eudr-pav/paddd/impact-assessment": "eudr-pav:paddd:monitor",
+
+    # Health (1 route)
+    "GET:/api/v1/eudr-pav/health": "eudr-pav:compliance:read",
+
+    # ── AGENT-EUDR-023: Legal Compliance Verifier ──────────────────────────
+    # Legal Framework Management (6 routes)
+    "POST:/api/v1/eudr-lcv/frameworks": "eudr-lcv:framework:create",
+    "GET:/api/v1/eudr-lcv/frameworks": "eudr-lcv:framework:read",
+    "GET:/api/v1/eudr-lcv/frameworks/{framework_id}": "eudr-lcv:framework:read",
+    "PUT:/api/v1/eudr-lcv/frameworks/{framework_id}": "eudr-lcv:framework:update",
+    "POST:/api/v1/eudr-lcv/frameworks/search": "eudr-lcv:framework:read",
+    "GET:/api/v1/eudr-lcv/frameworks/by-country/{country_code}": "eudr-lcv:framework:read",
+
+    # Document Compliance Validation (5 routes)
+    "POST:/api/v1/eudr-lcv/documents/validate": "eudr-lcv:document:create",
+    "GET:/api/v1/eudr-lcv/documents": "eudr-lcv:document:read",
+    "GET:/api/v1/eudr-lcv/documents/{document_id}": "eudr-lcv:document:read",
+    "POST:/api/v1/eudr-lcv/documents/bulk-validate": "eudr-lcv:document:create",
+    "GET:/api/v1/eudr-lcv/documents/validation-status/{document_id}": "eudr-lcv:document:read",
+
+    # Certification Verification (5 routes)
+    "POST:/api/v1/eudr-lcv/certifications/verify": "eudr-lcv:certification:create",
+    "GET:/api/v1/eudr-lcv/certifications": "eudr-lcv:certification:read",
+    "GET:/api/v1/eudr-lcv/certifications/{certification_id}": "eudr-lcv:certification:read",
+    "POST:/api/v1/eudr-lcv/certifications/bulk-verify": "eudr-lcv:certification:create",
+    "GET:/api/v1/eudr-lcv/certifications/by-supplier/{supplier_id}": "eudr-lcv:certification:read",
+
+    # Red Flag Detection (5 routes)
+    "POST:/api/v1/eudr-lcv/red-flags/detect": "eudr-lcv:red-flag:create",
+    "GET:/api/v1/eudr-lcv/red-flags": "eudr-lcv:red-flag:read",
+    "GET:/api/v1/eudr-lcv/red-flags/{red_flag_id}": "eudr-lcv:red-flag:read",
+    "PUT:/api/v1/eudr-lcv/red-flags/{red_flag_id}/suppress": "eudr-lcv:red-flag:update",
+    "POST:/api/v1/eudr-lcv/red-flags/bulk-detect": "eudr-lcv:red-flag:create",
+
+    # Compliance Assessment (4 routes)
+    "POST:/api/v1/eudr-lcv/compliance/assess": "eudr-lcv:compliance:create",
+    "GET:/api/v1/eudr-lcv/compliance/assessments": "eudr-lcv:compliance:read",
+    "GET:/api/v1/eudr-lcv/compliance/assessments/{assessment_id}": "eudr-lcv:compliance:read",
+    "GET:/api/v1/eudr-lcv/compliance/summary/{supplier_id}": "eudr-lcv:compliance:read",
+
+    # Audit Report Processing (5 routes)
+    "POST:/api/v1/eudr-lcv/audits/ingest": "eudr-lcv:audit:create",
+    "GET:/api/v1/eudr-lcv/audits": "eudr-lcv:audit:read",
+    "GET:/api/v1/eudr-lcv/audits/{audit_id}": "eudr-lcv:audit:read",
+    "PUT:/api/v1/eudr-lcv/audits/{audit_id}/corrective-actions": "eudr-lcv:audit:update",
+    "GET:/api/v1/eudr-lcv/audits/by-supplier/{supplier_id}": "eudr-lcv:audit:read",
+
+    # Compliance Reporting (3 routes)
+    "POST:/api/v1/eudr-lcv/reports/generate": "eudr-lcv:report:create",
+    "GET:/api/v1/eudr-lcv/reports": "eudr-lcv:report:read",
+    "GET:/api/v1/eudr-lcv/reports/{report_id}": "eudr-lcv:report:read",
+
+    # Batch Operations (2 routes)
+    "POST:/api/v1/eudr-lcv/batch/process": "eudr-lcv:batch:create",
+    "GET:/api/v1/eudr-lcv/batch/{batch_id}/status": "eudr-lcv:batch:read",
+
+    # Health (1 route)
+    "GET:/api/v1/eudr-lcv/health": "eudr-lcv:compliance:read",
+
+    # ── AGENT-EUDR-024: Third-Party Audit Manager ────────────────────────
+    # Audit Management (6 routes)
+    "POST:/api/v1/eudr-tam/audits": "eudr-tam:audit:create",
+    "GET:/api/v1/eudr-tam/audits": "eudr-tam:audit:read",
+    "GET:/api/v1/eudr-tam/audits/{audit_id}": "eudr-tam:audit:read",
+    "POST:/api/v1/eudr-tam/audits/schedule": "eudr-tam:audit:schedule",
+    "POST:/api/v1/eudr-tam/audits/{audit_id}/start": "eudr-tam:audit:execute",
+    "POST:/api/v1/eudr-tam/audits/{audit_id}/complete": "eudr-tam:audit:execute",
+
+    # Auditor Registry (5 routes)
+    "POST:/api/v1/eudr-tam/auditors": "eudr-tam:auditor:create",
+    "GET:/api/v1/eudr-tam/auditors": "eudr-tam:auditor:read",
+    "GET:/api/v1/eudr-tam/auditors/{auditor_id}": "eudr-tam:auditor:read",
+    "POST:/api/v1/eudr-tam/auditors/match": "eudr-tam:auditor:match",
+    "POST:/api/v1/eudr-tam/auditors/{auditor_id}/qualification": "eudr-tam:auditor:update",
+
+    # Checklist Management (3 routes)
+    "GET:/api/v1/eudr-tam/checklists": "eudr-tam:checklist:read",
+    "POST:/api/v1/eudr-tam/checklists/custom": "eudr-tam:checklist:create",
+    "POST:/api/v1/eudr-tam/audits/{audit_id}/checklist-progress": "eudr-tam:checklist:update",
+
+    # Evidence Collection (3 routes)
+    "POST:/api/v1/eudr-tam/audits/{audit_id}/evidence": "eudr-tam:evidence:create",
+    "GET:/api/v1/eudr-tam/audits/{audit_id}/evidence": "eudr-tam:evidence:read",
+    "DELETE:/api/v1/eudr-tam/evidence/{evidence_id}": "eudr-tam:evidence:delete",
+
+    # Non-Conformance Management (5 routes)
+    "POST:/api/v1/eudr-tam/audits/{audit_id}/ncs": "eudr-tam:nc:create",
+    "GET:/api/v1/eudr-tam/ncs": "eudr-tam:nc:read",
+    "GET:/api/v1/eudr-tam/ncs/{nc_id}": "eudr-tam:nc:read",
+    "POST:/api/v1/eudr-tam/ncs/{nc_id}/classify": "eudr-tam:nc:classify",
+    "POST:/api/v1/eudr-tam/ncs/{nc_id}/root-cause": "eudr-tam:nc:create",
+
+    # CAR Management (6 routes)
+    "POST:/api/v1/eudr-tam/ncs/{nc_id}/car": "eudr-tam:car:create",
+    "GET:/api/v1/eudr-tam/cars": "eudr-tam:car:read",
+    "GET:/api/v1/eudr-tam/cars/{car_id}": "eudr-tam:car:read",
+    "POST:/api/v1/eudr-tam/cars/{car_id}/submit-plan": "eudr-tam:car:update",
+    "POST:/api/v1/eudr-tam/cars/{car_id}/verify": "eudr-tam:car:verify",
+    "POST:/api/v1/eudr-tam/cars/{car_id}/close": "eudr-tam:car:close",
+
+    # Certification Integration (4 routes)
+    "POST:/api/v1/eudr-tam/certificates": "eudr-tam:certificate:create",
+    "GET:/api/v1/eudr-tam/certificates": "eudr-tam:certificate:read",
+    "GET:/api/v1/eudr-tam/suppliers/{supplier_id}/certificates": "eudr-tam:certificate:read",
+    "POST:/api/v1/eudr-tam/certificates/validate-eudr": "eudr-tam:certificate:validate",
+
+    # Report Generation (4 routes)
+    "POST:/api/v1/eudr-tam/reports/generate": "eudr-tam:report:create",
+    "GET:/api/v1/eudr-tam/reports": "eudr-tam:report:read",
+    "GET:/api/v1/eudr-tam/reports/{report_id}": "eudr-tam:report:read",
+    "GET:/api/v1/eudr-tam/reports/{report_id}/download": "eudr-tam:report:download",
+
+    # Authority Liaison (3 routes)
+    "POST:/api/v1/eudr-tam/authority-interactions": "eudr-tam:authority:create",
+    "GET:/api/v1/eudr-tam/authority-interactions": "eudr-tam:authority:read",
+    "POST:/api/v1/eudr-tam/authority-inspections/respond": "eudr-tam:authority:respond",
+
+    # Analytics (2 routes)
+    "GET:/api/v1/eudr-tam/analytics/compliance-rate": "eudr-tam:analytics:read",
+    "GET:/api/v1/eudr-tam/analytics/nc-trends": "eudr-tam:analytics:read",
+
+    # System (2 routes)
+    "GET:/api/v1/eudr-tam/health": "eudr-tam:analytics:read",
+    "GET:/api/v1/eudr-tam/stats": "eudr-tam:analytics:read",
+
+    # ── AGENT-EUDR-025: Risk Mitigation Advisor ────────────────────────
+    # Strategy Generation (5 routes)
+    "POST:/api/v1/eudr-rma/strategies/generate": "eudr-rma:strategy:create",
+    "GET:/api/v1/eudr-rma/strategies": "eudr-rma:strategy:read",
+    "GET:/api/v1/eudr-rma/strategies/{strategy_id}": "eudr-rma:strategy:read",
+    "POST:/api/v1/eudr-rma/strategies/{strategy_id}/select": "eudr-rma:strategy:select",
+    "POST:/api/v1/eudr-rma/strategies/{strategy_id}/approve": "eudr-rma:strategy:select",
+
+    # Remediation Plans (6 routes)
+    "POST:/api/v1/eudr-rma/plans": "eudr-rma:plan:create",
+    "GET:/api/v1/eudr-rma/plans": "eudr-rma:plan:read",
+    "GET:/api/v1/eudr-rma/plans/{plan_id}": "eudr-rma:plan:read",
+    "PUT:/api/v1/eudr-rma/plans/{plan_id}": "eudr-rma:plan:update",
+    "PATCH:/api/v1/eudr-rma/plans/{plan_id}/status": "eudr-rma:plan:update",
+    "POST:/api/v1/eudr-rma/plans/{plan_id}/clone": "eudr-rma:plan:clone",
+
+    # Capacity Building (5 routes)
+    "POST:/api/v1/eudr-rma/capacity/enroll": "eudr-rma:capacity:create",
+    "GET:/api/v1/eudr-rma/capacity/programs": "eudr-rma:capacity:read",
+    "GET:/api/v1/eudr-rma/capacity/programs/{program_id}": "eudr-rma:capacity:read",
+    "PUT:/api/v1/eudr-rma/capacity/suppliers/{supplier_id}/progress": "eudr-rma:capacity:update",
+    "GET:/api/v1/eudr-rma/capacity/suppliers/{supplier_id}": "eudr-rma:capacity:read",
+
+    # Mitigation Library (3 routes)
+    "GET:/api/v1/eudr-rma/library/measures": "eudr-rma:library:read",
+    "GET:/api/v1/eudr-rma/library/measures/{measure_id}": "eudr-rma:library:read",
+    "GET:/api/v1/eudr-rma/library/search": "eudr-rma:library:read",
+
+    # Effectiveness Tracking (3 routes)
+    "GET:/api/v1/eudr-rma/effectiveness": "eudr-rma:effectiveness:read",
+    "GET:/api/v1/eudr-rma/effectiveness/{plan_id}": "eudr-rma:effectiveness:read",
+    "GET:/api/v1/eudr-rma/effectiveness/trends": "eudr-rma:effectiveness:read",
+
+    # Continuous Monitoring (4 routes)
+    "GET:/api/v1/eudr-rma/monitoring/dashboard": "eudr-rma:monitoring:read",
+    "GET:/api/v1/eudr-rma/monitoring/triggers": "eudr-rma:monitoring:read",
+    "POST:/api/v1/eudr-rma/monitoring/triggers/{trigger_id}/acknowledge": "eudr-rma:monitoring:update",
+    "PUT:/api/v1/eudr-rma/monitoring/triggers/{trigger_id}": "eudr-rma:monitoring:update",
+
+    # Budget Optimization (4 routes)
+    "POST:/api/v1/eudr-rma/optimization/run": "eudr-rma:optimization:create",
+    "GET:/api/v1/eudr-rma/optimization/results": "eudr-rma:optimization:read",
+    "GET:/api/v1/eudr-rma/optimization/results/{run_id}": "eudr-rma:optimization:read",
+    "GET:/api/v1/eudr-rma/optimization/scenarios": "eudr-rma:optimization:read",
+
+    # Collaboration Hub (4 routes)
+    "POST:/api/v1/eudr-rma/collaboration/messages": "eudr-rma:collaboration:create",
+    "GET:/api/v1/eudr-rma/collaboration/messages": "eudr-rma:collaboration:read",
+    "POST:/api/v1/eudr-rma/collaboration/tasks": "eudr-rma:collaboration:create",
+    "GET:/api/v1/eudr-rma/collaboration/tasks": "eudr-rma:collaboration:read",
+
+    # Reporting (4 routes)
+    "POST:/api/v1/eudr-rma/reports/generate": "eudr-rma:report:create",
+    "GET:/api/v1/eudr-rma/reports": "eudr-rma:report:read",
+    "GET:/api/v1/eudr-rma/reports/{report_id}": "eudr-rma:report:read",
+    "GET:/api/v1/eudr-rma/reports/{report_id}/download": "eudr-rma:report:read",
+
+    # Reporting (additional export routes - 2 routes)
+    "POST:/api/v1/eudr-rma/reports/{report_id}/export": "eudr-rma:report:create",
+    "GET:/api/v1/eudr-rma/reports/summary": "eudr-rma:report:read",
+
+    # Capacity Building (additional batch routes - 2 routes)
+    "POST:/api/v1/eudr-rma/capacity/batch-enroll": "eudr-rma:capacity:create",
+    "GET:/api/v1/eudr-rma/capacity/statistics": "eudr-rma:capacity:read",
+
+    # System (4 routes)
+    "GET:/api/v1/eudr-rma/health": "eudr-rma:monitoring:read",
+    "GET:/api/v1/eudr-rma/stats": "eudr-rma:monitoring:read",
+    "GET:/api/v1/eudr-rma/config": "eudr-rma:monitoring:read",
+    "GET:/api/v1/eudr-rma/version": "eudr-rma:monitoring:read",
+
+    # -----------------------------------------------------------------------
+    # EUDR Information Gathering Agent (AGENT-EUDR-027)
+    # Regulation: EU 2023/1115 (EUDR) Articles 4, 9, 10, 12, 13, 29, 31
+    # -----------------------------------------------------------------------
+
+    # Gathering Operations (4 routes)
+    "POST:/api/v1/gathering/operations": "eudr-iga:operations:write",
+    "GET:/api/v1/gathering/operations": "eudr-iga:operations:read",
+    "GET:/api/v1/gathering/operations/{operation_id}": "eudr-iga:operations:read",
+    "POST:/api/v1/gathering/operations/{operation_id}/execute": "eudr-iga:operations:write",
+
+    # External Database Queries (4 routes)
+    "POST:/api/v1/gathering/external/query": "eudr-iga:external:query",
+    "POST:/api/v1/gathering/external/batch-query": "eudr-iga:external:query",
+    "GET:/api/v1/gathering/external/sources": "eudr-iga:external:status",
+    "GET:/api/v1/gathering/external/sources/{source}/status": "eudr-iga:external:status",
+
+    # Certification Verification (4 routes)
+    "POST:/api/v1/gathering/certifications/verify": "eudr-iga:certifications:verify",
+    "POST:/api/v1/gathering/certifications/batch-verify": "eudr-iga:certifications:verify",
+    "GET:/api/v1/gathering/certifications/expiring": "eudr-iga:certifications:read",
+    "GET:/api/v1/gathering/certifications/supplier/{supplier_id}": "eudr-iga:certifications:read",
+
+    # Public Data (3 routes)
+    "POST:/api/v1/gathering/public-data/harvest": "eudr-iga:public-data:harvest",
+    "GET:/api/v1/gathering/public-data/freshness": "eudr-iga:public-data:read",
+    "GET:/api/v1/gathering/public-data/{source}/latest": "eudr-iga:public-data:read",
+
+    # Supplier Aggregation (4 routes)
+    "POST:/api/v1/gathering/suppliers/aggregate": "eudr-iga:suppliers:aggregate",
+    "GET:/api/v1/gathering/suppliers/{supplier_id}/profile": "eudr-iga:suppliers:read",
+    "GET:/api/v1/gathering/suppliers/discrepancies": "eudr-iga:suppliers:read",
+    "POST:/api/v1/gathering/suppliers/resolve/{supplier_id}": "eudr-iga:suppliers:resolve",
+
+    # Completeness Validation (3 routes)
+    "POST:/api/v1/gathering/completeness/validate": "eudr-iga:completeness:validate",
+    "GET:/api/v1/gathering/completeness/{operation_id}/report": "eudr-iga:completeness:read",
+    "GET:/api/v1/gathering/completeness/{operation_id}/gaps": "eudr-iga:completeness:read",
+
+    # Information Packages (4 routes)
+    "POST:/api/v1/gathering/packages/assemble": "eudr-iga:packages:assemble",
+    "GET:/api/v1/gathering/packages/{package_id}": "eudr-iga:packages:read",
+    "GET:/api/v1/gathering/packages/{package_id}/download": "eudr-iga:packages:read",
+    "GET:/api/v1/gathering/packages/{package_id}/verify": "eudr-iga:packages:verify",
+
+    # Normalization Audit (1 route)
+    "GET:/api/v1/gathering/normalization/log": "eudr-iga:normalization:read",
+
+    # Health (1 route)
+    "GET:/api/v1/gathering/health": "eudr-iga:operations:read",
+
+    # -----------------------------------------------------------------------
+    # EUDR Due Diligence Orchestrator (AGENT-EUDR-026)
+    # Regulation: EU 2023/1115 (EUDR) Articles 4, 8, 9, 10, 11, 12, 13, 31
+    # 19 RBAC permissions across 7 categories, 30+ endpoints
+    # -----------------------------------------------------------------------
+
+    # Workflow Management (6 routes)
+    "POST:/api/v1/eudr-ddo/workflows": "eudr-ddo:workflows:create",
+    "GET:/api/v1/eudr-ddo/workflows": "eudr-ddo:workflows:read",
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}": "eudr-ddo:workflows:read",
+    "DELETE:/api/v1/eudr-ddo/workflows/{workflow_id}": "eudr-ddo:workflows:delete",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/validate": "eudr-ddo:workflows:read",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/clone": "eudr-ddo:workflows:create",
+
+    # Execution Control (5 routes)
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/start": "eudr-ddo:workflows:manage",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/pause": "eudr-ddo:workflows:manage",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/resume": "eudr-ddo:workflows:manage",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/cancel": "eudr-ddo:workflows:manage",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/rollback": "eudr-ddo:checkpoints:rollback",
+
+    # Status Monitoring (4 routes)
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/status": "eudr-ddo:workflows:read",
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/progress": "eudr-ddo:workflows:read",
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/phase-status": "eudr-ddo:workflows:read",
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/eta": "eudr-ddo:workflows:read",
+
+    # Quality Gate Management (3 routes)
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/gates": "eudr-ddo:gates:read",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/gates/{gate_id}/override": "eudr-ddo:gates:override",
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/gates/{gate_id}/details": "eudr-ddo:gates:read",
+
+    # Checkpoint Management (3 routes)
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/checkpoints": "eudr-ddo:checkpoints:read",
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/checkpoints": "eudr-ddo:checkpoints:rollback",
+    "GET:/api/v1/eudr-ddo/checkpoints/{checkpoint_id}": "eudr-ddo:checkpoints:read",
+
+    # Audit Trail (1 route)
+    "GET:/api/v1/eudr-ddo/workflows/{workflow_id}/audit-trail": "eudr-ddo:audit-trail:read",
+
+    # Template Management (4 routes)
+    "GET:/api/v1/eudr-ddo/templates": "eudr-ddo:templates:read",
+    "GET:/api/v1/eudr-ddo/templates/commodity/{commodity}": "eudr-ddo:templates:read",
+    "POST:/api/v1/eudr-ddo/templates": "eudr-ddo:templates:manage",
+    "GET:/api/v1/eudr-ddo/templates/{template_id}": "eudr-ddo:templates:read",
+
+    # Package Management (4 routes)
+    "POST:/api/v1/eudr-ddo/workflows/{workflow_id}/package": "eudr-ddo:packages:generate",
+    "GET:/api/v1/eudr-ddo/packages/{package_id}": "eudr-ddo:packages:read",
+    "GET:/api/v1/eudr-ddo/packages/{package_id}/download": "eudr-ddo:packages:download",
+    "POST:/api/v1/eudr-ddo/packages/validate": "eudr-ddo:packages:read",
+
+    # Batch Operations (2 routes)
+    "POST:/api/v1/eudr-ddo/workflows/batch": "eudr-ddo:batch:manage",
+    "GET:/api/v1/eudr-ddo/workflows/batch/{batch_id}": "eudr-ddo:batch:manage",
+
+    # Circuit Breakers (2 routes)
+    "GET:/api/v1/eudr-ddo/circuit-breakers": "eudr-ddo:circuit-breakers:read",
+    "POST:/api/v1/eudr-ddo/circuit-breakers/{agent_id}/reset": "eudr-ddo:circuit-breakers:manage",
+
+    # Dead Letter Queue (2 routes)
+    "GET:/api/v1/eudr-ddo/dead-letter-queue": "eudr-ddo:dlq:read",
+    "POST:/api/v1/eudr-ddo/dead-letter-queue/{dlq_id}/resolve": "eudr-ddo:dlq:manage",
+
+    # Health & Monitoring (3 routes)
+    "GET:/api/v1/eudr-ddo/health": "eudr-ddo:workflows:read",
+    "GET:/api/v1/eudr-ddo/metrics": "eudr-ddo:workflows:read",
+    "GET:/api/v1/eudr-ddo/version": "eudr-ddo:workflows:read",
+
+    # -----------------------------------------------------------------------
+    # AGENT-EUDR-027: Information Gathering Agent (GL-EUDR-IGA-027)
+    # -----------------------------------------------------------------------
+
+    # Information Gathering Operations (2 routes)
+    "POST:/api/v1/eudr/information-gathering/gather": "eudr-iga:gather:execute",
+    "GET:/api/v1/eudr/information-gathering/gather/{operation_id}": "eudr-iga:gather:read",
+
+    # External Database Queries (1 route)
+    "POST:/api/v1/eudr/information-gathering/query/{source}": "eudr-iga:query:execute",
+
+    # Certificate Verification (2 routes)
+    "POST:/api/v1/eudr/information-gathering/verify-certificate": "eudr-iga:certificate:verify",
+    "POST:/api/v1/eudr/information-gathering/verify-certificates/batch": "eudr-iga:certificate:verify",
+
+    # Public Data Harvest (1 route)
+    "POST:/api/v1/eudr/information-gathering/harvest/{source}": "eudr-iga:harvest:execute",
+
+    # Supplier Aggregation (1 route)
+    "POST:/api/v1/eudr/information-gathering/aggregate-supplier/{supplier_id}": "eudr-iga:supplier:aggregate",
+
+    # Completeness Validation (1 route)
+    "POST:/api/v1/eudr/information-gathering/validate-completeness": "eudr-iga:completeness:validate",
+
+    # Package Assembly (1 route)
+    "POST:/api/v1/eudr/information-gathering/assemble-package": "eudr-iga:package:assemble",
+
+    # Health (1 route)
+    "GET:/api/v1/eudr/information-gathering/health": "eudr-iga:health:read",
+
+    # -----------------------------------------------------------------------
+    # AGENT-EUDR-028: Risk Assessment Engine (GL-EUDR-RAE-028)
+    # -----------------------------------------------------------------------
+
+    # Risk Assessment Operations (2 routes)
+    "POST:/api/v1/eudr/risk-assessment-engine/assess": "eudr-rae:assess:execute",
+    "GET:/api/v1/eudr/risk-assessment-engine/assess/{operation_id}": "eudr-rae:assess:read",
+
+    # Composite Score (1 route)
+    "POST:/api/v1/eudr/risk-assessment-engine/composite-score": "eudr-rae:composite:calculate",
+
+    # Article 10 Criteria (1 route)
+    "POST:/api/v1/eudr/risk-assessment-engine/evaluate-criteria": "eudr-rae:criteria:evaluate",
+
+    # Country Benchmarks (2 routes)
+    "GET:/api/v1/eudr/risk-assessment-engine/benchmarks/{country_code}": "eudr-rae:benchmarks:read",
+    "POST:/api/v1/eudr/risk-assessment-engine/benchmarks/batch": "eudr-rae:benchmarks:read",
+
+    # Classification (1 route)
+    "POST:/api/v1/eudr/risk-assessment-engine/classify": "eudr-rae:classify:execute",
+
+    # Simplified DD (1 route)
+    "POST:/api/v1/eudr/risk-assessment-engine/simplified-dd/check": "eudr-rae:simplified-dd:check",
+
+    # Override (1 route)
+    "POST:/api/v1/eudr/risk-assessment-engine/override": "eudr-rae:override:apply",
+
+    # Trend (1 route)
+    "GET:/api/v1/eudr/risk-assessment-engine/trend/{operator_id}/{commodity}": "eudr-rae:trend:read",
+
+    # Batch (1 route)
+    "POST:/api/v1/eudr/risk-assessment-engine/assess/batch": "eudr-rae:assess:batch",
+
+    # Health (1 route)
+    "GET:/api/v1/eudr/risk-assessment-engine/health": "eudr-rae:health:read",
+
+    # -----------------------------------------------------------------------
+    # AGENT-EUDR-029: Mitigation Measure Designer (GL-EUDR-MMD-029)
+    # -----------------------------------------------------------------------
+
+    # Strategy Design (3 routes)
+    "POST:/api/v1/eudr/mitigation-measure-designer/design-strategy": "eudr-mmd:strategies:write",
+    "GET:/api/v1/eudr/mitigation-measure-designer/strategies/{strategy_id}": "eudr-mmd:strategies:read",
+    "GET:/api/v1/eudr/mitigation-measure-designer/strategies": "eudr-mmd:strategies:read",
+
+    # Measure Lifecycle (3 routes)
+    "POST:/api/v1/eudr/mitigation-measure-designer/measures/{measure_id}/approve": "eudr-mmd:measures:approve",
+    "POST:/api/v1/eudr/mitigation-measure-designer/measures/{measure_id}/start": "eudr-mmd:measures:write",
+    "POST:/api/v1/eudr/mitigation-measure-designer/measures/{measure_id}/complete": "eudr-mmd:measures:write",
+
+    # Verification (1 route)
+    "POST:/api/v1/eudr/mitigation-measure-designer/verify/{strategy_id}": "eudr-mmd:verification:execute",
+
+    # Templates (2 routes)
+    "GET:/api/v1/eudr/mitigation-measure-designer/templates": "eudr-mmd:templates:read",
+    "GET:/api/v1/eudr/mitigation-measure-designer/templates/{template_id}": "eudr-mmd:templates:read",
+
+    # Reports (1 route)
+    "GET:/api/v1/eudr/mitigation-measure-designer/generate-report/{strategy_id}": "eudr-mmd:reports:generate",
+
+    # Workflows (1 route)
+    "GET:/api/v1/eudr/mitigation-measure-designer/workflows/{workflow_id}/status": "eudr-mmd:workflows:read",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/mitigation-measure-designer/health": None,
+
+    # ---------------------------------------------------------------------------
+    # AGENT-EUDR-030: Documentation Generator (12 routes)
+    # ---------------------------------------------------------------------------
+
+    # DDS Generation (3 routes)
+    "POST:/api/v1/eudr/documentation-generator/generate-dds": "eudr-dgn:dds:generate",
+    "GET:/api/v1/eudr/documentation-generator/dds/{dds_id}": "eudr-dgn:dds:read",
+    "GET:/api/v1/eudr/documentation-generator/dds": "eudr-dgn:dds:list",
+
+    # Article 9 Assembly (1 route)
+    "POST:/api/v1/eudr/documentation-generator/assemble-article9/{operator_id}": "eudr-dgn:article9:assemble",
+
+    # Risk & Mitigation Documentation (2 routes)
+    "POST:/api/v1/eudr/documentation-generator/document-risk/{assessment_id}": "eudr-dgn:risk:document",
+    "POST:/api/v1/eudr/documentation-generator/document-mitigation/{strategy_id}": "eudr-dgn:mitigation:document",
+
+    # Compliance Package (1 route)
+    "POST:/api/v1/eudr/documentation-generator/build-package/{dds_id}": "eudr-dgn:package:build",
+
+    # Submission (2 routes)
+    "POST:/api/v1/eudr/documentation-generator/submit/{dds_id}": "eudr-dgn:submission:submit",
+    "GET:/api/v1/eudr/documentation-generator/submissions/{submission_id}/status": "eudr-dgn:submission:read",
+
+    # Validation (1 route)
+    "POST:/api/v1/eudr/documentation-generator/validate/{dds_id}": "eudr-dgn:validation:execute",
+
+    # Version History (1 route)
+    "GET:/api/v1/eudr/documentation-generator/versions/{document_id}": "eudr-dgn:versions:read",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/documentation-generator/health": None,
+
+    # =========================================================================
+    # AGENT-EUDR-031: Stakeholder Engagement Tool (33 routes)
+    # =========================================================================
+
+    # Stakeholder Mapping (3 routes)
+    "POST:/api/v1/eudr/stakeholder-engagement/map-stakeholder": "eudr-set:stakeholders:write",
+    "GET:/api/v1/eudr/stakeholder-engagement/stakeholders": "eudr-set:stakeholders:read",
+    "GET:/api/v1/eudr/stakeholder-engagement/stakeholders/{stakeholder_id}": "eudr-set:stakeholders:read",
+
+    # FPIC Workflow (5 routes)
+    "POST:/api/v1/eudr/stakeholder-engagement/initiate-fpic": "eudr-set:fpic:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/fpic/{fpic_id}/advance-stage": "eudr-set:fpic:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/fpic/{fpic_id}/record-consent": "eudr-set:fpic:write",
+    "GET:/api/v1/eudr/stakeholder-engagement/fpic/{fpic_id}": "eudr-set:fpic:read",
+    "GET:/api/v1/eudr/stakeholder-engagement/fpic": "eudr-set:fpic:read",
+
+    # Grievance Mechanism (7 routes)
+    "POST:/api/v1/eudr/stakeholder-engagement/submit-grievance": "eudr-set:grievances:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/grievances/{grievance_id}/triage": "eudr-set:grievances:triage",
+    "POST:/api/v1/eudr/stakeholder-engagement/grievances/{grievance_id}/investigate": "eudr-set:grievances:investigate",
+    "POST:/api/v1/eudr/stakeholder-engagement/grievances/{grievance_id}/resolve": "eudr-set:grievances:resolve",
+    "POST:/api/v1/eudr/stakeholder-engagement/grievances/{grievance_id}/appeal": "eudr-set:grievances:appeal",
+    "GET:/api/v1/eudr/stakeholder-engagement/grievances/{grievance_id}": "eudr-set:grievances:read",
+    "GET:/api/v1/eudr/stakeholder-engagement/grievances": "eudr-set:grievances:read",
+
+    # Consultation Records (7 routes)
+    "POST:/api/v1/eudr/stakeholder-engagement/create-consultation": "eudr-set:consultations:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/consultations/{consultation_id}/participants": "eudr-set:consultations:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/consultations/{consultation_id}/outcomes": "eudr-set:consultations:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/consultations/{consultation_id}/evidence": "eudr-set:consultations:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/consultations/{consultation_id}/finalize": "eudr-set:consultations:finalize",
+    "GET:/api/v1/eudr/stakeholder-engagement/consultations/{consultation_id}": "eudr-set:consultations:read",
+    "GET:/api/v1/eudr/stakeholder-engagement/consultations": "eudr-set:consultations:read",
+
+    # Communications (5 routes)
+    "POST:/api/v1/eudr/stakeholder-engagement/send-communication": "eudr-set:communications:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/schedule-communication": "eudr-set:communications:write",
+    "POST:/api/v1/eudr/stakeholder-engagement/send-campaign": "eudr-set:communications:campaign",
+    "GET:/api/v1/eudr/stakeholder-engagement/communications/{communication_id}": "eudr-set:communications:read",
+    "GET:/api/v1/eudr/stakeholder-engagement/communications": "eudr-set:communications:read",
+
+    # Engagement Assessments (2 routes)
+    "POST:/api/v1/eudr/stakeholder-engagement/assess-engagement/{stakeholder_id}": "eudr-set:assessments:write",
+    "GET:/api/v1/eudr/stakeholder-engagement/assessments/{assessment_id}": "eudr-set:assessments:read",
+
+    # Compliance Reports (3 routes)
+    "POST:/api/v1/eudr/stakeholder-engagement/generate-report": "eudr-set:reports:generate",
+    "GET:/api/v1/eudr/stakeholder-engagement/reports/{report_id}": "eudr-set:reports:read",
+    "GET:/api/v1/eudr/stakeholder-engagement/reports/{report_id}/export": "eudr-set:reports:export",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/stakeholder-engagement/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-032: Grievance Mechanism Manager (29 routes)
+    # ===========================================================================
+
+    # Analytics (3 routes)
+    "POST:/api/v1/eudr/grievance-mechanism-manager/analyze-patterns": "eudr-gmm:analytics:run",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/analytics": "eudr-gmm:analytics:read",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/analytics/{analytics_id}": "eudr-gmm:analytics:read",
+
+    # Root Cause (3 routes)
+    "POST:/api/v1/eudr/grievance-mechanism-manager/analyze-root-cause": "eudr-gmm:root-cause:analyze",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/root-causes": "eudr-gmm:root-cause:read",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/root-causes/{root_cause_id}": "eudr-gmm:root-cause:read",
+
+    # Mediation (7 routes)
+    "POST:/api/v1/eudr/grievance-mechanism-manager/initiate-mediation": "eudr-gmm:mediation:initiate",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/mediations/{mediation_id}/advance": "eudr-gmm:mediation:advance",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/mediations/{mediation_id}/sessions": "eudr-gmm:mediation:write",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/mediations/{mediation_id}/agreements": "eudr-gmm:mediation:write",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/mediations/{mediation_id}/settlement": "eudr-gmm:mediation:settle",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/mediations": "eudr-gmm:mediation:read",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/mediations/{mediation_id}": "eudr-gmm:mediation:read",
+
+    # Remediation (6 routes)
+    "POST:/api/v1/eudr/grievance-mechanism-manager/create-remediation": "eudr-gmm:remediation:create",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/remediations/{remediation_id}/progress": "eudr-gmm:remediation:update",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/remediations/{remediation_id}/verify": "eudr-gmm:remediation:verify",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/remediations/{remediation_id}/satisfaction": "eudr-gmm:remediation:update",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/remediations": "eudr-gmm:remediation:read",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/remediations/{remediation_id}": "eudr-gmm:remediation:read",
+
+    # Risk Scoring (3 routes)
+    "POST:/api/v1/eudr/grievance-mechanism-manager/compute-risk-score": "eudr-gmm:risk-scoring:compute",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/risk-scores": "eudr-gmm:risk-scoring:read",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/risk-scores/{risk_score_id}": "eudr-gmm:risk-scoring:read",
+
+    # Collective Grievances (4 routes)
+    "POST:/api/v1/eudr/grievance-mechanism-manager/create-collective": "eudr-gmm:collective:create",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/collectives/{collective_id}/demands": "eudr-gmm:collective:update",
+    "POST:/api/v1/eudr/grievance-mechanism-manager/collectives/{collective_id}/status": "eudr-gmm:collective:update",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/collectives": "eudr-gmm:collective:read",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/collectives/{collective_id}": "eudr-gmm:collective:read",
+
+    # Regulatory Reporting (3 routes)
+    "POST:/api/v1/eudr/grievance-mechanism-manager/generate-report": "eudr-gmm:reports:generate",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/reports": "eudr-gmm:reports:read",
+    "GET:/api/v1/eudr/grievance-mechanism-manager/reports/{report_id}": "eudr-gmm:reports:read",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/grievance-mechanism-manager/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-033: Continuous Monitoring Agent (30 routes)
+    # ===========================================================================
+
+    # Monitoring Jobs (7 routes)
+    "POST:/api/v1/eudr/continuous-monitoring/jobs": "eudr-cm:jobs:create",
+    "GET:/api/v1/eudr/continuous-monitoring/jobs": "eudr-cm:jobs:read",
+    "GET:/api/v1/eudr/continuous-monitoring/jobs/{job_id}": "eudr-cm:jobs:read",
+    "PUT:/api/v1/eudr/continuous-monitoring/jobs/{job_id}": "eudr-cm:jobs:update",
+    "DELETE:/api/v1/eudr/continuous-monitoring/jobs/{job_id}": "eudr-cm:jobs:delete",
+    "POST:/api/v1/eudr/continuous-monitoring/jobs/{job_id}/execute": "eudr-cm:jobs:execute",
+    "POST:/api/v1/eudr/continuous-monitoring/jobs/{job_id}/pause": "eudr-cm:jobs:update",
+
+    # Alerts (6 routes)
+    "GET:/api/v1/eudr/continuous-monitoring/alerts": "eudr-cm:alerts:read",
+    "GET:/api/v1/eudr/continuous-monitoring/alerts/{alert_id}": "eudr-cm:alerts:read",
+    "POST:/api/v1/eudr/continuous-monitoring/alerts/{alert_id}/acknowledge": "eudr-cm:alerts:acknowledge",
+    "POST:/api/v1/eudr/continuous-monitoring/alerts/{alert_id}/resolve": "eudr-cm:alerts:resolve",
+    "DELETE:/api/v1/eudr/continuous-monitoring/alerts/{alert_id}": "eudr-cm:alerts:delete",
+    "GET:/api/v1/eudr/continuous-monitoring/alerts/summary": "eudr-cm:alerts:read",
+
+    # Compliance Scanning (4 routes)
+    "POST:/api/v1/eudr/continuous-monitoring/compliance/scan": "eudr-cm:compliance:scan",
+    "GET:/api/v1/eudr/continuous-monitoring/compliance": "eudr-cm:compliance:read",
+    "GET:/api/v1/eudr/continuous-monitoring/compliance/{scan_id}": "eudr-cm:compliance:read",
+    "GET:/api/v1/eudr/continuous-monitoring/compliance/{scan_id}/export": "eudr-cm:compliance:export",
+
+    # Change Detection (3 routes)
+    "GET:/api/v1/eudr/continuous-monitoring/changes": "eudr-cm:changes:read",
+    "GET:/api/v1/eudr/continuous-monitoring/changes/{change_id}": "eudr-cm:changes:read",
+    "POST:/api/v1/eudr/continuous-monitoring/changes/{change_id}/analyze": "eudr-cm:changes:analyze",
+
+    # Risk Monitoring (3 routes)
+    "POST:/api/v1/eudr/continuous-monitoring/risk/monitor": "eudr-cm:risk:monitor",
+    "GET:/api/v1/eudr/continuous-monitoring/risk": "eudr-cm:risk:read",
+    "GET:/api/v1/eudr/continuous-monitoring/risk/{assessment_id}": "eudr-cm:risk:read",
+
+    # Data Freshness (3 routes)
+    "POST:/api/v1/eudr/continuous-monitoring/freshness/validate": "eudr-cm:freshness:validate",
+    "GET:/api/v1/eudr/continuous-monitoring/freshness": "eudr-cm:freshness:read",
+    "GET:/api/v1/eudr/continuous-monitoring/freshness/{source_id}": "eudr-cm:freshness:read",
+
+    # Regulatory Tracking (2 routes)
+    "GET:/api/v1/eudr/continuous-monitoring/regulatory": "eudr-cm:regulatory:read",
+    "POST:/api/v1/eudr/continuous-monitoring/regulatory/import": "eudr-cm:regulatory:import",
+
+    # System Configuration (2 routes)
+    "GET:/api/v1/eudr/continuous-monitoring/config": "eudr-cm:config:read",
+    "PUT:/api/v1/eudr/continuous-monitoring/config": "eudr-cm:config:update",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/continuous-monitoring/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-034: Annual Review Scheduler (30 routes)
+    # ===========================================================================
+
+    # Review Cycles (5 routes)
+    "POST:/api/v1/eudr/annual-review-scheduler/cycles": "eudr-ars:cycles:create",
+    "GET:/api/v1/eudr/annual-review-scheduler/cycles": "eudr-ars:cycles:read",
+    "GET:/api/v1/eudr/annual-review-scheduler/cycles/{cycle_id}": "eudr-ars:cycles:read",
+    "PUT:/api/v1/eudr/annual-review-scheduler/cycles/{cycle_id}": "eudr-ars:cycles:update",
+    "DELETE:/api/v1/eudr/annual-review-scheduler/cycles/{cycle_id}": "eudr-ars:cycles:delete",
+    "POST:/api/v1/eudr/annual-review-scheduler/cycles/{cycle_id}/schedule": "eudr-ars:cycles:schedule",
+
+    # Tasks (6 routes)
+    "POST:/api/v1/eudr/annual-review-scheduler/tasks": "eudr-ars:tasks:create",
+    "GET:/api/v1/eudr/annual-review-scheduler/tasks": "eudr-ars:tasks:read",
+    "GET:/api/v1/eudr/annual-review-scheduler/tasks/{task_id}": "eudr-ars:tasks:read",
+    "PUT:/api/v1/eudr/annual-review-scheduler/tasks/{task_id}": "eudr-ars:tasks:update",
+    "DELETE:/api/v1/eudr/annual-review-scheduler/tasks/{task_id}": "eudr-ars:tasks:delete",
+    "POST:/api/v1/eudr/annual-review-scheduler/tasks/{task_id}/assign": "eudr-ars:tasks:assign",
+    "POST:/api/v1/eudr/annual-review-scheduler/tasks/{task_id}/complete": "eudr-ars:tasks:complete",
+
+    # Deadlines (4 routes)
+    "POST:/api/v1/eudr/annual-review-scheduler/deadlines": "eudr-ars:deadlines:create",
+    "GET:/api/v1/eudr/annual-review-scheduler/deadlines": "eudr-ars:deadlines:read",
+    "PUT:/api/v1/eudr/annual-review-scheduler/deadlines/{deadline_id}": "eudr-ars:deadlines:update",
+    "POST:/api/v1/eudr/annual-review-scheduler/deadlines/{deadline_id}/submit": "eudr-ars:deadlines:submit",
+
+    # Checklists (4 routes)
+    "POST:/api/v1/eudr/annual-review-scheduler/checklists/generate": "eudr-ars:checklists:generate",
+    "GET:/api/v1/eudr/annual-review-scheduler/checklists": "eudr-ars:checklists:read",
+    "GET:/api/v1/eudr/annual-review-scheduler/checklists/{checklist_id}": "eudr-ars:checklists:read",
+    "PUT:/api/v1/eudr/annual-review-scheduler/checklists/{checklist_id}": "eudr-ars:checklists:update",
+    "POST:/api/v1/eudr/annual-review-scheduler/checklists/{checklist_id}/complete": "eudr-ars:checklists:complete",
+
+    # Year-over-Year Comparison (3 routes)
+    "POST:/api/v1/eudr/annual-review-scheduler/comparison/run": "eudr-ars:comparison:run",
+    "GET:/api/v1/eudr/annual-review-scheduler/comparison": "eudr-ars:comparison:read",
+    "GET:/api/v1/eudr/annual-review-scheduler/comparison/{comparison_id}/export": "eudr-ars:comparison:export",
+
+    # Calendar Integration (5 routes)
+    "GET:/api/v1/eudr/annual-review-scheduler/calendar": "eudr-ars:calendar:read",
+    "POST:/api/v1/eudr/annual-review-scheduler/calendar/events": "eudr-ars:calendar:create",
+    "PUT:/api/v1/eudr/annual-review-scheduler/calendar/events/{event_id}": "eudr-ars:calendar:update",
+    "DELETE:/api/v1/eudr/annual-review-scheduler/calendar/events/{event_id}": "eudr-ars:calendar:delete",
+    "POST:/api/v1/eudr/annual-review-scheduler/calendar/sync": "eudr-ars:calendar:sync",
+
+    # Notifications (3 routes)
+    "POST:/api/v1/eudr/annual-review-scheduler/notifications/send": "eudr-ars:notifications:send",
+    "GET:/api/v1/eudr/annual-review-scheduler/notifications": "eudr-ars:notifications:read",
+    "POST:/api/v1/eudr/annual-review-scheduler/notifications/{notification_id}/acknowledge": "eudr-ars:notifications:acknowledge",
+
+    # System Configuration (2 routes)
+    "GET:/api/v1/eudr/annual-review-scheduler/config": "eudr-ars:config:read",
+    "PUT:/api/v1/eudr/annual-review-scheduler/config": "eudr-ars:config:update",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/annual-review-scheduler/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-035: Improvement Plan Creator (30 routes)
+    # ===========================================================================
+
+    # Plans (5 routes)
+    "POST:/api/v1/eudr/improvement-plan-creator/plans": "eudr-ipc:plans:create",
+    "GET:/api/v1/eudr/improvement-plan-creator/plans": "eudr-ipc:plans:read",
+    "GET:/api/v1/eudr/improvement-plan-creator/plans/{plan_id}": "eudr-ipc:plans:read",
+    "PUT:/api/v1/eudr/improvement-plan-creator/plans/{plan_id}": "eudr-ipc:plans:update",
+    "DELETE:/api/v1/eudr/improvement-plan-creator/plans/{plan_id}": "eudr-ipc:plans:delete",
+    "POST:/api/v1/eudr/improvement-plan-creator/plans/{plan_id}/publish": "eudr-ipc:plans:publish",
+
+    # Findings (3 routes)
+    "GET:/api/v1/eudr/improvement-plan-creator/findings": "eudr-ipc:findings:read",
+    "GET:/api/v1/eudr/improvement-plan-creator/findings/aggregate": "eudr-ipc:findings:aggregate",
+    "POST:/api/v1/eudr/improvement-plan-creator/findings/analyze": "eudr-ipc:findings:analyze",
+
+    # Actions (6 routes)
+    "POST:/api/v1/eudr/improvement-plan-creator/actions": "eudr-ipc:actions:create",
+    "GET:/api/v1/eudr/improvement-plan-creator/actions": "eudr-ipc:actions:read",
+    "GET:/api/v1/eudr/improvement-plan-creator/actions/{action_id}": "eudr-ipc:actions:read",
+    "PUT:/api/v1/eudr/improvement-plan-creator/actions/{action_id}": "eudr-ipc:actions:update",
+    "DELETE:/api/v1/eudr/improvement-plan-creator/actions/{action_id}": "eudr-ipc:actions:delete",
+    "POST:/api/v1/eudr/improvement-plan-creator/actions/{action_id}/assign": "eudr-ipc:actions:assign",
+    "POST:/api/v1/eudr/improvement-plan-creator/actions/{action_id}/complete": "eudr-ipc:actions:complete",
+
+    # Root Causes (2 routes)
+    "POST:/api/v1/eudr/improvement-plan-creator/root-causes/analyze": "eudr-ipc:root-causes:analyze",
+    "GET:/api/v1/eudr/improvement-plan-creator/root-causes": "eudr-ipc:root-causes:read",
+
+    # Prioritization (3 routes)
+    "POST:/api/v1/eudr/improvement-plan-creator/prioritization/compute": "eudr-ipc:prioritization:compute",
+    "GET:/api/v1/eudr/improvement-plan-creator/prioritization": "eudr-ipc:prioritization:read",
+    "PUT:/api/v1/eudr/improvement-plan-creator/prioritization/{plan_id}": "eudr-ipc:prioritization:update",
+
+    # Progress (3 routes)
+    "GET:/api/v1/eudr/improvement-plan-creator/progress": "eudr-ipc:progress:read",
+    "PUT:/api/v1/eudr/improvement-plan-creator/progress/{plan_id}": "eudr-ipc:progress:update",
+    "GET:/api/v1/eudr/improvement-plan-creator/progress/{plan_id}/export": "eudr-ipc:progress:export",
+
+    # Stakeholders (3 routes)
+    "POST:/api/v1/eudr/improvement-plan-creator/stakeholders/assign": "eudr-ipc:stakeholders:assign",
+    "GET:/api/v1/eudr/improvement-plan-creator/stakeholders": "eudr-ipc:stakeholders:read",
+    "POST:/api/v1/eudr/improvement-plan-creator/stakeholders/notify": "eudr-ipc:stakeholders:notify",
+
+    # Config (2 routes)
+    "GET:/api/v1/eudr/improvement-plan-creator/config": "eudr-ipc:config:read",
+    "PUT:/api/v1/eudr/improvement-plan-creator/config": "eudr-ipc:config:update",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/improvement-plan-creator/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-036: EU Information System Interface (30 routes)
+    # ===========================================================================
+
+    # DDS Submissions (7 routes)
+    "POST:/api/v1/eudr/eu-information-system/submissions": "eudr-euis:submissions:create",
+    "GET:/api/v1/eudr/eu-information-system/submissions": "eudr-euis:submissions:read",
+    "GET:/api/v1/eudr/eu-information-system/submissions/{submission_id}": "eudr-euis:submissions:read",
+    "PUT:/api/v1/eudr/eu-information-system/submissions/{submission_id}": "eudr-euis:submissions:update",
+    "DELETE:/api/v1/eudr/eu-information-system/submissions/{submission_id}": "eudr-euis:submissions:delete",
+    "POST:/api/v1/eudr/eu-information-system/submissions/{submission_id}/submit": "eudr-euis:submissions:submit",
+    "POST:/api/v1/eudr/eu-information-system/submissions/{submission_id}/validate": "eudr-euis:submissions:validate",
+
+    # Operators (5 routes)
+    "POST:/api/v1/eudr/eu-information-system/operators": "eudr-euis:operators:create",
+    "GET:/api/v1/eudr/eu-information-system/operators": "eudr-euis:operators:read",
+    "GET:/api/v1/eudr/eu-information-system/operators/{operator_id}": "eudr-euis:operators:read",
+    "PUT:/api/v1/eudr/eu-information-system/operators/{operator_id}": "eudr-euis:operators:update",
+    "POST:/api/v1/eudr/eu-information-system/operators/{operator_id}/verify-eori": "eudr-euis:operators:verify",
+
+    # Geolocations (3 routes)
+    "POST:/api/v1/eudr/eu-information-system/geolocations/format": "eudr-euis:geolocations:format",
+    "POST:/api/v1/eudr/eu-information-system/geolocations/validate": "eudr-euis:geolocations:validate",
+    "GET:/api/v1/eudr/eu-information-system/geolocations": "eudr-euis:geolocations:read",
+
+    # Packages (4 routes)
+    "POST:/api/v1/eudr/eu-information-system/packages/assemble": "eudr-euis:packages:assemble",
+    "GET:/api/v1/eudr/eu-information-system/packages": "eudr-euis:packages:read",
+    "GET:/api/v1/eudr/eu-information-system/packages/{package_id}": "eudr-euis:packages:read",
+    "GET:/api/v1/eudr/eu-information-system/packages/{package_id}/download": "eudr-euis:packages:download",
+
+    # Statuses (3 routes)
+    "GET:/api/v1/eudr/eu-information-system/statuses": "eudr-euis:statuses:read",
+    "GET:/api/v1/eudr/eu-information-system/statuses/{submission_id}": "eudr-euis:statuses:read",
+    "POST:/api/v1/eudr/eu-information-system/statuses/{submission_id}/poll": "eudr-euis:statuses:poll",
+
+    # Audits (3 routes)
+    "GET:/api/v1/eudr/eu-information-system/audits": "eudr-euis:audits:read",
+    "GET:/api/v1/eudr/eu-information-system/audits/{audit_id}": "eudr-euis:audits:read",
+    "GET:/api/v1/eudr/eu-information-system/audits/export": "eudr-euis:audits:export",
+
+    # Batch (2 routes)
+    "POST:/api/v1/eudr/eu-information-system/batch/submit": "eudr-euis:batch:submit",
+    "GET:/api/v1/eudr/eu-information-system/batch/{batch_id}": "eudr-euis:batch:read",
+
+    # Config (2 routes)
+    "GET:/api/v1/eudr/eu-information-system/config": "eudr-euis:config:read",
+    "PUT:/api/v1/eudr/eu-information-system/config": "eudr-euis:config:update",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/eu-information-system/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-037: Due Diligence Statement Creator (32 routes)
+    # ===========================================================================
+
+    # Statements CRUD (5 routes)
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements": "eudr-ddsc:create",
+    "GET:/api/v1/eudr/due-diligence-statement-creator/statements": "eudr-ddsc:read",
+    "GET:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}": "eudr-ddsc:read",
+    "PUT:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}": "eudr-ddsc:update",
+    "DELETE:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}": "eudr-ddsc:delete",
+
+    # Validation (3 routes)
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/validate": "eudr-ddsc:validate",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/validate-geolocation": "eudr-ddsc:validate-geolocation",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/validate-compliance": "eudr-ddsc:validate-compliance",
+
+    # Submission (3 routes)
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/submit": "eudr-ddsc:submit",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/submit-bulk": "eudr-ddsc:submit-bulk",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/withdraw": "eudr-ddsc:withdraw",
+
+    # Amendment (3 routes)
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/amend": "eudr-ddsc:amend",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/amend-approve": "eudr-ddsc:amend-approve",
+    "GET:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/version-history": "eudr-ddsc:version-history",
+
+    # Document Packages (3 routes)
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/packages": "eudr-ddsc:package-add",
+    "DELETE:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/packages/{package_id}": "eudr-ddsc:package-remove",
+    "GET:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/packages": "eudr-ddsc:package-list",
+
+    # Signatures (3 routes)
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/sign": "eudr-ddsc:sign",
+    "GET:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/sign-verify": "eudr-ddsc:sign-verify",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/sign-approve": "eudr-ddsc:sign-approve",
+
+    # Risk Integration (2 routes)
+    "GET:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/risk-integrate": "eudr-ddsc:risk-integrate",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/risk-override": "eudr-ddsc:risk-override",
+
+    # Supply Chain (2 routes)
+    "GET:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/supply-chain": "eudr-ddsc:supply-chain-view",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/statements/{statement_id}/supply-chain-verify": "eudr-ddsc:supply-chain-verify",
+
+    # Reports (2 routes)
+    "POST:/api/v1/eudr/due-diligence-statement-creator/reports/generate": "eudr-ddsc:report-generate",
+    "GET:/api/v1/eudr/due-diligence-statement-creator/reports/{report_id}/download": "eudr-ddsc:report-download",
+
+    # Admin (2 routes)
+    "GET:/api/v1/eudr/due-diligence-statement-creator/admin": "eudr-ddsc:admin",
+    "POST:/api/v1/eudr/due-diligence-statement-creator/admin/bulk-operations": "eudr-ddsc:admin-bulk-operations",
+
+    # Config (2 routes)
+    "GET:/api/v1/eudr/due-diligence-statement-creator/config": "eudr-ddsc:config:read",
+    "PUT:/api/v1/eudr/due-diligence-statement-creator/config": "eudr-ddsc:config:update",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/due-diligence-statement-creator/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-038: Reference Number Generator (30 routes)
+    # ===========================================================================
+
+    # Generation (3 routes)
+    "POST:/api/v1/eudr/reference-number-generator/references": "eudr-rng:generate",
+    "POST:/api/v1/eudr/reference-number-generator/references/batch": "eudr-rng:generate-batch",
+    "POST:/api/v1/eudr/reference-number-generator/references/bulk": "eudr-rng:generate-bulk",
+
+    # Validation (3 routes)
+    "POST:/api/v1/eudr/reference-number-generator/references/{reference_id}/validate": "eudr-rng:validate",
+    "POST:/api/v1/eudr/reference-number-generator/references/{reference_id}/validate-format": "eudr-rng:validate-format",
+    "POST:/api/v1/eudr/reference-number-generator/references/{reference_id}/validate-checksum": "eudr-rng:validate-checksum",
+
+    # Read (3 routes)
+    "GET:/api/v1/eudr/reference-number-generator/references": "eudr-rng:read",
+    "GET:/api/v1/eudr/reference-number-generator/references/{reference_id}": "eudr-rng:read",
+    "GET:/api/v1/eudr/reference-number-generator/sequences": "eudr-rng:read-sequences",
+
+    # Lifecycle (3 routes)
+    "POST:/api/v1/eudr/reference-number-generator/references/{reference_id}/revoke": "eudr-rng:revoke",
+    "POST:/api/v1/eudr/reference-number-generator/references/{reference_id}/transfer": "eudr-rng:transfer",
+    "POST:/api/v1/eudr/reference-number-generator/references/{reference_id}/extend-expiry": "eudr-rng:extend-expiry",
+
+    # Batch (3 routes)
+    "POST:/api/v1/eudr/reference-number-generator/batches": "eudr-rng:batch-create",
+    "GET:/api/v1/eudr/reference-number-generator/batches/{batch_id}": "eudr-rng:batch-status",
+    "POST:/api/v1/eudr/reference-number-generator/batches/{batch_id}/cancel": "eudr-rng:batch-cancel",
+
+    # Sequences (3 routes)
+    "GET:/api/v1/eudr/reference-number-generator/sequences/{sequence_id}": "eudr-rng:sequence-view",
+    "POST:/api/v1/eudr/reference-number-generator/sequences/{sequence_id}/reset": "eudr-rng:sequence-reset",
+    "POST:/api/v1/eudr/reference-number-generator/sequences/{sequence_id}/reserve": "eudr-rng:sequence-reserve",
+
+    # Format Rules (2 routes)
+    "GET:/api/v1/eudr/reference-number-generator/format-rules": "eudr-rng:format-view",
+    "PUT:/api/v1/eudr/reference-number-generator/format-rules": "eudr-rng:format-update",
+
+    # Verification (2 routes)
+    "POST:/api/v1/eudr/reference-number-generator/references/{reference_id}/verify": "eudr-rng:verify",
+    "POST:/api/v1/eudr/reference-number-generator/references/verify-bulk": "eudr-rng:verify-bulk",
+
+    # Reports (2 routes)
+    "POST:/api/v1/eudr/reference-number-generator/reports/generate": "eudr-rng:report-generate",
+    "GET:/api/v1/eudr/reference-number-generator/reports/{report_id}/download": "eudr-rng:report-download",
+
+    # Admin (3 routes)
+    "GET:/api/v1/eudr/reference-number-generator/admin": "eudr-rng:admin",
+    "POST:/api/v1/eudr/reference-number-generator/admin/override-sequence": "eudr-rng:admin-override-sequence",
+    "POST:/api/v1/eudr/reference-number-generator/admin/purge-expired": "eudr-rng:admin-purge-expired",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/reference-number-generator/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-039: Customs Declaration Support (31 routes)
+    # ===========================================================================
+
+    # Declaration CRUD (4 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/declarations": "eudr-cds:create",
+    "GET:/api/v1/eudr/customs-declaration-support/declarations": "eudr-cds:read",
+    "GET:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}": "eudr-cds:read",
+    "PUT:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}": "eudr-cds:update",
+    "DELETE:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}": "eudr-cds:delete",
+
+    # Submission (3 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/submit": "eudr-cds:submit",
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/submit-batch": "eudr-cds:submit-batch",
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/cancel-submission": "eudr-cds:cancel-submission",
+
+    # Validation (3 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/validate": "eudr-cds:validate",
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/validate-cn-code": "eudr-cds:validate-cn-code",
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/validate-hs-code": "eudr-cds:validate-hs-code",
+
+    # CN/HS Codes (2 routes)
+    "GET:/api/v1/eudr/customs-declaration-support/cn-codes": "eudr-cds:cn-code-map",
+    "GET:/api/v1/eudr/customs-declaration-support/hs-codes": "eudr-cds:hs-code-lookup",
+
+    # Origin (2 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/origin-verify": "eudr-cds:origin-verify",
+    "PUT:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/origin": "eudr-cds:origin-update",
+
+    # Value & Tariff (2 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/value-calculate": "eudr-cds:value-calculate",
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/tariff-calculate": "eudr-cds:tariff-calculate",
+
+    # Compliance (2 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/compliance-check": "eudr-cds:compliance-check",
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/compliance-override": "eudr-cds:compliance-override",
+
+    # Customs Systems (3 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/ncts-submit": "eudr-cds:ncts-submit",
+    "POST:/api/v1/eudr/customs-declaration-support/declarations/{declaration_id}/ais-submit": "eudr-cds:ais-submit",
+    "GET:/api/v1/eudr/customs-declaration-support/mrn/{mrn_number}": "eudr-cds:mrn-lookup",
+
+    # Reports (2 routes)
+    "POST:/api/v1/eudr/customs-declaration-support/reports/generate": "eudr-cds:report-generate",
+    "GET:/api/v1/eudr/customs-declaration-support/reports/{report_id}/download": "eudr-cds:report-download",
+
+    # Admin (3 routes)
+    "GET:/api/v1/eudr/customs-declaration-support/admin": "eudr-cds:admin",
+    "POST:/api/v1/eudr/customs-declaration-support/admin/bulk-operations": "eudr-cds:admin-bulk-operations",
+    "POST:/api/v1/eudr/customs-declaration-support/admin/tariff-update": "eudr-cds:admin-tariff-update",
+
+    # Config (2 routes)
+    "GET:/api/v1/eudr/customs-declaration-support/config": "eudr-cds:config:read",
+    "PUT:/api/v1/eudr/customs-declaration-support/config": "eudr-cds:config:update",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/customs-declaration-support/health": None,
+
+    # ===========================================================================
+    # AGENT-EUDR-040: Authority Communication Manager (35 routes)
+    # ===========================================================================
+
+    # Communication CRUD (5 routes)
+    "POST:/api/v1/eudr/authority-communication-manager/communications": "eudr-acm:create",
+    "GET:/api/v1/eudr/authority-communication-manager/communications": "eudr-acm:read",
+    "GET:/api/v1/eudr/authority-communication-manager/communications/{communication_id}": "eudr-acm:read",
+    "POST:/api/v1/eudr/authority-communication-manager/communications/{communication_id}/respond": "eudr-acm:respond",
+    "POST:/api/v1/eudr/authority-communication-manager/communications/{communication_id}/close": "eudr-acm:close",
+
+    # Information Requests (3 routes)
+    "GET:/api/v1/eudr/authority-communication-manager/information-requests": "eudr-acm:request-receive",
+    "GET:/api/v1/eudr/authority-communication-manager/information-requests/{request_id}": "eudr-acm:request-receive",
+    "POST:/api/v1/eudr/authority-communication-manager/information-requests/{request_id}/respond": "eudr-acm:request-respond",
+
+    # Inspections (4 routes)
+    "GET:/api/v1/eudr/authority-communication-manager/inspections": "eudr-acm:inspection-schedule",
+    "GET:/api/v1/eudr/authority-communication-manager/inspections/{inspection_id}": "eudr-acm:inspection-schedule",
+    "POST:/api/v1/eudr/authority-communication-manager/inspections/{inspection_id}/coordinate": "eudr-acm:inspection-coordinate",
+    "POST:/api/v1/eudr/authority-communication-manager/inspections/{inspection_id}/report": "eudr-acm:inspection-report",
+
+    # Non-Compliance (4 routes)
+    "GET:/api/v1/eudr/authority-communication-manager/non-compliance": "eudr-acm:nc-receive",
+    "GET:/api/v1/eudr/authority-communication-manager/non-compliance/{notice_id}": "eudr-acm:nc-receive",
+    "POST:/api/v1/eudr/authority-communication-manager/non-compliance/{notice_id}/remediate": "eudr-acm:nc-remediate",
+    "POST:/api/v1/eudr/authority-communication-manager/non-compliance/{notice_id}/dispute": "eudr-acm:nc-dispute",
+
+    # Appeals (4 routes)
+    "POST:/api/v1/eudr/authority-communication-manager/appeals": "eudr-acm:appeal-file",
+    "GET:/api/v1/eudr/authority-communication-manager/appeals": "eudr-acm:appeal-track",
+    "GET:/api/v1/eudr/authority-communication-manager/appeals/{appeal_id}": "eudr-acm:appeal-track",
+    "POST:/api/v1/eudr/authority-communication-manager/appeals/{appeal_id}/evidence": "eudr-acm:appeal-submit-evidence",
+
+    # Documents (3 routes)
+    "POST:/api/v1/eudr/authority-communication-manager/documents/upload": "eudr-acm:document-upload",
+    "GET:/api/v1/eudr/authority-communication-manager/documents/{document_id}/download": "eudr-acm:document-download",
+    "POST:/api/v1/eudr/authority-communication-manager/documents/{document_id}/encrypt": "eudr-acm:document-encrypt",
+
+    # Notifications (2 routes)
+    "POST:/api/v1/eudr/authority-communication-manager/notifications/send": "eudr-acm:notification-send",
+    "GET:/api/v1/eudr/authority-communication-manager/notifications": "eudr-acm:notification-read",
+
+    # Authorities (2 routes)
+    "GET:/api/v1/eudr/authority-communication-manager/authorities": "eudr-acm:authority-list",
+    "GET:/api/v1/eudr/authority-communication-manager/authorities/{authority_id}/contact": "eudr-acm:authority-contact",
+
+    # Templates (2 routes)
+    "GET:/api/v1/eudr/authority-communication-manager/templates": "eudr-acm:template-view",
+    "POST:/api/v1/eudr/authority-communication-manager/templates/{template_id}/use": "eudr-acm:template-use",
+
+    # Reports (2 routes)
+    "POST:/api/v1/eudr/authority-communication-manager/reports/generate": "eudr-acm:report-generate",
+    "GET:/api/v1/eudr/authority-communication-manager/reports/{report_id}/download": "eudr-acm:report-download",
+
+    # Admin (3 routes)
+    "GET:/api/v1/eudr/authority-communication-manager/admin": "eudr-acm:admin",
+    "POST:/api/v1/eudr/authority-communication-manager/admin/manage-authorities": "eudr-acm:admin-manage-authorities",
+    "POST:/api/v1/eudr/authority-communication-manager/admin/manage-templates": "eudr-acm:admin-manage-templates",
+
+    # Health (1 route - public)
+    "GET:/api/v1/eudr/authority-communication-manager/health": None,
 }
 
 

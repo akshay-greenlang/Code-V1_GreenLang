@@ -1,0 +1,186 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-009: Chain of Custody Agent — custody events, batch lifecycle, mass balance, transformations, chain integrity",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Events Recorded (Total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "targets": [{ "expr": "sum(gl_eudr_coc_events_recorded_total)", "legendFormat": "Total" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"green","value":null}] } } }
+    },
+    {
+      "title": "Batches Created (Total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "targets": [{ "expr": "sum(gl_eudr_coc_batches_created_total)", "legendFormat": "Total" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"blue","value":null}] } } }
+    },
+    {
+      "title": "Active Batches",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "targets": [{ "expr": "gl_eudr_coc_active_batches", "legendFormat": "Active" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 50000, "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":25000},{"color":"red","value":45000}] } } }
+    },
+    {
+      "title": "Avg Chain Completeness",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "targets": [{ "expr": "gl_eudr_coc_chain_completeness_avg", "legendFormat": "Score" }],
+      "fieldConfig": { "defaults": { "unit": "percent", "decimals": 1, "thresholds": { "steps": [{"color":"red","value":null},{"color":"yellow","value":70},{"color":"green","value":90}] } } }
+    },
+    {
+      "title": "Verification Failures (1h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "targets": [{ "expr": "sum(increase(gl_eudr_coc_verification_failures_total[1h]))", "legendFormat": "Failures" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":5},{"color":"red","value":20}] } } }
+    },
+    {
+      "title": "API Errors (1h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "targets": [{ "expr": "sum(increase(gl_eudr_coc_api_errors_total[1h]))", "legendFormat": "Errors" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":5},{"color":"red","value":20}] } } }
+    },
+    {
+      "title": "Custody Events & Batches",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Event Recording Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_coc_events_recorded_total[5m])", "legendFormat": "Events/s" },
+        { "expr": "rate(gl_eudr_coc_batches_created_total[5m])", "legendFormat": "Batches/s" }
+      ]
+    },
+    {
+      "title": "Event Recording Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_coc_event_recording_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_coc_event_recording_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_coc_event_recording_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Batch Operations & Custody Gaps",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_coc_batch_operations_total[5m])", "legendFormat": "Batch Ops/s" },
+        { "expr": "rate(gl_eudr_coc_custody_gaps_total[5m])", "legendFormat": "Gaps/s" }
+      ]
+    },
+    {
+      "title": "Mass Balance & Transformations",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Mass Balance Entries Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 13 },
+      "targets": [
+        { "expr": "rate(gl_eudr_coc_mass_balance_entries_total[5m])", "legendFormat": "Entries/s" },
+        { "expr": "rate(gl_eudr_coc_mass_balance_overdrafts_total[5m])", "legendFormat": "Overdrafts/s" }
+      ]
+    },
+    {
+      "title": "Mass Balance Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 13 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_coc_mass_balance_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_coc_mass_balance_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_coc_mass_balance_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Transformations & Documents",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 13 },
+      "targets": [
+        { "expr": "rate(gl_eudr_coc_transformations_total[5m])", "legendFormat": "Transforms/s" },
+        { "expr": "rate(gl_eudr_coc_documents_linked_total[5m])", "legendFormat": "Documents/s" }
+      ]
+    },
+    {
+      "title": "Chain Verification Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 13 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_coc_verification_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_coc_verification_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_coc_verification_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Verification & Reporting",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Verifications (Pass vs Fail)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "rate(gl_eudr_coc_verifications_total[5m])", "legendFormat": "Verified/s" },
+        { "expr": "rate(gl_eudr_coc_verification_failures_total[5m])", "legendFormat": "Failed/s" }
+      ]
+    },
+    {
+      "title": "Reports Generated",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 20 },
+      "targets": [
+        { "expr": "rate(gl_eudr_coc_reports_generated_total[5m])", "legendFormat": "Reports/s" }
+      ]
+    },
+    {
+      "title": "Batch Jobs Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 20 },
+      "targets": [
+        { "expr": "rate(gl_eudr_coc_batch_jobs_total[5m])", "legendFormat": "Batch Jobs/s" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "chain-of-custody", "agent-eudr-009", "greenlang"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EUDR Chain of Custody (AGENT-EUDR-009)",
+  "uid": "eudr-coc-009",
+  "version": 1
+}

@@ -1,0 +1,1333 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-036: EU Information System Interface (EISI) -- Manages all interactions with the EU EUDR Information System including DDS submissions, operator/trader registrations, reference number lifecycle, compliance package transmission, geolocation data quality validation, submission acknowledgement tracking, rejection handling with auto-remediation, audit trail recording, and API health monitoring for EUDR Articles 4, 9, 10, 14-16, 28, 31, 33 compliance",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Submissions Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Total DDS Submissions",
+      "description": "Current count of Due Diligence Statement submissions sent to the EU Information System. Tracks total submission volume across all commodities and operator types for Article 4 compliance monitoring.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Submissions (24h)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 100 },
+              { "color": "purple", "value": 500 },
+              { "color": "orange", "value": 1000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Submission Success Rate",
+      "description": "Percentage of DDS submissions successfully acknowledged by the EU Information System over the last 24 hours. Target: >= 95% success rate. Below 90% triggers critical alert for connectivity or schema issues.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", status=\"acknowledged\"}[24h])) / (sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Success Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 80 },
+              { "color": "yellow", "value": 90 },
+              { "color": "green", "value": 95 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Pending Acknowledgements",
+      "description": "Current number of DDS submissions awaiting acknowledgement from the EU Information System. Sustained count > 25 indicates connectivity issues or EU IS processing delays requiring investigation.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_eisi_pending_acknowledgements{environment=\"$environment\"}) or vector(0)", "legendFormat": "Pending", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Submissions Over Time",
+      "description": "Rate of DDS submissions to the EU Information System over time, broken down by submission type: initial, amendment, withdrawal, annual_update. Tracks submission throughput and identifies peak filing periods.",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_submissions_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (submission_type) (rate(gl_eudr_eisi_submissions_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{submission_type}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Submissions by Commodity",
+      "description": "Distribution of DDS submissions in the last 24 hours by EUDR commodity: cattle, cocoa, coffee, oil_palm, rubber, soya, wood. Helps identify commodity-level filing volumes and compliance coverage.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (commodity) (increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", commodity=~\"$commodity\"}[24h]))", "legendFormat": "{{commodity}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Submissions by Status",
+      "description": "Distribution of DDS submissions by lifecycle status in the last 24 hours: pending, transmitted, acknowledged, accepted, rejected, withdrawn. Tracks submission pipeline health.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", status=\"pending\"}[24h]))", "legendFormat": "Pending", "refId": "A" },
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", status=\"transmitted\"}[24h]))", "legendFormat": "Transmitted", "refId": "B" },
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", status=\"acknowledged\"}[24h]))", "legendFormat": "Acknowledged", "refId": "C" },
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", status=\"accepted\"}[24h]))", "legendFormat": "Accepted", "refId": "D" },
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", status=\"rejected\"}[24h]))", "legendFormat": "Rejected", "refId": "E" },
+        { "expr": "sum(increase(gl_eudr_eisi_submissions_total{environment=\"$environment\", status=\"withdrawn\"}[24h]))", "legendFormat": "Withdrawn", "refId": "F" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Pending" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Transmitted" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Acknowledged" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Accepted" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Rejected" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Withdrawn" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Submission Status Transitions",
+      "description": "Stacked area chart of submission status transitions over time. Tracks lifecycle flow from pending through transmitted to acknowledged/accepted/rejected. Healthy pattern shows majority transitioning to accepted.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (rate(gl_eudr_eisi_submissions_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{status}} (/hr)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Registrations & Reference Numbers",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 8,
+      "title": "Active Operator Registrations",
+      "description": "Current number of active operator/trader registrations maintained in the EU Information System. Tracks registration lifecycle including new, active, suspended, and revoked statuses per Article 28.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_eisi_active_registrations{environment=\"$environment\"}) or vector(0)", "legendFormat": "Active Registrations", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 50 },
+              { "color": "purple", "value": 200 },
+              { "color": "orange", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Registration Success Rate",
+      "description": "Percentage of operator/trader registration requests successfully processed by the EU IS over the last 7 days. Target: >= 98%. Failed registrations prevent DDS submission for those operators.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_eisi_registrations_total{environment=\"$environment\", status=\"completed\"}[7d])) / (sum(increase(gl_eudr_eisi_registrations_total{environment=\"$environment\"}[7d])) > 0) * 100 or vector(0)", "legendFormat": "Registration Success %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 85 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 98 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Reference Numbers Issued",
+      "description": "Rate of EUDR reference numbers issued by the EU Information System over time. Each accepted DDS receives a unique reference number per Article 4(2). Tracks reference number issuance throughput.",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_reference_numbers_issued_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (commodity) (rate(gl_eudr_eisi_reference_numbers_issued_total{environment=\"$environment\", commodity=~\"$commodity\"}[5m])) * 3600", "legendFormat": "{{commodity}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Registrations by Type",
+      "description": "Distribution of operator/trader registrations by entity type over the last 7 days: operator, trader, sme_operator, authorized_representative. Tracks registration portfolio composition per Articles 4, 5, 6.",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (entity_type) (increase(gl_eudr_eisi_registrations_total{environment=\"$environment\"}[7d]))", "legendFormat": "{{entity_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Registration & Reference Lifecycle",
+      "description": "Time series of registration events and reference number issuance. Compares new registrations, renewals, suspensions, and reference numbers issued. Healthy pattern shows registrations tracking reference issuance.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 22 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_registrations_total{environment=\"$environment\", status=\"completed\"}[5m])) * 3600", "legendFormat": "New Registrations (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_eisi_registrations_total{environment=\"$environment\", status=\"renewed\"}[5m])) * 3600", "legendFormat": "Renewals (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_eisi_registrations_total{environment=\"$environment\", status=\"suspended\"}[5m])) * 3600", "legendFormat": "Suspensions (/hr)", "refId": "C" },
+        { "expr": "sum(rate(gl_eudr_eisi_reference_numbers_issued_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Ref Numbers Issued (/hr)", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "New Registrations (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Renewals (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Suspensions (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Ref Numbers Issued (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "EU IS API Health",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 13,
+      "title": "EU IS API Availability",
+      "description": "Uptime percentage of the EU Information System API endpoints as observed from GreenLang health checks over the last 24 hours. Target: >= 99.5%. Below 99% triggers critical alert for EU IS outage escalation.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 31 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg_over_time(gl_eudr_eisi_eu_is_availability{environment=\"$environment\"}[24h]) * 100 or vector(0)", "legendFormat": "EU IS Availability %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 95 },
+              { "color": "yellow", "value": 99 },
+              { "color": "green", "value": 99.5 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 14,
+      "title": "EU IS Response Time",
+      "description": "Average response time from the EU Information System API for health check probes over time. Tracks EU IS performance from GreenLang's perspective. Spikes indicate EU IS degradation or network issues.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 31 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_eisi_eu_is_response_seconds{environment=\"$environment\"})", "legendFormat": "Avg Response Time", "refId": "A" },
+        { "expr": "quantile(0.95, gl_eudr_eisi_eu_is_response_seconds{environment=\"$environment\"})", "legendFormat": "p95 Response Time", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Avg Response Time" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95 Response Time" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Connection Pool Status",
+      "description": "Current state of the EU IS connection pool: active connections, idle connections, and pool utilization percentage. High utilization (> 85%) indicates connection pressure requiring pool scaling.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 31 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_eisi_connection_pool_active{environment=\"$environment\"})", "legendFormat": "Active Connections", "refId": "A" },
+        { "expr": "sum(gl_eudr_eisi_connection_pool_idle{environment=\"$environment\"})", "legendFormat": "Idle Connections", "refId": "B" },
+        { "expr": "sum(gl_eudr_eisi_connection_pool_active{environment=\"$environment\"}) / (sum(gl_eudr_eisi_connection_pool_size{environment=\"$environment\"}) > 0) * 100", "legendFormat": "Pool Utilization %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Active Connections" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Idle Connections" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Pool Utilization %" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Rate Limit & Throttle Events",
+      "description": "Rate of EU IS rate-limiting (429) and throttle events encountered by GreenLang's EISI agent. Tracks API quota consumption and helps tune submission batching to avoid EU IS rate limits.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 31 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_rate_limit_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Rate Limit Events (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_eisi_throttle_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Throttle Events (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_eisi_retry_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Retry Events (/hr)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Rate Limit Events (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Throttle Events (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Retry Events (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Rejections & Remediation",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 17,
+      "title": "Active Rejections",
+      "description": "Current number of DDS submissions rejected by the EU Information System requiring amendment and resubmission. Non-zero triggers warning alert. > 10 triggers critical requiring compliance lead escalation.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_eisi_active_rejections{environment=\"$environment\"}) or vector(0)", "legendFormat": "Active Rejections", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Rejections by Reason",
+      "description": "Top rejection reasons from the EU Information System in the last 7 days: schema_validation, missing_geolocation, invalid_reference, incomplete_article9, data_inconsistency, format_error, expired_registration, duplicate_submission.",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 10, "x": 6, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (rejection_reason) (increase(gl_eudr_eisi_rejections_total{environment=\"$environment\"}[7d])))", "legendFormat": "{{rejection_reason}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 15 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "color": { "mode": "continuous-BlYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "id": 19,
+      "title": "Auto-Remediation Rate",
+      "description": "Percentage of rejected submissions automatically remediated and resubmitted by the EISI agent over the last 7 days. Target: >= 70% auto-remediation. Remaining rejections require manual intervention.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_eisi_auto_remediation_total{environment=\"$environment\", result=\"success\"}[7d])) / (sum(increase(gl_eudr_eisi_rejections_total{environment=\"$environment\"}[7d])) > 0) * 100 or vector(0)", "legendFormat": "Auto-Remediation Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 70 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 20,
+      "title": "Rejection & Remediation Timeline",
+      "description": "Time series of rejection events vs auto-remediation completions. Gap between rejections and remediations indicates growing manual intervention backlog. Includes resubmission rate for tracking recovery velocity.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_rejections_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Rejections (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_eisi_auto_remediation_total{environment=\"$environment\", result=\"success\"}[5m])) * 3600", "legendFormat": "Auto-Remediated (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_eisi_auto_remediation_total{environment=\"$environment\", result=\"failed\"}[5m])) * 3600", "legendFormat": "Remediation Failed (/hr)", "refId": "C" },
+        { "expr": "sum(rate(gl_eudr_eisi_resubmissions_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Resubmissions (/hr)", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Rejections (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Auto-Remediated (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Remediation Failed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Resubmissions (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Package Assembly",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 54 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 21,
+      "title": "Packages Assembled",
+      "description": "Rate of compliance packages assembled for EU IS transmission over time by commodity. Each package bundles DDS, Article 9 data, risk assessment summary, geolocation evidence, and supporting certifications.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_packages_assembled_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (commodity) (rate(gl_eudr_eisi_packages_assembled_total{environment=\"$environment\", commodity=~\"$commodity\"}[5m])) * 3600", "legendFormat": "{{commodity}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 22,
+      "title": "Package Completeness Score",
+      "description": "Average completeness score of assembled packages before EU IS transmission. Score measures presence of all required Article 9 elements, geolocation data, risk documentation, and supporting evidence. Target: >= 95%.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_eisi_package_completeness_score{environment=\"$environment\"}) * 100 or vector(0)", "legendFormat": "Completeness %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 70 },
+              { "color": "yellow", "value": 85 },
+              { "color": "green", "value": 95 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Package Validation Results",
+      "description": "Distribution of pre-submission package validation results in the last 24 hours: passed (all checks green), warnings (non-blocking issues), failed (blocking errors preventing submission). Tracks data quality gate effectiveness.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_eisi_package_validations_total{environment=\"$environment\", result=\"passed\"}[24h]))", "legendFormat": "Passed", "refId": "A" },
+        { "expr": "sum(increase(gl_eudr_eisi_package_validations_total{environment=\"$environment\", result=\"warnings\"}[24h]))", "legendFormat": "Warnings", "refId": "B" },
+        { "expr": "sum(increase(gl_eudr_eisi_package_validations_total{environment=\"$environment\", result=\"failed\"}[24h]))", "legendFormat": "Failed", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Passed" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Warnings" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Geolocation Quality",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 63 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 24,
+      "title": "Geolocation Compliance Rate",
+      "description": "Percentage of submitted geolocation data points meeting EU IS precision requirements (Article 9(1)(d)). Requires polygon boundaries for plots > 4 hectares and point coordinates for smaller plots. Target: >= 98%.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 64 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_eisi_geolocation_compliant{environment=\"$environment\"}) / (sum(gl_eudr_eisi_geolocation_total{environment=\"$environment\"}) > 0) * 100 or vector(0)", "legendFormat": "Geolocation Compliance %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 85 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 98 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 25,
+      "title": "Geolocation Validation Issues",
+      "description": "Top geolocation validation issues detected during pre-submission checks in the last 7 days: insufficient_precision, missing_polygon, invalid_coordinates, self_intersecting_polygon, out_of_bounds, topology_error, datum_mismatch.",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 64 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(8, sum by (issue_type) (increase(gl_eudr_eisi_geolocation_issues_total{environment=\"$environment\"}[7d])))", "legendFormat": "{{issue_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "color": { "mode": "continuous-BlYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "id": 26,
+      "title": "Geolocation Quality Over Time",
+      "description": "Time series of geolocation quality metrics: compliance rate, average coordinate precision, and polygon validity rate. Tracks improvements in upstream data quality feeding into EU IS submissions.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 64 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_eisi_geolocation_compliant{environment=\"$environment\"}) / (sum(gl_eudr_eisi_geolocation_total{environment=\"$environment\"}) > 0) * 100", "legendFormat": "Compliance Rate %", "refId": "A" },
+        { "expr": "avg(gl_eudr_eisi_coordinate_precision{environment=\"$environment\"})", "legendFormat": "Avg Precision (decimal places)", "refId": "B" },
+        { "expr": "sum(gl_eudr_eisi_polygon_valid{environment=\"$environment\"}) / (sum(gl_eudr_eisi_polygon_total{environment=\"$environment\"}) > 0) * 100", "legendFormat": "Polygon Validity %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Compliance Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }, { "id": "unit", "value": "percent" }] },
+          { "matcher": { "id": "byName", "options": "Avg Precision (decimal places)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }] },
+          { "matcher": { "id": "byName", "options": "Polygon Validity %" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Audit Trail",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 72 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 27,
+      "title": "Audit Events by Category",
+      "description": "Distribution of audit trail events recorded over the last 24 hours by category: submission, registration, reference_number, rejection, remediation, package_assembly, geolocation_check, api_call, authentication, authorization.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (category) (increase(gl_eudr_eisi_audit_events_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{category}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 28,
+      "title": "Audit Events Over Time",
+      "description": "Rate of audit trail events over time by category. All EU IS interactions are logged for Article 31 (5-year retention) and Article 33 (competent authority access). Spikes indicate batch operations or incident response activity.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_audit_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Events (/hr)", "refId": "A" },
+        { "expr": "sum by (category) (rate(gl_eudr_eisi_audit_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{category}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Events (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 29,
+      "title": "Retention & Compliance Metrics",
+      "description": "Key audit trail retention metrics. Total records under 5-year Article 31 retention, integrity check pass rate (SHA-256 hashes verified), and records accessible for competent authority requests per Article 33.",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_eisi_audit_records_retained{environment=\"$environment\"}) or vector(0)", "legendFormat": "Records Under Retention", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 10000 },
+              { "color": "purple", "value": 100000 },
+              { "color": "orange", "value": 1000000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 30,
+      "title": "Audit Integrity Check Rate",
+      "description": "Percentage of audit trail records passing SHA-256 integrity verification in the last 24 hours. Target: 100%. Any failure indicates potential data tampering or storage corruption requiring immediate investigation.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 77 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_eisi_audit_integrity_checks_total{environment=\"$environment\", result=\"passed\"}[24h])) / (sum(increase(gl_eudr_eisi_audit_integrity_checks_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(100)", "legendFormat": "Integrity %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 99 },
+              { "color": "yellow", "value": 99.9 },
+              { "color": "green", "value": 100 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 81 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 31,
+      "title": "API Request Latency (p50/p95/p99)",
+      "description": "Latency percentiles for all /v1/eudr-eisi API endpoints. Covers submission, registration, package assembly, validation, and reference number queries. Target: p99 < 3 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_eisi_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_eisi_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_eisi_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1.5 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 32,
+      "title": "EU IS Submission Latency (p50/p95/p99)",
+      "description": "End-to-end latency for DDS submission to the EU Information System including payload serialization, TLS handshake, transmission, and acknowledgement receipt. Target: p99 < 15 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_eisi_submission_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_eisi_submission_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_eisi_submission_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 8 },
+              { "color": "red", "value": 15 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 33,
+      "title": "Package Assembly Latency (p50/p95/p99)",
+      "description": "Latency for compliance package assembly including Article 9 data collection, geolocation bundling, risk summary embedding, evidence linking, and schema validation. Target: p99 < 10 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_eisi_package_assembly_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_eisi_package_assembly_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_eisi_package_assembly_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 34,
+      "title": "API Errors",
+      "description": "Rate of API errors (4xx and 5xx) across all /v1/eudr-eisi endpoints. Sustained 5xx error rate > 1% triggers critical alert. 4xx errors may indicate client-side integration issues.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 90 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_eisi_api_errors_total{environment=\"$environment\", status_code=~\"5..\"}[5m])) * 3600", "legendFormat": "5xx Errors (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_eisi_api_errors_total{environment=\"$environment\", status_code=~\"4..\"}[5m])) * 3600", "legendFormat": "4xx Errors (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_eisi_api_errors_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_eisi_api_requests_total{environment=\"$environment\"}[5m])) > 0) * 100", "legendFormat": "Error Rate %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "5xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Error Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 35,
+      "title": "Processing Time by Operation",
+      "description": "Average processing time for key EISI operations: submission_prepare, submission_transmit, registration_create, registration_renew, package_assemble, package_validate, geolocation_check, reference_lookup, rejection_analyze, auto_remediate.",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 90 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg by (operation) (rate(gl_eudr_eisi_operation_seconds_sum{environment=\"$environment\"}[5m]) / rate(gl_eudr_eisi_operation_seconds_count{environment=\"$environment\"}[5m]))", "legendFormat": "{{operation}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "title": "Alert Rules & Runbooks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 98 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 36,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the EU Information System Interface agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 99 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-036 EU Information System Interface Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Submission Success Rate Drop** | Success rate < 95% for 1h | Warning | Every 5m, for 15m | Review submission errors, check EU IS connectivity |\n| 2 | **Critical Submission Failures** | Success rate < 80% for 30m | Critical | Every 5m, for 5m | Page on-call, activate EU IS incident response |\n| 3 | **Pending Acknowledgement Backlog** | Pending acknowledgements > 25 for 2h | Warning | Every 15m, for 1h | Check EU IS status, review submission queue |\n| 4 | **Active Rejections** | Active rejections > 0 for 1h | Warning | Every 5m, for 15m | Review rejection reasons, trigger remediation |\n| 5 | **Critical Rejection Volume** | Active rejections > 10 for 30m | Critical | Every 5m, for 5m | Page compliance lead, activate emergency amendment workflow |\n| 6 | **EU IS Availability Drop** | EU IS availability < 99% for 30m | Warning | Every 5m, for 10m | Check EU IS status page, prepare for degraded mode |\n| 7 | **EU IS Outage** | EU IS availability < 95% for 15m | Critical | Every 1m, for 5m | Page on-call, activate submission queue buffering |\n| 8 | **Rate Limit Exceeded** | Rate limit events > 10 in 15m | Warning | Every 5m, for 10m | Reduce submission batch size, enable adaptive throttling |\n| 9 | **Geolocation Compliance Drop** | Geolocation compliance < 95% for 4h | Warning | Every 15m, for 1h | Review upstream geolocation data quality |\n| 10 | **Audit Integrity Failure** | Integrity check failure detected | Critical | Every 1m, for 1m | Page security on-call, isolate affected records |\n| 11 | **High API Error Rate** | API 5xx error rate > 1% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure |\n| 12 | **Submission Latency Degradation** | p99 submission latency > 15s for 10m | Warning | Every 5m, for 10m | Investigate EU IS performance, check network |\n| 13 | **Low Auto-Remediation Rate** | Auto-remediation rate < 50% for 7d | Warning | Every 6h, for 24h | Review remediation rules, update templates |\n| 14 | **Registration Failure** | Registration success rate < 95% for 24h | Warning | Every 1h, for 4h | Investigate registration API, check data quality |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead + Email eu-is-liaison\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Submission Failure Response](https://runbooks.greenlang.io/eudr/eisi/submission-failure)\n- [EU IS Outage Handling](https://runbooks.greenlang.io/eudr/eisi/eu-is-outage)\n- [Rejection Remediation](https://runbooks.greenlang.io/eudr/eisi/rejection-remediation)\n- [Rate Limit Mitigation](https://runbooks.greenlang.io/eudr/eisi/rate-limit)\n- [Geolocation Quality Resolution](https://runbooks.greenlang.io/eudr/eisi/geolocation-quality)\n- [Audit Integrity Investigation](https://runbooks.greenlang.io/eudr/eisi/audit-integrity)\n- [Registration Troubleshooting](https://runbooks.greenlang.io/eudr/eisi/registration-issues)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/eisi/perf-degradation)\n- [Acknowledgement Backlog](https://runbooks.greenlang.io/eudr/eisi/ack-backlog)\n- [Auto-Remediation Tuning](https://runbooks.greenlang.io/eudr/eisi/auto-remediation)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "eu-information-system-interface", "agent-eudr-036", "greenlang", "article-4", "article-9", "article-28", "article-31", "article-33", "dds-submission", "registration", "reference-number", "geolocation", "audit-trail"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_eisi_submissions_total{environment=\"$environment\"}, commodity)",
+        "description": "Filter by EUDR commodity (cattle, cocoa, coffee, oil_palm, rubber, soya, wood)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Commodity",
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_eisi_submissions_total{environment=\"$environment\"}, commodity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_eisi_submissions_total{environment=\"$environment\"}, submission_type)",
+        "description": "Filter by submission type (initial, amendment, withdrawal, annual_update)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Submission Type",
+        "multi": true,
+        "name": "submission_type",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_eisi_submissions_total{environment=\"$environment\"}, submission_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR EU Information System Interface (EISI)",
+  "uid": "eudr-eisi-036",
+  "version": 1
+}

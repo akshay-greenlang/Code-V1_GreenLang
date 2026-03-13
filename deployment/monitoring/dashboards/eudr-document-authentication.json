@@ -1,0 +1,336 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-012: Document Authentication & Verification Agent -- document classification, digital signature verification, hash integrity, certificate chain validation, fraud detection, cross-reference checking, and authentication reporting",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Documents Processed",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_dav_documents_processed_total[24h]))", "legendFormat": "24h" },
+        { "expr": "sum(gl_eudr_dav_documents_processed_total)", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Classification Accuracy",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_dav_classifications_total{confidence_level=\"high\"}) / sum(gl_eudr_dav_classifications_total) * 100", "legendFormat": "High Confidence %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 80 },
+              { "color": "green", "value": 95 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Fraud Alerts (Active)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_dav_fraud_alerts_unresolved)", "legendFormat": "Unresolved" },
+        { "expr": "sum(gl_eudr_dav_fraud_alerts_unresolved{severity=\"critical\"})", "legendFormat": "Critical" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Authentication Success Rate",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_dav_documents_authenticated_total{status=\"authentic\"}) / sum(gl_eudr_dav_documents_authenticated_total) * 100", "legendFormat": "Success %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 85 },
+              { "color": "green", "value": 95 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Security",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Signatures Verified",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_dav_signatures_verified_total{status=\"valid\"}[5m])", "legendFormat": "Valid/s" },
+        { "expr": "rate(gl_eudr_dav_signatures_verified_total[5m])", "legendFormat": "Total/s" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Invalid Signatures",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_dav_signatures_verified_total{status=\"invalid\"}[24h]))", "legendFormat": "Invalid (24h)" },
+        { "expr": "sum(increase(gl_eudr_dav_signatures_verified_total{status=\"expired\"}[24h]))", "legendFormat": "Expired (24h)" },
+        { "expr": "sum(increase(gl_eudr_dav_signatures_verified_total{status=\"malformed\"}[24h]))", "legendFormat": "Malformed (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Certificate Revocations",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_dav_cert_chain_validated_total{ocsp_status=\"revoked\"}[1h]))", "legendFormat": "OCSP Revoked" },
+        { "expr": "sum(increase(gl_eudr_dav_cert_chain_validated_total{crl_status=\"revoked\"}[1h]))", "legendFormat": "CRL Revoked" },
+        { "expr": "sum(increase(gl_eudr_dav_cert_chain_validated_total{chain_valid=\"false\"}[1h]))", "legendFormat": "Chain Invalid" }
+      ]
+    },
+    {
+      "title": "Tampering Detected",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 15, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_dav_hash_mismatch_total[24h]))", "legendFormat": "Hash Mismatches (24h)" },
+        { "expr": "sum(increase(gl_eudr_dav_metadata_consistency_failures_total[24h]))", "legendFormat": "Metadata Inconsistent (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Active Verifications",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_dav_verifications_in_progress", "legendFormat": "In Progress" },
+        { "expr": "rate(gl_eudr_dav_verifications_completed_total[5m])", "legendFormat": "Completed/s" }
+      ]
+    },
+    {
+      "title": "Fraud Detection",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Fraud Alerts by Severity",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (severity) (increase(gl_eudr_dav_fraud_alerts_total[1h]))", "legendFormat": "{{severity}}" }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "high" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "low" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Fraud Patterns Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (fraud_pattern) (gl_eudr_dav_fraud_alerts_total)", "legendFormat": "{{fraud_pattern}}" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "title": "Critical Fraud Alerts (Unresolved)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_dav_fraud_alerts_unresolved{severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_dav_fraud_alerts_unresolved{severity=\"high\"})", "legendFormat": "High" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Cross-Reference Mismatches",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 15, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_dav_crossref_total{registry_status=\"not_found\"}[1h]))", "legendFormat": "Not Found" },
+        { "expr": "sum(increase(gl_eudr_dav_crossref_total{registry_status=\"expired\"}[1h]))", "legendFormat": "Expired" },
+        { "expr": "sum(increase(gl_eudr_dav_crossref_total{registry_status=\"revoked\"}[1h]))", "legendFormat": "Revoked" },
+        { "expr": "sum(increase(gl_eudr_dav_crossref_total{scope_match=\"false\"}[1h]))", "legendFormat": "Scope Mismatch" },
+        { "expr": "sum(increase(gl_eudr_dav_crossref_total{quantity_match=\"false\"}[1h]))", "legendFormat": "Quantity Mismatch" }
+      ]
+    },
+    {
+      "title": "Duplicate Documents",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_dav_duplicate_documents_detected_total[1h]))", "legendFormat": "Duplicates (1h)" },
+        { "expr": "sum(gl_eudr_dav_hash_registry_collision_total)", "legendFormat": "Hash Collisions (cumulative)" }
+      ]
+    },
+    {
+      "title": "Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Classification Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_dav_classification_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_dav_classification_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_dav_classification_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Verification Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_dav_signature_verification_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_dav_signature_verification_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_dav_signature_verification_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Cross-Reference Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_dav_crossref_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_dav_crossref_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_dav_crossref_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "API Errors (1h)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_dav_api_errors_total[1h]))", "legendFormat": "Total Errors" },
+        { "expr": "sum(increase(gl_eudr_dav_api_errors_total{status_code=~\"5..\"}[1h]))", "legendFormat": "5xx Errors" },
+        { "expr": "sum(increase(gl_eudr_dav_api_errors_total{status_code=~\"4..\"}[1h]))", "legendFormat": "4xx Errors" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "document-authentication", "agent-eudr-012", "greenlang"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EUDR Document Authentication (AGENT-EUDR-012)",
+  "uid": "eudr-dav-012",
+  "version": 1
+}

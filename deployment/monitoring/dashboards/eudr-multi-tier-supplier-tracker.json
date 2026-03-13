@@ -1,0 +1,184 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-008: Multi-Tier Supplier Tracker — supplier discovery, tier depth, risk propagation, compliance monitoring, gap analysis",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Suppliers Discovered (Total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "targets": [{ "expr": "sum(gl_eudr_mst_suppliers_discovered_total)", "legendFormat": "Total" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"green","value":null}] } } }
+    },
+    {
+      "title": "Suppliers Onboarded (Total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "targets": [{ "expr": "sum(gl_eudr_mst_suppliers_onboarded_total)", "legendFormat": "Total" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"blue","value":null}] } } }
+    },
+    {
+      "title": "Active Suppliers",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "targets": [{ "expr": "gl_eudr_mst_active_suppliers", "legendFormat": "Active" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 10000, "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":5000},{"color":"red","value":9000}] } } }
+    },
+    {
+      "title": "Average Tier Depth",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "targets": [{ "expr": "gl_eudr_mst_avg_tier_depth", "legendFormat": "Avg Depth" }],
+      "fieldConfig": { "defaults": { "unit": "none", "decimals": 1, "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":3},{"color":"orange","value":5}] } } }
+    },
+    {
+      "title": "Relationships Created (Rate)",
+      "type": "timeseries",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "targets": [{ "expr": "rate(gl_eudr_mst_relationships_created_total[5m])", "legendFormat": "Relationships/s" }]
+    },
+    {
+      "title": "API Errors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "targets": [{ "expr": "sum(increase(gl_eudr_mst_api_errors_total[1h]))", "legendFormat": "Errors (1h)" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":5},{"color":"red","value":20}] } } }
+    },
+    {
+      "title": "Discovery & Tier Tracking",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Discovery Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_mst_suppliers_discovered_total[5m])", "legendFormat": "Discovered/s" },
+        { "expr": "rate(gl_eudr_mst_suppliers_onboarded_total[5m])", "legendFormat": "Onboarded/s" }
+      ]
+    },
+    {
+      "title": "Discovery Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_mst_discovery_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_mst_discovery_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_mst_discovery_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Tier Depth Assessments Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_mst_tier_depth_assessments_total[5m])", "legendFormat": "Assessments/s" }
+      ]
+    },
+    {
+      "title": "Risk & Compliance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Risk Assessments Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 13 },
+      "targets": [
+        { "expr": "rate(gl_eudr_mst_risk_assessments_total[5m])", "legendFormat": "Risk Assessments/s" },
+        { "expr": "rate(gl_eudr_mst_risk_alerts_total[5m])", "legendFormat": "Risk Alerts/s" }
+      ]
+    },
+    {
+      "title": "Risk Propagation Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 13 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_mst_risk_propagation_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_mst_risk_propagation_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_mst_risk_propagation_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Compliance Checks Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 13 },
+      "targets": [
+        { "expr": "rate(gl_eudr_mst_compliance_checks_total[5m])", "legendFormat": "Compliance Checks/s" },
+        { "expr": "rate(gl_eudr_mst_compliance_alerts_total[5m])", "legendFormat": "Compliance Alerts/s" }
+      ]
+    },
+    {
+      "title": "Compliance Check Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 13 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_mst_compliance_check_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_mst_compliance_check_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_mst_compliance_check_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Gap Analysis & Batch Operations",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Gaps Detected vs Remediated",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "rate(gl_eudr_mst_gaps_detected_total[5m])", "legendFormat": "Detected/s" },
+        { "expr": "rate(gl_eudr_mst_gaps_remediated_total[5m])", "legendFormat": "Remediated/s" }
+      ]
+    },
+    {
+      "title": "Reports Generated",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 20 },
+      "targets": [
+        { "expr": "rate(gl_eudr_mst_reports_generated_total[5m])", "legendFormat": "Reports/s" }
+      ]
+    },
+    {
+      "title": "Batch Jobs Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 20 },
+      "targets": [
+        { "expr": "rate(gl_eudr_mst_batch_jobs_total[5m])", "legendFormat": "Batch Jobs/s" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "multi-tier-supplier", "agent-eudr-008", "greenlang"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EUDR Multi-Tier Supplier Tracker (AGENT-EUDR-008)",
+  "uid": "eudr-mst-008",
+  "version": 1
+}

@@ -1,0 +1,1595 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-037: Due Diligence Statement Creator (DDSC) -- Manages full lifecycle of Due Diligence Statements for EUDR compliance including statement creation from collected due diligence data, Article 4(2) mandatory field validation, geolocation quality assurance (polygon/point formatting per Article 9), risk level integration from upstream assessment engines, supply chain depth mapping, compliance pre-checks, document packaging with supporting evidence, EU Information System submission orchestration, amendment management, and operator/trader reference number tracking for EUDR Articles 4, 5, 6, 8, 9, 10, 33 compliance",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview & Health",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Total Statements Created",
+      "description": "Total number of Due Diligence Statements created in the last 24 hours across all commodities and operator types. Tracks statement generation throughput for Article 4 compliance volume monitoring.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Statements (24h)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 50 },
+              { "color": "purple", "value": 200 },
+              { "color": "orange", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Statements by Status",
+      "description": "Distribution of DDS statements by current lifecycle status: draft, validating, validated, packaging, submitted, acknowledged, rejected, amended. Provides real-time view of the statement pipeline.",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (gl_eudr_ddsc_statements_by_status{environment=\"$environment\"})", "legendFormat": "{{status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Submission Success Rate",
+      "description": "Percentage of DDS submissions successfully acknowledged by the EU Information System over the last 24 hours. Target: >= 95% success rate for Article 4 compliance. Below 90% triggers critical alert.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_submissions_total{environment=\"$environment\", status=\"acknowledged\"}[24h])) / (sum(increase(gl_eudr_ddsc_submissions_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Success Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 80 },
+              { "color": "yellow", "value": 90 },
+              { "color": "green", "value": 95 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Health Status",
+      "description": "Overall health status of the Due Diligence Statement Creator agent. 1 = healthy, 0 = degraded. Monitors engine availability, database connectivity, EU IS API reachability, and background job processing.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 15, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_ddsc_health_status{environment=\"$environment\"} or vector(0)", "legendFormat": "Health", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [
+            { "options": { "0": { "text": "DEGRADED", "color": "red" }, "1": { "text": "HEALTHY", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Engine Status",
+      "description": "Status of all seven DDSC engines: statement_builder, validation, geolocation_formatter, risk_integrator, compliance_checker, document_packager, submission_manager. Shows readiness state, last heartbeat, and processed count.",
+      "type": "table",
+      "gridPos": { "h": 6, "w": 5, "x": 19, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_ddsc_engine_status{environment=\"$environment\"}", "legendFormat": "{{engine}}", "refId": "A", "format": "table", "instant": true },
+        { "expr": "sum by (engine) (increase(gl_eudr_ddsc_engine_processed_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{engine}}", "refId": "B", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true },
+          "mappings": [
+            { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+          ]
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "engine" }, "properties": [{ "id": "custom.width", "value": 180 }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "engine", "desc": false }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "engine": "Engine", "Value #A": "Status", "Value #B": "Processed (24h)" } } }
+      ]
+    },
+    {
+      "title": "DDS Creation & Validation",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "title": "Statements Created Over Time",
+      "description": "Rate of DDS statement creation over time, broken down by commodity type (cattle, cocoa, coffee, oil_palm, rubber, soya, wood). Tracks generation throughput and identifies peak filing periods per Article 4.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (commodity) (rate(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{commodity}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Validation Pass Rate",
+      "description": "Percentage of DDS statements passing all mandatory field validation checks (Article 4(2) fields, Article 9 geolocation, operator/trader identifiers, commodity declarations). Target: >= 90% first-pass validation.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 8, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_validation_passed_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_ddsc_validations_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Pass Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 70 },
+              { "color": "yellow", "value": 85 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Statement Generation Duration",
+      "description": "Histogram of DDS statement generation duration from input data assembly through template rendering. Includes data collection, field mapping, geolocation formatting, risk embedding, and XML/JSON serialization. Target: p99 < 5 seconds.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 4, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_generation_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "Oranges" }
+        }
+      },
+      "options": {
+        "bucketSize": 0.5,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Validation Duration",
+      "description": "Histogram of statement validation duration covering Article 4(2) mandatory field checks, geolocation format validation, commodity code verification, operator identifier validation, and cross-reference integrity checks. Target: p99 < 3 seconds.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 4, "x": 16, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_validation_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "Blues" }
+        }
+      },
+      "options": {
+        "bucketSize": 0.25,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Failed Validations by Type",
+      "description": "Breakdown of validation failures by check type: missing_mandatory_field, invalid_geolocation, invalid_commodity_code, missing_operator_id, invalid_reference_number, schema_violation, geolocation_precision_low, missing_risk_assessment, incomplete_supply_chain. Identifies common data quality gaps.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (failure_type) (increase(gl_eudr_ddsc_validation_failures_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{failure_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "hue"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "title": "Geolocation Quality",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 11,
+      "title": "Plots with Geolocation",
+      "description": "Total number of production plots with valid geolocation data attached to DDS statements in the last 24 hours. Article 9 requires precise geolocation (polygon for plots > 4ha, point for <= 4ha) for all production parcels.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_plots_with_geolocation_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Plots (24h)", "refId": "A" },
+        { "expr": "sum(increase(gl_eudr_ddsc_plots_with_geolocation_total{environment=\"$environment\", geo_type=\"polygon\"}[24h])) or vector(0)", "legendFormat": "Polygon Plots", "refId": "B" },
+        { "expr": "sum(increase(gl_eudr_ddsc_plots_with_geolocation_total{environment=\"$environment\", geo_type=\"point\"}[24h])) or vector(0)", "legendFormat": "Point Plots", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 100 },
+              { "color": "purple", "value": 1000 },
+              { "color": "orange", "value": 5000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Geolocation Accuracy Distribution",
+      "description": "Distribution of geolocation accuracy scores (0-100%) for production plot coordinates attached to DDS statements. Measures coordinate precision, polygon closure validity, self-intersection checks, and datum consistency. Target: > 95% of plots achieving >= 90% accuracy.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_geolocation_accuracy_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": { "mode": "scheme", "schemeId": "Greens" }
+        }
+      },
+      "options": {
+        "bucketSize": 5,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Polygon Coverage",
+      "description": "Percentage of production plots > 4 hectares that have valid polygon geolocation data (as required by Article 9(1)(d)). Plots <= 4ha may use single GPS points. Target: 100% polygon coverage for applicable plots.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddsc_polygon_coverage_ratio{environment=\"$environment\"}) * 100 or vector(0)", "legendFormat": "Polygon Coverage %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 80 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Geolocation Formatting Duration",
+      "description": "Histogram of geolocation data formatting duration including coordinate system normalization (WGS84), polygon simplification, point/polygon selection based on area threshold, GeoJSON serialization, and EU IS schema compliance formatting.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_geolocation_formatting_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "Purples" }
+        }
+      },
+      "options": {
+        "bucketSize": 0.1,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "title": "Risk Integration",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 15,
+      "title": "Statements by Risk Level",
+      "description": "Distribution of DDS statements by integrated risk level: negligible, low, medium, high, critical. Risk levels are aggregated from upstream risk assessment engines (country risk, supplier risk, commodity risk, deforestation alerts) per Article 10.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (risk_level) (gl_eudr_ddsc_statements_by_risk{environment=\"$environment\"})", "legendFormat": "{{risk_level}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "negligible" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "low" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "high" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Risk Score Distribution",
+      "description": "Histogram of composite risk scores (0-100) integrated into DDS statements. Scores are derived from country risk, supplier risk, commodity risk, deforestation probability, and indigenous rights assessments per Articles 10-11.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_risk_score_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "scheme", "schemeId": "RdYlGn", "reverse": true }
+        }
+      },
+      "options": {
+        "bucketSize": 5,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Risk Integration Duration",
+      "description": "Time series of risk data integration duration over time. Measures latency for fetching and embedding risk assessment results from upstream engines (country, supplier, commodity, deforestation, indigenous rights, protected area) into DDS statements.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddsc_risk_integration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_ddsc_risk_integration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ddsc_risk_integration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Critical Risk Statements",
+      "description": "Current count of DDS statements flagged with critical or high risk levels that require enhanced due diligence measures before submission. Per Article 10(2), these statements must include additional mitigation evidence. Sustained count > 20 triggers compliance team notification.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddsc_statements_by_risk{environment=\"$environment\", risk_level=\"critical\"}) or vector(0)", "legendFormat": "Critical", "refId": "A" },
+        { "expr": "sum(gl_eudr_ddsc_statements_by_risk{environment=\"$environment\", risk_level=\"high\"}) or vector(0)", "legendFormat": "High", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Supply Chain & Compliance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 19,
+      "title": "Supply Chain Depth",
+      "description": "Histogram of supply chain tier depth captured in DDS statements. Depth 1 = direct supplier, Depth 2+ = multi-tier traceability. Article 4(2) requires traceability to the production plot. Deeper chains indicate better provenance tracking.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_supply_chain_depth_bucket{environment=\"$environment\"}[24h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "scheme", "schemeId": "BuGn" }
+        }
+      },
+      "options": {
+        "bucketSize": 1,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 20,
+      "title": "Compliance Check Results",
+      "description": "Stacked bar chart of compliance pre-check results over time: passed, failed, warning, skipped. Checks include Article 4(2) mandatory fields, Article 9 geolocation, Article 10 risk assessment completeness, Article 6 operator obligations, and Article 5 prohibition verification.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (result) (increase(gl_eudr_ddsc_compliance_checks_total{environment=\"$environment\"}[1h]))", "legendFormat": "{{result}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "stacking": { "mode": "normal" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "passed" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "failed" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "warning" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "skipped" }, "properties": [{ "id": "color", "value": { "fixedColor": "gray", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "barWidth": 0.8,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 21,
+      "title": "Missing Mandatory Fields",
+      "description": "Table showing frequency of missing mandatory Article 4(2) fields across DDS statements: operator_name, operator_address, eori_number, commodity_code, hs_code, country_of_production, geolocation, quantity, supplier_info, production_date, deforestation_free_declaration.",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(15, sum by (field_name) (increase(gl_eudr_ddsc_missing_fields_total{environment=\"$environment\"}[24h])))", "legendFormat": "{{field_name}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "left", "filterable": true },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "field_name" }, "properties": [{ "id": "custom.width", "value": 200 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "custom.width", "value": 100 }, { "id": "custom.cellOptions", "value": { "type": "color-background" } }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Value", "desc": true }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "field_name": "Missing Field", "Value": "Count (24h)" } } }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Certification Coverage",
+      "description": "Percentage of DDS statements that include third-party certification references (FSC, PEFC, Rainforest Alliance, UTZ, organic, fair trade). Certification evidence strengthens the due diligence declaration and may reduce competent authority scrutiny per Article 10.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddsc_statements_with_certification{environment=\"$environment\"}) / (sum(gl_eudr_ddsc_active_statements{environment=\"$environment\"}) > 0) * 100 or vector(0)", "legendFormat": "Certification Coverage %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Document Packaging",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 43 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 23,
+      "title": "Documents Packaged Over Time",
+      "description": "Rate of compliance document packages assembled over time. Each package bundles the DDS XML/JSON, supporting evidence documents (certificates, invoices, audit reports), geolocation attachments, risk assessment summaries, and supply chain maps per Article 9.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_packages_assembled_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (commodity) (rate(gl_eudr_ddsc_packages_assembled_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{commodity}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 24,
+      "title": "Document Types Distribution",
+      "description": "Distribution of document types included in DDS packages over the last 24 hours: dds_xml, dds_json, certificate, invoice, audit_report, geolocation_file, risk_summary, supply_chain_map, photo_evidence, lab_report, customs_declaration.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (doc_type) (increase(gl_eudr_ddsc_documents_packaged_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{doc_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 25,
+      "title": "Average Package Size",
+      "description": "Average size of assembled DDS compliance packages in megabytes. Includes the DDS statement file, all supporting evidence documents, and geolocation attachments. Large packages (> 50MB) may require chunked upload to EU IS.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_ddsc_package_size_bytes{environment=\"$environment\"}) / 1048576 or vector(0)", "legendFormat": "Avg Size (MB)", "refId": "A" },
+        { "expr": "max(gl_eudr_ddsc_package_size_bytes{environment=\"$environment\"}) / 1048576 or vector(0)", "legendFormat": "Max Size (MB)", "refId": "B" },
+        { "expr": "quantile(0.95, gl_eudr_ddsc_package_size_bytes{environment=\"$environment\"}) / 1048576 or vector(0)", "legendFormat": "p95 Size (MB)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 25 },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "decmbytes"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 26,
+      "title": "Packaging Duration",
+      "description": "Histogram of document packaging assembly duration including evidence collection, file validation, checksum computation, ZIP/TAR assembly, and manifest generation. Target: p99 < 10 seconds for standard packages.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_packaging_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "YlOrRd" }
+        }
+      },
+      "options": {
+        "bucketSize": 1,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "title": "Submissions & Amendments",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 52 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 27,
+      "title": "Submissions to EU IS",
+      "description": "Rate of DDS submissions to the EU Information System over time, broken down by submission type: initial, amendment, withdrawal, annual_update. Tracks submission throughput and identifies peak filing periods for Article 4 compliance.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_submissions_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (submission_type) (rate(gl_eudr_ddsc_submissions_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{submission_type}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 28,
+      "title": "Submission Status",
+      "description": "Stacked bar chart of DDS submission outcomes over time: acknowledged, pending, rejected, timeout, retrying. Acknowledged submissions receive EU IS reference numbers. Rejected submissions require remediation and resubmission.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (increase(gl_eudr_ddsc_submissions_total{environment=\"$environment\"}[1h]))", "legendFormat": "{{status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "stacking": { "mode": "normal" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "acknowledged" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "pending" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "rejected" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "timeout" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "retrying" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "barWidth": 0.8,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 29,
+      "title": "Amendments Created Over Time",
+      "description": "Rate of DDS amendments created over time. Amendments are required when material changes occur to previously submitted statements (new supplier information, corrected geolocation, updated risk assessment, quantity adjustments) per Article 4(5).",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_amendments_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Amendments (/hr)", "refId": "A" },
+        { "expr": "sum by (amendment_type) (rate(gl_eudr_ddsc_amendments_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{amendment_type}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Amendments (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 30,
+      "title": "Amendment Reasons",
+      "description": "Distribution of amendment reasons for DDS statement modifications: corrected_geolocation, updated_supplier, quantity_adjustment, new_risk_data, corrected_commodity_code, additional_evidence, operator_info_change, regulatory_update, rejection_remediation.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (reason) (increase(gl_eudr_ddsc_amendments_created_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{reason}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "hue"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "title": "Performance & Errors",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 61 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 31,
+      "title": "API Request Latency (p50/p95/p99)",
+      "description": "Latency percentiles for all /v1/eudr-ddsc API endpoints. Covers statement CRUD, validation, packaging, submission, amendment, and query operations. Target: p99 < 3 seconds for standard operations.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddsc_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_ddsc_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ddsc_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1.5 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 32,
+      "title": "Error Rate",
+      "description": "Rate of API errors (4xx and 5xx) across all /v1/eudr-ddsc endpoints. Sustained 5xx error rate > 1% triggers critical alert. 4xx errors indicate client-side validation issues or invalid request payloads.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_api_errors_total{environment=\"$environment\", status_code=~\"5..\"}[5m])) * 3600", "legendFormat": "5xx Errors (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_ddsc_api_errors_total{environment=\"$environment\", status_code=~\"4..\"}[5m])) * 3600", "legendFormat": "4xx Errors (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_ddsc_api_errors_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_ddsc_api_requests_total{environment=\"$environment\"}[5m])) > 0) * 100", "legendFormat": "Error Rate %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "5xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Error Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 33,
+      "title": "Database Connection Pool",
+      "description": "PostgreSQL connection pool utilization for the DDSC agent. Tracks active, idle, and waiting connections. Pool exhaustion (active = max) causes request queuing and latency spikes. Target: active/max < 80%.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_ddsc_db_pool_active{environment=\"$environment\"}", "legendFormat": "Active", "refId": "A" },
+        { "expr": "gl_eudr_ddsc_db_pool_idle{environment=\"$environment\"}", "legendFormat": "Idle", "refId": "B" },
+        { "expr": "gl_eudr_ddsc_db_pool_waiting{environment=\"$environment\"}", "legendFormat": "Waiting", "refId": "C" },
+        { "expr": "gl_eudr_ddsc_db_pool_max{environment=\"$environment\"}", "legendFormat": "Max", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Active" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Idle" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Waiting" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Max" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 34,
+      "title": "Cache Hit Rate",
+      "description": "Redis cache hit rate for DDSC operations including statement template caching, commodity code lookups, operator profile caching, geolocation format caching, and risk assessment result caching. Target: >= 85% hit rate.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_cache_hits_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_ddsc_cache_requests_total{environment=\"$environment\"}[5m])) > 0) * 100 or vector(0)", "legendFormat": "Cache Hit Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 75 },
+              { "color": "green", "value": 85 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Audit Trail & Retention",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 70 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 35,
+      "title": "Audit Events by Category",
+      "description": "Distribution of audit trail events recorded over the last 24 hours by category: statement_created, statement_validated, statement_submitted, statement_acknowledged, statement_rejected, amendment_created, package_assembled, geolocation_verified, risk_integrated, compliance_checked.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (category) (increase(gl_eudr_ddsc_audit_events_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{category}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 36,
+      "title": "Audit Events Over Time",
+      "description": "Rate of audit trail events over time by category. All DDS lifecycle events are logged for Article 33 (5-year retention) and competent authority access. Spikes indicate batch operations or regulatory filing deadlines.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_audit_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Events (/hr)", "refId": "A" },
+        { "expr": "sum by (category) (rate(gl_eudr_ddsc_audit_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{category}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Events (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 37,
+      "title": "Records Under Retention",
+      "description": "Total audit records under 5-year Article 33 retention for DDS lifecycle events. Tracks record count, storage utilization, and integrity verification status (SHA-256 hash checks).",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddsc_audit_records_retained{environment=\"$environment\"}) or vector(0)", "legendFormat": "Records Under Retention", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 10000 },
+              { "color": "purple", "value": 100000 },
+              { "color": "orange", "value": 1000000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 38,
+      "title": "Audit Integrity Check Pass Rate",
+      "description": "Percentage of audit trail integrity checks (SHA-256 hash verification) passing successfully. Any failure indicates potential record tampering and triggers immediate critical alert for compliance investigation.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 75 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddsc_audit_integrity_passed_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_ddsc_audit_integrity_checks_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(100)", "legendFormat": "Integrity Pass Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 99 },
+              { "color": "yellow", "value": 99.9 },
+              { "color": "green", "value": 99.99 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Operator & Reference Numbers",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 79 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 39,
+      "title": "Statements by Operator Type",
+      "description": "Distribution of DDS statements by operator/trader type: operator_importer, operator_producer, trader, authorized_representative. Per Article 4, operators bear primary DDS responsibility while traders inherit reference numbers.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 80 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (operator_type) (increase(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{operator_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 40,
+      "title": "Reference Numbers Issued",
+      "description": "Rate of EU IS reference numbers received for successfully submitted DDS statements. Reference numbers confirm Article 4 compliance and are required for customs clearance per Article 5. Tracks the issuance throughput and backlog.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 80 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_reference_numbers_issued_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Issued (/hr)", "refId": "A" },
+        { "expr": "sum(gl_eudr_ddsc_reference_numbers_pending{environment=\"$environment\"}) or vector(0)", "legendFormat": "Pending", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Issued (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Pending" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 41,
+      "title": "Statements by Commodity",
+      "description": "Distribution of DDS statements by EUDR commodity in the last 24 hours: cattle, cocoa, coffee, oil_palm, rubber, soya, wood (and derived products). Identifies commodity-level filing volumes and regulatory coverage.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 80 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (commodity) (increase(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{commodity}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 42,
+      "title": "Processing Time by Operation",
+      "description": "Average processing time for key DDSC operations: statement_creation, validation, geolocation_formatting, risk_integration, compliance_check, document_packaging, submission, amendment_creation, reference_number_tracking.",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 80 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg by (operation) (rate(gl_eudr_ddsc_operation_seconds_sum{environment=\"$environment\"}[5m]) / rate(gl_eudr_ddsc_operation_seconds_count{environment=\"$environment\"}[5m]))", "legendFormat": "{{operation}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "title": "Alert Rules & Runbooks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 88 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 43,
+      "title": "EU IS Submission Latency (p50/p95/p99)",
+      "description": "End-to-end latency for DDS submission to the EU Information System including payload serialization, TLS handshake, transmission, and acknowledgement receipt. Target: p99 < 15 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 89 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddsc_submission_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_ddsc_submission_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ddsc_submission_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 8 },
+              { "color": "red", "value": 15 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 44,
+      "title": "Rejection Rate & Remediation",
+      "description": "Rate of DDS rejections from the EU IS and auto-remediation success rate. Rejections may occur due to schema violations, invalid geolocation, missing mandatory fields, or reference number conflicts. Auto-remediation attempts to fix and resubmit automatically.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 89 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddsc_rejections_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Rejections (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_ddsc_auto_remediation_total{environment=\"$environment\", result=\"success\"}[5m])) * 3600", "legendFormat": "Auto-Remediated (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_ddsc_auto_remediation_total{environment=\"$environment\", result=\"failed\"}[5m])) * 3600", "legendFormat": "Remediation Failed (/hr)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Rejections (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Auto-Remediated (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Remediation Failed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 45,
+      "title": "Statements by Country of Production",
+      "description": "Top 15 countries of production by DDS statement volume in the last 24 hours. Provides geographic distribution insight for competent authority benchmarking and country-risk correlation analysis per Article 9(1)(b).",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 89 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(15, sum by (country) (increase(gl_eudr_ddsc_statements_by_country_total{environment=\"$environment\"}[24h])))", "legendFormat": "{{country}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "hue"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 46,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the Due Diligence Statement Creator agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 97 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-037 Due Diligence Statement Creator Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Low Submission Success Rate** | gl_eudr_ddsc_submissions success rate < 95% for 15m | Warning | Every 5m, for 15m | Review submission errors, check EU IS connectivity |\n| 2 | **Critical Submission Failure** | gl_eudr_ddsc_submissions success rate < 80% for 5m | Critical | Every 1m, for 5m | Page on-call, check EU IS API status, review error logs |\n| 3 | **Low Validation Pass Rate** | gl_eudr_ddsc_validation pass rate < 80% for 1h | Warning | Every 15m, for 30m | Review validation failures, check data quality upstream |\n| 4 | **High Rejection Rate** | gl_eudr_ddsc_rejections_total increase > 20 in 1h | Warning | Every 5m, for 15m | Investigate rejection reasons, review schema compliance |\n| 5 | **Geolocation Coverage Gap** | gl_eudr_ddsc_polygon_coverage_ratio < 0.95 for 4h | Warning | Every 30m, for 2h | Review missing polygon data, notify GIS team |\n| 6 | **Critical Risk Backlog** | gl_eudr_ddsc_statements_by_risk{risk_level=\"critical\"} > 20 for 2h | Warning | Every 15m, for 1h | Notify compliance team, review enhanced DD requirements |\n| 7 | **High API Error Rate** | API 5xx error rate > 1% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure, review error logs |\n| 8 | **Statement Generation Latency** | p99 > 5s for 10 minutes | Warning | Every 5m, for 10m | Investigate performance, check database queries |\n| 9 | **EU IS Submission Latency** | p99 > 15s for 10 minutes | Warning | Every 5m, for 10m | Check EU IS API health, review network connectivity |\n| 10 | **DB Connection Pool Exhaustion** | active/max > 90% for 5 minutes | Critical | Every 1m, for 5m | Scale connection pool, investigate connection leaks |\n| 11 | **Cache Hit Rate Drop** | cache hit rate < 60% for 30m | Warning | Every 5m, for 15m | Review cache configuration, check Redis health |\n| 12 | **Audit Integrity Failure** | integrity pass rate < 100% for any check | Critical | Every 1m, for 1m | Immediate investigation, potential tampering alert |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Submission Failure Response](https://runbooks.greenlang.io/eudr/ddsc/submission-failure)\n- [Validation Failure Investigation](https://runbooks.greenlang.io/eudr/ddsc/validation-failures)\n- [Rejection Remediation Guide](https://runbooks.greenlang.io/eudr/ddsc/rejection-remediation)\n- [Geolocation Coverage Gaps](https://runbooks.greenlang.io/eudr/ddsc/geolocation-gaps)\n- [Critical Risk Backlog Response](https://runbooks.greenlang.io/eudr/ddsc/critical-risk-backlog)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/ddsc/perf-degradation)\n- [EU IS Connectivity Issues](https://runbooks.greenlang.io/eudr/ddsc/eu-is-connectivity)\n- [DB Pool Exhaustion](https://runbooks.greenlang.io/eudr/ddsc/db-pool-exhaustion)\n- [Audit Integrity Failure](https://runbooks.greenlang.io/eudr/ddsc/audit-integrity-failure)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "due-diligence-statement-creator", "agent-eudr-037", "greenlang", "article-4", "article-5", "article-6", "article-9", "article-10", "article-33", "dds", "geolocation", "risk-integration", "submissions", "amendments", "compliance-packaging"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}, commodity)",
+        "description": "Filter by EUDR commodity (cattle, cocoa, coffee, oil_palm, rubber, soya, wood)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Commodity",
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}, commodity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ddsc_statements_by_risk{environment=\"$environment\"}, risk_level)",
+        "description": "Filter by risk level (negligible, low, medium, high, critical)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Risk Level",
+        "multi": true,
+        "name": "risk_level",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_ddsc_statements_by_risk{environment=\"$environment\"}, risk_level)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}, operator_type)",
+        "description": "Filter by operator type (operator_importer, operator_producer, trader, authorized_representative)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Operator Type",
+        "multi": true,
+        "name": "operator_type",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_ddsc_statements_created_total{environment=\"$environment\"}, operator_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Due Diligence Statement Creator (DDSC)",
+  "uid": "eudr-ddsc-037",
+  "version": 1
+}

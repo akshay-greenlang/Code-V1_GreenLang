@@ -1,0 +1,466 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-017: Supplier Risk Scorer Agent -- multi-factor supplier risk assessment, due diligence tracking, documentation profiling, certification management, geographic sourcing analysis, supplier network mapping, monitoring configuration, alert generation, and risk reporting",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Suppliers Assessed",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_suppliers_assessed_total)", "legendFormat": "Total" },
+        { "expr": "sum(increase(gl_eudr_srs_suppliers_assessed_total[24h]))", "legendFormat": "24h" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "High Risk Suppliers",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_suppliers_by_risk_level{risk_level=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(gl_eudr_srs_suppliers_by_risk_level{risk_level=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_srs_suppliers_by_risk_level{risk_level=\"standard\"})", "legendFormat": "Standard" },
+        { "expr": "sum(gl_eudr_srs_suppliers_by_risk_level{risk_level=\"low\"})", "legendFormat": "Low" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Pending Due Diligence",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_pending_due_diligence)", "legendFormat": "Pending" },
+        { "expr": "sum(gl_eudr_srs_due_diligence{status=\"overdue\"})", "legendFormat": "Overdue" },
+        { "expr": "sum(increase(gl_eudr_srs_due_diligence_completed_total[24h]))", "legendFormat": "Completed (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Expiring Certifications",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_certifications_expiring_30d)", "legendFormat": "Next 30d" },
+        { "expr": "sum(gl_eudr_srs_certifications_expiring_90d)", "legendFormat": "Next 90d" },
+        { "expr": "sum(gl_eudr_srs_certifications_expired)", "legendFormat": "Expired" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Risk Assessment",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Assessment Latency",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_srs_assessment_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_srs_assessment_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_srs_assessment_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "yaxes": [
+        { "format": "s", "label": "Latency" },
+        { "format": "short" }
+      ]
+    },
+    {
+      "title": "Risk Level Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_suppliers_by_risk_level) by (risk_level)", "legendFormat": "{{risk_level}}" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      }
+    },
+    {
+      "title": "Risk Score Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_srs_risk_score_distribution", "legendFormat": "{{le}}" }
+      ],
+      "options": {
+        "legend": { "displayMode": "hidden" }
+      }
+    },
+    {
+      "title": "Risk Score Trends (7d)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_srs_supplier_risk_score)", "legendFormat": "Avg Score" },
+        { "expr": "max(gl_eudr_srs_supplier_risk_score)", "legendFormat": "Max Score" },
+        { "expr": "min(gl_eudr_srs_supplier_risk_score)", "legendFormat": "Min Score" }
+      ],
+      "yaxes": [
+        { "format": "short", "label": "Risk Score", "min": 0, "max": 100 },
+        { "format": "short" }
+      ]
+    },
+    {
+      "title": "Due Diligence & Documentation",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "DD Completion Rate",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_due_diligence{status=\"completed\"}) / sum(gl_eudr_srs_due_diligence) * 100", "legendFormat": "Completion %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Document Analysis Rate",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_srs_documents_analyzed_total[5m]) * 60", "legendFormat": "Documents/min" },
+        { "expr": "avg(gl_eudr_srs_document_quality_score)", "legendFormat": "Avg Quality Score" }
+      ],
+      "yaxes": [
+        { "format": "short", "label": "Rate" },
+        { "format": "short", "label": "Quality" }
+      ]
+    },
+    {
+      "title": "Certification Validations",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_certifications{status=\"valid\"})", "legendFormat": "Valid" },
+        { "expr": "sum(gl_eudr_srs_certifications{status=\"expired\"})", "legendFormat": "Expired" },
+        { "expr": "sum(gl_eudr_srs_certifications{status=\"suspended\"})", "legendFormat": "Suspended" },
+        { "expr": "sum(gl_eudr_srs_certifications{chain_of_custody=\"true\"})", "legendFormat": "CoC Certified" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Non-Conformances",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_srs_non_conformances_total{severity=\"major\"}[1h]))", "legendFormat": "Major" },
+        { "expr": "sum(increase(gl_eudr_srs_non_conformances_total{severity=\"minor\"}[1h]))", "legendFormat": "Minor" },
+        { "expr": "sum(increase(gl_eudr_srs_non_conformances_total{severity=\"critical\"}[1h]))", "legendFormat": "Critical" }
+      ],
+      "yaxes": [
+        { "format": "short", "label": "Count" },
+        { "format": "short" }
+      ]
+    },
+    {
+      "title": "Network & Geographic",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Networks Analyzed",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_networks_mapped_total)", "legendFormat": "Total Networks" },
+        { "expr": "avg(gl_eudr_srs_network_depth)", "legendFormat": "Avg Depth" },
+        { "expr": "sum(gl_eudr_srs_networks{circular_detected=\"true\"})", "legendFormat": "Circular Detected" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 8 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Geographic Analyses",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_srs_geographic_analyses_total[5m]) * 60", "legendFormat": "Analyses/min" },
+        { "expr": "avg(gl_eudr_srs_concentration_index)", "legendFormat": "Avg Concentration" },
+        { "expr": "sum(gl_eudr_srs_proximity_alerts_active)", "legendFormat": "Proximity Alerts" }
+      ],
+      "yaxes": [
+        { "format": "short", "label": "Rate/Index" },
+        { "format": "short" }
+      ]
+    },
+    {
+      "title": "Alert Generation Rate",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_srs_alerts_generated_total{severity=\"critical\"}[5m]) * 60", "legendFormat": "Critical/min" },
+        { "expr": "rate(gl_eudr_srs_alerts_generated_total{severity=\"high\"}[5m]) * 60", "legendFormat": "High/min" },
+        { "expr": "rate(gl_eudr_srs_alerts_generated_total{severity=\"medium\"}[5m]) * 60", "legendFormat": "Medium/min" },
+        { "expr": "rate(gl_eudr_srs_alerts_generated_total{severity=\"low\"}[5m]) * 60", "legendFormat": "Low/min" }
+      ],
+      "yaxes": [
+        { "format": "short", "label": "Alerts/min" },
+        { "format": "short" }
+      ]
+    },
+    {
+      "title": "Active Alerts",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_active_alerts)", "legendFormat": "Total Active" },
+        { "expr": "sum(gl_eudr_srs_active_alerts{severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_srs_active_alerts{acknowledged=\"false\"})", "legendFormat": "Unacknowledged" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 150 },
+              { "color": "red", "value": 300 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Operations",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "API Errors",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_srs_api_errors_total{error_type=\"assessment_failure\"}[5m]) * 60", "legendFormat": "Assessment" },
+        { "expr": "rate(gl_eudr_srs_api_errors_total{error_type=\"dd_processing_error\"}[5m]) * 60", "legendFormat": "DD Processing" },
+        { "expr": "rate(gl_eudr_srs_api_errors_total{error_type=\"network_mapping_error\"}[5m]) * 60", "legendFormat": "Network" },
+        { "expr": "rate(gl_eudr_srs_api_errors_total{error_type=\"report_generation_error\"}[5m]) * 60", "legendFormat": "Reports" }
+      ],
+      "yaxes": [
+        { "format": "short", "label": "Errors/min" },
+        { "format": "short" }
+      ],
+      "alert": {
+        "conditions": [
+          {
+            "evaluator": { "params": [5], "type": "gt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["A", "5m", "now"] },
+            "reducer": { "type": "avg" },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "frequency": "60s",
+        "handler": 1,
+        "name": "High API Error Rate",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Report Generation",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_srs_reports_generated_total[24h]))", "legendFormat": "24h" },
+        { "expr": "sum(gl_eudr_srs_reports{format=\"pdf\"})", "legendFormat": "PDF" },
+        { "expr": "sum(gl_eudr_srs_reports{format=\"excel\"})", "legendFormat": "Excel" },
+        { "expr": "avg(gl_eudr_srs_report_generation_duration_seconds)", "legendFormat": "Avg Duration (s)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Assessment Duration Heatmap",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_srs_assessment_duration_seconds_bucket[5m])) by (le)", "legendFormat": "{{le}}", "format": "heatmap" }
+      ],
+      "heatmap": {
+        "hideZeroBuckets": true
+      },
+      "yAxis": {
+        "format": "s"
+      }
+    },
+    {
+      "title": "Active Monitoring",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_srs_monitoring_configs{enabled=\"true\"})", "legendFormat": "Enabled" },
+        { "expr": "sum(gl_eudr_srs_monitoring_configs{watchlist=\"true\"})", "legendFormat": "Watchlist" },
+        { "expr": "sum(gl_eudr_srs_monitoring_configs{frequency=\"daily\"})", "legendFormat": "Daily" },
+        { "expr": "sum(gl_eudr_srs_monitoring_configs{frequency=\"continuous\"})", "legendFormat": "Continuous" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "supplier-risk-scorer", "agent-eudr-017", "greenlang", "risk-assessment"],
+  "templating": { "list": [] },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Supplier Risk Scorer (AGENT-EUDR-017)",
+  "uid": "eudr-srs-017",
+  "version": 1
+}

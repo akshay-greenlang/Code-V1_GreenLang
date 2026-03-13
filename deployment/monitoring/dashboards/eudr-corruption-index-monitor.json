@@ -1,0 +1,657 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-019: Corruption Index Monitor Agent -- CPI score tracking, WGI governance indicators, sector bribery risk assessments, institutional quality monitoring, trend analysis, deforestation-corruption correlations, EUDR Article 29 compliance impact, and alert management",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Countries Monitored",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cim_countries_monitored_total)", "legendFormat": "Total" },
+        { "expr": "sum(gl_eudr_cim_countries_monitored_total{risk_level=\"high\"})", "legendFormat": "High Risk" },
+        { "expr": "sum(gl_eudr_cim_countries_monitored_total{risk_level=\"critical\"})", "legendFormat": "Critical" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Average CPI Score",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cim_cpi_score_current)", "legendFormat": "Avg CPI" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 30 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "High-Risk Country Count",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cim_countries_by_classification{article_29_class=\"high_risk\"})", "legendFormat": "High Risk" },
+        { "expr": "sum(gl_eudr_cim_countries_by_classification{article_29_class=\"standard_risk\"})", "legendFormat": "Standard Risk" },
+        { "expr": "sum(gl_eudr_cim_countries_by_classification{article_29_class=\"low_risk\"})", "legendFormat": "Low Risk" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "orange", "value": 40 },
+              { "color": "red", "value": 60 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Active Alerts",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cim_alerts_active_total)", "legendFormat": "Active Alerts" },
+        { "expr": "sum(gl_eudr_cim_alerts_active_total{severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_cim_alerts_active_total{severity=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total[24h]))", "legendFormat": "New (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 15 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "CPI & Rankings",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "CPI World Heatmap",
+      "type": "geomap",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cim_cpi_score_current", "legendFormat": "{{country_code}}", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "dark-red", "value": 0 },
+              { "color": "red", "value": 20 },
+              { "color": "orange", "value": 35 },
+              { "color": "yellow", "value": 50 },
+              { "color": "light-green", "value": 65 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 10,
+          "lon": 20,
+          "zoom": 2
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "config": {
+              "style": {
+                "color": { "field": "Value", "fixed": "dark-green" },
+                "opacity": 0.7,
+                "size": { "field": "Value", "fixed": 5, "min": 3, "max": 15 }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "title": "CPI Trend by Region",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cim_cpi_score_current{region=\"Sub-Saharan Africa\"}) by (region)", "legendFormat": "Sub-Saharan Africa" },
+        { "expr": "avg(gl_eudr_cim_cpi_score_current{region=\"Asia-Pacific\"}) by (region)", "legendFormat": "Asia-Pacific" },
+        { "expr": "avg(gl_eudr_cim_cpi_score_current{region=\"Americas\"}) by (region)", "legendFormat": "Americas" },
+        { "expr": "avg(gl_eudr_cim_cpi_score_current{region=\"MENA\"}) by (region)", "legendFormat": "MENA" },
+        { "expr": "avg(gl_eudr_cim_cpi_score_current{region=\"Eastern Europe & Central Asia\"}) by (region)", "legendFormat": "Eastern Europe & Central Asia" },
+        { "expr": "avg(gl_eudr_cim_cpi_score_current{region=\"Western Europe & EU\"}) by (region)", "legendFormat": "Western Europe & EU" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Top/Bottom Ranked Countries",
+      "type": "table",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "topk(15, gl_eudr_cim_cpi_score_current) or bottomk(15, gl_eudr_cim_cpi_score_current)", "legendFormat": "{{country_code}} - {{country_name}}", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "dark-red", "value": 0 },
+              { "color": "red", "value": 20 },
+              { "color": "orange", "value": 35 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "displayName", "value": "CPI Score" },
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "CPI Score", "desc": true }]
+      }
+    },
+    {
+      "title": "CPI Change Year-over-Year",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "topk(10, gl_eudr_cim_cpi_yoy_change)", "legendFormat": "{{country_code}} (Improved)" },
+        { "expr": "bottomk(10, gl_eudr_cim_cpi_yoy_change)", "legendFormat": "{{country_code}} (Declined)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": -1 },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7,
+        "colorByField": "Value"
+      }
+    },
+    {
+      "title": "WGI & Governance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "WGI 6 Dimensions (Avg Estimate)",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 0, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"voice_accountability\"})", "legendFormat": "Voice & Accountability" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"political_stability\"})", "legendFormat": "Political Stability" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"government_effectiveness\"})", "legendFormat": "Government Effectiveness" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"regulatory_quality\"})", "legendFormat": "Regulatory Quality" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"rule_of_law\"})", "legendFormat": "Rule of Law" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"control_of_corruption\"})", "legendFormat": "Control of Corruption" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": -2.5 },
+              { "color": "orange", "value": -1.0 },
+              { "color": "yellow", "value": 0 },
+              { "color": "green", "value": 1.0 }
+            ]
+          },
+          "unit": "short",
+          "min": -2.5,
+          "max": 2.5
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Control of Corruption Trend",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 6, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"control_of_corruption\", region=\"Sub-Saharan Africa\"})", "legendFormat": "Sub-Saharan Africa" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"control_of_corruption\", region=\"Asia-Pacific\"})", "legendFormat": "Asia-Pacific" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"control_of_corruption\", region=\"Americas\"})", "legendFormat": "Americas" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"control_of_corruption\", region=\"MENA\"})", "legendFormat": "MENA" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"control_of_corruption\"})", "legendFormat": "Global Average" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": -2.5,
+          "max": 2.5,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Rule of Law Trend",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"rule_of_law\", region=\"Sub-Saharan Africa\"})", "legendFormat": "Sub-Saharan Africa" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"rule_of_law\", region=\"Asia-Pacific\"})", "legendFormat": "Asia-Pacific" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"rule_of_law\", region=\"Americas\"})", "legendFormat": "Americas" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"rule_of_law\", region=\"MENA\"})", "legendFormat": "MENA" },
+        { "expr": "avg(gl_eudr_cim_wgi_estimate{dimension=\"rule_of_law\"})", "legendFormat": "Global Average" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": -2.5,
+          "max": 2.5,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Government Effectiveness Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cim_wgi_estimate{dimension=\"government_effectiveness\"}", "legendFormat": "{{country_code}}", "format": "time_series" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80
+          }
+        }
+      },
+      "options": {
+        "bucketSize": 0.25,
+        "combine": true,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Bribery & Institutional",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 37 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Sector Bribery Risk by Country",
+      "type": "heatmap",
+      "gridPos": { "h": 10, "w": 6, "x": 0, "y": 38 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cim_bribery_risk_score", "legendFormat": "{{country_code}} - {{sector}}", "format": "time_series" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "options": {
+        "calculate": true,
+        "calculation": {
+          "xBuckets": { "mode": "size", "value": "" },
+          "yBuckets": { "mode": "size", "value": "" }
+        },
+        "color": {
+          "scheme": "RdYlGn",
+          "reverse": true,
+          "min": 0,
+          "max": 100
+        },
+        "yAxis": {
+          "axisLabel": "Sector",
+          "unit": "short"
+        },
+        "cellGap": 1
+      }
+    },
+    {
+      "title": "Forest Governance Scores",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 6, "y": 38 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "topk(15, gl_eudr_cim_institutional_quality_score{dimension=\"forest_governance\"})", "legendFormat": "{{country_code}}" },
+        { "expr": "bottomk(15, gl_eudr_cim_institutional_quality_score{dimension=\"forest_governance\"})", "legendFormat": "{{country_code}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 30 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Institutional Quality Distribution",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 38 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cim_institutional_quality_score{dimension=\"judicial_independence\"})", "legendFormat": "Judicial Independence" },
+        { "expr": "avg(gl_eudr_cim_institutional_quality_score{dimension=\"regulatory_enforcement\"})", "legendFormat": "Regulatory Enforcement" },
+        { "expr": "avg(gl_eudr_cim_institutional_quality_score{dimension=\"forest_governance\"})", "legendFormat": "Forest Governance" },
+        { "expr": "avg(gl_eudr_cim_institutional_quality_score{dimension=\"law_enforcement\"})", "legendFormat": "Law Enforcement" },
+        { "expr": "avg(gl_eudr_cim_institutional_quality_score{dimension=\"property_rights\"})", "legendFormat": "Property Rights" },
+        { "expr": "avg(gl_eudr_cim_institutional_quality_score{dimension=\"transparency\"})", "legendFormat": "Transparency" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 30 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Bribery Risk Alerts",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 38 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"bribery_risk_increase\"}[1h]))", "legendFormat": "Bribery Risk Increase" },
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"institutional_decline\"}[1h]))", "legendFormat": "Institutional Decline" },
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"governance_crisis\"}[1h]))", "legendFormat": "Governance Crisis" },
+        { "expr": "sum(gl_eudr_cim_alerts_active_total{alert_type=~\"bribery.*|institutional.*\"})", "legendFormat": "Active Bribery/Institutional" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "bars",
+            "stacking": { "mode": "normal" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Trends & Compliance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 48 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Improving vs Deteriorating Countries",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 6, "x": 0, "y": 49 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cim_trend_direction_count{direction=\"improving\"})", "legendFormat": "Improving" },
+        { "expr": "sum(gl_eudr_cim_trend_direction_count{direction=\"stable\"})", "legendFormat": "Stable" },
+        { "expr": "sum(gl_eudr_cim_trend_direction_count{direction=\"deteriorating\"})", "legendFormat": "Deteriorating" },
+        { "expr": "sum(gl_eudr_cim_trend_direction_count{direction=\"rapidly_deteriorating\"})", "legendFormat": "Rapidly Deteriorating" },
+        { "expr": "sum(gl_eudr_cim_trend_direction_count{direction=\"volatile\"})", "legendFormat": "Volatile" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Improving" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Stable" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Deteriorating" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Rapidly Deteriorating" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Volatile" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Deforestation-Corruption Correlation",
+      "type": "xychart",
+      "gridPos": { "h": 10, "w": 6, "x": 6, "y": 49 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cim_deforestation_correlation{corruption_index=\"cpi\"}", "legendFormat": "{{country_code}}", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "pointSize": { "fixed": 8 },
+            "show": "points"
+          }
+        }
+      },
+      "options": {
+        "seriesMapping": "manual",
+        "dims": {
+          "x": "cpi_score",
+          "frame": 0
+        },
+        "series": [
+          {
+            "name": "Correlation",
+            "x": { "field": "cpi_score" },
+            "y": { "field": "deforestation_rate" },
+            "color": { "field": "correlation_coefficient" },
+            "size": { "field": "p_value" }
+          }
+        ],
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Article 29 Classification Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 49 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cim_countries_by_classification{article_29_class=\"low_risk\"})", "legendFormat": "Low Risk" },
+        { "expr": "sum(gl_eudr_cim_countries_by_classification{article_29_class=\"standard_risk\"})", "legendFormat": "Standard Risk" },
+        { "expr": "sum(gl_eudr_cim_countries_by_classification{article_29_class=\"high_risk\"})", "legendFormat": "High Risk" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Low Risk" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Standard Risk" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High Risk" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Compliance Impact Alerts",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 49 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"classification_change\"}[1h]))", "legendFormat": "Classification Change" },
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"cpi_score_drop\"}[1h]))", "legendFormat": "CPI Score Drop" },
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"wgi_deterioration\"}[1h]))", "legendFormat": "WGI Deterioration" },
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"trend_reversal\"}[1h]))", "legendFormat": "Trend Reversal" },
+        { "expr": "sum(increase(gl_eudr_cim_alerts_triggered_total{alert_type=\"threshold_breach\"}[1h]))", "legendFormat": "Threshold Breach" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "bars",
+            "stacking": { "mode": "normal" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "corruption-index-monitor", "agent-eudr-019", "greenlang", "corruption", "cpi", "wgi", "governance"],
+  "templating": { "list": [] },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Corruption Index Monitor (AGENT-EUDR-019)",
+  "uid": "eudr-corruption-index-monitor",
+  "version": 1
+}

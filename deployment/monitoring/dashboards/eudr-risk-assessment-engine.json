@@ -1,0 +1,688 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-028: Risk Assessment Engine (RAE) -- Composite risk score computation from multi-dimensional factor inputs, Article 10(2) criteria evaluation, Article 29 country benchmarking, risk level classification (negligible/low/standard/elevated/high/critical), manual risk overrides with dual-approval audit trail, historical risk trend analysis via TimescaleDB, DDS-ready report generation, and simplified due diligence eligibility determination for EUDR Articles 8, 10, 13, 29, 31 compliance",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Assessments Completed Rate",
+      "description": "Rate of risk assessments completed over time by commodity. Tracks overall RAE throughput.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rae_assessments_total{environment=\"$environment\", commodity=~\"$commodity\"}[5m])) * 3600", "legendFormat": "Total (/hr)" },
+        { "expr": "sum by (commodity) (rate(gl_eudr_rae_assessments_total{environment=\"$environment\", commodity=~\"$commodity\"}[5m])) * 3600", "legendFormat": "{{commodity}} (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Active Assessments",
+      "description": "Current number of active risk assessments in progress. Spike > 200% triggers info alert.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rae_active_assessments{environment=\"$environment\"})", "legendFormat": "Active Assessments" },
+        { "expr": "sum(increase(gl_eudr_rae_assessments_total{environment=\"$environment\"}[24h]))", "legendFormat": "Completed (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "High Risk Operators",
+      "description": "Current count of operators classified as high or critical risk. Persistent count > 20 triggers warning alert.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rae_high_risk_operators{environment=\"$environment\"})", "legendFormat": "High/Critical Operators" },
+        { "expr": "sum(gl_eudr_rae_high_risk_operators{environment=\"$environment\", risk_level=\"critical\"})", "legendFormat": "Critical Only" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Assessment Duration (p50/p95/p99)",
+      "description": "End-to-end risk assessment latency by percentile. Target: p99 < 5 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_rae_assessment_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_rae_assessment_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_rae_assessment_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "API Errors Rate",
+      "description": "Rate of API errors by error type. Sustained rate > 1% triggers critical alert.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rae_api_errors_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Errors (/hr)" },
+        { "expr": "sum by (error_type) (rate(gl_eudr_rae_api_errors_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{error_type}} (/hr)" },
+        { "expr": "sum(rate(gl_eudr_rae_api_errors_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_rae_assessments_total{environment=\"$environment\"}[5m])) > 0) * 100", "legendFormat": "Error Rate %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Error Rate %" }, "properties": [{ "id": "custom.lineWidth", "value": 3 }, { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Risk Scores",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Average Risk Score",
+      "description": "Current average composite risk score across all recent assessments. Target: maintain below 0.50 (standard threshold).",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_rae_average_risk_score{environment=\"$environment\", commodity=~\"$commodity\"})", "legendFormat": "Avg Risk Score" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 4,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.25 },
+              { "color": "orange", "value": 0.50 },
+              { "color": "red", "value": 0.70 }
+            ]
+          },
+          "unit": "none",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Factor Aggregations Rate",
+      "description": "Rate of multi-dimensional factor aggregations computed. Each aggregation combines inputs from upstream risk agents (EUDR-016 through EUDR-025).",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 9, "x": 6, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rae_factor_aggregations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)" },
+        { "expr": "sum by (dimension) (rate(gl_eudr_rae_factor_aggregations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{dimension}} (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Aggregation Duration (p50/p95/p99)",
+      "description": "Factor aggregation computation latency by percentile. Target: p99 < 2 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 9, "x": 15, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_rae_aggregation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_rae_aggregation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_rae_aggregation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line", "lineInterpolation": "smooth", "thresholdsStyle": { "mode": "line" } },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 2 }] }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Risk Level Classification Distribution",
+      "description": "Distribution of risk classifications (negligible, low, standard, elevated, high, critical) over the last 24 hours.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (risk_level) (increase(gl_eudr_rae_classifications_total{environment=\"$environment\", risk_level=~\"$risk_level\"}[24h]))", "legendFormat": "{{risk_level}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Classification Duration (p50/p95/p99)",
+      "description": "Risk classification computation latency. Target: p99 < 500ms.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 9, "x": 6, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_rae_classification_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_rae_classification_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_rae_classification_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line", "lineInterpolation": "smooth" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.2 }, { "color": "red", "value": 0.5 }] }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Benchmarks Applied & Override Count",
+      "description": "Article 29 country benchmarks applied and manual risk overrides in effect. High override count may indicate data quality issues.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 9, "x": 15, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rae_benchmarks_applied_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Benchmarks Applied (/hr)" },
+        { "expr": "sum(gl_eudr_rae_override_count{environment=\"$environment\"})", "legendFormat": "Active Overrides" },
+        { "expr": "sum(rate(gl_eudr_rae_overrides_applied_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "New Overrides (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Article 10 Criteria",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Criteria Evaluations Rate",
+      "description": "Rate of Article 10(2) criteria evaluations by criterion type. Each assessment evaluates up to 15 criteria.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rae_criteria_evaluations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)" },
+        { "expr": "sum by (criterion) (rate(gl_eudr_rae_criteria_evaluations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{criterion}} (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Criteria Evaluation Latency (p50/p95/p99)",
+      "description": "Article 10(2) criteria evaluation latency by percentile. Target: p99 < 1 second per criterion.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_rae_criteria_evaluation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_rae_criteria_evaluation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_rae_criteria_evaluation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line", "lineInterpolation": "smooth", "thresholdsStyle": { "mode": "line" } },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.5 }, { "color": "red", "value": 1 }] }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Criteria Pass/Concern/Fail Distribution",
+      "description": "Distribution of Article 10(2) criteria evaluation results (pass, concern, fail, not_evaluated) in the last 24 hours.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 43 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (result) (increase(gl_eudr_rae_criteria_evaluations_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{result}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" },
+        "orientation": "horizontal",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Criteria Failure Heatmap by Criterion",
+      "description": "Heatmap of Article 10(2) criteria failures by criterion type over time. Persistent failures on specific criteria indicate systemic compliance gaps.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 43 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (criterion) (increase(gl_eudr_rae_criteria_evaluations_total{environment=\"$environment\", result=\"fail\"}[24h]))", "legendFormat": "{{criterion}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" },
+        "orientation": "vertical",
+        "barWidth": 0.7,
+        "stacking": "normal"
+      }
+    },
+    {
+      "title": "Reports & Trends",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 51 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Reports Generated Rate",
+      "description": "Rate of risk assessment reports generated over time. Includes DDS-ready and non-DDS-ready reports.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rae_reports_generated_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)" },
+        { "expr": "sum(rate(gl_eudr_rae_reports_generated_total{environment=\"$environment\", dds_ready=\"true\"}[5m])) * 3600", "legendFormat": "DDS-Ready (/hr)" },
+        { "expr": "sum(rate(gl_eudr_rae_reports_generated_total{environment=\"$environment\", dds_ready=\"false\"}[5m])) * 3600", "legendFormat": "Non-DDS (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Report Generation Latency (p50/p95/p99)",
+      "description": "Risk report generation latency by percentile. Target: p99 < 3 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_rae_report_generation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_rae_report_generation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_rae_report_generation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line", "lineInterpolation": "smooth", "thresholdsStyle": { "mode": "line" } },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1.5 }, { "color": "red", "value": 3 }] }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Trend Data Points",
+      "description": "Total number of historical risk trend data points stored in the TimescaleDB hypertable. Growth indicates active trend tracking coverage.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 60 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rae_trend_data_points{environment=\"$environment\"})", "legendFormat": "Total Trend Points" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1000 },
+              { "color": "yellow", "value": 10000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Risk Score Trend by Commodity",
+      "description": "Average composite risk score trend over time by EUDR commodity. Shows risk trajectory direction (improving, stable, deteriorating).",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 18, "x": 6, "y": 60 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg by (commodity) (gl_eudr_rae_average_risk_score{environment=\"$environment\", commodity=~\"$commodity\"})", "legendFormat": "{{commodity}}" },
+        { "expr": "avg(gl_eudr_rae_average_risk_score{environment=\"$environment\", commodity=~\"$commodity\"})", "legendFormat": "Overall Average" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.25 },
+              { "color": "orange", "value": 0.50 },
+              { "color": "red", "value": 0.70 }
+            ]
+          },
+          "min": 0,
+          "max": 1
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Overall Average" }, "properties": [{ "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "min", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Alert Rules & Runbooks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 68 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Alert Rules Reference",
+      "description": "Summary of all 6 alert rules for the Risk Assessment Engine with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 69 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-028 Risk Assessment Engine Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **High Risk Spike** | high_risk_operators > 20 sustained for 1h | Warning | Every 5m, for 15m | Review high-risk assessments, notify compliance lead |\n| 2 | **Critical Risk Detected** | Any operator classified as critical risk | Critical | Every 1m, for 5m | Page on-call, initiate enhanced due diligence review |\n| 3 | **Assessment Latency** | p99 assessment_duration_seconds > 5s for 10m | Warning | Every 5m, for 10m | Investigate upstream agent latency, check DB performance |\n| 4 | **Unapproved Overrides** | Pending overrides (approved_by IS NULL) > 10 for 24h | Warning | Every 1h, for 24h | Escalate to compliance lead for override approval |\n| 5 | **Benchmark Data Stale** | Country benchmark data > 90 days old | Warning | Every 6h, for 24h | Refresh benchmark data from EU Commission sources |\n| 6 | **System Errors** | API error rate (5xx) > 1% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure and upstream dependencies |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Risk Assessment Troubleshooting](https://runbooks.greenlang.io/eudr/rae/assessment-troubleshooting)\n- [High Risk Operator Response](https://runbooks.greenlang.io/eudr/rae/high-risk-response)\n- [Override Approval Workflow](https://runbooks.greenlang.io/eudr/rae/override-approval)\n- [Benchmark Data Refresh](https://runbooks.greenlang.io/eudr/rae/benchmark-refresh)\n- [Article 10 Criteria Failure Investigation](https://runbooks.greenlang.io/eudr/rae/article10-investigation)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/rae/perf-degradation)"
+      }
+    }
+  ],
+  "refresh": "15m",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "risk-assessment", "risk-assessment-engine", "agent-eudr-028", "greenlang", "composite-risk", "article-10", "article-29", "country-benchmark", "risk-classification", "risk-override", "risk-trends"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_rae_assessments_total{environment=\"$environment\"}, commodity)",
+        "description": "Filter by EUDR commodity (cattle, cocoa, coffee, oil_palm, rubber, soya, wood)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Commodity",
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_rae_assessments_total{environment=\"$environment\"}, commodity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_rae_classifications_total{environment=\"$environment\"}, risk_level)",
+        "description": "Filter by risk level classification (negligible, low, standard, elevated, high, critical)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Risk Level",
+        "multi": true,
+        "name": "risk_level",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_rae_classifications_total{environment=\"$environment\"}, risk_level)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["15m", "30m", "1h", "2h", "6h", "12h", "1d"],
+    "time_options": ["1h", "6h", "24h", "7d", "30d", "90d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Risk Assessment Engine (AGENT-EUDR-028)",
+  "uid": "eudr-risk-assessment-engine",
+  "version": 1
+}

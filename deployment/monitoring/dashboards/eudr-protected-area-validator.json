@@ -1,0 +1,879 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-022: Protected Area Validator Agent -- WDPA protected area registry, IUCN category management, plot-protected area overlap detection, buffer zone compliance monitoring, designation validation, PADDD event tracking, risk scoring, violation alerting, compliance reporting, and EUDR Article 3(a) protected area compliance",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Active Protected Areas",
+      "description": "Total number of protected areas currently registered and actively monitored in the WDPA registry",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_pav_active_protected_areas{environment=\"$environment\"})", "legendFormat": "Active Areas" },
+        { "expr": "sum(increase(gl_eudr_pav_protected_areas_registered_total{environment=\"$environment\"}[24h]))", "legendFormat": "Registered (24h)" },
+        { "expr": "sum(gl_eudr_pav_active_protected_areas{environment=\"$environment\", iucn_category=~\"Ia|Ib|II\"})", "legendFormat": "Strict (Ia/Ib/II)" },
+        { "expr": "sum(gl_eudr_pav_active_protected_areas{environment=\"$environment\", iucn_category=~\"III|IV|V|VI\"})", "legendFormat": "Other Categories" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 100 },
+              { "color": "yellow", "value": 500 },
+              { "color": "green", "value": 1000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Overlaps Detected",
+      "description": "Total plot-protected area overlaps detected across all monitored supply chains",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\"})", "legendFormat": "Total Overlaps" },
+        { "expr": "sum(increase(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\"}[24h]))", "legendFormat": "New (24h)" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", risk_level=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", risk_level=\"high\"})", "legendFormat": "High" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Unresolved Violations",
+      "description": "Current count of unresolved protected area violations requiring attention. Alert fires when count exceeds 15.",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_pav_unresolved_violations{environment=\"$environment\"})", "legendFormat": "Unresolved" },
+        { "expr": "sum(gl_eudr_pav_unresolved_violations{environment=\"$environment\", severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_pav_unresolved_violations{environment=\"$environment\", severity=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(increase(gl_eudr_pav_buffer_violations_detected_total{environment=\"$environment\"}[1h]))", "legendFormat": "Buffer Violations (1h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Compliance Score",
+      "description": "Average protected area compliance score across all assessed supply chains. Thresholds: <60 red, 60-80 yellow, >80 green.",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_pav_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Avg Compliance Score" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Overlap Analysis",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Overlaps by IUCN Category",
+      "description": "Distribution of plot-protected area overlaps by IUCN management category. Strict categories (Ia, Ib, II) indicate higher compliance risk.",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", iucn_category=\"Ia\"})", "legendFormat": "Ia - Strict Nature Reserve" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", iucn_category=\"Ib\"})", "legendFormat": "Ib - Wilderness Area" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", iucn_category=\"II\"})", "legendFormat": "II - National Park" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", iucn_category=\"III\"})", "legendFormat": "III - Natural Monument" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", iucn_category=\"IV\"})", "legendFormat": "IV - Habitat/Species Mgmt" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", iucn_category=\"V\"})", "legendFormat": "V - Protected Landscape" },
+        { "expr": "sum(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", iucn_category=\"VI\"})", "legendFormat": "VI - Sustainable Use" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Ia - Strict Nature Reserve" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Ib - Wilderness Area" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "II - National Park" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "III - Natural Monument" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "IV - Habitat/Species Mgmt" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "V - Protected Landscape" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "VI - Sustainable Use" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Overlap Detection Trend",
+      "description": "Rate of overlap detections over time segmented by risk level",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", risk_level=\"critical\"}[5m])) * 3600", "legendFormat": "Critical (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", risk_level=\"high\"}[5m])) * 3600", "legendFormat": "High (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", risk_level=\"medium\"}[5m])) * 3600", "legendFormat": "Medium (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\", risk_level=\"low\"}[5m])) * 3600", "legendFormat": "Low (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_overlaps_detected_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "High (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Risk Score Distribution",
+      "description": "Distribution of risk scores across all protected area assessments. Higher scores indicate greater compliance risk.",
+      "type": "histogram",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.25, sum(rate(gl_eudr_pav_risk_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p25" },
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_pav_risk_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50 (median)" },
+        { "expr": "histogram_quantile(0.75, sum(rate(gl_eudr_pav_risk_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p75" },
+        { "expr": "histogram_quantile(0.90, sum(rate(gl_eudr_pav_risk_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p90" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_pav_risk_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1
+          },
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 40 },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "bucketSize": 10,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "title": "Buffer Zone Monitoring",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Buffer Violations by Severity",
+      "description": "Buffer zone violations detected over time, broken down by severity level. Alert: critical violations > 3/hour triggers immediate escalation.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_pav_buffer_violations_detected_total{environment=\"$environment\", severity=\"critical\"}[5m])) * 3600", "legendFormat": "Critical (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_buffer_violations_detected_total{environment=\"$environment\", severity=\"high\"}[5m])) * 3600", "legendFormat": "High (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_buffer_violations_detected_total{environment=\"$environment\", severity=\"medium\"}[5m])) * 3600", "legendFormat": "Medium (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_buffer_violations_detected_total{environment=\"$environment\", severity=\"low\"}[5m])) * 3600", "legendFormat": "Low (/hr)" },
+        { "expr": "sum(increase(gl_eudr_pav_buffer_violations_detected_total{environment=\"$environment\", severity=\"critical\"}[1h]))", "legendFormat": "Critical (1h count)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "High (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Critical (1h count)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "custom.fillOpacity", "value": 0 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-PAV Critical Buffer Violations Rate",
+        "message": "Critical protected area buffer violations exceed 3/hour threshold. Immediate investigation required for EUDR Article 3(a) compliance.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["E", "1h", "now"] },
+            "reducer": { "type": "last", "params": [] },
+            "evaluator": { "type": "gt", "params": [3] }
+          }
+        ],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Buffer Zone Compliance Rate",
+      "description": "Percentage of monitored plots that comply with buffer zone requirements over time",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "(sum(gl_eudr_pav_buffer_zone_compliant_total{environment=\"$environment\"}) / clamp_min(sum(gl_eudr_pav_buffer_zone_monitored_total{environment=\"$environment\"}), 1)) * 100", "legendFormat": "Compliance Rate (%)" },
+        { "expr": "sum(gl_eudr_pav_buffer_zone_monitored_total{environment=\"$environment\"})", "legendFormat": "Total Monitored" },
+        { "expr": "sum(gl_eudr_pav_buffer_zone_compliant_total{environment=\"$environment\"})", "legendFormat": "Compliant" },
+        { "expr": "sum(gl_eudr_pav_buffer_zone_monitored_total{environment=\"$environment\"}) - sum(gl_eudr_pav_buffer_zone_compliant_total{environment=\"$environment\"})", "legendFormat": "Non-Compliant" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Compliance Rate (%)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "unit", "value": "percent" }, { "id": "custom.axisPlacement", "value": "right" }] },
+          { "matcher": { "id": "byName", "options": "Non-Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Total Monitored" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "min", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "PADDD & Designation",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "PADDD Events by Type",
+      "description": "Protected Area Downgrading, Downsizing, and Degazettement events tracked over time. Enacted events require immediate supply chain risk re-assessment.",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 29 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_pav_paddd_events_detected_total{environment=\"$environment\", event_type=\"downgrading\"}[$__range]))", "legendFormat": "Downgrading" },
+        { "expr": "sum(increase(gl_eudr_pav_paddd_events_detected_total{environment=\"$environment\", event_type=\"downsizing\"}[$__range]))", "legendFormat": "Downsizing" },
+        { "expr": "sum(increase(gl_eudr_pav_paddd_events_detected_total{environment=\"$environment\", event_type=\"degazettement\"}[$__range]))", "legendFormat": "Degazettement" },
+        { "expr": "sum(increase(gl_eudr_pav_paddd_events_detected_total{environment=\"$environment\", event_type=~\"proposed_.*\"}[$__range]))", "legendFormat": "Proposed" },
+        { "expr": "sum(increase(gl_eudr_pav_paddd_events_detected_total{environment=\"$environment\", event_type=\"reversed\"}[$__range]))", "legendFormat": "Reversed" },
+        { "expr": "sum(increase(gl_eudr_pav_paddd_events_detected_total{environment=\"$environment\", event_type=\"enacted\"}[$__range]))", "legendFormat": "Enacted" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Downgrading" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Downsizing" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Degazettement" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Proposed" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Reversed" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Enacted" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Designation Validation Status",
+      "description": "Protected area designation validation results showing how many areas have been validated and their current status",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 29 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_pav_designation_status_total{environment=\"$environment\", status=\"Designated\"})", "legendFormat": "Designated" },
+        { "expr": "sum(gl_eudr_pav_designation_status_total{environment=\"$environment\", status=\"Inscribed\"})", "legendFormat": "Inscribed" },
+        { "expr": "sum(gl_eudr_pav_designation_status_total{environment=\"$environment\", status=\"Adopted\"})", "legendFormat": "Adopted" },
+        { "expr": "sum(gl_eudr_pav_designation_status_total{environment=\"$environment\", status=\"Proposed\"})", "legendFormat": "Proposed" },
+        { "expr": "sum(gl_eudr_pav_designation_status_total{environment=\"$environment\", status=\"Not Reported\"})", "legendFormat": "Not Reported" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Designated" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Inscribed" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Adopted" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Proposed" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Not Reported" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-blue", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Protected Areas by Country",
+      "description": "Top countries by number of registered protected areas in the monitoring database",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 29 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum(gl_eudr_pav_active_protected_areas{environment=\"$environment\"}) by (country))", "legendFormat": "{{country}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7,
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Performance Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Processing Latency (p50 / p95 / p99)",
+      "description": "Processing duration distribution by operation. Shows p50, p95, and p99 percentiles. Alert: p99 > 5s indicates performance degradation.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_pav_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50 (all ops)" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_pav_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95 (all ops)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_pav_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99 (all ops)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_pav_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"overlap_analysis\"}[5m])) by (le))", "legendFormat": "p99 (overlap_analysis)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_pav_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"buffer_check\"}[5m])) by (le))", "legendFormat": "p99 (buffer_check)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_pav_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"risk_assessment\"}[5m])) by (le))", "legendFormat": "p99 (risk_assessment)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_pav_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"designation_validate\"}[5m])) by (le))", "legendFormat": "p99 (designation_validate)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line+area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p50 (all ops)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95 (all ops)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p99 (all ops)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-PAV p99 Latency Threshold",
+        "message": "p99 processing latency exceeds 5 seconds. Performance degradation detected in protected area validation pipeline.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["C", "5m", "now"] },
+            "reducer": { "type": "last", "params": [] },
+            "evaluator": { "type": "gt", "params": [5] }
+          }
+        ],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Error Rate by Operation",
+      "description": "Error rate across all protected area validation operations. Alert: error rate > 1% triggers notification for investigation.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_pav_errors_total{environment=\"$environment\"}[5m])) / clamp_min(sum(rate(gl_eudr_pav_api_requests_total{environment=\"$environment\"}[5m])), 0.001) * 100", "legendFormat": "Error Rate (%)" },
+        { "expr": "sum(rate(gl_eudr_pav_errors_total{environment=\"$environment\"}[5m])) by (operation)", "legendFormat": "{{operation}}" },
+        { "expr": "sum(rate(gl_eudr_pav_errors_total{environment=\"$environment\", error_type=\"validation\"}[5m]))", "legendFormat": "Validation Errors" },
+        { "expr": "sum(rate(gl_eudr_pav_errors_total{environment=\"$environment\", error_type=\"timeout\"}[5m]))", "legendFormat": "Timeout Errors" },
+        { "expr": "sum(rate(gl_eudr_pav_errors_total{environment=\"$environment\", error_type=\"database\"}[5m]))", "legendFormat": "Database Errors" },
+        { "expr": "sum(rate(gl_eudr_pav_errors_total{environment=\"$environment\", error_type=\"spatial\"}[5m]))", "legendFormat": "Spatial Processing Errors" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Error Rate (%)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "unit", "value": "percent" }, { "id": "custom.axisPlacement", "value": "right" }] },
+          { "matcher": { "id": "byName", "options": "Validation Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Timeout Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Database Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Spatial Processing Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-PAV Error Rate Threshold",
+        "message": "Protected area validator error rate exceeds 1%. Investigate failing operations immediately.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["A", "5m", "now"] },
+            "reducer": { "type": "last", "params": [] },
+            "evaluator": { "type": "gt", "params": [1] }
+          }
+        ],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Compliance & Reporting",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 50 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Compliance Assessments Over Time",
+      "description": "Rate of compliance assessments generated over time, segmented by compliance outcome",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 51 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_pav_compliance_assessments_total{environment=\"$environment\", status=\"compliant\"}[5m])) * 3600", "legendFormat": "Compliant (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_compliance_assessments_total{environment=\"$environment\", status=\"non_compliant\"}[5m])) * 3600", "legendFormat": "Non-Compliant (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_compliance_assessments_total{environment=\"$environment\", status=\"partially_compliant\"}[5m])) * 3600", "legendFormat": "Partially Compliant (/hr)" },
+        { "expr": "sum(rate(gl_eudr_pav_compliance_assessments_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "bars",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Compliant (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Non-Compliant (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Partially Compliant (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "custom.drawStyle", "value": "line" }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.stacking", "value": { "mode": "none" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "API Request Rate by Endpoint",
+      "description": "API request throughput for the Protected Area Validator agent, segmented by endpoint and HTTP status",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 51 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_pav_api_requests_total{environment=\"$environment\"}[5m])) by (endpoint)", "legendFormat": "{{endpoint}}" },
+        { "expr": "sum(rate(gl_eudr_pav_api_requests_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total RPS" },
+        { "expr": "sum(rate(gl_eudr_pav_api_requests_total{environment=\"$environment\", status=~\"5..\"}[5m]))", "legendFormat": "5xx Errors" },
+        { "expr": "sum(rate(gl_eudr_pav_api_requests_total{environment=\"$environment\", status=~\"4..\"}[5m]))", "legendFormat": "4xx Errors" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total RPS" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "5xx Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last", "sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "WDPA Data Freshness",
+      "description": "Freshness of protected area data from WDPA and other sources, measured by time since last sync",
+      "type": "stat",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 51 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_pav_wdpa_last_sync_seconds{environment=\"$environment\"}", "legendFormat": "WDPA Last Sync" },
+        { "expr": "sum(gl_eudr_pav_data_source_freshness_hours{environment=\"$environment\"}) by (source)", "legendFormat": "{{source}}" },
+        { "expr": "sum(increase(gl_eudr_pav_protected_areas_registered_total{environment=\"$environment\"}[7d]))", "legendFormat": "New Areas (7d)" },
+        { "expr": "sum(increase(gl_eudr_pav_paddd_events_detected_total{environment=\"$environment\"}[7d]))", "legendFormat": "PADDD Events (7d)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 86400 },
+              { "color": "orange", "value": 604800 },
+              { "color": "red", "value": 2592000 }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Alert Rules Summary",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 61 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Compliance Score Trend",
+      "description": "Average protected area compliance score over time. Alert fires when score drops below 60, indicating systemic compliance failures.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_pav_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Avg Compliance Score" },
+        { "expr": "min(gl_eudr_pav_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Min Compliance Score" },
+        { "expr": "max(gl_eudr_pav_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Max Compliance Score" },
+        { "expr": "avg(gl_eudr_pav_compliance_score_avg{environment=\"$environment\"}) by (operator_id)", "legendFormat": "Operator: {{operator_id}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line+area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Avg Compliance Score" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Min Compliance Score" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] },
+          { "matcher": { "id": "byName", "options": "Max Compliance Score" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "min", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-PAV Compliance Score Below Threshold",
+        "message": "Average protected area compliance score has dropped below 60. Systemic compliance failure detected across supply chains.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["A", "15m", "now"] },
+            "reducer": { "type": "avg", "params": [] },
+            "evaluator": { "type": "lt", "params": [60] }
+          }
+        ],
+        "frequency": "5m",
+        "for": "15m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules configured for the Protected Area Validator agent",
+      "type": "text",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 62 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-022 Protected Area Validator Alert Rules\n\n| Alert | Condition | Severity | Evaluation |\n|-------|-----------|----------|------------|\n| **Critical Buffer Violations Rate** | Critical buffer violations > 3/hour | Critical | Every 1m, for 5m |\n| **p99 Latency Threshold** | p99 processing latency > 5s | Warning | Every 1m, for 5m |\n| **Error Rate Threshold** | Error rate > 1% | Warning | Every 1m, for 5m |\n| **Unresolved Violations** | Unresolved violations > 15 | Warning | Every 5m, for 10m |\n| **Compliance Score Drop** | Avg compliance score < 60 | Critical | Every 5m, for 15m |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Protected Area Violation Response](https://runbooks.greenlang.io/eudr/pav/violation-response)\n- [Buffer Zone Encroachment](https://runbooks.greenlang.io/eudr/pav/buffer-encroachment)\n- [PADDD Event Response](https://runbooks.greenlang.io/eudr/pav/paddd-response)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/pav/perf-degradation)\n- [Compliance Score Recovery](https://runbooks.greenlang.io/eudr/pav/compliance-recovery)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "protected-areas", "compliance", "agent-eudr-022", "greenlang", "wdpa", "iucn", "buffer-zones", "paddd"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_pav_api_requests_total{environment=\"$environment\"}, operator_id)",
+        "description": "Filter by operator ID",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Operator ID",
+        "multi": true,
+        "name": "operator_id",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_pav_api_requests_total{environment=\"$environment\"}, operator_id)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+    "time_options": ["5m", "15m", "1h", "6h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Protected Area Validator (EUDR-022)",
+  "uid": "eudr-protected-area-validator",
+  "version": 1
+}

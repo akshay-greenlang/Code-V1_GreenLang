@@ -1,0 +1,1020 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-024: Third-Party Audit Manager (TAM) -- end-to-end audit lifecycle management for EUDR compliance verification including risk-based audit scheduling, auditor qualification tracking (ISO/IEC 17065/17021-1), non-conformance detection and classification, corrective action request (CAR) lifecycle with SLA enforcement, certification scheme integration (FSC/PEFC/RSPO/RA/ISCC), ISO 19011 report generation, and competent authority liaison",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Audit Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Active Audits",
+      "description": "Current number of active audits (not closed or cancelled) across all operators and certification schemes",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_tam_active_audits{environment=\"$environment\"})", "legendFormat": "Active" },
+        { "expr": "sum(increase(gl_eudr_tam_audits_created_total{environment=\"$environment\"}[24h]))", "legendFormat": "New (24h)" },
+        { "expr": "sum(increase(gl_eudr_tam_audits_completed_total{environment=\"$environment\"}[24h]))", "legendFormat": "Completed (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Open CARs by Severity",
+      "description": "Currently open corrective action requests broken down by severity (Critical/Major/Minor). Alert fires when critical CARs exceed 10.",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_tam_open_cars{environment=\"$environment\"})", "legendFormat": "Total Open" },
+        { "expr": "sum(gl_eudr_tam_open_cars{environment=\"$environment\", severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_tam_open_cars{environment=\"$environment\", severity=\"major\"})", "legendFormat": "Major" },
+        { "expr": "sum(gl_eudr_tam_open_cars{environment=\"$environment\", severity=\"minor\"})", "legendFormat": "Minor" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "CAR SLA Compliance Rate",
+      "description": "Percentage of corrective action requests closed within their SLA deadline. Target: >= 85%. Alert fires below 80%.",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_tam_car_sla_compliance_rate{environment=\"$environment\"})", "legendFormat": "SLA Compliance %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 80 },
+              { "color": "green", "value": 85 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Cache Hit Ratio",
+      "description": "Redis cache hit ratio for audit data queries. Target: > 65%.",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_tam_cache_hit_ratio{environment=\"$environment\"}) * 100", "legendFormat": "Cache Hit %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 55 },
+              { "color": "green", "value": 65 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Audit Execution Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Audits Created Over Time",
+      "description": "Rate of audit creation segmented by audit type (full, targeted, surveillance, unscheduled) and certification scheme",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", type=\"full\"}[5m])) * 3600", "legendFormat": "Full (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", type=\"targeted\"}[5m])) * 3600", "legendFormat": "Targeted (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", type=\"surveillance\"}[5m])) * 3600", "legendFormat": "Surveillance (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", type=\"unscheduled\"}[5m])) * 3600", "legendFormat": "Unscheduled (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Audits Completed Over Time",
+      "description": "Rate of audit completion segmented by outcome. Tracks closure velocity and completion trends.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_audits_completed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Completed (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_audits_cancelled_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Cancelled (/hr)" },
+        { "expr": "sum(increase(gl_eudr_tam_audits_completed_total{environment=\"$environment\"}[24h]))", "legendFormat": "Completed (24h total)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Completed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Cancelled (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Non-Conformance Trends",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "NCs Detected by Severity",
+      "description": "Non-conformances detected over time by severity level (critical/major/minor/observation). Alert: critical NCs > 5/hour triggers escalation.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_ncs_detected_total{environment=\"$environment\", severity=\"critical\"}[5m])) * 3600", "legendFormat": "Critical (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_ncs_detected_total{environment=\"$environment\", severity=\"major\"}[5m])) * 3600", "legendFormat": "Major (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_ncs_detected_total{environment=\"$environment\", severity=\"minor\"}[5m])) * 3600", "legendFormat": "Minor (/hr)" },
+        { "expr": "sum(increase(gl_eudr_tam_ncs_detected_total{environment=\"$environment\", severity=\"critical\"}[1h]))", "legendFormat": "Critical (1h count)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 20, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "none" }, "spanNulls": false, "lineInterpolation": "smooth" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 2 }, { "color": "red", "value": 5 }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Major (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Minor (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Critical (1h count)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "custom.fillOpacity", "value": 0 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-TAM Critical NCs Rate",
+        "message": "Critical non-conformances exceed 5/hour threshold. Immediate review required for EUDR audit compliance.",
+        "conditions": [{ "type": "query", "query": { "params": ["D", "1h", "now"] }, "reducer": { "type": "last", "params": [] }, "evaluator": { "type": "gt", "params": [5] } }],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "NCs by Country",
+      "description": "Non-conformance distribution by country of detection, highlighting geographic compliance patterns",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum(rate(gl_eudr_tam_ncs_detected_total{environment=\"$environment\"}[5m])) by (country))", "legendFormat": "{{country}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "normal" }, "spanNulls": false, "lineInterpolation": "smooth" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "NCs Resolved Over Time",
+      "description": "Rate of non-conformance resolution by severity, showing compliance improvement velocity",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_ncs_resolved_total{environment=\"$environment\", severity=\"critical\"}[5m])) * 3600", "legendFormat": "Critical Resolved (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_ncs_resolved_total{environment=\"$environment\", severity=\"major\"}[5m])) * 3600", "legendFormat": "Major Resolved (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_ncs_resolved_total{environment=\"$environment\", severity=\"minor\"}[5m])) * 3600", "legendFormat": "Minor Resolved (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "none" }, "spanNulls": false, "lineInterpolation": "smooth" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical Resolved (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Major Resolved (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Minor Resolved (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "CAR Lifecycle Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "CARs Issued vs Closed",
+      "description": "Corrective action requests issued versus closed over time by severity, showing CAR lifecycle throughput",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 29 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_cars_issued_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Issued (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_closed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Closed (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_issued_total{environment=\"$environment\", severity=\"critical\"}[5m])) * 3600", "legendFormat": "Critical Issued (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_closed_total{environment=\"$environment\", severity=\"critical\"}[5m])) * 3600", "legendFormat": "Critical Closed (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "none" }, "spanNulls": false, "lineInterpolation": "smooth" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Issued (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Closed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Critical Issued (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] },
+          { "matcher": { "id": "byName", "options": "Critical Closed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "CARs Overdue",
+      "description": "Rate of CARs exceeding SLA deadlines by severity. Alert fires when overdue CARs exceed 3/hour.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 29 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_cars_overdue_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Overdue (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_overdue_total{environment=\"$environment\", severity=\"critical\"}[5m])) * 3600", "legendFormat": "Critical Overdue (/hr)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_overdue_total{environment=\"$environment\", severity=\"major\"}[5m])) * 3600", "legendFormat": "Major Overdue (/hr)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 20, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "none" }, "spanNulls": false, "lineInterpolation": "smooth" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 3 }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical Overdue (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-TAM CAR SLA Breach Rate",
+        "message": "CAR SLA breaches exceed 3/hour. Review overdue corrective action requests for escalation.",
+        "conditions": [{ "type": "query", "query": { "params": ["A", "1h", "now"] }, "reducer": { "type": "last", "params": [] }, "evaluator": { "type": "gt", "params": [3] } }],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "CAR Escalations by Level",
+      "description": "CAR escalation events by escalation level (1=75% SLA, 2=90% SLA, 3=100% SLA, 4=30+ days overdue)",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 29 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_cars_escalated_total{environment=\"$environment\", level=\"1\"}[5m])) * 3600", "legendFormat": "Level 1 - Warning (75%)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_escalated_total{environment=\"$environment\", level=\"2\"}[5m])) * 3600", "legendFormat": "Level 2 - Critical (90%)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_escalated_total{environment=\"$environment\", level=\"3\"}[5m])) * 3600", "legendFormat": "Level 3 - Overdue (100%)" },
+        { "expr": "sum(rate(gl_eudr_tam_cars_escalated_total{environment=\"$environment\", level=\"4\"}[5m])) * 3600", "legendFormat": "Level 4 - Suspension (30d+)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "drawStyle": "bars", "pointSize": 5, "stacking": { "mode": "normal" }, "spanNulls": false }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Level 1 - Warning (75%)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Level 2 - Critical (90%)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Level 3 - Overdue (100%)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Level 4 - Suspension (30d+)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Performance Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Schedule Generation Latency",
+      "description": "Audit schedule generation latency distribution. Target: < 2 seconds for 500 suppliers.",
+      "type": "heatmap",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_tam_scheduling_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le)", "legendFormat": "{{le}}", "format": "heatmap" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "options": { "calculate": true, "yAxis": { "axisPlacement": "left", "unit": "s" }, "cellGap": 1, "color": { "mode": "scheme", "scheme": "Oranges" } }
+    },
+    {
+      "title": "NC Classification Latency",
+      "description": "Non-conformance classification latency distribution. Target: < 500ms per finding.",
+      "type": "heatmap",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_tam_nc_classification_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le)", "legendFormat": "{{le}}", "format": "heatmap" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "options": { "calculate": true, "yAxis": { "axisPlacement": "left", "unit": "s" }, "cellGap": 1, "color": { "mode": "scheme", "scheme": "Oranges" } }
+    },
+    {
+      "title": "Report Generation Latency",
+      "description": "ISO 19011 audit report generation latency. Target: < 30 seconds per 50-finding PDF report.",
+      "type": "heatmap",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_tam_report_generation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le)", "legendFormat": "{{le}}", "format": "heatmap" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "options": { "calculate": true, "yAxis": { "axisPlacement": "left", "unit": "s" }, "cellGap": 1, "color": { "mode": "scheme", "scheme": "Oranges" } }
+    },
+    {
+      "title": "API & Integration Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 50 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "API Request Latency (p50/p95/p99)",
+      "description": "API request latency percentiles. Target: p95 < 200ms. Alert fires when p99 > 1 second.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 51 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_tam_api_request_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_tam_api_request_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_tam_api_request_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "none" }, "spanNulls": false, "lineInterpolation": "smooth" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.2 }, { "color": "red", "value": 1 }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-TAM API p99 Latency",
+        "message": "API p99 latency exceeds 1 second. Investigate performance degradation.",
+        "conditions": [{ "type": "query", "query": { "params": ["C", "5m", "now"] }, "reducer": { "type": "avg", "params": [] }, "evaluator": { "type": "gt", "params": [1] } }],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Scheme Sync Freshness",
+      "description": "Time since last synchronization with certification scheme databases (FSC, PEFC, RSPO, RA, ISCC). Target: < 24 hours.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 51 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_tam_scheme_sync_freshness_seconds{environment=\"$environment\"} / 3600", "legendFormat": "Sync Age (hours)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "none" }, "spanNulls": false, "lineInterpolation": "smooth" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 12 }, { "color": "orange", "value": 18 }, { "color": "red", "value": 24 }] }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Certification & Authority Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 61 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Reports Generated by Format",
+      "description": "Audit reports generated by output format (PDF, JSON, HTML, XLSX, XML) and language",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_tam_reports_generated_total{environment=\"$environment\"}[30d])) by (format)", "legendFormat": "{{format}}" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Authority Interactions by Type",
+      "description": "Competent authority interactions by type (document_request, inspection, enforcement) and EU Member State",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_tam_authority_interactions_total{environment=\"$environment\", type=\"document_request\"}[5m])) * 3600", "legendFormat": "Document Request" },
+        { "expr": "sum(rate(gl_eudr_tam_authority_interactions_total{environment=\"$environment\", type=\"inspection_notification\"}[5m])) * 3600", "legendFormat": "Inspection" },
+        { "expr": "sum(rate(gl_eudr_tam_authority_interactions_total{environment=\"$environment\", type=\"corrective_action_order\"}[5m])) * 3600", "legendFormat": "Corrective Action" },
+        { "expr": "sum(rate(gl_eudr_tam_authority_interactions_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "drawStyle": "bars", "pointSize": 5, "stacking": { "mode": "normal" }, "spanNulls": false }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.stacking", "value": { "mode": "none" } }, { "id": "custom.drawStyle", "value": "line" }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-TAM Auditor Capacity",
+        "message": "Authority interactions rate exceeds threshold. Verify auditor capacity and resource allocation.",
+        "conditions": [{ "type": "query", "query": { "params": ["D", "1h", "now"] }, "reducer": { "type": "last", "params": [] }, "evaluator": { "type": "gt", "params": [20] } }],
+        "frequency": "5m",
+        "for": "10m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Certificate Expiry Monitoring",
+      "description": "Certification scheme sync freshness and certificate validity monitoring. Alert fires when sync exceeds 24 hours.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_tam_scheme_sync_freshness_seconds{environment=\"$environment\"}", "legendFormat": "Sync Freshness (s)" },
+        { "expr": "sum(increase(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"fsc\"}[24h]))", "legendFormat": "FSC Audits (24h)" },
+        { "expr": "sum(increase(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"rspo\"}[24h]))", "legendFormat": "RSPO Audits (24h)" },
+        { "expr": "sum(increase(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"pefc\"}[24h]))", "legendFormat": "PEFC Audits (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line", "pointSize": 5, "stacking": { "mode": "none" }, "spanNulls": false, "lineInterpolation": "smooth" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-TAM Certificate Sync Expiry",
+        "message": "Certification scheme sync has not run in 24+ hours. Certificate status data may be stale.",
+        "conditions": [{ "type": "query", "query": { "params": ["A", "1h", "now"] }, "reducer": { "type": "last", "params": [] }, "evaluator": { "type": "gt", "params": [86400] } }],
+        "frequency": "5m",
+        "for": "15m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Auditor Performance & Compliance Analytics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 72 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Audits by Certification Scheme",
+      "description": "Audit creation rate segmented by certification scheme (FSC, PEFC, RSPO, Rainforest Alliance, ISCC) showing cross-scheme activity distribution",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"fsc\"}[5m])) * 3600",
+          "legendFormat": "FSC"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"pefc\"}[5m])) * 3600",
+          "legendFormat": "PEFC"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"rspo\"}[5m])) * 3600",
+          "legendFormat": "RSPO"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"rainforest_alliance\"}[5m])) * 3600",
+          "legendFormat": "Rainforest Alliance"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\", scheme=\"iscc\"}[5m])) * 3600",
+          "legendFormat": "ISCC"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_created_total{environment=\"$environment\"}[5m])) * 3600",
+          "legendFormat": "Total"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "FSC" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "PEFC" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "RSPO" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Rainforest Alliance" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "ISCC" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } },
+              { "id": "custom.lineWidth", "value": 3 },
+              { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } },
+              { "id": "custom.stacking", "value": { "mode": "none" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Report Generation by Language",
+      "description": "Audit report generation rate segmented by language (EN, FR, DE, ES, PT) showing multi-language utilization",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum(rate(gl_eudr_tam_reports_generated_total{environment=\"$environment\", language=\"en\"}[5m])) * 3600",
+          "legendFormat": "English"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_reports_generated_total{environment=\"$environment\", language=\"fr\"}[5m])) * 3600",
+          "legendFormat": "French"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_reports_generated_total{environment=\"$environment\", language=\"de\"}[5m])) * 3600",
+          "legendFormat": "German"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_reports_generated_total{environment=\"$environment\", language=\"es\"}[5m])) * 3600",
+          "legendFormat": "Spanish"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_reports_generated_total{environment=\"$environment\", language=\"pt\"}[5m])) * 3600",
+          "legendFormat": "Portuguese"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "bars",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "English" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "French" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "German" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Spanish" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Portuguese" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Authority Interactions by Member State",
+      "description": "Competent authority interactions by EU Member State, showing regulatory engagement distribution across the EU-27",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "topk(8, sum(rate(gl_eudr_tam_authority_interactions_total{environment=\"$environment\"}[5m])) by (member_state)) * 3600",
+          "legendFormat": "{{member_state}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "bars",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Compliance Rate Trend",
+      "description": "Percentage of audits with zero critical NCs and zero major NCs over time, showing compliance improvement trajectory. Tracks the key success metric: >= 85% CAR SLA compliance.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 83 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "avg(gl_eudr_tam_car_sla_compliance_rate{environment=\"$environment\"})",
+          "legendFormat": "CAR SLA Compliance Rate (%)"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_completed_total{environment=\"$environment\", outcome=\"compliant\"}[5m])) / sum(rate(gl_eudr_tam_audits_completed_total{environment=\"$environment\"}[5m])) * 100",
+          "legendFormat": "Audit Compliance Rate (%)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": true,
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 80 },
+              { "color": "green", "value": 85 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "CAR SLA Compliance Rate (%)" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } },
+              { "id": "custom.lineWidth", "value": 3 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Audit Compliance Rate (%)" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } },
+              { "id": "custom.lineWidth", "value": 2 }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "min", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Audits Cancelled Over Time",
+      "description": "Rate of audit cancellations by reason, tracking scheduling efficiency and resource utilization",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 83 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_cancelled_total{environment=\"$environment\"}[5m])) by (reason) * 3600",
+          "legendFormat": "{{reason}}"
+        },
+        {
+          "expr": "sum(rate(gl_eudr_tam_audits_cancelled_total{environment=\"$environment\"}[5m])) * 3600",
+          "legendFormat": "Total Cancelled"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Total Cancelled" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
+              { "id": "custom.lineWidth", "value": 3 }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules configured for the Third-Party Audit Manager agent",
+      "type": "text",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 93 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-024 Third-Party Audit Manager Alert Rules\n\n| Alert | Condition | Severity | Evaluation |\n|-------|-----------|----------|------------|\n| **Critical NCs Rate** | Critical NCs > 5/hour | Critical | Every 1m, for 5m |\n| **CAR SLA Breach Rate** | Overdue CARs > 3/hour | Warning | Every 1m, for 5m |\n| **API p99 Latency** | p99 latency > 1 second | Warning | Every 1m, for 5m |\n| **Auditor Capacity** | Authority interactions > 20/hour | Warning | Every 5m, for 10m |\n| **Certificate Sync Expiry** | Sync freshness > 24 hours | Critical | Every 5m, for 15m |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Audit Lifecycle Management](https://runbooks.greenlang.io/eudr/tam/audit-lifecycle)\n- [CAR SLA Breach Response](https://runbooks.greenlang.io/eudr/tam/car-sla-breach)\n- [NC Classification Review](https://runbooks.greenlang.io/eudr/tam/nc-classification)\n- [Certification Sync Recovery](https://runbooks.greenlang.io/eudr/tam/cert-sync-recovery)\n- [Authority Interaction Response](https://runbooks.greenlang.io/eudr/tam/authority-response)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/tam/perf-degradation)"
+      }
+    }
+  ],
+  "refresh": "15m",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "third-party-audit", "audit-management", "agent-eudr-024", "greenlang", "car-lifecycle", "non-conformance", "certification-scheme", "competent-authority", "iso-19011"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_tam_audits_created_total{environment=\"$environment\"}, scheme)",
+        "description": "Filter by certification scheme (FSC, PEFC, RSPO, RA, ISCC)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Scheme",
+        "multi": true,
+        "name": "scheme",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_tam_audits_created_total{environment=\"$environment\"}, scheme)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_tam_ncs_detected_total{environment=\"$environment\"}, country)",
+        "description": "Filter by country of audit (ISO 3166-1 alpha-2)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Country",
+        "multi": true,
+        "name": "country",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_tam_ncs_detected_total{environment=\"$environment\"}, country)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["15m", "30m", "1h", "2h", "6h", "12h", "1d"],
+    "time_options": ["1h", "6h", "24h", "7d", "30d", "90d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Third-Party Audit Manager (TAM)",
+  "uid": "eudr-third-party-audit-manager",
+  "version": 1
+}

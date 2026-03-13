@@ -1,0 +1,1409 @@
+.FF.F.FF.F........FFF...FFFF.FF.FFFFFFFFFFFFF.FF.FFFFF..FFFFFFFFFFFFFFFF [ 10%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.............FF.............. [ 21%]
+.........F.....FF.FFFFFFFFF..FFFF....FF......F.....FFF................F. [ 32%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEEEEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 43%]
+FFFFFF.FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.....F.....FFFFFFFFFFFFF. [ 54%]
+......FFFF..FFFF..FFFFFFFF.FFFFFF.F..................................... [ 65%]
+FFFFFFF.FF..FFFF..FF...F............................FFFEEEFFFFEEFEEEFE.E [ 76%]
+EFF..EEEEEEEEEE.EEEEEEEEEEEEEE.FFFFFFFFFFFFFFFFFFF...................... [ 87%]
+........................................FF.FFFF..FFFF.....F..FFFFFFFFFFF [ 98%]
+FFFFFFFFF                                                                [100%]
+=================================== ERRORS ====================================
+________ ERROR at setup of TestErrorHandling.test_response_with_errors ________
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...bbbbbbbbbbbbbbbbbbbbbb'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...bbbbbbbbbbbbbbbbbbbbbb'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+_ ERROR at setup of TestErrorHandling.test_response_code_non_zero_for_rejection _
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...bbbbbbbbbbbbbbbbbbbbbb'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...bbbbbbbbbbbbbbbbbbbbbb'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+_____ ERROR at setup of TestErrorHandling.test_success_response_no_errors _____
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+____ ERROR at setup of TestErrorHandling.test_response_code_00_for_success ____
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+___________ ERROR at setup of TestHSCodeInfoModel.test_create_basic ___________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for HSCode
+    chapter
+      Input should be a valid string [type=string_type, input_value=18, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.12/v/string_type
+_________ ERROR at setup of TestHSCodeInfoModel.test_non_eudr_product _________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for HSCode
+    chapter
+      Input should be a valid string [type=string_type, input_value=87, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.12/v/string_type
+________ ERROR at setup of TestHSCodeInfoModel.test_chapter_extraction ________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for HSCode
+    chapter
+      Input should be a valid string [type=string_type, input_value=18, input_type=int]
+        For further information visit https://errors.pydantic.dev/2.12/v/string_type
+_______ ERROR at setup of TestTariffCalculationModel.test_create_basic ________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for TariffCalculation
+    cn_code
+      Field required [type=missing, input_value={'calculation_id': 'CALC-...hhhhhhhhhhhhhhhhhhhhhh'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+_____ ERROR at setup of TestTariffCalculationModel.test_total_payable_sum _____
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for TariffCalculation
+    cn_code
+      Field required [type=missing, input_value={'calculation_id': 'CALC-...hhhhhhhhhhhhhhhhhhhhhh'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+________ ERROR at setup of TestDutyCalculationModel.test_create_basic _________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for DutyCalculation
+    calculation_id
+      Field required [type=missing, input_value={'cn_code': '18032000', '...iiiiiiiiiiiiiiiiiiiiii'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+___ ERROR at setup of TestDutyCalculationModel.test_duty_amount_computation ___
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for DutyCalculation
+    calculation_id
+      Field required [type=missing, input_value={'cn_code': '18032000', '...iiiiiiiiiiiiiiiiiiiiii'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+______ ERROR at setup of TestDutyCalculationModel.test_preferential_rate ______
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for DutyCalculation
+    calculation_id
+      Field required [type=missing, input_value={'cn_code': '18032000', '...iiiiiiiiiiiiiiiiiiiiii'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+_____ ERROR at setup of TestOriginVerificationModel.test_create_mismatch ______
+E   AttributeError: MISMATCH
+_______ ERROR at setup of TestComplianceCheckModel.test_create_passing ________
+E   AttributeError: PASS
+_______ ERROR at setup of TestComplianceCheckModel.test_create_failing ________
+E   AttributeError: FAIL
+______ ERROR at setup of TestCustomsDeclarationModel.test_create_pending ______
+E   AttributeError: PENDING
+________ ERROR at setup of TestCustomsDeclarationModel.test_mrn_format ________
+E   AttributeError: PENDING
+_______ ERROR at setup of TestCustomsDeclarationModel.test_eori_format ________
+E   AttributeError: PENDING
+_____ ERROR at setup of TestCustomsDeclarationModel.test_cn_codes_present _____
+E   AttributeError: PENDING
+_____ ERROR at setup of TestCustomsDeclarationModel.test_hs_codes_present _____
+E   AttributeError: PENDING
+__ ERROR at setup of TestCustomsDeclarationModel.test_dds_reference_present ___
+E   AttributeError: PENDING
+_____ ERROR at setup of TestCustomsDeclarationModel.test_submitted_status _____
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for CustomsDeclaration
+    port_of_entry
+      Input should be a valid dictionary or instance of PortOfEntry [type=model_type, input_value='DEHAM', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.12/v/model_type
+______ ERROR at setup of TestCustomsDeclarationModel.test_cleared_status ______
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for CustomsDeclaration
+    port_of_entry
+      Input should be a valid dictionary or instance of PortOfEntry [type=model_type, input_value='BEANR', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.12/v/model_type
+_____ ERROR at setup of TestCustomsDeclarationModel.test_rejected_status ______
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for CustomsDeclaration
+    port_of_entry
+      Input should be a valid dictionary or instance of PortOfEntry [type=model_type, input_value='DEHAM', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.12/v/model_type
+___ ERROR at setup of TestCustomsDeclarationModel.test_rejected_missing_dds ___
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for CustomsDeclaration
+    port_of_entry
+      Input should be a valid dictionary or instance of PortOfEntry [type=model_type, input_value='DEHAM', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.12/v/model_type
+_ ERROR at setup of TestCustomsDeclarationModel.test_monetary_values_decimal __
+E   AttributeError: PENDING
+__ ERROR at setup of TestCustomsDeclarationModel.test_weight_values_decimal ___
+E   AttributeError: PENDING
+____________ ERROR at setup of TestSADFormModel.test_create_basic _____________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for SADForm
+    sad_id
+      Field required [type=missing, input_value={'form_id': 'SAD-TEST001'...zzzzzzzzzzzzzzzzzzzzzz'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+______ ERROR at setup of TestSADFormModel.test_eudr_dds_reference_in_sad ______
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for SADForm
+    sad_id
+      Field required [type=missing, input_value={'form_id': 'SAD-TEST001'...zzzzzzzzzzzzzzzzzzzzzz'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+_______ ERROR at setup of TestSADFormModel.test_commodity_code_8_digits _______
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for SADForm
+    sad_id
+      Field required [type=missing, input_value={'form_id': 'SAD-TEST001'...zzzzzzzzzzzzzzzzzzzzzz'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+_______ ERROR at setup of TestSADFormModel.test_box34_country_of_origin _______
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for SADForm
+    sad_id
+      Field required [type=missing, input_value={'form_id': 'SAD-TEST001'...zzzzzzzzzzzzzzzzzzzzzz'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+___________ ERROR at setup of TestSADFormModel.test_box_eori_number ___________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for SADForm
+    sad_id
+      Field required [type=missing, input_value={'form_id': 'SAD-TEST001'...zzzzzzzzzzzzzzzzzzzzzz'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+________ ERROR at setup of TestSADFormModel.test_gross_weight_decimal _________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for SADForm
+    sad_id
+      Field required [type=missing, input_value={'form_id': 'SAD-TEST001'...zzzzzzzzzzzzzzzzzzzzzz'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+_________ ERROR at setup of TestSADFormModel.test_net_weight_decimal __________
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for SADForm
+    sad_id
+      Field required [type=missing, input_value={'form_id': 'SAD-TEST001'...zzzzzzzzzzzzzzzzzzzzzz'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+____ ERROR at setup of TestCustomsInterfaceResponseModel.test_ncts_success ____
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+___ ERROR at setup of TestCustomsInterfaceResponseModel.test_ncts_rejection ___
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...bbbbbbbbbbbbbbbbbbbbbb'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...bbbbbbbbbbbbbbbbbbbbbb'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+____ ERROR at setup of TestCustomsInterfaceResponseModel.test_ais_success _____
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...cccccccccccccccccccccc'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...cccccccccccccccccccccc'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+____ ERROR at setup of TestCustomsInterfaceResponseModel.test_ais_pending _____
+E   pydantic_core._pydantic_core.ValidationError: 3 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...dddddddddddddddddddddd'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...dddddddddddddddddddddd'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    status
+      Input should be 'queued', 'transmitting', 'transmitted', 'acknowledged', 'accepted', 'rejected', 'error' or 'timeout' [type=enum, input_value='pending', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.12/v/enum
+_ ERROR at setup of TestCustomsInterfaceResponseModel.test_processing_time_decimal _
+E   pydantic_core._pydantic_core.ValidationError: 2 validation errors for CustomsInterfaceResponse
+    response_id
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+    customs_system
+      Field required [type=missing, input_value={'system': <CustomsSystem...aaaaaaaaaaaaaaaaaaaaaa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+================================== FAILURES ===================================
+E   AttributeError: 'CreateDeclarationRequest' object has no attribute 'operator_eori'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'CreateDeclarationRequest' object has no attribute 'operator_eori'
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for MapCNCodeRequest
+    commodity_type
+      Field required [type=missing, input_value={'commodity': 'cocoa'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:131: pydantic_core._pydantic_core.ValidationError: 1 validation error for MapCNCodeRequest
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for CalculateValueRequest
+    transaction_value
+      Field required [type=missing, input_value={'cn_code': '18010000', '... 'origin_country': 'CI'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:139: pydantic_core._pydantic_core.ValidationError: 1 validation error for CalculateValueRequest
+E   AssertionError: assert None is False
+     +  where None = RunComplianceRequest(dds_reference_numbers=None, dds_reference_number='', deforestation_free=None, legality_verified=N...complete=None, risk_assessment_complete=None, risk_level='unknown', country_of_origin='', country_risk_level='unknown').deforestation_free
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:162: AssertionError: assert None is False
+E   AttributeError: 'SubmitDeclarationRequest' object has no attribute 'system'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'SubmitDeclarationRequest' object has no attribute 'system'
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for CalculateValueRequest
+    transaction_value
+      Field required [type=missing, input_value={'fob_value': 10000.0, 'f...0.0, 'incoterms': 'CIF'}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:174: pydantic_core._pydantic_core.ValidationError: 1 validation error for CalculateValueRequest
+E   assert 405 == 200
+     +  where 405 = <Response [405 Method Not Allowed]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:241: assert 405 == 200
+E   assert 405 == 422
+     +  where 405 = <Response [405 Method Not Allowed]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:256: assert 405 == 422
+E   assert 405 == 500
+     +  where 405 = <Response [405 Method Not Allowed]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:269: assert 405 == 500
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:298: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:309: assert 404 == 200
+E   assert 404 == 422
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:318: assert 404 == 422
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:325: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:346: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:353: assert 404 == 200
+E   assert 404 == 422
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:370: assert 404 == 422
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:385: assert 404 == 200
+E   assert 404 == 422
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:394: assert 404 == 422
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:402: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:422: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:435: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:442: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:454: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:473: assert 404 == 200
+E   assert 404 == 422
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:486: assert 404 == 422
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:496: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:515: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:522: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:538: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:552: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:575: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:583: assert 404 == 200
+E   assert 404 == 422
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:592: assert 404 == 422
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:599: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_api.py:613: assert 404 == 200
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:37: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:44: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:51: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:58: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:65: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:72: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:79: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:91: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:102: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:113: AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:119: AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:125: AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:131: AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:136: AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:141: AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:150: AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:154: AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:158: AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:162: AttributeError: 'CNCodeMapper' object has no attribute 'is_eudr_regulated'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:170: AttributeError: 'CNCodeMapper' object has no attribute 'lookup_cn_code'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:176: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodity'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodities_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:188: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodities_batch'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodities_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:195: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodities_batch'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'map_commodities_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:201: AttributeError: 'CNCodeMapper' object has no attribute 'map_commodities_batch'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:208: AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:214: AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:219: AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+E   AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_cn_code_mapper.py:224: AttributeError: 'CNCodeMapper' object has no attribute 'health_check'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:43: AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:51: AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:59: AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:67: AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:75: AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:83: AttributeError: 'ComplianceChecker' object has no attribute 'check_dds_reference'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:98: AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:106: AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:115: AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:124: AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:132: AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:140: AttributeError: 'ComplianceChecker' object has no attribute 'check_cn_code_coverage'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:155: AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:164: AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:173: AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:182: AttributeError: 'ComplianceChecker' object has no attribute 'check_origin'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:198: AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:207: AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:216: AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:225: AttributeError: 'ComplianceChecker' object has no attribute 'check_deforestation_free'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:241: AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:250: AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:259: AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:268: AttributeError: 'ComplianceChecker' object has no attribute 'check_risk_level'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:284: AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:301: AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:315: AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:332: AttributeError: 'ComplianceChecker' object has no attribute 'run_full_compliance_check'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:354: AttributeError: 'ComplianceChecker' object has no attribute 'health_check'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:360: AttributeError: 'ComplianceChecker' object has no attribute 'health_check'
+E   AttributeError: 'ComplianceChecker' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_compliance_checker.py:365: AttributeError: 'ComplianceChecker' object has no attribute 'health_check'
+E   AssertionError: assert 30 == 60
+     +  where 30 = CustomsDeclarationSupportConfig(db_host='localhost', db_port=5432, db_name='greenlang', db_user='gl', db_password='gl'...0000000000000000000000000000000000000000000000', metrics_enabled=True, metrics_prefix='gl_eudr_cds_', log_level='INFO').ncts_timeout_seconds
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:77: AssertionError: assert 30 == 60
+E   AssertionError: assert 30 == 60
+     +  where 30 = CustomsDeclarationSupportConfig(db_host='localhost', db_port=5432, db_name='greenlang', db_user='gl', db_password='gl'...0000000000000000000000000000000000000000000000', metrics_enabled=True, metrics_prefix='gl_eudr_cds_', log_level='INFO').ais_timeout_seconds
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:80: AssertionError: assert 30 == 60
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'parallel_engine_calls'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:152: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'parallel_engine_calls'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'eudr_dds_validation_enabled'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:170: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'eudr_dds_validation_enabled'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'origin_cross_check_enabled'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:173: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'origin_cross_check_enabled'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ncts_retry_count'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:183: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ncts_retry_count'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ais_retry_count'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:186: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ais_retry_count'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'customs_submission_timeout_seconds'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:189: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'customs_submission_timeout_seconds'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ncts_message_format'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:192: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ncts_message_format'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ais_message_format'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:195: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'ais_message_format'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'customs_auth_method'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:198: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'customs_auth_method'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'sad_form_enabled'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:201: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'sad_form_enabled'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'mrn_generation_enabled'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:204: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'mrn_generation_enabled'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'tariff_database_version'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:211: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'tariff_database_version'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'currency_conversion_precision'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:220: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'currency_conversion_precision'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'tariff_calculation_timeout_seconds'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:223: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'tariff_calculation_timeout_seconds'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'cn_code_format_digits'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:226: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'cn_code_format_digits'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'hs_code_format_digits'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:229: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'hs_code_format_digits'
+E   AssertionError: assert 30 == 90
+     +  where 30 = CustomsDeclarationSupportConfig(db_host='localhost', db_port=5432, db_name='greenlang', db_user='gl', db_password='gl'...0000000000000000000000000000000000000000000000', metrics_enabled=True, metrics_prefix='gl_eudr_cds_', log_level='INFO').ncts_timeout_seconds
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:258: AssertionError: assert 30 == 90
+E   AssertionError: assert 30 == 120
+     +  where 30 = CustomsDeclarationSupportConfig(db_host='localhost', db_port=5432, db_name='greenlang', db_user='gl', db_password='gl'...0000000000000000000000000000000000000000000000', metrics_enabled=True, metrics_prefix='gl_eudr_cds_', log_level='INFO').ais_timeout_seconds
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:263: AssertionError: assert 30 == 120
+E   AssertionError: assert 5 == 7
+     +  where 5 = CustomsDeclarationSupportConfig(db_host='localhost', db_port=5432, db_name='greenlang', db_user='gl', db_password='gl'...0000000000000000000000000000000000000000000000', metrics_enabled=True, metrics_prefix='gl_eudr_cds_', log_level='INFO').declaration_retention_years
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:298: AssertionError: assert 5 == 7
+E   assert 0 >= 1
+     +  where 0 = len([])
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:342: assert 0 >= 1
+E   TypeError: CustomsDeclarationSupportConfig.__init__() got an unexpected keyword argument 'ncts_timeout_seconds'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:346: TypeError: CustomsDeclarationSupportConfig.__init__() got an unexpected keyword argument 'ncts_timeout_seconds'
+E   TypeError: CustomsDeclarationSupportConfig.__init__() got an unexpected keyword argument 'ais_timeout_seconds'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:353: TypeError: CustomsDeclarationSupportConfig.__init__() got an unexpected keyword argument 'ais_timeout_seconds'
+E   AssertionError: assert False
+     +  where False = hasattr(CustomsDeclarationSupportConfig(db_host='localhost', db_port=5432, db_name='greenlang', db_user='gl', db_password='gl'...0000000000000000000000000000000000000000000000', metrics_enabled=True, metrics_prefix='gl_eudr_cds_', log_level='INFO'), 'cn_code_format_digits')
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:447: AssertionError: assert False
+E   AssertionError: assert False
+     +  where False = hasattr(CustomsDeclarationSupportConfig(db_host='localhost', db_port=5432, db_name='greenlang', db_user='gl', db_password='gl'...0000000000000000000000000000000000000000000000', metrics_enabled=True, metrics_prefix='gl_eudr_cds_', log_level='INFO'), 'eudr_dds_validation_enabled')
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:456: AssertionError: assert False
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:465: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:468: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:471: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:474: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:477: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:480: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_rate_limit'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:483: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:488: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:492: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:496: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+E   AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_config.py:500: AttributeError: 'CustomsDeclarationSupportConfig' object has no attribute 'get_upstream_urls'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:45: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:55: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:65: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:74: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:87: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:96: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:106: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:115: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:130: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:140: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:150: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:159: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:173: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:188: AttributeError: 'CustomsInterface' object has no attribute 'submit'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:198: AttributeError: 'CustomsInterface' object has no attribute 'submit'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:209: AttributeError: 'CustomsInterface' object has no attribute 'submit'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:226: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:240: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+E   AttributeError: 'CustomsInterface' object has no attribute 'check_status'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:253: AttributeError: 'CustomsInterface' object has no attribute 'check_status'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:269: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:279: AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:315: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ncts'
+E   AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:324: AttributeError: 'CustomsInterface' object has no attribute 'submit_to_ais'
+E   AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:340: AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+E   AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:346: AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+E   AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:351: AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+E   AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:356: AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+E   AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_customs_interface.py:361: AttributeError: 'CustomsInterface' object has no attribute 'health_check'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_name'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:43: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_name'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:53: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:61: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:69: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_name'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:77: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_name'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:85: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:95: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:105: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:113: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:121: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:129: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:137: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:145: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:154: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:163: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:171: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:185: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:195: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:203: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:215: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:224: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:234: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_name'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:249: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_name'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:259: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:268: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:277: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:286: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_eori'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:296: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'operator_eori'
+E   TypeError: DeclarationGenerator.generate_sad_form() missing 1 required positional argument: 'sad_data'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:306: TypeError: DeclarationGenerator.generate_sad_form() missing 1 required positional argument: 'sad_data'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:317: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:327: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   AttributeError: 'DeclarationGenerator' object has no attribute 'update_status'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:337: AttributeError: 'DeclarationGenerator' object has no attribute 'update_status'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:342: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:358: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:375: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:388: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:402: TypeError: DeclarationGenerator.create_declaration() got an unexpected keyword argument 'commodities'
+E   AttributeError: 'DeclarationGenerator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:418: AttributeError: 'DeclarationGenerator' object has no attribute 'health_check'
+E   AttributeError: 'DeclarationGenerator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:424: AttributeError: 'DeclarationGenerator' object has no attribute 'health_check'
+E   AttributeError: 'DeclarationGenerator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_declaration_generator.py:429: AttributeError: 'DeclarationGenerator' object has no attribute 'health_check'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:37: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:43: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:50: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:57: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:64: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:71: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:77: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:83: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:89: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:96: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:101: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:106: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:111: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:119: AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:125: AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:131: AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:137: AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:143: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:148: AttributeError: 'HSCodeValidator' object has no attribute 'validate'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:153: AttributeError: 'HSCodeValidator' object has no attribute 'get_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:163: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:167: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:171: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:175: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:179: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:183: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:187: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:191: AttributeError: 'HSCodeValidator' object has no attribute 'is_eudr_chapter'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:200: AttributeError: 'HSCodeValidator' object has no attribute 'validate_batch'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:207: AttributeError: 'HSCodeValidator' object has no attribute 'validate_batch'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'validate_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:216: AttributeError: 'HSCodeValidator' object has no attribute 'validate_batch'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:223: AttributeError: 'HSCodeValidator' object has no attribute 'health_check'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:229: AttributeError: 'HSCodeValidator' object has no attribute 'health_check'
+E   AttributeError: 'HSCodeValidator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_hs_code_validator.py:234: AttributeError: 'HSCodeValidator' object has no attribute 'health_check'
+E   TypeError: record_declaration_cleared() missing 1 required positional argument: 'declaration_type'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:42: TypeError: record_declaration_cleared() missing 1 required positional argument: 'declaration_type'
+E   TypeError: record_hs_code_validated() takes 0 positional arguments but 1 was given
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:60: TypeError: record_hs_code_validated() takes 0 positional arguments but 1 was given
+E   TypeError: record_hs_code_validated() takes 0 positional arguments but 1 was given
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:63: TypeError: record_hs_code_validated() takes 0 positional arguments but 1 was given
+E   TypeError: record_tariff_calculated() missing 1 required positional argument: 'tariff_type'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:66: TypeError: record_tariff_calculated() missing 1 required positional argument: 'tariff_type'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_origin_verified'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:69: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_origin_verified'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_origin_verified'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:72: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_origin_verified'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_compliance_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:75: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_compliance_check'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_compliance_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:78: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_compliance_check'
+E   TypeError: record_sad_form_generated() missing 1 required positional argument: 'form_type'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:81: TypeError: record_sad_form_generated() missing 1 required positional argument: 'form_type'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_mrn_generated'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:84: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_mrn_generated'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_customs_submission'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:87: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_customs_submission'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_customs_submission'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:90: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_customs_submission'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_batch_operation'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:93: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'record_batch_operation'
+E   TypeError: record_currency_conversion() takes 1 positional argument but 2 were given
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:96: TypeError: record_currency_conversion() takes 1 positional argument but 2 were given
+E   TypeError: observe_compliance_check_duration() missing 1 required positional argument: 'duration'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:129: TypeError: observe_compliance_check_duration() missing 1 required positional argument: 'duration'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_sad_form_generation_duration'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:132: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_sad_form_generation_duration'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_customs_submission_duration'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:135: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_customs_submission_duration'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_customs_submission_duration'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:138: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_customs_submission_duration'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_mrn_generation_duration'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:147: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_mrn_generation_duration'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_batch_processing_duration'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:150: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'observe_batch_processing_duration'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_active_declarations'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:162: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_active_declarations'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_active_declarations'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:165: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_active_declarations'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_submitted_declarations'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:174: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_submitted_declarations'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_cleared_declarations'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:177: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_cleared_declarations'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_rejected_declarations'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:180: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_rejected_declarations'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_rejected_declarations'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:183: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_rejected_declarations'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_total_customs_value'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:186: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_total_customs_value'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_total_duty_collected'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:189: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_total_duty_collected'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_total_vat_collected'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:192: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_total_vat_collected'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_average_processing_time'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:195: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_average_processing_time'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_origin_verification_rate'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:201: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_origin_verification_rate'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_ncts_queue_depth'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:204: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_ncts_queue_depth'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_ais_queue_depth'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:207: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_ais_queue_depth'
+E   TypeError: record_declaration_cleared() missing 1 required positional argument: 'declaration_type'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:224: TypeError: record_declaration_cleared() missing 1 required positional argument: 'declaration_type'
+E   TypeError: observe_compliance_check_duration() missing 1 required positional argument: 'duration'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:248: TypeError: observe_compliance_check_duration() missing 1 required positional argument: 'duration'
+E   AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_active_declarations'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_metrics.py:262: AttributeError: module 'greenlang.agents.eudr.customs_declaration_support.metrics' has no attribute 'set_active_declarations'
+E   AttributeError: PENDING
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: PENDING
+E   AssertionError: assert 'NCTS' == 'ncts'
+      
+      - ncts
+      + NCTS
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_models.py:167: AssertionError: assert 'NCTS' == 'ncts'
+E   AssertionError: assert 'AIS' == 'ais'
+      
+      - ais
+      + AIS
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_models.py:170: AssertionError: assert 'AIS' == 'ais'
+E   TypeError: object of type 'ModelMetaclass' has no len()
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_models.py:175: TypeError: object of type 'ModelMetaclass' has no len()
+E   AttributeError: PASS
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_model_construction.py:289: AttributeError: PASS
+E   AttributeError: FAIL
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_model_construction.py:289: AttributeError: FAIL
+E   AttributeError: WARNING
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_model_construction.py:289: AttributeError: WARNING
+E   AttributeError: NOT_APPLICABLE
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_model_construction.py:289: AttributeError: NOT_APPLICABLE
+E   AttributeError: COMPLIANT
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: COMPLIANT
+E   AttributeError: NON_COMPLIANT
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: NON_COMPLIANT
+E   AttributeError: GENERATED
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: GENERATED
+E   AttributeError: SUBMITTED
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: SUBMITTED
+E   AttributeError: ACCEPTED
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: ACCEPTED
+E   AttributeError: REJECTED
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: REJECTED
+E   AttributeError: MISMATCH
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: MISMATCH
+E   AttributeError: UNVERIFIED
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\enum.py:786: AttributeError: UNVERIFIED
+E   AssertionError: assert False
+     +  where False = isinstance('cattle', CommodityType)
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_models.py:251: AssertionError: assert False
+E   AttributeError: 'CNCodeMapping' object has no attribute 'commodity'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'CNCodeMapping' object has no attribute 'commodity'
+E   AttributeError: 'CNCodeMapping' object has no attribute 'duty_rate'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'CNCodeMapping' object has no attribute 'duty_rate'
+E   AttributeError: 'CNCodeMapping' object has no attribute 'hs_code'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'CNCodeMapping' object has no attribute 'hs_code'
+E   AttributeError: 'TariffLineItem' object has no attribute 'currency'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'TariffLineItem' object has no attribute 'currency'
+E   AttributeError: 'TariffLineItem' object has no attribute 'quantity'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'TariffLineItem' object has no attribute 'quantity'
+E   AttributeError: 'TariffLineItem' object has no attribute 'total_value'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'TariffLineItem' object has no attribute 'total_value'
+E   AttributeError: 'TariffLineItem' object has no attribute 'duty_rate'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'TariffLineItem' object has no attribute 'duty_rate'
+E   pydantic_core._pydantic_core.ValidationError: 1 validation error for TariffCalculation
+    cn_code
+      Field required [type=missing, input_value={'calculation_id': 'C-X',..._value': Decimal('100')}, input_type=dict]
+        For further information visit https://errors.pydantic.dev/2.12/v/missing
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_models.py:451: pydantic_core._pydantic_core.ValidationError: 1 validation error for TariffCalculation
+E   AttributeError: 'CountryOriginVerification' object has no attribute 'result'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'CountryOriginVerification' object has no attribute 'result'
+E   AttributeError: PASS
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_model_construction.py:289: AttributeError: PASS
+E   AttributeError: 'PortOfEntry' object has no attribute 'ncts_enabled'
+C:\Users\aksha\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\main.py:1026: AttributeError: 'PortOfEntry' object has no attribute 'ncts_enabled'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:43: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:54: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:65: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:78: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:93: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:103: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:114: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:124: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:134: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:146: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:156: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:166: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   AttributeError: 'OriginValidator' object has no attribute 'verify_origin_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:192: AttributeError: 'OriginValidator' object has no attribute 'verify_origin_batch'
+E   AttributeError: 'OriginValidator' object has no attribute 'verify_origin_batch'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:201: AttributeError: 'OriginValidator' object has no attribute 'verify_origin_batch'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:208: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:224: TypeError: OriginValidator.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   AttributeError: 'OriginValidator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:232: AttributeError: 'OriginValidator' object has no attribute 'health_check'
+E   AttributeError: 'OriginValidator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:238: AttributeError: 'OriginValidator' object has no attribute 'health_check'
+E   AttributeError: 'OriginValidator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_origin_validator.py:243: AttributeError: 'OriginValidator' object has no attribute 'health_check'
+E   TypeError: CustomsDeclarationService.create_declaration() got an unexpected keyword argument 'commodities'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_setup.py:256: TypeError: CustomsDeclarationService.create_declaration() got an unexpected keyword argument 'commodities'
+E   AttributeError: 'CustomsDeclarationService' object has no attribute 'map_cn_codes'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_setup.py:265: AttributeError: 'CustomsDeclarationService' object has no attribute 'map_cn_codes'
+E   AttributeError: 'CustomsDeclarationService' object has no attribute 'calculate_tariff'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_setup.py:275: AttributeError: 'CustomsDeclarationService' object has no attribute 'calculate_tariff'
+E   TypeError: CustomsDeclarationService.verify_origin() got an unexpected keyword argument 'declaration_id'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_setup.py:286: TypeError: CustomsDeclarationService.verify_origin() got an unexpected keyword argument 'declaration_id'
+E   AttributeError: 'CustomsDeclarationService' object has no attribute 'run_compliance_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_setup.py:296: AttributeError: 'CustomsDeclarationService' object has no attribute 'run_compliance_check'
+E   TypeError: CustomsDeclarationService.submit_declaration() got an unexpected keyword argument 'system'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_setup.py:306: TypeError: CustomsDeclarationService.submit_declaration() got an unexpected keyword argument 'system'
+E   TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:44: TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+E   TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:54: TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+E   TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:64: TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+E   TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:74: TypeError: ValueCalculator.calculate_customs_value() got an unexpected keyword argument 'fob_value'
+E   Failed: DID NOT RAISE <class 'ValueError'>
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:140: Failed: DID NOT RAISE <class 'ValueError'>
+E   TypeError: ValueCalculator.get_exchange_rate() takes 2 positional arguments but 3 were given
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:171: TypeError: ValueCalculator.get_exchange_rate() takes 2 positional arguments but 3 were given
+E   TypeError: ValueCalculator.get_exchange_rate() takes 2 positional arguments but 3 were given
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:176: TypeError: ValueCalculator.get_exchange_rate() takes 2 positional arguments but 3 were given
+E   TypeError: ValueCalculator.get_exchange_rate() takes 2 positional arguments but 3 were given
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:181: TypeError: ValueCalculator.get_exchange_rate() takes 2 positional arguments but 3 were given
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:193: AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:205: AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:216: AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:227: AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:238: AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:249: AttributeError: 'ValueCalculator' object has no attribute 'calculate_tariff'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:262: AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:272: AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:282: AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:294: AttributeError: 'ValueCalculator' object has no attribute 'calculate_duty'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_line_item'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:306: AttributeError: 'ValueCalculator' object has no attribute 'calculate_line_item'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_line_item'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:319: AttributeError: 'ValueCalculator' object has no attribute 'calculate_line_item'
+E   AttributeError: 'ValueCalculator' object has no attribute 'calculate_line_item'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:331: AttributeError: 'ValueCalculator' object has no attribute 'calculate_line_item'
+E   AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:350: AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+E   AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:356: AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+E   AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:361: AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+E   AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\customs_declaration_support\test_value_calculator.py:366: AttributeError: 'ValueCalculator' object has no attribute 'health_check'
+============================== warnings summary ===============================
+greenlang\agents\intelligence\config.py:27
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\config.py:27: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class IntelligenceConfig(BaseModel):
+
+greenlang\agents\intelligence\verification.py:74
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\verification.py:74: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class NumericClaim(BaseModel):
+
+greenlang\agents\intelligence\verification.py:122
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\verification.py:122: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Citation(BaseModel):
+
+greenlang\agents\intelligence\runtime\telemetry.py:27
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\intelligence\runtime\telemetry.py:27: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TelemetryEvent(BaseModel):
+
+greenlang\execution\core\workflow.py:7
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\execution\core\workflow.py:7: DeprecationWarning: Importing from greenlang.exceptions is deprecated. Please import from specific submodules: greenlang.exceptions.base, greenlang.exceptions.agent, greenlang.exceptions.workflow, greenlang.exceptions.data, greenlang.exceptions.utils
+    from greenlang.exceptions import ValidationError
+
+greenlang\agents\foundation\orchestrator.py:152
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\orchestrator.py:152: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('agents')
+
+greenlang\governance\validation\framework.py:82
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\governance\validation\framework.py:82: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Validator(BaseModel):
+
+greenlang\governance\validation\rules.py:35
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\governance\validation\rules.py:35: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Rule(BaseModel):
+
+greenlang\schema\compiler\regex_analyzer.py:50
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\schema\compiler\regex_analyzer.py:50: DeprecationWarning: module 'sre_parse' is deprecated
+    import sre_parse
+
+greenlang\agents\foundation\policy_guard.py:149
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\policy_guard.py:149: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('clearance_level', pre=True)
+
+greenlang\agents\foundation\policy_guard.py:172
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\policy_guard.py:172: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('classification', pre=True)
+
+greenlang\agents\foundation\policy_guard.py:224
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\policy_guard.py:224: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('classification_max', pre=True)
+
+greenlang\agents\foundation\qa_test_harness.py:145
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\qa_test_harness.py:145: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('name')
+
+greenlang\agents\foundation\observability_agent.py:136
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\observability_agent.py:136: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('name')
+
+greenlang\agents\foundation\observability_agent.py:200
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\observability_agent.py:200: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('condition')
+
+greenlang\agents\foundation\observability_agent.py:254
+  C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\foundation\observability_agent.py:254: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    @validator('operation')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestRequestSchemas::test_create_declaration_request_defaults
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestRequestSchemas::test_map_cn_codes_request
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestRequestSchemas::test_calculate_tariff_request
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestRequestSchemas::test_run_compliance_check_request
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestRequestSchemas::test_submit_declaration_request
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestRequestSchemas::test_calculate_value_request
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestCreateDeclarationEndpoint::test_create_success
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestCreateDeclarationEndpoint::test_create_value_error
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestCreateDeclarationEndpoint::test_create_internal_error
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestGetDeclarationEndpoint::test_get_found
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestUpdateStatusEndpoint::test_update_status_success
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestUpdateStatusEndpoint::test_update_status_value_error
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestCancelDeclarationEndpoint::test_cancel_success
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestCNCodeEndpoints::test_map_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestCNCodeEndpoints::test_lookup_cn_code
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestCNCodeEndpoints::test_map_cn_codes_invalid_commodity
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestHSCodeEndpoints::test_validate_hs_code
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestHSCodeEndpoints::test_validate_hs_code_invalid
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestHSCodeEndpoints::test_validate_hs_codes_batch
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestTariffEndpoints::test_calculate_tariff
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestTariffEndpoints::test_calculate_customs_value
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestTariffEndpoints::test_get_tariff_summary
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestTariffEndpoints::test_convert_currency
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestOriginEndpoints::test_verify_origin
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestOriginEndpoints::test_verify_origin_invalid
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestOriginEndpoints::test_verify_origin_batch
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestComplianceEndpoints::test_run_compliance_check
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestComplianceEndpoints::test_get_compliance_report
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestComplianceEndpoints::test_check_dds_reference
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestSADFormEndpoints::test_generate_sad_form
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestSubmissionEndpoints::test_submit_to_ncts
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestSubmissionEndpoints::test_submit_to_ais
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestSubmissionEndpoints::test_submit_invalid_system
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestSubmissionEndpoints::test_check_submission_status
+FAILED tests/agents/eudr/customs_declaration_support/test_api.py::TestMRNEndpoints::test_get_mrn_status
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestMapCNCodes::test_map_cattle_returns_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestMapCNCodes::test_map_cocoa_returns_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestMapCNCodes::test_map_coffee_returns_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestMapCNCodes::test_map_oil_palm_returns_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestMapCNCodes::test_map_rubber_returns_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestMapCNCodes::test_map_soya_returns_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestMapCNCodes::test_map_wood_returns_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestCNCodeFormat::test_all_cn_codes_8_digits
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestCNCodeFormat::test_cn_codes_have_descriptions
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestLookupByCNCode::test_lookup_cocoa_cn_code
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestLookupByCNCode::test_lookup_coffee_cn_code
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestLookupByCNCode::test_lookup_wood_cn_code
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestLookupByCNCode::test_lookup_unknown_cn_code_returns_none
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestLookupByCNCode::test_lookup_empty_cn_code_returns_none
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestLookupByCNCode::test_lookup_invalid_length_returns_none
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestIsEUDRRegulated::test_cocoa_is_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestIsEUDRRegulated::test_coffee_is_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestIsEUDRRegulated::test_unknown_not_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestIsEUDRRegulated::test_empty_not_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestGetDutyRate::test_zero_duty_for_raw_cocoa
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestGetDutyRate::test_duty_rate_is_decimal
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestBatchMapping::test_batch_map_multiple_commodities
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestBatchMapping::test_batch_map_with_invalid_commodity
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestBatchMapping::test_batch_map_empty_list
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestHealthCheck::test_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestHealthCheck::test_status_healthy
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestHealthCheck::test_commodity_count
+FAILED tests/agents/eudr/customs_declaration_support/test_cn_code_mapper.py::TestHealthCheck::test_total_cn_codes_positive
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDDSReferenceValidation::test_valid_dds_reference_passes
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDDSReferenceValidation::test_empty_dds_reference_fails
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDDSReferenceValidation::test_invalid_format_dds_fails
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDDSReferenceValidation::test_check_type_is_dds_reference
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDDSReferenceValidation::test_article_reference_present
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDDSReferenceValidation::test_check_id_generated
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestCNCodeEUDRCoverage::test_eudr_cn_code_passes
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestCNCodeEUDRCoverage::test_non_eudr_cn_code_info
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestCNCodeEUDRCoverage::test_mixed_cn_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestCNCodeEUDRCoverage::test_empty_cn_codes_fails
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestCNCodeEUDRCoverage::test_multiple_eudr_cn_codes_pass
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestCNCodeEUDRCoverage::test_check_type_is_cn_code_coverage
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestOriginCheck::test_verified_origin_passes
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestOriginCheck::test_mismatched_origin_fails
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestOriginCheck::test_no_supply_chain_warning
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestOriginCheck::test_check_type_is_origin_verification
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDeforestationFreeCheck::test_confirmed_deforestation_free_passes
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDeforestationFreeCheck::test_not_confirmed_fails
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDeforestationFreeCheck::test_no_dds_reference_fails
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestDeforestationFreeCheck::test_check_type_is_deforestation_free
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestRiskLevelCheck::test_low_risk_passes
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestRiskLevelCheck::test_standard_risk_passes
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestRiskLevelCheck::test_high_risk_warning
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestRiskLevelCheck::test_critical_risk_warning
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestFullComplianceReport::test_run_all_checks
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestFullComplianceReport::test_all_pass_is_compliant
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestFullComplianceReport::test_missing_dds_is_non_compliant
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestFullComplianceReport::test_report_has_provenance
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestHealthCheck::test_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestHealthCheck::test_status_healthy
+FAILED tests/agents/eudr/customs_declaration_support/test_compliance_checker.py::TestHealthCheck::test_checks_performed_zero
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigDefaults::test_ncts_timeout_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigDefaults::test_ais_timeout_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigDefaults::test_parallel_engine_calls_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigDefaults::test_eudr_dds_validation_enabled_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigDefaults::test_origin_cross_check_enabled_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_ncts_retry_count_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_ais_retry_count_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_customs_submission_timeout_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_ncts_message_format_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_ais_message_format_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_customs_auth_method_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_sad_form_enabled_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestCustomsSystemConfigDefaults::test_mrn_generation_enabled_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestTariffConfigDefaults::test_tariff_database_version_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestTariffConfigDefaults::test_currency_conversion_precision_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestTariffConfigDefaults::test_tariff_calculation_timeout_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestTariffConfigDefaults::test_cn_code_format_digits_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestTariffConfigDefaults::test_hs_code_format_digits_default
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigEnvOverride::test_env_override_ncts_timeout
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigEnvOverride::test_env_override_ais_timeout
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigEnvOverride::test_env_override_retention_years
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigValidation::test_retention_years_below_minimum_warns
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigValidation::test_ncts_timeout_too_short_warns
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigValidation::test_ais_timeout_too_short_warns
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigAttributes::test_config_has_tariff_attributes
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigAttributes::test_config_has_eudr_compliance_settings
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_rate_limit_anonymous
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_rate_limit_basic
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_rate_limit_standard
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_rate_limit_premium
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_rate_limit_admin
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_rate_limit_unknown_returns_standard
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_upstream_urls_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_upstream_urls_has_dds_creator
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_upstream_urls_has_supply_chain
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_upstream_urls_has_eu_is
+FAILED tests/agents/eudr/customs_declaration_support/test_config.py::TestConfigMethods::test_get_upstream_urls_has_country_risk
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_submit_to_ncts_returns_response
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_ncts_request_id_generated
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_ncts_mrn_in_response
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_ncts_accepted_response
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_ncts_timestamp_set
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_ncts_processing_time_measured
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_ncts_empty_mrn_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestNCTSSubmission::test_ncts_invalid_mrn_length_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestAISSubmission::test_submit_to_ais_returns_response
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestAISSubmission::test_ais_request_id_generated
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestAISSubmission::test_ais_mrn_in_response
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestAISSubmission::test_ais_accepted_response
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestAISSubmission::test_ais_empty_mrn_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestGenericSubmit::test_submit_routes_to_ncts
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestGenericSubmit::test_submit_routes_to_ais
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestGenericSubmit::test_submit_invalid_system_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestStatusCheck::test_check_ncts_status
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestStatusCheck::test_check_ais_status
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestStatusCheck::test_check_status_unknown_mrn
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestRetryLogic::test_retry_on_timeout
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestRetryLogic::test_max_retries_respected
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestProvenance::test_submission_has_provenance
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestProvenance::test_ais_submission_has_provenance
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestHealthCheck::test_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestHealthCheck::test_status_healthy
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestHealthCheck::test_ncts_connectivity
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestHealthCheck::test_ais_connectivity
+FAILED tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestHealthCheck::test_submissions_count
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_returns_customs_declaration
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_declaration_id_prefix
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_draft_status
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_operator_id_set
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_operator_name_set
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_commodities_parsed
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_unknown_commodity_skipped
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_country_of_origin_set
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_declaration_type_import
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_declaration_type_export
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_incoterms_cif
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_incoterms_fob
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_dds_reference_set
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_provenance_hash_set
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_empty_operator_id_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestCreateDeclaration::test_no_commodities_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestMRNGeneration::test_mrn_generated_on_creation
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestMRNGeneration::test_mrn_format_compliance
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestMRNGeneration::test_mrn_uniqueness
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestMRNGeneration::test_mrn_starts_with_year
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestMRNGeneration::test_mrn_contains_country_code
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestMRNGeneration::test_mrn_alphanumeric
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestSADFormGeneration::test_generate_sad_form
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestSADFormGeneration::test_sad_form_has_declaration_type
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestSADFormGeneration::test_sad_form_has_commodity_code
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestSADFormGeneration::test_sad_form_has_origin_country
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestSADFormGeneration::test_sad_form_has_eudr_dds_reference
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestSADFormGeneration::test_sad_form_has_eori
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestSADFormGeneration::test_sad_form_nonexistent_declaration_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestUpdateStatus::test_update_to_submitted
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestUpdateStatus::test_update_to_cleared
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestUpdateStatus::test_update_nonexistent_returns_none
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestUpdateStatus::test_invalid_status_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestGetDeclaration::test_get_existing
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestListDeclarations::test_list_all
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestListDeclarations::test_filter_by_operator
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestListDeclarations::test_filter_by_status
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestHealthCheck::test_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestHealthCheck::test_status_healthy
+FAILED tests/agents/eudr/customs_declaration_support/test_declaration_generator.py::TestHealthCheck::test_initial_count_zero
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_6_digit_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_cocoa_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_coffee_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_cattle_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_wood_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_rubber_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_soya_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_valid_palm_oil_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_non_eudr_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_empty_code_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_too_short_code_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_too_long_code_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestValidateHSCode::test_non_numeric_code_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestChapterLookup::test_chapter_18_is_cocoa
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestChapterLookup::test_chapter_09_is_coffee
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestChapterLookup::test_chapter_01_is_cattle
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestChapterLookup::test_chapter_44_is_wood
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestChapterLookup::test_extract_chapter_from_hs_code
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestChapterLookup::test_extract_chapter_from_coffee_hs
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestChapterLookup::test_unknown_chapter_returns_none
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_01_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_09_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_12_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_15_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_18_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_40_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_44_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestIsEUDRChapter::test_chapter_87_not_eudr_regulated
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestBatchValidation::test_batch_validate_multiple_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestBatchValidation::test_batch_validate_mixed_codes
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestBatchValidation::test_batch_validate_empty_list
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestHealthCheck::test_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestHealthCheck::test_status_healthy
+FAILED tests/agents/eudr/customs_declaration_support/test_hs_code_validator.py::TestHealthCheck::test_eudr_chapters_loaded
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_declaration_cleared
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_hs_code_validated
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_hs_code_validated_coffee
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_tariff_calculated
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_origin_verified
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_origin_verified_mismatch
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_compliance_check
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_compliance_check_fail
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_sad_form_generated
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_mrn_generated
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_customs_submission
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_customs_submission_ais
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_batch_operation
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestCounterMetrics::test_record_currency_conversion
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestHistogramMetrics::test_observe_compliance_check_duration
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestHistogramMetrics::test_observe_sad_form_generation_duration
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestHistogramMetrics::test_observe_customs_submission_duration
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestHistogramMetrics::test_observe_customs_submission_duration_large
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestHistogramMetrics::test_observe_mrn_generation_duration
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestHistogramMetrics::test_observe_batch_processing_duration
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_active_declarations
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_active_declarations_zero
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_submitted_declarations
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_cleared_declarations
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_rejected_declarations
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_rejected_declarations_zero
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_total_customs_value
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_total_duty_collected
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_total_vat_collected
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_average_processing_time
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_origin_verification_rate
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_ncts_queue_depth
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestGaugeMetrics::test_set_ais_queue_depth
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestMetricsGracefulDegradation::test_counters_when_prometheus_unavailable
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestMetricsGracefulDegradation::test_histograms_when_prometheus_unavailable
+FAILED tests/agents/eudr/customs_declaration_support/test_metrics.py::TestMetricsGracefulDegradation::test_gauges_when_prometheus_unavailable
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestDeclarationStatusEnum::test_pending_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsSystemTypeEnum::test_ncts_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsSystemTypeEnum::test_ais_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestValidationResultEnum::test_values_count
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestValidationResultEnum::test_pass_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestValidationResultEnum::test_fail_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestValidationResultEnum::test_warning_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestValidationResultEnum::test_not_applicable_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestComplianceStatusEnum::test_compliant_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestComplianceStatusEnum::test_non_compliant_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestMRNStatusEnum::test_generated_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestMRNStatusEnum::test_submitted_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestMRNStatusEnum::test_accepted_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestMRNStatusEnum::test_rejected_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestOriginVerificationResultEnum::test_mismatch_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestOriginVerificationResultEnum::test_unverified_value
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestConstants::test_regulated_commodities_all_types
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestCNCodeMappingModel::test_create_basic
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestCNCodeMappingModel::test_duty_rate_decimal
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestCNCodeMappingModel::test_hs_code_derived_from_cn
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestTariffLineItemModel::test_create_basic
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestTariffLineItemModel::test_total_value_calculation
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestTariffLineItemModel::test_vat_amount_calculation
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestTariffLineItemModel::test_duty_amount_zero_for_zero_rate
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestTariffCalculationModel::test_exchange_rate_default
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestOriginVerificationModel::test_create_verified
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestComplianceCheckModel::test_default_severity
+FAILED tests/agents/eudr/customs_declaration_support/test_models.py::TestPortOfEntryModel::test_create_rotterdam
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestVerifyOrigin::test_verify_matching_origin
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestVerifyOrigin::test_verify_mismatching_origin
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestVerifyOrigin::test_verify_empty_supply_chain
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestVerifyOrigin::test_verify_no_dds_reference
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestConfidenceScoring::test_high_confidence_for_exact_match
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestConfidenceScoring::test_lower_confidence_for_multi_origin
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestConfidenceScoring::test_zero_confidence_for_mismatch
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestConfidenceScoring::test_confidence_is_decimal
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestConfidenceScoring::test_confidence_between_0_and_100
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestMismatchDetails::test_mismatch_details_include_declared
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestMismatchDetails::test_mismatch_details_include_supply_chain
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestMismatchDetails::test_no_mismatch_details_for_verified
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestBatchVerification::test_batch_verify_multiple
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestBatchVerification::test_batch_verify_empty
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestProvenanceTracking::test_provenance_hash_set
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestProvenanceTracking::test_provenance_deterministic
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestHealthCheck::test_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestHealthCheck::test_status_healthy
+FAILED tests/agents/eudr/customs_declaration_support/test_origin_validator.py::TestHealthCheck::test_verifications_count
+FAILED tests/agents/eudr/customs_declaration_support/test_setup.py::TestEngineDelegation::test_create_declaration_no_engine
+FAILED tests/agents/eudr/customs_declaration_support/test_setup.py::TestEngineDelegation::test_map_cn_codes_no_engine
+FAILED tests/agents/eudr/customs_declaration_support/test_setup.py::TestEngineDelegation::test_calculate_tariff_no_engine
+FAILED tests/agents/eudr/customs_declaration_support/test_setup.py::TestEngineDelegation::test_verify_origin_no_engine
+FAILED tests/agents/eudr/customs_declaration_support/test_setup.py::TestEngineDelegation::test_run_compliance_check_no_engine
+FAILED tests/agents/eudr/customs_declaration_support/test_setup.py::TestEngineDelegation::test_submit_declaration_no_engine
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestCIFCalculation::test_cif_includes_insurance_and_freight
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestCIFCalculation::test_fob_excludes_insurance_and_freight
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestCIFCalculation::test_cif_zero_extras
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestCIFCalculation::test_exw_calculation
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestCurrencyConversion::test_negative_amount_raises
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestGetExchangeRate::test_eur_to_eur_rate_is_one
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestGetExchangeRate::test_rate_is_positive
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestGetExchangeRate::test_rate_is_decimal
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestTariffCalculation::test_calculate_tariff_basic
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestTariffCalculation::test_zero_duty_for_raw_cocoa
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestTariffCalculation::test_vat_applied
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestTariffCalculation::test_total_payable_non_negative
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestTariffCalculation::test_currency_default_eur
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestTariffCalculation::test_provenance_hash_set
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestDutyCalculation::test_calculate_duty_basic
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestDutyCalculation::test_duty_amount_matches_rate
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestDutyCalculation::test_preferential_tariff
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestDutyCalculation::test_anti_dumping_duty
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestLineItemCalculation::test_calculate_line_item
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestLineItemCalculation::test_line_item_duty_computed
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestLineItemCalculation::test_line_item_vat_computed
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestHealthCheck::test_returns_dict
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestHealthCheck::test_status_healthy
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestHealthCheck::test_calculations_performed_zero
+FAILED tests/agents/eudr/customs_declaration_support/test_value_calculator.py::TestHealthCheck::test_supported_currencies
+ERROR tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestErrorHandling::test_response_with_errors
+ERROR tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestErrorHandling::test_response_code_non_zero_for_rejection
+ERROR tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestErrorHandling::test_success_response_no_errors
+ERROR tests/agents/eudr/customs_declaration_support/test_customs_interface.py::TestErrorHandling::test_response_code_00_for_success
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestHSCodeInfoModel::test_create_basic
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestHSCodeInfoModel::test_non_eudr_product
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestHSCodeInfoModel::test_chapter_extraction
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestTariffCalculationModel::test_create_basic
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestTariffCalculationModel::test_total_payable_sum
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestDutyCalculationModel::test_create_basic
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestDutyCalculationModel::test_duty_amount_computation
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestDutyCalculationModel::test_preferential_rate
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestOriginVerificationModel::test_create_mismatch
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestComplianceCheckModel::test_create_passing
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestComplianceCheckModel::test_create_failing
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_create_pending
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_mrn_format
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_eori_format
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_cn_codes_present
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_hs_codes_present
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_dds_reference_present
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_submitted_status
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_cleared_status
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_rejected_status
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_rejected_missing_dds
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_monetary_values_decimal
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsDeclarationModel::test_weight_values_decimal
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestSADFormModel::test_create_basic
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestSADFormModel::test_eudr_dds_reference_in_sad
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestSADFormModel::test_commodity_code_8_digits
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestSADFormModel::test_box34_country_of_origin
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestSADFormModel::test_box_eori_number
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestSADFormModel::test_gross_weight_decimal
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestSADFormModel::test_net_weight_decimal
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsInterfaceResponseModel::test_ncts_success
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsInterfaceResponseModel::test_ncts_rejection
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsInterfaceResponseModel::test_ais_success
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsInterfaceResponseModel::test_ais_pending
+ERROR tests/agents/eudr/customs_declaration_support/test_models.py::TestCustomsInterfaceResponseModel::test_processing_time_decimal
+347 failed, 271 passed, 16 warnings, 39 errors in 9.64s

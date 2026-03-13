@@ -1,0 +1,599 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-018: Commodity Risk Analyzer Agent -- commodity risk profiling, price volatility tracking, production forecasting, substitution detection, derived product traceability, due diligence workflows, portfolio risk analysis, and regulatory compliance monitoring",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Total Commodities Monitored",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cra_commodities_monitored_total)", "legendFormat": "Total" },
+        { "expr": "sum(gl_eudr_cra_commodities_monitored_total{risk_level=\"high\"})", "legendFormat": "High Risk" },
+        { "expr": "sum(gl_eudr_cra_derived_products_tracked_total)", "legendFormat": "Derived Products" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 7 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Average Risk Score",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cra_commodity_risk_score)", "legendFormat": "Avg Risk" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 40 },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Active DD Workflows",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cra_dd_workflows_active)", "legendFormat": "Active" },
+        { "expr": "sum(gl_eudr_cra_dd_workflows_active{status=\"in_progress\"})", "legendFormat": "In Progress" },
+        { "expr": "sum(gl_eudr_cra_dd_workflows_active{status=\"review\"})", "legendFormat": "In Review" },
+        { "expr": "sum(increase(gl_eudr_cra_dd_workflows_completed_total[24h]))", "legendFormat": "Completed (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Market Disruption Alerts",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cra_market_disruption_alerts_active)", "legendFormat": "Active Alerts" },
+        { "expr": "sum(gl_eudr_cra_market_disruption_alerts_active{significance=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_cra_market_disruption_alerts_active{significance=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(increase(gl_eudr_cra_market_disruption_alerts_total[24h]))", "legendFormat": "New (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 15 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Commodity Risk",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Risk Scores by Commodity",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cra_commodity_risk_score{risk_type=\"overall\"}", "legendFormat": "{{commodity_type}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 40 },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Risk Trend Over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cra_commodity_risk_score{commodity_type=\"cattle\", risk_type=\"overall\"}", "legendFormat": "Cattle" },
+        { "expr": "gl_eudr_cra_commodity_risk_score{commodity_type=\"cocoa\", risk_type=\"overall\"}", "legendFormat": "Cocoa" },
+        { "expr": "gl_eudr_cra_commodity_risk_score{commodity_type=\"coffee\", risk_type=\"overall\"}", "legendFormat": "Coffee" },
+        { "expr": "gl_eudr_cra_commodity_risk_score{commodity_type=\"oil_palm\", risk_type=\"overall\"}", "legendFormat": "Oil Palm" },
+        { "expr": "gl_eudr_cra_commodity_risk_score{commodity_type=\"rubber\", risk_type=\"overall\"}", "legendFormat": "Rubber" },
+        { "expr": "gl_eudr_cra_commodity_risk_score{commodity_type=\"soya\", risk_type=\"overall\"}", "legendFormat": "Soya" },
+        { "expr": "gl_eudr_cra_commodity_risk_score{commodity_type=\"wood\", risk_type=\"overall\"}", "legendFormat": "Wood" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Deforestation Risk Heatmap",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cra_deforestation_risk_bucket[1h])) by (le)", "legendFormat": "{{le}}", "format": "heatmap" }
+      ],
+      "heatmap": {
+        "hideZeroBuckets": true
+      },
+      "yAxis": {
+        "format": "short",
+        "label": "Risk Score"
+      },
+      "options": {
+        "calculate": false,
+        "color": {
+          "scheme": "RdYlGn",
+          "reverse": true
+        }
+      }
+    },
+    {
+      "title": "Top Risk Commodities",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "topk(10, gl_eudr_cra_commodity_risk_score{risk_type=\"overall\"})", "legendFormat": "{{commodity_type}}", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 40 },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Value" },
+            "properties": [
+              { "id": "displayName", "value": "Risk Score" },
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Risk Score", "desc": true }]
+      }
+    },
+    {
+      "title": "Market & Price",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Price Volatility Indices",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cra_price_volatility_30d{commodity_type=\"cattle\"}", "legendFormat": "Cattle (30d)" },
+        { "expr": "gl_eudr_cra_price_volatility_30d{commodity_type=\"cocoa\"}", "legendFormat": "Cocoa (30d)" },
+        { "expr": "gl_eudr_cra_price_volatility_30d{commodity_type=\"coffee\"}", "legendFormat": "Coffee (30d)" },
+        { "expr": "gl_eudr_cra_price_volatility_30d{commodity_type=\"oil_palm\"}", "legendFormat": "Oil Palm (30d)" },
+        { "expr": "gl_eudr_cra_price_volatility_30d{commodity_type=\"soya\"}", "legendFormat": "Soya (30d)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Market Disruption Events",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cra_market_disruption_events_total{significance=\"critical\"}[1h]))", "legendFormat": "Critical" },
+        { "expr": "sum(increase(gl_eudr_cra_market_disruption_events_total{significance=\"high\"}[1h]))", "legendFormat": "High" },
+        { "expr": "sum(increase(gl_eudr_cra_market_disruption_events_total{significance=\"moderate\"}[1h]))", "legendFormat": "Moderate" },
+        { "expr": "sum(increase(gl_eudr_cra_market_disruption_events_total{significance=\"low\"}[1h]))", "legendFormat": "Low" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "stacking": { "mode": "normal" }
+          }
+        }
+      }
+    },
+    {
+      "title": "Price Trend by Commodity",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cra_commodity_price{commodity_type=\"cattle\"}", "legendFormat": "Cattle" },
+        { "expr": "gl_eudr_cra_commodity_price{commodity_type=\"cocoa\"}", "legendFormat": "Cocoa" },
+        { "expr": "gl_eudr_cra_commodity_price{commodity_type=\"coffee\"}", "legendFormat": "Coffee" },
+        { "expr": "gl_eudr_cra_commodity_price{commodity_type=\"oil_palm\"}", "legendFormat": "Oil Palm" },
+        { "expr": "gl_eudr_cra_commodity_price{commodity_type=\"rubber\"}", "legendFormat": "Rubber" },
+        { "expr": "gl_eudr_cra_commodity_price{commodity_type=\"soya\"}", "legendFormat": "Soya" },
+        { "expr": "gl_eudr_cra_commodity_price{commodity_type=\"wood\"}", "legendFormat": "Wood" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Forecast Accuracy",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cra_forecast_accuracy_pct)", "legendFormat": "Overall Accuracy" },
+        { "expr": "avg(gl_eudr_cra_forecast_accuracy_pct{commodity_type=\"cocoa\"})", "legendFormat": "Cocoa" },
+        { "expr": "avg(gl_eudr_cra_forecast_accuracy_pct{commodity_type=\"coffee\"})", "legendFormat": "Coffee" },
+        { "expr": "avg(gl_eudr_cra_forecast_accuracy_pct{commodity_type=\"soya\"})", "legendFormat": "Soya" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 75 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Processing & Products",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Derived Products Tracked",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cra_derived_products_tracked_total)", "legendFormat": "Total Products" },
+        { "expr": "sum(gl_eudr_cra_derived_products_tracked_total) by (source_commodity)", "legendFormat": "{{source_commodity}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Processing Chain Complexity",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cra_processing_chain_stages{traceability_difficulty=\"simple\"}", "legendFormat": "Simple" },
+        { "expr": "gl_eudr_cra_processing_chain_stages{traceability_difficulty=\"moderate\"}", "legendFormat": "Moderate" },
+        { "expr": "gl_eudr_cra_processing_chain_stages{traceability_difficulty=\"complex\"}", "legendFormat": "Complex" },
+        { "expr": "gl_eudr_cra_processing_chain_stages{traceability_difficulty=\"very_complex\"}", "legendFormat": "Very Complex" },
+        { "expr": "gl_eudr_cra_processing_chain_stages{traceability_difficulty=\"opaque\"}", "legendFormat": "Opaque" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "stacking": "normal"
+      }
+    },
+    {
+      "title": "Substitution Events",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cra_substitution_events_total[1h]))", "legendFormat": "Total Events" },
+        { "expr": "sum(increase(gl_eudr_cra_substitution_events_total{verified=\"true\"}[1h]))", "legendFormat": "Verified" },
+        { "expr": "sum(increase(gl_eudr_cra_substitution_events_total{verified=\"false\"}[1h]))", "legendFormat": "Unverified" },
+        { "expr": "avg(gl_eudr_cra_substitution_risk_impact)", "legendFormat": "Avg Risk Impact" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Traceability Scores",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cra_traceability_score) by (commodity_type)", "legendFormat": "{{commodity_type}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Compliance & Portfolio",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "DD Workflow Completion Rate",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cra_dd_workflows_active{status=\"completed\"}) / sum(gl_eudr_cra_dd_workflows_active) * 100", "legendFormat": "Completion %" },
+        { "expr": "avg(gl_eudr_cra_dd_workflow_completion_pct)", "legendFormat": "Avg Progress" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Regulatory Compliance Status",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cra_regulatory_compliance{status=\"compliant\"})", "legendFormat": "Compliant" },
+        { "expr": "sum(gl_eudr_cra_regulatory_compliance{status=\"partial\"})", "legendFormat": "Partial" },
+        { "expr": "sum(gl_eudr_cra_regulatory_compliance{status=\"non_compliant\"})", "legendFormat": "Non-Compliant" },
+        { "expr": "sum(gl_eudr_cra_regulatory_compliance{status=\"pending\"})", "legendFormat": "Pending Review" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Partial" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Non-Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Pending Review" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Portfolio Concentration (HHI)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_cra_portfolio_concentration_hhi", "legendFormat": "{{portfolio_name}}" },
+        { "expr": "avg(gl_eudr_cra_portfolio_concentration_hhi)", "legendFormat": "Avg HHI" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 10000,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1500 },
+              { "color": "orange", "value": 2500 },
+              { "color": "red", "value": 5000 }
+            ]
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "thresholdsStyle": { "mode": "area" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Diversification Score",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cra_portfolio_diversification_score)", "legendFormat": "Avg Diversification" },
+        { "expr": "min(gl_eudr_cra_portfolio_diversification_score)", "legendFormat": "Min Diversification" },
+        { "expr": "max(gl_eudr_cra_portfolio_diversification_score)", "legendFormat": "Max Diversification" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 30 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "commodity-risk-analyzer", "agent-eudr-018", "greenlang", "commodity-risk"],
+  "templating": { "list": [] },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Commodity Risk Analyzer (AGENT-EUDR-018)",
+  "uid": "eudr-commodity-risk-analyzer",
+  "version": 1
+}

@@ -1,0 +1,1254 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-035: Improvement Plan Creator (IPC) -- Creates structured improvement plans from due diligence findings, gap analyses, and audit results. Manages action items with SMART goal compliance, root cause analysis, Eisenhower matrix prioritization, stakeholder assignment, progress tracking, effectiveness scoring, and KPI achievement monitoring for EUDR Articles 8, 10, 11, 12 compliance",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Plan Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Active Improvement Plans",
+      "description": "Current number of active improvement plans by status (draft, in_progress, under_review, approved). Plans transition through lifecycle stages from creation to closure.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ipc_active_plans{environment=\"$environment\"}) or vector(0)", "legendFormat": "Active Plans", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Plan Completion Rate",
+      "description": "Percentage of improvement plans completed within their target deadline over the last 30 days. Target: >= 85% on-time completion rate for Article 10 compliance evidence.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ipc_plans_completed_total{environment=\"$environment\"}[30d])) / (sum(increase(gl_eudr_ipc_plans_completed_total{environment=\"$environment\"}[30d])) + sum(gl_eudr_ipc_active_plans{environment=\"$environment\"})) * 100 or vector(0)", "legendFormat": "Completion Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 85 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Overdue Actions",
+      "description": "Current number of overdue improvement actions (past deadline, not yet completed). Non-zero triggers warning alert. > 15 triggers critical alert requiring compliance lead escalation.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ipc_overdue_actions{environment=\"$environment\"}) or vector(0)", "legendFormat": "Overdue Actions", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Plans Created Over Time",
+      "description": "Rate of new improvement plans created over time, broken down by trigger source. Tracks plan generation throughput and identifies peak creation periods.",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_plans_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (source) (rate(gl_eudr_ipc_plans_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{source}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Findings",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 5,
+      "title": "Findings by Source",
+      "description": "Distribution of findings ingested in the last 24 hours by originating source: due_diligence, gap_analysis, audit, risk_assessment, monitoring, supplier_review. Helps identify which processes generate the most improvement needs.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (source) (increase(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{source}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Findings by Severity",
+      "description": "Distribution of findings by severity level over the last 24 hours. Critical and high severity findings auto-generate urgent improvement actions with shortened deadlines per Article 11 requirements.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\", severity=\"critical\"}[24h]))", "legendFormat": "Critical", "refId": "A" },
+        { "expr": "sum(increase(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\", severity=\"high\"}[24h]))", "legendFormat": "High", "refId": "B" },
+        { "expr": "sum(increase(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\", severity=\"medium\"}[24h]))", "legendFormat": "Medium", "refId": "C" },
+        { "expr": "sum(increase(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\", severity=\"low\"}[24h]))", "legendFormat": "Low", "refId": "D" },
+        { "expr": "sum(increase(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\", severity=\"informational\"}[24h]))", "legendFormat": "Informational", "refId": "E" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Informational" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Gap Analysis Results",
+      "description": "Rate of gap analysis results processed over time by gap category: regulatory, operational, documentation, monitoring, supplier_engagement. Each gap maps to one or more improvement actions in the generated plan.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_gap_analysis_results_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (gap_category) (rate(gl_eudr_ipc_gap_analysis_results_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{gap_category}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Findings Ingestion Rate",
+      "description": "Time series of findings ingested from all sources. Spikes indicate batch imports from audit completions or periodic risk assessment cycles.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Findings (/hr)", "refId": "A" },
+        { "expr": "sum by (severity) (rate(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\", severity=~\"$severity\"}[5m])) * 3600", "legendFormat": "{{severity}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Findings (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] },
+          { "matcher": { "id": "byName", "options": "critical (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "high (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Actions",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 9,
+      "title": "Actions by Status",
+      "description": "Distribution of improvement actions by current status in the last 24 hours: pending, in_progress, completed, verified, cancelled. Tracks action lifecycle flow and identifies bottlenecks.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 25 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ipc_actions_by_status{environment=\"$environment\", status=\"pending\"}) or vector(0)", "legendFormat": "Pending", "refId": "A" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_status{environment=\"$environment\", status=\"in_progress\"}) or vector(0)", "legendFormat": "In Progress", "refId": "B" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_status{environment=\"$environment\", status=\"completed\"}) or vector(0)", "legendFormat": "Completed", "refId": "C" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_status{environment=\"$environment\", status=\"verified\"}) or vector(0)", "legendFormat": "Verified", "refId": "D" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_status{environment=\"$environment\", status=\"cancelled\"}) or vector(0)", "legendFormat": "Cancelled", "refId": "E" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Pending" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "In Progress" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Completed" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Verified" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Cancelled" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Actions by Priority",
+      "description": "Distribution of current improvement actions by priority level: critical, high, medium, low. Priority is derived from Eisenhower matrix quadrant classification and finding severity.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 25 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"critical\"}) or vector(0)", "legendFormat": "Critical", "refId": "A" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"high\"}) or vector(0)", "legendFormat": "High", "refId": "B" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"medium\"}) or vector(0)", "legendFormat": "Medium", "refId": "C" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"low\"}) or vector(0)", "legendFormat": "Low", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 11,
+      "title": "SMART Goal Compliance",
+      "description": "Percentage of improvement actions that meet SMART goal criteria (Specific, Measurable, Achievable, Relevant, Time-bound). Target: >= 90% SMART compliance for audit-ready documentation.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 25 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_ipc_smart_compliance_ratio{environment=\"$environment\"}) * 100 or vector(0)", "legendFormat": "SMART Compliance %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 75 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Action Creation & Completion Rate",
+      "description": "Comparison of action creation rate vs completion rate over time. A widening gap indicates growing backlog. Sustained parity or completion > creation indicates healthy throughput.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 33 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_actions_created_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Actions Created (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_ipc_actions_completed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Actions Completed (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_ipc_actions_verified_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Actions Verified (/hr)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Actions Created (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Actions Completed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Actions Verified (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Root Causes",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 13,
+      "title": "Top Root Causes",
+      "description": "Top root causes identified across all improvement plans in the last 7 days. Categories include: process_gap, training_deficit, system_limitation, supplier_noncompliance, documentation_gap, monitoring_failure, resource_constraint.",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (root_cause) (increase(gl_eudr_ipc_root_causes_identified_total{environment=\"$environment\"}[7d])))", "legendFormat": "{{root_cause}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "color": { "mode": "continuous-BlYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "id": 14,
+      "title": "Recurrence Patterns",
+      "description": "Tracks recurring root causes identified across multiple improvement cycles. High recurrence (> 3 times in 90 days) indicates systemic issues requiring strategic intervention rather than tactical fixes.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_recurrence_detected_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Recurrences Detected (/hr)", "refId": "A" },
+        { "expr": "sum by (root_cause) (rate(gl_eudr_ipc_recurrence_detected_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{root_cause}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Recurrences Detected (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Root Cause Analysis Depth",
+      "description": "Average number of root cause analysis iterations (5-Whys depth) performed per finding. Deeper analysis (>= 4 levels) produces more targeted improvement actions. Target: average >= 3 levels.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 50 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_ipc_rca_depth{environment=\"$environment\"}) or vector(0)", "legendFormat": "Avg RCA Depth", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 2 },
+              { "color": "yellow", "value": 3 },
+              { "color": "green", "value": 4 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Root Cause Categories Over Time",
+      "description": "Stacked area chart showing root cause category distribution over time. Trends reveal systemic patterns: rising supplier_noncompliance may indicate supply chain degradation requiring strategic response.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 50 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (category) (rate(gl_eudr_ipc_root_causes_identified_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{category}} (/hr)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 30,
+            "drawStyle": "line",
+            "pointSize": 3,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Prioritization",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 58 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 17,
+      "title": "Eisenhower Matrix Distribution",
+      "description": "Heatmap of actions categorized by Eisenhower matrix quadrants: Q1 (Urgent+Important) = Do First, Q2 (Not Urgent+Important) = Schedule, Q3 (Urgent+Not Important) = Delegate, Q4 (Not Urgent+Not Important) = Eliminate. Healthy distribution shows majority in Q2.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 59 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ipc_eisenhower_actions{environment=\"$environment\", quadrant=\"q1_do_first\"}) or vector(0)", "legendFormat": "Q1: Do First (Urgent+Important)", "refId": "A" },
+        { "expr": "sum(gl_eudr_ipc_eisenhower_actions{environment=\"$environment\", quadrant=\"q2_schedule\"}) or vector(0)", "legendFormat": "Q2: Schedule (Important)", "refId": "B" },
+        { "expr": "sum(gl_eudr_ipc_eisenhower_actions{environment=\"$environment\", quadrant=\"q3_delegate\"}) or vector(0)", "legendFormat": "Q3: Delegate (Urgent)", "refId": "C" },
+        { "expr": "sum(gl_eudr_ipc_eisenhower_actions{environment=\"$environment\", quadrant=\"q4_eliminate\"}) or vector(0)", "legendFormat": "Q4: Eliminate (Neither)", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Q1: Do First (Urgent+Important)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Q2: Schedule (Important)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Q3: Delegate (Urgent)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Q4: Eliminate (Neither)" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "stacking": "none",
+        "groupWidth": 0.7,
+        "barWidth": 0.8,
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["value"] }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Priority Distribution Over Time",
+      "description": "Stacked area view of action priority levels over time. Shifts from critical/high toward medium/low indicate improving compliance posture and maturity of improvement processes.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 59 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"critical\"})", "legendFormat": "Critical", "refId": "A" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"high\"})", "legendFormat": "High", "refId": "B" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"medium\"})", "legendFormat": "Medium", "refId": "C" },
+        { "expr": "sum(gl_eudr_ipc_actions_by_priority{environment=\"$environment\", priority=\"low\"})", "legendFormat": "Low", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 30,
+            "drawStyle": "line",
+            "pointSize": 3,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 19,
+      "title": "Priority Score Histogram",
+      "description": "Distribution of computed priority scores across all active actions. Priority scores combine urgency (time sensitivity), importance (compliance impact), effort (resource requirement), and risk (severity). Score range: 0-100.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 67 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (le) (gl_eudr_ipc_priority_score_bucket{environment=\"$environment\"})", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "continuous-BlYlRd" },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1
+          }
+        }
+      },
+      "options": {
+        "bucketSize": 10,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Progress",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 75 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 20,
+      "title": "Plan Completion Trend",
+      "description": "Trend of improvement plan completions over time with 7-day moving average. Tracks organizational improvement velocity and capacity for continuous improvement under EUDR Article 8.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 76 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_plans_completed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Completions (/hr)", "refId": "A" },
+        { "expr": "avg_over_time(sum(rate(gl_eudr_ipc_plans_completed_total{environment=\"$environment\"}[1h]))[7d:1h]) * 3600", "legendFormat": "7d Moving Avg (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Completions (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "7d Moving Avg (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 21,
+      "title": "Effectiveness Scores",
+      "description": "Average effectiveness score of completed improvement plans by commodity. Effectiveness is measured as the percentage reduction in identified gaps after plan execution. Target: >= 70% effectiveness for Article 11 compliance evidence.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 76 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_ipc_effectiveness_score{environment=\"$environment\"}) or vector(0)", "legendFormat": "Overall Avg", "refId": "A" },
+        { "expr": "avg by (commodity) (gl_eudr_ipc_effectiveness_score{environment=\"$environment\", commodity=~\"$commodity\"})", "legendFormat": "{{commodity}}", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          },
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Overall Avg" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "lastNotNull", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 22,
+      "title": "KPI Achievement Rate",
+      "description": "Percentage of improvement plan KPIs that have been achieved within the target timeframe. Tracks quantitative success of improvement efforts across all active and recently closed plans.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 84 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ipc_kpis_achieved{environment=\"$environment\"}) / (sum(gl_eudr_ipc_kpis_total{environment=\"$environment\"}) > 0) * 100 or vector(0)", "legendFormat": "KPI Achievement %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Action Completion by Category",
+      "description": "Action completion rates broken down by improvement category over time. Categories: regulatory, operational, documentation, monitoring, supplier_engagement, training, system_upgrade.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 84 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (category) (rate(gl_eudr_ipc_actions_completed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{category}} (/hr)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Stakeholders",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 92 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 24,
+      "title": "Assignment Distribution",
+      "description": "Distribution of active improvement actions assigned to each stakeholder role. Roles include: compliance_officer, supply_chain_manager, procurement_lead, sustainability_analyst, legal_counsel, operations_manager.",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 93 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (assignee_role) (gl_eudr_ipc_actions_assigned{environment=\"$environment\"}))", "legendFormat": "{{assignee_role}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 15 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 40 }
+            ]
+          },
+          "color": { "mode": "continuous-BlYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "id": 25,
+      "title": "Workload Balance",
+      "description": "Ratio of assigned actions to capacity for each stakeholder role. Values > 1.0 indicate overloaded roles. Target: all roles <= 1.0 for sustainable improvement velocity.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 93 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (assignee_role) (gl_eudr_ipc_actions_assigned{environment=\"$environment\"}) / (sum by (assignee_role) (gl_eudr_ipc_stakeholder_capacity{environment=\"$environment\"}) > 0)", "legendFormat": "{{assignee_role}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.8 },
+              { "color": "red", "value": 1.0 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "lastNotNull", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 26,
+      "title": "Stakeholder Response Time",
+      "description": "Average time from action assignment to first stakeholder response, by role. Measures engagement velocity. Target: < 48 hours for critical, < 72 hours for high priority actions.",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 101 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg by (assignee_role) (gl_eudr_ipc_stakeholder_response_hours{environment=\"$environment\"})", "legendFormat": "{{assignee_role}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 48 },
+              { "color": "orange", "value": 72 },
+              { "color": "red", "value": 120 }
+            ]
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "id": 27,
+      "title": "Escalation Rate by Role",
+      "description": "Rate of action escalations per stakeholder role over time. Escalations occur when deadlines are missed or actions remain unacknowledged for > 72 hours.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 101 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_escalations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Escalations (/hr)", "refId": "A" },
+        { "expr": "sum by (assignee_role) (rate(gl_eudr_ipc_escalations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{assignee_role}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Escalations (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 109 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 28,
+      "title": "API Request Latency (p50/p95/p99)",
+      "description": "Latency percentiles for all /v1/eudr-ipc API endpoints. Covers plan CRUD, action management, progress queries, and report generation. Target: p99 < 3 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 110 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ipc_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_ipc_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ipc_api_request_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1.5 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 29,
+      "title": "Plan Generation Latency (p50/p95/p99)",
+      "description": "Latency for end-to-end improvement plan generation including findings analysis, root cause identification, action creation, prioritization, and stakeholder assignment. Target: p99 < 8 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 110 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ipc_plan_generation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_ipc_plan_generation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ipc_plan_generation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 4 },
+              { "color": "red", "value": 8 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 30,
+      "title": "Prioritization Engine Latency (p50/p95/p99)",
+      "description": "Latency for Eisenhower matrix computation and priority score calculation across all actions in a plan. Includes urgency/importance scoring, resource estimation, and dependency resolution. Target: p99 < 2 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 110 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ipc_prioritization_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_ipc_prioritization_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ipc_prioritization_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 2 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 31,
+      "title": "API Errors",
+      "description": "Rate of API errors (4xx and 5xx) across all /v1/eudr-ipc endpoints. Sustained 5xx error rate > 1% triggers critical alert.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 118 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ipc_api_errors_total{environment=\"$environment\", status_code=~\"5..\"}[5m])) * 3600", "legendFormat": "5xx Errors (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_ipc_api_errors_total{environment=\"$environment\", status_code=~\"4..\"}[5m])) * 3600", "legendFormat": "4xx Errors (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_ipc_api_errors_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_ipc_api_requests_total{environment=\"$environment\"}[5m])) > 0) * 100", "legendFormat": "Error Rate %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "5xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Error Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 32,
+      "title": "Processing Time by Operation",
+      "description": "Average processing time for key IPC operations: plan_creation, findings_analysis, root_cause_analysis, action_generation, prioritization, stakeholder_assignment, progress_update, report_generation.",
+      "type": "bargauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 118 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg by (operation) (rate(gl_eudr_ipc_operation_seconds_sum{environment=\"$environment\"}[5m]) / rate(gl_eudr_ipc_operation_seconds_count{environment=\"$environment\"}[5m]))", "legendFormat": "{{operation}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10
+      }
+    },
+    {
+      "title": "Alert Rules & Runbooks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 126 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 33,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the Improvement Plan Creator agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 127 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-035 Improvement Plan Creator Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Overdue Actions** | gl_eudr_ipc_overdue_actions > 0 for 1h | Warning | Every 5m, for 15m | Review overdue actions, notify assigned stakeholders |\n| 2 | **Critical Overdue** | gl_eudr_ipc_overdue_actions > 15 for 30m | Critical | Every 5m, for 5m | Page on-call, escalate to compliance lead |\n| 3 | **Low SMART Compliance** | gl_eudr_ipc_smart_compliance_ratio < 0.75 for 4h | Warning | Every 15m, for 1h | Review action quality, update templates |\n| 4 | **Low Effectiveness** | gl_eudr_ipc_effectiveness_score avg < 50% for 7d | Warning | Every 1h, for 24h | Review plan design, analyze root causes |\n| 5 | **High Recurrence Rate** | gl_eudr_ipc_recurrence_detected_total increase > 10 in 7d | Warning | Every 1h, for 4h | Investigate systemic issues, escalate to management |\n| 6 | **Workload Imbalance** | gl_eudr_ipc_actions_assigned / gl_eudr_ipc_stakeholder_capacity > 1.5 for 24h | Warning | Every 30m, for 2h | Rebalance assignments, review capacity planning |\n| 7 | **High API Error Rate** | API 5xx error rate > 1% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure |\n| 8 | **Plan Generation Latency** | p99 > 8s for 10 minutes | Warning | Every 5m, for 10m | Investigate performance, check database queries |\n| 9 | **Low KPI Achievement** | gl_eudr_ipc_kpis_achieved / gl_eudr_ipc_kpis_total < 0.4 for 30d | Warning | Every 6h, for 24h | Review KPI targets, assess plan feasibility |\n| 10 | **Approval Bottleneck** | pending actions with status=pending > 20 for 48h | Warning | Every 1h, for 4h | Notify approvers, review delegation rules |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Overdue Actions Response](https://runbooks.greenlang.io/eudr/ipc/overdue-actions)\n- [Low Effectiveness Investigation](https://runbooks.greenlang.io/eudr/ipc/low-effectiveness)\n- [Recurrence Pattern Analysis](https://runbooks.greenlang.io/eudr/ipc/recurrence-patterns)\n- [Workload Rebalancing](https://runbooks.greenlang.io/eudr/ipc/workload-rebalancing)\n- [SMART Compliance Remediation](https://runbooks.greenlang.io/eudr/ipc/smart-compliance)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/ipc/perf-degradation)\n- [KPI Achievement Review](https://runbooks.greenlang.io/eudr/ipc/kpi-review)\n- [Approval Bottleneck Resolution](https://runbooks.greenlang.io/eudr/ipc/approval-bottleneck)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "improvement-plan-creator", "agent-eudr-035", "greenlang", "article-8", "article-10", "article-11", "improvement-plans", "gap-analysis", "root-cause", "eisenhower-matrix", "smart-goals", "stakeholders"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ipc_plans_created_total{environment=\"$environment\"}, commodity)",
+        "description": "Filter by EUDR commodity (cattle, cocoa, coffee, oil_palm, rubber, soya, wood)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Commodity",
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_ipc_plans_created_total{environment=\"$environment\"}, commodity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\"}, severity)",
+        "description": "Filter by finding severity (critical, high, medium, low, informational)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Severity",
+        "multi": true,
+        "name": "severity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_ipc_findings_ingested_total{environment=\"$environment\"}, severity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Improvement Plan Creator (IPC)",
+  "uid": "eudr-ipc-035",
+  "version": 1
+}

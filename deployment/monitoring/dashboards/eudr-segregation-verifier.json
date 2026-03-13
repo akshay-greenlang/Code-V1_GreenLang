@@ -1,0 +1,201 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-010: Segregation Verifier Agent — SCP management, storage zone tracking, transport verification, contamination detection, facility assessments",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Active SCPs",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "targets": [{ "expr": "sum(gl_eudr_sgv_active_scps)", "legendFormat": "Total" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"green","value":null}] } } }
+    },
+    {
+      "title": "Avg Facility Score",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "targets": [{ "expr": "gl_eudr_sgv_facility_score_avg", "legendFormat": "Score" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 100, "unit": "percent", "decimals": 1, "thresholds": { "steps": [{"color":"red","value":null},{"color":"yellow","value":60},{"color":"green","value":85}] } } }
+    },
+    {
+      "title": "Contamination Events (24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "targets": [{ "expr": "sum(increase(gl_eudr_sgv_contamination_events_total[24h]))", "legendFormat": "Events" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":3},{"color":"red","value":10}] } } }
+    },
+    {
+      "title": "Reports Generated (Total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "targets": [{ "expr": "sum(gl_eudr_sgv_reports_generated_total)", "legendFormat": "Total" }],
+      "fieldConfig": { "defaults": { "thresholds": { "steps": [{"color":"blue","value":null}] } } }
+    },
+    {
+      "title": "Segregation Verification",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "SCP Validation Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_sgv_scp_validations_total[5m])", "legendFormat": "Validated/s" },
+        { "expr": "rate(gl_eudr_sgv_scp_validation_failures_total[5m])", "legendFormat": "Failed/s" }
+      ]
+    },
+    {
+      "title": "Storage Zone Audits",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_sgv_storage_audits_total[5m])", "legendFormat": "Audits/s" },
+        { "expr": "rate(gl_eudr_sgv_storage_events_recorded_total[5m])", "legendFormat": "Events/s" }
+      ]
+    },
+    {
+      "title": "Transport Checks",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_sgv_transport_checks_total[5m])", "legendFormat": "Checks/s" },
+        { "expr": "rate(gl_eudr_sgv_seal_failures_total[5m])", "legendFormat": "Seal Fails/s" },
+        { "expr": "rate(gl_eudr_sgv_cleaning_failures_total[5m])", "legendFormat": "Clean Fails/s" }
+      ]
+    },
+    {
+      "title": "Processing Line Checks",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 6 },
+      "targets": [
+        { "expr": "rate(gl_eudr_sgv_changeover_checks_total[5m])", "legendFormat": "Changeovers/s" },
+        { "expr": "rate(gl_eudr_sgv_line_dedications_total[5m])", "legendFormat": "Dedicated Lines" }
+      ]
+    },
+    {
+      "title": "Contamination Detection",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Contamination by Pathway",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 13 },
+      "targets": [
+        { "expr": "rate(gl_eudr_sgv_contamination_events_total{pathway=\"storage_cross\"}[5m])", "legendFormat": "Storage Cross" },
+        { "expr": "rate(gl_eudr_sgv_contamination_events_total{pathway=\"transport_residue\"}[5m])", "legendFormat": "Transport Residue" },
+        { "expr": "rate(gl_eudr_sgv_contamination_events_total{pathway=\"processing_carryover\"}[5m])", "legendFormat": "Processing Carryover" },
+        { "expr": "rate(gl_eudr_sgv_contamination_events_total{pathway=\"handling_mix\"}[5m])", "legendFormat": "Handling Mix" },
+        { "expr": "rate(gl_eudr_sgv_contamination_events_total{pathway=\"labeling_error\"}[5m])", "legendFormat": "Labeling Error" }
+      ]
+    },
+    {
+      "title": "Severity Breakdown",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 13 },
+      "targets": [
+        { "expr": "sum(gl_eudr_sgv_contamination_events_total{severity=\"low\"})", "legendFormat": "Low" },
+        { "expr": "sum(gl_eudr_sgv_contamination_events_total{severity=\"medium\"})", "legendFormat": "Medium" },
+        { "expr": "sum(gl_eudr_sgv_contamination_events_total{severity=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(gl_eudr_sgv_contamination_events_total{severity=\"critical\"})", "legendFormat": "Critical" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "title": "Critical Contamination Events",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 13 },
+      "targets": [
+        { "expr": "rate(gl_eudr_sgv_contamination_events_total{severity=\"critical\"}[5m])", "legendFormat": "Critical/s" },
+        { "expr": "rate(gl_eudr_sgv_contamination_events_total{severity=\"high\"}[5m])", "legendFormat": "High/s" },
+        { "expr": "gl_eudr_sgv_unresolved_contaminations", "legendFormat": "Unresolved" }
+      ]
+    },
+    {
+      "title": "Risk Heatmap (Facility x Pathway)",
+      "type": "heatmap",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 13 },
+      "targets": [
+        { "expr": "gl_eudr_sgv_facility_risk_score", "legendFormat": "{{facility_id}} - {{pathway}}" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "scheme", "schemeName": "RdYlGn", "reverse": true } } }
+    },
+    {
+      "title": "Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Validation Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_sgv_validation_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_sgv_validation_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_sgv_validation_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Detection Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_sgv_detection_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_sgv_detection_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_sgv_detection_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Assessment Duration (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 20 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_sgv_assessment_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_sgv_assessment_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_sgv_assessment_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "API Errors (1h)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_sgv_api_errors_total[1h]))", "legendFormat": "Total Errors" },
+        { "expr": "sum(increase(gl_eudr_sgv_api_errors_total{status_code=~\"5..\"}[1h]))", "legendFormat": "5xx Errors" },
+        { "expr": "sum(increase(gl_eudr_sgv_api_errors_total{status_code=~\"4..\"}[1h]))", "legendFormat": "4xx Errors" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "segregation-verifier", "agent-eudr-010", "greenlang"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EUDR Segregation Verifier (AGENT-EUDR-010)",
+  "uid": "eudr-segregation-verifier-010",
+  "version": 1
+}

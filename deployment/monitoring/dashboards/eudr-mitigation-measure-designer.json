@@ -1,0 +1,659 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-029: Mitigation Measure Designer (MMD) -- Strategy design linked to risk assessments, Article 11 measure lifecycle management, curated template library, evidence/document collection, effectiveness estimation with conservative/moderate/optimistic projections, post-mitigation verification, workflow state machine, implementation milestone tracking, and audit-ready documentation for EUDR Articles 10, 11, 12, 13, 14-16, 29, 31 compliance",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Strategy & Measure Operations",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Strategies Designed",
+      "description": "Rate of mitigation strategies designed over time by commodity. Each strategy links a risk assessment to a set of Article 11 mitigation measures.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_mmd_strategies_designed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (commodity) (rate(gl_eudr_mmd_strategies_designed_total{environment=\"$environment\", commodity=~\"$commodity\"}[5m])) * 3600", "legendFormat": "{{commodity}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Measures Proposed by Category",
+      "description": "Rate of mitigation measures proposed, stacked by Article 11 category. Categories include: additional_information, independent_survey, third_party_verification, supplier_engagement, supply_chain_restructuring, certification, monitoring_system, field_inspection, document_review.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (category) (rate(gl_eudr_mmd_measures_proposed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{category}} (/hr)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Measures Approved",
+      "description": "Rate of mitigation measures approved for implementation over time. Approval indicates readiness for resource allocation and execution.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_mmd_measures_approved_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Approved (/hr)", "refId": "A" },
+        { "expr": "sum by (dimension) (rate(gl_eudr_mmd_measures_approved_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{dimension}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Approved (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Measures Completed",
+      "description": "Rate of mitigation measures marked as completed over time. Completion triggers evidence review and effectiveness verification workflows.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_mmd_measures_completed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Completed (/hr)", "refId": "A" },
+        { "expr": "sum by (category) (rate(gl_eudr_mmd_measures_completed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{category}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Completed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Verification & Reporting",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 5,
+      "title": "Verifications by Result",
+      "description": "Distribution of post-mitigation verification results in the last 24 hours. Effective means target risk score was met; partially_effective means >50% of target achieved.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_mmd_verifications_total{environment=\"$environment\", result=\"effective\"}[24h]))", "legendFormat": "Effective", "refId": "A" },
+        { "expr": "sum(increase(gl_eudr_mmd_verifications_total{environment=\"$environment\", result=\"partially_effective\"}[24h]))", "legendFormat": "Partially Effective", "refId": "B" },
+        { "expr": "sum(increase(gl_eudr_mmd_verifications_total{environment=\"$environment\", result=\"ineffective\"}[24h]))", "legendFormat": "Ineffective", "refId": "C" },
+        { "expr": "sum(increase(gl_eudr_mmd_verifications_total{environment=\"$environment\", result=\"inconclusive\"}[24h]))", "legendFormat": "Inconclusive", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Effective" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Partially Effective" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Ineffective" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Inconclusive" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Reports Generated",
+      "description": "Rate of mitigation reports generated over time by report type. Reports provide Article 11 compliance documentation for DDS submissions.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_mmd_reports_generated_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (report_type) (rate(gl_eudr_mmd_reports_generated_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{report_type}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Workflows Closed",
+      "description": "Rate of mitigation workflows closed over time. Workflow closure indicates the full design-implement-verify lifecycle has been completed.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_mmd_workflows_closed_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Closed (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_mmd_workflows_escalated_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Escalated (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Closed (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Escalated (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "API Errors",
+      "description": "Rate of API errors (4xx and 5xx) across all /v1/eudr-mmd endpoints. Sustained 5xx error rate > 1% triggers critical alert.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_mmd_api_errors_total{environment=\"$environment\", status_code=~\"5..\"}[5m])) * 3600", "legendFormat": "5xx Errors (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_mmd_api_errors_total{environment=\"$environment\", status_code=~\"4..\"}[5m])) * 3600", "legendFormat": "4xx Errors (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_mmd_api_errors_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_mmd_api_requests_total{environment=\"$environment\"}[5m])) > 0) * 100", "legendFormat": "Error Rate %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "5xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Error Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Latency Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 9,
+      "title": "Strategy Design Latency (p50/p95/p99)",
+      "description": "Latency percentiles for end-to-end mitigation strategy design. Includes risk analysis, template selection, measure design, and effectiveness estimation. Target: p99 < 5 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_mmd_strategy_design_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_mmd_strategy_design_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_mmd_strategy_design_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Effectiveness Estimation Latency (p50/p95/p99)",
+      "description": "Latency percentiles for effectiveness estimation calculations including conservative/moderate/optimistic projections with applicability and quality factors. Target: p99 < 2 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_mmd_effectiveness_estimation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_mmd_effectiveness_estimation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_mmd_effectiveness_estimation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 2 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Verification Latency (p50/p95/p99)",
+      "description": "Latency percentiles for post-mitigation verification including pre/post score comparison, reduction calculation, and result classification. Target: p99 < 3 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 43 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_mmd_verification_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_mmd_verification_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_mmd_verification_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1.5 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Report Generation Latency (p50/p95/p99)",
+      "description": "Latency percentiles for mitigation report generation including evidence aggregation, effectiveness summaries, and compliance formatting. Target: p99 < 10 seconds.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 43 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_mmd_report_generation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_mmd_report_generation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_mmd_report_generation_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Operational Gauges",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 51 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 13,
+      "title": "Active Workflows",
+      "description": "Current number of active mitigation design workflows (initiated, designing, pending_approval, implementing, monitoring, verifying). Spike > 200% baseline triggers info alert.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mmd_active_workflows{environment=\"$environment\"})", "legendFormat": "Active Workflows", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 200 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Overdue Measures",
+      "description": "Current number of overdue mitigation measures (past deadline, not yet completed). Non-zero triggers warning alert. > 10 triggers critical.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mmd_overdue_measures{environment=\"$environment\"})", "legendFormat": "Overdue Measures", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Average Risk Reduction",
+      "description": "Average post-mitigation risk reduction percentage across all verified strategies. Target: >= 40% reduction for Article 11 compliance. Higher values indicate more effective mitigation portfolio.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_mmd_avg_risk_reduction{environment=\"$environment\"}) or vector(0)", "legendFormat": "Avg Risk Reduction %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 15 },
+              { "color": "yellow", "value": 30 },
+              { "color": "green", "value": 40 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Pending Approvals",
+      "description": "Current number of mitigation strategies and measures awaiting approval. High count (> 20) may indicate approval workflow bottleneck.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_mmd_pending_approvals{environment=\"$environment\", type=\"strategy\"})", "legendFormat": "Strategies", "refId": "A" },
+        { "expr": "sum(gl_eudr_mmd_pending_approvals{environment=\"$environment\", type=\"measure\"})", "legendFormat": "Measures", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Alert Rules & Runbooks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 58 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 17,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the Mitigation Measure Designer agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 59 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-029 Mitigation Measure Designer Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Overdue Measures** | gl_eudr_mmd_overdue_measures > 0 for 1h | Warning | Every 5m, for 15m | Review overdue measures, escalate to compliance lead |\n| 2 | **Critical Overdue** | gl_eudr_mmd_overdue_measures > 10 for 30m | Critical | Every 5m, for 5m | Page on-call, activate emergency response |\n| 3 | **Approval Bottleneck** | gl_eudr_mmd_pending_approvals > 20 for 4h | Warning | Every 15m, for 1h | Review approval queue, notify approvers |\n| 4 | **Low Effectiveness** | gl_eudr_mmd_avg_risk_reduction < 15% after 90 days | Warning | Every 1h, for 24h | Review strategy design, consider template updates |\n| 5 | **High API Error Rate** | API 5xx error rate > 1% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure |\n| 6 | **Strategy Design Latency** | p99 > 5s for 10 minutes | Warning | Every 5m, for 10m | Investigate performance, check database queries |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Overdue Measures Response](https://runbooks.greenlang.io/eudr/mmd/overdue-measures)\n- [Approval Bottleneck Resolution](https://runbooks.greenlang.io/eudr/mmd/approval-bottleneck)\n- [Low Effectiveness Investigation](https://runbooks.greenlang.io/eudr/mmd/low-effectiveness)\n- [Strategy Design Troubleshooting](https://runbooks.greenlang.io/eudr/mmd/strategy-design)\n- [Verification Failures](https://runbooks.greenlang.io/eudr/mmd/verification-failures)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/mmd/perf-degradation)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "mitigation-measure-designer", "agent-eudr-029", "greenlang", "article-11", "risk-mitigation", "measure-design", "effectiveness", "verification", "workflow"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_mmd_strategies_designed_total{environment=\"$environment\"}, commodity)",
+        "description": "Filter by EUDR commodity (cattle, cocoa, coffee, oil_palm, rubber, soya, wood)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Commodity",
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_mmd_strategies_designed_total{environment=\"$environment\"}, commodity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Mitigation Measure Designer (MMD)",
+  "uid": "eudr-mmd-029",
+  "version": 1
+}

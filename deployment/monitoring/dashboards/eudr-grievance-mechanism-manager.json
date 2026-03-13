@@ -1,0 +1,464 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "AGENT-EUDR-032 Grievance Mechanism Manager - Analytics, Mediation, Remediation, Risk Scoring, Collective Grievances & Regulatory Reporting",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Agent Health & Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "mappings": [
+            { "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } }, "type": "value" }
+          ]
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Agent Status",
+      "type": "stat",
+      "targets": [
+        { "expr": "up{job=\"gl-eudr-gmm-032\"}", "legendFormat": "Status" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Uptime",
+      "type": "stat",
+      "targets": [
+        { "expr": "process_uptime_seconds{job=\"gl-eudr-gmm-032\"}", "legendFormat": "Uptime" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Total Analytics Created",
+      "type": "stat",
+      "targets": [
+        { "expr": "sum(gl_eudr_gmm_analytics_created_total)", "legendFormat": "Total" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Active Mediations",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_gmm_active_mediations", "legendFormat": "Active" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 6,
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Open Remediations",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_gmm_open_remediations", "legendFormat": "Open" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 7,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "High Risk Entities",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_gmm_high_risk_entities", "legendFormat": "High Risk" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 8,
+      "title": "Grievance Analytics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 20 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 9,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum", "last"] }, "tooltip": { "mode": "multi" } },
+      "title": "Analytics Created by Pattern Type",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (pattern_type) (rate(gl_eudr_gmm_analytics_created_total[5m]))", "legendFormat": "{{pattern_type}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Analytics Duration (p50 / p95 / p99)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_gmm_analytics_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_gmm_analytics_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_gmm_analytics_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 11,
+      "title": "Root Cause Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "bars", "fillOpacity": 80 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "id": 12,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Root Causes Analyzed by Method",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (method) (rate(gl_eudr_gmm_root_cause_analyzed_total[5m]))", "legendFormat": "{{method}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "id": 13,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Root Cause Analysis Duration",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_gmm_root_cause_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_gmm_root_cause_duration_seconds_bucket[5m]))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 14,
+      "title": "Mediation Workflow",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 20 } } },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "id": 15,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum", "last"] }, "tooltip": { "mode": "multi" } },
+      "title": "Mediations Initiated by Type",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (mediator_type) (rate(gl_eudr_gmm_mediation_initiated_total[5m]))", "legendFormat": "{{mediator_type}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 20 } } },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "id": 16,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Mediations Completed by Outcome",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (outcome) (rate(gl_eudr_gmm_mediation_completed_total[5m]))", "legendFormat": "{{outcome}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } } },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "id": 17,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Mediation Session Duration",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_gmm_mediation_session_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_gmm_mediation_session_duration_seconds_bucket[5m]))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "id": 18,
+      "title": "Remediation Tracking",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 20 } } },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 33 },
+      "id": 19,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Remediations Created by Type",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (remediation_type) (rate(gl_eudr_gmm_remediation_created_total[5m]))", "legendFormat": "{{remediation_type}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 20 } } },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 33 },
+      "id": 20,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Remediations Verified by Status",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (status) (rate(gl_eudr_gmm_remediation_verified_total[5m]))", "legendFormat": "{{status}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } } },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 33 },
+      "id": 21,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Remediation Verification Duration",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_gmm_remediation_verification_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_gmm_remediation_verification_duration_seconds_bucket[5m]))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
+      "id": 22,
+      "title": "Risk Scoring",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 20 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
+      "id": 23,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Risk Scores Computed by Scope",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (scope) (rate(gl_eudr_gmm_risk_score_computed_total[5m]))", "legendFormat": "{{scope}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
+      "id": 24,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Risk Scoring Duration",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_gmm_risk_scoring_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_gmm_risk_scoring_duration_seconds_bucket[5m]))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 50 },
+      "id": 25,
+      "title": "Collective Grievances",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 20 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 51 },
+      "id": 26,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Collective Grievances Created (Rate)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "rate(gl_eudr_gmm_collective_created_total[5m])", "legendFormat": "Created/s" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "fillOpacity": 30 },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 51 },
+      "id": 27,
+      "options": { "legend": { "displayMode": "list" }, "tooltip": { "mode": "single" } },
+      "title": "Collective Grievances - Active vs Resolved",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "gl_eudr_gmm_high_risk_entities", "legendFormat": "High Risk" },
+        { "expr": "gl_eudr_gmm_active_mediations", "legendFormat": "Active Mediations" },
+        { "expr": "gl_eudr_gmm_open_remediations", "legendFormat": "Open Remediations" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "id": 28,
+      "title": "Regulatory Reporting",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "bars", "fillOpacity": 80 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 60 },
+      "id": 29,
+      "options": { "legend": { "displayMode": "table", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Reports Generated by Type",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (report_type) (rate(gl_eudr_gmm_regulatory_report_generated_total[5m]))", "legendFormat": "{{report_type}}" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 60 },
+      "id": 30,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Report Generation Duration by Type",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum by (le, report_type) (rate(gl_eudr_gmm_report_generation_duration_seconds_bucket[5m])))", "legendFormat": "p50 {{report_type}}" },
+        { "expr": "histogram_quantile(0.95, sum by (le, report_type) (rate(gl_eudr_gmm_report_generation_duration_seconds_bucket[5m])))", "legendFormat": "p95 {{report_type}}" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 68 },
+      "id": 31,
+      "title": "Error Rates & SLIs",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 },
+          "color": { "mode": "palette-classic" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.05 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 69 },
+      "id": 32,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Error Rate (5xx / Total)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum(rate(http_requests_total{job=\"gl-eudr-gmm-032\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"gl-eudr-gmm-032\"}[5m]))", "legendFormat": "5xx Rate" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "fillOpacity": 20 }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 69 },
+      "id": 33,
+      "options": { "legend": { "displayMode": "table", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi" } },
+      "title": "Request Throughput",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum(rate(http_requests_total{job=\"gl-eudr-gmm-032\"}[5m]))", "legendFormat": "Requests/s" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "grievance-mechanism-manager", "agent-eudr-032"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "EUDR-032 Grievance Mechanism Manager",
+  "uid": "eudr-032-grievance-mechanism-manager",
+  "version": 1,
+  "weekStart": ""
+}

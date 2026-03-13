@@ -1,0 +1,1213 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-031: Stakeholder Engagement Tool (SET) -- Stakeholder registration and management, Free Prior and Informed Consent (FPIC) workflow orchestration, grievance mechanism tracking, consultation recording, communication management, engagement quality assessment, and compliance reporting for EUDR Articles 10, 11, 29 due diligence requirements including indigenous peoples' rights, community engagement, and transparent stakeholder interaction",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Total Active Stakeholders",
+      "description": "Current count of all active stakeholders across all operator supply chains. Includes indigenous communities, local authorities, NGOs, suppliers, and other registered parties. Healthy systems should show steady growth aligned with supply chain expansion.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_set_active_stakeholders{environment=\"$environment\", operator_id=~\"$operator_id\"})", "legendFormat": "Active Stakeholders", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 100 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Stakeholder Types Distribution",
+      "description": "Breakdown of registered stakeholders by type in the last 24 hours. Types include: indigenous_community, local_authority, ngo, supplier, smallholder, cooperative, government_agency, civil_society, academic_institution, and other.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (stakeholder_type) (gl_eudr_set_stakeholders_registered{environment=\"$environment\", operator_id=~\"$operator_id\", stakeholder_type=~\"$stakeholder_type\"})", "legendFormat": "{{stakeholder_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "indigenous_community" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "local_authority" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "ngo" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "supplier" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "smallholder" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Active FPIC Workflows",
+      "description": "Current count of Free Prior and Informed Consent workflows actively in progress across all stages: identification, information_sharing, consultation, deliberation, decision, implementation, monitoring. High counts indicate significant engagement activity with indigenous and local communities per EUDR Article 10 requirements.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_set_active_fpic_workflows{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"})", "legendFormat": "Active FPIC Workflows", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1 },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Open Grievances",
+      "description": "Current number of unresolved grievances across all severity levels. Alert thresholds: > 50 = warning, > 100 = critical. High open grievance counts may indicate systemic issues in stakeholder engagement processes or supply chain compliance gaps.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_set_open_grievances{environment=\"$environment\", operator_id=~\"$operator_id\"})", "legendFormat": "Open Grievances", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 25 },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "alert": {
+        "name": "Open Grievances Critical",
+        "conditions": [
+          {
+            "evaluator": { "params": [100], "type": "gt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["A", "5m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "15m",
+        "frequency": "5m",
+        "message": "CRITICAL: Open grievances exceed 100. Immediate review required to prevent EUDR compliance violations. Check stakeholder engagement processes and escalate to compliance lead.",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "title": "FPIC Workflow Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 5,
+      "title": "FPIC Workflows by Stage",
+      "description": "Distribution of active FPIC workflows across workflow stages: identification, information_sharing, consultation, deliberation, decision, implementation, monitoring. Bottlenecks in early stages may indicate inadequate community outreach; bottlenecks in deliberation/decision may indicate complex consent negotiations.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (stage) (gl_eudr_set_active_fpic_workflows{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"})", "legendFormat": "{{stage}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "axisCenteredZero": false,
+            "axisLabel": "Workflows"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "identification" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "information_sharing" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "consultation" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "deliberation" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "decision" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "implementation" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "monitoring" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.75,
+        "showValue": "auto",
+        "stacking": "none",
+        "legend": { "displayMode": "list", "placement": "right", "calcs": [] },
+        "tooltip": { "mode": "single", "sort": "none" }
+      }
+    },
+    {
+      "id": 6,
+      "title": "FPIC Consent Rate",
+      "description": "Rate of FPIC consents granted over the selected time range. Tracks the ratio of consent_granted outcomes to total FPIC workflow completions. A healthy consent rate indicates effective community engagement and transparent information sharing per EUDR due diligence requirements.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 12, "y": 10 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_set_fpic_consents_granted_total{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[5m])) / (sum(rate(gl_eudr_set_fpic_workflows_completed_total{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[5m])) > 0) * 100", "legendFormat": "Consent Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 85 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 7,
+      "title": "FPIC Workflow Duration (p50/p95/p99)",
+      "description": "Latency percentiles for FPIC workflow completion from initiation to final consent decision. FPIC workflows are inherently long-running (days to weeks). p95 exceeding SLA threshold indicates workflows that may need escalation or additional facilitation resources.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 10 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_set_fpic_workflow_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[$__rate_interval])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_set_fpic_workflow_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[$__rate_interval])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_set_fpic_workflow_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[$__rate_interval])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 604800 },
+              { "color": "red", "value": 2592000 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "FPIC SLA Compliance",
+      "description": "Percentage of FPIC workflows completing within the configured SLA window. SLA is typically 30 days for standard workflows and 90 days for complex multi-community engagements. Below 80% triggers a warning; below 60% triggers critical alert indicating systemic delays in consent processes.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 12, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "(sum(gl_eudr_set_fpic_workflows_within_sla{environment=\"$environment\", operator_id=~\"$operator_id\"}) / (sum(gl_eudr_set_active_fpic_workflows{environment=\"$environment\", operator_id=~\"$operator_id\"}) > 0)) * 100", "legendFormat": "SLA Compliance %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 80 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "orientation": "auto"
+      },
+      "alert": {
+        "name": "FPIC Workflows Exceeding SLA",
+        "conditions": [
+          {
+            "evaluator": { "params": [80], "type": "lt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["A", "15m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "30m",
+        "frequency": "10m",
+        "message": "WARNING: FPIC SLA compliance dropped below 80%. Multiple workflows exceeding target completion timeframes. Review delayed workflows and allocate additional facilitation resources.",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Grievance Mechanism Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 9,
+      "title": "Grievances by Severity",
+      "description": "Distribution of grievances submitted over time by severity level: critical, high, medium, low, informational. Critical grievances relate to immediate human rights or environmental violations. High grievances involve systemic compliance gaps. Sustained critical/high volume triggers escalation to compliance leadership.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (severity) (increase(gl_eudr_set_grievances_submitted_total{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[24h]))", "legendFormat": "{{severity}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "axisCenteredZero": false,
+            "axisLabel": "Grievances (24h)"
+          },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "high" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "low" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "informational" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "barWidth": 0.7,
+        "groupWidth": 0.75,
+        "showValue": "auto",
+        "stacking": "normal",
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": [] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Grievance Resolution Rate",
+      "description": "Ratio of grievances resolved to total grievances submitted in the last 24 hours. Target: > 85% for non-critical, > 95% for critical within 48 hours. Low resolution rates indicate resource constraints or process inefficiencies in the grievance mechanism.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 8, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "(sum(increase(gl_eudr_set_grievances_resolved_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[24h])) / (sum(increase(gl_eudr_set_grievances_submitted_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[24h])) > 0)) * 100", "legendFormat": "Resolution Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 85 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Grievance Resolution Time (p50/p95)",
+      "description": "Latency percentiles for grievance resolution from submission to closure. Critical grievances have a 48-hour SLA; high severity has 7-day SLA; medium has 14-day SLA. p95 exceeding SLA triggers alert for compliance review.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 12, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_set_grievance_resolution_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_set_grievance_resolution_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_set_grievance_resolution_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", severity=\"critical\"}[$__rate_interval])) by (le))", "legendFormat": "p50 (critical)", "refId": "C" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_set_grievance_resolution_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", severity=\"critical\"}[$__rate_interval])) by (le))", "legendFormat": "p95 (critical)", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 172800 },
+              { "color": "red", "value": 604800 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p50 (critical)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] },
+          { "matcher": { "id": "byName", "options": "p95 (critical)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "Critical Grievances Unresolved > 48 Hours",
+        "conditions": [
+          {
+            "evaluator": { "params": [172800], "type": "gt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["D", "10m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "30m",
+        "frequency": "10m",
+        "message": "CRITICAL: Critical severity grievances have exceeded the 48-hour SLA for resolution. Immediate escalation required. Check grievance queue, assign additional reviewers, and notify compliance leadership per EUDR Article 10 due diligence obligations.",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "id": 12,
+      "title": "Grievances by Status",
+      "description": "Current distribution of open grievances by processing status: new, acknowledged, investigating, remediation_in_progress, awaiting_response, escalated, resolved, closed. Helps identify bottlenecks in the grievance resolution pipeline.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 27 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (gl_eudr_set_open_grievances{environment=\"$environment\", operator_id=~\"$operator_id\"})", "legendFormat": "{{status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "new" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "acknowledged" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "investigating" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "remediation_in_progress" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "escalated" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "resolved" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Consultation & Communication Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 13,
+      "title": "Consultations Recorded",
+      "description": "Total consultations recorded over the selected time range. Includes all stakeholder interactions: face-to-face meetings, community assemblies, remote consultations, surveys, and field visits. Growth trend indicates active due diligence engagement.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 36 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_set_consultations_recorded_total{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[24h]))", "legendFormat": "Consultations (24h)", "refId": "A" },
+        { "expr": "sum(increase(gl_eudr_set_consultations_recorded_total{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[7d]))", "legendFormat": "Consultations (7d)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "green", "value": 20 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Consultations by Type",
+      "description": "Breakdown of consultations by type in the last 7 days: community_assembly, individual_meeting, focus_group, survey, field_visit, remote_consultation, public_hearing, grievance_hearing. Diverse consultation types indicate comprehensive stakeholder engagement.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 7, "x": 5, "y": 36 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (consultation_type) (increase(gl_eudr_set_consultations_recorded_total{environment=\"$environment\", operator_id=~\"$operator_id\", commodity=~\"$commodity\"}[7d]))", "legendFormat": "{{consultation_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "axisCenteredZero": false,
+            "axisLabel": "Count (7d)"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.75,
+        "showValue": "auto",
+        "stacking": "none",
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": [] },
+        "tooltip": { "mode": "single", "sort": "none" }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Communications Sent Over Time",
+      "description": "Rate of communications sent to stakeholders over time by channel: email, sms, in_app_notification, letter, community_notice. Tracks outbound messaging volume for due diligence transparency requirements.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 36 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_set_communications_sent_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (channel) (rate(gl_eudr_set_communications_sent_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) * 3600", "legendFormat": "{{channel}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Communication Delivery Rate",
+      "description": "Percentage of communications successfully delivered to stakeholders across all channels. Delivery failures may indicate incorrect contact information, infrastructure issues, or accessibility barriers. Below 90% triggers warning alert per communication SLA.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 3, "x": 18, "y": 36 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "(sum(rate(gl_eudr_set_communications_delivered_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[5m])) / (sum(rate(gl_eudr_set_communications_sent_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[5m])) > 0)) * 100", "legendFormat": "Delivery Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 80 },
+              { "color": "yellow", "value": 90 },
+              { "color": "green", "value": 95 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "orientation": "auto"
+      },
+      "alert": {
+        "name": "Communication Delivery Failure Rate > 10%",
+        "conditions": [
+          {
+            "evaluator": { "params": [90], "type": "lt" },
+            "operator": { "type": "and" },
+            "query": { "params": ["A", "5m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "15m",
+        "frequency": "5m",
+        "message": "WARNING: Communication delivery rate has dropped below 90% (failure rate > 10%). Stakeholders may not be receiving critical FPIC and engagement notifications. Investigate delivery infrastructure, verify contact records, and check channel provider status.",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "id": 17,
+      "title": "Pending Communications",
+      "description": "Current count of communications queued but not yet sent. High pending counts may indicate delivery pipeline congestion, rate limiting, or infrastructure degradation. Spike > 200% baseline triggers investigation.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 3, "x": 21, "y": 36 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_set_pending_communications{environment=\"$environment\", operator_id=~\"$operator_id\"})", "legendFormat": "Pending", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Engagement Quality Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 44 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 18,
+      "title": "Engagement Assessments Completed",
+      "description": "Total engagement quality assessments completed over the selected time range. Each assessment evaluates stakeholder interaction quality across 6 dimensions: accessibility, inclusivity, transparency, responsiveness, cultural_sensitivity, and documentation_quality.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 0, "y": 45 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_set_assessments_completed_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[24h]))", "legendFormat": "Assessments (24h)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "short",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "green", "value": 20 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 19,
+      "title": "Average Engagement Score by Dimension",
+      "description": "Average engagement quality scores across 6 assessment dimensions: accessibility (physical/digital access for stakeholders), inclusivity (representation of marginalized groups), transparency (information clarity and availability), responsiveness (timeliness of feedback), cultural_sensitivity (respect for local customs/languages), documentation_quality (completeness of records). Scores range 0-100; below 40 in any dimension triggers quality alert.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 10, "x": 4, "y": 45 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_set_engagement_score{environment=\"$environment\", operator_id=~\"$operator_id\", dimension=\"accessibility\"})", "legendFormat": "Accessibility", "refId": "A" },
+        { "expr": "avg(gl_eudr_set_engagement_score{environment=\"$environment\", operator_id=~\"$operator_id\", dimension=\"inclusivity\"})", "legendFormat": "Inclusivity", "refId": "B" },
+        { "expr": "avg(gl_eudr_set_engagement_score{environment=\"$environment\", operator_id=~\"$operator_id\", dimension=\"transparency\"})", "legendFormat": "Transparency", "refId": "C" },
+        { "expr": "avg(gl_eudr_set_engagement_score{environment=\"$environment\", operator_id=~\"$operator_id\", dimension=\"responsiveness\"})", "legendFormat": "Responsiveness", "refId": "D" },
+        { "expr": "avg(gl_eudr_set_engagement_score{environment=\"$environment\", operator_id=~\"$operator_id\", dimension=\"cultural_sensitivity\"})", "legendFormat": "Cultural Sensitivity", "refId": "E" },
+        { "expr": "avg(gl_eudr_set_engagement_score{environment=\"$environment\", operator_id=~\"$operator_id\", dimension=\"documentation_quality\"})", "legendFormat": "Documentation Quality", "refId": "F" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "fillOpacity": 70,
+            "gradientMode": "scheme",
+            "axisCenteredZero": false,
+            "axisLabel": "Score (0-100)"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 75 }
+            ]
+          },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.6,
+        "groupWidth": 0.75,
+        "showValue": "always",
+        "stacking": "none",
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": [] },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "alert": {
+        "name": "Engagement Score Below Threshold",
+        "conditions": [
+          {
+            "evaluator": { "params": [40], "type": "lt" },
+            "operator": { "type": "or" },
+            "query": { "params": ["A", "15m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          },
+          {
+            "evaluator": { "params": [40], "type": "lt" },
+            "operator": { "type": "or" },
+            "query": { "params": ["B", "15m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          },
+          {
+            "evaluator": { "params": [40], "type": "lt" },
+            "operator": { "type": "or" },
+            "query": { "params": ["C", "15m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          },
+          {
+            "evaluator": { "params": [40], "type": "lt" },
+            "operator": { "type": "or" },
+            "query": { "params": ["D", "15m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          },
+          {
+            "evaluator": { "params": [40], "type": "lt" },
+            "operator": { "type": "or" },
+            "query": { "params": ["E", "15m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          },
+          {
+            "evaluator": { "params": [40], "type": "lt" },
+            "operator": { "type": "or" },
+            "query": { "params": ["F", "15m", "now"] },
+            "reducer": { "params": [], "type": "last" },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "30m",
+        "frequency": "15m",
+        "message": "WARNING: One or more engagement quality dimensions scored below 40 (poor quality). This indicates deficient stakeholder engagement that may compromise EUDR due diligence compliance. Review engagement processes, provide additional training, and consult affected stakeholder groups.",
+        "noDataState": "no_data",
+        "notifications": []
+      }
+    },
+    {
+      "id": 20,
+      "title": "Engagement Score Distribution",
+      "description": "Distribution of composite engagement quality scores across all assessments. Composite score is weighted average of 6 dimensions. Scores: 0-40 = poor (red), 40-60 = needs improvement (orange), 60-75 = adequate (yellow), 75-90 = good (green), 90-100 = excellent. Target: > 80% of assessments scoring 60+.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 14, "y": 45 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"40\"}[$__rate_interval]))", "legendFormat": "Poor (0-40)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"60\"}[$__rate_interval])) - sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"40\"}[$__rate_interval]))", "legendFormat": "Needs Improvement (40-60)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"75\"}[$__rate_interval])) - sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"60\"}[$__rate_interval]))", "legendFormat": "Adequate (60-75)", "refId": "C" },
+        { "expr": "sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"90\"}[$__rate_interval])) - sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"75\"}[$__rate_interval]))", "legendFormat": "Good (75-90)", "refId": "D" },
+        { "expr": "sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"+Inf\"}[$__rate_interval])) - sum(rate(gl_eudr_set_engagement_score_bucket{environment=\"$environment\", operator_id=~\"$operator_id\", le=\"90\"}[$__rate_interval]))", "legendFormat": "Excellent (90-100)", "refId": "E" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 80,
+            "drawStyle": "bars",
+            "stacking": { "mode": "normal" },
+            "barAlignment": 0
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Poor (0-40)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Needs Improvement (40-60)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Adequate (60-75)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Good (75-90)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Excellent (90-100)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 21,
+      "title": "Engagement Assessment Duration p95",
+      "description": "95th percentile latency for completing engagement quality assessments. Includes data collection across all 6 dimensions, composite scoring, and report generation. Target: p95 < 5 seconds for automated assessments.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 45 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_set_engagement_assessment_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) by (le))", "legendFormat": "p95", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "unit": "s",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Compliance & Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 22,
+      "title": "Reports Generated by Type",
+      "description": "Distribution of stakeholder engagement reports generated in the last 24 hours by type: fpic_summary, grievance_report, consultation_record, engagement_assessment, compliance_report, stakeholder_register, communication_log, annual_review. Tracks documentation output for EUDR compliance evidence.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 54 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (report_type) (increase(gl_eudr_set_reports_generated_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[24h]))", "legendFormat": "{{report_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme",
+            "axisCenteredZero": false,
+            "axisLabel": "Reports (24h)"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.6,
+        "groupWidth": 0.75,
+        "showValue": "auto",
+        "stacking": "none",
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": [] },
+        "tooltip": { "mode": "single", "sort": "none" }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Report Generation Duration p95",
+      "description": "95th percentile latency for generating stakeholder engagement reports. Includes data aggregation, template rendering, and PDF/document generation. Target: p95 < 8 seconds for standard reports, < 30 seconds for comprehensive annual reviews.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 8, "y": 54 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_set_report_generation_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) by (le))", "legendFormat": "p95", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "unit": "s",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 8 },
+              { "color": "red", "value": 30 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 24,
+      "title": "API Response Times (p50/p95/p99)",
+      "description": "Latency percentiles for all /v1/eudr-set API endpoints. Tracks request processing time across stakeholder registration, FPIC workflow, grievance, consultation, communication, and reporting endpoints. Target: p99 < 2 seconds for read operations, p99 < 5 seconds for write operations.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 54 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_set_api_request_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_set_api_request_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_set_api_request_duration_seconds_bucket{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 25,
+      "title": "Error Rate",
+      "description": "Rate of API errors (4xx and 5xx) across all /v1/eudr-set endpoints over time. Sustained 5xx error rate > 1% triggers critical alert. 4xx spikes may indicate client-side integration issues or invalid request patterns.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 54 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_set_api_errors_total{environment=\"$environment\", operator_id=~\"$operator_id\", status_code=~\"5..\"}[$__rate_interval])) * 3600", "legendFormat": "5xx Errors (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_set_api_errors_total{environment=\"$environment\", operator_id=~\"$operator_id\", status_code=~\"4..\"}[$__rate_interval])) * 3600", "legendFormat": "4xx Errors (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_set_api_errors_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) / (sum(rate(gl_eudr_set_api_requests_total{environment=\"$environment\", operator_id=~\"$operator_id\"}[$__rate_interval])) > 0) * 100", "legendFormat": "Error Rate %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "5xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Error Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Alert Rules & Runbooks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 62 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 26,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the Stakeholder Engagement Tool agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 63 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-031 Stakeholder Engagement Tool Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Critical Grievances Unresolved > 48h** | p95 critical grievance resolution time > 172,800s (48h) for 30m | Critical | Every 10m, for 30m | Page on-call, escalate to compliance lead, activate emergency grievance response |\n| 2 | **FPIC Workflows Exceeding SLA** | FPIC SLA compliance < 80% for 30m | Warning | Every 10m, for 30m | Review delayed workflows, allocate facilitation resources, notify engagement team |\n| 3 | **Communication Delivery Failure > 10%** | Communication delivery rate < 90% for 15m | Warning | Every 5m, for 15m | Check delivery infrastructure, verify contact records, review channel providers |\n| 4 | **Engagement Scores < 40 (Poor Quality)** | Any engagement dimension average score < 40 for 30m | Warning | Every 15m, for 30m | Review engagement processes, provide training, consult affected stakeholders |\n| 5 | **Open Grievances > 100** | Open grievance count > 100 for 15m | Critical | Every 5m, for 15m | Immediate review, assign additional reviewers, escalate to management |\n| 6 | **High API Error Rate** | 5xx error rate > 1% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure, review recent deployments |\n| 7 | **FPIC Consent Rate Drop** | Consent rate < 50% for 1h | Warning | Every 15m, for 1h | Review community engagement practices, investigate consent barriers |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead + Email stakeholder-engagement-lead\n- **Warning**: Slack #eudr-alerts + Email on-call + Email engagement-team\n\n### Runbook Links\n- [Critical Grievance Response](https://runbooks.greenlang.io/eudr/set/critical-grievance-response)\n- [FPIC Workflow Delays](https://runbooks.greenlang.io/eudr/set/fpic-workflow-delays)\n- [Communication Delivery Failures](https://runbooks.greenlang.io/eudr/set/communication-delivery-failures)\n- [Engagement Quality Remediation](https://runbooks.greenlang.io/eudr/set/engagement-quality-remediation)\n- [Grievance Backlog Resolution](https://runbooks.greenlang.io/eudr/set/grievance-backlog-resolution)\n- [API Error Investigation](https://runbooks.greenlang.io/eudr/set/api-error-investigation)\n- [Stakeholder Engagement Escalation](https://runbooks.greenlang.io/eudr/set/stakeholder-engagement-escalation)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "stakeholder-engagement", "due-diligence", "fpic", "grievance"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_set_stakeholders_registered{environment=\"$environment\"}, operator_id)",
+        "description": "Filter by operator ID for multi-tenant stakeholder engagement data",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Operator ID",
+        "multi": true,
+        "name": "operator_id",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_set_stakeholders_registered{environment=\"$environment\"}, operator_id)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_set_fpic_workflows_started_total{environment=\"$environment\"}, commodity)",
+        "description": "Filter by EUDR commodity (cattle, cocoa, coffee, oil_palm, rubber, soya, wood)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Commodity",
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_set_fpic_workflows_started_total{environment=\"$environment\"}, commodity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_set_stakeholders_registered{environment=\"$environment\"}, stakeholder_type)",
+        "description": "Filter by stakeholder type (indigenous_community, local_authority, ngo, supplier, smallholder, cooperative, etc.)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Stakeholder Type",
+        "multi": true,
+        "name": "stakeholder_type",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_set_stakeholders_registered{environment=\"$environment\"}, stakeholder_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": true,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": { "selected": false, "text": "auto", "value": "$__auto_interval_time_range" },
+        "description": "Aggregation interval for rate calculations",
+        "hide": 0,
+        "label": "Interval",
+        "name": "time_range",
+        "options": [
+          { "selected": false, "text": "30s", "value": "30s" },
+          { "selected": false, "text": "1m", "value": "1m" },
+          { "selected": false, "text": "5m", "value": "5m" },
+          { "selected": false, "text": "15m", "value": "15m" },
+          { "selected": false, "text": "1h", "value": "1h" }
+        ],
+        "query": "30s,1m,5m,15m,1h",
+        "queryValue": "",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "type": "interval"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR-031: Stakeholder Engagement Tool",
+  "uid": "eudr-stakeholder-engagement",
+  "version": 1
+}

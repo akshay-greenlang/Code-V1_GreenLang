@@ -601,6 +601,282 @@ except ImportError:
     EUDR_GPS_COORDINATE_AVAILABLE = False
     _eudr_gcv_router = None
 
+# EUDR Multi-Tier Supplier Tracker imports (AGENT-EUDR-008)
+try:
+    from greenlang.agents.eudr.multi_tier_supplier.api.router import get_router as get_eudr_mst_router
+    _eudr_mst_router = get_eudr_mst_router()
+    EUDR_MULTI_TIER_SUPPLIER_AVAILABLE = True
+except ImportError:
+    EUDR_MULTI_TIER_SUPPLIER_AVAILABLE = False
+    _eudr_mst_router = None
+
+# EUDR Chain of Custody imports (AGENT-EUDR-009)
+try:
+    from greenlang.agents.eudr.chain_of_custody.api.router import get_router as get_eudr_coc_router
+    _eudr_coc_router = get_eudr_coc_router()
+    EUDR_CHAIN_OF_CUSTODY_AVAILABLE = True
+except ImportError:
+    EUDR_CHAIN_OF_CUSTODY_AVAILABLE = False
+    _eudr_coc_router = None
+
+# AGENT-EUDR-010: Segregation Verifier
+try:
+    from greenlang.agents.eudr.segregation_verifier.api.router import get_router as get_eudr_sgv_router
+    _eudr_sgv_router = get_eudr_sgv_router()
+    EUDR_SEGREGATION_VERIFIER_AVAILABLE = True
+except ImportError:
+    EUDR_SEGREGATION_VERIFIER_AVAILABLE = False
+    _eudr_sgv_router = None
+
+# AGENT-EUDR-011: Mass Balance Calculator
+try:
+    from greenlang.agents.eudr.mass_balance_calculator.api.router import get_router as get_eudr_mbc_router
+    _eudr_mbc_router = get_eudr_mbc_router()
+    EUDR_MASS_BALANCE_CALCULATOR_AVAILABLE = True
+except ImportError:
+    EUDR_MASS_BALANCE_CALCULATOR_AVAILABLE = False
+    _eudr_mbc_router = None
+
+# AGENT-EUDR-012: Document Authentication
+try:
+    from greenlang.agents.eudr.document_authentication.api.router import get_router as get_eudr_dav_router
+    _eudr_dav_router = get_eudr_dav_router()
+    EUDR_DOCUMENT_AUTHENTICATION_AVAILABLE = True
+except ImportError:
+    EUDR_DOCUMENT_AUTHENTICATION_AVAILABLE = False
+    _eudr_dav_router = None
+
+# AGENT-EUDR-013: Blockchain Integration
+try:
+    from greenlang.agents.eudr.blockchain_integration.api.router import get_router as get_eudr_bci_router
+    _eudr_bci_router = get_eudr_bci_router()
+    EUDR_BLOCKCHAIN_INTEGRATION_AVAILABLE = True
+except ImportError:
+    EUDR_BLOCKCHAIN_INTEGRATION_AVAILABLE = False
+    _eudr_bci_router = None
+
+# AGENT-EUDR-014: QR Code Generator
+try:
+    from greenlang.agents.eudr.qr_code_generator.api.router import get_router as get_eudr_qrg_router
+    _eudr_qrg_router = get_eudr_qrg_router()
+    EUDR_QR_CODE_GENERATOR_AVAILABLE = True
+except ImportError:
+    EUDR_QR_CODE_GENERATOR_AVAILABLE = False
+    _eudr_qrg_router = None
+
+# AGENT-EUDR-015: Mobile Data Collector
+try:
+    from greenlang.agents.eudr.mobile_data_collector.api.router import get_router as get_eudr_mdc_router
+    _eudr_mdc_router = get_eudr_mdc_router()
+    EUDR_MOBILE_DATA_COLLECTOR_AVAILABLE = True
+except ImportError:
+    EUDR_MOBILE_DATA_COLLECTOR_AVAILABLE = False
+    _eudr_mdc_router = None
+
+# AGENT-EUDR-016: Country Risk Evaluator
+try:
+    from greenlang.agents.eudr.country_risk_evaluator.api.router import get_router as get_eudr_cre_router
+    _eudr_cre_router = get_eudr_cre_router()
+    EUDR_COUNTRY_RISK_EVALUATOR_AVAILABLE = True
+except ImportError:
+    EUDR_COUNTRY_RISK_EVALUATOR_AVAILABLE = False
+    _eudr_cre_router = None
+
+# AGENT-EUDR-017: Supplier Risk Scorer
+try:
+    from greenlang.agents.eudr.supplier_risk_scorer.api.router import get_router as get_eudr_srs_router
+    _eudr_srs_router = get_eudr_srs_router()
+    EUDR_SUPPLIER_RISK_SCORER_AVAILABLE = True
+except ImportError:
+    EUDR_SUPPLIER_RISK_SCORER_AVAILABLE = False
+    _eudr_srs_router = None
+
+# AGENT-EUDR-018: Commodity Risk Analyzer
+try:
+    from greenlang.agents.eudr.commodity_risk_analyzer.api.router import get_router as get_eudr_cra_router
+    _eudr_cra_router = get_eudr_cra_router()
+    EUDR_COMMODITY_RISK_ANALYZER_AVAILABLE = True
+except ImportError:
+    EUDR_COMMODITY_RISK_ANALYZER_AVAILABLE = False
+    _eudr_cra_router = None
+
+# AGENT-EUDR-019: Corruption Index Monitor
+try:
+    from greenlang.agents.eudr.corruption_index_monitor.api.router import get_router as get_eudr_cim_router
+    _eudr_cim_router = get_eudr_cim_router()
+    EUDR_CORRUPTION_INDEX_MONITOR_AVAILABLE = True
+except ImportError:
+    EUDR_CORRUPTION_INDEX_MONITOR_AVAILABLE = False
+    _eudr_cim_router = None
+
+# AGENT-EUDR-020: Deforestation Alert System
+try:
+    from greenlang.agents.eudr.deforestation_alert_system.api.router import get_router as get_eudr_das_router
+    _eudr_das_router = get_eudr_das_router()
+    EUDR_DEFORESTATION_ALERT_SYSTEM_AVAILABLE = True
+except ImportError:
+    EUDR_DEFORESTATION_ALERT_SYSTEM_AVAILABLE = False
+    _eudr_das_router = None
+
+# AGENT-EUDR-021: Indigenous Rights Checker
+try:
+    from greenlang.agents.eudr.indigenous_rights_checker.api.router import get_router as get_eudr_irc_router
+    _eudr_irc_router = get_eudr_irc_router()
+    EUDR_INDIGENOUS_RIGHTS_CHECKER_AVAILABLE = True
+except ImportError:
+    EUDR_INDIGENOUS_RIGHTS_CHECKER_AVAILABLE = False
+    _eudr_irc_router = None
+
+# AGENT-EUDR-022: Protected Area Validator
+try:
+    from greenlang.agents.eudr.protected_area_validator.api.router import get_router as get_eudr_pav_router
+    _eudr_pav_router = get_eudr_pav_router()
+    EUDR_PROTECTED_AREA_VALIDATOR_AVAILABLE = True
+except ImportError:
+    EUDR_PROTECTED_AREA_VALIDATOR_AVAILABLE = False
+    _eudr_pav_router = None
+
+# AGENT-EUDR-023: Legal Compliance Verifier
+try:
+    from greenlang.agents.eudr.legal_compliance_verifier.api.router import get_router as get_eudr_lcv_router
+    _eudr_lcv_router = get_eudr_lcv_router()
+    EUDR_LEGAL_COMPLIANCE_VERIFIER_AVAILABLE = True
+except ImportError:
+    EUDR_LEGAL_COMPLIANCE_VERIFIER_AVAILABLE = False
+    _eudr_lcv_router = None
+
+# AGENT-EUDR-024: Third-Party Audit Manager
+try:
+    from greenlang.agents.eudr.third_party_audit_manager.api.router import get_router as get_eudr_tam_router
+    _eudr_tam_router = get_eudr_tam_router()
+    EUDR_THIRD_PARTY_AUDIT_MANAGER_AVAILABLE = True
+except ImportError:
+    EUDR_THIRD_PARTY_AUDIT_MANAGER_AVAILABLE = False
+    _eudr_tam_router = None
+
+# AGENT-EUDR-025: Risk Mitigation Advisor
+try:
+    from greenlang.agents.eudr.risk_mitigation_advisor.api.router import get_router as get_eudr_rma_router
+    _eudr_rma_router = get_eudr_rma_router()
+    EUDR_RISK_MITIGATION_ADVISOR_AVAILABLE = True
+except ImportError:
+    EUDR_RISK_MITIGATION_ADVISOR_AVAILABLE = False
+    _eudr_rma_router = None
+
+# AGENT-EUDR-027: Information Gathering Agent
+try:
+    from greenlang.agents.eudr.information_gathering.api import get_router as get_eudr_iga_router
+    _eudr_iga_router = get_eudr_iga_router()
+    EUDR_INFORMATION_GATHERING_AVAILABLE = True
+except ImportError:
+    EUDR_INFORMATION_GATHERING_AVAILABLE = False
+    _eudr_iga_router = None
+
+# AGENT-EUDR-028: Risk Assessment Engine
+try:
+    from greenlang.agents.eudr.risk_assessment_engine.api import get_router as get_eudr_rae_router
+    _eudr_rae_router = get_eudr_rae_router()
+    EUDR_RISK_ASSESSMENT_ENGINE_AVAILABLE = True
+except ImportError:
+    EUDR_RISK_ASSESSMENT_ENGINE_AVAILABLE = False
+    _eudr_rae_router = None
+
+# AGENT-EUDR-029: Mitigation Measure Designer
+try:
+    from greenlang.agents.eudr.mitigation_measure_designer import api as eudr_mmd_api
+    _EUDR_MMD_AVAILABLE = True
+except ImportError:
+    _EUDR_MMD_AVAILABLE = False
+    logger.debug("EUDR-029 Mitigation Measure Designer not available")
+
+# AGENT-EUDR-030: Documentation Generator
+try:
+    from greenlang.agents.eudr.documentation_generator import api as eudr_dgn_api
+    _EUDR_DGN_AVAILABLE = True
+except ImportError:
+    _EUDR_DGN_AVAILABLE = False
+    logger.debug("EUDR-030 Documentation Generator not available")
+
+# AGENT-EUDR-031: Stakeholder Engagement Tool
+try:
+    from greenlang.agents.eudr.stakeholder_engagement import api as eudr_set_api
+    _EUDR_SET_AVAILABLE = True
+except ImportError:
+    _EUDR_SET_AVAILABLE = False
+    logger.debug("EUDR-031 Stakeholder Engagement Tool not available")
+
+# AGENT-EUDR-032: Grievance Mechanism Manager
+try:
+    from greenlang.agents.eudr.grievance_mechanism_manager import api as eudr_gmm_api
+    _EUDR_GMM_AVAILABLE = True
+except ImportError:
+    _EUDR_GMM_AVAILABLE = False
+    logger.debug("EUDR-032 Grievance Mechanism Manager not available")
+
+# AGENT-EUDR-033: Continuous Monitoring Agent
+try:
+    from greenlang.agents.eudr.continuous_monitoring import api as eudr_cm_api
+    _EUDR_CM_AVAILABLE = True
+except ImportError:
+    _EUDR_CM_AVAILABLE = False
+    logger.debug("EUDR-033 Continuous Monitoring Agent not available")
+
+# AGENT-EUDR-034: Annual Review Scheduler
+try:
+    from greenlang.agents.eudr.annual_review_scheduler import api as eudr_ars_api
+    _EUDR_ARS_AVAILABLE = True
+except ImportError:
+    _EUDR_ARS_AVAILABLE = False
+    logger.debug("EUDR-034 Annual Review Scheduler not available")
+
+# AGENT-EUDR-035: Improvement Plan Creator
+try:
+    from greenlang.agents.eudr.improvement_plan_creator import api as eudr_ipc_api
+    _EUDR_IPC_AVAILABLE = True
+except ImportError:
+    _EUDR_IPC_AVAILABLE = False
+    logger.debug("EUDR-035 Improvement Plan Creator not available")
+
+# AGENT-EUDR-036: EU Information System Interface
+try:
+    from greenlang.agents.eudr.eu_information_system_interface import api as eudr_euis_api
+    _EUDR_EUIS_AVAILABLE = True
+except ImportError:
+    _EUDR_EUIS_AVAILABLE = False
+    logger.debug("EUDR-036 EU Information System Interface not available")
+
+# AGENT-EUDR-037: Due Diligence Statement Creator
+try:
+    from greenlang.agents.eudr.due_diligence_statement_creator import api as eudr_ddsc_api
+    _EUDR_DDSC_AVAILABLE = True
+except ImportError:
+    _EUDR_DDSC_AVAILABLE = False
+    logger.debug("EUDR-037 Due Diligence Statement Creator not available")
+
+# AGENT-EUDR-038: Reference Number Generator
+try:
+    from greenlang.agents.eudr.reference_number_generator import api as eudr_rng_api
+    _EUDR_RNG_AVAILABLE = True
+except ImportError:
+    _EUDR_RNG_AVAILABLE = False
+    logger.debug("EUDR-038 Reference Number Generator not available")
+
+# AGENT-EUDR-039: Customs Declaration Support
+try:
+    from greenlang.agents.eudr.customs_declaration_support import api as eudr_cds_api
+    _EUDR_CDS_AVAILABLE = True
+except ImportError:
+    _EUDR_CDS_AVAILABLE = False
+    logger.debug("EUDR-039 Customs Declaration Support not available")
+
+# AGENT-EUDR-040: Authority Communication Manager
+try:
+    from greenlang.agents.eudr.authority_communication_manager import api as eudr_acm_api
+    _EUDR_ACM_AVAILABLE = True
+except ImportError:
+    _EUDR_ACM_AVAILABLE = False
+    logger.debug("EUDR-040 Authority Communication Manager not available")
+
 
 def configure_auth(
     app: "FastAPI",
@@ -1308,6 +1584,310 @@ def _include_auth_routers(app: "FastAPI") -> None:
         logger.info("EUDR GPS Coordinate Validator router included (AGENT-EUDR-007)")
     else:
         logger.debug("EUDR GPS Coordinate Validator router not available; skipping")
+
+    # EUDR Multi-Tier Supplier Tracker router (AGENT-EUDR-008)
+    if EUDR_MULTI_TIER_SUPPLIER_AVAILABLE and _eudr_mst_router is not None:
+        app.include_router(
+            _eudr_mst_router,
+            prefix="/api",
+            tags=["eudr-multi-tier-supplier-tracker"],
+        )
+        logger.info("EUDR Multi-Tier Supplier Tracker router included (AGENT-EUDR-008)")
+    else:
+        logger.debug("EUDR Multi-Tier Supplier Tracker router not available; skipping")
+
+    # EUDR Chain of Custody router (AGENT-EUDR-009)
+    if EUDR_CHAIN_OF_CUSTODY_AVAILABLE and _eudr_coc_router is not None:
+        app.include_router(
+            _eudr_coc_router,
+            prefix="/api",
+            tags=["eudr-chain-of-custody"],
+        )
+        logger.info("EUDR Chain of Custody router included (AGENT-EUDR-009)")
+    else:
+        logger.debug("EUDR Chain of Custody router not available; skipping")
+
+    # EUDR Segregation Verifier router (AGENT-EUDR-010)
+    if EUDR_SEGREGATION_VERIFIER_AVAILABLE and _eudr_sgv_router is not None:
+        app.include_router(
+            _eudr_sgv_router,
+            prefix="/api",
+            tags=["eudr-segregation-verifier"],
+        )
+        logger.info("EUDR Segregation Verifier router included (AGENT-EUDR-010)")
+    else:
+        logger.debug("EUDR Segregation Verifier router not available; skipping")
+
+    # EUDR Mass Balance Calculator router (AGENT-EUDR-011)
+    if EUDR_MASS_BALANCE_CALCULATOR_AVAILABLE and _eudr_mbc_router is not None:
+        app.include_router(
+            _eudr_mbc_router,
+            prefix="/api",
+            tags=["eudr-mass-balance-calculator"],
+        )
+        logger.info("EUDR Mass Balance Calculator router included (AGENT-EUDR-011)")
+    else:
+        logger.debug("EUDR Mass Balance Calculator router not available; skipping")
+
+    # EUDR Document Authentication router (AGENT-EUDR-012)
+    if EUDR_DOCUMENT_AUTHENTICATION_AVAILABLE and _eudr_dav_router is not None:
+        app.include_router(
+            _eudr_dav_router,
+            prefix="/api",
+            tags=["eudr-document-authentication"],
+        )
+        logger.info("EUDR Document Authentication router included (AGENT-EUDR-012)")
+    else:
+        logger.debug("EUDR Document Authentication router not available; skipping")
+
+    # EUDR Blockchain Integration router (AGENT-EUDR-013)
+    if EUDR_BLOCKCHAIN_INTEGRATION_AVAILABLE and _eudr_bci_router is not None:
+        app.include_router(
+            _eudr_bci_router,
+            prefix="/api",
+            tags=["eudr-blockchain-integration"],
+        )
+        logger.info("EUDR Blockchain Integration router included (AGENT-EUDR-013)")
+    else:
+        logger.debug("EUDR Blockchain Integration router not available; skipping")
+
+    # EUDR QR Code Generator router (AGENT-EUDR-014)
+    if EUDR_QR_CODE_GENERATOR_AVAILABLE and _eudr_qrg_router is not None:
+        app.include_router(
+            _eudr_qrg_router,
+            prefix="/api",
+            tags=["eudr-qr-code-generator"],
+        )
+        logger.info("EUDR QR Code Generator router included (AGENT-EUDR-014)")
+    else:
+        logger.debug("EUDR QR Code Generator router not available; skipping")
+
+    # EUDR Mobile Data Collector router (AGENT-EUDR-015)
+    if EUDR_MOBILE_DATA_COLLECTOR_AVAILABLE and _eudr_mdc_router is not None:
+        app.include_router(
+            _eudr_mdc_router,
+            prefix="/api",
+            tags=["eudr-mobile-data-collector"],
+        )
+        logger.info("EUDR Mobile Data Collector router included (AGENT-EUDR-015)")
+    else:
+        logger.debug("EUDR Mobile Data Collector router not available; skipping")
+
+    # EUDR Country Risk Evaluator router (AGENT-EUDR-016)
+    if EUDR_COUNTRY_RISK_EVALUATOR_AVAILABLE and _eudr_cre_router is not None:
+        app.include_router(
+            _eudr_cre_router,
+            prefix="/api",
+            tags=["eudr-country-risk-evaluator"],
+        )
+        logger.info("EUDR Country Risk Evaluator router included (AGENT-EUDR-016)")
+    else:
+        logger.debug("EUDR Country Risk Evaluator router not available; skipping")
+
+    # EUDR Supplier Risk Scorer router (AGENT-EUDR-017)
+    if EUDR_SUPPLIER_RISK_SCORER_AVAILABLE and _eudr_srs_router is not None:
+        app.include_router(
+            _eudr_srs_router,
+            prefix="/api",
+            tags=["eudr-supplier-risk-scorer"],
+        )
+        logger.info("EUDR Supplier Risk Scorer router included (AGENT-EUDR-017)")
+    else:
+        logger.debug("EUDR Supplier Risk Scorer router not available; skipping")
+
+    # EUDR Commodity Risk Analyzer router (AGENT-EUDR-018)
+    if EUDR_COMMODITY_RISK_ANALYZER_AVAILABLE and _eudr_cra_router is not None:
+        app.include_router(_eudr_cra_router, prefix="/api", tags=["eudr-commodity-risk-analyzer"])
+        logger.info("EUDR Commodity Risk Analyzer router included (AGENT-EUDR-018)")
+    else:
+        logger.debug("EUDR Commodity Risk Analyzer router not available; skipping")
+
+    # EUDR Corruption Index Monitor router (AGENT-EUDR-019)
+    if EUDR_CORRUPTION_INDEX_MONITOR_AVAILABLE and _eudr_cim_router is not None:
+        app.include_router(_eudr_cim_router, prefix="/api", tags=["eudr-corruption-index-monitor"])
+        logger.info("EUDR Corruption Index Monitor router included (AGENT-EUDR-019)")
+    else:
+        logger.debug("EUDR Corruption Index Monitor router not available; skipping")
+
+    # EUDR Deforestation Alert System router (AGENT-EUDR-020)
+    if EUDR_DEFORESTATION_ALERT_SYSTEM_AVAILABLE and _eudr_das_router is not None:
+        app.include_router(_eudr_das_router, prefix="/api", tags=["eudr-deforestation-alert-system"])
+        logger.info("EUDR Deforestation Alert System router included (AGENT-EUDR-020)")
+    else:
+        logger.debug("EUDR Deforestation Alert System router not available; skipping")
+
+    # EUDR Indigenous Rights Checker router (AGENT-EUDR-021)
+    if EUDR_INDIGENOUS_RIGHTS_CHECKER_AVAILABLE and _eudr_irc_router is not None:
+        app.include_router(
+            _eudr_irc_router,
+            prefix="/api",
+            tags=["eudr-indigenous-rights-checker"],
+        )
+        logger.info("EUDR Indigenous Rights Checker router included (AGENT-EUDR-021)")
+    else:
+        logger.debug("EUDR Indigenous Rights Checker router not available; skipping")
+
+    # EUDR Protected Area Validator router (AGENT-EUDR-022)
+    if EUDR_PROTECTED_AREA_VALIDATOR_AVAILABLE and _eudr_pav_router is not None:
+        app.include_router(
+            _eudr_pav_router,
+            prefix="/api",
+            tags=["eudr-protected-area-validator"],
+        )
+        logger.info("EUDR Protected Area Validator router included (AGENT-EUDR-022)")
+    else:
+        logger.debug("EUDR Protected Area Validator router not available; skipping")
+
+    # EUDR Legal Compliance Verifier router (AGENT-EUDR-023)
+    if EUDR_LEGAL_COMPLIANCE_VERIFIER_AVAILABLE and _eudr_lcv_router is not None:
+        app.include_router(
+            _eudr_lcv_router,
+            prefix="/api",
+            tags=["eudr-legal-compliance-verifier"],
+        )
+        logger.info("EUDR Legal Compliance Verifier router included (AGENT-EUDR-023)")
+    else:
+        logger.debug("EUDR Legal Compliance Verifier router not available; skipping")
+
+    # EUDR Third-Party Audit Manager router (AGENT-EUDR-024)
+    if EUDR_THIRD_PARTY_AUDIT_MANAGER_AVAILABLE and _eudr_tam_router is not None:
+        app.include_router(
+            _eudr_tam_router,
+            prefix="/api",
+            tags=["eudr-third-party-audit-manager"],
+        )
+        logger.info("EUDR Third-Party Audit Manager router included (AGENT-EUDR-024)")
+    else:
+        logger.debug("EUDR Third-Party Audit Manager router not available; skipping")
+
+    # EUDR Risk Mitigation Advisor router (AGENT-EUDR-025)
+    if EUDR_RISK_MITIGATION_ADVISOR_AVAILABLE and _eudr_rma_router is not None:
+        app.include_router(
+            _eudr_rma_router,
+            prefix="/api",
+            tags=["eudr-risk-mitigation-advisor"],
+        )
+        logger.info("EUDR Risk Mitigation Advisor router included (AGENT-EUDR-025)")
+    else:
+        logger.debug("EUDR Risk Mitigation Advisor router not available; skipping")
+
+    # EUDR Information Gathering Agent router (AGENT-EUDR-027)
+    if EUDR_INFORMATION_GATHERING_AVAILABLE and _eudr_iga_router is not None:
+        app.include_router(
+            _eudr_iga_router,
+            prefix="/api",
+            tags=["eudr-information-gathering"],
+        )
+        logger.info("EUDR Information Gathering Agent router included (AGENT-EUDR-027)")
+    else:
+        logger.debug("EUDR Information Gathering Agent router not available; skipping")
+
+    # EUDR Risk Assessment Engine router (AGENT-EUDR-028)
+    if EUDR_RISK_ASSESSMENT_ENGINE_AVAILABLE and _eudr_rae_router is not None:
+        app.include_router(
+            _eudr_rae_router,
+            prefix="/api",
+            tags=["eudr-risk-assessment-engine"],
+        )
+        logger.info("EUDR Risk Assessment Engine router included (AGENT-EUDR-028)")
+    else:
+        logger.debug("EUDR Risk Assessment Engine router not available; skipping")
+
+    # AGENT-EUDR-029: Mitigation Measure Designer
+    if _EUDR_MMD_AVAILABLE:
+        try:
+            app.include_router(eudr_mmd_api.get_router())
+            logger.info("EUDR-029 Mitigation Measure Designer router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-029 router: {e}")
+
+    # AGENT-EUDR-030: Documentation Generator
+    if _EUDR_DGN_AVAILABLE:
+        try:
+            app.include_router(eudr_dgn_api.get_router())
+            logger.info("EUDR-030 Documentation Generator router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-030 router: {e}")
+
+    # AGENT-EUDR-031: Stakeholder Engagement Tool
+    if _EUDR_SET_AVAILABLE:
+        try:
+            app.include_router(eudr_set_api.get_router())
+            logger.info("EUDR-031 Stakeholder Engagement Tool router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-031 router: {e}")
+
+    # AGENT-EUDR-032: Grievance Mechanism Manager
+    if _EUDR_GMM_AVAILABLE:
+        try:
+            app.include_router(eudr_gmm_api.get_router())
+            logger.info("EUDR-032 Grievance Mechanism Manager router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-032 router: {e}")
+
+    # AGENT-EUDR-033: Continuous Monitoring Agent
+    if _EUDR_CM_AVAILABLE:
+        try:
+            app.include_router(eudr_cm_api.get_router())
+            logger.info("EUDR-033 Continuous Monitoring Agent router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-033 router: {e}")
+
+    # AGENT-EUDR-034: Annual Review Scheduler
+    if _EUDR_ARS_AVAILABLE:
+        try:
+            app.include_router(eudr_ars_api.get_router())
+            logger.info("EUDR-034 Annual Review Scheduler router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-034 router: {e}")
+
+    # AGENT-EUDR-035: Improvement Plan Creator
+    if _EUDR_IPC_AVAILABLE:
+        try:
+            app.include_router(eudr_ipc_api.get_router())
+            logger.info("EUDR-035 Improvement Plan Creator router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-035 router: {e}")
+
+    # AGENT-EUDR-036: EU Information System Interface
+    if _EUDR_EUIS_AVAILABLE:
+        try:
+            app.include_router(eudr_euis_api.get_router())
+            logger.info("EUDR-036 EU Information System Interface router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-036 router: {e}")
+
+    # AGENT-EUDR-037: Due Diligence Statement Creator
+    if _EUDR_DDSC_AVAILABLE:
+        try:
+            app.include_router(eudr_ddsc_api.get_router())
+            logger.info("EUDR-037 Due Diligence Statement Creator router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-037 router: {e}")
+
+    # AGENT-EUDR-038: Reference Number Generator
+    if _EUDR_RNG_AVAILABLE:
+        try:
+            app.include_router(eudr_rng_api.get_router())
+            logger.info("EUDR-038 Reference Number Generator router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-038 router: {e}")
+
+    # AGENT-EUDR-039: Customs Declaration Support
+    if _EUDR_CDS_AVAILABLE:
+        try:
+            app.include_router(eudr_cds_api.get_router())
+            logger.info("EUDR-039 Customs Declaration Support router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-039 router: {e}")
+
+    # AGENT-EUDR-040: Authority Communication Manager
+    if _EUDR_ACM_AVAILABLE:
+        try:
+            app.include_router(eudr_acm_api.get_router())
+            logger.info("EUDR-040 Authority Communication Manager router registered")
+        except Exception as e:
+            logger.warning(f"Failed to register EUDR-040 router: {e}")
 
 
 def _protect_all_routes(app: "FastAPI") -> None:

@@ -1,0 +1,9 @@
+WARNING:root:FAISS not available. Install with: pip install faiss-cpu
+WARNING:root:Redis not available. Install with: pip install redis
+WARNING:root:tiktoken not available. Install with: pip install tiktoken
+WARNING:greenlang.orchestrator.executors.k8s_executor:kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio
+WARNING:greenlang.orchestrator.artifacts.s3_store:aioboto3 not available. Install with: pip install aioboto3
+ImportError while loading conftest 'C:\Users\aksha\Code-V1_GreenLang\tests\agents\eudr\geolocation_verification\conftest.py'.
+tests\agents\eudr\geolocation_verification\conftest.py:31: in <module>
+    from greenlang.agents.eudr.geolocation_verification.models import (
+E   ImportError: cannot import name 'CoordinateInput' from 'greenlang.agents.eudr.geolocation_verification.models' (C:\Users\aksha\Code-V1_GreenLang\greenlang\agents\eudr\geolocation_verification\models.py)

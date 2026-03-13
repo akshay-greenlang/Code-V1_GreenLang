@@ -1,0 +1,351 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-013: Blockchain Integration Agent -- blockchain anchoring, Merkle tree batching, on-chain verification, smart contract management, gas cost tracking, access control, and evidence package generation",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Total Anchors",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_bci_anchors_total[24h]))", "legendFormat": "24h" },
+        { "expr": "sum(gl_eudr_bci_anchors_total)", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Confirmed Rate",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_bci_anchors_total{status=\"confirmed\"}) / sum(gl_eudr_bci_anchors_total) * 100", "legendFormat": "Confirmed %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 85 },
+              { "color": "green", "value": 95 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Failed Rate",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_bci_anchors_total{status=\"failed\"}) / sum(gl_eudr_bci_anchors_total) * 100", "legendFormat": "Failed %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Pending Count",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_bci_anchors_pending)", "legendFormat": "Pending" },
+        { "expr": "sum(gl_eudr_bci_anchors_pending{priority=\"p0_critical\"})", "legendFormat": "Critical Pending" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Anchoring",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Anchor Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_bci_anchor_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_bci_anchor_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_bci_anchor_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Anchors by Event Type",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (event_type) (gl_eudr_bci_anchors_total)", "legendFormat": "{{event_type}}" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "title": "Anchors by Network",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (blockchain_network) (increase(gl_eudr_bci_anchors_total[1h]))", "legendFormat": "{{blockchain_network}}" }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "polygon" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "ethereum" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "polygon_amoy" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "ethereum_sepolia" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Gas Costs (USD)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_bci_gas_cost_usd_total[1h]))", "legendFormat": "Hourly USD" },
+        { "expr": "sum by (blockchain_network) (increase(gl_eudr_bci_gas_cost_usd_total[1h]))", "legendFormat": "{{blockchain_network}}" },
+        { "expr": "avg(gl_eudr_bci_gas_cost_usd_per_anchor)", "legendFormat": "Avg per Anchor" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "currencyUSD", "decimals": 4 } }
+    },
+    {
+      "title": "Verification",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Verifications Total",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_bci_verifications_total{status=\"verified\"}[5m])", "legendFormat": "Verified/s" },
+        { "expr": "rate(gl_eudr_bci_verifications_total{status=\"tampered\"}[5m])", "legendFormat": "Tampered/s" },
+        { "expr": "rate(gl_eudr_bci_verifications_total{status=\"not_found\"}[5m])", "legendFormat": "Not Found/s" },
+        { "expr": "rate(gl_eudr_bci_verifications_total[5m])", "legendFormat": "Total/s" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Tampered/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Not Found/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Verified/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Tamper Detection Rate",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_bci_verifications_total{status=\"tampered\"}[24h]))", "legendFormat": "Tampered (24h)" },
+        { "expr": "sum(increase(gl_eudr_bci_verifications_total{merkle_proof_valid=\"false\"}[24h]))", "legendFormat": "Merkle Invalid (24h)" },
+        { "expr": "sum(increase(gl_eudr_bci_verifications_total{temporal_valid=\"false\"}[24h]))", "legendFormat": "Temporal Invalid (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Verification Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_bci_verification_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_bci_verification_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_bci_verification_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Infrastructure",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Merkle Trees Built",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_bci_merkle_trees_built_total[1h]))", "legendFormat": "Trees Built (1h)" },
+        { "expr": "avg(gl_eudr_bci_merkle_tree_leaf_count)", "legendFormat": "Avg Leaves/Tree" },
+        { "expr": "avg(gl_eudr_bci_merkle_tree_depth)", "legendFormat": "Avg Depth" }
+      ]
+    },
+    {
+      "title": "Events Indexed",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_bci_contract_events_indexed_total[5m])", "legendFormat": "Events/s" },
+        { "expr": "sum by (event_type) (increase(gl_eudr_bci_contract_events_indexed_total[1h]))", "legendFormat": "{{event_type}} (1h)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Active Chain Listeners",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_bci_chain_connections_active)", "legendFormat": "Connected" },
+        { "expr": "sum(gl_eudr_bci_chain_connections_active{status=\"degraded\"})", "legendFormat": "Degraded" },
+        { "expr": "sum(gl_eudr_bci_chain_connections_active{status=\"disconnected\"})", "legendFormat": "Disconnected" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Contracts Deployed",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 15, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_bci_smart_contracts_total{status=\"deployed\"})", "legendFormat": "Deployed" },
+        { "expr": "sum(gl_eudr_bci_smart_contracts_total{status=\"deploying\"})", "legendFormat": "Deploying" },
+        { "expr": "sum(gl_eudr_bci_smart_contracts_total{status=\"failed\"})", "legendFormat": "Failed" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Evidence Packages",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_bci_evidence_packages_generated_total[1h]))", "legendFormat": "Generated (1h)" },
+        { "expr": "sum(gl_eudr_bci_evidence_packages_generated_total)", "legendFormat": "Total" }
+      ]
+    },
+    {
+      "title": "Batch Job Progress",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_bci_batch_jobs_active{status=\"processing\"})", "legendFormat": "Processing" },
+        { "expr": "sum(increase(gl_eudr_bci_batch_jobs_completed_total[1h]))", "legendFormat": "Completed (1h)" },
+        { "expr": "sum(increase(gl_eudr_bci_batch_jobs_failed_total[1h]))", "legendFormat": "Failed (1h)" },
+        { "expr": "sum(gl_eudr_bci_batch_jobs_active{status=\"queued\"})", "legendFormat": "Queued" }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Failed (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Completed (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "API Errors (1h)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_bci_api_errors_total[1h]))", "legendFormat": "Total Errors" },
+        { "expr": "sum(increase(gl_eudr_bci_api_errors_total{status_code=~\"5..\"}[1h]))", "legendFormat": "5xx Errors" },
+        { "expr": "sum(increase(gl_eudr_bci_api_errors_total{status_code=~\"4..\"}[1h]))", "legendFormat": "4xx Errors" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "blockchain-integration", "agent-eudr-013", "greenlang"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EUDR Blockchain Integration (AGENT-EUDR-013)",
+  "uid": "eudr-bci-013",
+  "version": 1
+}

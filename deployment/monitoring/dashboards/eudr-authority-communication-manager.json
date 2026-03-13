@@ -1,0 +1,1988 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-040: Authority Communication Manager (ACM) -- Manages all communications between EUDR operators and EU Member State Competent Authorities. Handles information requests, inspection coordination, non-compliance case management, appeals processing, document exchange, notification delivery, and deadline tracking across all 27 EU Member States and 24 official EU languages per Articles 14-24 of Regulation (EU) 2023/1115. Supports authority interactions for due diligence statement verification, compliance checks, corrective measures, penalty management, and remediation tracking.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview & Health",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Total Communications",
+      "description": "Total number of authority communications processed in the last 24 hours across all 27 EU Member State Competent Authorities. Includes information requests, inspection notifications, non-compliance notices, appeals, and general correspondence per Articles 14-24 of Regulation (EU) 2023/1115.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_acm_communications_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Communications (24h)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 100 },
+              { "color": "purple", "value": 500 },
+              { "color": "orange", "value": 2000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Communications by Status",
+      "description": "Distribution of authority communications by current lifecycle status: draft, sent, received, acknowledged, in_progress, responded, closed, escalated. Provides real-time view of the communication pipeline and identifies bottlenecks in authority response workflows.",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (gl_eudr_acm_communications_by_status{environment=\"$environment\"})", "legendFormat": "{{status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "closed" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "responded" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "in_progress" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "escalated" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "sent" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "received" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "acknowledged" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "draft" }, "properties": [{ "id": "color", "value": { "fixedColor": "grey", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Response On-Time Rate",
+      "description": "Percentage of authority communications that received a timely response within the regulatory deadline. Target: >= 98% on-time response rate. Late responses to competent authority requests may trigger enforcement actions under Articles 19-24 of Regulation (EU) 2023/1115.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_acm_responses_on_time_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_acm_responses_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "On-Time Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 90 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 98 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Health Status",
+      "description": "Overall health status of the Authority Communication Manager agent. 1 = healthy, 0 = degraded. Monitors engine availability, authority API connectivity, document exchange service, notification delivery pipeline, encryption service, and background processing workers.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 15, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_acm_health_status{environment=\"$environment\"} or vector(0)", "legendFormat": "Health", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [
+            { "options": { "0": { "text": "DEGRADED", "color": "red" }, "1": { "text": "HEALTHY", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Engine Status",
+      "description": "Status of all seven ACM engines: communication_handler, request_processor, inspection_coordinator, compliance_case_manager, appeals_handler, document_exchanger, notification_dispatcher. Shows readiness state, last heartbeat, and processed count per engine.",
+      "type": "table",
+      "gridPos": { "h": 6, "w": 5, "x": 19, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_acm_engine_status{environment=\"$environment\"}", "legendFormat": "{{engine}}", "refId": "A", "format": "table", "instant": true },
+        { "expr": "sum by (engine) (increase(gl_eudr_acm_engine_processed_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{engine}}", "refId": "B", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true },
+          "mappings": [
+            { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+          ]
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "engine" }, "properties": [{ "id": "custom.width", "value": 180 }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "engine", "desc": false }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "engine": "Engine", "Value #A": "Status", "Value #B": "Processed (24h)" } } }
+      ]
+    },
+    {
+      "title": "Communication Processing",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "title": "Communications Created",
+      "description": "Rate of authority communication creation over time, broken down by communication type (information_request, inspection_notice, compliance_notice, appeal, general). Tracks communication throughput and identifies peak interaction periods with EU Competent Authorities.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_communications_created_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Total (/min)", "refId": "A" },
+        { "expr": "sum by (comm_type) (rate(gl_eudr_acm_communications_created_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{comm_type}} (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Responses Submitted",
+      "description": "Rate of response submissions to authority requests over time. Tracks response throughput including on-time vs late submissions. Timely responses are critical to avoid enforcement actions under Articles 19-24.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_responses_submitted_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Submitted (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_acm_responses_late_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Late (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Submitted (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Late (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Average Response Time (hours)",
+      "description": "Average time in hours from receiving an authority communication to submitting a response. Target: < 48 hours for standard requests, < 24 hours for urgent requests, < 4 hours for critical enforcement notices.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 10, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_acm_response_time_hours{environment=\"$environment\"}) or vector(0)", "legendFormat": "Avg Response (hrs)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 24 },
+              { "color": "orange", "value": 48 },
+              { "color": "red", "value": 72 }
+            ]
+          },
+          "unit": "h"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Processing Duration P50/P95/P99",
+      "description": "Latency percentiles for end-to-end communication processing including request parsing, language translation, document validation, response generation, encryption, and delivery. Target: p50 < 2s, p95 < 10s, p99 < 30s.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 14, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_acm_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_acm_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_acm_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 30 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Pending Communications",
+      "description": "Current count of communications in pending states: draft, sent, received, acknowledged, in_progress. High pending counts indicate processing delays or authority response backlogs requiring attention.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_acm_communications_by_status{environment=\"$environment\", status=~\"draft|sent|received|acknowledged|in_progress\"}) or vector(0)", "legendFormat": "Pending", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 200 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Information Requests",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 11,
+      "title": "Requests Received",
+      "description": "Rate of information requests received from EU Competent Authorities over time. Information requests are formal demands for additional documentation, clarification, or evidence per Article 15. Operators must respond within the statutory deadline to avoid enforcement escalation.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_info_requests_received_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Received (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_acm_info_requests_responded_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Responded (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Received (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Responded (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Requests by Type",
+      "description": "Distribution of information requests by type: documentation_request, dds_clarification, geolocation_verification, supplier_information, product_traceability, compliance_evidence, risk_assessment_detail, remediation_plan. Identifies the most common authority inquiry categories.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (request_type) (gl_eudr_acm_info_requests_by_type{environment=\"$environment\"})", "legendFormat": "{{request_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Requests by Priority",
+      "description": "Distribution of information requests by priority level: critical (4h response), urgent (24h response), standard (48h response), low (7 day response). Priority determines the required response timeframe and escalation path.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (priority) (gl_eudr_acm_info_requests_by_priority{environment=\"$environment\"})", "legendFormat": "{{priority}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "urgent" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "standard" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "low" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 14,
+      "title": "Avg Response Time by Priority",
+      "description": "Average response time in hours grouped by priority level. Critical: target < 4h, Urgent: target < 24h, Standard: target < 48h, Low: target < 168h (7 days). Monitors SLA compliance per priority tier.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 5, "x": 15, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg by (priority) (gl_eudr_acm_response_time_hours{environment=\"$environment\"})", "legendFormat": "{{priority}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 15,
+      "title": "Overdue Requests",
+      "description": "Current count of information requests that have exceeded their response deadline. Overdue requests risk enforcement escalation and potential penalties. Requires immediate attention from compliance teams.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_acm_info_requests_overdue{environment=\"$environment\"}) or vector(0)", "legendFormat": "Overdue", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Inspections",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 16,
+      "title": "Inspections Scheduled",
+      "description": "Rate of inspections scheduled by EU Competent Authorities over time. Includes on-site inspections, document reviews, remote audits, and surprise checks per Articles 14-16 of Regulation (EU) 2023/1115.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_inspections_scheduled_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Scheduled (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_acm_inspections_completed_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Completed (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Scheduled (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Completed (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Inspections by Type",
+      "description": "Distribution of inspections by type: on_site, document_review, remote_audit, surprise_check, follow_up, re_inspection. Identifies the predominant inspection approaches used by Competent Authorities.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (inspection_type) (gl_eudr_acm_inspections_by_type{environment=\"$environment\"})", "legendFormat": "{{inspection_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "on_site" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "document_review" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "remote_audit" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "surprise_check" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "follow_up" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "re_inspection" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Inspection Duration (hours)",
+      "description": "Histogram showing the distribution of inspection durations in hours from scheduled start to completion report. Identifies typical inspection lengths by type and highlights unusually long inspections that may indicate complex compliance issues.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (le) (increase(gl_eudr_acm_inspection_duration_hours_bucket{environment=\"$environment\"}[$__range]))", "legendFormat": "{{le}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "bucketSize": 4,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 19,
+      "title": "Upcoming Inspections",
+      "description": "Table of upcoming scheduled inspections showing date, authority, type, location, and preparation status. Enables proactive preparation for authority visits and document readiness assessment.",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 5, "x": 15, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_acm_upcoming_inspections{environment=\"$environment\"}", "legendFormat": "{{authority}} - {{inspection_type}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "authority" }, "properties": [{ "id": "custom.width", "value": 120 }] },
+          { "matcher": { "id": "byName", "options": "inspection_type" }, "properties": [{ "id": "custom.width", "value": 120 }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "scheduled_date", "desc": false }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true }, "renameByName": { "authority": "Authority", "inspection_type": "Type", "member_state": "State", "scheduled_date": "Date", "Value": "Days Until" } } }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Follow-up Required",
+      "description": "Current count of completed inspections requiring follow-up actions: additional documentation, corrective measures, re-inspection scheduling, or remediation evidence. High follow-up counts indicate systemic compliance gaps.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_acm_inspections_followup_required{environment=\"$environment\"}) or vector(0)", "legendFormat": "Follow-up", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 25 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Non-Compliance Cases",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 21,
+      "title": "Non-Compliance Cases",
+      "description": "Rate of non-compliance cases opened by EU Competent Authorities over time. Non-compliance cases are formal proceedings triggered by identified violations of Regulation (EU) 2023/1115, including due diligence failures, false declarations, and prohibited product placement per Articles 19-24.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_noncompliance_cases_opened_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Opened (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_acm_noncompliance_cases_closed_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Closed (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Opened (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Closed (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 22,
+      "title": "Cases by Severity",
+      "description": "Distribution of non-compliance cases by severity level: minor (administrative), moderate (corrective measures required), major (product withdrawal), critical (market ban + penalties). Severity determines the enforcement response and potential financial impact.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (severity) (gl_eudr_acm_noncompliance_cases_by_severity{environment=\"$environment\"})", "legendFormat": "{{severity}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "major" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "moderate" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "minor" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Cases by Violation Type",
+      "description": "Distribution of non-compliance cases by violation type: missing_dds, false_declaration, deforestation_link, traceability_failure, documentation_gaps, unauthorized_product, delayed_response, incomplete_due_diligence. Identifies systemic compliance weaknesses.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sort_desc(sum by (violation_type) (gl_eudr_acm_noncompliance_cases_by_violation{environment=\"$environment\"}))", "legendFormat": "{{violation_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-RdYlGr" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 24,
+      "title": "Total Penalties (EUR)",
+      "description": "Total cumulative penalties assessed in EUR across all non-compliance cases. Penalties are imposed per Article 25 of Regulation (EU) 2023/1115 and must be effective, proportionate, and dissuasive. Tracks financial exposure from enforcement actions.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 15, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_acm_penalties_total_eur{environment=\"$environment\"}) or vector(0)", "legendFormat": "Penalties (EUR)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10000 },
+              { "color": "orange", "value": 100000 },
+              { "color": "red", "value": 1000000 }
+            ]
+          },
+          "unit": "currencyEUR"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 25,
+      "title": "Remediation Status",
+      "description": "Stacked bar chart showing remediation progress for non-compliance cases: not_started, in_progress, evidence_submitted, under_review, accepted, rejected. Tracks the corrective action lifecycle from initial identification to authority acceptance.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (remediation_status) (gl_eudr_acm_remediation_by_status{environment=\"$environment\"})", "legendFormat": "{{remediation_status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 60,
+            "drawStyle": "bars",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "not_started" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "in_progress" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "evidence_submitted" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "under_review" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "accepted" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "rejected" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Appeals",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 43 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 26,
+      "title": "Appeals Filed",
+      "description": "Rate of appeals filed against Competent Authority decisions over time. Operators have the right to appeal non-compliance findings, penalty assessments, and product withdrawal orders per Article 22 of Regulation (EU) 2023/1115.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_appeals_filed_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Filed (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_acm_appeals_resolved_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Resolved (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Filed (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Resolved (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 27,
+      "title": "Appeals by Decision",
+      "description": "Distribution of appeal outcomes: upheld (original decision stands), overturned (decision reversed), partially_overturned (modified penalty/measures), withdrawn (operator withdrew), pending (awaiting decision). Tracks appeal success rates and authority decision patterns.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (decision) (gl_eudr_acm_appeals_by_decision{environment=\"$environment\"})", "legendFormat": "{{decision}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "upheld" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "overturned" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "partially_overturned" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "withdrawn" }, "properties": [{ "id": "color", "value": { "fixedColor": "grey", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "pending" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 28,
+      "title": "Appeal Resolution Time (days)",
+      "description": "Histogram showing the distribution of appeal resolution times in days from filing to final decision. Identifies typical resolution timeframes and highlights jurisdictions with slow appeal processing.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (le) (increase(gl_eudr_acm_appeal_resolution_days_bucket{environment=\"$environment\"}[$__range]))", "legendFormat": "{{le}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "d",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "bucketSize": 7,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 29,
+      "title": "Active Appeals",
+      "description": "Current count of active appeals awaiting decision. High active appeal counts may indicate systemic enforcement disputes or regulatory interpretation disagreements requiring legal team attention.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 15, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_acm_appeals_active{environment=\"$environment\"}) or vector(0)", "legendFormat": "Active", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 15 },
+              { "color": "red", "value": 30 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 30,
+      "title": "Hearing Schedule",
+      "description": "Table of upcoming appeal hearings showing date, case reference, member state, authority, appeal type, and preparation status. Enables proactive legal preparation and resource allocation for hearing attendance.",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_acm_upcoming_hearings{environment=\"$environment\"}", "legendFormat": "{{case_ref}} - {{member_state}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "case_ref" }, "properties": [{ "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "member_state" }, "properties": [{ "id": "custom.width", "value": 60 }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "hearing_date", "desc": false }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true }, "renameByName": { "case_ref": "Case Ref", "member_state": "State", "authority": "Authority", "hearing_date": "Date", "appeal_type": "Type", "Value": "Days Until" } } }
+      ]
+    },
+    {
+      "title": "Document Exchange",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 52 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 31,
+      "title": "Documents Uploaded",
+      "description": "Rate of documents uploaded to authority communication channels over time. Includes due diligence statements, compliance evidence, traceability records, geolocation data, supplier declarations, and remediation plans submitted to Competent Authorities.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_documents_uploaded_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Uploaded (/min)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Uploaded (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 32,
+      "title": "Documents Downloaded",
+      "description": "Rate of documents downloaded from authority channels over time. Includes inspection reports, non-compliance notices, penalty assessments, guidance documents, and authority decisions received from Competent Authorities.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_documents_downloaded_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Downloaded (/min)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Downloaded (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 33,
+      "title": "Documents by Type",
+      "description": "Distribution of exchanged documents by type: due_diligence_statement, compliance_evidence, traceability_record, geolocation_data, supplier_declaration, inspection_report, penalty_notice, remediation_plan, appeal_filing, guidance_document.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (doc_type) (gl_eudr_acm_documents_by_type{environment=\"$environment\"})", "legendFormat": "{{doc_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 34,
+      "title": "Total Storage (GB)",
+      "description": "Total storage consumed by exchanged documents in gigabytes. Tracks document storage growth and capacity planning for authority communication archives. Documents must be retained for minimum 5 years per Article 12 of Regulation (EU) 2023/1115.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 15, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_acm_document_storage_bytes{environment=\"$environment\"}) / 1073741824 or vector(0)", "legendFormat": "Storage (GB)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 10 },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 }
+            ]
+          },
+          "unit": "decgbytes"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 35,
+      "title": "Encryption Status",
+      "description": "Percentage of documents encrypted with AES-256-GCM at rest and TLS 1.3 in transit. Target: 100% encryption coverage. All authority communications must be encrypted per EU data protection requirements and GDPR Article 32 technical measures.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_acm_documents_encrypted_total{environment=\"$environment\"}) / (sum(gl_eudr_acm_documents_total{environment=\"$environment\"}) > 0) * 100 or vector(100)", "legendFormat": "Encryption %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 95 },
+              { "color": "yellow", "value": 99 },
+              { "color": "green", "value": 100 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Notifications",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 61 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 36,
+      "title": "Notifications Sent",
+      "description": "Rate of notifications sent to operators and internal teams over time. Includes deadline reminders, authority response alerts, inspection notifications, non-compliance warnings, appeal updates, and document receipt confirmations across all configured channels.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_notifications_sent_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Total (/min)", "refId": "A" },
+        { "expr": "sum by (notification_type) (rate(gl_eudr_acm_notifications_sent_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{notification_type}} (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 37,
+      "title": "Notification Delivery Rate",
+      "description": "Percentage of notifications successfully delivered across all channels (email, SMS, webhook, in-app, Slack). Target: >= 99.5% delivery rate. Failed deliveries may cause missed deadlines and regulatory non-compliance.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_acm_notifications_delivered_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_acm_notifications_sent_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Delivery Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 95 },
+              { "color": "yellow", "value": 99 },
+              { "color": "green", "value": 99.5 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 38,
+      "title": "Notifications by Channel",
+      "description": "Distribution of notifications by delivery channel: email, sms, webhook, in_app, slack, teams, pagerduty. Identifies channel utilization and preferred notification pathways for authority communications.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (channel) (increase(gl_eudr_acm_notifications_sent_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{channel}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "email" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "sms" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "webhook" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "in_app" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "slack" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "teams" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "pagerduty" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 39,
+      "title": "Average Delivery Time",
+      "description": "Histogram showing the distribution of notification delivery times in seconds from dispatch to confirmed receipt. Target: < 5s for email, < 3s for SMS, < 1s for webhook/in-app. Monitors notification pipeline latency.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (le) (increase(gl_eudr_acm_notification_delivery_seconds_bucket{environment=\"$environment\"}[$__range]))", "legendFormat": "{{le}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "bucketSize": 1,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "title": "Member State Distribution",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 70 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 40,
+      "title": "Communications by Member State",
+      "description": "Distribution of authority communications across all 27 EU Member States: AT (Austria), BE (Belgium), BG (Bulgaria), HR (Croatia), CY (Cyprus), CZ (Czechia), DK (Denmark), EE (Estonia), FI (Finland), FR (France), DE (Germany), GR (Greece), HU (Hungary), IE (Ireland), IT (Italy), LV (Latvia), LT (Lithuania), LU (Luxembourg), MT (Malta), NL (Netherlands), PL (Poland), PT (Portugal), RO (Romania), SK (Slovakia), SI (Slovenia), ES (Spain), SE (Sweden).",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 10, "x": 0, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sort_desc(sum by (member_state) (gl_eudr_acm_communications_by_member_state{environment=\"$environment\"}))", "legendFormat": "{{member_state}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-blues" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 41,
+      "title": "Top 10 Most Active Authorities",
+      "description": "Top 10 most active Competent Authorities by total communication volume. Identifies which specific authority bodies generate the highest interaction volumes, enabling targeted relationship management and resource allocation.",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 7, "x": 10, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (authority_name) (gl_eudr_acm_communications_by_authority{environment=\"$environment\"}))", "legendFormat": "{{authority_name}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 42,
+      "title": "Response Time by Member State",
+      "description": "Heatmap showing average response times (hours) by EU Member State over time. Identifies jurisdictions with consistently slow or fast response patterns, enabling proactive deadline management and resource allocation for high-latency member states.",
+      "type": "heatmap",
+      "gridPos": { "h": 10, "w": 7, "x": 17, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg by (member_state) (gl_eudr_acm_response_time_hours{environment=\"$environment\"})", "legendFormat": "{{member_state}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "scaleDistribution": { "type": "linear" }
+          },
+          "color": { "mode": "scheme", "schemeVersion": 1, "exponent": 0.5 }
+        }
+      },
+      "options": {
+        "calculate": true,
+        "calculation": { "yBuckets": { "mode": "count", "value": "27" } },
+        "color": { "mode": "scheme", "scheme": "RdYlGn", "reverse": true, "fill": "dark-orange", "exponent": 0.5 },
+        "yAxis": { "axisPlacement": "left" },
+        "cellGap": 1,
+        "filterValues": { "le": 1e-9 },
+        "tooltip": { "show": true, "yHistogram": false },
+        "legend": { "show": true }
+      }
+    },
+    {
+      "title": "Deadlines & SLA",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 81 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 43,
+      "title": "Approaching Deadlines",
+      "description": "Table of communications with approaching response deadlines showing case reference, authority, deadline date, days remaining, priority, and preparation status. Critical for preventing overdue responses and enforcement escalation.",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_acm_deadline_days_remaining{environment=\"$environment\"} > 0 and gl_eudr_acm_deadline_days_remaining{environment=\"$environment\"} <= 14", "legendFormat": "{{case_ref}} - {{member_state}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 3 },
+              { "color": "yellow", "value": 7 },
+              { "color": "green", "value": 14 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "case_ref" }, "properties": [{ "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "member_state" }, "properties": [{ "id": "custom.width", "value": 60 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background" } }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Value", "desc": false }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true }, "renameByName": { "case_ref": "Case Ref", "member_state": "State", "authority": "Authority", "priority": "Priority", "comm_type": "Type", "Value": "Days Left" } } }
+      ]
+    },
+    {
+      "id": 44,
+      "title": "Overdue by Days",
+      "description": "Histogram showing the distribution of overdue communications by days past deadline. Identifies the severity of deadline breaches and enables prioritization of overdue response remediation.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 5, "x": 8, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (le) (increase(gl_eudr_acm_overdue_days_bucket{environment=\"$environment\"}[$__range]))", "legendFormat": "{{le}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "d",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-RdYlGr" }
+        }
+      },
+      "options": {
+        "bucketSize": 3,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 45,
+      "title": "SLA Compliance Rate",
+      "description": "Percentage of authority communications meeting internal SLA targets for response time, document quality, and deadline adherence. Target: >= 99% SLA compliance. Tracks operational excellence in authority communication management.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 5, "x": 13, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_acm_sla_met_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_acm_sla_evaluated_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "SLA Compliance %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 90 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 46,
+      "title": "Deadline Reminders Sent",
+      "description": "Rate of deadline reminder notifications sent over time, broken down by urgency level: early_warning (7+ days), approaching (3-7 days), urgent (1-3 days), critical (< 24 hours), overdue (past deadline). Monitors proactive deadline management effectiveness.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (urgency) (rate(gl_eudr_acm_deadline_reminders_sent_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{urgency}} (/min)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 30,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "early_warning (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "approaching (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "urgent (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "critical (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "overdue (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Performance & Errors",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 90 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 47,
+      "title": "API Response Time P50/P95/P99",
+      "description": "API endpoint response time percentiles for the Authority Communication Manager service. Target: p50 < 200ms, p95 < 1s, p99 < 3s. Monitors API performance for communication submission, status queries, document upload/download, and notification dispatch endpoints.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 91 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_acm_api_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_acm_api_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_acm_api_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 48,
+      "title": "Error Rate",
+      "description": "Rate of errors in the Authority Communication Manager service over time, broken down by error type: api_5xx, api_4xx, encryption_failure, delivery_failure, timeout, auth_failure, validation_error. Target: < 0.1% error rate for production stability.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 91 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_errors_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Total Errors (/min)", "refId": "A" },
+        { "expr": "sum by (error_type) (rate(gl_eudr_acm_errors_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{error_type}} (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Errors (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 49,
+      "title": "Database Connection Pool",
+      "description": "Database connection pool utilization for the Authority Communication Manager. Tracks active, idle, and waiting connections. Target: active/max < 80%. Pool exhaustion causes request failures and communication processing delays.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 91 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_acm_db_pool_active{environment=\"$environment\"}", "legendFormat": "Active", "refId": "A" },
+        { "expr": "gl_eudr_acm_db_pool_idle{environment=\"$environment\"}", "legendFormat": "Idle", "refId": "B" },
+        { "expr": "gl_eudr_acm_db_pool_waiting{environment=\"$environment\"}", "legendFormat": "Waiting", "refId": "C" },
+        { "expr": "gl_eudr_acm_db_pool_max{environment=\"$environment\"}", "legendFormat": "Max", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Active" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Idle" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Waiting" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Max" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 50,
+      "title": "Message Queue Depth",
+      "description": "Message queue depth for asynchronous communication processing including notification dispatch, document encryption, authority API calls, and deadline monitoring. High queue depth indicates processing backlog requiring capacity scaling.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 15, "y": 91 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_acm_queue_depth{environment=\"$environment\", queue=\"notification\"}", "legendFormat": "Notification Queue", "refId": "A" },
+        { "expr": "gl_eudr_acm_queue_depth{environment=\"$environment\", queue=\"document\"}", "legendFormat": "Document Queue", "refId": "B" },
+        { "expr": "gl_eudr_acm_queue_depth{environment=\"$environment\", queue=\"authority_api\"}", "legendFormat": "Authority API Queue", "refId": "C" },
+        { "expr": "gl_eudr_acm_queue_depth{environment=\"$environment\", queue=\"deadline_monitor\"}", "legendFormat": "Deadline Monitor Queue", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 51,
+      "title": "Encryption Operations/sec",
+      "description": "Rate of AES-256-GCM encryption and decryption operations per second for authority document exchange. Includes encrypt, decrypt, sign, and verify operations. Monitors cryptographic throughput and identifies encryption pipeline bottlenecks.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 91 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_encryption_ops_total{environment=\"$environment\", operation=\"encrypt\"}[5m]))", "legendFormat": "Encrypt/s", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_acm_encryption_ops_total{environment=\"$environment\", operation=\"decrypt\"}[5m]))", "legendFormat": "Decrypt/s", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_acm_encryption_ops_total{environment=\"$environment\", operation=\"sign\"}[5m]))", "legendFormat": "Sign/s", "refId": "C" },
+        { "expr": "sum(rate(gl_eudr_acm_encryption_ops_total{environment=\"$environment\", operation=\"verify\"}[5m]))", "legendFormat": "Verify/s", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Encrypt/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Decrypt/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Sign/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Verify/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 52,
+      "title": "Language Distribution",
+      "description": "Distribution of authority communications across all 24 official EU languages: BG (Bulgarian), CS (Czech), DA (Danish), DE (German), EL (Greek), EN (English), ES (Spanish), ET (Estonian), FI (Finnish), FR (French), GA (Irish), HR (Croatian), HU (Hungarian), IT (Italian), LT (Lithuanian), LV (Latvian), MT (Maltese), NL (Dutch), PL (Polish), PT (Portuguese), RO (Romanian), SK (Slovak), SL (Slovenian), SV (Swedish). Operators must communicate in the official language of the Competent Authority's Member State.",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 99 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sort_desc(sum by (language) (gl_eudr_acm_communications_by_language{environment=\"$environment\"}))", "legendFormat": "{{language}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-blues" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 53,
+      "title": "Translation Operations",
+      "description": "Rate of automated translation operations for authority communications over time. Tracks translation throughput between operator language and authority language, including document translation, response translation, and real-time correspondence translation across 24 EU languages.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 99 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_translations_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Translations (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_acm_translations_failed_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Failed (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Translations (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 54,
+      "title": "Cache Hit Rate",
+      "description": "Cache hit rate for frequently accessed data: authority contact details, member state configurations, language templates, deadline rules, and compliance checklist items. Target: >= 80% hit rate. Low cache hit rates increase latency and database load.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 99 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_acm_cache_hits_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_acm_cache_hits_total{environment=\"$environment\"}[5m])) + sum(rate(gl_eudr_acm_cache_misses_total{environment=\"$environment\"}[5m]))) * 100 or vector(0)", "legendFormat": "Hit Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "min", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 55,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the Authority Communication Manager agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 16, "w": 24, "x": 0, "y": 109 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-040 Authority Communication Manager Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Low On-Time Response Rate** | gl_eudr_acm response on-time rate < 98% for 10m | Warning | Every 5m, for 10m | Review pending responses, prioritize approaching deadlines |\n| 2 | **Critical Deadline Breach** | gl_eudr_acm overdue requests > 0 for 5m | Critical | Every 1m, for 5m | Page on-call, immediate response required to avoid enforcement escalation |\n| 3 | **High Non-Compliance Cases** | gl_eudr_acm new non-compliance cases > 5 in 1h | Warning | Every 5m, for 15m | Review case patterns, assess systemic compliance gaps, notify legal team |\n| 4 | **Critical Penalty Threshold** | gl_eudr_acm total penalties > EUR 100,000 for 5m | Critical | Every 1m, for 5m | Page compliance lead, escalate to executive management, initiate remediation |\n| 5 | **Notification Delivery Failure** | gl_eudr_acm notification delivery rate < 99.5% for 10m | Warning | Every 5m, for 10m | Check notification channels, verify SMTP/SMS gateway, review webhook endpoints |\n| 6 | **Encryption Coverage Drop** | gl_eudr_acm encryption coverage < 100% for 5m | Critical | Every 1m, for 5m | Immediate investigation, all authority documents must be encrypted per GDPR Art. 32 |\n| 7 | **Appeal Surge Detection** | gl_eudr_acm new appeals > 3 in 1h | Warning | Every 5m, for 15m | Review enforcement patterns, assess appeal merit, allocate legal resources |\n| 8 | **Authority API Unreachable** | gl_eudr_acm authority API success rate < 95% for 5m | Critical | Every 1m, for 5m | Check authority system connectivity, verify certificates, activate fallback channels |\n| 9 | **Processing Latency Degradation** | p99 > 30s for 10 minutes | Warning | Every 5m, for 10m | Check processing pipeline, DB performance, connection pool utilization |\n| 10 | **High API Error Rate** | API 5xx error rate > 0.5% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure, review error logs |\n| 11 | **DB Connection Pool Exhaustion** | active/max > 90% for 5 minutes | Critical | Every 1m, for 5m | Scale connection pool, investigate connection leaks |\n| 12 | **Message Queue Backlog** | queue depth > 500 for 10 minutes | Warning | Every 5m, for 10m | Scale workers, investigate processing bottleneck, review dead letter queue |\n| 13 | **Cache Hit Rate Drop** | cache hit rate < 60% for 30m | Warning | Every 5m, for 15m | Review cache configuration, check Redis health, verify TTL settings |\n| 14 | **Translation Failure Spike** | translation failure rate > 5% for 10m | Warning | Every 5m, for 10m | Check translation service health, verify language model availability |\n| 15 | **SLA Compliance Degradation** | SLA compliance < 99% for 30m | Warning | Every 5m, for 30m | Review SLA breaches by category, identify root causes, adjust capacity |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead + Email legal-team\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Deadline Breach Response](https://runbooks.greenlang.io/eudr/acm/deadline-breach)\n- [Non-Compliance Case Management](https://runbooks.greenlang.io/eudr/acm/noncompliance-cases)\n- [Penalty Threshold Escalation](https://runbooks.greenlang.io/eudr/acm/penalty-escalation)\n- [Appeal Processing](https://runbooks.greenlang.io/eudr/acm/appeal-processing)\n- [Authority API Connectivity](https://runbooks.greenlang.io/eudr/acm/authority-api)\n- [Encryption Coverage](https://runbooks.greenlang.io/eudr/acm/encryption-coverage)\n- [Notification Delivery](https://runbooks.greenlang.io/eudr/acm/notification-delivery)\n- [Translation Service](https://runbooks.greenlang.io/eudr/acm/translation-service)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/acm/perf-degradation)\n- [DB Pool Exhaustion](https://runbooks.greenlang.io/eudr/acm/db-pool-exhaustion)\n- [Queue Backlog](https://runbooks.greenlang.io/eudr/acm/queue-backlog)\n- [SLA Compliance Review](https://runbooks.greenlang.io/eudr/acm/sla-review)\n\n### EU Member State Authority Reference\n| State | Code | Authority | Language |\n|-------|------|-----------|----------|\n| Austria | AT | BMLRT | DE |\n| Belgium | BE | FPS Economy | NL/FR/DE |\n| Bulgaria | BG | MoEW | BG |\n| Croatia | HR | MoAFF | HR |\n| Cyprus | CY | DoF | EL |\n| Czechia | CZ | MoE | CS |\n| Denmark | DK | DEPA | DA |\n| Estonia | EE | MoE | ET |\n| Finland | FI | MMM | FI |\n| France | FR | DGCCRF | FR |\n| Germany | DE | BMEL | DE |\n| Greece | GR | MoRDFA | EL |\n| Hungary | HU | NAK | HU |\n| Ireland | IE | DAFM | EN/GA |\n| Italy | IT | MASAF | IT |\n| Latvia | LV | ZM | LV |\n| Lithuania | LT | AAD | LT |\n| Luxembourg | LU | AEV | FR |\n| Malta | MT | ERA | MT/EN |\n| Netherlands | NL | NVWA | NL |\n| Poland | PL | GDEP | PL |\n| Portugal | PT | ICNF | PT |\n| Romania | RO | MMAP | RO |\n| Slovakia | SK | MoA | SK |\n| Slovenia | SI | MKGP | SL |\n| Spain | ES | MITECO | ES |\n| Sweden | SE | Skogsstyrelsen | SV |"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "authority-communication-manager", "agent-eudr-040", "greenlang", "article-14", "article-15", "article-16", "article-19", "article-20", "article-21", "article-22", "article-23", "article-24", "competent-authorities", "eu-member-states", "inspections", "non-compliance", "appeals", "penalties", "document-exchange", "notifications", "deadlines", "sla", "encryption", "multilingual"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_acm_communications_by_member_state{environment=\"$environment\"}, member_state)",
+        "description": "Filter by EU Member State (AT, BE, BG, HR, CY, CZ, DK, EE, FI, FR, DE, GR, HU, IE, IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Member State",
+        "multi": true,
+        "name": "member_state",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_acm_communications_by_member_state{environment=\"$environment\"}, member_state)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_acm_communications_created_total{environment=\"$environment\"}, comm_type)",
+        "description": "Filter by communication type (information_request, inspection_notice, compliance_notice, appeal, general)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Communication Type",
+        "multi": true,
+        "name": "comm_type",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_acm_communications_created_total{environment=\"$environment\"}, comm_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_acm_communications_by_status{environment=\"$environment\"}, status)",
+        "description": "Filter by communication status (draft, sent, received, acknowledged, in_progress, responded, closed, escalated)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Status",
+        "multi": true,
+        "name": "status",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_acm_communications_by_status{environment=\"$environment\"}, status)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_acm_communications_by_language{environment=\"$environment\"}, language)",
+        "description": "Filter by EU official language (BG, CS, DA, DE, EL, EN, ES, ET, FI, FR, GA, HR, HU, IT, LT, LV, MT, NL, PL, PT, RO, SK, SL, SV)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Language",
+        "multi": true,
+        "name": "language",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_acm_communications_by_language{environment=\"$environment\"}, language)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_acm_info_requests_by_priority{environment=\"$environment\"}, priority)",
+        "description": "Filter by priority level (critical, urgent, standard, low)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Priority",
+        "multi": true,
+        "name": "priority",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_acm_info_requests_by_priority{environment=\"$environment\"}, priority)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Authority Communication Manager (ACM)",
+  "uid": "eudr-acm-040",
+  "version": 1
+}

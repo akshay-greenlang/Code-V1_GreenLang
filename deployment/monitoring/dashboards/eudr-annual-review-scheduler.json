@@ -1,0 +1,1343 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "AGENT-EUDR-034 Annual Review Scheduler Agent - Review Cycle Management, Deadline Tracking, Task Management, Multi-Year Comparison, Checklist Progress, Calendar Events, Notifications & System Performance",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Review Cycle Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "green", "value": 10 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "title": "Active Review Cycles",
+      "description": "Total number of currently active EUDR annual review cycles. These are cycles in 'in_progress' or 'pending_review' state across all commodities and jurisdictions.",
+      "type": "gauge",
+      "targets": [
+        { "expr": "gl_eudr_ars_active_review_cycles{environment=~\"$environment\"}", "legendFormat": "Active Cycles", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "pieType": "donut",
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Cycles by Status",
+      "description": "Distribution of review cycles across lifecycle statuses: draft, in_progress, pending_review, submitted, completed, cancelled. Helps identify bottlenecks in the review pipeline.",
+      "type": "piechart",
+      "targets": [
+        { "expr": "sum by (status) (gl_eudr_ars_cycles_by_status{environment=~\"$environment\"})", "legendFormat": "{{status}}", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.5 },
+              { "color": "yellow", "value": 0.75 },
+              { "color": "green", "value": 0.9 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "title": "Completion Rate",
+      "description": "Percentage of review cycles that have reached 'completed' status out of all cycles that were due for completion in the current review period. Target is above 90%.",
+      "type": "gauge",
+      "targets": [
+        { "expr": "gl_eudr_ars_cycle_completion_rate{environment=~\"$environment\"}", "legendFormat": "Completion Rate", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Overdue Reviews",
+      "description": "Number of review cycles that have exceeded their scheduled completion deadline. These require immediate attention and escalation to prevent regulatory non-compliance.",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_ars_overdue_reviews_total{environment=~\"$environment\"}", "legendFormat": "Overdue", "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 },
+      "id": 6,
+      "title": "Deadline Tracking",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "days_until_deadline" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "orange", "value": 7 },
+                    { "color": "yellow", "value": 14 },
+                    { "color": "green", "value": 30 }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "priority" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-text" }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "critical": { "color": "red", "text": "CRITICAL" },
+                      "high": { "color": "orange", "text": "HIGH" },
+                      "normal": { "color": "blue", "text": "NORMAL" },
+                      "low": { "color": "green", "text": "LOW" }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 9 },
+      "id": 7,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "days_until_deadline", "desc": false }],
+        "footer": { "show": true, "reducer": ["count"] }
+      },
+      "title": "Upcoming Deadlines",
+      "description": "Table of approaching review deadlines with color-coded days-until values. Red indicates less than 7 days, orange 7-14 days, yellow 14-30 days, green more than 30 days remaining.",
+      "type": "table",
+      "targets": [
+        { "expr": "gl_eudr_ars_deadline_info{environment=~\"$environment\"}", "legendFormat": "{{cycle_id}} - {{commodity}} - {{authority}} - {{days_until_deadline}} - {{priority}}", "format": "table", "instant": true, "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.6 },
+              { "color": "yellow", "value": 0.8 },
+              { "color": "green", "value": 0.95 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 9 },
+      "id": 8,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "title": "Deadline Compliance Rate",
+      "description": "Percentage of review cycles that were completed on or before their scheduled deadline. Measures organizational punctuality in meeting EUDR annual review obligations.",
+      "type": "gauge",
+      "targets": [
+        { "expr": "gl_eudr_ars_deadline_compliance_rate{environment=~\"$environment\"}", "legendFormat": "Compliance Rate", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "fillOpacity": 80, "stacking": { "mode": "normal" }, "lineWidth": 1 },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 9 },
+      "id": 9,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Submissions by Authority",
+      "description": "Stacked bar chart showing the number of review submissions grouped by competent authority (EU Member State). Helps track submission distribution across jurisdictions.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (authority) (rate(gl_eudr_ars_submissions_by_authority_total{environment=~\"$environment\"}[5m])) * 3600", "legendFormat": "{{authority}}", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 8 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 9 },
+      "id": 10,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Late Submissions",
+      "description": "Count of review submissions that were filed after the regulatory deadline. Late submissions carry penalty risk under EUDR enforcement provisions.",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_ars_late_submissions_total{environment=~\"$environment\"}", "legendFormat": "Late", "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "id": 11,
+      "title": "Task Management",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "fillOpacity": 80, "stacking": { "mode": "normal" }, "lineWidth": 1 },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "data_collection" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "risk_assessment" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "checklist_review" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "stakeholder_engagement" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "document_update" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "authority_submission" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 18 },
+      "id": 12,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Tasks by Type",
+      "description": "Stacked bar chart showing review tasks broken down by type: data collection, risk assessment, checklist review, stakeholder engagement, document update, and authority submission.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (task_type) (rate(gl_eudr_ars_tasks_by_type_total{environment=~\"$environment\"}[5m])) * 3600", "legendFormat": "{{task_type}}", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "spanNulls": false },
+          "color": { "mode": "palette-classic" },
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 18 },
+      "id": 13,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Task Completion Rate",
+      "description": "Time series showing the ratio of completed tasks to total assigned tasks, broken down by task type. Tracks progress velocity across the review cycle.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "gl_eudr_ars_task_completion_rate{environment=~\"$environment\"}", "legendFormat": "Overall", "refId": "A" },
+        { "expr": "gl_eudr_ars_task_completion_rate_by_type{environment=~\"$environment\"}", "legendFormat": "{{task_type}}", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "days_overdue" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "yellow", "value": null },
+                    { "color": "orange", "value": 7 },
+                    { "color": "red", "value": 14 }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "task_type" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-text" }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 18 },
+      "id": 14,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "days_overdue", "desc": true }],
+        "footer": { "show": true, "reducer": ["count"] }
+      },
+      "title": "Overdue Tasks",
+      "description": "Table listing all tasks past their due date with assignee, task type, cycle ID, and days overdue. Color-coded by severity of delay.",
+      "type": "table",
+      "targets": [
+        { "expr": "gl_eudr_ars_overdue_task_info{environment=~\"$environment\"}", "legendFormat": "{{task_id}} - {{task_type}} - {{assignee}} - {{cycle_id}} - {{days_overdue}}", "format": "table", "instant": true, "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "d",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "lineWidth": 1 },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 18 },
+      "id": 15,
+      "options": {
+        "bucketSize": 5,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "table", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Task Duration (Avg Days)",
+      "description": "Histogram distribution of task completion durations in days. Shows how long different task types typically take to complete, helping identify process bottlenecks.",
+      "type": "histogram",
+      "targets": [
+        { "expr": "rate(gl_eudr_ars_task_duration_days_bucket{environment=~\"$environment\"}[5m])", "legendFormat": "{{le}}", "format": "heatmap", "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "id": 16,
+      "title": "Multi-Year Comparison",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2, "pointSize": 6, "spanNulls": false },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "2024" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-blue", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dot", "dash": [2, 4] } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "2025" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [8, 4] } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "2026" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-orange", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 27 },
+      "id": 17,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Year-over-Year Metrics",
+      "description": "Comparison of key review metrics (supplier count, plot coverage, compliance score) across 2024, 2025, and 2026 review cycles. Line styles distinguish each year for clear visual comparison.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "gl_eudr_ars_yoy_metric{environment=~\"$environment\", year=\"2024\"}", "legendFormat": "2024", "refId": "A" },
+        { "expr": "gl_eudr_ars_yoy_metric{environment=~\"$environment\", year=\"2025\"}", "legendFormat": "2025", "refId": "B" },
+        { "expr": "gl_eudr_ars_yoy_metric{environment=~\"$environment\", year=\"2026\"}", "legendFormat": "2026", "refId": "C" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 8, "y": 27 },
+      "id": 18,
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "pieType": "donut",
+        "legend": { "displayMode": "table", "placement": "bottom", "values": ["value", "percent"] },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Change Significance",
+      "description": "Distribution of year-over-year changes by significance level: critical (major regulatory impact), significant (notable shifts), moderate (expected variation), minor (negligible change).",
+      "type": "piechart",
+      "targets": [
+        { "expr": "sum by (significance) (gl_eudr_ars_change_significance{environment=~\"$environment\"})", "legendFormat": "{{significance}}", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 12, "y": 27 },
+      "id": 19,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Supplier Delta (YoY)",
+      "description": "Net change in the number of suppliers tracked between the current and previous review year. Positive values indicate supply chain expansion.",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_ars_yoy_supplier_delta{environment=~\"$environment\"}", "legendFormat": "Supplier Delta", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 16, "y": 27 },
+      "id": 20,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Plot Delta (YoY)",
+      "description": "Net change in the number of geolocated production plots between the current and previous review year. Tracks expansion or contraction of monitored land areas.",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_ars_yoy_plot_delta{environment=~\"$environment\"}", "legendFormat": "Plot Delta", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": -0.1 },
+              { "color": "yellow", "value": -0.05 },
+              { "color": "green", "value": 0 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 27 },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Risk Delta (YoY)",
+      "description": "Year-over-year change in composite risk score. Negative values (green) indicate risk reduction; positive values (red) indicate deterioration requiring attention.",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_ars_yoy_risk_delta{environment=~\"$environment\"}", "legendFormat": "Risk Delta", "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 },
+      "id": 22,
+      "title": "Checklist Progress",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "drawStyle": "bars", "fillOpacity": 80, "lineWidth": 1, "stacking": { "mode": "none" } },
+          "color": { "mode": "palette-classic" },
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 36 },
+      "id": 23,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Checklist Completion by Commodity",
+      "description": "Bar chart showing review checklist completion percentage for each EUDR commodity (cattle, cocoa, coffee, palm oil, rubber, soya, wood). Tracks which commodity reviews are lagging.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "gl_eudr_ars_checklist_completion_by_commodity{environment=~\"$environment\"}", "legendFormat": "{{commodity}}", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "scaleDistribution": { "type": "linear" }
+          },
+          "color": {
+            "mode": "scheme",
+            "schemeType": "sequential",
+            "schemeName": "Greens"
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 36 },
+      "id": 24,
+      "options": {
+        "calculate": true,
+        "calculation": { "xBuckets": { "mode": "size", "value": "1" } },
+        "cellGap": 2,
+        "color": {
+          "mode": "scheme",
+          "schemeType": "sequential",
+          "schemeName": "Greens",
+          "fill": "dark-green",
+          "exponent": 0.5
+        },
+        "yAxis": { "axisPlacement": "left" },
+        "tooltip": { "show": true }
+      },
+      "title": "Article Coverage Heatmap",
+      "description": "Heatmap showing which EUDR articles (Art. 3-31) have been reviewed per commodity. Darker cells indicate completed reviews; lighter cells indicate pending or partial reviews.",
+      "type": "heatmap",
+      "targets": [
+        { "expr": "gl_eudr_ars_article_coverage{environment=~\"$environment\"}", "legendFormat": "Art. {{article}} - {{commodity}}", "format": "heatmap", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5 },
+          "color": { "mode": "palette-classic" },
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.6 },
+              { "color": "yellow", "value": 0.8 },
+              { "color": "green", "value": 0.95 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 36 },
+      "id": 25,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Compliance Score Trend",
+      "description": "Time series of the aggregate compliance score across all active review cycles. Tracks movement toward or away from full EUDR compliance over the review period.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "gl_eudr_ars_compliance_score{environment=~\"$environment\"}", "legendFormat": "Overall Score", "refId": "A" },
+        { "expr": "gl_eudr_ars_compliance_score_by_commodity{environment=~\"$environment\"}", "legendFormat": "{{commodity}}", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "completion_pct" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "orange", "value": 0.3 },
+                    { "color": "yellow", "value": 0.6 },
+                    { "color": "green", "value": 0.9 }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 36 },
+      "id": 26,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "completion_pct", "desc": false }],
+        "footer": { "show": true, "reducer": ["count"] }
+      },
+      "title": "Incomplete Checklists",
+      "description": "Table of review checklists that have not yet reached 100% completion. Sorted by completion percentage ascending to highlight the most incomplete items first.",
+      "type": "table",
+      "targets": [
+        { "expr": "gl_eudr_ars_incomplete_checklist_info{environment=~\"$environment\"}", "legendFormat": "{{checklist_id}} - {{commodity}} - {{cycle_id}} - {{completion_pct}} - {{items_remaining}}", "format": "table", "instant": true, "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 44 },
+      "id": 27,
+      "title": "Calendar & Events",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 15 }
+            ]
+          },
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "event_type" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-text" }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "deadline": { "color": "red", "text": "DEADLINE" },
+                      "milestone": { "color": "orange", "text": "MILESTONE" },
+                      "meeting": { "color": "blue", "text": "MEETING" },
+                      "reminder": { "color": "green", "text": "REMINDER" },
+                      "audit": { "color": "purple", "text": "AUDIT" }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "days_until" },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "orange", "value": 3 },
+                    { "color": "yellow", "value": 7 },
+                    { "color": "green", "value": 14 }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 45 },
+      "id": 28,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "days_until", "desc": false }],
+        "footer": { "show": true, "reducer": ["count"] }
+      },
+      "title": "Upcoming Events",
+      "description": "Timeline-style table of upcoming review calendar events including deadlines, milestones, meetings, reminders, and audits. Sorted by proximity with color-coded urgency.",
+      "type": "table",
+      "targets": [
+        { "expr": "gl_eudr_ars_upcoming_event_info{environment=~\"$environment\"}", "legendFormat": "{{event_id}} - {{event_type}} - {{event_name}} - {{cycle_id}} - {{days_until}}", "format": "table", "instant": true, "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 45 },
+      "id": 29,
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "pieType": "donut",
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "tooltip": { "mode": "single" }
+      },
+      "title": "Event Types Distribution",
+      "description": "Pie chart showing the breakdown of scheduled calendar events by type: deadline, milestone, meeting, reminder, audit. Indicates the composition of the review schedule.",
+      "type": "piechart",
+      "targets": [
+        { "expr": "sum by (event_type) (gl_eudr_ars_events_by_type{environment=~\"$environment\"})", "legendFormat": "{{event_type}}", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "scaleDistribution": { "type": "linear" }
+          },
+          "color": {
+            "mode": "scheme",
+            "schemeType": "sequential",
+            "schemeName": "Blues"
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 45 },
+      "id": 30,
+      "options": {
+        "calculate": true,
+        "calculation": { "xBuckets": { "mode": "size", "value": "1" } },
+        "cellGap": 2,
+        "color": {
+          "mode": "scheme",
+          "schemeType": "sequential",
+          "schemeName": "Blues",
+          "fill": "dark-blue",
+          "exponent": 0.5
+        },
+        "yAxis": { "axisPlacement": "left" },
+        "tooltip": { "show": true }
+      },
+      "title": "Calendar Density (by Month)",
+      "description": "Heatmap showing the density of scheduled events per month across the review calendar. Identifies peak activity periods and potential scheduling conflicts.",
+      "type": "heatmap",
+      "targets": [
+        { "expr": "sum by (le) (gl_eudr_ars_calendar_density_bucket{environment=~\"$environment\"})", "legendFormat": "{{le}}", "format": "heatmap", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.5 },
+              { "color": "yellow", "value": 0.75 },
+              { "color": "green", "value": 0.9 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 45 },
+      "id": 31,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Participant Engagement",
+      "description": "Percentage of assigned review participants who have actively engaged with their tasks (logged actions, submitted updates, attended meetings) during the current review cycle.",
+      "type": "stat",
+      "targets": [
+        { "expr": "gl_eudr_ars_participant_engagement_rate{environment=~\"$environment\"}", "legendFormat": "Engagement", "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 },
+      "id": 32,
+      "title": "Notifications",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "stacking": { "mode": "none" } },
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "email" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "slack" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "in_app" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "sms" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 54 },
+      "id": 33,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Notifications Sent (by Channel)",
+      "description": "Time series of notifications dispatched through each delivery channel: email, Slack, in-app, and SMS. Tracks notification volume and preferred communication paths.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (channel) (rate(gl_eudr_ars_notifications_sent_total{environment=~\"$environment\"}[5m])) * 3600", "legendFormat": "{{channel}}", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.5 },
+              { "color": "yellow", "value": 0.75 },
+              { "color": "green", "value": 0.9 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 54 },
+      "id": 34,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "title": "Acknowledgment Rate",
+      "description": "Percentage of sent notifications that received explicit acknowledgment from recipients. Low rates may indicate notification fatigue or delivery issues requiring channel optimization.",
+      "type": "gauge",
+      "targets": [
+        { "expr": "gl_eudr_ars_notification_ack_rate{environment=~\"$environment\"}", "legendFormat": "Ack Rate", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 25 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 54 },
+      "id": 35,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Escalations Triggered",
+      "description": "Total number of escalation notifications triggered when review tasks exceed their SLA or participants fail to acknowledge within the configured grace period.",
+      "type": "stat",
+      "targets": [
+        { "expr": "sum(gl_eudr_ars_escalations_triggered_total{environment=~\"$environment\"})", "legendFormat": "Escalations", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 54 },
+      "id": 36,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "title": "Notification Delivery Failures",
+      "description": "Count of notifications that failed to deliver due to channel errors (bounced emails, API failures, rate limits). High counts indicate integration issues requiring investigation.",
+      "type": "stat",
+      "targets": [
+        { "expr": "sum(gl_eudr_ars_notification_failures_total{environment=~\"$environment\"})", "legendFormat": "Failures", "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 62 },
+      "id": 37,
+      "title": "System Performance",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5 },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 63 },
+      "id": 38,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Cycle Creation Rate",
+      "description": "Rate of new review cycle creation over time. Spikes typically align with the start of annual review periods or bulk cycle initialization.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ars_cycles_created_total{environment=~\"$environment\"}[5m])) * 3600", "legendFormat": "Cycles Created/hr", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_ars_cycles_completed_total{environment=~\"$environment\"}[5m])) * 3600", "legendFormat": "Cycles Completed/hr", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "lineWidth": 1 },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 63 },
+      "id": 39,
+      "options": {
+        "bucketSize": 20,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "table", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "API Latency",
+      "description": "Histogram distribution of API request latency for the Annual Review Scheduler endpoints. Helps identify performance degradation and capacity planning needs.",
+      "type": "histogram",
+      "targets": [
+        { "expr": "rate(gl_eudr_ars_api_request_duration_seconds_bucket{environment=~\"$environment\"}[5m])", "legendFormat": "{{le}}", "format": "heatmap", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2 },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 63 },
+      "id": 40,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Database Query Time",
+      "description": "Percentile latencies (p50, p95, p99) for database queries executed by the Annual Review Scheduler. Monitors query performance and helps detect slow query regressions.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_ars_db_query_duration_seconds_bucket{environment=~\"$environment\"}[5m]))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_ars_db_query_duration_seconds_bucket{environment=~\"$environment\"}[5m]))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_ars_db_query_duration_seconds_bucket{environment=~\"$environment\"}[5m]))", "legendFormat": "p99", "refId": "C" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 2 },
+          "color": { "mode": "palette-classic" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.05 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 63 },
+      "id": 41,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Error Rate",
+      "description": "Overall error rates for the Annual Review Scheduler including API errors (HTTP 5xx), business logic errors, and background task failures. Threshold at 1% warning, 5% critical.",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ars_errors_total{environment=~\"$environment\"}[5m])) / sum(rate(gl_eudr_ars_requests_total{environment=~\"$environment\"}[5m]))", "legendFormat": "Overall Error Rate", "refId": "A" },
+        { "expr": "sum(rate(http_requests_total{job=\"gl-eudr-ars-034\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"gl-eudr-ars-034\"}[5m]))", "legendFormat": "HTTP 5xx Rate", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_ars_task_errors_total{environment=~\"$environment\"}[5m])) / sum(rate(gl_eudr_ars_tasks_processed_total{environment=~\"$environment\"}[5m]))", "legendFormat": "Task Error Rate", "refId": "C" }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "annual-review-scheduler", "agent-eudr-034"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ars_active_review_cycles, environment)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "environment",
+        "options": [],
+        "query": { "query": "label_values(gl_eudr_ars_active_review_cycles, environment)", "refId": "StandardVariableQuery" },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ars_cycles_by_status, commodity)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": { "query": "label_values(gl_eudr_ars_cycles_by_status, commodity)", "refId": "StandardVariableQuery" },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ars_cycles_by_status, authority)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "authority",
+        "options": [],
+        "query": { "query": "label_values(gl_eudr_ars_cycles_by_status, authority)", "refId": "StandardVariableQuery" },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": false, "text": "2026", "value": "2026" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_ars_yoy_metric, year)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "review_year",
+        "options": [],
+        "query": { "query": "label_values(gl_eudr_ars_yoy_metric, year)", "refId": "StandardVariableQuery" },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "EUDR-034 Annual Review Scheduler Agent",
+  "uid": "eudr-034-annual-review-scheduler",
+  "version": 1,
+  "weekStart": ""
+}

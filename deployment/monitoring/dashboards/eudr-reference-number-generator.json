@@ -1,0 +1,1677 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-038: Reference Number Generator (RNG) -- Manages full lifecycle of EUDR reference number generation for operator and trader due diligence statements. Handles unique reference number creation with EU-wide collision-free guarantees, sequence management per member state, atomic increment operations with Redis distributed locks, checksum validation (Luhn mod-36), batch generation for bulk import operations, member state format compliance (all 27 EU states), reference number lifecycle tracking (active/expired/revoked/transferred), operator-to-trader reference number inheritance per Article 4(3), and customs clearance reference validation per Articles 4, 5, 6, 8, 26, 33 compliance.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview & Health",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Total References Generated",
+      "description": "Total number of EUDR reference numbers generated in the last 24 hours across all member states and operator types. Tracks generation throughput for Article 4 and Article 26 compliance volume monitoring. Each reference number uniquely identifies a Due Diligence Statement in the EU Information System.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_references_generated_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "References (24h)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 100 },
+              { "color": "purple", "value": 500 },
+              { "color": "orange", "value": 2000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 2,
+      "title": "References by Status",
+      "description": "Distribution of generated reference numbers by current lifecycle status: active, pending_validation, validated, submitted, expired, revoked, transferred, suspended. Provides real-time view of the reference number pipeline and identifies bottlenecks in the generation-to-submission flow.",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (gl_eudr_rng_references_by_status{environment=\"$environment\"})", "legendFormat": "{{status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "active" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "expired" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "revoked" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "transferred" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "suspended" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Generation Success Rate",
+      "description": "Percentage of reference number generation requests that completed successfully without collision, sequence exhaustion, or validation failure in the last 24 hours. Target: >= 99.9% success rate for uninterrupted DDS filing operations per Article 4.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_generation_success_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_rng_generation_attempts_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Success Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 95 },
+              { "color": "yellow", "value": 99 },
+              { "color": "green", "value": 99.9 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Health Status",
+      "description": "Overall health status of the Reference Number Generator agent. 1 = healthy, 0 = degraded. Monitors engine availability, Redis lock service connectivity, PostgreSQL sequence store, checksum validator, and background batch processor.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 15, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_rng_health_status{environment=\"$environment\"} or vector(0)", "legendFormat": "Health", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [
+            { "options": { "0": { "text": "DEGRADED", "color": "red" }, "1": { "text": "HEALTHY", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Engine Status",
+      "description": "Status of all seven RNG engines: sequence_manager, collision_detector, checksum_validator, format_generator, batch_processor, lifecycle_manager, distribution_tracker. Shows readiness state, last heartbeat, and processed count per engine.",
+      "type": "table",
+      "gridPos": { "h": 6, "w": 5, "x": 19, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_rng_engine_status{environment=\"$environment\"}", "legendFormat": "{{engine}}", "refId": "A", "format": "table", "instant": true },
+        { "expr": "sum by (engine) (increase(gl_eudr_rng_engine_processed_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{engine}}", "refId": "B", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true },
+          "mappings": [
+            { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+          ]
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "engine" }, "properties": [{ "id": "custom.width", "value": 180 }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "engine", "desc": false }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "engine": "Engine", "Value #A": "Status", "Value #B": "Processed (24h)" } } }
+      ]
+    },
+    {
+      "title": "Generation Performance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "title": "References Generated/sec",
+      "description": "Rate of reference number generation over time, broken down by member state. Tracks generation throughput and identifies peak filing periods, regulatory deadlines, and capacity planning needs for Article 4 compliance.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_references_generated_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total (/sec)", "refId": "A" },
+        { "expr": "sum by (member_state) (rate(gl_eudr_rng_references_generated_total{environment=\"$environment\", member_state=~\"$member_state\"}[5m]))", "legendFormat": "{{member_state}} (/sec)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/sec)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Generation Duration P50/P95/P99",
+      "description": "Latency percentiles for single reference number generation including sequence acquisition, collision check, checksum computation, format assembly, and persistence. Target: p50 < 5ms, p95 < 20ms, p99 < 50ms for real-time DDS filing.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_rng_generation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_rng_generation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_rng_generation_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.02 },
+              { "color": "red", "value": 0.05 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Concurrent Requests",
+      "description": "Number of concurrent reference number generation requests being processed. Tracks in-flight requests, queued requests awaiting Redis lock acquisition, and maximum concurrency observed. Sustained high concurrency may indicate lock contention.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_rng_concurrent_requests{environment=\"$environment\"}", "legendFormat": "In-Flight", "refId": "A" },
+        { "expr": "gl_eudr_rng_queued_requests{environment=\"$environment\"}", "legendFormat": "Queued", "refId": "B" },
+        { "expr": "gl_eudr_rng_max_concurrency{environment=\"$environment\"}", "legendFormat": "Max Limit", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "In-Flight" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Queued" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Max Limit" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Batch Generation Rate",
+      "description": "Rate of batch reference number generation operations over time. Batch generation is used for bulk import operations where multiple DDS statements require simultaneous reference number allocation. Tracks batch throughput and identifies peak batch processing windows.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 15, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_batch_references_generated_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "References/min (batch)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_rng_batch_operations_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Batches/min", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "References/min (batch)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Batches/min" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Generation Errors",
+      "description": "Rate of reference number generation errors over time by error type: sequence_exhausted, collision_unresolvable, lock_timeout, checksum_failure, format_error, db_write_failure, redis_unavailable. Sustained errors > 0.1/sec triggers investigation.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (error_type) (rate(gl_eudr_rng_generation_errors_total{environment=\"$environment\"}[5m]))", "legendFormat": "{{error_type}}", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_rng_generation_errors_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total Errors/sec", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Errors/sec" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.stacking", "value": { "mode": "none" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Sequence Management",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 11,
+      "title": "Sequence Utilization by Member State",
+      "description": "Current sequence utilization percentage for each of the 27 EU member states. Each member state has an independent sequence pool for reference number generation. High utilization (> 80%) triggers proactive sequence expansion alerts. States: AT, BE, BG, HR, CY, CZ, DK, EE, FI, FR, DE, GR, HU, IE, IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sort_desc(gl_eudr_rng_sequence_utilization_percent{environment=\"$environment\"})", "legendFormat": "{{member_state}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": { "mode": "continuous-GrYlRd" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "orange", "value": 80 },
+              { "color": "red", "value": 95 }
+            ]
+          },
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 12,
+      "title": "Available Sequences",
+      "description": "Total remaining available sequence numbers across all 27 EU member states combined. When available sequences drop below threshold, automatic sequence pool expansion is triggered. Target: always > 100K available sequences per member state.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 8, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rng_sequences_available{environment=\"$environment\"}) or vector(0)", "legendFormat": "Available Sequences", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 100000 },
+              { "color": "yellow", "value": 500000 },
+              { "color": "green", "value": 1000000 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Sequences Near Exhaustion",
+      "description": "Table showing member states where sequence utilization exceeds 70%, ordered by utilization percentage descending. Includes current sequence position, total pool size, remaining count, estimated days until exhaustion based on current generation rate, and recommended action.",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_rng_sequence_utilization_percent{environment=\"$environment\"} > 70", "legendFormat": "{{member_state}}", "refId": "A", "format": "table", "instant": true },
+        { "expr": "gl_eudr_rng_sequences_available{environment=\"$environment\"} and gl_eudr_rng_sequence_utilization_percent{environment=\"$environment\"} > 70", "legendFormat": "{{member_state}}", "refId": "B", "format": "table", "instant": true },
+        { "expr": "gl_eudr_rng_sequence_days_remaining{environment=\"$environment\"} and gl_eudr_rng_sequence_utilization_percent{environment=\"$environment\"} > 70", "legendFormat": "{{member_state}}", "refId": "C", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 80 },
+              { "color": "orange", "value": 90 },
+              { "color": "red", "value": 95 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "member_state" }, "properties": [{ "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "Value #A" }, "properties": [{ "id": "custom.width", "value": 110 }, { "id": "custom.cellOptions", "value": { "type": "color-background" } }] },
+          { "matcher": { "id": "byName", "options": "Value #C" }, "properties": [{ "id": "custom.width", "value": 100 }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Value #A", "desc": true }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "member_state": "Member State", "Value #A": "Utilization %", "Value #B": "Available", "Value #C": "Days Left" } } }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Sequence Rollover Events",
+      "description": "Time series of sequence rollover events by member state. Rollover occurs when a sequence pool reaches its maximum value and wraps around to the next allocated block. Frequent rollovers indicate high generation volume and may require pool expansion.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 3, "x": 18, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_sequence_rollover_total{environment=\"$environment\"}[1h]))", "legendFormat": "Total Rollovers", "refId": "A" },
+        { "expr": "sum by (member_state) (increase(gl_eudr_rng_sequence_rollover_total{environment=\"$environment\"}[1h]))", "legendFormat": "{{member_state}}", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "stepAfter"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Rollovers" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Atomic Increment Latency",
+      "description": "Histogram of Redis atomic increment operation latency for sequence number allocation. Atomic increments ensure collision-free sequence allocation under concurrent load. Target: p99 < 2ms for real-time generation. Includes WATCH/MULTI/EXEC transaction overhead.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 3, "x": 21, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_atomic_increment_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "Oranges" }
+        }
+      },
+      "options": {
+        "bucketSize": 0.0005,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "title": "Collision Detection",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 16,
+      "title": "Collisions Detected",
+      "description": "Total number of reference number collisions detected in the last 24 hours. Collisions occur when two concurrent generation requests produce the same candidate reference number before persistence. Redis distributed locks and atomic increments minimize collisions. Any collision > 0 per hour warrants investigation.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_collisions_detected_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Collisions (24h)", "refId": "A" },
+        { "expr": "sum(increase(gl_eudr_rng_collisions_resolved_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Resolved (24h)", "refId": "B" },
+        { "expr": "sum(increase(gl_eudr_rng_collisions_unresolved_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Unresolved (24h)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Collision Rate",
+      "description": "Rate of reference number collisions over time. Collision rate should be near zero under normal operation. Spikes indicate concurrent generation pressure exceeding lock granularity or Redis lock service degradation. Sustained rate > 0.01/sec triggers critical alert.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_collisions_detected_total{environment=\"$environment\"}[5m]))", "legendFormat": "Collisions/sec", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_rng_collisions_detected_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_rng_generation_attempts_total{environment=\"$environment\"}[5m])) > 0) * 100", "legendFormat": "Collision Rate %", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.001 },
+              { "color": "red", "value": 0.01 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Collisions/sec" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Collision Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Collision Resolution Time",
+      "description": "Histogram of collision resolution duration from detection through retry-with-new-sequence to successful persistence. Resolution involves acquiring a new sequence number, regenerating the reference, re-checking for collisions, and writing to the database. Target: p99 < 100ms.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_collision_resolution_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "RdYlGn", "reverse": true }
+        }
+      },
+      "options": {
+        "bucketSize": 0.01,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 19,
+      "title": "Retry Attempts Distribution",
+      "description": "Distribution of retry attempts required before successful reference number generation after collision detection. Retries 0 = first attempt success. Retries 1-2 = normal collision recovery. Retries 3+ = lock contention or sequence pressure. Max retries = 5 before failure.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (retry_count) (increase(gl_eudr_rng_retry_attempts_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{retry_count}} retries", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "hue"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "0 retries" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "1 retries" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "2 retries" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "3 retries" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4 retries" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "5 retries" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "title": "Member State Distribution",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 20,
+      "title": "References by Member State (All 27 EU)",
+      "description": "Distribution of reference numbers generated by EU member state in the last 24 hours. Covers all 27 EU member states: Austria (AT), Belgium (BE), Bulgaria (BG), Croatia (HR), Cyprus (CY), Czech Republic (CZ), Denmark (DK), Estonia (EE), Finland (FI), France (FR), Germany (DE), Greece (GR), Hungary (HU), Ireland (IE), Italy (IT), Latvia (LV), Lithuania (LT), Luxembourg (LU), Malta (MT), Netherlands (NL), Poland (PL), Portugal (PT), Romania (RO), Slovakia (SK), Slovenia (SI), Spain (ES), Sweden (SE).",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (member_state) (increase(gl_eudr_rng_references_generated_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{member_state}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 21,
+      "title": "Top 10 Member States by Volume",
+      "description": "Top 10 EU member states ranked by reference number generation volume in the last 24 hours. Identifies highest-volume filing jurisdictions for capacity planning and member state-specific infrastructure scaling. Typically led by DE, FR, NL, IT, ES due to import volumes.",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 8, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (member_state) (increase(gl_eudr_rng_references_generated_total{environment=\"$environment\"}[24h])))", "legendFormat": "{{member_state}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "hue"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 22,
+      "title": "Member State Format Compliance",
+      "description": "Percentage of generated reference numbers that comply with the member state-specific format requirements. Each EU member state has a defined reference number format pattern (country prefix, checksum algorithm, sequence structure). Target: 100% format compliance across all 27 states.",
+      "type": "gauge",
+      "gridPos": { "h": 10, "w": 4, "x": 14, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_format_compliant_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_rng_references_generated_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(100)", "legendFormat": "Format Compliance %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 95 },
+              { "color": "yellow", "value": 99 },
+              { "color": "green", "value": 99.9 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Member State Generation Trends",
+      "description": "Time series of reference number generation rate by top member states over time. Shows generation trends across jurisdictions for capacity planning, filing deadline detection, and cross-border pattern analysis. Filterable by member_state template variable.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (member_state) (rate(gl_eudr_rng_references_generated_total{environment=\"$environment\", member_state=~\"$member_state\"}[5m]))) * 3600", "legendFormat": "{{member_state}} (/hr)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Validation & Verification",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 45 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 24,
+      "title": "Validations Performed",
+      "description": "Rate of reference number validation operations over time. Validations are performed on both newly generated references (pre-persistence) and existing references (lookup/verification requests from customs, traders, and the EU Information System). Includes format, checksum, and existence checks.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_validations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total (/hr)", "refId": "A" },
+        { "expr": "sum by (validation_type) (rate(gl_eudr_rng_validations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{validation_type}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 25,
+      "title": "Validation Pass Rate",
+      "description": "Percentage of reference number validations that pass all checks (format compliance, Luhn mod-36 checksum, member state prefix, sequence range validity, existence verification) in the last 24 hours. Target: >= 99.5% pass rate for internally generated references.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_validation_passed_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_rng_validations_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Validation Pass Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 90 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99.5 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 26,
+      "title": "Checksum Failures",
+      "description": "Rate of Luhn mod-36 checksum validation failures over time. Checksum failures indicate corrupted reference numbers, data transmission errors, or attempted fraud. All failures are logged to the audit trail with source IP and request context for security investigation.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_checksum_failures_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Checksum Failures (/hr)", "refId": "A" },
+        { "expr": "sum by (source) (rate(gl_eudr_rng_checksum_failures_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{source}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Checksum Failures (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 27,
+      "title": "Validation Duration",
+      "description": "Histogram of reference number validation duration including format regex matching, Luhn mod-36 checksum computation, member state prefix lookup, sequence range verification, and database existence check. Target: p99 < 10ms for real-time customs clearance validation.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 4, "x": 15, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_validation_duration_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "Blues" }
+        }
+      },
+      "options": {
+        "bucketSize": 0.001,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 28,
+      "title": "Invalid Format Attempts",
+      "description": "Breakdown of invalid reference number format attempts by failure reason: invalid_country_prefix, wrong_length, bad_checksum, invalid_characters, expired_sequence, unknown_format, missing_year_code, invalid_operator_segment. Identifies common input quality issues and potential abuse patterns.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (failure_reason) (increase(gl_eudr_rng_invalid_format_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{failure_reason}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "hue"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "title": "Lifecycle Management",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 54 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 29,
+      "title": "Active References",
+      "description": "Current count of active (non-expired, non-revoked) reference numbers in the system. Active references are linked to valid Due Diligence Statements and can be used for customs clearance per Article 5. Tracks total active inventory for capacity planning.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rng_references_by_status{environment=\"$environment\", status=\"active\"}) or vector(0)", "legendFormat": "Active References", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 1000 },
+              { "color": "purple", "value": 10000 },
+              { "color": "orange", "value": 100000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 30,
+      "title": "References Expiring in 30 Days",
+      "description": "Count of reference numbers expiring within the next 30 days. Per Article 33, reference numbers have defined validity periods. Operators must renew or submit new DDS statements before expiration. High expiration counts trigger proactive notification to affected operators.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rng_references_expiring_30d{environment=\"$environment\"}) or vector(0)", "legendFormat": "Expiring (30d)", "refId": "A" },
+        { "expr": "sum(gl_eudr_rng_references_expiring_7d{environment=\"$environment\"}) or vector(0)", "legendFormat": "Expiring (7d)", "refId": "B" },
+        { "expr": "sum(gl_eudr_rng_references_expiring_1d{environment=\"$environment\"}) or vector(0)", "legendFormat": "Expiring (24h)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 200 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 31,
+      "title": "Revocations",
+      "description": "Rate of reference number revocations over time by reason: operator_request, regulatory_action, fraud_detected, dds_invalidated, compliance_violation, court_order, administrative_error. Revocations immediately invalidate the reference for customs clearance.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_revocations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Revocations (/hr)", "refId": "A" },
+        { "expr": "sum by (reason) (rate(gl_eudr_rng_revocations_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{reason}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Revocations (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 32,
+      "title": "Transfers Between Operators",
+      "description": "Rate of reference number transfers from operators to traders over time per Article 4(3). When a trader places a product on the market using an operator's DDS, the reference number is inherited/transferred. Tracks inter-party reference sharing and chain of custody integrity.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 15, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_transfers_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Transfers (/hr)", "refId": "A" },
+        { "expr": "sum by (transfer_type) (rate(gl_eudr_rng_transfers_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{transfer_type}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Transfers (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 33,
+      "title": "Status Transitions",
+      "description": "Distribution of reference number status transitions over the last 24 hours. Tracks lifecycle flow: generated -> validated -> submitted -> active -> expired/revoked/transferred. Identifies bottlenecks in the lifecycle pipeline and abnormal transition patterns (e.g., direct-to-revoked).",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 55 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (from_status, to_status) (increase(gl_eudr_rng_status_transitions_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{from_status}} -> {{to_status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "hue"
+          }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "title": "Batch Operations",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 63 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 34,
+      "title": "Pending Batches",
+      "description": "Current number of batch reference number generation requests queued for processing. Batches are used for bulk import operations where operators submit multiple DDS statements simultaneously. High pending count indicates processing backlog or capacity constraints.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 64 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rng_pending_batches{environment=\"$environment\"}) or vector(0)", "legendFormat": "Pending Batches", "refId": "A" },
+        { "expr": "sum(gl_eudr_rng_processing_batches{environment=\"$environment\"}) or vector(0)", "legendFormat": "Processing", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 20 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 35,
+      "title": "Batch Completion Rate",
+      "description": "Percentage of batch reference number generation operations completing successfully in the last 24 hours. Batch failures may be caused by partial sequence exhaustion, lock timeouts under high concurrency, or database write failures during bulk insert. Target: >= 99% completion.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 64 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_batch_completed_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_rng_batch_operations_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Batch Completion %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 90 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 36,
+      "title": "Batch Size Distribution",
+      "description": "Histogram of batch sizes (number of reference numbers per batch request) processed in the last hour. Small batches (1-10) are typical for individual operator filings. Large batches (100+) indicate bulk import operations or authorized representative multi-client submissions.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 64 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_batch_size_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "scheme", "schemeId": "Purples" }
+        }
+      },
+      "options": {
+        "bucketSize": 10,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 37,
+      "title": "Batch Processing Duration",
+      "description": "Histogram of batch processing duration from request receipt through sequence allocation, collision checking, checksum computation, bulk persistence, and response assembly. Duration scales with batch size. Target: p99 < 5s for batches up to 100 references, p99 < 30s for batches up to 1000.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 64 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_batch_duration_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "YlOrRd" }
+        }
+      },
+      "options": {
+        "bucketSize": 1,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "title": "Performance & Resources",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 72 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 38,
+      "title": "Database Connection Pool",
+      "description": "PostgreSQL connection pool utilization for the RNG agent. Tracks active, idle, and waiting connections. Pool exhaustion (active = max) causes request queuing and latency spikes. Target: active/max < 80%. Reference number generation is write-heavy and requires dedicated pool monitoring.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_rng_db_pool_active{environment=\"$environment\"}", "legendFormat": "Active", "refId": "A" },
+        { "expr": "gl_eudr_rng_db_pool_idle{environment=\"$environment\"}", "legendFormat": "Idle", "refId": "B" },
+        { "expr": "gl_eudr_rng_db_pool_waiting{environment=\"$environment\"}", "legendFormat": "Waiting", "refId": "C" },
+        { "expr": "gl_eudr_rng_db_pool_max{environment=\"$environment\"}", "legendFormat": "Max", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Active" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Idle" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Waiting" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Max" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 39,
+      "title": "Redis Lock Wait Time",
+      "description": "Histogram of Redis distributed lock acquisition wait time for sequence number allocation. Locks ensure atomic sequence increments under concurrent generation requests. Long wait times indicate lock contention from high-volume generation. Target: p99 < 5ms.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_redis_lock_wait_seconds_bucket{environment=\"$environment\"}[1h])) by (le)", "legendFormat": "{{le}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "RdYlGn", "reverse": true }
+        }
+      },
+      "options": {
+        "bucketSize": 0.001,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 40,
+      "title": "Cache Hit Rate",
+      "description": "Redis cache hit rate for RNG operations including member state format template caching, sequence metadata lookups, reference number existence checks, and operator profile caching. High cache hit rate reduces database load and improves generation latency. Target: >= 90% hit rate.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 10, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_cache_hits_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_rng_cache_requests_total{environment=\"$environment\"}[5m])) > 0) * 100 or vector(0)", "legendFormat": "Cache Hit Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 80 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 41,
+      "title": "API Error Rate",
+      "description": "Rate of API errors (4xx and 5xx) across all /v1/eudr-rng endpoints. Sustained 5xx error rate > 0.5% triggers critical alert. 4xx errors indicate client-side issues (invalid member state, malformed requests, duplicate generation requests). Tracks error rates for generation, validation, lifecycle, and batch endpoints.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 14, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_api_errors_total{environment=\"$environment\", status_code=~\"5..\"}[5m])) * 3600", "legendFormat": "5xx Errors (/hr)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_rng_api_errors_total{environment=\"$environment\", status_code=~\"4..\"}[5m])) * 3600", "legendFormat": "4xx Errors (/hr)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_rng_api_errors_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_rng_api_requests_total{environment=\"$environment\"}[5m])) > 0) * 100", "legendFormat": "Error Rate %", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "5xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Error Rate %" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "unit", "value": "percent" }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 42,
+      "title": "P99 Latency by Endpoint",
+      "description": "Heatmap of p99 latency by API endpoint over time. Endpoints: /generate, /generate-batch, /validate, /lookup, /revoke, /transfer, /lifecycle, /status, /health. Identifies which operations are experiencing latency degradation and correlates with concurrent request volume and resource utilization.",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 73 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.99, sum by (le, endpoint) (rate(gl_eudr_rng_api_request_seconds_bucket{environment=\"$environment\"}[5m])))", "legendFormat": "{{endpoint}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "scheme", "schemeId": "Spectral", "reverse": true }
+        }
+      },
+      "options": {
+        "calculate": true,
+        "calculation": { "xBuckets": { "mode": "size" }, "yBuckets": { "mode": "size", "value": "0.05" } },
+        "color": { "mode": "scheme", "schemeId": "Spectral", "reverse": true },
+        "yAxis": { "unit": "s" },
+        "cellGap": 1,
+        "filterValues": { "le": 1e-9 },
+        "tooltip": { "show": true, "yHistogram": true }
+      }
+    },
+    {
+      "title": "Alert Rules & Runbooks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 81 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 43,
+      "title": "Audit Events by Category",
+      "description": "Distribution of audit trail events for the RNG agent over the last 24 hours by category: reference_generated, reference_validated, reference_revoked, reference_transferred, reference_expired, batch_processed, collision_detected, sequence_rollover, format_violation, checksum_failure.",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (category) (increase(gl_eudr_rng_audit_events_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{category}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 44,
+      "title": "Audit Events Over Time",
+      "description": "Rate of audit trail events over time by category. All reference number lifecycle events are logged for Article 33 (5-year retention) and competent authority access. Spikes correlate with batch operations, regulatory deadlines, and customs clearance peaks.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_rng_audit_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "Total Events (/hr)", "refId": "A" },
+        { "expr": "sum by (category) (rate(gl_eudr_rng_audit_events_total{environment=\"$environment\"}[5m])) * 3600", "legendFormat": "{{category}} (/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Events (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 45,
+      "title": "Records Under Retention",
+      "description": "Total reference number audit records under 5-year Article 33 retention. Tracks record count, storage utilization, and integrity verification status (SHA-256 hash checks). Reference number records must be retained for competent authority access throughout the entire validity period.",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_rng_audit_records_retained{environment=\"$environment\"}) or vector(0)", "legendFormat": "Records Under Retention", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 10000 },
+              { "color": "purple", "value": 100000 },
+              { "color": "orange", "value": 1000000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 46,
+      "title": "Audit Integrity Check Pass Rate",
+      "description": "Percentage of audit trail integrity checks (SHA-256 hash verification) passing successfully. Any failure indicates potential record tampering and triggers immediate critical alert for compliance investigation. Reference number integrity is critical for customs clearance trust.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 86 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_rng_audit_integrity_passed_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_rng_audit_integrity_checks_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(100)", "legendFormat": "Integrity Pass Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 99 },
+              { "color": "yellow", "value": 99.9 },
+              { "color": "green", "value": 99.99 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 47,
+      "title": "References by Operator Type",
+      "description": "Distribution of generated reference numbers by operator/trader type: operator_importer, operator_producer, trader, authorized_representative, sme_operator. Per Article 4, operators bear primary DDS responsibility while traders inherit reference numbers per Article 4(3).",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (operator_type) (increase(gl_eudr_rng_references_generated_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{operator_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 48,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the Reference Number Generator agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 90 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-038 Reference Number Generator Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Low Generation Success Rate** | gl_eudr_rng_generation success rate < 99.9% for 10m | Warning | Every 5m, for 10m | Review generation errors, check sequence availability |\n| 2 | **Critical Generation Failure** | gl_eudr_rng_generation success rate < 95% for 5m | Critical | Every 1m, for 5m | Page on-call, check Redis lock service, review DB connectivity |\n| 3 | **Collision Rate Spike** | gl_eudr_rng_collisions_detected rate > 0.01/sec for 5m | Critical | Every 1m, for 5m | Investigate lock contention, verify Redis cluster health |\n| 4 | **Sequence Near Exhaustion** | gl_eudr_rng_sequence_utilization_percent > 90% for any member state | Warning | Every 15m, for 30m | Expand sequence pool for affected member state |\n| 5 | **Sequence Critical Exhaustion** | gl_eudr_rng_sequence_utilization_percent > 98% for any member state | Critical | Every 5m, for 5m | Immediate pool expansion, page on-call |\n| 6 | **High Checksum Failure Rate** | gl_eudr_rng_checksum_failures_total increase > 10 in 1h | Warning | Every 5m, for 15m | Investigate source of invalid references, check for abuse |\n| 7 | **Generation Latency Degradation** | p99 > 50ms for 10 minutes | Warning | Every 5m, for 10m | Check Redis latency, DB performance, connection pool |\n| 8 | **Batch Processing Backlog** | gl_eudr_rng_pending_batches > 20 for 15m | Warning | Every 5m, for 15m | Scale batch workers, review processing throughput |\n| 9 | **Redis Lock Contention** | p99 lock wait > 5ms for 10 minutes | Warning | Every 5m, for 10m | Scale Redis, review lock granularity, check concurrent load |\n| 10 | **High API Error Rate** | API 5xx error rate > 0.5% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure, review error logs |\n| 11 | **DB Connection Pool Exhaustion** | active/max > 90% for 5 minutes | Critical | Every 1m, for 5m | Scale connection pool, investigate connection leaks |\n| 12 | **Cache Hit Rate Drop** | cache hit rate < 60% for 30m | Warning | Every 5m, for 15m | Review cache configuration, check Redis health |\n| 13 | **Audit Integrity Failure** | integrity pass rate < 100% for any check | Critical | Every 1m, for 1m | Immediate investigation, potential tampering alert |\n| 14 | **Mass Revocation Detected** | gl_eudr_rng_revocations_total increase > 50 in 1h | Warning | Every 5m, for 15m | Investigate revocation trigger, notify compliance team |\n| 15 | **Expiration Surge** | gl_eudr_rng_references_expiring_1d > 100 | Warning | Every 1h, for 1h | Notify affected operators, trigger renewal reminders |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Generation Failure Response](https://runbooks.greenlang.io/eudr/rng/generation-failure)\n- [Collision Investigation](https://runbooks.greenlang.io/eudr/rng/collision-investigation)\n- [Sequence Exhaustion Recovery](https://runbooks.greenlang.io/eudr/rng/sequence-exhaustion)\n- [Redis Lock Contention](https://runbooks.greenlang.io/eudr/rng/redis-lock-contention)\n- [Batch Processing Backlog](https://runbooks.greenlang.io/eudr/rng/batch-backlog)\n- [Checksum Failure Investigation](https://runbooks.greenlang.io/eudr/rng/checksum-failure)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/rng/perf-degradation)\n- [DB Pool Exhaustion](https://runbooks.greenlang.io/eudr/rng/db-pool-exhaustion)\n- [Audit Integrity Failure](https://runbooks.greenlang.io/eudr/rng/audit-integrity-failure)\n- [Mass Revocation Response](https://runbooks.greenlang.io/eudr/rng/mass-revocation)\n- [Expiration Surge Management](https://runbooks.greenlang.io/eudr/rng/expiration-surge)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "reference-number-generator", "agent-eudr-038", "greenlang", "article-4", "article-5", "article-6", "article-26", "article-33", "collision-detection", "sequence-management", "member-states", "checksum-validation", "batch-generation", "lifecycle-management"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_rng_references_generated_total{environment=\"$environment\"}, member_state)",
+        "description": "Filter by EU member state (AT, BE, BG, HR, CY, CZ, DK, EE, FI, FR, DE, GR, HU, IE, IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Member State",
+        "multi": true,
+        "name": "member_state",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_rng_references_generated_total{environment=\"$environment\"}, member_state)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_rng_references_generated_total{environment=\"$environment\"}, operator_type)",
+        "description": "Filter by operator type (operator_importer, operator_producer, trader, authorized_representative, sme_operator)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Operator Type",
+        "multi": true,
+        "name": "operator_type",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_rng_references_generated_total{environment=\"$environment\"}, operator_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_rng_references_by_status{environment=\"$environment\"}, status)",
+        "description": "Filter by reference status (active, pending_validation, validated, submitted, expired, revoked, transferred, suspended)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Status",
+        "multi": true,
+        "name": "status",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_rng_references_by_status{environment=\"$environment\"}, status)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Reference Number Generator (RNG)",
+  "uid": "eudr-rng-038",
+  "version": 1
+}

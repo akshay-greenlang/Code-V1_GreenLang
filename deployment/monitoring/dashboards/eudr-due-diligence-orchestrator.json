@@ -1,0 +1,863 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-026: Due Diligence Orchestrator -- End-to-end EUDR due diligence workflow orchestration, 25-agent coordination, quality gates, parallel execution, error recovery, and DDS package generation",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Active Workflows",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddo_active_workflows)", "legendFormat": "Active Workflows" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 20 },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Running Agents",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddo_running_agents)", "legendFormat": "Running Agents" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "green", "value": 1 },
+              { "color": "yellow", "value": 30 },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Packages Generated (24h)",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_packages_generated_total[24h]))", "legendFormat": "Packages (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "yellow", "value": 10 },
+              { "color": "green", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Workflow Completion Rate",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_workflows_completed_total[24h])) / clamp_min(sum(increase(gl_eudr_ddo_workflows_completed_total[24h])) + sum(increase(gl_eudr_ddo_workflows_failed_total[24h])), 1) * 100", "legendFormat": "Completion Rate %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 70 },
+              { "color": "yellow", "value": 85 },
+              { "color": "green", "value": 95 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Workflow Lifecycle",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Workflows Created / Completed / Failed Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_workflows_created_total[5m]))", "legendFormat": "Created /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_workflows_completed_total[5m]))", "legendFormat": "Completed /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_workflows_failed_total[5m]))", "legendFormat": "Failed /s" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Created /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Completed /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Workflows by Type & Commodity",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_workflows_created_total[5m])) by (workflow_type)", "legendFormat": "Created: {{workflow_type}}" },
+        { "expr": "sum(rate(gl_eudr_ddo_workflows_created_total[5m])) by (commodity)", "legendFormat": "Commodity: {{commodity}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "stacking": { "mode": "none" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Workflow Duration (P50 / P90 / P99)",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddo_workflow_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P50" },
+        { "expr": "histogram_quantile(0.90, sum(rate(gl_eudr_ddo_workflow_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P90" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ddo_workflow_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "P50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "P90" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Workflow Failures by Reason",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_workflows_failed_total[5m])) by (reason)", "legendFormat": "{{reason}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "stacking": { "mode": "normal" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Workflow Duration Heatmap by Type",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddo_workflow_duration_seconds_bucket[5m])) by (le, workflow_type))", "legendFormat": "P50 - {{workflow_type}}" },
+        { "expr": "histogram_quantile(0.90, sum(rate(gl_eudr_ddo_workflow_duration_seconds_bucket[5m])) by (le, workflow_type))", "legendFormat": "P90 - {{workflow_type}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Agent Execution",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Agent Execution Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_agent_executions_total[5m]))", "legendFormat": "Executions Started /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_agent_completions_total[5m]))", "legendFormat": "Completions /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_agent_completions_total{status=\"failed\"}[5m]))", "legendFormat": "Failed /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_agent_completions_total{status=\"skipped\"}[5m]))", "legendFormat": "Skipped /s" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Executions Started /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Completions /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Skipped /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Agent Execution Duration by Agent",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddo_agent_execution_seconds_bucket[5m])) by (le, agent_id))", "legendFormat": "P50 - {{agent_id}}" },
+        { "expr": "histogram_quantile(0.90, sum(rate(gl_eudr_ddo_agent_execution_seconds_bucket[5m])) by (le, agent_id))", "legendFormat": "P90 - {{agent_id}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Running Agents by Phase",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddo_running_agents) by (phase)", "legendFormat": "Running: {{phase}}" },
+        { "expr": "sum(gl_eudr_ddo_running_agents)", "legendFormat": "Total Running" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Running" }, "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Agent Completions by Status",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 38 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_agent_completions_total{status=\"completed\"}[$__range]))", "legendFormat": "Completed" },
+        { "expr": "sum(increase(gl_eudr_ddo_agent_completions_total{status=\"failed\"}[$__range]))", "legendFormat": "Failed" },
+        { "expr": "sum(increase(gl_eudr_ddo_agent_completions_total{status=\"skipped\"}[$__range]))", "legendFormat": "Skipped" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Completed" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Skipped" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Agent Executions by Phase",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 38 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_agent_executions_total[5m])) by (phase)", "legendFormat": "{{phase}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "stacking": { "mode": "normal" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Quality Gates",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 48 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Quality Gate Pass Rate",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 49 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_quality_gate_evaluations_total{result=\"passed\"}[24h])) / clamp_min(sum(increase(gl_eudr_ddo_quality_gate_evaluations_total[24h])), 1) * 100", "legendFormat": "Pass Rate %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 60 },
+              { "color": "yellow", "value": 80 },
+              { "color": "green", "value": 90 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Quality Gate Evaluations by Result",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 10, "x": 6, "y": 49 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_quality_gate_evaluations_total{result=\"passed\"}[5m]))", "legendFormat": "Passed /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_quality_gate_evaluations_total{result=\"failed\"}[5m]))", "legendFormat": "Failed /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_quality_gate_evaluations_total{result=\"overridden\"}[5m]))", "legendFormat": "Overridden /s" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Passed /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Overridden /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Quality Gate Evaluation Duration (P50 / P90)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 49 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddo_quality_gate_seconds_bucket[5m])) by (le))", "legendFormat": "P50" },
+        { "expr": "histogram_quantile(0.90, sum(rate(gl_eudr_ddo_quality_gate_seconds_bucket[5m])) by (le))", "legendFormat": "P90" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ddo_quality_gate_seconds_bucket[5m])) by (le))", "legendFormat": "P99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "P50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "P90" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Quality Gate Results by Gate ID",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 57 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_quality_gate_evaluations_total{result=\"passed\"}[$__range])) by (gate_id)", "legendFormat": "Passed: {{gate_id}}" },
+        { "expr": "sum(increase(gl_eudr_ddo_quality_gate_evaluations_total{result=\"failed\"}[$__range])) by (gate_id)", "legendFormat": "Failed: {{gate_id}}" },
+        { "expr": "sum(increase(gl_eudr_ddo_quality_gate_evaluations_total{result=\"overridden\"}[$__range])) by (gate_id)", "legendFormat": "Overridden: {{gate_id}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": "Passed.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byRegexp", "options": "Failed.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byRegexp", "options": "Overridden.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "barWidth": 0.7,
+        "stacking": "normal",
+        "groupWidth": 0.7
+      }
+    },
+    {
+      "title": "Error Recovery",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 65 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Retry Rate by Agent",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 66 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_retry_attempts_total[5m])) by (agent_id)", "legendFormat": "{{agent_id}}" },
+        { "expr": "sum(rate(gl_eudr_ddo_retry_attempts_total[5m]))", "legendFormat": "Total Retries /s" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Retries /s" }, "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Circuit Breaker Transitions",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 66 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_circuit_breaker_transitions_total{to_state=\"open\"}[5m]))", "legendFormat": "Opened /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_circuit_breaker_transitions_total{to_state=\"half_open\"}[5m]))", "legendFormat": "Half-Open /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_circuit_breaker_transitions_total{to_state=\"closed\"}[5m]))", "legendFormat": "Closed /s" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Opened /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Half-Open /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Closed /s" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Open Circuit Breakers & DLQ Entries",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 66 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_ddo_circuit_breakers_open", "legendFormat": "Open Circuit Breakers" },
+        { "expr": "gl_eudr_ddo_dead_letter_entries", "legendFormat": "Dead Letter Queue Entries" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Open Circuit Breakers" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Dead Letter Queue Entries" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Retry Attempts by Error Type",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 76 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_retry_attempts_total[$__range])) by (error_type)", "legendFormat": "{{error_type}}" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    },
+    {
+      "title": "API Errors by Operation",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 76 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_api_errors_total[5m])) by (operation)", "legendFormat": "{{operation}}" },
+        { "expr": "sum(rate(gl_eudr_ddo_api_errors_total[5m]))", "legendFormat": "Total API Errors /s" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "stacking": { "mode": "normal" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total API Errors /s" }, "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.stacking", "value": { "mode": "none" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Circuit Breaker Transitions by Agent",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 76 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_circuit_breaker_transitions_total{to_state=\"open\"}[$__range])) by (agent_id)", "legendFormat": "Open: {{agent_id}}" },
+        { "expr": "sum(increase(gl_eudr_ddo_circuit_breaker_transitions_total{to_state=\"closed\"}[$__range])) by (agent_id)", "legendFormat": "Closed: {{agent_id}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": "Open.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byRegexp", "options": "Closed.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7,
+        "stacking": "normal",
+        "groupWidth": 0.7
+      }
+    },
+    {
+      "title": "Parallelization",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 86 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Queued Agents by Phase",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 87 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddo_queued_agents) by (phase)", "legendFormat": "Queued: {{phase}}" },
+        { "expr": "sum(gl_eudr_ddo_queued_agents)", "legendFormat": "Total Queued" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Queued" }, "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Active Workflows by Type",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 87 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_ddo_active_workflows) by (workflow_type)", "legendFormat": "{{workflow_type}}" },
+        { "expr": "sum(gl_eudr_ddo_active_workflows)", "legendFormat": "Total Active" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "stacking": { "mode": "none" }
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Active" }, "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Checkpoint Write Backlog",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 87 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_ddo_checkpoint_backlog", "legendFormat": "Checkpoint Backlog" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "thresholdsStyle": { "mode": "area" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Package Generation",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 97 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Packages Generated Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 98 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_ddo_packages_generated_total[5m]))", "legendFormat": "Total /s" },
+        { "expr": "sum(rate(gl_eudr_ddo_packages_generated_total[5m])) by (workflow_type)", "legendFormat": "{{workflow_type}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total /s" }, "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Package Generation Duration (P50 / P90 / P99)",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 98 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_ddo_package_generation_seconds_bucket[5m])) by (le))", "legendFormat": "P50" },
+        { "expr": "histogram_quantile(0.90, sum(rate(gl_eudr_ddo_package_generation_seconds_bucket[5m])) by (le))", "legendFormat": "P90" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_ddo_package_generation_seconds_bucket[5m])) by (le))", "legendFormat": "P99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "P50" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "P90" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Packages by Language",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 98 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_ddo_packages_generated_total[$__range])) by (language)", "legendFormat": "{{language}}" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "due-diligence-orchestrator", "agent-eudr-026", "greenlang", "orchestration", "workflows", "quality-gates", "compliance"],
+  "templating": { "list": [] },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Due Diligence Orchestrator (AGENT-EUDR-026)",
+  "uid": "eudr-due-diligence-orchestrator",
+  "version": 1
+}

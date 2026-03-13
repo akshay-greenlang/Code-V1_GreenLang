@@ -1,0 +1,2033 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-039: Customs Declaration Support (CDS) -- Manages full lifecycle of customs declarations for EUDR-regulated commodity imports into the EU. Handles declaration creation, CN/HS code mapping and validation, commodity classification across all 7 EUDR commodities (cattle, cocoa, coffee, oil palm, rubber, soya, wood), country of origin verification, customs value calculation, tariff computation, EUDR compliance pre-checks including DDS reference validation, integration with EU customs systems (NCTS/AIS), MRN assignment tracking, port of entry management across major EU ports, and customs clearance monitoring per Articles 4, 5, 6, 8, 26, 33 of Regulation (EU) 2023/1115.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview & Health",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "title": "Total Declarations",
+      "description": "Total number of customs declarations created in the last 24 hours across all commodities, ports of entry, and origin countries. Tracks declaration volume for EUDR-regulated imports requiring due diligence statement references per Article 4. Each declaration represents a customs clearance request for goods subject to Regulation (EU) 2023/1115.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_declarations_created_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Declarations (24h)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 100 },
+              { "color": "purple", "value": 500 },
+              { "color": "orange", "value": 2000 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Declarations by Status",
+      "description": "Distribution of customs declarations by current lifecycle status: draft, submitted, pending_clearance, cleared, rejected, held, cancelled, under_review. Provides real-time view of the declaration pipeline and identifies bottlenecks in the submission-to-clearance flow.",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (status) (gl_eudr_cds_declarations_by_status{environment=\"$environment\"})", "legendFormat": "{{status}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "cleared" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "submitted" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "pending_clearance" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "rejected" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "held" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "cancelled" }, "properties": [{ "id": "color", "value": { "fixedColor": "grey", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "draft" }, "properties": [{ "id": "color", "value": { "fixedColor": "light-blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "under_review" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Clearance Success Rate",
+      "description": "Percentage of submitted customs declarations that achieved successful clearance without rejection or hold in the last 24 hours. Target: >= 98% clearance rate for smooth import operations. Accounts for first-pass clearance without re-submission per Articles 4 and 6 compliance.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_declarations_cleared_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_cds_declarations_submitted_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Clearance Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 90 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 98 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Health Status",
+      "description": "Overall health status of the Customs Declaration Support agent. 1 = healthy, 0 = degraded. Monitors engine availability, customs system connectivity (NCTS/AIS), CN code validation service, tariff calculation engine, compliance check pipeline, and background processing workers.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 15, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_cds_health_status{environment=\"$environment\"} or vector(0)", "legendFormat": "Health", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [
+            { "options": { "0": { "text": "DEGRADED", "color": "red" }, "1": { "text": "HEALTHY", "color": "green" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Engine Status",
+      "description": "Status of all seven CDS engines: declaration_builder, cn_code_mapper, tariff_calculator, compliance_checker, customs_submitter, clearance_tracker, port_manager. Shows readiness state, last heartbeat, and processed count per engine.",
+      "type": "table",
+      "gridPos": { "h": 6, "w": 5, "x": 19, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_cds_engine_status{environment=\"$environment\"}", "legendFormat": "{{engine}}", "refId": "A", "format": "table", "instant": true },
+        { "expr": "sum by (engine) (increase(gl_eudr_cds_engine_processed_total{environment=\"$environment\"}[24h]))", "legendFormat": "{{engine}}", "refId": "B", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "center", "filterable": true },
+          "mappings": [
+            { "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } }, "type": "value" }
+          ]
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "engine" }, "properties": [{ "id": "custom.width", "value": 180 }] }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "engine", "desc": false }]
+      },
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "engine": "Engine", "Value #A": "Status", "Value #B": "Processed (24h)" } } }
+      ]
+    },
+    {
+      "title": "Declaration Processing",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "title": "Declarations Created",
+      "description": "Rate of customs declaration creation over time, broken down by commodity type. Tracks declaration creation throughput and identifies peak import filing periods, regulatory deadline surges, and seasonal commodity patterns for EUDR-regulated goods.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_declarations_created_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Total (/min)", "refId": "A" },
+        { "expr": "sum by (commodity) (rate(gl_eudr_cds_declarations_created_total{environment=\"$environment\", commodity=~\"$commodity\"}[5m])) * 60", "legendFormat": "{{commodity}} (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Declarations Submitted",
+      "description": "Rate of customs declaration submissions to EU customs systems (NCTS/AIS) over time. Tracks submission throughput and identifies bottlenecks in the draft-to-submission pipeline. Submission requires valid DDS reference, complete CN code mapping, and passed compliance pre-checks.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_declarations_submitted_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Submitted (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_declarations_rejected_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Rejected (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Submitted (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Rejected (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Declarations Cleared",
+      "description": "Rate of customs declarations that received clearance from EU customs authorities over time. Clearance indicates the goods have been authorized for release into free circulation within the EU per Article 6. Tracks clearance throughput and average time-to-clearance trends.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 10, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_declarations_cleared_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Cleared (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_declarations_held_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Held (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Cleared (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Held (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Processing Duration P50/P95/P99",
+      "description": "Latency percentiles for end-to-end declaration processing including declaration building, CN code mapping, compliance pre-checks, customs system submission, and clearance response. Target: p50 < 2s, p95 < 10s, p99 < 30s for responsive declaration processing.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 15, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_cds_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_cds_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_cds_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 30 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Pending Declarations",
+      "description": "Current count of declarations in pending states: draft (awaiting submission), submitted (awaiting customs response), pending_clearance (under customs review), held (requiring additional documentation). High pending counts indicate processing delays or customs system backlog.",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_status{environment=\"$environment\", status=~\"draft|submitted|pending_clearance|held|under_review\"}) or vector(0)", "legendFormat": "Pending", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 200 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Commodity Distribution",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 11,
+      "title": "Declarations by EUDR Commodity",
+      "description": "Distribution of customs declarations across the 7 EUDR-regulated commodity categories as defined in Annex I of Regulation (EU) 2023/1115: cattle (and derived products), cocoa (and chocolate), coffee, oil palm (and palm oil derivatives), rubber (and rubber products), soya (and soya derivatives), wood (and wood products including paper/pulp).",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (commodity) (gl_eudr_cds_declarations_by_commodity{environment=\"$environment\"})", "legendFormat": "{{commodity}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "cattle" }, "properties": [{ "id": "color", "value": { "fixedColor": "brown", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "cocoa" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "coffee" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "oil_palm" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "rubber" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "soya" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "wood" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Top Commodities by Volume (tonnes)",
+      "description": "Ranking of EUDR commodity categories by total declared import volume in metric tonnes over the selected time range. Identifies dominant commodity flows requiring customs declaration support and capacity planning per commodity type.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sort_desc(sum by (commodity) (increase(gl_eudr_cds_commodity_volume_tonnes_total{environment=\"$environment\"}[$__range])))", "legendFormat": "{{commodity}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 13,
+      "title": "Commodity Value Distribution (EUR)",
+      "description": "Histogram showing the distribution of declared customs values (EUR) per commodity across all EUDR declarations. Identifies typical value ranges for each commodity type and highlights outlier declarations requiring additional review per customs valuation rules.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 5, "x": 12, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (le) (increase(gl_eudr_cds_commodity_value_eur_bucket{environment=\"$environment\"}[$__range]))", "legendFormat": "{{le}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "bucketSize": 10000,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Cattle Declarations",
+      "description": "Current count of active customs declarations for cattle and derived products (live bovine animals, beef, leather, tallow). Tracks EUDR Annex I cattle commodity compliance volume.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 1, "x": 17, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_commodity{environment=\"$environment\", commodity=\"cattle\"}) or vector(0)", "legendFormat": "Cattle", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Cocoa Declarations",
+      "description": "Current count of active customs declarations for cocoa and derived products (cocoa beans, cocoa butter, cocoa powder, chocolate). Tracks EUDR Annex I cocoa commodity compliance volume.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 1, "x": 18, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_commodity{environment=\"$environment\", commodity=\"cocoa\"}) or vector(0)", "legendFormat": "Cocoa", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Coffee Declarations",
+      "description": "Current count of active customs declarations for coffee and derived products (green coffee beans, roasted coffee, coffee extracts). Tracks EUDR Annex I coffee commodity compliance volume.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 1, "x": 19, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_commodity{environment=\"$environment\", commodity=\"coffee\"}) or vector(0)", "legendFormat": "Coffee", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Oil Palm Declarations",
+      "description": "Current count of active customs declarations for oil palm and derived products (palm oil, palm kernel oil, palm olein). Tracks EUDR Annex I oil palm commodity compliance volume.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 1, "x": 20, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_commodity{environment=\"$environment\", commodity=\"oil_palm\"}) or vector(0)", "legendFormat": "Oil Palm", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Rubber Declarations",
+      "description": "Current count of active customs declarations for rubber and derived products (natural rubber, rubber sheets, tyres). Tracks EUDR Annex I rubber commodity compliance volume.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 1, "x": 21, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_commodity{environment=\"$environment\", commodity=\"rubber\"}) or vector(0)", "legendFormat": "Rubber", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 19,
+      "title": "Soya Declarations",
+      "description": "Current count of active customs declarations for soya and derived products (soybeans, soya oil, soya meal, soya flour). Tracks EUDR Annex I soya commodity compliance volume.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 1, "x": 22, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_commodity{environment=\"$environment\", commodity=\"soya\"}) or vector(0)", "legendFormat": "Soya", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 20,
+      "title": "Wood Declarations",
+      "description": "Current count of active customs declarations for wood and derived products (timber, plywood, paper, pulp, charcoal, printed products). Tracks EUDR Annex I wood commodity compliance volume.",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 1, "x": 23, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_cds_declarations_by_commodity{environment=\"$environment\", commodity=\"wood\"}) or vector(0)", "legendFormat": "Wood", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "options": {
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 21,
+      "title": "Commodity Volume Trend",
+      "description": "Time series trend of declared commodity volumes (tonnes) per EUDR commodity type over the selected time range. Identifies seasonal patterns, growth trends, and supply chain shifts across the 7 regulated commodity categories.",
+      "type": "timeseries",
+      "gridPos": { "h": 4, "w": 7, "x": 17, "y": 21 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (commodity) (rate(gl_eudr_cds_commodity_volume_tonnes_total{environment=\"$environment\"}[1h])) * 3600", "legendFormat": "{{commodity}} (t/hr)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "CN Code & HS Code",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 22,
+      "title": "CN Code Mappings Performed",
+      "description": "Rate of Combined Nomenclature (CN) code mapping operations over time. CN codes are the EU-specific 8-digit extensions of the international HS code system used for customs classification. Each EUDR declaration requires accurate CN code assignment matching the commodity type in Annex I of Regulation (EU) 2023/1115.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_cn_code_mappings_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Mappings (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_cn_code_mappings_total{environment=\"$environment\", result=\"success\"}[5m])) * 60", "legendFormat": "Successful (/min)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_cds_cn_code_mappings_total{environment=\"$environment\", result=\"failed\"}[5m])) * 60", "legendFormat": "Failed (/min)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Mappings (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Successful (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 23,
+      "title": "Top 10 CN Codes Used",
+      "description": "Ranking of the 10 most frequently used CN codes across all customs declarations. Identifies dominant product classifications and helps optimize CN code suggestion algorithms. Typical high-volume codes include 1801 (cocoa beans), 0901 (coffee), 1511 (palm oil), 4403 (wood), 1201 (soybeans).",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (cn_code) (gl_eudr_cds_cn_code_usage{environment=\"$environment\"}))", "legendFormat": "{{cn_code}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 24,
+      "title": "HS Code Validations",
+      "description": "Rate of Harmonized System (HS) code validations performed over time. HS codes (6-digit international standard) are validated against the World Customs Organization (WCO) nomenclature and cross-referenced with EUDR Annex I commodity mappings to ensure correct classification.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_hs_code_validations_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Validations (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_hs_code_validations_total{environment=\"$environment\", result=\"valid\"}[5m])) * 60", "legendFormat": "Valid (/min)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_cds_hs_code_validations_total{environment=\"$environment\", result=\"invalid\"}[5m])) * 60", "legendFormat": "Invalid (/min)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Valid (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Invalid (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 25,
+      "title": "Invalid CN/HS Code Attempts",
+      "description": "Time series of invalid CN code and HS code attempts by error type: unknown_code, deprecated_code, wrong_commodity_mapping, format_error, annex_i_mismatch. Sustained invalid attempts indicate user input issues, outdated code tables, or potential misclassification attempts.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (error_type) (rate(gl_eudr_cds_code_validation_errors_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{error_type}} (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_code_validation_errors_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Total Errors (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Errors (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.stacking", "value": { "mode": "none" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Country of Origin",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 26,
+      "title": "Declarations by Origin Country",
+      "description": "World map visualization showing the geographic distribution of customs declarations by country of origin. Color intensity represents declaration volume per country. Highlights major EUDR commodity source countries including Brazil, Indonesia, Colombia, Cote d'Ivoire, Ghana, Malaysia, and equatorial regions with deforestation risk.",
+      "type": "geomap",
+      "gridPos": { "h": 10, "w": 10, "x": 0, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (origin_country) (gl_eudr_cds_declarations_by_origin{environment=\"$environment\"})", "legendFormat": "{{origin_country}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "continuous-GrYlRd" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "orange", "value": 200 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "view": { "id": "coords", "lat": 10, "lon": 20, "zoom": 2 },
+        "basemap": { "type": "default", "name": "OpenStreetMap" },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Origin Countries",
+            "config": {
+              "style": {
+                "color": { "field": "Value", "fixed": "dark-green" },
+                "opacity": 0.7,
+                "size": { "field": "Value", "min": 5, "max": 30 }
+              }
+            },
+            "location": { "mode": "lookup", "lookup": "origin_country" }
+          }
+        ],
+        "tooltip": { "mode": "details" }
+      }
+    },
+    {
+      "id": 27,
+      "title": "Top 10 Origin Countries",
+      "description": "Ranking of the 10 most common countries of origin for EUDR customs declarations. Identifies major commodity source countries and concentration risk in supply chains. Key countries typically include Brazil (soya, cattle, coffee), Indonesia (palm oil, rubber), Cote d'Ivoire (cocoa), Colombia (coffee), Malaysia (palm oil, rubber).",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 10, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(10, sum by (origin_country) (gl_eudr_cds_declarations_by_origin{environment=\"$environment\"}))", "legendFormat": "{{origin_country}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-GrYlRd" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 28,
+      "title": "Origin Verification Pass Rate",
+      "description": "Percentage of origin country verifications that passed validation against the EUDR DDS declared origins in the last 24 hours. Verifies that the declared country of origin in the customs declaration matches the geolocation data in the associated Due Diligence Statement. Target: >= 99% pass rate.",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 4, "x": 16, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_origin_verification_pass_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_cds_origin_verifications_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Pass Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 90 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 29,
+      "title": "Origin Mismatches Detected",
+      "description": "Time series of origin country mismatches detected between customs declarations and DDS geolocation data. Mismatches trigger compliance review and may indicate fraudulent origin declarations, transshipment through intermediary countries, or data entry errors requiring operator correction.",
+      "type": "timeseries",
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 35 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_origin_mismatches_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Mismatches (/min)", "refId": "A" },
+        { "expr": "sum by (mismatch_type) (rate(gl_eudr_cds_origin_mismatches_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{mismatch_type}}", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Mismatches (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 30,
+      "title": "Risk Country Breakdown",
+      "description": "Distribution of customs declarations by EUDR country risk classification: standard (low risk), enhanced (elevated risk per Article 29), high (benchmarked high risk). Countries classified per Commission Implementing Regulation benchmarking. High-risk origins require enhanced due diligence checks.",
+      "type": "piechart",
+      "gridPos": { "h": 5, "w": 4, "x": 16, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (risk_level) (gl_eudr_cds_declarations_by_risk_level{environment=\"$environment\"})", "legendFormat": "{{risk_level}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "standard" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "enhanced" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "high" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["value", "percent"] },
+        "tooltip": { "mode": "single" },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 31,
+      "title": "High-Risk Origin Trend",
+      "description": "Time series of customs declarations originating from high-risk benchmarked countries per Article 29 over time. Increasing high-risk origin volume triggers enhanced scrutiny requirements and may affect customs clearance timelines.",
+      "type": "timeseries",
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_declarations_created_total{environment=\"$environment\", risk_level=\"high\"}[5m])) * 60", "legendFormat": "High-Risk (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_declarations_created_total{environment=\"$environment\", risk_level=\"enhanced\"}[5m])) * 60", "legendFormat": "Enhanced (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "High-Risk (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Enhanced (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Customs Value & Tariffs",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 45 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 32,
+      "title": "Total Customs Value (EUR)",
+      "description": "Total cumulative customs value in EUR across all EUDR customs declarations in the last 24 hours. Represents the declared transaction value of all imported EUDR-regulated commodities subject to Articles 4, 5, and 6 of Regulation (EU) 2023/1115.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 0, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_customs_value_eur_total{environment=\"$environment\"}[24h])) or vector(0)", "legendFormat": "Total Value (EUR)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 1000000 },
+              { "color": "purple", "value": 10000000 },
+              { "color": "orange", "value": 100000000 }
+            ]
+          },
+          "unit": "currencyEUR"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 33,
+      "title": "Average Customs Value per Declaration",
+      "description": "Average declared customs value per declaration in EUR over the last 24 hours. Helps identify typical transaction sizes and detect outlier declarations that may require additional valuation scrutiny under EU customs valuation rules.",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 5, "x": 5, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_customs_value_eur_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_cds_declarations_created_total{environment=\"$environment\"}[24h])) > 0) or vector(0)", "legendFormat": "Avg Value (EUR)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "blue", "value": 10000 },
+              { "color": "purple", "value": 100000 },
+              { "color": "orange", "value": 1000000 }
+            ]
+          },
+          "unit": "currencyEUR"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 34,
+      "title": "Tariff Calculations Performed",
+      "description": "Rate of customs tariff calculations performed over time. Each tariff calculation applies the applicable duty rate based on CN code classification, country of origin, preferential trade agreements, and EUDR-specific levy considerations. Tracks tariff computation throughput.",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 10, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_tariff_calculations_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Calculations (/min)", "refId": "A" },
+        { "expr": "sum by (tariff_type) (rate(gl_eudr_cds_tariff_calculations_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{tariff_type}} (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Calculations (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 35,
+      "title": "Average Tariff Rate",
+      "description": "Average applied tariff rate (percentage) across all EUDR customs declarations. Reflects the weighted average duty rate considering commodity type, origin country, preferential trade agreements (EPA, GSP, GSP+), and any anti-dumping duties. Target varies by commodity mix.",
+      "type": "gauge",
+      "gridPos": { "h": 6, "w": 4, "x": 15, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_cds_applied_tariff_rate_percent{environment=\"$environment\"}) or vector(0)", "legendFormat": "Avg Tariff Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 30
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 36,
+      "title": "Tariff Revenue (EUR)",
+      "description": "Time series of cumulative tariff revenue (EUR) computed from EUDR customs declarations over time. Represents the total duty amount assessed across all cleared declarations broken down by commodity type. Tracks revenue trends and fiscal impact of EUDR import volumes.",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 5, "x": 19, "y": 46 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_tariff_revenue_eur_total{environment=\"$environment\"}[1h]))", "legendFormat": "Total Revenue (EUR/hr)", "refId": "A" },
+        { "expr": "sum by (commodity) (increase(gl_eudr_cds_tariff_revenue_eur_total{environment=\"$environment\"}[1h]))", "legendFormat": "{{commodity}} (EUR/hr)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Revenue (EUR/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Compliance Checks",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 52 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 37,
+      "title": "Compliance Checks Passed",
+      "description": "Rate of EUDR compliance pre-checks that passed successfully over time. Compliance checks include DDS reference validation, geolocation data completeness, commodity-origin matching, operator registration verification, and Article 33 customs authority notification. All checks must pass before declaration submission.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_compliance_checks_passed_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Passed (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_compliance_checks_failed_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Failed (/min)", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Passed (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Failed (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 38,
+      "title": "Compliance Check Failure Rate",
+      "description": "Percentage of compliance pre-checks that failed in the last 24 hours. High failure rates indicate data quality issues in declarations, missing DDS references, or operator registration problems. Target: < 5% failure rate for smooth declaration processing.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 6, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_compliance_checks_failed_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_cds_compliance_checks_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Failure Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 2 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 39,
+      "title": "Failed Checks by Type",
+      "description": "Breakdown of compliance check failures by check type: dds_reference_missing, dds_reference_invalid, geolocation_incomplete, origin_mismatch, operator_unregistered, commodity_mismatch, article_33_notification_missing, risk_assessment_pending. Identifies the most common compliance gaps in declaration preparation.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 7, "x": 10, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sort_desc(sum by (check_type) (increase(gl_eudr_cds_compliance_checks_failed_total{environment=\"$environment\"}[$__range])))", "legendFormat": "{{check_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-RdYlGr" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 40,
+      "title": "DDS Reference Missing Rate",
+      "description": "Percentage of customs declarations attempted without a valid Due Diligence Statement (DDS) reference number in the last 24 hours. Per Article 4(2), all imports of EUDR-regulated commodities must reference a validated DDS before customs clearance. Missing DDS references are the most critical compliance failure.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 3, "x": 17, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_dds_reference_missing_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_cds_declarations_created_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "Missing DDS %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 41,
+      "title": "DDS Reference Validation Trend",
+      "description": "Time series of DDS reference validation outcomes: valid, expired, revoked, not_found, format_invalid. Tracks the health of the DDS-to-customs linkage and identifies patterns in reference number issues requiring coordination with EUDR-038 Reference Number Generator.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 53 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (result) (rate(gl_eudr_cds_dds_reference_validations_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{result}} (/min)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "valid (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "expired (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "revoked (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "not_found (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "format_invalid (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Customs Systems Integration",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 61 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 42,
+      "title": "NCTS Submissions",
+      "description": "Rate of submissions to the New Computerised Transit System (NCTS) for transit declarations over time. NCTS handles goods moving through the EU under customs transit procedures. Tracks submission throughput and identifies connectivity issues with the EU transit system.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 0, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_ncts_submissions_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Submitted (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_ncts_submissions_total{environment=\"$environment\", result=\"accepted\"}[5m])) * 60", "legendFormat": "Accepted (/min)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_cds_ncts_submissions_total{environment=\"$environment\", result=\"rejected\"}[5m])) * 60", "legendFormat": "Rejected (/min)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Submitted (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Accepted (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Rejected (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 43,
+      "title": "AIS Submissions",
+      "description": "Rate of submissions to the Automated Import System (AIS) for import declarations over time. AIS processes customs import declarations at the EU external border. Tracks submission throughput and identifies connectivity issues with national customs import systems.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 5, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_ais_submissions_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "Submitted (/min)", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_ais_submissions_total{environment=\"$environment\", result=\"accepted\"}[5m])) * 60", "legendFormat": "Accepted (/min)", "refId": "B" },
+        { "expr": "sum(rate(gl_eudr_cds_ais_submissions_total{environment=\"$environment\", result=\"rejected\"}[5m])) * 60", "legendFormat": "Rejected (/min)", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Submitted (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Accepted (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Rejected (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 44,
+      "title": "MRN Assignment Success Rate",
+      "description": "Percentage of customs submissions that received a Movement Reference Number (MRN) assignment from EU customs systems in the last 24 hours. MRN is the unique identifier assigned by customs authorities upon acceptance of a declaration. Target: >= 99% MRN assignment rate.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 10, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_cds_mrn_assigned_total{environment=\"$environment\"}[24h])) / (sum(increase(gl_eudr_cds_customs_submissions_total{environment=\"$environment\"}[24h])) > 0) * 100 or vector(0)", "legendFormat": "MRN Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 90 },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 45,
+      "title": "Customs System Response Time",
+      "description": "Histogram of response times from EU customs systems (NCTS/AIS) for declaration submissions. Measures the latency from submission to acknowledgement/MRN assignment. Long response times may indicate customs system load, network issues, or maintenance windows.",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 5, "x": 14, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (le) (increase(gl_eudr_cds_customs_response_seconds_bucket{environment=\"$environment\"}[$__range]))", "legendFormat": "{{le}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "bucketSize": 1,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 46,
+      "title": "Submission Retry Attempts",
+      "description": "Distribution of customs system submission retry attempts by retry count (1, 2, 3, 4, 5+). Retries occur when the initial submission fails due to customs system unavailability, timeout, or transient errors. High retry counts indicate customs system instability or network issues.",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 5, "x": 19, "y": 62 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (retry_count) (increase(gl_eudr_cds_submission_retries_total{environment=\"$environment\"}[$__range]))", "legendFormat": "Retry {{retry_count}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-RdYlGr" }
+        }
+      },
+      "options": {
+        "orientation": "vertical",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "title": "Ports of Entry",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 70 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 47,
+      "title": "Declarations by Port (Top 15 EU Ports)",
+      "description": "Ranking of the top 15 EU ports of entry by customs declaration volume. Major EUDR commodity import ports include Rotterdam (NL), Hamburg (DE), Antwerp (BE), Le Havre (FR), Barcelona (ES), Genoa (IT), Piraeus (GR), Gdansk (PL), Felixstowe (UK), Algeciras (ES), Valencia (ES), Marseille (FR), Bremerhaven (DE), Gothenburg (SE), and Lisbon (PT).",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 10, "x": 0, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "topk(15, sum by (port) (gl_eudr_cds_declarations_by_port{environment=\"$environment\"}))", "legendFormat": "{{port}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "scheme"
+          },
+          "color": { "mode": "continuous-blues" }
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "legend": { "displayMode": "hidden" },
+        "tooltip": { "mode": "single" },
+        "xTickLabelRotation": 0
+      }
+    },
+    {
+      "id": 48,
+      "title": "Rotterdam Traffic",
+      "description": "Time series of customs declarations processed through the Port of Rotterdam (NL), Europe's largest port and primary entry point for EUDR-regulated commodities including palm oil, soya, cocoa, and wood products. Tracks declaration volume trends and identifies peak periods.",
+      "type": "timeseries",
+      "gridPos": { "h": 5, "w": 5, "x": 10, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_declarations_by_port{environment=\"$environment\", port=\"rotterdam\"}[5m])) * 60", "legendFormat": "Rotterdam (/min)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Rotterdam (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 49,
+      "title": "Hamburg Traffic",
+      "description": "Time series of customs declarations processed through the Port of Hamburg (DE), Germany's largest port and a major gateway for EUDR commodities including cocoa, coffee, rubber, and wood products entering Central Europe.",
+      "type": "timeseries",
+      "gridPos": { "h": 5, "w": 5, "x": 15, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_declarations_by_port{environment=\"$environment\", port=\"hamburg\"}[5m])) * 60", "legendFormat": "Hamburg (/min)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Hamburg (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 50,
+      "title": "Antwerp Traffic",
+      "description": "Time series of customs declarations processed through the Port of Antwerp (BE), a primary hub for EUDR-regulated commodity imports including cocoa (world's largest cocoa port), coffee, and palm oil derivatives entering the Benelux and broader EU market.",
+      "type": "timeseries",
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 71 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_declarations_by_port{environment=\"$environment\", port=\"antwerp\"}[5m])) * 60", "legendFormat": "Antwerp (/min)", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Antwerp (/min)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-orange", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 51,
+      "title": "Port Clearance Times",
+      "description": "Heatmap of customs clearance times (hours) by port of entry over time. Shows the distribution of time from declaration submission to clearance for each port. Identifies ports with consistently fast clearance (green) and those experiencing delays (red). Helps operators plan logistics and identify bottleneck ports.",
+      "type": "heatmap",
+      "gridPos": { "h": 5, "w": 14, "x": 10, "y": 76 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (port, le) (increase(gl_eudr_cds_clearance_time_hours_bucket{environment=\"$environment\"}[1h]))", "legendFormat": "{{port}}", "refId": "A", "format": "heatmap" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "custom": {
+            "scaleDistribution": { "type": "linear" }
+          }
+        }
+      },
+      "options": {
+        "calculate": true,
+        "calculation": { "xBuckets": { "mode": "size" }, "yBuckets": { "mode": "size", "value": "1" } },
+        "color": {
+          "mode": "scheme",
+          "scheme": "Oranges",
+          "steps": 128
+        },
+        "cellGap": 1,
+        "yAxis": { "unit": "h" },
+        "tooltip": { "show": true }
+      }
+    },
+    {
+      "title": "Performance & Errors",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 81 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 52,
+      "title": "API Response Time P50/P95/P99",
+      "description": "Latency percentiles for the Customs Declaration Support API endpoints. Measures end-to-end response time for all API operations including declaration CRUD, compliance checks, submission, and status queries. Target: p50 < 200ms, p95 < 1s, p99 < 3s.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_cds_api_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_cds_api_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_cds_api_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 53,
+      "title": "Error Rate",
+      "description": "Time series of error rates for the Customs Declaration Support agent by error category: validation_error, submission_error, customs_system_error, timeout, db_error, auth_error, internal_error. Sustained error rates > 0.5% trigger investigation per SLO targets.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 6, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (error_category) (rate(gl_eudr_cds_errors_total{environment=\"$environment\"}[5m]))", "legendFormat": "{{error_category}}", "refId": "A" },
+        { "expr": "sum(rate(gl_eudr_cds_errors_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total Errors/sec", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Errors/sec" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.stacking", "value": { "mode": "none" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 54,
+      "title": "Database Connection Pool",
+      "description": "PostgreSQL connection pool utilization for the Customs Declaration Support agent. Tracks active connections, idle connections, waiting requests, and maximum pool size. Connection pool exhaustion (active/max > 90%) triggers critical alerts and may cause declaration processing failures.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 5, "x": 11, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "gl_eudr_cds_db_pool_active{environment=\"$environment\"}", "legendFormat": "Active", "refId": "A" },
+        { "expr": "gl_eudr_cds_db_pool_idle{environment=\"$environment\"}", "legendFormat": "Idle", "refId": "B" },
+        { "expr": "gl_eudr_cds_db_pool_waiting{environment=\"$environment\"}", "legendFormat": "Waiting", "refId": "C" },
+        { "expr": "gl_eudr_cds_db_pool_max{environment=\"$environment\"}", "legendFormat": "Max", "refId": "D" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Active" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Idle" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Waiting" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Max" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 55,
+      "title": "Cache Hit Rate",
+      "description": "Redis cache hit rate percentage for the Customs Declaration Support agent. Caches CN code lookups, tariff rate tables, country risk classifications, port metadata, and DDS reference validation results. Target: >= 80% cache hit rate for optimal performance.",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 16, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_cds_cache_hits_total{environment=\"$environment\"}[5m])) / (sum(rate(gl_eudr_cds_cache_requests_total{environment=\"$environment\"}[5m])) > 0) * 100 or vector(0)", "legendFormat": "Cache Hit Rate %", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "id": 56,
+      "title": "Declaration Generation Errors",
+      "description": "Time series of declaration generation errors by error type: cn_code_mapping_failure, tariff_calculation_error, compliance_check_timeout, customs_system_unreachable, dds_reference_lookup_failure, value_calculation_error, port_validation_error. Tracks specific failure modes to guide remediation.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 82 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum by (error_type) (rate(gl_eudr_cds_generation_errors_total{environment=\"$environment\"}[5m])) * 60", "legendFormat": "{{error_type}}", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 57,
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules for the Customs Declaration Support agent with conditions, severity, and notification channels.",
+      "type": "text",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 90 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-039 Customs Declaration Support Alert Rules\n\n| # | Alert | Condition | Severity | Evaluation | Action |\n|---|-------|-----------|----------|------------|--------|\n| 1 | **Low Clearance Success Rate** | gl_eudr_cds clearance rate < 98% for 10m | Warning | Every 5m, for 10m | Review rejected declarations, check compliance pre-check pipeline |\n| 2 | **Critical Clearance Failure** | gl_eudr_cds clearance rate < 90% for 5m | Critical | Every 1m, for 5m | Page on-call, investigate customs system connectivity, check DDS references |\n| 3 | **High CN Code Validation Failure** | gl_eudr_cds CN code error rate > 5% for 10m | Warning | Every 5m, for 10m | Review CN code tables, check for deprecated codes, validate Annex I mappings |\n| 4 | **Customs System Unreachable (NCTS)** | gl_eudr_cds_ncts_submissions success rate < 95% for 5m | Critical | Every 1m, for 5m | Check NCTS connectivity, verify certificates, contact customs IT support |\n| 5 | **Customs System Unreachable (AIS)** | gl_eudr_cds_ais_submissions success rate < 95% for 5m | Critical | Every 1m, for 5m | Check AIS connectivity, verify certificates, contact customs IT support |\n| 6 | **MRN Assignment Failure** | gl_eudr_cds MRN assignment rate < 99% for 15m | Warning | Every 5m, for 15m | Investigate rejected submissions, check declaration format compliance |\n| 7 | **High DDS Reference Missing Rate** | gl_eudr_cds DDS missing rate > 3% for 10m | Warning | Every 5m, for 10m | Notify operators of missing DDS, check EUDR-038 RNG integration |\n| 8 | **Origin Mismatch Spike** | gl_eudr_cds origin mismatch rate > 1% for 15m | Warning | Every 5m, for 15m | Review origin verification, check DDS geolocation data quality |\n| 9 | **Processing Latency Degradation** | p99 > 30s for 10 minutes | Warning | Every 5m, for 10m | Check customs system response times, DB performance, connection pool |\n| 10 | **High API Error Rate** | API 5xx error rate > 0.5% for 5 minutes | Critical | Every 1m, for 5m | Page on-call, check infrastructure, review error logs |\n| 11 | **DB Connection Pool Exhaustion** | active/max > 90% for 5 minutes | Critical | Every 1m, for 5m | Scale connection pool, investigate connection leaks |\n| 12 | **Cache Hit Rate Drop** | cache hit rate < 60% for 30m | Warning | Every 5m, for 15m | Review cache configuration, check Redis health, verify TTL settings |\n| 13 | **Port Clearance Time Spike** | avg clearance time > 48h for any port for 2h | Warning | Every 30m, for 2h | Investigate port-specific delays, check customs authority capacity |\n| 14 | **Compliance Check Failure Spike** | compliance failure rate > 10% for 15m | Warning | Every 5m, for 15m | Review failed check types, update operator guidance documentation |\n| 15 | **High Tariff Calculation Error** | tariff calc error rate > 1% for 10m | Warning | Every 5m, for 10m | Check tariff rate tables, verify preferential agreement data |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical + Email compliance-lead\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Clearance Failure Response](https://runbooks.greenlang.io/eudr/cds/clearance-failure)\n- [Customs System Connectivity](https://runbooks.greenlang.io/eudr/cds/customs-system-connectivity)\n- [CN Code Validation Issues](https://runbooks.greenlang.io/eudr/cds/cn-code-validation)\n- [DDS Reference Integration](https://runbooks.greenlang.io/eudr/cds/dds-reference-integration)\n- [Origin Mismatch Investigation](https://runbooks.greenlang.io/eudr/cds/origin-mismatch)\n- [Port Clearance Delays](https://runbooks.greenlang.io/eudr/cds/port-clearance-delays)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/cds/perf-degradation)\n- [DB Pool Exhaustion](https://runbooks.greenlang.io/eudr/cds/db-pool-exhaustion)\n- [Tariff Calculation Errors](https://runbooks.greenlang.io/eudr/cds/tariff-calc-errors)\n- [Compliance Check Failures](https://runbooks.greenlang.io/eudr/cds/compliance-check-failures)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "customs-declaration-support", "agent-eudr-039", "greenlang", "article-4", "article-5", "article-6", "article-8", "article-26", "article-33", "cn-codes", "hs-codes", "ncts", "ais", "mrn", "customs-clearance", "tariff", "ports-of-entry", "commodities"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_cds_declarations_created_total{environment=\"$environment\"}, commodity)",
+        "description": "Filter by EUDR commodity (cattle, cocoa, coffee, oil_palm, rubber, soya, wood)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Commodity",
+        "multi": true,
+        "name": "commodity",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_cds_declarations_created_total{environment=\"$environment\"}, commodity)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_cds_declarations_by_port{environment=\"$environment\"}, port)",
+        "description": "Filter by EU port of entry (rotterdam, hamburg, antwerp, le_havre, barcelona, genoa, piraeus, gdansk, felixstowe, algeciras, valencia, marseille, bremerhaven, gothenburg, lisbon)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Port",
+        "multi": true,
+        "name": "port",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_cds_declarations_by_port{environment=\"$environment\"}, port)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_cds_declarations_by_origin{environment=\"$environment\"}, origin_country)",
+        "description": "Filter by country of origin (ISO 3166-1 alpha-2 codes: BR, ID, CO, CI, GH, MY, TH, VN, etc.)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Origin Country",
+        "multi": true,
+        "name": "origin_country",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_cds_declarations_by_origin{environment=\"$environment\"}, origin_country)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_cds_declarations_by_status{environment=\"$environment\"}, status)",
+        "description": "Filter by declaration status (draft, submitted, pending_clearance, cleared, rejected, held, cancelled, under_review)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Status",
+        "multi": true,
+        "name": "status",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_cds_declarations_by_status{environment=\"$environment\"}, status)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+    "time_options": ["1h", "3h", "6h", "12h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Customs Declaration Support (CDS)",
+  "uid": "eudr-cds-039",
+  "version": 1
+}

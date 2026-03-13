@@ -1,0 +1,63 @@
+EUDR AGENTS 001-020 INTEGRATION TEST RESULTS
+==============================================
+Execution Date: 2026-03-13
+Total Execution Time: 86.09 seconds (1m 26s)
+
+SUMMARY STATISTICS
+------------------
+Total Tests Collected: 9,943
+Tests Run: ~9,943
+Passed: 6,147 (61.8%)
+Failed: 744 (7.5%)
+Errors: 3,052 (30.7%)
+Warnings: 773
+
+AGENT STATUS BREAKDOWN
+----------------------
+✅ 100% Pass (7 agents):
+  - EUDR-001 Supply Chain Mapper: 935/935 (56.94s)
+  - EUDR-003 Satellite Monitoring: 831/831 (1.83s)
+  - EUDR-004 Forest Cover Analysis: 676/676 (1.58s)
+  - EUDR-005 Land Use Change: 682/682 (1.64s)
+  - EUDR-006 Plot Boundary: 456/456 (1.55s)
+  - EUDR-014 QR Code Generator: 603/603 (12.76s)
+  - EUDR-016 Country Risk: 514/514 (1.41s)
+
+⚠️ Partial Pass (4 agents):
+  - EUDR-017 Supplier Risk: 393/416 (94.5%)
+  - EUDR-018 Commodity Risk: 393/416 (94.5%)
+  - EUDR-019 Corruption Monitor: 443/568 (78.0%)
+  - EUDR-020 Deforestation Alerts: 568/585 (97.1%)
+
+❌ High Error Rate (6 agents):
+  - EUDR-008 Multi-Tier Supplier: 0/552 (100% errors)
+  - EUDR-009 Chain of Custody: 2/503 (0.4% pass)
+  - EUDR-010 Segregation Verifier: 43/613 (7.0% pass)
+  - EUDR-011 Mass Balance: 1/515 (0.2% pass)
+  - EUDR-012 Document Auth: 0/529 (100% errors)
+  - EUDR-013 Blockchain: 0/465 (100% errors)
+  - EUDR-015 Mobile Data: 0/500 (100% errors)
+
+🚫 Not Tested (2 agents):
+  - EUDR-002 Geolocation (ImportError)
+  - EUDR-007 GPS Validator (ImportError)
+
+CRITICAL ISSUES
+---------------
+1. Model import mismatches: 6 agents blocked (3,546 tests)
+2. Engine import errors: 3 agents affected (1,631 tests)
+3. Total blocked/errored: 5,177 tests (52.1%)
+
+PERFORMANCE METRICS
+-------------------
+Fastest: Plot Boundary (294 tests/sec)
+Slowest: Supply Chain Mapper (16 tests/sec)
+Average: 115 tests/second
+
+NEXT STEPS
+----------
+Priority 1: Fix model imports (estimated 2-4 hours)
+Priority 2: Resolve engine errors (estimated 2-3 hours)
+Priority 3: Debug corruption monitor (estimated 1-2 hours)
+
+Projected pass rate after fixes: ~95%

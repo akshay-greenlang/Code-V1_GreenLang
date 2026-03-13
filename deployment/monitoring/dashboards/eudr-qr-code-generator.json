@@ -1,0 +1,343 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-014: QR Code Generator Agent -- QR code generation, payload composition, label rendering, scan tracking, counterfeit detection, batch processing, verification URL management, and lifecycle state tracking",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Total Codes Generated",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_codes_generated_total[24h]))", "legendFormat": "24h" },
+        { "expr": "sum(gl_eudr_qrg_codes_generated_total)", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Active Codes",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_qrg_codes_active)", "legendFormat": "Active" },
+        { "expr": "sum(gl_eudr_qrg_codes_active{status=\"suspended\"})", "legendFormat": "Suspended" },
+        { "expr": "sum(gl_eudr_qrg_codes_active{status=\"expired\"})", "legendFormat": "Expired" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Scans Total (24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_scans_total[24h]))", "legendFormat": "24h Scans" },
+        { "expr": "sum(increase(gl_eudr_qrg_scans_total{outcome=\"valid\"}[24h]))", "legendFormat": "Valid" },
+        { "expr": "sum(increase(gl_eudr_qrg_scans_total{outcome=\"invalid\"}[24h]))", "legendFormat": "Invalid" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Counterfeit Detections (24h)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_scans_total{outcome=\"counterfeit_suspected\"}[24h]))", "legendFormat": "Counterfeit (24h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_scans_total{outcome=\"tampered\"}[24h]))", "legendFormat": "Tampered (24h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_scans_total{outcome=\"signature_mismatch\"}[24h]))", "legendFormat": "Sig Mismatch (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Generation",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Code Generation Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(gl_eudr_qrg_code_generation_duration_seconds_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_qrg_code_generation_duration_seconds_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_qrg_code_generation_duration_seconds_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Codes by Image Format",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (image_format) (gl_eudr_qrg_codes_generated_total)", "legendFormat": "{{image_format}}" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "title": "Codes by Content Type",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (content_type) (gl_eudr_qrg_codes_generated_total)", "legendFormat": "{{content_type}}" }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+    },
+    {
+      "title": "Labels Generated",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_labels_rendered_total[1h]))", "legendFormat": "Labels (1h)" },
+        { "expr": "sum by (template_name) (increase(gl_eudr_qrg_labels_rendered_total[1h]))", "legendFormat": "{{template_name}}" },
+        { "expr": "sum by (output_format) (increase(gl_eudr_qrg_labels_rendered_total[1h]))", "legendFormat": "{{output_format}}" }
+      ]
+    },
+    {
+      "title": "Verification",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Scans Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(gl_eudr_qrg_scans_total{outcome=\"valid\"}[5m])", "legendFormat": "Valid/s" },
+        { "expr": "rate(gl_eudr_qrg_scans_total{outcome=\"invalid\"}[5m])", "legendFormat": "Invalid/s" },
+        { "expr": "rate(gl_eudr_qrg_scans_total{outcome=\"counterfeit_suspected\"}[5m])", "legendFormat": "Counterfeit/s" },
+        { "expr": "rate(gl_eudr_qrg_scans_total[5m])", "legendFormat": "Total/s" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ops" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Counterfeit/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Invalid/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Valid/s" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Scan Outcomes (24h)",
+      "type": "piechart",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum by (outcome) (increase(gl_eudr_qrg_scans_total[24h]))", "legendFormat": "{{outcome}}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "valid" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "invalid" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "counterfeit_suspected" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "expired" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "revoked" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Counterfeit Risk Score Distribution",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_qrg_scan_counterfeit_risk_score)", "legendFormat": "Avg Risk Score" },
+        { "expr": "histogram_quantile(0.95, rate(gl_eudr_qrg_scan_counterfeit_risk_bucket[5m]))", "legendFormat": "p95 Risk" },
+        { "expr": "histogram_quantile(0.99, rate(gl_eudr_qrg_scan_counterfeit_risk_bucket[5m]))", "legendFormat": "p99 Risk" },
+        { "expr": "sum(increase(gl_eudr_qrg_scans_total{outcome=\"counterfeit_suspected\"}[1h]))", "legendFormat": "Counterfeit Alerts (1h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "decimals": 3,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.3 },
+              { "color": "orange", "value": 0.6 },
+              { "color": "red", "value": 0.8 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Signature Verifications",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 13 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_signature_verifications_total{result=\"valid\"}[24h]))", "legendFormat": "Valid (24h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_signature_verifications_total{result=\"invalid\"}[24h]))", "legendFormat": "Invalid (24h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_signature_verifications_total{result=\"key_expired\"}[24h]))", "legendFormat": "Key Expired (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Operations",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Bulk Jobs Active",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_qrg_bulk_jobs_active{status=\"processing\"})", "legendFormat": "Processing" },
+        { "expr": "sum(gl_eudr_qrg_bulk_jobs_active{status=\"queued\"})", "legendFormat": "Queued" },
+        { "expr": "sum(increase(gl_eudr_qrg_bulk_jobs_completed_total[1h]))", "legendFormat": "Completed (1h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_bulk_jobs_failed_total[1h]))", "legendFormat": "Failed (1h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Bulk Codes Generated",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_bulk_codes_generated_total[1h]))", "legendFormat": "Generated (1h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_bulk_codes_failed_total[1h]))", "legendFormat": "Failed (1h)" },
+        { "expr": "sum(gl_eudr_qrg_bulk_job_progress_ratio) / count(gl_eudr_qrg_bulk_job_progress_ratio) * 100", "legendFormat": "Avg Progress %" }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Failed (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Generated (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Revocations",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_lifecycle_transitions_total{action=\"revoke\"}[1h]))", "legendFormat": "Revoked (1h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_lifecycle_transitions_total{action=\"suspend\"}[1h]))", "legendFormat": "Suspended (1h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_lifecycle_transitions_total{action=\"expire\"}[1h]))", "legendFormat": "Expired (1h)" },
+        { "expr": "sum(increase(gl_eudr_qrg_lifecycle_transitions_total{action=\"reactivate\"}[1h]))", "legendFormat": "Reactivated (1h)" }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Revoked (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Suspended (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Expired (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Reactivated (1h)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "API Errors (1h)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_qrg_api_errors_total[1h]))", "legendFormat": "Total Errors" },
+        { "expr": "sum(increase(gl_eudr_qrg_api_errors_total{status_code=~\"5..\"}[1h]))", "legendFormat": "5xx Errors" },
+        { "expr": "sum(increase(gl_eudr_qrg_api_errors_total{status_code=~\"4..\"}[1h]))", "legendFormat": "4xx Errors" }
+      ],
+      "fieldConfig": {
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "5xx Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["eudr", "qr-code-generator", "agent-eudr-014", "greenlang"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "EUDR QR Code Generator (AGENT-EUDR-014)",
+  "uid": "eudr-qrg-014",
+  "version": 1
+}

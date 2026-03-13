@@ -1,0 +1,998 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-023: Legal Compliance Verifier Agent -- country legal frameworks registry, compliance document verification, certification validation (FSC/PEFC/RSPO/RA/ISCC), red flag detection and alerting, compliance assessments across 8 EUDR Article 2(40) categories, third-party audit tracking, country compliance rule sets, batch processing, legal opinion management, and EUDR legal compliance reporting",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Legal Frameworks Registered",
+      "description": "Total number of country legal frameworks currently registered in the system across all 8 legislation categories",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_frameworks_registered_total{environment=\"$environment\"})", "legendFormat": "Total Frameworks" },
+        { "expr": "sum(increase(gl_eudr_lcv_frameworks_registered_total{environment=\"$environment\"}[24h]))", "legendFormat": "New (24h)" },
+        { "expr": "sum(gl_eudr_lcv_frameworks_registered_total{environment=\"$environment\"}) by (category)", "legendFormat": "{{category}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 25 },
+              { "color": "yellow", "value": 100 },
+              { "color": "green", "value": 250 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Documents Verified",
+      "description": "Total compliance documents verified across all suppliers and document types",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_documents_verified_total{environment=\"$environment\"})", "legendFormat": "Total Verified" },
+        { "expr": "sum(increase(gl_eudr_lcv_documents_verified_total{environment=\"$environment\"}[24h]))", "legendFormat": "Verified (24h)" },
+        { "expr": "sum(gl_eudr_lcv_documents_verified_total{environment=\"$environment\", status=\"valid\"})", "legendFormat": "Valid" },
+        { "expr": "sum(gl_eudr_lcv_documents_verified_total{environment=\"$environment\", status=\"rejected\"})", "legendFormat": "Rejected" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 200 },
+              { "color": "green", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Unresolved Red Flags",
+      "description": "Current count of unresolved red flag alerts requiring attention. Alert fires when count exceeds 20.",
+      "type": "stat",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\"})", "legendFormat": "Unresolved" },
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\", severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\", severity=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(increase(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\"}[1h]))", "legendFormat": "New (1h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Compliance Score",
+      "description": "Average legal compliance score across all assessed suppliers. Thresholds: <60 red, 60-80 yellow, >80 green.",
+      "type": "gauge",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_lcv_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Avg Compliance Score" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Activity Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Framework Registrations Over Time",
+      "description": "Rate of legal framework registrations segmented by legislation category",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_frameworks_registered_total{environment=\"$environment\"}[5m])) by (category)", "legendFormat": "{{category}}" },
+        { "expr": "sum(rate(gl_eudr_lcv_frameworks_registered_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Document Verifications by Type",
+      "description": "Compliance document verifications broken down by document type (land_title, forest_permit, environmental_license, etc.)",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_documents_verified_total{environment=\"$environment\"}[5m])) by (document_type)", "legendFormat": "{{document_type}}" },
+        { "expr": "sum(rate(gl_eudr_lcv_documents_verified_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Certification Validations by Scheme",
+      "description": "Certification validations segmented by scheme (FSC, PEFC, RSPO, RA, ISCC, etc.)",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_certifications_validated_total{environment=\"$environment\", scheme=\"FSC\"}[5m]))", "legendFormat": "FSC" },
+        { "expr": "sum(rate(gl_eudr_lcv_certifications_validated_total{environment=\"$environment\", scheme=\"PEFC\"}[5m]))", "legendFormat": "PEFC" },
+        { "expr": "sum(rate(gl_eudr_lcv_certifications_validated_total{environment=\"$environment\", scheme=\"RSPO\"}[5m]))", "legendFormat": "RSPO" },
+        { "expr": "sum(rate(gl_eudr_lcv_certifications_validated_total{environment=\"$environment\", scheme=\"RA\"}[5m]))", "legendFormat": "RA" },
+        { "expr": "sum(rate(gl_eudr_lcv_certifications_validated_total{environment=\"$environment\", scheme=\"ISCC\"}[5m]))", "legendFormat": "ISCC" },
+        { "expr": "sum(rate(gl_eudr_lcv_certifications_validated_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "FSC" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "PEFC" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "RSPO" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "RA" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "ISCC" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Total" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "custom.stacking", "value": { "mode": "none" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Red Flag Monitoring",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Red Flags by Severity",
+      "description": "Red flag detections over time broken down by severity level. Alert: critical red flags > 5/hour triggers immediate escalation.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", severity=\"critical\"}[5m])) * 3600", "legendFormat": "Critical (/hr)" },
+        { "expr": "sum(rate(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", severity=\"high\"}[5m])) * 3600", "legendFormat": "High (/hr)" },
+        { "expr": "sum(rate(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", severity=\"medium\"}[5m])) * 3600", "legendFormat": "Medium (/hr)" },
+        { "expr": "sum(rate(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", severity=\"low\"}[5m])) * 3600", "legendFormat": "Low (/hr)" },
+        { "expr": "sum(increase(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", severity=\"critical\"}[1h]))", "legendFormat": "Critical (1h count)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "High (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low (/hr)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Critical (1h count)" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "custom.fillOpacity", "value": 0 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-LCV Critical Red Flags Rate",
+        "message": "Critical legal compliance red flags exceed 5/hour threshold. Immediate investigation required for EUDR compliance.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["E", "1h", "now"] },
+            "reducer": { "type": "last", "params": [] },
+            "evaluator": { "type": "gt", "params": [5] }
+          }
+        ],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Unresolved Red Flags Trend",
+      "description": "Trend of unresolved red flags over time with severity breakdown. Alert fires when total exceeds 20.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\"})", "legendFormat": "Total Unresolved" },
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\", severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\", severity=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\", severity=\"medium\"})", "legendFormat": "Medium" },
+        { "expr": "sum(gl_eudr_lcv_unresolved_red_flags{environment=\"$environment\", severity=\"low\"})", "legendFormat": "Low" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 15 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total Unresolved" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["last", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-LCV Unresolved Red Flags Threshold",
+        "message": "Unresolved legal compliance red flags exceed 20. Remediation backlog growing beyond acceptable limit.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["A", "5m", "now"] },
+            "reducer": { "type": "last", "params": [] },
+            "evaluator": { "type": "gt", "params": [20] }
+          }
+        ],
+        "frequency": "5m",
+        "for": "10m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Red Flags by Category",
+      "description": "Distribution of red flags across the 6 detection categories: document irregularity, certification gap, legal non-compliance, sanctions match, corruption indicator, deforestation link",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", category=\"document_irregularity\"})", "legendFormat": "Document Irregularity" },
+        { "expr": "sum(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", category=\"certification_gap\"})", "legendFormat": "Certification Gap" },
+        { "expr": "sum(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", category=\"legal_non_compliance\"})", "legendFormat": "Legal Non-Compliance" },
+        { "expr": "sum(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", category=\"sanctions_match\"})", "legendFormat": "Sanctions Match" },
+        { "expr": "sum(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", category=\"corruption_indicator\"})", "legendFormat": "Corruption Indicator" },
+        { "expr": "sum(gl_eudr_lcv_red_flags_detected_total{environment=\"$environment\", category=\"deforestation_link\"})", "legendFormat": "Deforestation Link" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Document Irregularity" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Certification Gap" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Legal Non-Compliance" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Sanctions Match" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Corruption Indicator" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Deforestation Link" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Assessments by Status",
+      "description": "Compliance assessment outcomes over time segmented by status: compliant, partially_compliant, non_compliant, remediation_required",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_compliance_assessments_total{environment=\"$environment\", status=\"compliant\"}[5m]))", "legendFormat": "Compliant" },
+        { "expr": "sum(rate(gl_eudr_lcv_compliance_assessments_total{environment=\"$environment\", status=\"partially_compliant\"}[5m]))", "legendFormat": "Partially Compliant" },
+        { "expr": "sum(rate(gl_eudr_lcv_compliance_assessments_total{environment=\"$environment\", status=\"non_compliant\"}[5m]))", "legendFormat": "Non-Compliant" },
+        { "expr": "sum(rate(gl_eudr_lcv_compliance_assessments_total{environment=\"$environment\", status=\"remediation_required\"}[5m]))", "legendFormat": "Remediation Required" },
+        { "expr": "sum(rate(gl_eudr_lcv_compliance_assessments_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "bars",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Partially Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Non-Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Remediation Required" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Total" }, "properties": [{ "id": "custom.drawStyle", "value": "line" }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.stacking", "value": { "mode": "none" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Active Suppliers Monitored",
+      "description": "Number of unique suppliers currently being monitored for legal compliance",
+      "type": "stat",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_active_suppliers{environment=\"$environment\"})", "legendFormat": "Total Active" },
+        { "expr": "sum(gl_eudr_lcv_active_suppliers{environment=\"$environment\", compliance_status=\"compliant\"})", "legendFormat": "Compliant" },
+        { "expr": "sum(gl_eudr_lcv_active_suppliers{environment=\"$environment\", compliance_status=\"non_compliant\"})", "legendFormat": "Non-Compliant" },
+        { "expr": "sum(gl_eudr_lcv_active_suppliers{environment=\"$environment\", compliance_status=\"under_review\"})", "legendFormat": "Under Review" },
+        { "expr": "sum(increase(gl_eudr_lcv_active_suppliers{environment=\"$environment\"}[7d]))", "legendFormat": "New (7d)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 100 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "Performance Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 38 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Processing Latency (p50 / p95 / p99)",
+      "description": "Processing duration distribution by operation. Shows p50, p95, and p99 percentiles. Alert: p99 > 5s indicates performance degradation.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_lcv_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50 (all ops)" },
+        { "expr": "histogram_quantile(0.95, sum(rate(gl_eudr_lcv_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p95 (all ops)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_lcv_processing_duration_seconds_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99 (all ops)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_lcv_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"document_verify\"}[5m])) by (le))", "legendFormat": "p99 (document_verify)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_lcv_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"certification_validate\"}[5m])) by (le))", "legendFormat": "p99 (certification_validate)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_lcv_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"red_flag_scan\"}[5m])) by (le))", "legendFormat": "p99 (red_flag_scan)" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_lcv_processing_duration_seconds_bucket{environment=\"$environment\", operation=\"compliance_assess\"}[5m])) by (le))", "legendFormat": "p99 (compliance_assess)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line+area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p50 (all ops)" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p95 (all ops)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "p99 (all ops)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-LCV p99 Latency Threshold",
+        "message": "p99 processing latency exceeds 5 seconds. Performance degradation detected in legal compliance verifier pipeline.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["C", "5m", "now"] },
+            "reducer": { "type": "last", "params": [] },
+            "evaluator": { "type": "gt", "params": [5] }
+          }
+        ],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Error Rate by Operation",
+      "description": "Error rate across all legal compliance verifier operations. Alert: error rate > 1% triggers notification for investigation.",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_errors_total{environment=\"$environment\"}[5m])) / clamp_min(sum(rate(gl_eudr_lcv_api_requests_total{environment=\"$environment\"}[5m])), 0.001) * 100", "legendFormat": "Error Rate (%)" },
+        { "expr": "sum(rate(gl_eudr_lcv_errors_total{environment=\"$environment\"}[5m])) by (operation)", "legendFormat": "{{operation}}" },
+        { "expr": "sum(rate(gl_eudr_lcv_errors_total{environment=\"$environment\", error_type=\"validation\"}[5m]))", "legendFormat": "Validation Errors" },
+        { "expr": "sum(rate(gl_eudr_lcv_errors_total{environment=\"$environment\", error_type=\"timeout\"}[5m]))", "legendFormat": "Timeout Errors" },
+        { "expr": "sum(rate(gl_eudr_lcv_errors_total{environment=\"$environment\", error_type=\"database\"}[5m]))", "legendFormat": "Database Errors" },
+        { "expr": "sum(rate(gl_eudr_lcv_errors_total{environment=\"$environment\", error_type=\"external_api\"}[5m]))", "legendFormat": "External API Errors" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Error Rate (%)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "unit", "value": "percent" }, { "id": "custom.axisPlacement", "value": "right" }] },
+          { "matcher": { "id": "byName", "options": "Validation Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Timeout Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Database Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "External API Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-LCV Error Rate Threshold",
+        "message": "Legal compliance verifier error rate exceeds 1%. Investigate failing operations immediately.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["A", "5m", "now"] },
+            "reducer": { "type": "last", "params": [] },
+            "evaluator": { "type": "gt", "params": [1] }
+          }
+        ],
+        "frequency": "1m",
+        "for": "5m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Compliance Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 49 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Compliance Score Distribution",
+      "description": "Distribution of legal compliance scores (0-100) across all assessed suppliers. Threshold: <60 non_compliant, 60-79 partially_compliant, >=80 compliant.",
+      "type": "histogram",
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 50 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "histogram_quantile(0.25, sum(rate(gl_eudr_lcv_compliance_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p25" },
+        { "expr": "histogram_quantile(0.50, sum(rate(gl_eudr_lcv_compliance_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p50 (median)" },
+        { "expr": "histogram_quantile(0.75, sum(rate(gl_eudr_lcv_compliance_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p75" },
+        { "expr": "histogram_quantile(0.90, sum(rate(gl_eudr_lcv_compliance_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p90" },
+        { "expr": "histogram_quantile(0.99, sum(rate(gl_eudr_lcv_compliance_score_distribution_bucket{environment=\"$environment\"}[5m])) by (le))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1
+          },
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "bucketSize": 10,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "title": "Compliance Reports Generated",
+      "description": "Rate of compliance reports generated over time, segmented by report type",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 50 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_reports_generated_total{environment=\"$environment\"}[5m])) by (report_type)", "legendFormat": "{{report_type}}" },
+        { "expr": "sum(rate(gl_eudr_lcv_reports_generated_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total" },
+        { "expr": "sum(increase(gl_eudr_lcv_reports_generated_total{environment=\"$environment\"}[24h]))", "legendFormat": "24h Count" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "bars",
+            "pointSize": 5,
+            "stacking": { "mode": "normal" },
+            "spanNulls": false
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total" }, "properties": [{ "id": "custom.drawStyle", "value": "line" }, { "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }, { "id": "custom.stacking", "value": { "mode": "none" } }] },
+          { "matcher": { "id": "byName", "options": "24h Count" }, "properties": [{ "id": "custom.drawStyle", "value": "line" }, { "id": "color", "value": { "fixedColor": "semi-dark-blue", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }, { "id": "custom.stacking", "value": { "mode": "none" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum", "mean", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Batch Operations Status",
+      "description": "Batch processing operations status distribution: running, completed, failed, partially_completed",
+      "type": "stat",
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 50 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_batch_operations_active{environment=\"$environment\"})", "legendFormat": "Active Batches" },
+        { "expr": "sum(increase(gl_eudr_lcv_batch_operations_completed_total{environment=\"$environment\"}[24h]))", "legendFormat": "Completed (24h)" },
+        { "expr": "sum(increase(gl_eudr_lcv_batch_operations_failed_total{environment=\"$environment\"}[24h]))", "legendFormat": "Failed (24h)" },
+        { "expr": "sum(gl_eudr_lcv_batch_items_pending{environment=\"$environment\"})", "legendFormat": "Items Pending" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 10 },
+              { "color": "red", "value": 20 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "title": "API Metrics",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 60 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "API Request Rate by Endpoint & Status",
+      "description": "API request throughput for the Legal Compliance Verifier agent, segmented by endpoint path and HTTP status code",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 61 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_lcv_api_requests_total{environment=\"$environment\"}[5m])) by (endpoint)", "legendFormat": "{{endpoint}}" },
+        { "expr": "sum(rate(gl_eudr_lcv_api_requests_total{environment=\"$environment\"}[5m]))", "legendFormat": "Total RPS" },
+        { "expr": "sum(rate(gl_eudr_lcv_api_requests_total{environment=\"$environment\", status=~\"5..\"}[5m]))", "legendFormat": "5xx Errors" },
+        { "expr": "sum(rate(gl_eudr_lcv_api_requests_total{environment=\"$environment\", status=~\"4..\"}[5m]))", "legendFormat": "4xx Errors" },
+        { "expr": "sum(rate(gl_eudr_lcv_api_requests_total{environment=\"$environment\", status=~\"2..\"}[5m]))", "legendFormat": "2xx Success" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Total RPS" }, "properties": [{ "id": "color", "value": { "fixedColor": "white", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "5xx Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "4xx Errors" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "2xx Success" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last", "sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Document Expiry Monitoring",
+      "description": "Count of compliance documents by validity status: valid, expiring within 30/60/90 days, expired, revoked",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 61 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "sum(gl_eudr_lcv_documents_by_validity{environment=\"$environment\", validity=\"valid\"})", "legendFormat": "Valid" },
+        { "expr": "sum(gl_eudr_lcv_documents_by_validity{environment=\"$environment\", validity=\"expiring_30d\"})", "legendFormat": "Expiring (30d)" },
+        { "expr": "sum(gl_eudr_lcv_documents_by_validity{environment=\"$environment\", validity=\"expiring_60d\"})", "legendFormat": "Expiring (60d)" },
+        { "expr": "sum(gl_eudr_lcv_documents_by_validity{environment=\"$environment\", validity=\"expiring_90d\"})", "legendFormat": "Expiring (90d)" },
+        { "expr": "sum(gl_eudr_lcv_documents_by_validity{environment=\"$environment\", validity=\"expired\"})", "legendFormat": "Expired" },
+        { "expr": "sum(gl_eudr_lcv_documents_by_validity{environment=\"$environment\", validity=\"revoked\"})", "legendFormat": "Revoked" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Valid" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Expiring (30d)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Expiring (60d)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Expiring (90d)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Expired" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] },
+          { "matcher": { "id": "byName", "options": "Revoked" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["last", "mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "title": "Alert Rules Summary",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 71 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Compliance Score Trend",
+      "description": "Average legal compliance score over time. Alert fires when score drops below 60, indicating systemic legal compliance failures.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 72 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "targets": [
+        { "expr": "avg(gl_eudr_lcv_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Avg Compliance Score" },
+        { "expr": "min(gl_eudr_lcv_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Min Compliance Score" },
+        { "expr": "max(gl_eudr_lcv_compliance_score_avg{environment=\"$environment\"})", "legendFormat": "Max Compliance Score" },
+        { "expr": "avg(gl_eudr_lcv_compliance_score_avg{environment=\"$environment\"}) by (country)", "legendFormat": "Country: {{country}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "drawStyle": "line",
+            "pointSize": 5,
+            "stacking": { "mode": "none" },
+            "spanNulls": false,
+            "lineInterpolation": "smooth",
+            "thresholdsStyle": { "mode": "line+area" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Avg Compliance Score" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }, { "id": "custom.lineWidth", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "Min Compliance Score" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] },
+          { "matcher": { "id": "byName", "options": "Max Compliance Score" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "min", "max", "last"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "alert": {
+        "name": "EUDR-LCV Compliance Score Below Threshold",
+        "message": "Average legal compliance score has dropped below 60. Systemic compliance failure detected across supply chains.",
+        "conditions": [
+          {
+            "type": "query",
+            "query": { "params": ["A", "15m", "now"] },
+            "reducer": { "type": "avg", "params": [] },
+            "evaluator": { "type": "lt", "params": [60] }
+          }
+        ],
+        "frequency": "5m",
+        "for": "15m",
+        "noDataState": "no_data",
+        "executionErrorState": "alerting",
+        "notifications": []
+      }
+    },
+    {
+      "title": "Alert Rules Reference",
+      "description": "Summary of all alert rules configured for the Legal Compliance Verifier agent",
+      "type": "text",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 72 },
+      "options": {
+        "mode": "markdown",
+        "content": "## EUDR-023 Legal Compliance Verifier Alert Rules\n\n| Alert | Condition | Severity | Evaluation |\n|-------|-----------|----------|------------|\n| **Critical Red Flags Rate** | Critical red flags > 5/hour | Critical | Every 1m, for 5m |\n| **p99 Latency Threshold** | p99 processing latency > 5s | Warning | Every 1m, for 5m |\n| **Error Rate Threshold** | Error rate > 1% | Warning | Every 1m, for 5m |\n| **Unresolved Red Flags** | Unresolved red flags > 20 | Warning | Every 5m, for 10m |\n| **Compliance Score Drop** | Avg compliance score < 60 | Critical | Every 5m, for 15m |\n\n### Notification Channels\n- **Critical**: PagerDuty + Slack #eudr-critical\n- **Warning**: Slack #eudr-alerts + Email on-call\n\n### Runbook Links\n- [Legal Compliance Red Flag Response](https://runbooks.greenlang.io/eudr/lcv/red-flag-response)\n- [Document Verification Failure](https://runbooks.greenlang.io/eudr/lcv/doc-verify-failure)\n- [Certification Validation Issues](https://runbooks.greenlang.io/eudr/lcv/cert-validation)\n- [Performance Degradation](https://runbooks.greenlang.io/eudr/lcv/perf-degradation)\n- [Compliance Score Recovery](https://runbooks.greenlang.io/eudr/lcv/compliance-recovery)"
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "legal-compliance", "compliance", "agent-eudr-023", "greenlang", "document-verification", "certification", "red-flags"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "description": "Prometheus data source",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "prod", "value": "prod" },
+        "description": "Deployment environment",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Environment",
+        "multi": false,
+        "name": "environment",
+        "options": [
+          { "selected": false, "text": "dev", "value": "dev" },
+          { "selected": false, "text": "staging", "value": "staging" },
+          { "selected": true, "text": "prod", "value": "prod" }
+        ],
+        "query": "dev,staging,prod",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(gl_eudr_lcv_api_requests_total{environment=\"$environment\"}, operator_id)",
+        "description": "Filter by operator ID",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Operator ID",
+        "multi": true,
+        "name": "operator_id",
+        "options": [],
+        "query": {
+          "query": "label_values(gl_eudr_lcv_api_requests_total{environment=\"$environment\"}, operator_id)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+    "time_options": ["5m", "15m", "1h", "6h", "24h", "7d", "30d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Legal Compliance Verifier (EUDR-023)",
+  "uid": "eudr-legal-compliance-verifier",
+  "version": 1
+}

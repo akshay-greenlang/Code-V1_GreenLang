@@ -1,0 +1,628 @@
+{
+  "annotations": { "list": [] },
+  "description": "AGENT-EUDR-020: Deforestation Alert System Agent -- Satellite detection ingestion, alert lifecycle management, severity scoring, spatial buffer zone monitoring, EUDR cutoff date verification, historical baseline comparisons, workflow state machines, compliance impact assessments, and notification dispatch",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Overview",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Active Alerts",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_alerts_active_total)", "legendFormat": "Total Active" },
+        { "expr": "sum(gl_eudr_das_alerts_active_total{severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_das_alerts_active_total{severity=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(increase(gl_eudr_das_alerts_created_total[24h]))", "legendFormat": "New (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "orange", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Detections Today",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total[24h]))", "legendFormat": "Detections (24h)" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{change_type=\"deforestation\"}[24h]))", "legendFormat": "Deforestation (24h)" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{change_type=\"degradation\"}[24h]))", "legendFormat": "Degradation (24h)" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{change_type=\"fire\"}[24h]))", "legendFormat": "Fire (24h)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "orange", "value": 500 },
+              { "color": "red", "value": 1000 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Monitored Plots",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_spatial_buffers_active_total)", "legendFormat": "Active Buffers" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 200 },
+              { "color": "green", "value": 500 }
+            ]
+          },
+          "unit": "short",
+          "min": 0,
+          "max": 5000
+        }
+      }
+    },
+    {
+      "title": "SLA Compliance",
+      "type": "gauge",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "(1 - (sum(gl_eudr_das_sla_breached_total) / clamp_min(sum(gl_eudr_das_alerts_created_total), 1))) * 100", "legendFormat": "SLA Compliance %" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "orange", "value": 80 },
+              { "color": "yellow", "value": 90 },
+              { "color": "green", "value": 95 }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      }
+    },
+    {
+      "title": "Satellite Detections",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Detections by Source",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 6, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"sentinel2\"}[$__range]))", "legendFormat": "Sentinel-2" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"landsat8\"}[$__range]))", "legendFormat": "Landsat 8" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"landsat9\"}[$__range]))", "legendFormat": "Landsat 9" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"glad\"}[$__range]))", "legendFormat": "GLAD" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"hansen_gfc\"}[$__range]))", "legendFormat": "Hansen GFC" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"radd\"}[$__range]))", "legendFormat": "RADD" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"planet\"}[$__range]))", "legendFormat": "Planet" },
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total{source=\"custom\"}[$__range]))", "legendFormat": "Custom" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        }
+      }
+    },
+    {
+      "title": "Detection Trend",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 6, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_das_detections_ingested_total[1h])) by (source)", "legendFormat": "{{source}}" },
+        { "expr": "sum(rate(gl_eudr_das_detections_ingested_total[1h]))", "legendFormat": "Total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "stacking": { "mode": "normal" }
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Change Type Distribution",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_das_detections_ingested_total[$__range])) by (change_type)", "legendFormat": "{{change_type}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "orange", "value": 500 },
+              { "color": "red", "value": 1000 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "deforestation" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "degradation" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "fire" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "logging" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "clearing" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "regrowth" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "no_change" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Cloud Cover Impact",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "avg(gl_eudr_das_detection_cloud_cover_pct)", "legendFormat": "Avg Cloud Cover %" },
+        { "expr": "quantile(0.90, gl_eudr_das_detection_cloud_cover_pct)", "legendFormat": "P90 Cloud Cover %" },
+        { "expr": "avg(gl_eudr_das_detection_confidence)", "legendFormat": "Avg Confidence" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Alert Management",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Alerts by Severity",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_alerts_active_total{severity=\"critical\"})", "legendFormat": "Critical" },
+        { "expr": "sum(gl_eudr_das_alerts_active_total{severity=\"high\"})", "legendFormat": "High" },
+        { "expr": "sum(gl_eudr_das_alerts_active_total{severity=\"medium\"})", "legendFormat": "Medium" },
+        { "expr": "sum(gl_eudr_das_alerts_active_total{severity=\"low\"})", "legendFormat": "Low" },
+        { "expr": "sum(gl_eudr_das_alerts_active_total{severity=\"informational\"})", "legendFormat": "Informational" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Medium" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Low" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Informational" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "Alert Status Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 6, "x": 6, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_alerts_by_status{status=\"pending\"})", "legendFormat": "Pending" },
+        { "expr": "sum(gl_eudr_das_alerts_by_status{status=\"triaged\"})", "legendFormat": "Triaged" },
+        { "expr": "sum(gl_eudr_das_alerts_by_status{status=\"investigating\"})", "legendFormat": "Investigating" },
+        { "expr": "sum(gl_eudr_das_alerts_by_status{status=\"resolved\"})", "legendFormat": "Resolved" },
+        { "expr": "sum(gl_eudr_das_alerts_by_status{status=\"escalated\"})", "legendFormat": "Escalated" },
+        { "expr": "sum(gl_eudr_das_alerts_by_status{status=\"false_positive\"})", "legendFormat": "False Positive" },
+        { "expr": "sum(gl_eudr_das_alerts_by_status{status=\"expired\"})", "legendFormat": "Expired" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Pending" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Triaged" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Investigating" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Resolved" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Escalated" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "False Positive" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Expired" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-blue", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Alert Resolution Time",
+      "type": "histogram",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "gl_eudr_das_alert_resolution_duration_seconds", "legendFormat": "{{severity}}", "format": "time_series" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "fillOpacity": 80
+          }
+        }
+      },
+      "options": {
+        "bucketSize": 3600,
+        "combine": false,
+        "fillOpacity": 80,
+        "gradientMode": "scheme",
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Geographic Heatmap",
+      "type": "geomap",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_alerts_active_total) by (country_code, latitude, longitude)", "legendFormat": "{{country_code}}", "format": "table", "instant": true }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 5 },
+              { "color": "orange", "value": 15 },
+              { "color": "red", "value": 30 },
+              { "color": "dark-red", "value": 50 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 0,
+          "lon": 20,
+          "zoom": 2
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "config": {
+              "style": {
+                "color": { "field": "Value", "fixed": "dark-green" },
+                "opacity": 0.8,
+                "size": { "field": "Value", "fixed": 5, "min": 3, "max": 20 }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "title": "Buffer & Cutoff",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Buffer Violations",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 0, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(rate(gl_eudr_das_buffer_violations_total[1h]))", "legendFormat": "Total Violations / hr" },
+        { "expr": "sum(rate(gl_eudr_das_buffer_violations_total{distance_band=\"0_1km\"}[1h]))", "legendFormat": "< 1 km" },
+        { "expr": "sum(rate(gl_eudr_das_buffer_violations_total{distance_band=\"1_5km\"}[1h]))", "legendFormat": "1-5 km" },
+        { "expr": "sum(rate(gl_eudr_das_buffer_violations_total{distance_band=\"5_10km\"}[1h]))", "legendFormat": "5-10 km" },
+        { "expr": "sum(rate(gl_eudr_das_buffer_violations_total{distance_band=\"10_plus_km\"}[1h]))", "legendFormat": "> 10 km" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "drawStyle": "line",
+            "pointSize": 5
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Active Buffer Zones",
+      "type": "stat",
+      "gridPos": { "h": 10, "w": 6, "x": 6, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_spatial_buffers_active_total)", "legendFormat": "Active Buffers" },
+        { "expr": "sum(gl_eudr_das_spatial_buffers_active_total{buffer_type=\"circular\"})", "legendFormat": "Circular" },
+        { "expr": "sum(gl_eudr_das_spatial_buffers_active_total{buffer_type=\"polygon\"})", "legendFormat": "Polygon" },
+        { "expr": "sum(gl_eudr_das_spatial_buffers_active_total{buffer_type=\"adaptive\"})", "legendFormat": "Adaptive" },
+        { "expr": "avg(gl_eudr_das_spatial_buffer_radius_km)", "legendFormat": "Avg Radius (km)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 200 },
+              { "color": "green", "value": 500 }
+            ]
+          },
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "title": "Cutoff Verification Results",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_cutoff_verifications_total{cutoff_result=\"pre_cutoff\"})", "legendFormat": "Pre-Cutoff" },
+        { "expr": "sum(gl_eudr_das_cutoff_verifications_total{cutoff_result=\"post_cutoff\"})", "legendFormat": "Post-Cutoff" },
+        { "expr": "sum(gl_eudr_das_cutoff_verifications_total{cutoff_result=\"uncertain\"})", "legendFormat": "Uncertain" },
+        { "expr": "sum(gl_eudr_das_cutoff_verifications_total{cutoff_result=\"ongoing\"})", "legendFormat": "Ongoing" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Pre-Cutoff" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Post-Cutoff" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Uncertain" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Ongoing" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Pre vs Post Cutoff",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_das_alerts_created_total{is_post_cutoff=\"true\"}[$__range])) by (country_code)", "legendFormat": "Post-Cutoff: {{country_code}}" },
+        { "expr": "sum(increase(gl_eudr_das_alerts_created_total{is_post_cutoff=\"false\"}[$__range])) by (country_code)", "legendFormat": "Pre-Cutoff: {{country_code}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": "Post-Cutoff.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byRegexp", "options": "Pre-Cutoff.*" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "always",
+        "barWidth": 0.7,
+        "stacking": "normal",
+        "groupWidth": 0.7
+      }
+    },
+    {
+      "title": "Workflow & Compliance",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 38 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "title": "Workflow State Distribution",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 6, "x": 0, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_das_workflow_transitions_total{action=\"triage\"}[$__range]))", "legendFormat": "Triage" },
+        { "expr": "sum(increase(gl_eudr_das_workflow_transitions_total{action=\"assign\"}[$__range]))", "legendFormat": "Assign" },
+        { "expr": "sum(increase(gl_eudr_das_workflow_transitions_total{action=\"investigate\"}[$__range]))", "legendFormat": "Investigate" },
+        { "expr": "sum(increase(gl_eudr_das_workflow_transitions_total{action=\"resolve\"}[$__range]))", "legendFormat": "Resolve" },
+        { "expr": "sum(increase(gl_eudr_das_workflow_transitions_total{action=\"escalate\"}[$__range]))", "legendFormat": "Escalate" },
+        { "expr": "sum(increase(gl_eudr_das_workflow_transitions_total{action=\"close\"}[$__range]))", "legendFormat": "Close" },
+        { "expr": "sum(increase(gl_eudr_das_workflow_transitions_total{action=\"reopen\"}[$__range]))", "legendFormat": "Reopen" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Triage" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Assign" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Investigate" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Resolve" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Escalate" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Close" }, "properties": [{ "id": "color", "value": { "fixedColor": "semi-dark-green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Reopen" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "barWidth": 0.7
+      }
+    },
+    {
+      "title": "SLA Breach Trend",
+      "type": "timeseries",
+      "gridPos": { "h": 10, "w": 6, "x": 6, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(increase(gl_eudr_das_sla_breached_total[1h]))", "legendFormat": "SLA Breaches / hr" },
+        { "expr": "sum(increase(gl_eudr_das_sla_breached_total{severity=\"critical\"}[1h]))", "legendFormat": "Critical SLA Breaches" },
+        { "expr": "sum(increase(gl_eudr_das_sla_breached_total{severity=\"high\"}[1h]))", "legendFormat": "High SLA Breaches" },
+        { "expr": "sum(gl_eudr_das_alerts_pending_sla_total)", "legendFormat": "Pending SLA (Current)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Critical SLA Breaches" }, "properties": [{ "id": "color", "value": { "fixedColor": "dark-red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "High SLA Breaches" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Pending SLA (Current)" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }, { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Compliance Outcomes",
+      "type": "piechart",
+      "gridPos": { "h": 10, "w": 6, "x": 12, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_compliance_outcomes_total{outcome=\"compliant\"})", "legendFormat": "Compliant" },
+        { "expr": "sum(gl_eudr_das_compliance_outcomes_total{outcome=\"non_compliant\"})", "legendFormat": "Non-Compliant" },
+        { "expr": "sum(gl_eudr_das_compliance_outcomes_total{outcome=\"under_review\"})", "legendFormat": "Under Review" },
+        { "expr": "sum(gl_eudr_das_compliance_outcomes_total{outcome=\"remediation_required\"})", "legendFormat": "Remediation Required" }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right" },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Non-Compliant" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Under Review" }, "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Remediation Required" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      }
+    },
+    {
+      "title": "Financial Impact",
+      "type": "stat",
+      "gridPos": { "h": 10, "w": 6, "x": 18, "y": 39 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "sum(gl_eudr_das_estimated_financial_impact_eur_total)", "legendFormat": "Total Financial Impact" },
+        { "expr": "sum(gl_eudr_das_estimated_financial_impact_eur_total{outcome=\"non_compliant\"})", "legendFormat": "Non-Compliant Impact" },
+        { "expr": "sum(gl_eudr_das_estimated_financial_impact_eur_total{outcome=\"remediation_required\"})", "legendFormat": "Remediation Cost" },
+        { "expr": "sum(gl_eudr_das_market_restrictions_total)", "legendFormat": "Market Restrictions" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100000 },
+              { "color": "orange", "value": 500000 },
+              { "color": "red", "value": 1000000 }
+            ]
+          },
+          "unit": "currencyEUR"
+        }
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["eudr", "deforestation-alert-system", "agent-eudr-020", "greenlang", "deforestation", "satellite", "alerts", "compliance"],
+  "templating": { "list": [] },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
+  "timezone": "browser",
+  "title": "EUDR Deforestation Alert System (AGENT-EUDR-020)",
+  "uid": "eudr-deforestation-alert-system",
+  "version": 1
+}
