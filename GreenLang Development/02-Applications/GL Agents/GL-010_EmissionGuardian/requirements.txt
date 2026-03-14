@@ -60,7 +60,7 @@ pytz==2024.1
 
 # Security
 cryptography==41.0.7
-pyjwt==2.8.0
+pyjwt==2.12.0
 passlib[bcrypt]==1.7.4
 
 # Validation
