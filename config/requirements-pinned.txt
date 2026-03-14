@@ -13,9 +13,9 @@ cryptography==46.0.3 \
     --hash=sha256:4f3b10de2b2be7a39e0f0a5b4e1b5f9c7f8e7b9f8a3c3f9e8d7c6b5a4e3d2c1b0a9 \
     --hash=sha256:5g4b10de2b2be7a39e0f0a5b4e1b5f9c7f8e7b9f8a3c3f9e8d7c6b5a4e3d2c1b0b0  # Cryptographic backend for JWT
 
-PyJWT==2.8.0 \
-    --hash=sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de \
-    --hash=sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320  # JWT token encoding
+PyJWT==2.12.0 \
+    --hash=sha256:2f62390b667cd8257de560b850bb5a883102a388829274147f1d724453f8fb02 \
+    --hash=sha256:9bb459d1bdd0387967d287f5656bf7ec2b9a26645d1961628cda1764e087fd6e  # JWT token encoding
 
 requests==2.32.4 \
     --hash=sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c \
