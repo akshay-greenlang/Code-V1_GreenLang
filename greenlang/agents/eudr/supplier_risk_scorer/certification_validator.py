@@ -77,7 +77,7 @@ from .models import (
     CommodityType,
     ValidateCertificationRequest,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -302,7 +302,7 @@ class CertificationValidator:
                 self._cert_registry[request.certificate_number] = request.supplier_id
 
             # Step 12: Record provenance
-            get_provenance_tracker().record_operation(
+            get_tracker().record_operation(
                 entity_type="certification",
                 entity_id=cert_id,
                 action="validate",

@@ -677,3 +677,39 @@ class RiskAssessmentCoordinator:
         }
         canonical = json.dumps(data, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    # ------------------------------------------------------------------
+    # Test-compatible wrapper methods
+    # ------------------------------------------------------------------
+
+    def _is_phase2_agent(self, agent_id: str) -> bool:
+        """Check if an agent belongs to Phase 2.
+
+        Test-compatible wrapper method.
+
+        Args:
+            agent_id: EUDR agent identifier.
+
+        Returns:
+            True if the agent is a Phase 2 agent.
+        """
+        return agent_id in PHASE_2_AGENTS
+
+    def calculate_composite_risk(
+        self,
+        agent_scores: Dict[str, Decimal],
+    ):
+        """Calculate composite risk score from agent scores.
+
+        Test-compatible wrapper for compute_composite_risk.
+
+        Args:
+            agent_scores: Dict mapping agent_id to risk score.
+
+        Returns:
+            CompositeRiskProfile object.
+        """
+        return self.compute_composite_risk(
+            workflow_id="test-workflow",
+            agent_scores=agent_scores,
+        )

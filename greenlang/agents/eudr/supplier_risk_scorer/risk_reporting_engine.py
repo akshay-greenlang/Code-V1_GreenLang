@@ -57,7 +57,7 @@ from .models import (
     RiskReport,
     SupplierType,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -247,7 +247,7 @@ class RiskReportingEngine:
             self._reports[report_id] = report
 
         # Record provenance
-        provenance = get_provenance_tracker()
+        provenance = get_tracker()
         provenance.record(
             entity_type="risk_report",
             entity_id=report_id,

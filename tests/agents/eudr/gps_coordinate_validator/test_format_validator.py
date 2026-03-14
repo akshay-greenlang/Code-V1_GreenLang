@@ -33,9 +33,8 @@ import pytest
 
 from greenlang.agents.eudr.gps_coordinate_validator.models import (
     ValidationErrorType,
-    ValidationSeverity,
     ValidationResult,
-    ValidationError as VError,
+    CoordinateValidationError,
     BatchValidationResult,
 )
 from tests.agents.eudr.gps_coordinate_validator.conftest import (
@@ -642,8 +641,8 @@ class TestErrorSeverity:
         assert len(oor_errors) >= 1
         for e in oor_errors:
             assert e.severity in (
-                ValidationSeverity.CRITICAL,
-                ValidationSeverity.ERROR,
+                error,
+                error,
             )
 
     def test_nan_is_critical(self, format_validator):
@@ -656,8 +655,8 @@ class TestErrorSeverity:
         assert len(nan_errors) >= 1
         for e in nan_errors:
             assert e.severity in (
-                ValidationSeverity.CRITICAL,
-                ValidationSeverity.ERROR,
+                error,
+                error,
             )
 
     def test_null_island_is_warning(self, format_validator):
@@ -670,8 +669,8 @@ class TestErrorSeverity:
         assert len(null_issues) >= 1
         for e in null_issues:
             assert e.severity in (
-                ValidationSeverity.WARNING,
-                ValidationSeverity.ERROR,
+                warning,
+                error,
             )
 
 

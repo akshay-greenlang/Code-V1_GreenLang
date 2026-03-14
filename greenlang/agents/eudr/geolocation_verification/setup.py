@@ -755,10 +755,10 @@ class GeolocationVerificationService:
         )
 
         from greenlang.agents.eudr.geolocation_verification.models import (
-            CoordinateInput,
+            VerifyCoordinateRequest,
         )
 
-        coord_input = CoordinateInput(
+        coord_input = VerifyCoordinateRequest(
             lat=lat,
             lon=lon,
             declared_country=declared_country,
@@ -794,11 +794,11 @@ class GeolocationVerificationService:
         )
 
         from greenlang.agents.eudr.geolocation_verification.models import (
-            CoordinateInput,
+            VerifyCoordinateRequest,
         )
 
         inputs = [
-            CoordinateInput(
+            VerifyCoordinateRequest(
                 lat=float(c.get("lat", 0.0)),
                 lon=float(c.get("lon", 0.0)),
                 declared_country=str(c.get("declared_country", "")),
@@ -848,10 +848,10 @@ class GeolocationVerificationService:
         )
 
         from greenlang.agents.eudr.geolocation_verification.models import (
-            PolygonInput,
+            VerifyPolygonRequest,
         )
 
-        polygon_input = PolygonInput(
+        polygon_input = VerifyPolygonRequest(
             vertices=vertices,
             declared_area_ha=declared_area_ha,
         )

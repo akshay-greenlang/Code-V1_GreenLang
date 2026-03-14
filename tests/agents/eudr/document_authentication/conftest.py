@@ -1428,7 +1428,7 @@ def classifier_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.document_classifier import (
             DocumentClassifierEngine,
         )
-        return DocumentClassifierEngine(config=dav_config)
+        return DocumentClassifierEngine()
     except ImportError:
         pytest.skip("DocumentClassifierEngine not yet implemented")
 
@@ -1440,7 +1440,7 @@ def signature_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.signature_verifier import (
             SignatureVerifierEngine,
         )
-        return SignatureVerifierEngine(config=dav_config)
+        return SignatureVerifierEngine()
     except ImportError:
         pytest.skip("SignatureVerifierEngine not yet implemented")
 
@@ -1452,7 +1452,7 @@ def hash_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.hash_integrity_validator import (
             HashIntegrityValidator,
         )
-        return HashIntegrityValidator(config=dav_config)
+        return HashIntegrityValidator()
     except ImportError:
         pytest.skip("HashIntegrityValidator not yet implemented")
 
@@ -1464,7 +1464,7 @@ def certificate_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.certificate_chain_validator import (
             CertificateChainValidator,
         )
-        return CertificateChainValidator(config=dav_config)
+        return CertificateChainValidator()
     except ImportError:
         pytest.skip("CertificateChainValidator not yet implemented")
 
@@ -1476,7 +1476,7 @@ def metadata_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.metadata_extractor import (
             MetadataExtractorEngine,
         )
-        return MetadataExtractorEngine(config=dav_config)
+        return MetadataExtractorEngine()
     except ImportError:
         pytest.skip("MetadataExtractorEngine not yet implemented")
 
@@ -1488,7 +1488,7 @@ def fraud_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.fraud_pattern_detector import (
             FraudPatternDetector,
         )
-        return FraudPatternDetector(config=dav_config)
+        return FraudPatternDetector()
     except ImportError:
         pytest.skip("FraudPatternDetector not yet implemented")
 
@@ -1500,7 +1500,7 @@ def crossref_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.cross_reference_verifier import (
             CrossReferenceVerifier,
         )
-        return CrossReferenceVerifier(config=dav_config)
+        return CrossReferenceVerifier()
     except ImportError:
         pytest.skip("CrossReferenceVerifier not yet implemented")
 
@@ -1512,7 +1512,7 @@ def reporter_engine(dav_config):
         from greenlang.agents.eudr.document_authentication.compliance_reporter import (
             ComplianceReporter,
         )
-        return ComplianceReporter(config=dav_config)
+        return ComplianceReporter()
     except ImportError:
         pytest.skip("ComplianceReporter not yet implemented")
 
@@ -1524,7 +1524,7 @@ def service_fixture(dav_config):
         from greenlang.agents.eudr.document_authentication.setup import (
             DocumentAuthenticationService,
         )
-        return DocumentAuthenticationService(config=dav_config)
+        return DocumentAuthenticationService()
     except ImportError:
         pytest.skip("DocumentAuthenticationService not yet implemented")
 

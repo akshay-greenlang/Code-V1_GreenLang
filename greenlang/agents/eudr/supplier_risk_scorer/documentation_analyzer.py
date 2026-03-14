@@ -70,7 +70,7 @@ from .models import (
     DocumentationResponse,
     SupplierDocument,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -296,7 +296,7 @@ class DocumentationAnalyzer:
                 self._supplier_profiles[request.supplier_id] = profile.profile_id
 
             # Step 16: Record provenance
-            get_provenance_tracker().record_operation(
+            get_tracker().record_operation(
                 entity_type="documentation",
                 entity_id=profile.profile_id,
                 action="analyze",

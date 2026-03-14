@@ -42,11 +42,11 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from .models import (
-    IssueSeverity,
-    PolygonInput,
+    PolygonIssue,
+    PolygonIssueType,
     PolygonVerificationResult,
     RepairSuggestion,
-    ValidationIssue,
+    VerifyPolygonRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -233,17 +233,16 @@ class PolygonTopologyVerifier:
             declared_area_ha=declared_area_ha,
             area_tolerance_pct=tol,
         )
-        issues: List[ValidationIssue] = []
+        issues: List[PolygonIssue] = []
 
         # 0. Basic vertex count
         result.vertex_count = self._count_vertices(vertices)
         if result.vertex_count < MIN_POLYGON_VERTICES:
-            issues.append(ValidationIssue(
-                code="POLY_TOO_FEW_VERTICES",
-                severity=IssueSeverity.CRITICAL,
-                message=f"Polygon has {result.vertex_count} unique vertices; "
+            issues.append(PolygonIssue(
+                issue_type=PolygonIssueType.INSUFFICIENT_VERTICES,
+                severity="error",
+                description=f"Polygon has {result.vertex_count} unique vertices; "
                         f"minimum is {MIN_POLYGON_VERTICES}.",
-                field="vertices",
             ))
             result.is_valid = False
             result.issues = issues
@@ -254,12 +253,11 @@ class PolygonTopologyVerifier:
         # 1. Ring closure check
         result.ring_closed = self._check_ring_closure(vertices)
         if not result.ring_closed:
-            issues.append(ValidationIssue(
-                code="POLY_RING_NOT_CLOSED",
-                severity=IssueSeverity.HIGH,
-                message="Polygon ring is not closed. The first and last "
+            issues.append(PolygonIssue(
+                issue_type=PolygonIssueType.UNCLOSED_RING,
+                severity="error",
+                description="Polygon ring is not closed. The first and last "
                         "vertex must be identical.",
-                field="vertices",
             ))
             # Auto-close for subsequent checks
             vertices = list(vertices) + [vertices[0]]
@@ -267,23 +265,21 @@ class PolygonTopologyVerifier:
         # 2. Winding order check (should be counter-clockwise)
         result.winding_order_ccw = self._check_winding_order(vertices)
         if not result.winding_order_ccw:
-            issues.append(ValidationIssue(
-                code="POLY_CLOCKWISE_WINDING",
-                severity=IssueSeverity.MEDIUM,
-                message="Polygon vertices are in clockwise order. "
+            issues.append(PolygonIssue(
+                issue_type=PolygonIssueType.WRONG_WINDING_ORDER,
+                severity="warning",
+                description="Polygon vertices are in clockwise order. "
                         "EUDR convention requires counter-clockwise.",
-                field="vertices",
             ))
 
         # 3. Self-intersection check
         result.has_self_intersection = self._detect_self_intersection(vertices)
         if result.has_self_intersection:
-            issues.append(ValidationIssue(
-                code="POLY_SELF_INTERSECTION",
-                severity=IssueSeverity.CRITICAL,
-                message="Polygon edges self-intersect, creating an invalid "
+            issues.append(PolygonIssue(
+                issue_type=PolygonIssueType.SELF_INTERSECTION,
+                severity="error",
+                description="Polygon edges self-intersect, creating an invalid "
                         "geometry (bowtie or figure-8).",
-                field="vertices",
             ))
 
         # 4. Geodesic area calculation
@@ -298,13 +294,12 @@ class PolygonTopologyVerifier:
                 diff_pct = abs(
                     result.calculated_area_ha - declared_area_ha
                 ) / declared_area_ha * 100.0
-                issues.append(ValidationIssue(
-                    code="POLY_AREA_MISMATCH",
-                    severity=IssueSeverity.HIGH,
-                    message=f"Calculated area ({result.calculated_area_ha:.2f} ha) "
+                issues.append(PolygonIssue(
+                    issue_type=PolygonIssueType.AREA_MISMATCH,
+                    severity="error",
+                    description=f"Calculated area ({result.calculated_area_ha:.2f} ha) "
                             f"differs from declared area ({declared_area_ha:.2f} ha) "
                             f"by {diff_pct:.1f}%, exceeding tolerance of {tol:.1f}%.",
-                    field="area",
                     details={
                         "calculated_ha": result.calculated_area_ha,
                         "declared_ha": declared_area_ha,
@@ -316,12 +311,11 @@ class PolygonTopologyVerifier:
         # 6. Sliver detection
         result.is_sliver = self._detect_sliver(vertices)
         if result.is_sliver:
-            issues.append(ValidationIssue(
-                code="POLY_SLIVER_DETECTED",
-                severity=IssueSeverity.MEDIUM,
-                message="Polygon is a degenerate sliver (very narrow shape "
+            issues.append(PolygonIssue(
+                issue_type=PolygonIssueType.SLIVER_POLYGON,
+                severity="warning",
+                description="Polygon is a degenerate sliver (very narrow shape "
                         "with low area-to-perimeter ratio).",
-                field="vertices",
             ))
 
         # 7. Spike vertex detection
@@ -329,27 +323,26 @@ class PolygonTopologyVerifier:
         result.has_spikes = has_spikes
         result.spike_vertex_indices = spike_indices
         if has_spikes:
-            issues.append(ValidationIssue(
-                code="POLY_SPIKE_VERTICES",
-                severity=IssueSeverity.MEDIUM,
-                message=f"Polygon contains {len(spike_indices)} spike "
+            issues.append(PolygonIssue(
+                issue_type=PolygonIssueType.SPIKE_VERTEX,
+                severity="warning",
+                description=f"Polygon contains {len(spike_indices)} spike "
                         f"vertex(es) with interior angles below "
                         f"{self.spike_angle_threshold}deg at indices: "
                         f"{spike_indices}.",
-                field="vertices",
+                affected_vertices=spike_indices,
                 details={"spike_indices": spike_indices},
             ))
 
         # 8. Vertex density check
         result.vertex_density_ok = self._check_vertex_density(vertices)
         if not result.vertex_density_ok:
-            issues.append(ValidationIssue(
-                code="POLY_LOW_VERTEX_DENSITY",
-                severity=IssueSeverity.LOW,
-                message="Some consecutive vertices are closer than "
+            issues.append(PolygonIssue(
+                issue_type=PolygonIssueType.VERTEX_DENSITY_LOW,
+                severity="warning",
+                description="Some consecutive vertices are closer than "
                         f"{self.min_vertex_spacing_m:.1f}m, indicating "
                         f"redundant points.",
-                field="vertices",
             ))
 
         # 9. Maximum area per commodity
@@ -361,13 +354,12 @@ class PolygonTopologyVerifier:
                 max_ha = COMMODITY_MAX_AREA_HA.get(
                     commodity.lower(), DEFAULT_MAX_AREA_HA
                 )
-                issues.append(ValidationIssue(
-                    code="POLY_EXCEEDS_MAX_AREA",
-                    severity=IssueSeverity.HIGH,
-                    message=f"Calculated area ({result.calculated_area_ha:.2f} ha) "
+                issues.append(PolygonIssue(
+                    issue_type=PolygonIssueType.EXCEEDS_MAX_AREA,
+                    severity="error",
+                    description=f"Calculated area ({result.calculated_area_ha:.2f} ha) "
                             f"exceeds maximum for commodity '{commodity}' "
                             f"({max_ha:.0f} ha).",
-                    field="area",
                     details={
                         "calculated_ha": result.calculated_area_ha,
                         "max_ha": max_ha,
@@ -377,14 +369,9 @@ class PolygonTopologyVerifier:
 
         # Determine overall validity
         critical_issues = [
-            i for i in issues if i.severity == IssueSeverity.CRITICAL
+            i for i in issues if i.severity == "error"
         ]
-        high_issues = [
-            i for i in issues if i.severity == IssueSeverity.HIGH
-        ]
-        result.is_valid = (
-            len(critical_issues) == 0 and len(high_issues) == 0
-        )
+        result.is_valid = len(critical_issues) == 0
         result.issues = issues
 
         # Generate repair suggestions

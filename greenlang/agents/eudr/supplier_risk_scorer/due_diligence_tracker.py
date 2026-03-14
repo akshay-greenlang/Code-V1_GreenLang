@@ -70,7 +70,7 @@ from .models import (
     NonConformanceType,
     TrackDueDiligenceRequest,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -267,7 +267,7 @@ class DueDiligenceTracker:
                 self._dd_records[dd_record.record_id] = dd_record
 
             # Step 13: Record provenance
-            get_provenance_tracker().record_operation(
+            get_tracker().record_operation(
                 entity_type="due_diligence",
                 entity_id=activity_id,
                 action="track",

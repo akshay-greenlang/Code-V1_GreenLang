@@ -39,12 +39,11 @@ from greenlang.agents.eudr.gps_coordinate_validator.models import (
     PrecisionLevel,
     SourceType,
     ValidationErrorType,
-    ValidationSeverity,
     RawCoordinate,
     ParsedCoordinate,
     NormalizedCoordinate,
     PrecisionResult,
-    ValidationError as VError,
+    CoordinateValidationError,
     ValidationResult,
     BatchValidationResult,
 )
@@ -168,21 +167,8 @@ class TestValidationErrorTypeEnum:
         assert expected == actual
 
 
-class TestValidationSeverityEnum:
-    """Test ValidationSeverity enumeration."""
-
-    def test_all_members(self):
-        """All 4 severity levels exist."""
-        expected = {"CRITICAL", "ERROR", "WARNING", "INFO"}
-        actual = {m.name for m in ValidationSeverity}
-        assert expected == actual
-
-    def test_ordering_conceptual(self):
-        """Severity values are lowercase strings."""
-        assert ValidationSeverity.CRITICAL.value == "critical"
-        assert ValidationSeverity.ERROR.value == "error"
-        assert ValidationSeverity.WARNING.value == "warning"
-        assert ValidationSeverity.INFO.value == "info"
+# ValidationSeverity enum removed - severity is now a plain string field
+# Valid values are: "error", "warning", "info"
 
 
 # ===========================================================================
@@ -195,15 +181,15 @@ class TestRawCoordinate:
 
     def test_create_minimal(self):
         """Create RawCoordinate with only required field."""
-        raw = RawCoordinate(input_string="5.603716, -0.186964")
-        assert raw.input_string == "5.603716, -0.186964"
+        raw = RawCoordinate(raw_input="5.603716, -0.186964")
+        assert raw.raw_input == "5.603716, -0.186964"
         assert raw.source_datum is None
         assert raw.country_iso is None
 
     def test_create_full(self):
         """Create RawCoordinate with all fields."""
         raw = RawCoordinate(
-            input_string="5.603716, -0.186964",
+            raw_input="5.603716, -0.186964",
             source_datum=GeodeticDatum.WGS84,
             country_iso="GH",
             source_type=SourceType.GNSS_SURVEY,
@@ -217,23 +203,23 @@ class TestRawCoordinate:
     def test_empty_input_string_rejected(self):
         """Empty input string is rejected by min_length=1."""
         with pytest.raises(PydanticValidationError):
-            RawCoordinate(input_string="")
+            RawCoordinate(raw_input="")
 
     def test_country_iso_length_validation(self):
         """Country ISO must be 2 characters."""
         with pytest.raises(PydanticValidationError):
-            RawCoordinate(input_string="test", country_iso="GHA")
+            RawCoordinate(raw_input="test", country_iso="GHA")
 
     def test_serialization_roundtrip(self):
         """RawCoordinate survives JSON serialization roundtrip."""
         raw = RawCoordinate(
-            input_string="5.603716, -0.186964",
+            raw_input="5.603716, -0.186964",
             source_datum=GeodeticDatum.WGS84,
             country_iso="GH",
         )
         data = raw.model_dump()
         raw2 = RawCoordinate.model_validate(data)
-        assert raw2.input_string == raw.input_string
+        assert raw2.raw_input == raw.raw_input
         assert raw2.source_datum == raw.source_datum
 
 
@@ -450,52 +436,48 @@ class TestPrecisionResult:
 # ===========================================================================
 
 
-class TestValidationErrorModel:
-    """Test ValidationError model creation and validation."""
+class TestCoordinateValidationErrorModel:
+    """Test CoordinateValidationError model creation and validation."""
 
     def test_create_error(self):
         """Create a validation error."""
-        ve = VError(
+        ve = CoordinateValidationError(
             error_type=ValidationErrorType.OUT_OF_RANGE,
-            severity=ValidationSeverity.CRITICAL,
-            message="Latitude 91.0 exceeds maximum of 90.0",
-            field="latitude",
+            description="Latitude 91.0 exceeds maximum of 90.0",
+            severity="error",
         )
         assert ve.error_type == ValidationErrorType.OUT_OF_RANGE
-        assert ve.severity == ValidationSeverity.CRITICAL
-        assert "91.0" in ve.message
+        assert ve.severity == "error"
+        assert "91.0" in ve.description
 
     def test_create_warning(self):
         """Create a validation warning."""
-        ve = VError(
+        ve = CoordinateValidationError(
             error_type=ValidationErrorType.NULL_ISLAND,
-            severity=ValidationSeverity.WARNING,
-            message="Coordinate near Null Island",
-            field="both",
+            description="Coordinate near Null Island",
+            severity="warning",
         )
-        assert ve.severity == ValidationSeverity.WARNING
+        assert ve.severity == "warning"
 
-    def test_suggested_correction(self):
-        """ValidationError can include suggested correction."""
-        ve = VError(
-            error_type=ValidationErrorType.SWAPPED,
-            severity=ValidationSeverity.ERROR,
-            message="Lat/lon appear swapped",
-            suggested_correction={
-                "latitude": -0.186964,
-                "longitude": 5.603716,
-            },
+    def test_corrected_value(self):
+        """CoordinateValidationError can include corrected value."""
+        ve = CoordinateValidationError(
+            error_type=ValidationErrorType.SWAPPED_LAT_LON,
+            description="Lat/lon appear swapped",
+            severity="error",
+            auto_correctable=True,
+            corrected_value="-0.186964, 5.603716",
         )
-        assert ve.suggested_correction is not None
-        assert "latitude" in ve.suggested_correction
+        assert ve.corrected_value is not None
+        assert ve.auto_correctable is True
 
-    def test_default_field_is_both(self):
-        """Default field value is 'both'."""
-        ve = VError(
+    def test_default_severity_is_error(self):
+        """Default severity value is 'error'."""
+        ve = CoordinateValidationError(
             error_type=ValidationErrorType.NAN_VALUE,
-            message="NaN detected",
+            description="NaN detected",
         )
-        assert ve.field == "both"
+        assert ve.severity == "error"
 
 
 # ===========================================================================
@@ -510,8 +492,8 @@ class TestValidationResult:
         """Create a clean validation result."""
         vr = ValidationResult(is_valid=True)
         assert vr.is_valid is True
-        assert vr.error_count == 0
-        assert vr.warning_count == 0
+        assert len(vr.errors) == 0
+        assert len(vr.warnings) == 0
         assert vr.errors == []
         assert vr.warnings == []
 
@@ -520,48 +502,40 @@ class TestValidationResult:
         vr = ValidationResult(
             is_valid=False,
             errors=[
-                VError(
+                CoordinateValidationError(
                     error_type=ValidationErrorType.OUT_OF_RANGE,
-                    message="Lat out of range",
+                    description="Lat out of range",
                 ),
             ],
-            error_count=1,
         )
         assert vr.is_valid is False
         assert len(vr.errors) == 1
-        assert vr.error_count == 1
 
-    def test_auto_correctable_default_false(self):
-        """Auto-correctable defaults to False."""
-        vr = ValidationResult()
-        assert vr.auto_correctable is False
+    def test_auto_corrections_default_empty(self):
+        """Auto-corrections list defaults to empty."""
+        vr = ValidationResult(is_valid=True)
+        assert vr.auto_corrections == []
 
-    def test_correction_confidence_range(self):
-        """Correction confidence must be in [0, 1]."""
-        with pytest.raises(PydanticValidationError):
-            ValidationResult(correction_confidence=1.5)
+    def test_provenance_hash_default_empty(self):
+        """Provenance hash defaults to empty string."""
+        vr = ValidationResult(is_valid=True)
+        assert vr.provenance_hash == ""
 
     def test_serialization_roundtrip(self):
         """ValidationResult survives serialization roundtrip."""
         vr = ValidationResult(
             is_valid=False,
             errors=[
-                VError(
-                    error_type=ValidationErrorType.SWAPPED,
-                    message="Coords appear swapped",
+                CoordinateValidationError(
+                    error_type=ValidationErrorType.SWAPPED_LAT_LON,
+                    description="Coords appear swapped",
                 ),
             ],
-            error_count=1,
-            auto_correctable=True,
-            corrected_latitude=5.603716,
-            corrected_longitude=-0.186964,
-            correction_confidence=0.85,
         )
         data = vr.model_dump()
         vr2 = ValidationResult.model_validate(data)
         assert vr2.is_valid == vr.is_valid
         assert len(vr2.errors) == 1
-        assert vr2.corrected_latitude == 5.603716
 
 
 # ===========================================================================

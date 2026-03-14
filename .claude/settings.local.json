@@ -518,7 +518,12 @@
       "Bash(do echo \"=== $agent ===\" ls -1 \"greenlang/agents/eudr/$agent\"/*.py)",
       "Bash(tee:*)",
       "Bash(chmod:*)",
-      "Bash(do echo \"=== $agent ===\")"
+      "Bash(do echo \"=== $agent ===\")",
+      "Bash(do echo \"Deactivating rollback deployment $id...\")",
+      "Bash(do echo \"Deactivating development deployment $id...\")",
+      "Bash(do echo \"Deactivating dev-plan deployment $id...\")",
+      "Bash(do gh api \"repos/akshay-greenlang/Code-V1_GreenLang/deployments/$id\" -X DELETE)",
+      "Bash(do echo \"Dismissing alert $num...\")"
     ],
     "deny": [],
     "ask": []

@@ -164,7 +164,7 @@ class TestOverallScore:
             ),
         )
         assert result.total_score < Decimal("50.00")
-        assert result.quality_tier == QualityTier.FAIL
+        assert result.quality_tier == QualityTier.UNVERIFIED
 
     def test_score_range(self, accuracy_scorer):
         """Test total score is always in [0, 100] range."""
@@ -289,13 +289,13 @@ class TestQualityTiers:
             temporal_result=_make_temporal_result(is_consistent=False),
         )
         if result.total_score < Decimal("50"):
-            assert result.quality_tier == QualityTier.FAIL
+            assert result.quality_tier == QualityTier.UNVERIFIED
 
     @pytest.mark.parametrize("tier,min_score,max_score", [
         (QualityTier.GOLD, 85, 100),
         (QualityTier.SILVER, 70, 84),
         (QualityTier.BRONZE, 50, 69),
-        (QualityTier.FAIL, 0, 49),
+        (QualityTier.UNVERIFIED, 0, 49),
     ])
     def test_tier_score_boundaries(self, tier, min_score, max_score):
         """Test tier classification at boundary scores."""
@@ -319,7 +319,7 @@ class TestQualityTiers:
 
     def test_fail_tier_value(self):
         """Test FAIL tier enum value."""
-        assert QualityTier.FAIL.value == "fail"
+        assert QualityTier.UNVERIFIED.value == "fail"
 
     def test_all_tiers_present(self):
         """Test all four quality tiers exist."""

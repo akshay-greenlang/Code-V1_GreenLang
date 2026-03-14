@@ -1632,6 +1632,7 @@ class OptimizeBudgetRequest(BaseModel):
         category_budgets: Category-specific budget limits.
         supplier_ids: Suppliers to include in optimization.
         candidate_measure_ids: Candidate measures to consider.
+        supplier_risk_scores: Risk scores per supplier for optimization.
     """
 
     model_config = ConfigDict(strict=True)
@@ -1657,6 +1658,10 @@ class OptimizeBudgetRequest(BaseModel):
     candidate_measure_ids: List[str] = Field(
         default_factory=list,
         description="Candidate measures",
+    )
+    supplier_risk_scores: Dict[str, Decimal] = Field(
+        default_factory=dict,
+        description="Risk scores per supplier (0-100)",
     )
 
 

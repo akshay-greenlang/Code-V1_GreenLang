@@ -37,7 +37,7 @@ from greenlang.agents.eudr.geolocation_verification.api.schemas import (
     PolygonVerificationResponse,
 )
 from greenlang.agents.eudr.geolocation_verification.models import (
-    PolygonInput,
+    VerifyPolygonRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -143,7 +143,7 @@ async def verify_polygon(
     try:
         verifier = get_polygon_verifier()
 
-        polygon_input = PolygonInput(
+        polygon_input = VerifyPolygonRequest(
             vertices=list(body.vertices),
             declared_area_ha=body.declared_area_hectares,
         )
@@ -247,7 +247,7 @@ async def repair_polygon(
     try:
         verifier = get_polygon_verifier()
 
-        polygon_input = PolygonInput(
+        polygon_input = VerifyPolygonRequest(
             vertices=list(body.vertices),
         )
 
@@ -290,7 +290,7 @@ async def repair_polygon(
         ]
 
         # Re-verify repaired polygon
-        repaired_polygon = PolygonInput(vertices=repaired_vertices)
+        repaired_polygon = VerifyPolygonRequest(vertices=repaired_vertices)
         post_repair_result = verifier.verify(repaired_polygon)
 
         elapsed = time.monotonic() - start

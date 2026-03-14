@@ -31,18 +31,20 @@ from greenlang.agents.eudr.geolocation_verification.config import (
 from greenlang.agents.eudr.geolocation_verification.models import (
     BoundaryChange,
     ChangeType,
-    CoordinateInput,
+    CoordinateIssue,
+    CoordinateIssueType,
     CoordinateValidationResult,
     DeforestationVerificationResult,
     GeolocationAccuracyScore,
-    IssueSeverity,
-    PolygonInput,
+    PolygonIssue,
+    PolygonIssueType,
     PolygonVerificationResult,
     ProtectedAreaCheckResult,
     QualityTier,
     RepairSuggestion,
     TemporalChangeResult,
-    ValidationIssue,
+    VerifyCoordinateRequest,
+    VerifyPolygonRequest,
 )
 from greenlang.agents.eudr.geolocation_verification.coordinate_validator import (
     CoordinateValidator,
@@ -155,73 +157,50 @@ def uuid_gen():
 @pytest.fixture
 def valid_coordinate_brazil():
     """Valid coordinate in Para, Brazil (Amazon region)."""
-    return CoordinateInput(
-        lat=-3.1234567,
-        lon=-60.0234567,
-        declared_country="BR",
-        commodity="cocoa",
-        plot_id="PLOT-BR-001",
-    )
+    # Return as tuple for simpler testing
+    return (-3.1234567, -60.0234567)
 
 
 @pytest.fixture
 def valid_coordinate_indonesia():
     """Valid coordinate in Kalimantan, Indonesia."""
-    return CoordinateInput(
-        lat=-2.5678901,
-        lon=111.7654321,
-        declared_country="ID",
-        commodity="oil_palm",
-        plot_id="PLOT-ID-001",
-    )
+    return (-2.5678901, 111.7654321)
 
 
 @pytest.fixture
 def valid_coordinate_ghana():
     """Valid coordinate in Ashanti, Ghana."""
-    return CoordinateInput(
-        lat=6.1234567,
-        lon=-1.6234567,
-        declared_country="GH",
-        commodity="cocoa",
-        plot_id="PLOT-GH-001",
-    )
+    return (6.1234567, -1.6234567)
 
 
 @pytest.fixture
 def invalid_coordinate_ocean():
     """Coordinate in the middle of the Atlantic Ocean (not on land)."""
-    return CoordinateInput(
-        lat=0.0,
-        lon=-30.0,
-        declared_country="BR",
-        commodity="soya",
-        plot_id="PLOT-OCEAN-001",
-    )
+    return (0.0, -30.0)
 
 
 @pytest.fixture
 def coordinate_north_pole():
     """Coordinate at the North Pole (boundary)."""
-    return CoordinateInput(lat=90.0, lon=0.0, declared_country="", plot_id="POLE-N")
+    return (90.0, 0.0)
 
 
 @pytest.fixture
 def coordinate_south_pole():
     """Coordinate at the South Pole (boundary)."""
-    return CoordinateInput(lat=-90.0, lon=0.0, declared_country="", plot_id="POLE-S")
+    return (-90.0, 0.0)
 
 
 @pytest.fixture
 def coordinate_dateline():
     """Coordinate on the International Date Line."""
-    return CoordinateInput(lat=0.0, lon=180.0, declared_country="", plot_id="DATELINE")
+    return (0.0, 180.0)
 
 
 @pytest.fixture
 def coordinate_prime_meridian():
     """Coordinate on the Prime Meridian at the equator."""
-    return CoordinateInput(lat=0.0, lon=0.0, declared_country="", plot_id="PRIME-MER")
+    return (0.0, 0.0)
 
 
 # ---------------------------------------------------------------------------
@@ -237,17 +216,12 @@ def valid_polygon_small():
     Approximately 140m x 285m = ~2 ha at this latitude.
     CCW winding order. Ring is closed (first == last).
     """
-    return PolygonInput(
-        vertices=[
-            (-3.1200, -60.0200),
-            (-3.1200, -60.0180),
-            (-3.1215, -60.0190),
-            (-3.1200, -60.0200),  # closure
-        ],
-        declared_area_ha=2.0,
-        commodity="cocoa",
-        plot_id="POLY-SM-001",
-    )
+    return [
+        (-3.1200, -60.0200),
+        (-3.1200, -60.0180),
+        (-3.1215, -60.0190),
+        (-3.1200, -60.0200),  # closure
+    ]
 
 
 @pytest.fixture
@@ -257,19 +231,14 @@ def valid_polygon_large():
     Pentagon shape near -2.57, 111.77 area.
     CCW winding order. Ring is closed.
     """
-    return PolygonInput(
-        vertices=[
-            (-2.5700, 111.7700),
-            (-2.5700, 111.7740),
-            (-2.5720, 111.7750),
-            (-2.5740, 111.7730),
-            (-2.5730, 111.7700),
-            (-2.5700, 111.7700),  # closure
-        ],
-        declared_area_ha=10.0,
-        commodity="oil_palm",
-        plot_id="POLY-LG-001",
-    )
+    return [
+        (-2.5700, 111.7700),
+        (-2.5700, 111.7740),
+        (-2.5720, 111.7750),
+        (-2.5740, 111.7730),
+        (-2.5730, 111.7700),
+        (-2.5700, 111.7700),  # closure
+    ]
 
 
 @pytest.fixture
@@ -278,62 +247,42 @@ def invalid_polygon_self_intersecting():
 
     Vertices cross over each other, creating two separate lobes.
     """
-    return PolygonInput(
-        vertices=[
-            (-3.1200, -60.0200),
-            (-3.1200, -60.0180),
-            (-3.1220, -60.0200),  # crosses previous edge
-            (-3.1220, -60.0180),  # crosses first edge
-            (-3.1200, -60.0200),  # closure
-        ],
-        declared_area_ha=2.0,
-        commodity="cocoa",
-        plot_id="POLY-SELF-INT",
-    )
+    return [
+        (-3.1200, -60.0200),
+        (-3.1200, -60.0180),
+        (-3.1220, -60.0200),  # crosses previous edge
+        (-3.1220, -60.0180),  # crosses first edge
+        (-3.1200, -60.0200),  # closure
+    ]
 
 
 @pytest.fixture
 def invalid_polygon_unclosed():
     """Polygon that is not properly closed (last vertex != first)."""
-    return PolygonInput(
-        vertices=[
-            (-3.1200, -60.0200),
-            (-3.1200, -60.0180),
-            (-3.1215, -60.0190),
-            # missing closure vertex
-        ],
-        declared_area_ha=2.0,
-        commodity="cocoa",
-        plot_id="POLY-UNCLOSED",
-    )
+    return [
+        (-3.1200, -60.0200),
+        (-3.1200, -60.0180),
+        (-3.1215, -60.0190),
+        # missing closure vertex
+    ]
 
 
 @pytest.fixture
 def polygon_degenerate_point():
     """Degenerate polygon with all vertices at the same point."""
     pt = (-3.12, -60.02)
-    return PolygonInput(
-        vertices=[pt, pt, pt, pt],
-        declared_area_ha=0.0,
-        commodity="cocoa",
-        plot_id="POLY-DEGEN",
-    )
+    return [pt, pt, pt, pt]
 
 
 @pytest.fixture
 def polygon_sliver():
     """Very thin sliver polygon (extremely low area-to-perimeter ratio)."""
-    return PolygonInput(
-        vertices=[
-            (-3.1200, -60.0200),
-            (-3.1200, -60.0000),  # Very long edge
-            (-3.12001, -60.0100),  # Very narrow
-            (-3.1200, -60.0200),
-        ],
-        declared_area_ha=0.1,
-        commodity="cocoa",
-        plot_id="POLY-SLIVER",
-    )
+    return [
+        (-3.1200, -60.0200),
+        (-3.1200, -60.0000),  # Very long edge
+        (-3.12001, -60.0100),  # Very narrow
+        (-3.1200, -60.0200),
+    ]
 
 
 @pytest.fixture
@@ -351,12 +300,7 @@ def polygon_complex_20_vertices():
         lon = center_lon + radius * _math.sin(angle)
         vertices.append((round(lat, 7), round(lon, 7)))
     vertices.append(vertices[0])  # close ring
-    return PolygonInput(
-        vertices=vertices,
-        declared_area_ha=25.0,
-        commodity="oil_palm",
-        plot_id="POLY-COMPLEX-20",
-    )
+    return vertices
 
 
 # ---------------------------------------------------------------------------
@@ -386,24 +330,13 @@ def sample_batch_request():
     for i in range(4):
         plots.append({
             "plot_id": f"BATCH-BR-{i+1:03d}",
-            "coordinate": CoordinateInput(
-                lat=-3.12 + i * 0.01,
-                lon=-60.02 + i * 0.005,
-                declared_country="BR",
-                commodity="cocoa",
-                plot_id=f"BATCH-BR-{i+1:03d}",
-            ),
-            "polygon": PolygonInput(
-                vertices=[
-                    (-3.12 + i * 0.01, -60.02 + i * 0.005),
-                    (-3.12 + i * 0.01, -60.018 + i * 0.005),
-                    (-3.1215 + i * 0.01, -60.019 + i * 0.005),
-                    (-3.12 + i * 0.01, -60.02 + i * 0.005),
-                ],
-                declared_area_ha=2.0,
-                commodity="cocoa",
-                plot_id=f"BATCH-BR-{i+1:03d}",
-            ),
+            "coordinate": (-3.12 + i * 0.01, -60.02 + i * 0.005),
+            "polygon": [
+                (-3.12 + i * 0.01, -60.02 + i * 0.005),
+                (-3.12 + i * 0.01, -60.018 + i * 0.005),
+                (-3.1215 + i * 0.01, -60.019 + i * 0.005),
+                (-3.12 + i * 0.01, -60.02 + i * 0.005),
+            ],
             "declared_country": "BR",
             "commodity": "cocoa",
         })
@@ -411,24 +344,13 @@ def sample_batch_request():
     for i in range(3):
         plots.append({
             "plot_id": f"BATCH-ID-{i+1:03d}",
-            "coordinate": CoordinateInput(
-                lat=-2.57 + i * 0.01,
-                lon=111.77 + i * 0.005,
-                declared_country="ID",
-                commodity="oil_palm",
-                plot_id=f"BATCH-ID-{i+1:03d}",
-            ),
-            "polygon": PolygonInput(
-                vertices=[
-                    (-2.57 + i * 0.01, 111.77 + i * 0.005),
-                    (-2.57 + i * 0.01, 111.772 + i * 0.005),
-                    (-2.5715 + i * 0.01, 111.771 + i * 0.005),
-                    (-2.57 + i * 0.01, 111.77 + i * 0.005),
-                ],
-                declared_area_ha=5.0,
-                commodity="oil_palm",
-                plot_id=f"BATCH-ID-{i+1:03d}",
-            ),
+            "coordinate": (-2.57 + i * 0.01, 111.77 + i * 0.005),
+            "polygon": [
+                (-2.57 + i * 0.01, 111.77 + i * 0.005),
+                (-2.57 + i * 0.01, 111.772 + i * 0.005),
+                (-2.5715 + i * 0.01, 111.771 + i * 0.005),
+                (-2.57 + i * 0.01, 111.77 + i * 0.005),
+            ],
             "declared_country": "ID",
             "commodity": "oil_palm",
         })
@@ -436,24 +358,13 @@ def sample_batch_request():
     for i in range(3):
         plots.append({
             "plot_id": f"BATCH-GH-{i+1:03d}",
-            "coordinate": CoordinateInput(
-                lat=6.12 + i * 0.01,
-                lon=-1.62 + i * 0.005,
-                declared_country="GH",
-                commodity="cocoa",
-                plot_id=f"BATCH-GH-{i+1:03d}",
-            ),
-            "polygon": PolygonInput(
-                vertices=[
-                    (6.12 + i * 0.01, -1.62 + i * 0.005),
-                    (6.12 + i * 0.01, -1.618 + i * 0.005),
-                    (6.1215 + i * 0.01, -1.619 + i * 0.005),
-                    (6.12 + i * 0.01, -1.62 + i * 0.005),
-                ],
-                declared_area_ha=1.5,
-                commodity="cocoa",
-                plot_id=f"BATCH-GH-{i+1:03d}",
-            ),
+            "coordinate": (6.12 + i * 0.01, -1.62 + i * 0.005),
+            "polygon": [
+                (6.12 + i * 0.01, -1.62 + i * 0.005),
+                (6.12 + i * 0.01, -1.618 + i * 0.005),
+                (6.1215 + i * 0.01, -1.619 + i * 0.005),
+                (6.12 + i * 0.01, -1.62 + i * 0.005),
+            ],
             "declared_country": "GH",
             "commodity": "cocoa",
         })

@@ -1886,7 +1886,7 @@ def anchor_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.transaction_anchor import (
             TransactionAnchor,
         )
-        return TransactionAnchor(config=bci_config)
+        return TransactionAnchor()
     except ImportError:
         pytest.skip("TransactionAnchor not yet implemented")
 
@@ -1898,7 +1898,7 @@ def contract_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.smart_contract_manager import (
             SmartContractManager,
         )
-        return SmartContractManager(config=bci_config)
+        return SmartContractManager()
     except ImportError:
         pytest.skip("SmartContractManager not yet implemented")
 
@@ -1910,7 +1910,7 @@ def chain_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.multi_chain_connector import (
             MultiChainConnector,
         )
-        return MultiChainConnector(config=bci_config)
+        return MultiChainConnector()
     except ImportError:
         pytest.skip("MultiChainConnector not yet implemented")
 
@@ -1922,7 +1922,7 @@ def verification_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.verification_engine import (
             VerificationEngine,
         )
-        return VerificationEngine(config=bci_config)
+        return VerificationEngine()
     except ImportError:
         pytest.skip("VerificationEngine not yet implemented")
 
@@ -1934,7 +1934,7 @@ def event_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.event_listener import (
             EventListener,
         )
-        return EventListener(config=bci_config)
+        return EventListener()
     except ImportError:
         pytest.skip("EventListener not yet implemented")
 
@@ -1946,7 +1946,7 @@ def merkle_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.merkle_proof_generator import (
             MerkleProofGenerator,
         )
-        return MerkleProofGenerator(config=bci_config)
+        return MerkleProofGenerator()
     except ImportError:
         pytest.skip("MerkleProofGenerator not yet implemented")
 
@@ -1958,7 +1958,7 @@ def sharing_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.cross_party_sharing import (
             CrossPartySharing,
         )
-        return CrossPartySharing(config=bci_config)
+        return CrossPartySharing()
     except ImportError:
         pytest.skip("CrossPartySharing not yet implemented")
 
@@ -1970,7 +1970,7 @@ def evidence_engine(bci_config):
         from greenlang.agents.eudr.blockchain_integration.compliance_evidence_packager import (
             ComplianceEvidencePackager,
         )
-        return ComplianceEvidencePackager(config=bci_config)
+        return ComplianceEvidencePackager()
     except ImportError:
         pytest.skip("ComplianceEvidencePackager not yet implemented")
 
@@ -1982,7 +1982,7 @@ def blockchain_service(bci_config):
         from greenlang.agents.eudr.blockchain_integration.setup import (
             BlockchainIntegrationService,
         )
-        return BlockchainIntegrationService(config=bci_config)
+        return BlockchainIntegrationService()
     except ImportError:
         pytest.skip("BlockchainIntegrationService not yet implemented")
 

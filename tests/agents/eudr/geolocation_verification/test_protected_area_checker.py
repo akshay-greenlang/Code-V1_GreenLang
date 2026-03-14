@@ -26,9 +26,9 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 from greenlang.agents.eudr.geolocation_verification.models import (
-    CoordinateInput,
-    PolygonInput,
     ProtectedAreaCheckResult,
+    VerifyCoordinateRequest,
+    VerifyPolygonRequest,
 )
 from greenlang.agents.eudr.geolocation_verification.protected_area_checker import (
     ProtectedAreaChecker,
@@ -45,7 +45,7 @@ class TestNoOverlap:
 
     def test_no_overlap_clear_location(self, protected_checker):
         """Test coordinate clearly outside any protected area."""
-        coord = CoordinateInput(lat=-15.78, lon=-47.93, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-15.78, lon=-47.93, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert isinstance(result, ProtectedAreaCheckResult)
         assert result.overlaps_protected is False
@@ -53,13 +53,13 @@ class TestNoOverlap:
 
     def test_no_overlap_urban_area(self, protected_checker):
         """Test coordinate in urban area (unlikely protected)."""
-        coord = CoordinateInput(lat=-23.55, lon=-46.63, declared_country="BR")  # Sao Paulo
+        coord = VerifyCoordinateRequest(lat=-23.55, lon=-46.63, declared_country="BR")  # Sao Paulo
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is False
 
     def test_no_overlap_agricultural_zone(self, protected_checker):
         """Test coordinate in agricultural zone (Mato Grosso)."""
-        coord = CoordinateInput(lat=-12.65, lon=-55.42, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-12.65, lon=-55.42, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is False
 
@@ -72,13 +72,13 @@ class TestNoOverlap:
     ])
     def test_no_overlap_capital_cities(self, protected_checker, lat, lon, country):
         """Test coordinates in capital cities are not in protected areas."""
-        coord = CoordinateInput(lat=lat, lon=lon, declared_country=country)
+        coord = VerifyCoordinateRequest(lat=lat, lon=lon, declared_country=country)
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is False
 
     def test_no_overlap_result_fields_default(self, protected_checker):
         """Test no-overlap result has correct default field values."""
-        coord = CoordinateInput(lat=-15.78, lon=-47.93, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-15.78, lon=-47.93, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert result.protected_area_name is None
         assert result.protected_area_type is None
@@ -96,7 +96,7 @@ class TestOverlapDetection:
     def test_overlap_amazon_protected_area(self, protected_checker):
         """Test coordinate inside Amazon protected area is detected."""
         # Inside Amazonia National Park mock area (-4 to -2, -58 to -56)
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is True
         assert result.protected_area_name is not None
@@ -104,7 +104,7 @@ class TestOverlapDetection:
     def test_overlap_borneo_national_park(self, protected_checker):
         """Test coordinate inside Borneo national park is detected."""
         # Inside Tanjung Puting mock area (-3.5 to -2.5, 111.5 to 112.5)
-        coord = CoordinateInput(lat=-3.0, lon=112.0, declared_country="ID")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=112.0, declared_country="ID")
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is True
         assert result.protected_area_name is not None
@@ -112,27 +112,27 @@ class TestOverlapDetection:
     def test_overlap_ghana_national_park(self, protected_checker):
         """Test coordinate inside Ghana national park is detected."""
         # Inside Kakum mock area (5.3 to 5.5, -1.5 to -1.3)
-        coord = CoordinateInput(lat=5.4, lon=-1.4, declared_country="GH")
+        coord = VerifyCoordinateRequest(lat=5.4, lon=-1.4, declared_country="GH")
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is True
 
     def test_overlap_reports_area_name(self, protected_checker):
         """Test overlap result includes the protected area name."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert result.protected_area_name is not None
         assert len(result.protected_area_name) > 0
 
     def test_overlap_reports_area_type(self, protected_checker):
         """Test overlap result includes the protected area type."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         if result.overlaps_protected:
             assert result.protected_area_type is not None
 
     def test_overlap_percentage_positive(self, protected_checker):
         """Test overlap percentage is positive when overlapping."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         if result.overlaps_protected:
             assert result.overlap_percentage > 0.0
@@ -147,7 +147,7 @@ class TestOverlapDetection:
     ])
     def test_overlap_parametrized(self, protected_checker, lat, lon, expected_overlap):
         """Parametrized test for overlap detection across regions."""
-        coord = CoordinateInput(lat=lat, lon=lon)
+        coord = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is expected_overlap
 
@@ -162,21 +162,21 @@ class TestOverlapSeverity:
 
     def test_overlap_severity_full(self, protected_checker):
         """Test full overlap (100%) for coordinate deep inside protected area."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         if result.overlaps_protected:
             assert result.overlap_percentage >= 90.0
 
     def test_overlap_severity_none(self, protected_checker):
         """Test no overlap for coordinate clearly outside."""
-        coord = CoordinateInput(lat=-15.78, lon=-47.93, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-15.78, lon=-47.93, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert result.overlap_percentage == 0.0
 
     def test_overlap_severity_boundary(self, protected_checker):
         """Test overlap near the boundary of a protected area."""
         # Just inside the boundary of Amazon mock area
-        coord = CoordinateInput(lat=-2.1, lon=-56.1, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-2.1, lon=-56.1, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         # Near boundary - may be partial or marginal
         assert isinstance(result.overlap_percentage, float)
@@ -184,9 +184,9 @@ class TestOverlapSeverity:
     def test_overlap_percentage_range(self, protected_checker):
         """Test overlap percentage is always in [0, 100] range."""
         test_coords = [
-            CoordinateInput(lat=-3.0, lon=-57.0),
-            CoordinateInput(lat=-15.78, lon=-47.93),
-            CoordinateInput(lat=5.4, lon=-1.4),
+            VerifyCoordinateRequest(lat=-3.0, lon=-57.0),
+            VerifyCoordinateRequest(lat=-15.78, lon=-47.93),
+            VerifyCoordinateRequest(lat=5.4, lon=-1.4),
         ]
         for coord in test_coords:
             result = protected_checker.check_coordinate(coord)
@@ -226,20 +226,20 @@ class TestBufferZone:
     def test_buffer_zone_detection(self, protected_checker):
         """Test coordinate in buffer zone (near but outside protected area)."""
         # Just outside Amazon mock area boundary
-        coord = CoordinateInput(lat=-1.95, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-1.95, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         # May detect buffer zone proximity
         assert isinstance(result, ProtectedAreaCheckResult)
 
     def test_no_buffer_zone_far_away(self, protected_checker):
         """Test coordinate far from any protected area has no buffer alert."""
-        coord = CoordinateInput(lat=-15.78, lon=-47.93, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-15.78, lon=-47.93, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is False
 
     def test_buffer_zone_inside_area(self, protected_checker):
         """Test coordinate inside protected area is not just buffer."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is True
 
@@ -247,7 +247,7 @@ class TestBufferZone:
     def test_buffer_zone_various_distances(self, protected_checker, lat_offset):
         """Test buffer zone detection at various distances from boundary."""
         # Amazon mock area ends at lat=-2.0
-        coord = CoordinateInput(
+        coord = VerifyCoordinateRequest(
             lat=-2.0 + lat_offset,
             lon=-57.0,
             declared_country="BR",
@@ -266,13 +266,13 @@ class TestMultipleOverlaps:
 
     def test_multiple_overlapping_areas(self, protected_checker):
         """Test coordinate that could overlap multiple protected areas."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert isinstance(result, ProtectedAreaCheckResult)
 
     def test_single_area_reported(self, protected_checker):
         """Test that at least one protected area is reported for overlap."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         if result.overlaps_protected:
             assert result.protected_area_name is not None
@@ -288,7 +288,7 @@ class TestIUCNCategory:
 
     def test_iucn_category_reported(self, protected_checker):
         """Test IUCN category is reported for overlapping areas."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         if result.overlaps_protected and result.protected_area_type:
             # IUCN category should be present
@@ -296,7 +296,7 @@ class TestIUCNCategory:
 
     def test_highest_protection_level(self, protected_checker):
         """Test that the highest protection level is reported."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         if result.overlaps_protected:
             assert result.protected_area_type is not None
@@ -323,10 +323,10 @@ class TestBatchChecking:
     def test_batch_check_mixed_results(self, protected_checker):
         """Test batch checking with coordinates inside and outside protected areas."""
         coords = [
-            CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR"),    # Inside Amazon
-            CoordinateInput(lat=-15.78, lon=-47.93, declared_country="BR"), # Brasilia
-            CoordinateInput(lat=-3.0, lon=112.0, declared_country="ID"),    # Inside Borneo
-            CoordinateInput(lat=5.55, lon=-0.19, declared_country="GH"),    # Accra
+            VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR"),    # Inside Amazon
+            VerifyCoordinateRequest(lat=-15.78, lon=-47.93, declared_country="BR"), # Brasilia
+            VerifyCoordinateRequest(lat=-3.0, lon=112.0, declared_country="ID"),    # Inside Borneo
+            VerifyCoordinateRequest(lat=5.55, lon=-0.19, declared_country="GH"),    # Accra
         ]
         results = protected_checker.check_batch(coords)
         assert len(results) == 4
@@ -342,15 +342,15 @@ class TestBatchChecking:
 
     def test_batch_check_single(self, protected_checker):
         """Test batch checking with single coordinate."""
-        coords = [CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")]
+        coords = [VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")]
         results = protected_checker.check_batch(coords)
         assert len(results) == 1
 
     def test_batch_preserves_order(self, protected_checker):
         """Test batch results maintain input order."""
         coords = [
-            CoordinateInput(lat=-3.0, lon=-57.0, plot_id="INSIDE"),
-            CoordinateInput(lat=-15.78, lon=-47.93, plot_id="OUTSIDE"),
+            VerifyCoordinateRequest(lat=-3.0, lon=-57.0, plot_id="INSIDE"),
+            VerifyCoordinateRequest(lat=-15.78, lon=-47.93, plot_id="OUTSIDE"),
         ]
         results = protected_checker.check_batch(coords)
         assert len(results) == 2
@@ -362,7 +362,7 @@ class TestBatchChecking:
     def test_batch_various_sizes(self, protected_checker, batch_size):
         """Test batch checking with various sizes."""
         coords = [
-            CoordinateInput(
+            VerifyCoordinateRequest(
                 lat=-3.0 + i * 0.5,
                 lon=-57.0 + i * 0.5,
                 plot_id=f"BATCH-{i}",
@@ -375,9 +375,9 @@ class TestBatchChecking:
     def test_batch_all_inside(self, protected_checker):
         """Test batch where all coordinates are inside protected areas."""
         coords = [
-            CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR"),
-            CoordinateInput(lat=-2.5, lon=-57.5, declared_country="BR"),
-            CoordinateInput(lat=-3.5, lon=-56.5, declared_country="BR"),
+            VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR"),
+            VerifyCoordinateRequest(lat=-2.5, lon=-57.5, declared_country="BR"),
+            VerifyCoordinateRequest(lat=-3.5, lon=-56.5, declared_country="BR"),
         ]
         results = protected_checker.check_batch(coords)
         assert all(r.overlaps_protected for r in results)
@@ -385,9 +385,9 @@ class TestBatchChecking:
     def test_batch_all_outside(self, protected_checker):
         """Test batch where all coordinates are outside protected areas."""
         coords = [
-            CoordinateInput(lat=-15.78, lon=-47.93, declared_country="BR"),
-            CoordinateInput(lat=-23.55, lon=-46.63, declared_country="BR"),
-            CoordinateInput(lat=-22.91, lon=-43.17, declared_country="BR"),
+            VerifyCoordinateRequest(lat=-15.78, lon=-47.93, declared_country="BR"),
+            VerifyCoordinateRequest(lat=-23.55, lon=-46.63, declared_country="BR"),
+            VerifyCoordinateRequest(lat=-22.91, lon=-43.17, declared_country="BR"),
         ]
         results = protected_checker.check_batch(coords)
         assert all(not r.overlaps_protected for r in results)
@@ -403,7 +403,7 @@ class TestPolygonIntersection:
 
     def test_polygon_intersection(self, protected_checker):
         """Test polygon overlapping with protected area."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.0, -57.0),
                 (-3.0, -56.8),
@@ -420,7 +420,7 @@ class TestPolygonIntersection:
 
     def test_polygon_no_intersection(self, protected_checker):
         """Test polygon not overlapping with any protected area."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-15.78, -47.93),
                 (-15.78, -47.91),
@@ -437,7 +437,7 @@ class TestPolygonIntersection:
     def test_polygon_partial_intersection(self, protected_checker):
         """Test polygon partially overlapping with protected area."""
         # Polygon that spans the boundary of Amazon mock area
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-2.0, -57.0),    # On boundary
                 (-2.0, -56.5),
@@ -453,7 +453,7 @@ class TestPolygonIntersection:
 
     def test_point_only_proximity(self, protected_checker):
         """Test point-only proximity check (no polygon)."""
-        coord = CoordinateInput(lat=-2.05, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-2.05, lon=-57.0, declared_country="BR")
         result = protected_checker.check_coordinate(coord)
         assert isinstance(result, ProtectedAreaCheckResult)
 
@@ -468,7 +468,7 @@ class TestProtectedAreaDeterminism:
 
     def test_deterministic_results(self, protected_checker):
         """Test same coordinate produces same result."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         r1 = protected_checker.check_coordinate(coord)
         r2 = protected_checker.check_coordinate(coord)
         assert r1.overlaps_protected == r2.overlaps_protected
@@ -478,8 +478,8 @@ class TestProtectedAreaDeterminism:
     def test_deterministic_batch(self, protected_checker):
         """Test batch produces deterministic results."""
         coords = [
-            CoordinateInput(lat=-3.0, lon=-57.0),
-            CoordinateInput(lat=-15.78, lon=-47.93),
+            VerifyCoordinateRequest(lat=-3.0, lon=-57.0),
+            VerifyCoordinateRequest(lat=-15.78, lon=-47.93),
         ]
         r1 = protected_checker.check_batch(coords)
         r2 = protected_checker.check_batch(coords)
@@ -489,7 +489,7 @@ class TestProtectedAreaDeterminism:
 
     def test_deterministic_10_runs(self, protected_checker):
         """Test determinism over 10 runs."""
-        coord = CoordinateInput(lat=-3.0, lon=-57.0, declared_country="BR")
+        coord = VerifyCoordinateRequest(lat=-3.0, lon=-57.0, declared_country="BR")
         first_result = protected_checker.check_coordinate(coord)
         for _ in range(9):
             result = protected_checker.check_coordinate(coord)
@@ -499,12 +499,12 @@ class TestProtectedAreaDeterminism:
     def test_order_independent_batch(self, protected_checker):
         """Test batch results are the same regardless of order in list."""
         coords_forward = [
-            CoordinateInput(lat=-3.0, lon=-57.0, plot_id="A"),
-            CoordinateInput(lat=-15.78, lon=-47.93, plot_id="B"),
+            VerifyCoordinateRequest(lat=-3.0, lon=-57.0, plot_id="A"),
+            VerifyCoordinateRequest(lat=-15.78, lon=-47.93, plot_id="B"),
         ]
         coords_reverse = [
-            CoordinateInput(lat=-15.78, lon=-47.93, plot_id="B"),
-            CoordinateInput(lat=-3.0, lon=-57.0, plot_id="A"),
+            VerifyCoordinateRequest(lat=-15.78, lon=-47.93, plot_id="B"),
+            VerifyCoordinateRequest(lat=-3.0, lon=-57.0, plot_id="A"),
         ]
         r_fwd = protected_checker.check_batch(coords_forward)
         r_rev = protected_checker.check_batch(coords_reverse)
@@ -534,7 +534,7 @@ class TestCommodityProtectedAreas:
     ])
     def test_protected_check_by_commodity(self, protected_checker, lat, lon, country, commodity):
         """Test protected area check for each EUDR commodity at known locations."""
-        coord = CoordinateInput(
+        coord = VerifyCoordinateRequest(
             lat=lat, lon=lon, declared_country=country, commodity=commodity,
         )
         result = protected_checker.check_coordinate(coord)
@@ -560,7 +560,7 @@ class TestCommodityProtectedAreas:
     ])
     def test_urban_areas_clear_of_protected(self, protected_checker, lat, lon, country, expected_clear):
         """Test urban areas are clear of protected area overlaps."""
-        coord = CoordinateInput(lat=lat, lon=lon, declared_country=country)
+        coord = VerifyCoordinateRequest(lat=lat, lon=lon, declared_country=country)
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is not expected_clear or not result.overlaps_protected
 
@@ -574,6 +574,6 @@ class TestCommodityProtectedAreas:
     ])
     def test_known_protected_area_overlap(self, protected_checker, lat, lon):
         """Test known protected area locations are detected."""
-        coord = CoordinateInput(lat=lat, lon=lon)
+        coord = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = protected_checker.check_coordinate(coord)
         assert result.overlaps_protected is True

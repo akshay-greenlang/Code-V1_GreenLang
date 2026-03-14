@@ -44,10 +44,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from .models import (
-    CoordinateInput,
     CoordinateValidationResult,
-    IssueSeverity,
-    ValidationIssue,
+    CoordinateIssue,
+    CoordinateIssueType,
+    VerifyCoordinateRequest,
 )
 
 logger = logging.getLogger(__name__)

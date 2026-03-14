@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from greenlang.agents.eudr.geolocation_verification.models import (
-    IssueSeverity,
     QualityTier,
 )
 

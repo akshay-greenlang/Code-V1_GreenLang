@@ -775,3 +775,152 @@ class InformationGatheringCoordinator:
             },
         }
         return mappings.get(agent_id, {})
+
+    # ------------------------------------------------------------------
+    # Test-compatible wrapper methods
+    # ------------------------------------------------------------------
+
+    def calculate_completeness(
+        self,
+        workflow_state,
+    ) -> Decimal:
+        """Calculate Phase 1 completeness from workflow state.
+
+        Wrapper method for test compatibility. Extracts agent outputs
+        from workflow state and delegates to evaluate_completeness.
+
+        Args:
+            workflow_state: WorkflowState object with agent executions.
+
+        Returns:
+            Completeness score as Decimal (0-100).
+        """
+        # Extract agent outputs from workflow state
+        agent_outputs = {}
+        agent_statuses = {}
+
+        for exec_record in workflow_state.agent_executions:
+            if self.is_phase1_agent(exec_record.agent_id):
+                agent_outputs[exec_record.agent_id] = exec_record.output_data or {}
+                agent_statuses[exec_record.agent_id] = exec_record.status
+
+        # Get workflow type
+        workflow_type = getattr(
+            workflow_state, 'workflow_type', WorkflowType.STANDARD
+        )
+
+        # Evaluate completeness
+        result = self.evaluate_completeness(
+            agent_outputs, agent_statuses, workflow_type
+        )
+
+        # Return as percentage (0-100)
+        return result.completeness_score * Decimal("100")
+
+    def _build_agent_input(
+        self,
+        agent_id: str,
+        upstream_outputs: Dict[str, Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Build agent input from upstream outputs.
+
+        Wrapper method for test compatibility. Delegates to prepare_agent_input
+        with empty workflow context.
+
+        Args:
+            agent_id: Target agent identifier.
+            upstream_outputs: Outputs from completed upstream agents.
+
+        Returns:
+            Input data dictionary for the agent.
+        """
+        return self.prepare_agent_input(
+            agent_id,
+            workflow_context={},
+            upstream_outputs=upstream_outputs,
+        )
+
+    async def execute_phase(
+        self,
+        workflow,
+        agent_client,
+    ):
+        """Execute Phase 1 information gathering.
+
+        High-level orchestration method for test compatibility.
+        Executes all Phase 1 agents in dependency order.
+
+        Args:
+            workflow: WorkflowState object.
+            agent_client: Agent invocation client.
+
+        Returns:
+            Phase execution result object with agent statuses.
+        """
+        # Get required agents
+        workflow_type = getattr(workflow, 'workflow_type', WorkflowType.STANDARD)
+        required_agents = self.get_required_agents(workflow_type=workflow_type)
+
+        # Track execution
+        agent_outputs = {}
+        completed_agents = set()
+        failed_agents = set()
+
+        # Execute agents in order (simplified for tests)
+        for agent_id in required_agents:
+            try:
+                # Prepare input
+                input_data = self.prepare_agent_input(
+                    agent_id,
+                    workflow_context={
+                        'workflow_id': workflow.workflow_id,
+                        'commodity': getattr(workflow, 'commodity', None),
+                    },
+                    upstream_outputs=agent_outputs,
+                )
+
+                # Invoke agent
+                result = await agent_client.invoke(agent_id, input_data)
+                agent_outputs[agent_id] = result.get('output', {})
+                completed_agents.add(agent_id)
+
+            except Exception as e:
+                logger.error(f"Agent {agent_id} failed: {e}")
+                failed_agents.add(agent_id)
+
+        # Create result object
+        class PhaseResult:
+            def __init__(self):
+                self.phase = "information_gathering"
+                self.agents_completed = len(completed_agents)
+                self.agents_failed = len(failed_agents)
+                self.agent_outputs = agent_outputs
+                self.completed_agents = completed_agents
+                self.failed_agents = failed_agents
+
+        return PhaseResult()
+
+    def calculate_progress(
+        self,
+        agent_statuses: Dict[str, AgentExecutionStatus],
+    ) -> Decimal:
+        """Calculate progress percentage from agent statuses.
+
+        Wrapper method for test compatibility.
+
+        Args:
+            agent_statuses: Dict mapping agent_id to execution status.
+
+        Returns:
+            Progress percentage as Decimal (0-100).
+        """
+        completed = {
+            aid for aid, status in agent_statuses.items()
+            if status == AgentExecutionStatus.COMPLETED
+        }
+        running = {
+            aid for aid, status in agent_statuses.items()
+            if status == AgentExecutionStatus.RUNNING
+        }
+
+        return self.compute_progress(completed, running)

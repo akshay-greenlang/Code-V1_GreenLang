@@ -77,7 +77,7 @@ from .models import (
     TrendDirection,
     TrendResponse,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -302,7 +302,7 @@ class SupplierRiskScorer:
                         ]
 
             # Step 11: Record provenance
-            get_provenance_tracker().record_operation(
+            get_tracker().record_operation(
                 entity_type="supplier_assessment",
                 entity_id=assessment_id,
                 action="assess",

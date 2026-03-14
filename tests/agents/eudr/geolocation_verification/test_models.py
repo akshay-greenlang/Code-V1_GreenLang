@@ -34,18 +34,20 @@ import pytest
 from greenlang.agents.eudr.geolocation_verification.models import (
     BoundaryChange,
     ChangeType,
-    CoordinateInput,
+    CoordinateIssue,
+    CoordinateIssueType,
     CoordinateValidationResult,
     DeforestationVerificationResult,
     GeolocationAccuracyScore,
-    IssueSeverity,
-    PolygonInput,
+    PolygonIssue,
+    PolygonIssueType,
     PolygonVerificationResult,
     ProtectedAreaCheckResult,
     QualityTier,
     RepairSuggestion,
     TemporalChangeResult,
-    ValidationIssue,
+    VerifyCoordinateRequest,
+    VerifyPolygonRequest,
 )
 
 
@@ -65,23 +67,23 @@ class TestEnumerations:
 
     def test_issue_severity_critical(self):
         """Test CRITICAL severity value."""
-        assert IssueSeverity.CRITICAL.value == "critical"
+        assert CoordinateIssueType.CRITICAL.value == "critical"
 
     def test_issue_severity_high(self):
         """Test HIGH severity value."""
-        assert IssueSeverity.HIGH.value == "high"
+        assert CoordinateIssueType.HIGH.value == "high"
 
     def test_issue_severity_medium(self):
         """Test MEDIUM severity value."""
-        assert IssueSeverity.MEDIUM.value == "medium"
+        assert CoordinateIssueType.MEDIUM.value == "medium"
 
     def test_issue_severity_low(self):
         """Test LOW severity value."""
-        assert IssueSeverity.LOW.value == "low"
+        assert CoordinateIssueType.LOW.value == "low"
 
     def test_issue_severity_info(self):
         """Test INFO severity value."""
-        assert IssueSeverity.INFO.value == "info"
+        assert CoordinateIssueType.INFO.value == "info"
 
     def test_quality_tier_all_values(self):
         """Test QualityTier has all expected values."""
@@ -113,8 +115,8 @@ class TestEnumerations:
 
     def test_issue_severity_is_str_enum(self):
         """Test IssueSeverity inherits from str."""
-        assert isinstance(IssueSeverity.CRITICAL, str)
-        assert IssueSeverity.CRITICAL == "critical"
+        assert isinstance(CoordinateIssueType.CRITICAL, str)
+        assert CoordinateIssueType.CRITICAL == "critical"
 
     def test_quality_tier_is_str_enum(self):
         """Test QualityTier inherits from str."""
@@ -136,7 +138,7 @@ class TestInputModels:
 
     def test_coordinate_input_creation(self):
         """Test CoordinateInput creation with all fields."""
-        coord = CoordinateInput(
+        coord = VerifyCoordinateRequest(
             lat=-3.1234567,
             lon=-60.0234567,
             declared_country="BR",
@@ -149,7 +151,7 @@ class TestInputModels:
 
     def test_coordinate_input_defaults(self):
         """Test CoordinateInput default values."""
-        coord = CoordinateInput(lat=0.0, lon=0.0)
+        coord = VerifyCoordinateRequest(lat=0.0, lon=0.0)
         assert coord.declared_country == ""
         assert coord.commodity == ""
         assert coord.plot_id == ""
@@ -157,7 +159,7 @@ class TestInputModels:
 
     def test_polygon_input_creation(self):
         """Test PolygonInput creation with vertices."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[(-3.12, -60.02), (-3.12, -60.01), (-3.13, -60.02)],
             declared_area_ha=2.0,
             commodity="cocoa",
@@ -167,14 +169,14 @@ class TestInputModels:
 
     def test_polygon_input_defaults(self):
         """Test PolygonInput default values."""
-        poly = PolygonInput()
+        poly = VerifyPolygonRequest()
         assert poly.vertices == []
         assert poly.declared_area_ha is None
         assert poly.commodity == ""
 
     def test_coordinate_input_metadata(self):
         """Test CoordinateInput with metadata."""
-        coord = CoordinateInput(
+        coord = VerifyCoordinateRequest(
             lat=0.0, lon=0.0,
             metadata={"source": "GPS", "device": "Garmin"},
         )
@@ -191,26 +193,26 @@ class TestValidationIssue:
 
     def test_issue_creation(self):
         """Test ValidationIssue creation."""
-        issue = ValidationIssue(
+        issue = CoordinateIssue(
             code="COORD_OUT_OF_BOUNDS",
-            severity=IssueSeverity.CRITICAL,
+            severity=CoordinateIssueType.CRITICAL,
             message="Latitude exceeds WGS84 bounds",
             field="lat",
         )
         assert issue.code == "COORD_OUT_OF_BOUNDS"
-        assert issue.severity == IssueSeverity.CRITICAL
+        assert issue.severity == CoordinateIssueType.CRITICAL
 
     def test_issue_auto_id(self):
         """Test issue ID is auto-generated."""
-        issue = ValidationIssue()
+        issue = CoordinateIssue()
         assert issue.issue_id is not None
         assert issue.issue_id.startswith("ISS")
 
     def test_issue_to_dict(self):
         """Test issue serialization."""
-        issue = ValidationIssue(
+        issue = CoordinateIssue(
             code="TEST_CODE",
-            severity=IssueSeverity.HIGH,
+            severity=CoordinateIssueType.HIGH,
             message="Test message",
         )
         d = issue.to_dict()
@@ -220,9 +222,9 @@ class TestValidationIssue:
 
     def test_issue_defaults(self):
         """Test issue default values."""
-        issue = ValidationIssue()
+        issue = CoordinateIssue()
         assert issue.code == ""
-        assert issue.severity == IssueSeverity.MEDIUM
+        assert issue.severity == CoordinateIssueType.MEDIUM
         assert issue.message == ""
         assert issue.details == {}
 
@@ -540,8 +542,8 @@ class TestJsonRoundtrip:
 
     def test_issue_json_roundtrip(self):
         """Test ValidationIssue JSON roundtrip."""
-        issue = ValidationIssue(
-            code="TEST", severity=IssueSeverity.HIGH, message="Test",
+        issue = CoordinateIssue(
+            code="TEST", severity=CoordinateIssueType.HIGH, message="Test",
         )
         d = issue.to_dict()
         json_str = json.dumps(d)

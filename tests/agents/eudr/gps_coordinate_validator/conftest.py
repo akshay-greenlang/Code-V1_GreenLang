@@ -47,12 +47,11 @@ from greenlang.agents.eudr.gps_coordinate_validator.models import (
     PrecisionLevel,
     SourceType,
     ValidationErrorType,
-    ValidationSeverity,
     RawCoordinate,
     ParsedCoordinate,
     NormalizedCoordinate,
     PrecisionResult,
-    ValidationError,
+    CoordinateValidationError,
     ValidationResult,
     BatchValidationResult,
 )
@@ -196,8 +195,8 @@ DATUM_TRANSFORM_REFERENCE: List[Dict[str, Any]] = [
         "tolerance_m": 15.0,
     },
     {
-        "name": "SIRGAS2000 to WGS84 - South America",
-        "source_datum": GeodeticDatum.SIRGAS2000,
+        "name": "SIRGAS_2000 to WGS84 - South America",
+        "source_datum": GeodeticDatum.SIRGAS_2000,
         "lat": -12.97, "lon": -55.32,
         "expected_lat": -12.97, "expected_lon": -55.32,
         "tolerance_m": 2.0,
@@ -218,7 +217,7 @@ DATUM_TRANSFORM_REFERENCE: List[Dict[str, Any]] = [
     },
     {
         "name": "ARC1960 to WGS84 - East Africa",
-        "source_datum": GeodeticDatum.ARC1960,
+        "source_datum": GeodeticDatum.ARC_1960,
         "lat": -1.29, "lon": 36.82,
         "expected_lat": -1.29, "expected_lon": 36.82,
         "tolerance_m": 25.0,
@@ -474,7 +473,7 @@ def make_raw(
     input_str: str,
     commodity: str = "cocoa",
     country: str = "GH",
-    source_datum: Optional[GeodeticDatum] = None,
+    datum_hint: Optional[GeodeticDatum] = None,
     source_type: Optional[SourceType] = None,
 ) -> RawCoordinate:
     """Build a RawCoordinate instance for testing.
@@ -483,36 +482,38 @@ def make_raw(
         input_str: The raw coordinate string.
         commodity: EUDR commodity identifier.
         country: ISO 3166-1 alpha-2 country code.
-        source_datum: Optional declared source datum.
+        datum_hint: Optional hint about geodetic datum.
         source_type: Optional GPS source type.
 
     Returns:
         RawCoordinate instance ready for parsing tests.
     """
     return RawCoordinate(
-        input_string=input_str,
-        source_datum=source_datum,
+        raw_input=input_str,
+        datum_hint=datum_hint,
+        commodity=commodity,
         country_iso=country,
-        source_type=source_type,
-        metadata={"commodity": commodity},
+        source_type=source_type or SourceType.UNKNOWN,
     )
 
 
 def make_normalized(
     lat: float,
     lon: float,
-    decimal_places: int = 6,
-    source_datum: GeodeticDatum = GeodeticDatum.WGS84,
-    displacement_m: float = 0.0,
+    decimal_places_lat: int = 6,
+    decimal_places_lon: int = 6,
+    source_datum: Optional[GeodeticDatum] = None,
+    transformation_displacement_m: float = 0.0,
 ) -> NormalizedCoordinate:
     """Build a NormalizedCoordinate instance for testing.
 
     Args:
         lat: WGS84 latitude.
         lon: WGS84 longitude.
-        decimal_places: Number of decimal places (informational).
-        source_datum: Original datum.
-        displacement_m: Displacement from datum transformation.
+        decimal_places_lat: Number of decimal places in latitude.
+        decimal_places_lon: Number of decimal places in longitude.
+        source_datum: Original datum before transformation.
+        transformation_displacement_m: Displacement from datum transformation.
 
     Returns:
         NormalizedCoordinate instance.
@@ -520,12 +521,10 @@ def make_normalized(
     return NormalizedCoordinate(
         latitude=lat,
         longitude=lon,
+        decimal_places_lat=decimal_places_lat,
+        decimal_places_lon=decimal_places_lon,
         source_datum=source_datum,
-        target_datum=GeodeticDatum.WGS84,
-        displacement_m=displacement_m,
-        original_latitude=lat,
-        original_longitude=lon,
-        transformation_method="identity" if source_datum == GeodeticDatum.WGS84 else "helmert_7param",
+        transformation_displacement_m=transformation_displacement_m,
     )
 
 
@@ -535,6 +534,7 @@ def make_parsed(
     fmt: CoordinateFormat = CoordinateFormat.DECIMAL_DEGREES,
     confidence: float = 0.95,
     original_input: str = "",
+    datum: GeodeticDatum = GeodeticDatum.WGS84,
 ) -> ParsedCoordinate:
     """Build a ParsedCoordinate instance for testing.
 
@@ -542,8 +542,9 @@ def make_parsed(
         lat: Parsed latitude.
         lon: Parsed longitude.
         fmt: Detected coordinate format.
-        confidence: Format detection confidence.
+        confidence: Parser confidence in the result.
         original_input: Original input string.
+        datum: Geodetic datum of the parsed coordinate.
 
     Returns:
         ParsedCoordinate instance.
@@ -552,9 +553,9 @@ def make_parsed(
         latitude=lat,
         longitude=lon,
         detected_format=fmt,
-        format_confidence=confidence,
+        confidence=confidence,
         original_input=original_input,
-        parse_successful=True,
+        datum=datum,
     )
 
 

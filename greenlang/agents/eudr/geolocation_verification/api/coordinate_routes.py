@@ -39,7 +39,7 @@ from greenlang.agents.eudr.geolocation_verification.api.schemas import (
     CoordinateValidationResponse,
 )
 from greenlang.agents.eudr.geolocation_verification.models import (
-    CoordinateInput,
+    VerifyCoordinateRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -143,7 +143,7 @@ async def validate_coordinate(
     try:
         validator = get_coordinate_validator()
 
-        coordinate_input = CoordinateInput(
+        coordinate_input = VerifyCoordinateRequest(
             lat=body.lat,
             lon=body.lon,
             declared_country=body.declared_country_code,
@@ -249,7 +249,7 @@ async def validate_coordinates_batch(
         validator = get_coordinate_validator()
 
         coordinate_inputs = [
-            CoordinateInput(
+            VerifyCoordinateRequest(
                 lat=c.lat,
                 lon=c.lon,
                 declared_country=c.declared_country_code,

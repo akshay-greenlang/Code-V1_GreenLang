@@ -727,16 +727,16 @@ def sample_certificate_fsc() -> CertificateRecord:
     """Return a sample FSC certificate record."""
     return CertificateRecord(
         certificate_id="CERT-FSC-001",
-        supplier_id="SUP-001",
         scheme=CertificationScheme.FSC,
         certificate_number="FSC-C123456",
+        holder_name="Test Supplier FSC Ltd.",
+        holder_id="SUP-001",
         status="active",
         scope="chain_of_custody",
         issue_date=date(2023, 6, 1),
         expiry_date=date(2028, 5, 31),
         certified_products=["timber", "wood_products"],
         certified_sites=["SITE-001"],
-        certification_body="TUV SUD",
     )
 
 
@@ -745,15 +745,15 @@ def sample_certificate_rspo() -> CertificateRecord:
     """Return a sample RSPO certificate record."""
     return CertificateRecord(
         certificate_id="CERT-RSPO-001",
-        supplier_id="SUP-002",
         scheme=CertificationScheme.RSPO,
         certificate_number="RSPO-2024-789",
+        holder_name="Palm Oil Plantation RSPO Corp.",
+        holder_id="SUP-002",
         status="active",
         scope="identity_preserved",
         issue_date=date(2024, 1, 1),
         expiry_date=date(2029, 12, 31),
         certified_products=["crude_palm_oil"],
-        certification_body="Control Union",
     )
 
 
@@ -762,14 +762,14 @@ def sample_certificate_expired() -> CertificateRecord:
     """Return an expired certificate record."""
     return CertificateRecord(
         certificate_id="CERT-EXP-001",
-        supplier_id="SUP-003",
         scheme=CertificationScheme.PEFC,
         certificate_number="PEFC-XX-2020-001",
+        holder_name="Expired Forest Products Inc.",
+        holder_id="SUP-003",
         status="expired",
         scope="chain_of_custody",
         issue_date=date(2019, 1, 1),
         expiry_date=date(2024, 12, 31),
-        certification_body="Bureau Veritas",
     )
 
 

@@ -54,7 +54,7 @@ from .models import (
     RiskLevel,
     SupplierAlert,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -223,7 +223,7 @@ class MonitoringAlertEngine:
             self._configs[supplier_id] = config
 
         # Record provenance
-        provenance = get_provenance_tracker()
+        provenance = get_tracker()
         provenance.record(
             entity_type="monitoring",
             entity_id=config_id,
@@ -457,7 +457,7 @@ class MonitoringAlertEngine:
             self._alerts[alert_id] = alert
 
         # Record provenance
-        provenance = get_provenance_tracker()
+        provenance = get_tracker()
         provenance.record(
             entity_type="alert",
             entity_id=alert_id,
@@ -606,7 +606,7 @@ class MonitoringAlertEngine:
             self._last_assessment_time[supplier_id] = _utcnow()
 
         # Record provenance
-        provenance = get_provenance_tracker()
+        provenance = get_tracker()
         provenance.record(
             entity_type="monitoring",
             entity_id=supplier_id,

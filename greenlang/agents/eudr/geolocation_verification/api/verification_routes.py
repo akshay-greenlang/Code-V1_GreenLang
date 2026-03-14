@@ -61,8 +61,8 @@ from greenlang.agents.eudr.geolocation_verification.api.schemas import (
     PaginatedMeta,
 )
 from greenlang.agents.eudr.geolocation_verification.models import (
-    CoordinateInput,
-    PolygonInput,
+    VerifyCoordinateRequest,
+    VerifyPolygonRequest,
 )
 
 logger = logging.getLogger(__name__)

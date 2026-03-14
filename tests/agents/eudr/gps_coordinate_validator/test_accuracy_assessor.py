@@ -33,9 +33,8 @@ from greenlang.agents.eudr.gps_coordinate_validator.models import (
     PrecisionResult,
     SourceType,
     ValidationResult,
-    ValidationError as VError,
+    CoordinateValidationError,
     ValidationErrorType,
-    ValidationSeverity,
 )
 from tests.agents.eudr.gps_coordinate_validator.conftest import (
     COCOA_FARM_GHANA,
@@ -106,17 +105,15 @@ def _errored_validation() -> ValidationResult:
     return ValidationResult(
         is_valid=False,
         errors=[
-            VError(
-                error_type=ValidationErrorType.SWAPPED,
-                severity=ValidationSeverity.ERROR,
-                message="Coordinates appear swapped",
-                field="both",
+            CoordinateValidationError(
+                error_type=ValidationErrorType.SWAPPED_LAT_LON,
+                severity="error",
+                description="Coordinates appear swapped",
             ),
-            VError(
+            CoordinateValidationError(
                 error_type=ValidationErrorType.SIGN_ERROR,
-                severity=ValidationSeverity.ERROR,
-                message="Missing negative sign",
-                field="longitude",
+                severity="error",
+                description="Missing negative sign",
             ),
         ],
         warnings=[],
@@ -526,7 +523,7 @@ class TestAccuracyProvenance:
     "source_type",
     [
         SourceType.GNSS_SURVEY,
-        SourceType.RTK_GPS,
+        SourceType.GNSS_SURVEY,
         SourceType.HANDHELD_GPS,
         SourceType.MOBILE_GPS,
         SourceType.SATELLITE_DERIVED,

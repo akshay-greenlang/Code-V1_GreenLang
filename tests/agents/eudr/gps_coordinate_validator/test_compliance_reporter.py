@@ -37,9 +37,8 @@ from greenlang.agents.eudr.gps_coordinate_validator.models import (
     PrecisionResult,
     SourceType,
     ValidationResult,
-    ValidationError as VError,
+    CoordinateValidationError,
     ValidationErrorType,
-    ValidationSeverity,
 )
 from tests.agents.eudr.gps_coordinate_validator.conftest import (
     COCOA_FARM_GHANA,

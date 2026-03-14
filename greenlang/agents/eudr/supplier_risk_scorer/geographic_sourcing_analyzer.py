@@ -50,7 +50,7 @@ from .models import (
     RiskLevel,
     SUPPORTED_COMMODITIES,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -339,7 +339,7 @@ class GeographicSourcingAnalyzer:
             self._profiles[profile_id] = profile
 
         # Record provenance
-        provenance = get_provenance_tracker()
+        provenance = get_tracker()
         provenance.record(
             entity_type="geographic_sourcing",
             entity_id=profile_id,

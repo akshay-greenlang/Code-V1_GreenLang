@@ -27,17 +27,19 @@ provenance hashing to ensure zero-hallucination, bit-perfect
 reproducibility across all supplier risk evaluation operations per
 EU 2023/1115 Articles 4, 8, 9, 10, 11, and 31.
 
-Enumerations (15):
+Enumerations (18):
     - RiskLevel, SupplierType, CommodityType, CertificationScheme,
       CertificationStatus, DocumentType, DocumentStatus, DDLevel,
       DDStatus, NonConformanceType, AlertSeverity, AlertType,
-      ReportType, ReportFormat, MonitoringFrequency
+      ReportType, ReportFormat, MonitoringFrequency, TrendDirection,
+      DDActivityType, NonConformanceStatus
 
-Core Models (12):
+Core Models (16):
     - SupplierRiskAssessment, DueDiligenceRecord, DocumentationProfile,
       CertificationRecord, GeographicSourcingProfile, SupplierNetwork,
       MonitoringConfig, SupplierAlert, RiskReport, SupplierProfile,
-      FactorScore, AuditLogEntry
+      FactorScore, AuditLogEntry, DDActivity, NonConformance,
+      CorrectiveActionPlan, SupplierDocument
 
 Request Models (15):
     - AssessSupplierRequest, TrackDueDiligenceRequest,
@@ -273,6 +275,7 @@ class DocumentType(str, Enum):
     CERTIFICATE: Third-party certification certificate.
     TRADE_LICENSE: Trade or export license.
     PHYTOSANITARY: Phytosanitary certificate.
+    OTHER: Other supporting documentation.
     """
 
     GEOLOCATION = "geolocation"
@@ -284,6 +287,7 @@ class DocumentType(str, Enum):
     CERTIFICATE = "certificate"
     TRADE_LICENSE = "trade_license"
     PHYTOSANITARY = "phytosanitary"
+    OTHER = "other"
 
 
 class DocumentStatus(str, Enum):
@@ -429,6 +433,59 @@ class MonitoringFrequency(str, Enum):
     BIWEEKLY = "biweekly"
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
+
+
+class TrendDirection(str, Enum):
+    """Direction of risk score trend over time.
+
+    IMPROVING: Risk score decreasing (positive trend, lower risk).
+    STABLE: Risk score stable within threshold over analysis window.
+    DETERIORATING: Risk score increasing (negative trend, higher risk).
+    """
+
+    IMPROVING = "improving"
+    STABLE = "stable"
+    DETERIORATING = "deteriorating"
+
+
+class DDActivityType(str, Enum):
+    """Due diligence activity type classification.
+
+    AUDIT: On-site or remote audit by qualified auditor.
+    SITE_VISIT: Physical inspection of production/processing sites.
+    DOCUMENT_REVIEW: Review of EUDR-required documentation package.
+    QUESTIONNAIRE: Supplier self-assessment questionnaire response.
+    SCREENING: Screening against sanctions lists, deforestation databases.
+    VERIFICATION: Third-party verification of claims or certifications.
+    TRAINING: Supplier capacity building or training session.
+    INTERVIEW: Stakeholder or worker interviews.
+    """
+
+    AUDIT = "audit"
+    SITE_VISIT = "site_visit"
+    DOCUMENT_REVIEW = "document_review"
+    QUESTIONNAIRE = "questionnaire"
+    SCREENING = "screening"
+    VERIFICATION = "verification"
+    TRAINING = "training"
+    INTERVIEW = "interview"
+
+
+class NonConformanceStatus(str, Enum):
+    """Non-conformance status classification.
+
+    OPEN: Non-conformance identified, action pending.
+    IN_PROGRESS: Corrective action in progress.
+    RESOLVED: Corrective action completed, pending verification.
+    VERIFIED: Corrective action verified and closed.
+    OVERDUE: Corrective action deadline exceeded.
+    """
+
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    RESOLVED = "resolved"
+    VERIFIED = "verified"
+    OVERDUE = "overdue"
 
 
 # =============================================================================
@@ -824,6 +881,128 @@ class AuditLogEntry(BaseModel):
     timestamp: datetime = Field(default_factory=_utcnow)
     provenance_hash: str = Field(..., min_length=64, max_length=64)
     details: Optional[Dict[str, Any]] = None
+
+
+class DDActivity(BaseModel):
+    """Due diligence activity record.
+
+    Attributes:
+        activity_id: Unique activity identifier.
+        supplier_id: Supplier identifier.
+        activity_type: Activity type classification.
+        activity_date: Activity execution date.
+        conducted_by: Person or entity who conducted the activity.
+        findings: Activity findings summary.
+        documents_reviewed: List of document identifiers reviewed.
+        sites_visited: List of site locations visited.
+        stakeholders_interviewed: List of stakeholders interviewed.
+        cost_usd: Activity cost in USD.
+        duration_hours: Activity duration in hours.
+    """
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    activity_id: str = Field(..., min_length=1, max_length=100)
+    supplier_id: str = Field(..., min_length=1, max_length=100)
+    activity_type: DDActivityType
+    activity_date: datetime
+    conducted_by: str = Field(..., min_length=1, max_length=100)
+    findings: str = Field(default="", max_length=2000)
+    documents_reviewed: List[str] = Field(default_factory=list)
+    sites_visited: List[str] = Field(default_factory=list)
+    stakeholders_interviewed: List[str] = Field(default_factory=list)
+    cost_usd: float = Field(default=0.0, ge=0)
+    duration_hours: float = Field(default=0.0, ge=0)
+
+
+class NonConformance(BaseModel):
+    """Non-conformance finding record.
+
+    Attributes:
+        nc_id: Unique non-conformance identifier.
+        record_id: Parent due diligence record identifier.
+        supplier_id: Supplier identifier.
+        nc_type: Non-conformance type classification.
+        description: Non-conformance description.
+        severity_score: Severity score (0-100).
+        detected_date: Detection date.
+        status: Non-conformance status.
+        resolved_date: Resolution date (if resolved).
+    """
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    nc_id: str = Field(..., min_length=1, max_length=100)
+    record_id: str = Field(..., min_length=1, max_length=100)
+    supplier_id: str = Field(..., min_length=1, max_length=100)
+    nc_type: NonConformanceType
+    description: str = Field(..., min_length=1, max_length=2000)
+    severity_score: Decimal = Field(..., ge=0, le=100)
+    detected_date: datetime
+    status: NonConformanceStatus
+    resolved_date: Optional[datetime] = None
+
+
+class CorrectiveActionPlan(BaseModel):
+    """Corrective action plan for non-conformance.
+
+    Attributes:
+        cap_id: Unique corrective action plan identifier.
+        nc_id: Non-conformance identifier.
+        action_description: Description of corrective action.
+        responsible_party: Person or entity responsible.
+        deadline: Completion deadline.
+        resources_required: Required resources description.
+        created_date: Plan creation date.
+        status: Action plan status.
+        completed_date: Completion date (if completed).
+    """
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    cap_id: str = Field(..., min_length=1, max_length=100)
+    nc_id: str = Field(..., min_length=1, max_length=100)
+    action_description: str = Field(..., min_length=1, max_length=2000)
+    responsible_party: str = Field(..., min_length=1, max_length=100)
+    deadline: datetime
+    resources_required: str = Field(default="", max_length=1000)
+    created_date: datetime
+    status: NonConformanceStatus
+    completed_date: Optional[datetime] = None
+
+
+class SupplierDocument(BaseModel):
+    """Supplier document record.
+
+    Attributes:
+        document_id: Unique document identifier.
+        supplier_id: Supplier identifier.
+        document_type: Document type classification.
+        file_name: Original file name.
+        file_format: File format (pdf, xlsx, jpg, etc.).
+        file_size_bytes: File size in bytes.
+        content_hash: SHA-256 content hash.
+        submission_date: Document submission date.
+        expiry_date: Document expiry date (if applicable).
+        version: Document version number.
+        status: Document validation status.
+        language_code: Document language code (ISO 639-1).
+    """
+
+    model_config = ConfigDict(frozen=False, extra="forbid")
+
+    document_id: str = Field(..., min_length=1, max_length=100)
+    supplier_id: str = Field(..., min_length=1, max_length=100)
+    document_type: DocumentType
+    file_name: str = Field(..., min_length=1, max_length=255)
+    file_format: str = Field(..., min_length=1, max_length=50)
+    file_size_bytes: int = Field(..., ge=0)
+    content_hash: str = Field(..., min_length=64, max_length=64)
+    submission_date: datetime
+    expiry_date: Optional[datetime] = None
+    version: int = Field(default=1, ge=1)
+    status: DocumentStatus
+    language_code: str = Field(default="en", min_length=2, max_length=2)
 
 
 # =============================================================================

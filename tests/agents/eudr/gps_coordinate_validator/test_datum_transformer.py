@@ -7,7 +7,7 @@ Comprehensive test suite covering:
 - NAD27 to WGS84 transformation (North America)
 - NAD83 to WGS84 (near identity)
 - ED50 to WGS84 (European Datum 1950)
-- SIRGAS2000 to WGS84 (South America)
+- SIRGAS_2000 to WGS84 (South America)
 - INDIAN_1975 to WGS84 (Southeast Asia)
 - PULKOVO_1942 to WGS84 (Russia / Eastern Europe)
 - ARC1960 to WGS84 (East Africa)
@@ -178,14 +178,14 @@ class TestED50ToWGS84:
 
 
 class TestSIRGASToWGS84:
-    """Test SIRGAS2000 to WGS84 transformation (South America)."""
+    """Test SIRGAS_2000 to WGS84 transformation (South America)."""
 
     def test_sirgas_to_wgs84_near_identity(self, datum_transformer):
-        """SIRGAS2000 -> WGS84 should be near identity (<2m)."""
+        """SIRGAS_2000 -> WGS84 should be near identity (<2m)."""
         result = datum_transformer.transform(
             latitude=SOYA_FIELD_BRAZIL[0],
             longitude=SOYA_FIELD_BRAZIL[1],
-            source_datum=GeodeticDatum.SIRGAS2000,
+            source_datum=GeodeticDatum.SIRGAS_2000,
         )
         assert result.displacement_m < 2.0
 
@@ -310,7 +310,7 @@ class TestDatumAutoDetection:
         "country,expected_datums",
         [
             ("US", [GeodeticDatum.NAD27, GeodeticDatum.NAD83]),
-            ("BR", [GeodeticDatum.SAD69, GeodeticDatum.SIRGAS2000]),
+            ("BR", [GeodeticDatum.SOUTH_AMERICAN_1969, GeodeticDatum.SIRGAS_2000]),
             ("AU", [GeodeticDatum.AGD66, GeodeticDatum.AGD84, GeodeticDatum.GDA94, GeodeticDatum.GDA2020]),
             ("JP", [GeodeticDatum.TOKYO]),
             ("DE", [GeodeticDatum.ED50, GeodeticDatum.ETRS89]),
@@ -590,15 +590,15 @@ class TestSouthAmericanDatumTransformations:
     """Test datum transformations for South American EUDR regions."""
 
     def test_sad69_datum_brazil(self, datum_transformer):
-        """SAD69 datum -> WGS84 for Brazil."""
+        """SOUTH_AMERICAN_1969 datum -> WGS84 for Brazil."""
         result = datum_transformer.transform(
             latitude=SOYA_FIELD_BRAZIL[0],
             longitude=SOYA_FIELD_BRAZIL[1],
-            source_datum=GeodeticDatum.SAD69,
+            source_datum=GeodeticDatum.SOUTH_AMERICAN_1969,
         )
-        assert result.source_datum == GeodeticDatum.SAD69
+        assert result.source_datum == GeodeticDatum.SOUTH_AMERICAN_1969
         assert result.target_datum == GeodeticDatum.WGS84
-        # SAD69 shift is typically 30-100m in Brazil
+        # SOUTH_AMERICAN_1969 shift is typically 30-100m in Brazil
         assert result.displacement_m < 200.0
 
     def test_bogota_datum_colombia(self, datum_transformer):

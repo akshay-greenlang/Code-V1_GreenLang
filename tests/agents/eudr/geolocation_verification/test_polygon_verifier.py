@@ -34,11 +34,11 @@ from typing import List, Tuple
 import pytest
 
 from greenlang.agents.eudr.geolocation_verification.models import (
-    IssueSeverity,
-    PolygonInput,
+    PolygonIssue,
+    PolygonIssueType,
     PolygonVerificationResult,
     RepairSuggestion,
-    ValidationIssue,
+    VerifyPolygonRequest,
 )
 from greenlang.agents.eudr.geolocation_verification.polygon_verifier import (
     PolygonTopologyVerifier,
@@ -61,7 +61,7 @@ class TestValidPolygons:
 
     def test_valid_quadrilateral(self, polygon_verifier):
         """Test valid quadrilateral polygon passes verification."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -97,7 +97,7 @@ class TestValidPolygons:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=3.0, plot_id="HEX-001")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=3.0, plot_id="HEX-001")
         result = polygon_verifier.verify(poly)
         assert result.is_valid is True
 
@@ -139,7 +139,7 @@ class TestValidPolygons:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=3.0, plot_id=f"POLY-{n_vertices}")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=3.0, plot_id=f"POLY-{n_vertices}")
         result = polygon_verifier.verify(poly)
         assert result.vertex_count == n_vertices + 1
 
@@ -159,7 +159,7 @@ class TestRingClosure:
 
     def test_ring_closure_within_tolerance(self, polygon_verifier):
         """Test ring closure within floating-point tolerance."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -186,7 +186,7 @@ class TestRingClosure:
 
     def test_ring_closure_far_apart(self, polygon_verifier):
         """Test ring closure fails when endpoints are far apart."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -207,7 +207,7 @@ class TestRingClosure:
     ])
     def test_ring_closure_tolerance_levels(self, polygon_verifier, offset):
         """Test ring closure at various tolerance levels."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -245,7 +245,7 @@ class TestWindingOrder:
     def test_winding_order_ccw_correct(self, polygon_verifier):
         """Test CCW winding order is accepted."""
         # CCW polygon (standard GeoJSON convention)
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -261,7 +261,7 @@ class TestWindingOrder:
     def test_winding_order_cw_incorrect(self, polygon_verifier):
         """Test CW winding order is flagged as incorrect."""
         # CW polygon (reversed vertex order)
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1215, -60.0190),
@@ -276,7 +276,7 @@ class TestWindingOrder:
 
     def test_winding_order_cw_issue_generated(self, polygon_verifier):
         """Test CW winding order generates a validation issue."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1215, -60.0190),
@@ -292,7 +292,7 @@ class TestWindingOrder:
 
     def test_winding_order_repair_suggestion(self, polygon_verifier):
         """Test repair suggestion for wrong winding order."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1215, -60.0190),
@@ -328,7 +328,7 @@ class TestWindingOrder:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=3.0, plot_id=f"WIND-{n_vertices}")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=3.0, plot_id=f"WIND-{n_vertices}")
         result = polygon_verifier.verify(poly)
         assert isinstance(result.winding_order_ccw, bool)
 
@@ -349,7 +349,7 @@ class TestSelfIntersection:
 
     def test_self_intersection_figure_eight(self, polygon_verifier):
         """Test figure-eight pattern is detected as self-intersecting."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -370,7 +370,7 @@ class TestSelfIntersection:
 
     def test_no_self_intersection_concave(self, polygon_verifier):
         """Test valid concave polygon has no self-intersection."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -400,7 +400,7 @@ class TestSelfIntersection:
 
     def test_self_intersection_complex_crossing(self, polygon_verifier):
         """Test complex polygon with multiple edge crossings."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1220, -60.0180),
@@ -426,7 +426,7 @@ class TestSelfIntersection:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=3.0, plot_id=f"REG-{n_vertices}")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=3.0, plot_id=f"REG-{n_vertices}")
         result = polygon_verifier.verify(poly)
         assert result.has_self_intersection is False
 
@@ -446,7 +446,7 @@ class TestVertexCount:
 
     def test_too_few_vertices_2(self, polygon_verifier):
         """Test polygon with only 2 unique vertices fails."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1220, -60.0180),
@@ -460,7 +460,7 @@ class TestVertexCount:
 
     def test_too_few_vertices_1(self, polygon_verifier):
         """Test polygon with only 1 unique vertex fails."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0200),
@@ -483,7 +483,7 @@ class TestVertexCount:
 
     def test_too_few_vertices_issue(self, polygon_verifier):
         """Test too few vertices generates an issue."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.12, -60.02),
                 (-3.12, -60.02),
@@ -510,7 +510,7 @@ class TestVertexCount:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=3.0, plot_id=f"VCNT-{n_verts}")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=3.0, plot_id=f"VCNT-{n_verts}")
         result = polygon_verifier.verify(poly)
         assert result.vertex_count == n_verts + 1
 
@@ -531,7 +531,7 @@ class TestAreaCalculation:
     def test_area_tolerance_within_10pct(self, polygon_verifier):
         """Test area within 10% tolerance passes."""
         # Create polygon with known approximate area
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -547,7 +547,7 @@ class TestAreaCalculation:
 
     def test_area_with_declared_matching(self, polygon_verifier):
         """Test area within tolerance when declared matches calculated."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -563,7 +563,7 @@ class TestAreaCalculation:
 
     def test_area_tolerance_exceeded(self, polygon_verifier):
         """Test area tolerance exceeded when declared differs greatly."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -578,7 +578,7 @@ class TestAreaCalculation:
 
     def test_area_no_declared_value(self, polygon_verifier, valid_polygon_small):
         """Test area tolerance check skipped when no declared area."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=valid_polygon_small.vertices,
             declared_area_ha=None,
             plot_id="NO-DECL-AREA",
@@ -589,7 +589,7 @@ class TestAreaCalculation:
 
     def test_area_tolerance_pct_from_config(self, polygon_verifier, mock_config):
         """Test area tolerance percentage comes from config."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -622,7 +622,7 @@ class TestAreaCalculation:
     ])
     def test_area_tolerance_parametrized(self, polygon_verifier, declared_ha, should_pass):
         """Test area tolerance with various declared values."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -637,7 +637,7 @@ class TestAreaCalculation:
 
     def test_area_issue_on_mismatch(self, polygon_verifier):
         """Test area mismatch generates an issue."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -678,7 +678,7 @@ class TestSliverDetection:
 
     def test_square_polygon_not_sliver(self, polygon_verifier):
         """Test a square polygon is not a sliver."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -694,7 +694,7 @@ class TestSliverDetection:
 
     def test_very_thin_rectangle_is_sliver(self, polygon_verifier):
         """Test very thin rectangle is classified as sliver."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0000),      # Very long edge (2km+)
@@ -711,7 +711,7 @@ class TestSliverDetection:
     @pytest.mark.parametrize("width_offset", [0.0001, 0.001, 0.01, 0.02])
     def test_sliver_threshold_boundary(self, polygon_verifier, width_offset):
         """Test sliver detection at various widths."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0000),
@@ -736,7 +736,7 @@ class TestSpikeDetection:
 
     def test_spike_vertex_detection(self, polygon_verifier):
         """Test polygon with spike vertex is detected."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -760,7 +760,7 @@ class TestSpikeDetection:
 
     def test_spike_indices_reported(self, polygon_verifier):
         """Test spike vertex indices are reported."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -787,13 +787,13 @@ class TestSpikeDetection:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=3.0, plot_id="REG-HEX")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=3.0, plot_id="REG-HEX")
         result = polygon_verifier.verify(poly)
         assert result.has_spikes is False
 
     def test_spike_issue_severity(self, polygon_verifier):
         """Test spike issues have appropriate severity."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -835,7 +835,7 @@ class TestVertexDensity:
     def test_vertex_density_too_sparse(self, polygon_verifier):
         """Test polygon with too few vertices for its size is flagged."""
         # Very large area but only 3 vertices (triangle)
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.0, -60.0),
                 (-3.0, -59.0),    # ~111 km
@@ -866,7 +866,7 @@ class TestMaxArea:
     def test_max_area_exceeded(self, polygon_verifier):
         """Test polygon exceeding max area limit is flagged."""
         # Very large polygon
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (0.0, 0.0),
                 (0.0, 10.0),
@@ -888,7 +888,7 @@ class TestMaxArea:
     @pytest.mark.parametrize("size_factor", [0.001, 0.01, 0.05, 0.1])
     def test_various_area_sizes(self, polygon_verifier, size_factor):
         """Test max area check for various polygon sizes."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.12, -60.02),
                 (-3.12, -60.02 + size_factor),
@@ -922,7 +922,7 @@ class TestRepairSuggestions:
 
     def test_repair_suggestions_wrong_winding(self, polygon_verifier):
         """Test repair suggestion for wrong winding order."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1215, -60.0190),
@@ -1003,7 +1003,7 @@ class TestBatchVerification:
                 (-3.1215 + i * 0.01, -60.019),
                 (-3.12 + i * 0.01, -60.02),
             ]
-            polys.append(PolygonInput(vertices=verts, plot_id=f"BATCH-{i}"))
+            polys.append(VerifyPolygonRequest(vertices=verts, plot_id=f"BATCH-{i}"))
         results = polygon_verifier.verify_batch(polys)
         assert len(results) == 5
 
@@ -1018,7 +1018,7 @@ class TestBatchVerification:
                 (-3.1215 + i * 0.01, -60.019),
                 (-3.12 + i * 0.01, -60.02),
             ]
-            polys.append(PolygonInput(vertices=verts, plot_id=f"BV-{i}"))
+            polys.append(VerifyPolygonRequest(vertices=verts, plot_id=f"BV-{i}"))
         results = polygon_verifier.verify_batch(polys)
         assert len(results) == batch_size
 
@@ -1069,7 +1069,7 @@ class TestEmptyDegenerate:
 
     def test_empty_polygon(self, polygon_verifier):
         """Test polygon with no vertices."""
-        poly = PolygonInput(vertices=[], plot_id="EMPTY")
+        poly = VerifyPolygonRequest(vertices=[], plot_id="EMPTY")
         result = polygon_verifier.verify(poly)
         assert result.is_valid is False
         assert result.vertex_count == 0
@@ -1081,13 +1081,13 @@ class TestEmptyDegenerate:
 
     def test_single_vertex(self, polygon_verifier):
         """Test polygon with single vertex."""
-        poly = PolygonInput(vertices=[(-3.12, -60.02)], plot_id="SINGLE")
+        poly = VerifyPolygonRequest(vertices=[(-3.12, -60.02)], plot_id="SINGLE")
         result = polygon_verifier.verify(poly)
         assert result.is_valid is False
 
     def test_two_vertices(self, polygon_verifier):
         """Test polygon with two vertices (a line)."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[(-3.12, -60.02), (-3.13, -60.03)],
             plot_id="LINE",
         )
@@ -1096,7 +1096,7 @@ class TestEmptyDegenerate:
 
     def test_collinear_vertices(self, polygon_verifier):
         """Test polygon with all collinear vertices (zero area)."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.12, -60.02),
                 (-3.13, -60.02),
@@ -1196,7 +1196,7 @@ class TestCommodityPolygonShapes:
             lon = center_lon + radius * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])  # Close ring
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=verts,
             declared_area_ha=declared_ha,
             commodity=commodity,
@@ -1227,7 +1227,7 @@ class TestCommodityPolygonShapes:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=verts,
             declared_area_ha=3.0,
             plot_id=f"GEO-{country}",
@@ -1247,7 +1247,7 @@ class TestAdvancedTopology:
 
     def test_narrow_isthmus_polygon(self, polygon_verifier):
         """Test polygon with a narrow isthmus (almost self-intersecting)."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0150),
@@ -1265,7 +1265,7 @@ class TestAdvancedTopology:
 
     def test_l_shaped_polygon(self, polygon_verifier):
         """Test L-shaped concave polygon."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-3.1200, -60.0200),
                 (-3.1200, -60.0180),
@@ -1292,7 +1292,7 @@ class TestAdvancedTopology:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=verts, declared_area_ha=3.0, plot_id="STAR",
         )
         result = polygon_verifier.verify(poly)
@@ -1310,7 +1310,7 @@ class TestAdvancedTopology:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=3.0, plot_id=f"REG-{n_sides}")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=3.0, plot_id=f"REG-{n_sides}")
         result = polygon_verifier.verify(poly)
         assert result.vertex_count == n_sides + 1
         assert result.has_self_intersection is False
@@ -1327,13 +1327,13 @@ class TestAdvancedTopology:
             lon = center_lon + r * math.sin(angle)
             verts.append((round(lat, 7), round(lon, 7)))
         verts.append(verts[0])
-        poly = PolygonInput(vertices=verts, declared_area_ha=50.0, plot_id="LARGE-100")
+        poly = VerifyPolygonRequest(vertices=verts, declared_area_ha=50.0, plot_id="LARGE-100")
         result = polygon_verifier.verify(poly)
         assert result.vertex_count == 101
 
     def test_polygon_crossing_equator(self, polygon_verifier):
         """Test polygon that crosses the equator."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (-0.01, 30.0),
                 (-0.01, 30.02),
@@ -1349,7 +1349,7 @@ class TestAdvancedTopology:
 
     def test_polygon_near_dateline(self, polygon_verifier):
         """Test polygon near the International Date Line."""
-        poly = PolygonInput(
+        poly = VerifyPolygonRequest(
             vertices=[
                 (0.0, 179.99),
                 (0.0, 179.995),

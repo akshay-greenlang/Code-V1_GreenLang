@@ -222,6 +222,38 @@ try:
 except ImportError:
     PROMETHEUS_AVAILABLE = False  # type: ignore[assignment]
 
+# ---- Engine 1: Custody Event Tracker ----
+try:
+    from greenlang.agents.eudr.chain_of_custody.custody_event_tracker import (
+        CustodyEventTracker,
+    )
+except ImportError:
+    CustodyEventTracker = None  # type: ignore[assignment,misc]
+
+# ---- Engine 2: Batch Lifecycle Manager ----
+try:
+    from greenlang.agents.eudr.chain_of_custody.batch_lifecycle_manager import (
+        BatchLifecycleManager,
+    )
+except ImportError:
+    BatchLifecycleManager = None  # type: ignore[assignment,misc]
+
+# ---- Engine 3: CoC Model Enforcer ----
+try:
+    from greenlang.agents.eudr.chain_of_custody.coc_model_enforcer import (
+        CoCModelEnforcer,
+    )
+except ImportError:
+    CoCModelEnforcer = None  # type: ignore[assignment,misc]
+
+# ---- Engine 4: Mass Balance Engine ----
+try:
+    from greenlang.agents.eudr.chain_of_custody.mass_balance_engine import (
+        MassBalanceEngine,
+    )
+except ImportError:
+    MassBalanceEngine = None  # type: ignore[assignment,misc]
+
 # ---- Engine 5: Transformation Tracker ----
 try:
     from greenlang.agents.eudr.chain_of_custody.transformation_tracker import (
@@ -370,6 +402,14 @@ __all__ = [
     "observe_mass_balance_duration",
     "set_active_batches",
     "set_chain_completeness_avg",
+    # -- Engine 1: Custody Event Tracker --
+    "CustodyEventTracker",
+    # -- Engine 2: Batch Lifecycle Manager --
+    "BatchLifecycleManager",
+    # -- Engine 3: CoC Model Enforcer --
+    "CoCModelEnforcer",
+    # -- Engine 4: Mass Balance Engine --
+    "MassBalanceEngine",
     # -- Engine 5: Transformation Tracker --
     "TransformationTracker",
     # -- Engine 6: Document Chain Verifier --

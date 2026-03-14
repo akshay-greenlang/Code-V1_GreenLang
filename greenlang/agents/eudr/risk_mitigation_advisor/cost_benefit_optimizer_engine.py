@@ -1045,6 +1045,184 @@ class CostBenefitOptimizerEngine:
             "Continue monitoring plan performance."
         )
 
+    async def calculate_cost_effectiveness(
+        self,
+        expected_reduction: Decimal,
+        expected_cost: Decimal,
+    ) -> Optional[Decimal]:
+        """Calculate cost-effectiveness ratio.
+
+        Args:
+            expected_reduction: Expected risk reduction percentage (0-100).
+            expected_cost: Expected cost in EUR.
+
+        Returns:
+            Cost-effectiveness ratio (risk points per 1000 EUR), or None if cost is zero.
+        """
+        if expected_cost <= Decimal("0"):
+            return None
+
+        # Risk points per 1000 EUR
+        ratio = (expected_reduction / expected_cost * Decimal("1000")).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+        return ratio
+
+    async def run_scenarios(
+        self,
+        request: OptimizeBudgetRequest,
+        budget_multipliers: Optional[List[Decimal]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Run multiple optimization scenarios with different budgets.
+
+        Args:
+            request: Base optimization request.
+            budget_multipliers: Budget multipliers to apply (default: [0.5, 1.0, 1.5, 2.0]).
+                               If empty list is passed, returns empty list.
+
+        Returns:
+            List of scenario results with budget and risk reduction.
+        """
+        if budget_multipliers is None:
+            budget_multipliers = [
+                Decimal("0.5"),
+                Decimal("1.0"),
+                Decimal("1.5"),
+                Decimal("2.0"),
+            ]
+
+        # If explicitly empty list, return empty scenarios
+        if len(budget_multipliers) == 0:
+            return []
+
+        scenarios = []
+        base_budget = request.total_budget_eur
+
+        for multiplier in budget_multipliers:
+            scenario_request = OptimizeBudgetRequest(
+                operator_id=request.operator_id,
+                total_budget_eur=base_budget * multiplier,
+                per_supplier_cap_eur=request.per_supplier_cap_eur,
+                category_budgets=request.category_budgets,
+                supplier_ids=request.supplier_ids,
+                candidate_measure_ids=request.candidate_measure_ids,
+                supplier_risk_scores=request.supplier_risk_scores,
+            )
+
+            result = await self.optimize(scenario_request)
+
+            scenarios.append({
+                "budget_multiplier": str(multiplier),
+                "total_budget": str(scenario_request.total_budget_eur),
+                "budget_used": str(result.total_budget_used),
+                "expected_risk_reduction": result.expected_risk_reduction,
+                "solver_status": result.solver_status,
+            })
+
+        return scenarios
+
+    async def calculate_rice_score(
+        self,
+        reach: Decimal,
+        impact: Decimal,
+        confidence: Decimal,
+        effort: Decimal,
+    ) -> Decimal:
+        """Calculate RICE prioritization score.
+
+        RICE = (Reach × Impact × Confidence) / Effort
+
+        Args:
+            reach: Number of suppliers/stakeholders impacted (0-100+).
+            impact: Risk reduction impact (0-100).
+            confidence: Confidence level (0-1).
+            effort: Required effort in EUR or person-weeks.
+
+        Returns:
+            RICE score (higher is better).
+        """
+        if effort <= Decimal("0"):
+            # Avoid division by zero
+            effort = Decimal("1")
+
+        rice = (reach * impact * confidence) / effort
+        return rice.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+
+    async def greedy_allocate(
+        self,
+        total_budget: Decimal,
+        supplier_ids: List[str],
+        measure_costs: List[Decimal],
+        measure_reductions: List[Decimal],
+    ) -> Dict[str, Any]:
+        """Greedy budget allocation algorithm.
+
+        Allocates budget to measures in order of cost-effectiveness ratio
+        until budget is exhausted.
+
+        Args:
+            total_budget: Total available budget.
+            supplier_ids: List of supplier IDs.
+            measure_costs: Cost for each measure.
+            measure_reductions: Expected reduction for each measure.
+
+        Returns:
+            Dictionary with allocations, total_cost, and total_reduction.
+        """
+        # Create (supplier, cost, reduction, ratio) tuples
+        measures = []
+        for i, (sid, cost, reduction) in enumerate(
+            zip(supplier_ids, measure_costs, measure_reductions)
+        ):
+            if cost > Decimal("0"):
+                ratio = reduction / cost
+                measures.append((sid, cost, reduction, ratio, i))
+
+        # Sort by cost-effectiveness ratio (descending)
+        measures.sort(key=lambda x: x[3], reverse=True)
+
+        allocations = []
+        remaining_budget = total_budget
+        total_reduction = Decimal("0")
+
+        for sid, cost, reduction, ratio, idx in measures:
+            if cost <= remaining_budget:
+                allocations.append({
+                    "supplier_id": sid,
+                    "measure_index": idx,
+                    "cost": str(cost),
+                    "reduction": str(reduction),
+                    "ratio": str(ratio),
+                })
+                remaining_budget -= cost
+                total_reduction += reduction
+
+        total_cost = total_budget - remaining_budget
+
+        return {
+            "allocations": allocations,
+            "total_cost": total_cost,
+            "total_reduction": total_reduction,
+            "remaining_budget": remaining_budget,
+        }
+
+    async def calculate_spend_variance(
+        self,
+        planned: Decimal,
+        actual: Decimal,
+    ) -> Decimal:
+        """Calculate spend variance.
+
+        Args:
+            planned: Planned budget.
+            actual: Actual spend.
+
+        Returns:
+            Variance (positive = overspend, negative = underspend).
+        """
+        variance = actual - planned
+        return variance.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
     async def health_check(self) -> Dict[str, Any]:
         """Return engine health status."""
         return {

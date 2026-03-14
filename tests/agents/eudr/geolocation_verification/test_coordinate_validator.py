@@ -30,10 +30,10 @@ from typing import List
 import pytest
 
 from greenlang.agents.eudr.geolocation_verification.models import (
-    CoordinateInput,
+    CoordinateIssue,
+    CoordinateIssueType,
     CoordinateValidationResult,
-    IssueSeverity,
-    ValidationIssue,
+    VerifyCoordinateRequest,
 )
 from greenlang.agents.eudr.geolocation_verification.coordinate_validator import (
     CoordinateValidator,
@@ -50,7 +50,7 @@ class TestWGS84Bounds:
 
     def test_valid_coordinate_center(self, coordinate_validator):
         """Test valid coordinate near the center of WGS84 bounds."""
-        inp = CoordinateInput(lat=0.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert isinstance(result, CoordinateValidationResult)
         assert result.wgs84_valid is True
@@ -74,59 +74,59 @@ class TestWGS84Bounds:
 
     def test_invalid_latitude_too_high(self, coordinate_validator):
         """Test latitude above 90 degrees is invalid."""
-        inp = CoordinateInput(lat=91.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=91.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
         assert result.is_valid is False
 
     def test_invalid_latitude_too_low(self, coordinate_validator):
         """Test latitude below -90 degrees is invalid."""
-        inp = CoordinateInput(lat=-91.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=-91.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
         assert result.is_valid is False
 
     def test_invalid_longitude_too_high(self, coordinate_validator):
         """Test longitude above 180 degrees is invalid."""
-        inp = CoordinateInput(lat=0.0, lon=181.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=181.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
         assert result.is_valid is False
 
     def test_invalid_longitude_too_low(self, coordinate_validator):
         """Test longitude below -180 degrees is invalid."""
-        inp = CoordinateInput(lat=0.0, lon=-181.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=-181.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
         assert result.is_valid is False
 
     def test_latitude_exactly_90(self, coordinate_validator):
         """Test latitude at exactly 90 (North Pole) is valid."""
-        inp = CoordinateInput(lat=90.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=90.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
     def test_latitude_exactly_minus_90(self, coordinate_validator):
         """Test latitude at exactly -90 (South Pole) is valid."""
-        inp = CoordinateInput(lat=-90.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=-90.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
     def test_longitude_exactly_180(self, coordinate_validator):
         """Test longitude at exactly 180 (Date Line) is valid."""
-        inp = CoordinateInput(lat=0.0, lon=180.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=180.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
     def test_longitude_exactly_minus_180(self, coordinate_validator):
         """Test longitude at exactly -180 (Date Line) is valid."""
-        inp = CoordinateInput(lat=0.0, lon=-180.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=-180.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
     def test_invalid_both_out_of_bounds(self, coordinate_validator):
         """Test both latitude and longitude out of bounds."""
-        inp = CoordinateInput(lat=100.0, lon=200.0)
+        inp = VerifyCoordinateRequest(lat=100.0, lon=200.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
         assert result.is_valid is False
@@ -140,7 +140,7 @@ class TestWGS84Bounds:
     ])
     def test_valid_coordinates_parametrized(self, coordinate_validator, lat, lon):
         """Test multiple valid coordinate pairs."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
@@ -156,13 +156,13 @@ class TestWGS84Bounds:
     ])
     def test_invalid_coordinates_parametrized(self, coordinate_validator, lat, lon):
         """Test multiple invalid coordinate pairs."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
 
     def test_issues_populated_on_invalid_latitude(self, coordinate_validator):
         """Test that issues list is populated when latitude is invalid."""
-        inp = CoordinateInput(lat=95.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=95.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert len(result.issues) > 0
         issue_codes = [i.code for i in result.issues]
@@ -170,13 +170,13 @@ class TestWGS84Bounds:
 
     def test_issues_populated_on_invalid_longitude(self, coordinate_validator):
         """Test that issues list is populated when longitude is invalid."""
-        inp = CoordinateInput(lat=0.0, lon=200.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=200.0)
         result = coordinate_validator.validate(inp)
         assert len(result.issues) > 0
 
     def test_validation_id_generated(self, coordinate_validator):
         """Test that a validation ID is generated for each result."""
-        inp = CoordinateInput(lat=0.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.validation_id is not None
         assert len(result.validation_id) > 0
@@ -184,7 +184,7 @@ class TestWGS84Bounds:
 
     def test_validated_at_set(self, coordinate_validator):
         """Test that the validated_at timestamp is set."""
-        inp = CoordinateInput(lat=0.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.validated_at is not None
 
@@ -199,56 +199,56 @@ class TestPrecisionAssessment:
 
     def test_precision_7_decimals(self, coordinate_validator):
         """Test 7 decimal places gives highest precision score."""
-        inp = CoordinateInput(lat=-3.1234567, lon=-60.0234567)
+        inp = VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= 7
         assert result.precision_score >= 0.9
 
     def test_precision_6_decimals_score_max(self, coordinate_validator):
         """Test 6 decimal places gives near-maximum precision score."""
-        inp = CoordinateInput(lat=-3.123456, lon=-60.023456)
+        inp = VerifyCoordinateRequest(lat=-3.123456, lon=-60.023456)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= 6
         assert result.precision_score >= 0.8
 
     def test_precision_5_decimals_acceptable(self, coordinate_validator):
         """Test 5 decimal places is acceptable (~1.1m accuracy)."""
-        inp = CoordinateInput(lat=-3.12345, lon=-60.02345)
+        inp = VerifyCoordinateRequest(lat=-3.12345, lon=-60.02345)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= 5
         assert result.precision_score >= 0.6
 
     def test_precision_4_decimals_moderate(self, coordinate_validator):
         """Test 4 decimal places gives moderate score."""
-        inp = CoordinateInput(lat=-3.1234, lon=-60.0234)
+        inp = VerifyCoordinateRequest(lat=-3.1234, lon=-60.0234)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= 4
         assert result.precision_score >= 0.3
 
     def test_precision_3_decimals_low_score(self, coordinate_validator):
         """Test 3 decimal places gives low precision score (~111m)."""
-        inp = CoordinateInput(lat=-3.123, lon=-60.023)
+        inp = VerifyCoordinateRequest(lat=-3.123, lon=-60.023)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= 3
         assert result.precision_score <= 0.5
 
     def test_precision_2_decimals_very_low(self, coordinate_validator):
         """Test 2 decimal places gives very low score (~1.1km)."""
-        inp = CoordinateInput(lat=-3.12, lon=-60.02)
+        inp = VerifyCoordinateRequest(lat=-3.12, lon=-60.02)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= 2
         assert result.precision_score <= 0.3
 
     def test_precision_1_decimal_very_low(self, coordinate_validator):
         """Test 1 decimal place gives minimal score (~11km)."""
-        inp = CoordinateInput(lat=-3.1, lon=-60.0)
+        inp = VerifyCoordinateRequest(lat=-3.1, lon=-60.0)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= 1
         assert result.precision_score <= 0.2
 
     def test_precision_integer_minimum(self, coordinate_validator):
         """Test integer coordinates give minimum precision score (~111km)."""
-        inp = CoordinateInput(lat=-3.0, lon=-60.0)
+        inp = VerifyCoordinateRequest(lat=-3.0, lon=-60.0)
         result = coordinate_validator.validate(inp)
         # Integer-like coords still have at least 1 decimal if .0 is counted
         assert result.precision_score <= 0.2
@@ -262,7 +262,7 @@ class TestPrecisionAssessment:
             (-3.1234567, -60.0234567),
         ]
         for lat, lon in test_cases:
-            result = coordinate_validator.validate(CoordinateInput(lat=lat, lon=lon))
+            result = coordinate_validator.validate(VerifyCoordinateRequest(lat=lat, lon=lon))
             assert 0.0 <= result.precision_score <= 1.0
 
     @pytest.mark.parametrize("decimals,lat_str", [
@@ -276,13 +276,13 @@ class TestPrecisionAssessment:
     ])
     def test_precision_monotonically_increasing(self, coordinate_validator, decimals, lat_str):
         """Test that more decimal places always yield higher or equal precision score."""
-        inp = CoordinateInput(lat=lat_str, lon=-60.0234567)
+        inp = VerifyCoordinateRequest(lat=lat_str, lon=-60.0234567)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= decimals
 
     def test_precision_issue_below_threshold(self, coordinate_validator, mock_config):
         """Test that a precision issue is raised when below min_decimals threshold."""
-        inp = CoordinateInput(lat=-3.12, lon=-60.02)  # 2 decimals < 5 min
+        inp = VerifyCoordinateRequest(lat=-3.12, lon=-60.02)  # 2 decimals < 5 min
         result = coordinate_validator.validate(inp)
         issue_codes = [i.code for i in result.issues]
         assert any(
@@ -292,7 +292,7 @@ class TestPrecisionAssessment:
 
     def test_no_precision_issue_above_threshold(self, coordinate_validator):
         """Test no precision issue when above minimum decimals threshold."""
-        inp = CoordinateInput(lat=-3.1234567, lon=-60.0234567)  # 7 decimals >= 5
+        inp = VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567)  # 7 decimals >= 5
         result = coordinate_validator.validate(inp)
         precision_issues = [
             i for i in result.issues
@@ -302,14 +302,14 @@ class TestPrecisionAssessment:
 
     def test_precision_different_lat_lon_decimals(self, coordinate_validator):
         """Test precision when lat and lon have different decimal counts."""
-        inp = CoordinateInput(lat=-3.12, lon=-60.0234567)
+        inp = VerifyCoordinateRequest(lat=-3.12, lon=-60.0234567)
         result = coordinate_validator.validate(inp)
         # Should report the lower precision
         assert result.precision_decimal_places <= 7
 
     def test_precision_trailing_zeros(self, coordinate_validator):
         """Test precision handling when coordinates have trailing zeros."""
-        inp = CoordinateInput(lat=-3.100000, lon=-60.020000)
+        inp = VerifyCoordinateRequest(lat=-3.100000, lon=-60.020000)
         result = coordinate_validator.validate(inp)
         # Python floats strip trailing zeros, so precision may be lower
         assert isinstance(result.precision_decimal_places, int)
@@ -321,7 +321,7 @@ class TestPrecisionAssessment:
     ])
     def test_precision_detected_correctly(self, coordinate_validator, lat, expected_min_decimals):
         """Test precision detection across different decimal counts."""
-        inp = CoordinateInput(lat=lat, lon=-60.0234567)
+        inp = VerifyCoordinateRequest(lat=lat, lon=-60.0234567)
         result = coordinate_validator.validate(inp)
         assert result.precision_decimal_places >= expected_min_decimals
 
@@ -336,37 +336,37 @@ class TestTranspositionDetection:
 
     def test_transposition_detection_lat_gt_90(self, coordinate_validator):
         """Detect transposition when lat value exceeds 90 (looks like longitude)."""
-        inp = CoordinateInput(lat=111.7654321, lon=-2.5678901)
+        inp = VerifyCoordinateRequest(lat=111.7654321, lon=-2.5678901)
         result = coordinate_validator.validate(inp)
         assert result.transposition_detected is True
 
     def test_no_transposition_normal_coords(self, coordinate_validator):
         """No transposition for normal coordinates within bounds."""
-        inp = CoordinateInput(lat=-3.1234567, lon=-60.0234567)
+        inp = VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567)
         result = coordinate_validator.validate(inp)
         assert result.transposition_detected is False
 
     def test_transposition_both_within_lat_range(self, coordinate_validator):
         """No transposition when both values are within latitude range."""
-        inp = CoordinateInput(lat=45.0, lon=80.0)
+        inp = VerifyCoordinateRequest(lat=45.0, lon=80.0)
         result = coordinate_validator.validate(inp)
         assert result.transposition_detected is False
 
     def test_transposition_lat_minus_120(self, coordinate_validator):
         """Detect transposition when latitude is -120 (valid longitude)."""
-        inp = CoordinateInput(lat=-120.0, lon=-3.0)
+        inp = VerifyCoordinateRequest(lat=-120.0, lon=-3.0)
         result = coordinate_validator.validate(inp)
         assert result.transposition_detected is True
 
     def test_transposition_large_lat_positive(self, coordinate_validator):
         """Detect transposition when lat is 150 (clearly a longitude value)."""
-        inp = CoordinateInput(lat=150.0, lon=10.0)
+        inp = VerifyCoordinateRequest(lat=150.0, lon=10.0)
         result = coordinate_validator.validate(inp)
         assert result.transposition_detected is True
 
     def test_no_transposition_at_poles(self, coordinate_validator):
         """No false transposition at boundary values."""
-        inp = CoordinateInput(lat=89.9, lon=89.9)
+        inp = VerifyCoordinateRequest(lat=89.9, lon=89.9)
         result = coordinate_validator.validate(inp)
         assert result.transposition_detected is False
 
@@ -381,13 +381,13 @@ class TestTranspositionDetection:
     ])
     def test_transposition_parametrized(self, coordinate_validator, lat, lon, expected):
         """Parametrized test for transposition detection."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.transposition_detected is expected
 
     def test_transposition_issue_severity(self, coordinate_validator):
         """Test that transposition issues have critical or high severity."""
-        inp = CoordinateInput(lat=111.0, lon=-3.0)
+        inp = VerifyCoordinateRequest(lat=111.0, lon=-3.0)
         result = coordinate_validator.validate(inp)
         transposition_issues = [
             i for i in result.issues
@@ -410,7 +410,7 @@ class TestCountryMatching:
 
     def test_country_match_brazil_correct(self, coordinate_validator):
         """Test coordinate in Brazil matches declared country BR."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-3.1234567, lon=-60.0234567, declared_country="BR"
         )
         result = coordinate_validator.validate(inp)
@@ -418,7 +418,7 @@ class TestCountryMatching:
 
     def test_country_match_brazil_wrong_country(self, coordinate_validator):
         """Test coordinate in Brazil with wrong declared country."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-3.1234567, lon=-60.0234567, declared_country="GH"
         )
         result = coordinate_validator.validate(inp)
@@ -426,7 +426,7 @@ class TestCountryMatching:
 
     def test_country_match_indonesia(self, coordinate_validator):
         """Test coordinate in Indonesia matches declared country ID."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-2.5678901, lon=111.7654321, declared_country="ID"
         )
         result = coordinate_validator.validate(inp)
@@ -434,7 +434,7 @@ class TestCountryMatching:
 
     def test_country_match_ghana(self, coordinate_validator):
         """Test coordinate in Ghana matches declared country GH."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=6.1234567, lon=-1.6234567, declared_country="GH"
         )
         result = coordinate_validator.validate(inp)
@@ -442,7 +442,7 @@ class TestCountryMatching:
 
     def test_country_match_colombia(self, coordinate_validator):
         """Test coordinate in Colombia matches declared country CO."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=4.5678901, lon=-74.0654321, declared_country="CO"
         )
         result = coordinate_validator.validate(inp)
@@ -450,7 +450,7 @@ class TestCountryMatching:
 
     def test_country_match_cote_divoire(self, coordinate_validator):
         """Test coordinate in Cote d'Ivoire matches declared country CI."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=6.8234567, lon=-5.2734567, declared_country="CI"
         )
         result = coordinate_validator.validate(inp)
@@ -458,7 +458,7 @@ class TestCountryMatching:
 
     def test_country_match_malaysia(self, coordinate_validator):
         """Test coordinate in Malaysia matches declared country MY."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=3.1234567, lon=101.7654321, declared_country="MY"
         )
         result = coordinate_validator.validate(inp)
@@ -466,7 +466,7 @@ class TestCountryMatching:
 
     def test_country_match_paraguay(self, coordinate_validator):
         """Test coordinate in Paraguay matches declared country PY."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-23.4567890, lon=-57.1234567, declared_country="PY"
         )
         result = coordinate_validator.validate(inp)
@@ -474,7 +474,7 @@ class TestCountryMatching:
 
     def test_country_mismatch_issue_generated(self, coordinate_validator):
         """Test that country mismatch generates a validation issue."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-3.1234567, lon=-60.0234567, declared_country="ID"
         )
         result = coordinate_validator.validate(inp)
@@ -488,7 +488,7 @@ class TestCountryMatching:
 
     def test_country_match_resolved_country_populated(self, coordinate_validator):
         """Test that resolved_country field is populated."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-3.1234567, lon=-60.0234567, declared_country="BR"
         )
         result = coordinate_validator.validate(inp)
@@ -497,7 +497,7 @@ class TestCountryMatching:
 
     def test_country_empty_declared_no_mismatch(self, coordinate_validator):
         """Test no mismatch when declared country is empty."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-3.1234567, lon=-60.0234567, declared_country=""
         )
         result = coordinate_validator.validate(inp)
@@ -506,7 +506,7 @@ class TestCountryMatching:
 
     def test_country_match_case_insensitive(self, coordinate_validator):
         """Test country matching is case-insensitive."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=-3.1234567, lon=-60.0234567, declared_country="br"
         )
         result = coordinate_validator.validate(inp)
@@ -522,7 +522,7 @@ class TestCountryMatching:
     ])
     def test_country_match_all_eudr_origins(self, coordinate_validator, lat, lon, country):
         """Test country matching for all major EUDR origin countries."""
-        inp = CoordinateInput(lat=lat, lon=lon, declared_country=country)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon, declared_country=country)
         result = coordinate_validator.validate(inp)
         assert result.country_match is True
 
@@ -533,7 +533,7 @@ class TestCountryMatching:
     ])
     def test_country_mismatch_detected(self, coordinate_validator, lat, lon, wrong_country):
         """Test country mismatch is detected for wrong countries."""
-        inp = CoordinateInput(lat=lat, lon=lon, declared_country=wrong_country)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon, declared_country=wrong_country)
         result = coordinate_validator.validate(inp)
         assert result.country_match is False
 
@@ -575,7 +575,7 @@ class TestOceanLandDetection:
     ])
     def test_ocean_coordinates_parametrized(self, coordinate_validator, lat, lon, expected_land):
         """Test multiple ocean coordinates are correctly identified."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.is_on_land is expected_land
 
@@ -588,13 +588,13 @@ class TestOceanLandDetection:
     ])
     def test_land_coordinates_parametrized(self, coordinate_validator, lat, lon, expected_land):
         """Test multiple land coordinates are correctly identified."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.is_on_land is expected_land
 
     def test_ocean_coordinate_generates_issue(self, coordinate_validator):
         """Test ocean coordinate generates a validation issue."""
-        inp = CoordinateInput(lat=0.0, lon=-30.0, declared_country="BR")
+        inp = VerifyCoordinateRequest(lat=0.0, lon=-30.0, declared_country="BR")
         result = coordinate_validator.validate(inp)
         assert result.is_on_land is False
         issue_codes = [i.code for i in result.issues]
@@ -606,7 +606,7 @@ class TestOceanLandDetection:
     def test_coastal_coordinate_land(self, coordinate_validator):
         """Test coordinate on a coastline is treated as land."""
         # Rio de Janeiro coastline
-        inp = CoordinateInput(lat=-22.9068, lon=-43.1729)
+        inp = VerifyCoordinateRequest(lat=-22.9068, lon=-43.1729)
         result = coordinate_validator.validate(inp)
         assert result.is_on_land is True
 
@@ -622,8 +622,8 @@ class TestDuplicateDetection:
     def test_duplicate_detection_same_coords(self, coordinate_validator):
         """Detect duplicates when two coordinates are identical."""
         coords = [
-            CoordinateInput(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
-            CoordinateInput(lat=-3.1234567, lon=-60.0234567, plot_id="P2"),
+            VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, plot_id="P2"),
         ]
         results = coordinate_validator.validate_batch(coords)
         assert len(results) == 2
@@ -634,8 +634,8 @@ class TestDuplicateDetection:
     def test_duplicate_detection_nearby_coords(self, coordinate_validator):
         """Detect duplicates when coordinates are very close (within threshold)."""
         coords = [
-            CoordinateInput(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
-            CoordinateInput(lat=-3.1234568, lon=-60.0234568, plot_id="P2"),  # ~0.15m away
+            VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.1234568, lon=-60.0234568, plot_id="P2"),  # ~0.15m away
         ]
         results = coordinate_validator.validate_batch(coords)
         dup_flags = [r.is_duplicate for r in results]
@@ -644,8 +644,8 @@ class TestDuplicateDetection:
     def test_no_duplicates_distant_coords(self, coordinate_validator):
         """No duplicates when coordinates are far apart."""
         coords = [
-            CoordinateInput(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
-            CoordinateInput(lat=-2.5678901, lon=111.7654321, plot_id="P2"),  # Different continent
+            VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-2.5678901, lon=111.7654321, plot_id="P2"),  # Different continent
         ]
         results = coordinate_validator.validate_batch(coords)
         dup_flags = [r.is_duplicate for r in results]
@@ -654,7 +654,7 @@ class TestDuplicateDetection:
     def test_duplicate_detection_three_same(self, coordinate_validator):
         """Detect duplicates with three identical coordinates."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id=f"P{i}")
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id=f"P{i}")
             for i in range(3)
         ]
         results = coordinate_validator.validate_batch(coords)
@@ -663,7 +663,7 @@ class TestDuplicateDetection:
 
     def test_no_duplicates_single_coord(self, coordinate_validator):
         """Single coordinate cannot have duplicates."""
-        coords = [CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1")]
+        coords = [VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1")]
         results = coordinate_validator.validate_batch(coords)
         assert results[0].is_duplicate is False
 
@@ -672,8 +672,8 @@ class TestDuplicateDetection:
         threshold_m = mock_config.duplicate_distance_threshold_m
         # Two coordinates ~5m apart (well within default 10m threshold)
         coords = [
-            CoordinateInput(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
-            CoordinateInput(lat=-3.1234117, lon=-60.0234567, plot_id="P2"),  # ~5m north
+            VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.1234117, lon=-60.0234567, plot_id="P2"),  # ~5m north
         ]
         results = coordinate_validator.validate_batch(coords)
         dup_flags = [r.is_duplicate for r in results]
@@ -682,8 +682,8 @@ class TestDuplicateDetection:
     def test_no_duplicates_just_outside_threshold(self, coordinate_validator):
         """Test coordinates just outside duplicate threshold are not duplicates."""
         coords = [
-            CoordinateInput(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
-            CoordinateInput(lat=-3.1230000, lon=-60.0234567, plot_id="P2"),  # ~50m away
+            VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.1230000, lon=-60.0234567, plot_id="P2"),  # ~50m away
         ]
         results = coordinate_validator.validate_batch(coords)
         dup_flags = [r.is_duplicate for r in results]
@@ -692,8 +692,8 @@ class TestDuplicateDetection:
     def test_duplicate_issue_code(self, coordinate_validator):
         """Test that duplicates generate appropriate issue codes."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P2"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P2"),
         ]
         results = coordinate_validator.validate_batch(coords)
         dup_results = [r for r in results if r.is_duplicate]
@@ -705,7 +705,7 @@ class TestDuplicateDetection:
     def test_duplicate_detection_scales(self, coordinate_validator, n_coords):
         """Test duplicate detection works with varying batch sizes."""
         coords = [
-            CoordinateInput(
+            VerifyCoordinateRequest(
                 lat=-3.12 + i * 0.01, lon=-60.02, plot_id=f"P{i}"
             )
             for i in range(n_coords)
@@ -716,11 +716,11 @@ class TestDuplicateDetection:
     def test_duplicate_detection_mixed_duplicates(self, coordinate_validator):
         """Test batch with some duplicates and some unique coordinates."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P2"),  # dup of P1
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P3"),    # unique
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P4"),    # dup of P3
-            CoordinateInput(lat=-2.57, lon=111.77, plot_id="P5"),  # unique
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P2"),  # dup of P1
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P3"),    # unique
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P4"),    # dup of P3
+            VerifyCoordinateRequest(lat=-2.57, lon=111.77, plot_id="P5"),  # unique
         ]
         results = coordinate_validator.validate_batch(coords)
         assert len(results) == 5
@@ -739,7 +739,7 @@ class TestClusterAnomalyDetection:
     def test_cluster_anomaly_all_same_location(self, coordinate_validator):
         """Detect anomaly when all batch coordinates are at the same location."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id=f"P{i}")
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id=f"P{i}")
             for i in range(10)
         ]
         results = coordinate_validator.validate_batch(coords)
@@ -749,10 +749,10 @@ class TestClusterAnomalyDetection:
     def test_no_cluster_anomaly_spread_coords(self, coordinate_validator):
         """No anomaly when coordinates are well-spread geographically."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=-2.57, lon=111.77, plot_id="P2"),
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P3"),
-            CoordinateInput(lat=4.57, lon=-74.07, plot_id="P4"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-2.57, lon=111.77, plot_id="P2"),
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P3"),
+            VerifyCoordinateRequest(lat=4.57, lon=-74.07, plot_id="P4"),
         ]
         results = coordinate_validator.validate_batch(coords)
         anomaly_flags = [r.cluster_anomaly for r in results]
@@ -761,9 +761,9 @@ class TestClusterAnomalyDetection:
     def test_cluster_anomaly_small_cluster(self, coordinate_validator):
         """Test cluster anomaly with small cluster (3 points same location)."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P2"),
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P3"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P2"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P3"),
         ]
         results = coordinate_validator.validate_batch(coords)
         anomaly_flags = [r.cluster_anomaly for r in results]
@@ -772,10 +772,10 @@ class TestClusterAnomalyDetection:
     def test_no_anomaly_two_clusters(self, coordinate_validator):
         """No anomaly when coordinates form two distinct geographic clusters."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=-3.13, lon=-60.03, plot_id="P2"),
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P3"),
-            CoordinateInput(lat=6.13, lon=-1.63, plot_id="P4"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-3.13, lon=-60.03, plot_id="P2"),
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P3"),
+            VerifyCoordinateRequest(lat=6.13, lon=-1.63, plot_id="P4"),
         ]
         results = coordinate_validator.validate_batch(coords)
         anomaly_flags = [r.cluster_anomaly for r in results]
@@ -784,7 +784,7 @@ class TestClusterAnomalyDetection:
     def test_cluster_anomaly_generates_issue(self, coordinate_validator):
         """Test that cluster anomaly generates an issue."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id=f"P{i}")
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id=f"P{i}")
             for i in range(5)
         ]
         results = coordinate_validator.validate_batch(coords)
@@ -796,7 +796,7 @@ class TestClusterAnomalyDetection:
 
     def test_no_anomaly_single_coordinate(self, coordinate_validator):
         """Single coordinate cannot be a cluster anomaly."""
-        coords = [CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1")]
+        coords = [VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1")]
         results = coordinate_validator.validate_batch(coords)
         assert results[0].cluster_anomaly is False
 
@@ -811,14 +811,14 @@ class TestElevationPlausibility:
 
     def test_elevation_plausible_normal(self, coordinate_validator):
         """Test normal elevation is plausible for production plots."""
-        inp = CoordinateInput(lat=-3.12, lon=-60.02)
+        inp = VerifyCoordinateRequest(lat=-3.12, lon=-60.02)
         result = coordinate_validator.validate(inp)
         assert result.elevation_plausible is True
 
     def test_elevation_implausible_too_high(self, coordinate_validator):
         """Test extreme high elevation is implausible for production."""
         # Mock high elevation location (e.g., Everest)
-        inp = CoordinateInput(lat=27.9881, lon=86.9250)  # Mt Everest
+        inp = VerifyCoordinateRequest(lat=27.9881, lon=86.9250)  # Mt Everest
         result = coordinate_validator.validate(inp)
         # The elevation_plausible check depends on resolved elevation
         # but the validator should handle this gracefully
@@ -826,7 +826,7 @@ class TestElevationPlausibility:
 
     def test_elevation_field_populated(self, coordinate_validator):
         """Test elevation_m field is populated or None."""
-        inp = CoordinateInput(lat=-3.12, lon=-60.02)
+        inp = VerifyCoordinateRequest(lat=-3.12, lon=-60.02)
         result = coordinate_validator.validate(inp)
         # May be None if no elevation lookup, or a float value
         assert result.elevation_m is None or isinstance(result.elevation_m, (int, float))
@@ -842,20 +842,20 @@ class TestElevationPlausibility:
     ])
     def test_lowland_coordinates_plausible(self, coordinate_validator, lat, lon):
         """Test lowland commodity production coordinates are plausible."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.elevation_plausible is True
 
     def test_elevation_issue_for_extreme(self, coordinate_validator):
         """Test elevation issue generated for extreme altitudes."""
         # High altitude location where commodity production is impossible
-        inp = CoordinateInput(lat=35.88, lon=76.51)  # K2 base
+        inp = VerifyCoordinateRequest(lat=35.88, lon=76.51)  # K2 base
         result = coordinate_validator.validate(inp)
         assert isinstance(result.elevation_plausible, bool)
 
     def test_elevation_zero_sea_level(self, coordinate_validator):
         """Test sea-level coordinates have plausible elevation."""
-        inp = CoordinateInput(lat=-22.91, lon=-43.17)  # Rio coast
+        inp = VerifyCoordinateRequest(lat=-22.91, lon=-43.17)  # Rio coast
         result = coordinate_validator.validate(inp)
         assert result.elevation_plausible is True
 
@@ -882,10 +882,10 @@ class TestBatchValidation:
     def test_batch_validation_mixed_results(self, coordinate_validator):
         """Test batch with both valid and invalid coordinates."""
         coords = [
-            CoordinateInput(lat=-3.1234567, lon=-60.0234567, plot_id="VALID-1"),
-            CoordinateInput(lat=95.0, lon=0.0, plot_id="INVALID-1"),
-            CoordinateInput(lat=6.1234567, lon=-1.6234567, plot_id="VALID-2"),
-            CoordinateInput(lat=0.0, lon=200.0, plot_id="INVALID-2"),
+            VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, plot_id="VALID-1"),
+            VerifyCoordinateRequest(lat=95.0, lon=0.0, plot_id="INVALID-1"),
+            VerifyCoordinateRequest(lat=6.1234567, lon=-1.6234567, plot_id="VALID-2"),
+            VerifyCoordinateRequest(lat=0.0, lon=200.0, plot_id="INVALID-2"),
         ]
         results = coordinate_validator.validate_batch(coords)
         assert len(results) == 4
@@ -897,7 +897,7 @@ class TestBatchValidation:
     def test_batch_validation_preserves_order(self, coordinate_validator):
         """Test that batch results maintain input order."""
         coords = [
-            CoordinateInput(lat=-3.12 + i * 0.1, lon=-60.02, plot_id=f"P{i}")
+            VerifyCoordinateRequest(lat=-3.12 + i * 0.1, lon=-60.02, plot_id=f"P{i}")
             for i in range(5)
         ]
         results = coordinate_validator.validate_batch(coords)
@@ -908,9 +908,9 @@ class TestBatchValidation:
     def test_batch_validation_all_valid(self, coordinate_validator):
         """Test batch where all coordinates are valid."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=-2.57, lon=111.77, plot_id="P2"),
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P3"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-2.57, lon=111.77, plot_id="P2"),
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P3"),
         ]
         results = coordinate_validator.validate_batch(coords)
         assert all(r.wgs84_valid for r in results)
@@ -918,9 +918,9 @@ class TestBatchValidation:
     def test_batch_validation_all_invalid(self, coordinate_validator):
         """Test batch where all coordinates are invalid."""
         coords = [
-            CoordinateInput(lat=95.0, lon=0.0, plot_id="P1"),
-            CoordinateInput(lat=-95.0, lon=0.0, plot_id="P2"),
-            CoordinateInput(lat=0.0, lon=185.0, plot_id="P3"),
+            VerifyCoordinateRequest(lat=95.0, lon=0.0, plot_id="P1"),
+            VerifyCoordinateRequest(lat=-95.0, lon=0.0, plot_id="P2"),
+            VerifyCoordinateRequest(lat=0.0, lon=185.0, plot_id="P3"),
         ]
         results = coordinate_validator.validate_batch(coords)
         assert all(not r.wgs84_valid for r in results)
@@ -929,7 +929,7 @@ class TestBatchValidation:
     def test_batch_validation_various_sizes(self, coordinate_validator, batch_size):
         """Test batch validation with various batch sizes."""
         coords = [
-            CoordinateInput(
+            VerifyCoordinateRequest(
                 lat=-3.12 + (i % 10) * 0.01,
                 lon=-60.02 + (i % 10) * 0.005,
                 plot_id=f"P{i}",
@@ -942,7 +942,7 @@ class TestBatchValidation:
     def test_batch_each_result_has_validation_id(self, coordinate_validator):
         """Test each batch result has a unique validation ID."""
         coords = [
-            CoordinateInput(lat=-3.12 + i * 0.01, lon=-60.02, plot_id=f"P{i}")
+            VerifyCoordinateRequest(lat=-3.12 + i * 0.01, lon=-60.02, plot_id=f"P{i}")
             for i in range(5)
         ]
         results = coordinate_validator.validate_batch(coords)
@@ -952,8 +952,8 @@ class TestBatchValidation:
     def test_batch_provenance_hashes(self, coordinate_validator):
         """Test that provenance hashes are generated for batch results."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P2"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P2"),
         ]
         results = coordinate_validator.validate_batch(coords)
         for r in results:
@@ -996,13 +996,13 @@ class TestBoundaryCoordinates:
 
     def test_equator_brazil(self, coordinate_validator):
         """Test validation on the equator in Brazil."""
-        inp = CoordinateInput(lat=0.0, lon=-51.0, declared_country="BR")
+        inp = VerifyCoordinateRequest(lat=0.0, lon=-51.0, declared_country="BR")
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
     def test_minus_180_longitude(self, coordinate_validator):
         """Test validation at -180 longitude."""
-        inp = CoordinateInput(lat=0.0, lon=-180.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=-180.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
@@ -1019,7 +1019,7 @@ class TestBoundaryCoordinates:
     ])
     def test_all_boundary_corners(self, coordinate_validator, lat, lon):
         """Test all corners and edges of WGS84 bounds."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
@@ -1034,7 +1034,7 @@ class TestDeterminism:
 
     def test_deterministic_same_input_same_output(self, coordinate_validator):
         """Test same input produces identical results on repeated calls."""
-        inp = CoordinateInput(lat=-3.1234567, lon=-60.0234567, declared_country="BR")
+        inp = VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, declared_country="BR")
         result1 = coordinate_validator.validate(inp)
         result2 = coordinate_validator.validate(inp)
         assert result1.is_valid == result2.is_valid
@@ -1047,15 +1047,15 @@ class TestDeterminism:
 
     def test_deterministic_provenance_hash(self, coordinate_validator):
         """Test provenance hash is deterministic for same input."""
-        inp = CoordinateInput(lat=-3.1234567, lon=-60.0234567, declared_country="BR")
+        inp = VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567, declared_country="BR")
         result1 = coordinate_validator.validate(inp)
         result2 = coordinate_validator.validate(inp)
         assert result1.provenance_hash == result2.provenance_hash
 
     def test_different_input_different_provenance(self, coordinate_validator):
         """Test different inputs produce different provenance hashes."""
-        inp1 = CoordinateInput(lat=-3.12, lon=-60.02)
-        inp2 = CoordinateInput(lat=6.12, lon=-1.62)
+        inp1 = VerifyCoordinateRequest(lat=-3.12, lon=-60.02)
+        inp2 = VerifyCoordinateRequest(lat=6.12, lon=-1.62)
         result1 = coordinate_validator.validate(inp1)
         result2 = coordinate_validator.validate(inp2)
         assert result1.provenance_hash != result2.provenance_hash
@@ -1063,8 +1063,8 @@ class TestDeterminism:
     def test_deterministic_batch_provenance(self, coordinate_validator):
         """Test batch validation produces deterministic provenance hashes."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P2"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P2"),
         ]
         results1 = coordinate_validator.validate_batch(coords)
         results2 = coordinate_validator.validate_batch(coords)
@@ -1073,22 +1073,22 @@ class TestDeterminism:
 
     def test_provenance_hash_length(self, coordinate_validator):
         """Test provenance hash is SHA-256 (64 hex characters)."""
-        inp = CoordinateInput(lat=-3.12, lon=-60.02)
+        inp = VerifyCoordinateRequest(lat=-3.12, lon=-60.02)
         result = coordinate_validator.validate(inp)
         if result.provenance_hash:
             assert len(result.provenance_hash) == 64
 
     def test_deterministic_issues_count(self, coordinate_validator):
         """Test same input produces same number of issues."""
-        inp = CoordinateInput(lat=95.0, lon=200.0, declared_country="XX")
+        inp = VerifyCoordinateRequest(lat=95.0, lon=200.0, declared_country="XX")
         result1 = coordinate_validator.validate(inp)
         result2 = coordinate_validator.validate(inp)
         assert len(result1.issues) == len(result2.issues)
 
     def test_idempotent_no_state_mutation(self, coordinate_validator):
         """Test validation is stateless - no side effects between calls."""
-        inp1 = CoordinateInput(lat=-3.12, lon=-60.02, declared_country="BR")
-        inp2 = CoordinateInput(lat=95.0, lon=200.0, declared_country="XX")
+        inp1 = VerifyCoordinateRequest(lat=-3.12, lon=-60.02, declared_country="BR")
+        inp2 = VerifyCoordinateRequest(lat=95.0, lon=200.0, declared_country="XX")
         # Run invalid first, then valid
         coordinate_validator.validate(inp2)
         result = coordinate_validator.validate(inp1)
@@ -1098,8 +1098,8 @@ class TestDeterminism:
     def test_batch_deterministic_10_runs(self, coordinate_validator):
         """Test batch validation is deterministic across 10 runs."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="P1"),
-            CoordinateInput(lat=6.12, lon=-1.62, plot_id="P2"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="P1"),
+            VerifyCoordinateRequest(lat=6.12, lon=-1.62, plot_id="P2"),
         ]
         first_hashes = [
             r.provenance_hash
@@ -1146,7 +1146,7 @@ class TestResultSerialization:
 
     def test_to_dict_issues_serialized(self, coordinate_validator):
         """Test issues are serialized as list of dicts."""
-        inp = CoordinateInput(lat=95.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=95.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         d = result.to_dict()
         assert isinstance(d["issues"], list)
@@ -1164,7 +1164,7 @@ class TestResultSerialization:
 
     def test_to_dict_roundtrip_lat_lon(self, coordinate_validator):
         """Test lat/lon values survive serialization roundtrip."""
-        inp = CoordinateInput(lat=-3.1234567, lon=-60.0234567)
+        inp = VerifyCoordinateRequest(lat=-3.1234567, lon=-60.0234567)
         result = coordinate_validator.validate(inp)
         d = result.to_dict()
         assert d["lat"] == -3.1234567
@@ -1213,7 +1213,7 @@ class TestEUDRCountryCoverage:
     ])
     def test_eudr_origin_coordinates(self, coordinate_validator, lat, lon, country, commodity):
         """Test coordinate validation for EUDR origin country coordinates."""
-        inp = CoordinateInput(
+        inp = VerifyCoordinateRequest(
             lat=lat, lon=lon, declared_country=country, commodity=commodity,
         )
         result = coordinate_validator.validate(inp)
@@ -1234,7 +1234,7 @@ class TestEUDRCountryCoverage:
     ])
     def test_resolved_country_accuracy(self, coordinate_validator, lat, lon, expected_country):
         """Test resolved country matches expected for known locations."""
-        inp = CoordinateInput(lat=lat, lon=lon, declared_country=expected_country)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon, declared_country=expected_country)
         result = coordinate_validator.validate(inp)
         assert result.country_match is True
 
@@ -1250,7 +1250,7 @@ class TestEUDRCountryCoverage:
     ])
     def test_country_mismatch_eudr_countries(self, coordinate_validator, lat, lon, wrong_country):
         """Test country mismatch detection for EUDR country coordinates."""
-        inp = CoordinateInput(lat=lat, lon=lon, declared_country=wrong_country)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon, declared_country=wrong_country)
         result = coordinate_validator.validate(inp)
         assert result.country_match is False
 
@@ -1276,7 +1276,7 @@ class TestAdvancedPrecision:
     ])
     def test_precision_levels_ascending(self, coordinate_validator, precision, lat):
         """Test precision detection for increasing decimal places."""
-        inp = CoordinateInput(lat=-lat, lon=-60.0234567)
+        inp = VerifyCoordinateRequest(lat=-lat, lon=-60.0234567)
         result = coordinate_validator.validate(inp)
         assert isinstance(result.precision_score, float)
         assert 0.0 <= result.precision_score <= 1.0
@@ -1291,7 +1291,7 @@ class TestAdvancedPrecision:
     ])
     def test_precision_score_ordering(self, coordinate_validator, score_lat, score_lon):
         """Test that higher precision coordinates get higher scores."""
-        inp = CoordinateInput(lat=score_lat, lon=score_lon)
+        inp = VerifyCoordinateRequest(lat=score_lat, lon=score_lon)
         result = coordinate_validator.validate(inp)
         assert isinstance(result.precision_score, float)
 
@@ -1306,50 +1306,50 @@ class TestEdgeCasesAndErrors:
 
     def test_nan_latitude_handling(self, coordinate_validator):
         """Test NaN latitude is handled gracefully."""
-        inp = CoordinateInput(lat=float('nan'), lon=0.0)
+        inp = VerifyCoordinateRequest(lat=float('nan'), lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
 
     def test_nan_longitude_handling(self, coordinate_validator):
         """Test NaN longitude is handled gracefully."""
-        inp = CoordinateInput(lat=0.0, lon=float('nan'))
+        inp = VerifyCoordinateRequest(lat=0.0, lon=float('nan'))
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
 
     def test_inf_latitude_handling(self, coordinate_validator):
         """Test infinity latitude is handled gracefully."""
-        inp = CoordinateInput(lat=float('inf'), lon=0.0)
+        inp = VerifyCoordinateRequest(lat=float('inf'), lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
 
     def test_inf_longitude_handling(self, coordinate_validator):
         """Test infinity longitude is handled gracefully."""
-        inp = CoordinateInput(lat=0.0, lon=float('inf'))
+        inp = VerifyCoordinateRequest(lat=0.0, lon=float('inf'))
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
 
     def test_negative_inf_handling(self, coordinate_validator):
         """Test negative infinity is handled gracefully."""
-        inp = CoordinateInput(lat=float('-inf'), lon=float('-inf'))
+        inp = VerifyCoordinateRequest(lat=float('-inf'), lon=float('-inf'))
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
 
     def test_very_small_negative_lat(self, coordinate_validator):
         """Test very small negative latitude."""
-        inp = CoordinateInput(lat=-0.0000001, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=-0.0000001, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
 
     def test_very_large_precision(self, coordinate_validator):
         """Test coordinate with excessive precision."""
-        inp = CoordinateInput(lat=-3.12345678901234, lon=-60.02345678901234)
+        inp = VerifyCoordinateRequest(lat=-3.12345678901234, lon=-60.02345678901234)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
         assert result.precision_decimal_places >= 7
 
     def test_zero_zero_coordinate(self, coordinate_validator):
         """Test (0.0, 0.0) coordinate (Null Island)."""
-        inp = CoordinateInput(lat=0.0, lon=0.0)
+        inp = VerifyCoordinateRequest(lat=0.0, lon=0.0)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is True
         # Null Island is in the ocean
@@ -1374,15 +1374,15 @@ class TestEdgeCasesAndErrors:
     ])
     def test_out_of_bounds_comprehensive(self, coordinate_validator, lat, lon):
         """Comprehensive out-of-bounds coordinate testing."""
-        inp = CoordinateInput(lat=lat, lon=lon)
+        inp = VerifyCoordinateRequest(lat=lat, lon=lon)
         result = coordinate_validator.validate(inp)
         assert result.wgs84_valid is False
 
     def test_batch_with_nan(self, coordinate_validator):
         """Test batch containing NaN coordinates."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="VALID"),
-            CoordinateInput(lat=float('nan'), lon=0.0, plot_id="NAN"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="VALID"),
+            VerifyCoordinateRequest(lat=float('nan'), lon=0.0, plot_id="NAN"),
         ]
         results = coordinate_validator.validate_batch(coords)
         assert len(results) == 2
@@ -1392,8 +1392,8 @@ class TestEdgeCasesAndErrors:
     def test_batch_with_inf(self, coordinate_validator):
         """Test batch containing infinity coordinates."""
         coords = [
-            CoordinateInput(lat=-3.12, lon=-60.02, plot_id="VALID"),
-            CoordinateInput(lat=float('inf'), lon=0.0, plot_id="INF"),
+            VerifyCoordinateRequest(lat=-3.12, lon=-60.02, plot_id="VALID"),
+            VerifyCoordinateRequest(lat=float('inf'), lon=0.0, plot_id="INF"),
         ]
         results = coordinate_validator.validate_batch(coords)
         assert len(results) == 2

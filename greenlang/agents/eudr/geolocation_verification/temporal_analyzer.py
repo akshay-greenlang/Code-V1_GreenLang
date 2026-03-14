@@ -46,9 +46,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from .models import (
     BoundaryChange,
     ChangeType,
-    IssueSeverity,
     TemporalChangeResult,
-    ValidationIssue,
 )
 
 logger = logging.getLogger(__name__)
@@ -199,31 +197,16 @@ class TemporalConsistencyAnalyzer:
         """
         start_time = time.monotonic()
         result = TemporalChangeResult(plot_id=plot_id)
-        issues: List[ValidationIssue] = []
 
         # Validate inputs
         if not previous_boundary or len(previous_boundary) < 3:
-            issues.append(ValidationIssue(
-                code="TEMPORAL_INVALID_PREV_BOUNDARY",
-                severity=IssueSeverity.HIGH,
-                message="Previous boundary has fewer than 3 vertices.",
-                field="previous_boundary",
-            ))
-            result.is_consistent = False
-            result.issues = issues
-            result.provenance_hash = self._compute_result_hash(result)
+            result.has_suspicious_changes = True
+            result.temporal_consistency_score = 0.0
             return result
 
         if not new_boundary or len(new_boundary) < 3:
-            issues.append(ValidationIssue(
-                code="TEMPORAL_INVALID_NEW_BOUNDARY",
-                severity=IssueSeverity.HIGH,
-                message="New boundary has fewer than 3 vertices.",
-                field="new_boundary",
-            ))
-            result.is_consistent = False
-            result.issues = issues
-            result.provenance_hash = self._compute_result_hash(result)
+            result.has_suspicious_changes = True
+            result.temporal_consistency_score = 0.0
             return result
 
         # 1. Calculate areas
@@ -280,66 +263,30 @@ class TemporalConsistencyAnalyzer:
             self.rapid_change_window_days,
         )
 
-        # 10. Generate issues
-        if abs(area_change_pct) > SIGNIFICANT_AREA_CHANGE_PCT:
-            direction = "expanded" if area_change_pct > 0 else "contracted"
-            issues.append(ValidationIssue(
-                code="TEMPORAL_SIGNIFICANT_AREA_CHANGE",
-                severity=IssueSeverity.HIGH,
-                message=f"Plot boundary {direction} by "
-                        f"{abs(area_change_pct):.2f}% "
-                        f"({prev_area:.2f} ha -> {new_area:.2f} ha).",
-                field="area",
-                details={
-                    "previous_area_ha": round(prev_area, 4),
-                    "new_area_ha": round(new_area, 4),
-                    "change_pct": round(area_change_pct, 4),
-                },
-            ))
+        # 10. Set result flags
+        has_significant_area_change = abs(area_change_pct) > SIGNIFICANT_AREA_CHANGE_PCT
+        has_significant_centroid_shift = centroid_shift_m > SIGNIFICANT_CENTROID_SHIFT_M
 
-        if centroid_shift_m > SIGNIFICANT_CENTROID_SHIFT_M:
-            issues.append(ValidationIssue(
-                code="TEMPORAL_CENTROID_SHIFT",
-                severity=IssueSeverity.MEDIUM,
-                message=f"Plot centroid shifted by {centroid_shift_m:.1f}m "
-                        f"(threshold: {SIGNIFICANT_CENTROID_SHIFT_M:.0f}m).",
-                field="centroid",
-                details={
-                    "shift_m": round(centroid_shift_m, 2),
-                    "previous_centroid": list(prev_centroid),
-                    "new_centroid": list(new_centroid),
-                },
-            ))
-
-        if forest_encroachment:
-            issues.append(ValidationIssue(
-                code="TEMPORAL_FOREST_ENCROACHMENT",
-                severity=IssueSeverity.CRITICAL,
-                message="Boundary expansion direction indicates potential "
-                        "encroachment into forest area.",
-                field="boundary",
-            ))
-
-        if rapid_change:
-            issues.append(ValidationIssue(
-                code="TEMPORAL_RAPID_CHANGES",
-                severity=IssueSeverity.HIGH,
-                message=f"Plot has undergone {len(self._boundary_history[plot_id])} "
-                        f"boundary changes within "
-                        f"{self.rapid_change_window_days} days.",
-                field="boundary_history",
-            ))
-
-        # Determine consistency
-        critical_issues = [
-            i for i in issues if i.severity == IssueSeverity.CRITICAL
-        ]
-        high_issues = [
-            i for i in issues if i.severity == IssueSeverity.HIGH
-        ]
-        result.is_consistent = (
-            len(critical_issues) == 0 and len(high_issues) == 0
+        # Determine suspicious changes
+        result.has_suspicious_changes = (
+            has_significant_area_change or
+            has_significant_centroid_shift or
+            rapid_change
         )
+        result.forest_encroachment_detected = forest_encroachment
+        result.rapid_changes_detected = rapid_change
+
+        # Calculate consistency score (0-100)
+        score = 100.0
+        if has_significant_area_change:
+            score -= 30.0
+        if has_significant_centroid_shift:
+            score -= 20.0
+        if forest_encroachment:
+            score -= 40.0  # Most critical
+        if rapid_change:
+            score -= 10.0
+        result.temporal_consistency_score = max(0.0, score)
 
         result.boundary_change = boundary_change
         result.rapid_change_detected = rapid_change

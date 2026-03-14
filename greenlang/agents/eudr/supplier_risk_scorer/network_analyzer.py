@@ -51,7 +51,7 @@ from .models import (
     SupplierNetwork,
     SupplierType,
 )
-from .provenance import get_provenance_tracker
+from .provenance import get_tracker
 
 logger = logging.getLogger(__name__)
 
@@ -259,7 +259,7 @@ class NetworkAnalyzer:
             self._networks[network_id] = network
 
         # Record provenance
-        provenance = get_provenance_tracker()
+        provenance = get_tracker()
         provenance.record(
             entity_type="network_analysis",
             entity_id=network_id,

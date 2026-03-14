@@ -1194,7 +1194,7 @@ def supplier_discovery_engine(config):
         from greenlang.agents.eudr.multi_tier_supplier.supplier_discovery_engine import (
             SupplierDiscoveryEngine,
         )
-        return SupplierDiscoveryEngine(config=config)
+        return SupplierDiscoveryEngine()
     except ImportError:
         pytest.skip("SupplierDiscoveryEngine not yet implemented")
 
@@ -1206,7 +1206,7 @@ def supplier_profile_manager(config):
         from greenlang.agents.eudr.multi_tier_supplier.supplier_profile_manager import (
             SupplierProfileManager,
         )
-        return SupplierProfileManager(config=config)
+        return SupplierProfileManager()
     except ImportError:
         pytest.skip("SupplierProfileManager not yet implemented")
 
@@ -1218,7 +1218,7 @@ def tier_depth_tracker(config):
         from greenlang.agents.eudr.multi_tier_supplier.tier_depth_tracker import (
             TierDepthTracker,
         )
-        return TierDepthTracker(config=config)
+        return TierDepthTracker()
     except ImportError:
         pytest.skip("TierDepthTracker not yet implemented")
 
@@ -1230,7 +1230,7 @@ def relationship_manager(config):
         from greenlang.agents.eudr.multi_tier_supplier.relationship_manager import (
             RelationshipManager,
         )
-        return RelationshipManager(config=config)
+        return RelationshipManager()
     except ImportError:
         pytest.skip("RelationshipManager not yet implemented")
 
@@ -1242,7 +1242,7 @@ def risk_propagation_engine(config):
         from greenlang.agents.eudr.multi_tier_supplier.risk_propagation_engine import (
             RiskPropagationEngine,
         )
-        return RiskPropagationEngine(config=config)
+        return RiskPropagationEngine()
     except ImportError:
         pytest.skip("RiskPropagationEngine not yet implemented")
 
@@ -1254,7 +1254,7 @@ def compliance_monitor(config):
         from greenlang.agents.eudr.multi_tier_supplier.compliance_monitor import (
             ComplianceMonitor,
         )
-        return ComplianceMonitor(config=config)
+        return ComplianceMonitor()
     except ImportError:
         pytest.skip("ComplianceMonitor not yet implemented")
 
@@ -1266,7 +1266,7 @@ def gap_analyzer(config):
         from greenlang.agents.eudr.multi_tier_supplier.gap_analyzer import (
             GapAnalyzer,
         )
-        return GapAnalyzer(config=config)
+        return GapAnalyzer()
     except ImportError:
         pytest.skip("GapAnalyzer not yet implemented")
 
@@ -1278,7 +1278,7 @@ def audit_reporter(config):
         from greenlang.agents.eudr.multi_tier_supplier.audit_reporter import (
             AuditReporter,
         )
-        return AuditReporter(config=config)
+        return AuditReporter()
     except ImportError:
         pytest.skip("AuditReporter not yet implemented")
 
@@ -1290,7 +1290,7 @@ def service(config):
         from greenlang.agents.eudr.multi_tier_supplier.setup import (
             MultiTierSupplierService,
         )
-        return MultiTierSupplierService(config=config)
+        return MultiTierSupplierService()
     except ImportError:
         pytest.skip("MultiTierSupplierService not yet implemented")
 
