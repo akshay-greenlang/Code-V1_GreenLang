@@ -1,0 +1,280 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Financial Services Professional Preset
+# =============================================================================
+# NACE Codes: K64-K66 (Financial Services)
+# Enhanced with:
+#   - PCAF methodology (6 asset classes, data quality scoring)
+#   - GAR/BTAR EU Taxonomy alignment ratios
+#   - Financed emissions (Scope 3 Cat 15) with attribution
+#   - Stranded asset analysis and portfolio transition risk
+#   - SBTi FI sector targets (portfolio coverage, SDA, temperature rating)
+#   - SFDR Principal Adverse Indicators (PAI)
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["K64", "K65", "K66"]
+  sector_name: "Financial Services Professional"
+  sector_group: "financial"
+  financial_institution_type: "universal"
+
+  # Primary emission sources for FI
+  primary_emission_sources:
+    - "building_operations"
+    - "business_travel"
+    - "employee_commuting"
+    - "financed_emissions"
+    - "data_center_operations"
+
+  # PCAF methodology
+  pcaf:
+    enabled: true
+    version: "2.0"
+    asset_classes:
+      - id: "listed_equity_bonds"
+        name: "Listed Equity and Corporate Bonds"
+        enabled: true
+        data_quality_target: 2
+        attribution_method: "enterprise_value"
+      - id: "business_loans"
+        name: "Business Loans and Unlisted Equity"
+        enabled: true
+        data_quality_target: 3
+        attribution_method: "outstanding_amount"
+      - id: "project_finance"
+        name: "Project Finance"
+        enabled: true
+        data_quality_target: 2
+        attribution_method: "project_share"
+      - id: "commercial_real_estate"
+        name: "Commercial Real Estate"
+        enabled: true
+        data_quality_target: 3
+        attribution_method: "loan_to_value"
+      - id: "mortgages"
+        name: "Mortgages"
+        enabled: true
+        data_quality_target: 3
+        attribution_method: "loan_to_value"
+      - id: "motor_vehicle_loans"
+        name: "Motor Vehicle Loans"
+        enabled: true
+        data_quality_target: 4
+        attribution_method: "outstanding_amount"
+    weighted_average_data_quality_target: 3.0
+    year_on_year_improvement_target: 0.5
+
+  # EU Taxonomy for financial institutions
+  taxonomy_fi:
+    gar_enabled: true
+    btar_enabled: true
+    covered_assets_scope:
+      - "loans"
+      - "debt_securities"
+      - "equity_instruments"
+    excluded_exposures:
+      - "central_governments"
+      - "central_banks"
+      - "supranational_issuers"
+      - "trading_book"
+      - "interbank_on_demand"
+    gar_kpi_breakdown:
+      - "by_environmental_objective"
+      - "by_sector"
+      - "by_counterparty_type"
+    taxonomy_plan_capex_gar: true
+
+  # Stranded asset analysis
+  stranded_assets:
+    enabled: true
+    fossil_fuel_exposure_tracking: true
+    carbon_intensive_sector_tracking: true
+    transition_risk_concentration: true
+    threshold_alert_percent: 8.0
+    sector_heatmap:
+      - sector: "oil_gas"
+        risk_level: "very_high"
+      - sector: "coal_mining"
+        risk_level: "very_high"
+      - sector: "utilities_fossil"
+        risk_level: "high"
+      - sector: "automotive_ice"
+        risk_level: "high"
+      - sector: "cement"
+        risk_level: "medium"
+      - sector: "steel"
+        risk_level: "medium"
+
+  # SBTi FI targets
+  sbti_fi:
+    enabled: true
+    target_setting_approach: "portfolio_coverage"
+    sector_targets:
+      - sector: "power_generation"
+        method: "SDA"
+        pathway: "1.5C"
+        target_year: 2030
+      - sector: "real_estate"
+        method: "SDA"
+        pathway: "1.5C"
+        target_year: 2030
+      - sector: "oil_gas"
+        method: "SDA"
+        pathway: "well_below_2C"
+        target_year: 2030
+      - sector: "transport"
+        method: "SDA"
+        pathway: "well_below_2C"
+        target_year: 2030
+    portfolio_temperature_rating: true
+    implied_temperature_rise: true
+    portfolio_coverage_target_percent: 67.0
+    portfolio_coverage_target_year: 2030
+
+  # SFDR Principal Adverse Indicators
+  sfdr_pai:
+    enabled: true
+    mandatory_indicators:
+      - "ghg_emissions"
+      - "carbon_footprint"
+      - "ghg_intensity"
+      - "fossil_fuel_exposure"
+      - "non_renewable_energy_share"
+      - "energy_consumption_intensity"
+      - "biodiversity_impact"
+      - "water_emissions"
+      - "hazardous_waste"
+      - "ungc_violations"
+      - "gender_pay_gap"
+      - "board_gender_diversity"
+      - "controversial_weapons"
+    optional_indicators:
+      - "water_recycling"
+      - "deforestation"
+      - "human_rights_violations"
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "pcaf_database"
+      description: "PCAF Emission Factor Database"
+      priority: 1
+    - name: "exiobase"
+      description: "Multi-regional I/O database for sector averages"
+      priority: 2
+    - name: "cdp_reported"
+      description: "CDP-reported company-specific emissions"
+      priority: 3
+
+# Scope 3 - FI-specific categories
+scope3:
+  enabled_categories: [1, 2, 3, 5, 6, 7, 13, 15]
+  priority_categories: [15, 1, 6]
+  screening_required: true
+  materiality_threshold_percent: 1.0
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "reported_verified"
+  - "pcaf_database"
+  - "cdp_reported"
+  - "industry_average"
+  - "exiobase"
+  - "government_published"
+
+# Professional overrides for financial services
+professional:
+  scenarios:
+    scenarios:
+      - id: "ngfs_orderly"
+        name: "NGFS Net Zero 2050 (Orderly)"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_disorderly"
+        name: "NGFS Divergent Net Zero (Disorderly)"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_below_2c"
+        name: "NGFS Below 2C"
+        source: "NGFS"
+        temperature_outcome_c: 1.8
+        enabled: true
+      - id: "ngfs_delayed"
+        name: "NGFS Delayed Transition"
+        source: "NGFS"
+        temperature_outcome_c: 1.8
+        enabled: true
+      - id: "ngfs_ndcs"
+        name: "NGFS Nationally Determined Contributions"
+        source: "NGFS"
+        temperature_outcome_c: 2.5
+        enabled: true
+      - id: "ngfs_current"
+        name: "NGFS Current Policies (Hot House)"
+        source: "NGFS"
+        temperature_outcome_c: 3.0
+        enabled: true
+    monte_carlo_enabled: true
+    monte_carlo_iterations: 10000
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_unit_definitions:
+      financial: "per_million_aum"
+      banking: "per_million_loans"
+      insurance: "per_million_premium"
+
+  benchmarking:
+    peer_group_source: "gics"
+    percentile_targets:
+      financed_emissions_intensity: 25
+      portfolio_temperature_rating: 25
+      gar_ratio: 75
+      fossil_fuel_exposure: 20
+      esg_rating: 75
+
+# Agent overrides for financial services
+agent_overrides:
+  AGENT-MRV-001:
+    enabled: true
+    config_overrides:
+      building_operations_only: true
+  AGENT-MRV-003:
+    enabled: true
+    config_overrides:
+      fleet_vehicles_only: true
+  AGENT-MRV-004:
+    enabled: false
+  AGENT-MRV-005:
+    enabled: false
+  AGENT-MRV-006:
+    enabled: false
+  AGENT-MRV-007:
+    enabled: false
+  AGENT-MRV-008:
+    enabled: false
+  AGENT-MRV-011:
+    enabled: false
+  AGENT-MRV-012:
+    enabled: false
+  AGENT-MRV-015:
+    enabled: false
+  AGENT-MRV-020:
+    enabled: true
+  AGENT-MRV-026:
+    enabled: true
+  AGENT-MRV-028:
+    enabled: true
+    config_overrides:
+      pcaf_enabled: true
+      asset_classes: ["listed_equity_bonds", "business_loans", "project_finance",
+                       "commercial_real_estate", "mortgages", "motor_vehicle_loans"]
+      financed_emissions_priority: "critical"
+  GL-SBTi-FI:
+    enabled: true
+  GL-CDP-WATER:
+    enabled: false
+  GL-CDP-FORESTS:
+    enabled: false
+  GL-SBTi-FLAG:
+    enabled: false

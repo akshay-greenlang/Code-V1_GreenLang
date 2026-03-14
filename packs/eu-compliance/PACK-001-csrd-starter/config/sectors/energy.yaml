@@ -1,0 +1,257 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - Energy Sector Preset
+# =============================================================================
+# NACE Codes: B05-B09 (Mining/Extraction), D35 (Electricity/Gas/Steam)
+# Focus areas:
+#   - Full Scope 1 with fossil fuel extraction and combustion
+#   - Methane (CH4) tracking and reduction
+#   - EU ETS compliance integration
+#   - Transition plan requirements (ESRS E1-1)
+#   - Stranded asset risk assessment
+#   - Decommissioning obligations
+#   - Just transition considerations
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  nace_codes: ["B05", "B06", "B07", "B08", "B09", "D35"]
+  sector_name: "Energy"
+  sector_group: "energy_utilities"
+
+  # Key emission sources for energy sector
+  primary_emission_sources:
+    - "fossil_fuel_combustion"     # Power generation, heating
+    - "fossil_fuel_extraction"     # Upstream oil/gas/coal
+    - "methane_venting_flaring"    # CH4 from operations
+    - "fugitive_methane"           # Pipeline and equipment leaks
+    - "process_emissions"          # Refining, chemical processing
+    - "mobile_fleet"               # Heavy equipment, marine vessels
+    - "electricity_t_and_d"        # Transmission and distribution losses
+
+  # Methane tracking (critical for oil & gas)
+  methane:
+    enabled: true
+    tracking_methodology: "ogmp_2.0"   # Oil and Gas Methane Partnership
+    measurement_levels:
+      - "source_level"                  # Level 4-5 measurement
+      - "site_level"                    # Level 3 measurement
+      - "facility_level"               # Level 2 measurement
+    reduction_target_percent: 75       # By 2030, aligned with Global Methane Pledge
+    gwp_factor: 28                     # AR5 100-year GWP for CH4
+    gwp_20yr_reporting: true           # Also report with 20-year GWP (82)
+    ldar_program: true                 # Leak Detection and Repair
+    ldar_frequency: "quarterly"
+    aerial_survey_enabled: true
+    satellite_monitoring: false
+
+  # EU ETS integration
+  eu_ets:
+    enabled: true
+    phase: "phase_4"                   # Phase 4 (2021-2030)
+    installation_ids: []               # Will be populated per-company
+    free_allocation_tracking: true
+    carbon_leakage_sector: true
+    cbam_interaction: true
+    verification_body: ""
+    annual_emissions_report: true
+    surrender_deadline_tracking: true
+
+  # Transition plan (ESRS E1-1 - critical for energy)
+  transition_plan:
+    enabled: true
+    paris_alignment: true
+    target_scenarios:
+      - "iea_nze_2050"
+      - "iea_steps"
+      - "iea_aps"
+    milestones:
+      - year: 2025
+        target_reduction_percent: 10
+      - year: 2030
+        target_reduction_percent: 45
+      - year: 2040
+        target_reduction_percent: 70
+      - year: 2050
+        target_reduction_percent: 100
+    capex_alignment: true              # CapEx aligned with transition
+    opex_alignment: true               # OpEx aligned with transition
+    revenue_alignment: true            # Revenue from low-carbon products
+    fossil_fuel_phase_out_plan: true
+    renewable_capacity_targets: true
+    just_transition_plan: true
+
+  # Stranded asset risk
+  stranded_assets:
+    enabled: true
+    asset_categories:
+      - "proven_reserves"
+      - "exploration_assets"
+      - "production_infrastructure"
+      - "refining_capacity"
+      - "fossil_fuel_power_plants"
+    carbon_budget_analysis: true
+    scenario_analysis:
+      - "1.5C_carbon_budget"
+      - "2.0C_carbon_budget"
+    impairment_testing: true
+
+  # Decommissioning obligations
+  decommissioning:
+    enabled: true
+    asset_retirement_obligations: true
+    environmental_remediation: true
+    well_plugging_abandonment: true
+    mine_closure: true
+    provision_adequacy_assessment: true
+
+  # Upstream oil and gas specifics
+  upstream_operations:
+    enabled: true
+    well_tracking: true
+    production_tracking: true
+    flaring_tracking: true
+    venting_tracking: true
+    water_management: true
+    hydraulic_fracturing: false        # Flag per jurisdiction
+
+  # Power generation specifics
+  power_generation:
+    enabled: true
+    plant_types:
+      - "coal"
+      - "natural_gas_ccgt"
+      - "natural_gas_ocgt"
+      - "oil"
+      - "nuclear"
+      - "wind_onshore"
+      - "wind_offshore"
+      - "solar_pv"
+      - "solar_csp"
+      - "hydroelectric"
+      - "biomass"
+      - "geothermal"
+    capacity_factor_tracking: true
+    heat_rate_tracking: true
+    grid_emission_factor_contribution: true
+
+  # Biodiversity and land use (relevant for extraction)
+  biodiversity:
+    enabled: true
+    protected_area_assessment: true
+    biodiversity_offset_tracking: true
+    mine_rehabilitation: true
+    marine_impact_assessment: true
+
+# Scope 3 - Full scope including sold products (Cat 11 is dominant for fossil fuels)
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 14, 15]
+  priority_categories: [11, 3, 10, 1, 9]  # Use of sold products is dominant
+  screening_required: true
+  materiality_threshold_percent: 1.0
+
+# Emission factor priorities for energy sector
+emission_factor_priorities:
+  - "company_measured"            # Continuous emissions monitoring
+  - "engineering_calculations"    # Mass balance, engineering models
+  - "eu_ets_verified"             # EU ETS verified emission factors
+  - "api_compendium"              # API Compendium of GHG Methodologies
+  - "ipcc_2006"
+  - "epa_subpart"                 # EPA GHG Reporting Program
+
+# Agent overrides for energy sector - nearly everything enabled
+agent_overrides:
+  # Scope 1 - ALL enabled (core of energy sector emissions)
+  AGENT-MRV-001:
+    enabled: true               # Stationary combustion - PRIMARY
+    config_overrides:
+      sources: ["power_plants", "boilers", "heaters", "furnaces", "turbines",
+                "compressor_stations", "flares"]
+      fuel_types: ["coal", "natural_gas", "fuel_oil", "diesel", "biomass",
+                   "refinery_gas", "lpg"]
+      continuous_monitoring: true
+  AGENT-MRV-002:
+    enabled: true               # Refrigerants (industrial cooling)
+    config_overrides:
+      equipment_types: ["industrial_cooling", "lng_processing", "gas_processing"]
+  AGENT-MRV-003:
+    enabled: true               # Mobile combustion (heavy equipment fleet)
+    config_overrides:
+      fleet_types: ["heavy_haul_trucks", "excavators", "drilling_rigs",
+                     "marine_vessels", "helicopters", "company_vehicles"]
+  AGENT-MRV-004:
+    enabled: true               # Process emissions (refining, gas processing)
+    config_overrides:
+      process_categories: ["petroleum_refining", "gas_processing",
+                           "hydrogen_production", "petrochemicals"]
+  AGENT-MRV-005:
+    enabled: true               # Fugitive emissions - CRITICAL (methane)
+    config_overrides:
+      leak_detection_method: "ogmp_level_4"
+      equipment_types: ["wellheads", "compressors", "pipelines", "valves",
+                         "flanges", "separators", "storage_tanks"]
+      methane_focus: true
+  AGENT-MRV-006:
+    enabled: true               # Land use (mine sites, well pads)
+    config_overrides:
+      land_types: ["mine_sites", "well_pads", "pipeline_corridors",
+                    "processing_facilities", "access_roads"]
+  AGENT-MRV-007:
+    enabled: true               # Waste treatment (produced water, drilling waste)
+    config_overrides:
+      waste_types: ["produced_water", "drilling_muds", "drill_cuttings",
+                     "hazardous_waste", "ash", "slag"]
+  AGENT-MRV-008:
+    enabled: false              # Agriculture - not applicable
+
+  # Scope 2 - relevant for electricity-consuming operations
+  AGENT-MRV-011:
+    enabled: true               # Steam/heat (industrial processes)
+  AGENT-MRV-012:
+    enabled: true               # Cooling (LNG, gas processing)
+
+  # Scope 3 - comprehensive for energy sector
+  AGENT-MRV-014:
+    enabled: true               # Purchased goods (Cat 1) - equipment, chemicals
+  AGENT-MRV-015:
+    enabled: true               # Capital goods (Cat 2) - infrastructure
+  AGENT-MRV-017:
+    enabled: true               # Upstream transport (Cat 4) - fuel delivery
+  AGENT-MRV-018:
+    enabled: true               # Waste (Cat 5) - operational waste
+  AGENT-MRV-019:
+    enabled: true               # Business travel (Cat 6)
+  AGENT-MRV-020:
+    enabled: true               # Employee commuting (Cat 7)
+  AGENT-MRV-021:
+    enabled: false              # Upstream leased (Cat 8)
+  AGENT-MRV-022:
+    enabled: true               # Downstream transport (Cat 9) - fuel distribution
+    config_overrides:
+      include_pipeline_distribution: true
+  AGENT-MRV-023:
+    enabled: true               # Processing sold (Cat 10) - crude to refinery
+    config_overrides:
+      processing_types: ["crude_oil_refining", "gas_processing"]
+  AGENT-MRV-024:
+    enabled: true               # Use of sold products (Cat 11) - DOMINANT CATEGORY
+    config_overrides:
+      product_types: ["gasoline", "diesel", "jet_fuel", "natural_gas",
+                       "coal", "lpg", "fuel_oil", "electricity"]
+      combustion_emission_factors: true
+  AGENT-MRV-025:
+    enabled: false              # End of life (Cat 12) - minimal for fuels
+  AGENT-MRV-026:
+    enabled: false              # Downstream leased (Cat 13)
+  AGENT-MRV-027:
+    enabled: false              # Franchises (Cat 14) - gas stations if applicable
+  AGENT-MRV-028:
+    enabled: true               # Investments (Cat 15) - joint ventures
+    config_overrides:
+      methodology: "equity_share"
+      asset_types: ["joint_ventures", "associates", "minority_stakes"]
+
+  # Enable supplier questionnaire
+  AGENT-DATA-008:
+    enabled: true
+    config_overrides:
+      questionnaire_templates: ["energy_supplier_esg", "contractor_hse"]

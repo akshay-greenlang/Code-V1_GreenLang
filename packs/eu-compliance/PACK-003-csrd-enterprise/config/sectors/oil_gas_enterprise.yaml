@@ -1,0 +1,240 @@
+# =============================================================================
+# PACK-003 CSRD Enterprise Pack - Oil & Gas Enterprise Sector Preset
+# =============================================================================
+# NACE Codes: B06, B09, C19, D35 (Extraction, Support, Refining, Utilities)
+# Enhanced with:
+#   - OGMP 2.0 methane reporting (5 reporting levels)
+#   - Fugitive emissions monitoring (component-level, IoT sensors)
+#   - Carbon credit management (VCS, CDM, Article 6.4)
+#   - IoT sensor integration (gas flow, flare, leak detection)
+#   - Scope 1 Cat 1-8 with process emissions emphasis
+#   - Scope 3 Cat 1/3/4/9/10/11 value chain
+#   - Transition plan and stranded asset analysis
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["B06", "B09", "C19", "D35"]
+  sector_name: "Oil & Gas Enterprise"
+  sector_group: "energy"
+  sub_sectors:
+    - "upstream_exploration"
+    - "midstream_transport"
+    - "downstream_refining"
+    - "power_generation"
+
+  primary_emission_sources:
+    - "combustion_stationary"
+    - "combustion_mobile"
+    - "process_emissions"
+    - "fugitive_emissions"
+    - "flaring"
+    - "venting"
+    - "methane_leaks"
+
+  # OGMP 2.0 Methane Reporting
+  ogmp:
+    enabled: true
+    version: "2.0"
+    reporting_level_target: 4
+    source_categories:
+      - "pneumatic_devices"
+      - "compressor_seals"
+      - "pipeline_leaks"
+      - "storage_tanks"
+      - "loading_operations"
+      - "flaring_incomplete_combustion"
+      - "venting"
+    measurement_based_threshold_percent: 80.0
+    reconciliation_enabled: true
+
+  # Fugitive emissions
+  fugitive:
+    ldar_program: true
+    ldar_frequency_months: 3
+    component_level_tracking: true
+    ogi_camera_surveys: true
+    continuous_monitoring_pilots: true
+    methane_intensity_target: 0.20
+
+  # Flaring management
+  flaring:
+    tracking_enabled: true
+    combustion_efficiency_default: 0.98
+    routine_flaring_reduction_target_percent: 30.0
+    zero_routine_flaring_target_year: 2030
+
+  # IoT sensor types
+  iot_sensor_types:
+    - type: "gas_flow_meter"
+      protocol: "MODBUS"
+      measurement: "gas_m3_per_hour"
+    - type: "flare_stack_sensor"
+      protocol: "OPCUA"
+      measurement: "flare_efficiency_percent"
+    - type: "methane_detector"
+      protocol: "MQTT"
+      measurement: "methane_ppm"
+    - type: "tank_level_sensor"
+      protocol: "HTTP"
+      measurement: "tank_level_percent"
+    - type: "energy_meter"
+      protocol: "MODBUS"
+      measurement: "energy_kwh"
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "api_compendium"
+      description: "API GHG Reporting Compendium"
+      priority: 1
+    - name: "ipcc_2006"
+      description: "IPCC 2006 Guidelines"
+      priority: 2
+    - name: "ogci_methane"
+      description: "OGCI Methane Guiding Principles"
+      priority: 3
+
+  # Transition planning
+  transition_plan:
+    enabled: true
+    target_net_zero_year: 2050
+    interim_target_year: 2030
+    interim_reduction_percent: 30.0
+    stranded_asset_analysis: true
+    capex_alignment_tracking: true
+    renewable_investment_tracking: true
+
+# Scope 3 - O&G value chain emphasis
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 14]
+  priority_categories: [1, 3, 4, 9, 11]
+  screening_required: true
+  materiality_threshold_percent: 1.0
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "measurement_based"
+  - "api_compendium"
+  - "company_specific"
+  - "ipcc_2006"
+  - "industry_average"
+  - "epa"
+
+# Enterprise overrides for oil & gas
+enterprise:
+  iot:
+    enabled: true
+    protocols: ["MQTT", "HTTP", "OPCUA", "MODBUS"]
+    aggregation_window_minutes: 5
+    max_devices: 50000
+    buffer_size_mb: 2048
+    anomaly_alerting: true
+    data_retention_days: 730
+    downsampling_enabled: true
+    downsampling_after_days: 90
+
+  carbon_credit:
+    enabled: true
+    registries_enabled: ["VCS", "GoldStandard", "CDM", "Article6", "ACR"]
+    auto_retirement: false
+    vintage_tracking: true
+    price_tracking: true
+    net_zero_accounting: true
+    additionality_verification: true
+    buffer_pool_percent: 15.0
+
+  supply_chain:
+    enabled: true
+    max_tiers: 4
+    questionnaire_frequency_months: 6
+    scoring_weights:
+      environmental: 0.50
+      social: 0.30
+      governance: 0.20
+    risk_threshold: 0.5
+    critical_supplier_monitoring: true
+
+  predictive:
+    models_enabled: ["emission_forecast", "anomaly_detection", "drift_monitor"]
+    forecast_horizon_months: 24
+    anomaly_sensitivity: 0.92
+    auto_retrain_on_drift: true
+
+  scenarios:
+    scenarios:
+      - id: "iea_nze"
+        name: "IEA Net Zero by 2050"
+        source: "IEA"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "iea_aps"
+        name: "IEA Announced Pledges"
+        source: "IEA"
+        temperature_outcome_c: 1.7
+        enabled: true
+      - id: "iea_steps"
+        name: "IEA Stated Policies"
+        source: "IEA"
+        temperature_outcome_c: 2.5
+        enabled: true
+      - id: "ngfs_orderly"
+        name: "NGFS Orderly Transition"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_disorderly"
+        name: "NGFS Disorderly Transition"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_hot_house"
+        name: "NGFS Hot House World"
+        source: "NGFS"
+        temperature_outcome_c: 3.0
+        enabled: true
+    monte_carlo_enabled: true
+    monte_carlo_iterations: 50000
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_unit"]
+    per_unit_definitions:
+      upstream: "per_boe_produced"
+      midstream: "per_tonne_km_transported"
+      downstream: "per_tonne_refined"
+      power: "per_mwh_generated"
+
+  benchmarking:
+    peer_group_source: "nace_code"
+    percentile_targets:
+      methane_intensity: 10
+      ghg_intensity: 25
+      flaring_intensity: 25
+      renewable_capex_ratio: 75
+
+# Agent overrides for oil & gas
+agent_overrides:
+  AGENT-MRV-001:
+    enabled: true
+  AGENT-MRV-002:
+    enabled: true
+  AGENT-MRV-003:
+    enabled: true
+  AGENT-MRV-004:
+    enabled: true
+  AGENT-MRV-005:
+    enabled: true
+  AGENT-MRV-006:
+    enabled: true
+  AGENT-MRV-007:
+    enabled: true
+  AGENT-MRV-008:
+    enabled: false
+  GL-ENT-IOT-INGEST:
+    enabled: true
+  GL-ENT-CARBON-CREDIT:
+    enabled: true
+  GL-CBAM-APP:
+    enabled: true
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: false

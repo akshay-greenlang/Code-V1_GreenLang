@@ -1,0 +1,469 @@
+{
+  "group": {
+    "legal_name": "EuroTech Holdings AG",
+    "trading_name": "EuroTech Holdings",
+    "lei": "529900DEMO1234567890",
+    "registration_number": "HRB 987654 M",
+    "incorporation_country": "DE",
+    "incorporation_date": "1998-06-15",
+    "legal_form": "AG",
+    "listed": true,
+    "stock_exchange": "Frankfurt Stock Exchange (XETRA)",
+    "ticker": "ETH.DE",
+    "isin": "DE000ETH0001"
+  },
+
+  "headquarters": {
+    "address_line_1": "Leopoldstrasse 120",
+    "address_line_2": "Haus der Nachhaltigkeit",
+    "city": "Munich",
+    "state": "Bavaria",
+    "postal_code": "80802",
+    "country": "DE",
+    "latitude": 48.1620,
+    "longitude": 11.5860
+  },
+
+  "sector": {
+    "primary_nace_code": "C29.3",
+    "primary_nace_description": "Manufacture of parts and accessories for motor vehicles",
+    "secondary_nace_codes": ["C29.1", "C22.1", "C27.1"],
+    "gics_sector": "20",
+    "gics_industry_group": "2010",
+    "gics_industry": "201040"
+  },
+
+  "financials": {
+    "reporting_currency": "EUR",
+    "fiscal_year_end": "12-31",
+    "revenue_eur": 2100000000,
+    "net_income_eur": 147000000,
+    "total_assets_eur": 1850000000,
+    "equity_eur": 820000000,
+    "capex_eur": 168000000,
+    "r_and_d_spend_eur": 84000000,
+    "market_cap_eur": 2800000000,
+    "dividend_per_share_eur": 2.40,
+    "shares_outstanding": 50000000
+  },
+
+  "workforce": {
+    "total_employees": 8000,
+    "full_time_equivalents": 7600,
+    "permanent_employees": 7200,
+    "temporary_employees": 800,
+    "contractors": 400,
+    "gender_split": {
+      "male_percent": 58.0,
+      "female_percent": 41.5,
+      "non_binary_percent": 0.5
+    },
+    "age_distribution": {
+      "under_30_percent": 24.0,
+      "between_30_50_percent": 52.0,
+      "over_50_percent": 24.0
+    },
+    "countries": {
+      "DE": 3500,
+      "FR": 1800,
+      "NL": 1200,
+      "PL": 900,
+      "SE": 600
+    },
+    "collective_bargaining_coverage_percent": 72.0,
+    "training_hours_per_employee": 38.0,
+    "voluntary_turnover_rate": 0.078,
+    "gender_pay_gap_percent": 3.8,
+    "management_female_percent": 34.0,
+    "board_female_percent": 37.5
+  },
+
+  "subsidiaries": [
+    {
+      "entity_id": "ETH-DE-001",
+      "legal_name": "EuroTech Automotive GmbH",
+      "trading_name": "EuroTech Automotive",
+      "country": "DE",
+      "city": "Stuttgart",
+      "nace_code": "C29.3",
+      "ownership_pct": 100.0,
+      "consolidation_method": "full",
+      "employees": 3500,
+      "revenue_eur": 890000000,
+      "reporting_currency": "EUR",
+      "fiscal_year_end": "12-31",
+      "facilities": [
+        {
+          "name": "Stuttgart Main Plant",
+          "type": "manufacturing",
+          "country": "DE",
+          "latitude": 48.7758,
+          "longitude": 9.1829,
+          "floor_area_sqm": 65000,
+          "employees": 2200,
+          "products": ["brake_systems", "suspension_components", "electronic_control_units"],
+          "energy_sources": ["natural_gas", "grid_electricity", "rooftop_solar"],
+          "iso_14001_certified": true,
+          "iso_50001_certified": true,
+          "iatf_16949_certified": true
+        },
+        {
+          "name": "Stuttgart R&D Lab",
+          "type": "office_lab",
+          "country": "DE",
+          "latitude": 48.7780,
+          "longitude": 9.1800,
+          "floor_area_sqm": 12000,
+          "employees": 450,
+          "products": [],
+          "energy_sources": ["grid_electricity"],
+          "iso_14001_certified": false
+        },
+        {
+          "name": "Ulm Logistics Center",
+          "type": "warehouse",
+          "country": "DE",
+          "latitude": 48.4011,
+          "longitude": 9.9876,
+          "floor_area_sqm": 22000,
+          "employees": 180,
+          "products": [],
+          "energy_sources": ["grid_electricity"],
+          "iso_14001_certified": false
+        }
+      ],
+      "fleet": {
+        "total_vehicles": 120,
+        "diesel_trucks": 18,
+        "diesel_vans": 25,
+        "gasoline_cars": 20,
+        "electric_cars": 22,
+        "hybrid_cars": 10,
+        "forklifts_electric": 45,
+        "forklifts_lpg": 5
+      },
+      "emissions_baseline": {
+        "scope_1_tco2e": 12500,
+        "scope_2_location_tco2e": 18200,
+        "scope_2_market_tco2e": 11800,
+        "scope_3_tco2e": 210000
+      }
+    },
+    {
+      "entity_id": "ETH-FR-001",
+      "legal_name": "EuroTech France SAS",
+      "trading_name": "EuroTech France",
+      "country": "FR",
+      "city": "Lyon",
+      "nace_code": "C29.3",
+      "ownership_pct": 100.0,
+      "consolidation_method": "full",
+      "employees": 1800,
+      "revenue_eur": 520000000,
+      "reporting_currency": "EUR",
+      "fiscal_year_end": "12-31",
+      "facilities": [
+        {
+          "name": "Lyon Production Facility",
+          "type": "manufacturing",
+          "country": "FR",
+          "latitude": 45.7640,
+          "longitude": 4.8357,
+          "floor_area_sqm": 38000,
+          "employees": 1400,
+          "products": ["steering_systems", "powertrain_components"],
+          "energy_sources": ["natural_gas", "grid_electricity"],
+          "iso_14001_certified": true,
+          "iso_50001_certified": false,
+          "iatf_16949_certified": true
+        },
+        {
+          "name": "Paris Sales Office",
+          "type": "office",
+          "country": "FR",
+          "latitude": 48.8566,
+          "longitude": 2.3522,
+          "floor_area_sqm": 2500,
+          "employees": 120,
+          "products": [],
+          "energy_sources": ["grid_electricity"],
+          "iso_14001_certified": false
+        }
+      ],
+      "fleet": {
+        "total_vehicles": 65,
+        "diesel_trucks": 8,
+        "diesel_vans": 15,
+        "gasoline_cars": 12,
+        "electric_cars": 15,
+        "hybrid_cars": 8,
+        "forklifts_electric": 25
+      },
+      "emissions_baseline": {
+        "scope_1_tco2e": 5800,
+        "scope_2_location_tco2e": 3200,
+        "scope_2_market_tco2e": 2100,
+        "scope_3_tco2e": 125000
+      }
+    },
+    {
+      "entity_id": "ETH-NL-001",
+      "legal_name": "EuroTech Nederland B.V.",
+      "trading_name": "EuroTech Netherlands",
+      "country": "NL",
+      "city": "Eindhoven",
+      "nace_code": "C27.1",
+      "ownership_pct": 85.0,
+      "consolidation_method": "full",
+      "employees": 1200,
+      "revenue_eur": 380000000,
+      "reporting_currency": "EUR",
+      "fiscal_year_end": "12-31",
+      "facilities": [
+        {
+          "name": "Eindhoven Electronics Plant",
+          "type": "manufacturing",
+          "country": "NL",
+          "latitude": 51.4416,
+          "longitude": 5.4697,
+          "floor_area_sqm": 28000,
+          "employees": 950,
+          "products": ["electronic_sensors", "control_modules", "display_systems"],
+          "energy_sources": ["natural_gas", "grid_electricity", "wind_ppa"],
+          "iso_14001_certified": true,
+          "iso_50001_certified": true,
+          "iatf_16949_certified": true
+        },
+        {
+          "name": "Amsterdam Innovation Hub",
+          "type": "office_lab",
+          "country": "NL",
+          "latitude": 52.3676,
+          "longitude": 4.9041,
+          "floor_area_sqm": 5000,
+          "employees": 200,
+          "products": [],
+          "energy_sources": ["grid_electricity"],
+          "iso_14001_certified": false
+        }
+      ],
+      "fleet": {
+        "total_vehicles": 40,
+        "electric_vans": 10,
+        "electric_cars": 18,
+        "hybrid_cars": 8,
+        "forklifts_electric": 20
+      },
+      "emissions_baseline": {
+        "scope_1_tco2e": 3200,
+        "scope_2_location_tco2e": 8500,
+        "scope_2_market_tco2e": 4200,
+        "scope_3_tco2e": 95000
+      }
+    },
+    {
+      "entity_id": "ETH-PL-001",
+      "legal_name": "EuroTech Polska Sp. z o.o.",
+      "trading_name": "EuroTech Poland",
+      "country": "PL",
+      "city": "Wroclaw",
+      "nace_code": "C22.1",
+      "ownership_pct": 100.0,
+      "consolidation_method": "full",
+      "employees": 900,
+      "revenue_eur": 180000000,
+      "reporting_currency": "PLN",
+      "fiscal_year_end": "12-31",
+      "facilities": [
+        {
+          "name": "Wroclaw Plastics Plant",
+          "type": "manufacturing",
+          "country": "PL",
+          "latitude": 51.1079,
+          "longitude": 17.0385,
+          "floor_area_sqm": 32000,
+          "employees": 780,
+          "products": ["plastic_housings", "rubber_seals", "interior_trim"],
+          "energy_sources": ["natural_gas", "grid_electricity"],
+          "iso_14001_certified": true,
+          "iso_50001_certified": false,
+          "iatf_16949_certified": true
+        },
+        {
+          "name": "Wroclaw Warehouse",
+          "type": "warehouse",
+          "country": "PL",
+          "latitude": 51.1100,
+          "longitude": 17.0400,
+          "floor_area_sqm": 8000,
+          "employees": 45,
+          "products": [],
+          "energy_sources": ["grid_electricity"],
+          "iso_14001_certified": false
+        }
+      ],
+      "fleet": {
+        "total_vehicles": 35,
+        "diesel_trucks": 5,
+        "diesel_vans": 10,
+        "gasoline_cars": 8,
+        "electric_cars": 4,
+        "forklifts_electric": 18,
+        "forklifts_lpg": 5
+      },
+      "emissions_baseline": {
+        "scope_1_tco2e": 4800,
+        "scope_2_location_tco2e": 9800,
+        "scope_2_market_tco2e": 8500,
+        "scope_3_tco2e": 62000
+      }
+    },
+    {
+      "entity_id": "ETH-SE-001",
+      "legal_name": "EuroTech Sverige AB",
+      "trading_name": "EuroTech Sweden",
+      "country": "SE",
+      "city": "Gothenburg",
+      "nace_code": "C29.1",
+      "ownership_pct": 70.0,
+      "consolidation_method": "proportional",
+      "employees": 600,
+      "revenue_eur": 130000000,
+      "reporting_currency": "SEK",
+      "fiscal_year_end": "12-31",
+      "facilities": [
+        {
+          "name": "Gothenburg Assembly Plant",
+          "type": "manufacturing",
+          "country": "SE",
+          "latitude": 57.7089,
+          "longitude": 11.9746,
+          "floor_area_sqm": 20000,
+          "employees": 520,
+          "products": ["chassis_assemblies", "safety_systems"],
+          "energy_sources": ["grid_electricity", "district_heating", "biogas"],
+          "iso_14001_certified": true,
+          "iso_50001_certified": true,
+          "iatf_16949_certified": true
+        }
+      ],
+      "fleet": {
+        "total_vehicles": 25,
+        "electric_cars": 15,
+        "hybrid_cars": 8,
+        "forklifts_electric": 12
+      },
+      "emissions_baseline": {
+        "scope_1_tco2e": 1200,
+        "scope_2_location_tco2e": 800,
+        "scope_2_market_tco2e": 350,
+        "scope_3_tco2e": 35000
+      }
+    }
+  ],
+
+  "group_totals": {
+    "total_employees": 8000,
+    "total_revenue_eur": 2100000000,
+    "total_facilities": 12,
+    "total_countries": 5,
+    "consolidation_approach": "operational_control"
+  },
+
+  "group_emissions_baseline": {
+    "reporting_year": 2025,
+    "base_year": 2020,
+    "consolidation_approach": "operational_control",
+    "scope_1_tco2e": 27500,
+    "scope_2_location_tco2e": 40500,
+    "scope_2_market_tco2e": 26950,
+    "scope_3_tco2e": 527000,
+    "total_tco2e": 595000,
+    "intensity_tco2e_per_m_revenue": 283.3,
+    "intensity_tco2e_per_employee": 74.4,
+    "scope_3_breakdown": {
+      "cat_1_purchased_goods": 285000,
+      "cat_2_capital_goods": 42000,
+      "cat_3_fuel_energy": 15200,
+      "cat_4_upstream_transport": 38500,
+      "cat_5_waste": 12800,
+      "cat_6_business_travel": 8500,
+      "cat_7_employee_commuting": 11200,
+      "cat_9_downstream_transport": 32000,
+      "cat_11_use_of_sold_products": 65000,
+      "cat_12_end_of_life": 16800
+    }
+  },
+
+  "sustainability": {
+    "csrd_first_report_year": 2026,
+    "previous_reporting_frameworks": ["GRI", "CDP", "TCFD"],
+    "cdp_climate_score": "A-",
+    "cdp_water_score": "B",
+    "sbti_committed": true,
+    "sbti_validated": true,
+    "sbti_target_type": "near_term_1.5C",
+    "net_zero_target_year": 2050,
+    "scope_1_2_reduction_target_2030_percent": 42,
+    "scope_3_reduction_target_2030_percent": 25,
+    "eu_taxonomy_eligible_revenue_percent": 68.0,
+    "eu_taxonomy_aligned_revenue_percent": 42.0,
+    "board_sustainability_committee": true,
+    "chief_sustainability_officer": true,
+    "sustainability_linked_financing": true,
+    "sustainability_linked_bond_eur": 500000000,
+    "materiality_assessment_last_year": 2025,
+    "double_materiality_completed": true
+  },
+
+  "certifications": [
+    {"name": "ISO 14001:2015", "scope": "DE, FR, NL, PL, SE manufacturing sites", "valid_until": "2027-09-30"},
+    {"name": "ISO 50001:2018", "scope": "DE and NL manufacturing sites", "valid_until": "2027-06-30"},
+    {"name": "ISO 45001:2018", "scope": "All manufacturing sites", "valid_until": "2027-03-31"},
+    {"name": "ISO 9001:2015", "scope": "All sites", "valid_until": "2027-12-31"},
+    {"name": "IATF 16949:2016", "scope": "All manufacturing sites", "valid_until": "2026-12-31"},
+    {"name": "EcoVadis Platinum", "scope": "Group-wide", "valid_until": "2026-12-31"},
+    {"name": "CDP A List", "scope": "Climate Change", "valid_until": "2026-12-31"}
+  ],
+
+  "governance": {
+    "board_size": 8,
+    "independent_directors": 5,
+    "board_sustainability_expertise": 3,
+    "executive_committee_size": 10,
+    "sustainability_linked_compensation": true,
+    "sustainability_kpi_weight_percent": 20,
+    "anti_corruption_policy": true,
+    "whistleblower_mechanism": true,
+    "human_rights_policy": true,
+    "supplier_code_of_conduct": true,
+    "data_privacy_officer": true,
+    "tax_transparency_policy": true,
+    "lobbying_transparency": true,
+    "political_contributions_policy": "no_contributions"
+  },
+
+  "supply_chain": {
+    "total_suppliers": 680,
+    "tier_1_suppliers": 245,
+    "tier_2_suppliers": 435,
+    "critical_suppliers": 58,
+    "countries_sourced_from": 28,
+    "top_procurement_categories": [
+      {"name": "Steel and metal alloys", "spend_eur": 310000000, "percent": 22.0},
+      {"name": "Electronic components", "spend_eur": 252000000, "percent": 18.0},
+      {"name": "Plastic resins and compounds", "spend_eur": 168000000, "percent": 12.0},
+      {"name": "Rubber and elastomers", "spend_eur": 98000000, "percent": 7.0},
+      {"name": "Logistics and transport", "spend_eur": 126000000, "percent": 9.0},
+      {"name": "Packaging materials", "spend_eur": 56000000, "percent": 4.0},
+      {"name": "Chemicals and coatings", "spend_eur": 84000000, "percent": 6.0},
+      {"name": "Energy (direct)", "spend_eur": 72000000, "percent": 5.1},
+      {"name": "Professional services", "spend_eur": 63000000, "percent": 4.5},
+      {"name": "Other materials and services", "spend_eur": 171000000, "percent": 12.4}
+    ],
+    "supplier_with_iso14001_percent": 68.0,
+    "supplier_with_sbti_targets_percent": 22.0,
+    "supplier_code_of_conduct_signed_percent": 92.0,
+    "supplier_audits_per_year": 45
+  }
+}

@@ -1,0 +1,222 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - SME Preset
+# =============================================================================
+# For small and medium enterprises (<250 employees, <EUR 40M revenue).
+# Uses simplified LSME/VSME standards where applicable. Scope 1+2 mandatory,
+# Scope 3 optional with guided screening. Basic XBRL, guided mode enabled.
+# =============================================================================
+
+# ESRS Standards - Simplified LSME/VSME approach
+# SMEs may use proportionate disclosure and simplified reporting
+esrs_standards:
+  # Cross-cutting (mandatory but simplified)
+  - id: "ESRS1"
+    name: "General Requirements"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS1-DR1"
+      - "ESRS1-DR2"
+
+  - id: "ESRS2"
+    name: "General Disclosures"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS2-BP1"
+      - "ESRS2-GOV1"
+      - "ESRS2-GOV4"
+      - "ESRS2-SBM1"
+      - "ESRS2-SBM3"
+      - "ESRS2-IRO1"
+      - "ESRS2-IRO2"
+      - "ESRS2-MDR-P"
+      - "ESRS2-MDR-T"
+
+  # Climate Change is typically material for all organizations
+  - id: "E1"
+    name: "Climate Change"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "E1-2"   # Policies
+      - "E1-4"   # Targets
+      - "E1-5"   # Energy consumption
+      - "E1-6"   # GHG emissions (simplified - Scope 1+2 focus)
+
+  # Other environment standards - enabled for materiality assessment only
+  - id: "E2"
+    name: "Pollution"
+    enabled: true
+    mandatory: false
+    material: null
+    disclosure_requirements:
+      - "E2-1"
+      - "E2-4"
+
+  - id: "E3"
+    name: "Water and Marine Resources"
+    enabled: false
+    mandatory: false
+    material: null
+    disclosure_requirements: []
+
+  - id: "E4"
+    name: "Biodiversity and Ecosystems"
+    enabled: false
+    mandatory: false
+    material: null
+    disclosure_requirements: []
+
+  - id: "E5"
+    name: "Resource Use and Circular Economy"
+    enabled: true
+    mandatory: false
+    material: null
+    disclosure_requirements:
+      - "E5-1"
+      - "E5-4"
+      - "E5-5"
+
+  # Social - Own workforce is typically material
+  - id: "S1"
+    name: "Own Workforce"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "S1-1"
+      - "S1-6"
+      - "S1-9"
+      - "S1-14"
+      - "S1-17"
+
+  - id: "S2"
+    name: "Workers in the Value Chain"
+    enabled: false
+    mandatory: false
+    material: null
+    disclosure_requirements: []
+
+  - id: "S3"
+    name: "Affected Communities"
+    enabled: false
+    mandatory: false
+    material: null
+    disclosure_requirements: []
+
+  - id: "S4"
+    name: "Consumers and End-Users"
+    enabled: false
+    mandatory: false
+    material: null
+    disclosure_requirements: []
+
+  # Governance
+  - id: "G1"
+    name: "Business Conduct"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "G1-1"
+      - "G1-3"
+      - "G1-4"
+
+# Scope 3 - Optional for SMEs, with guided screening
+scope3:
+  enabled_categories: []   # Empty - Scope 3 is optional for SMEs
+  priority_categories: []
+  screening_required: false
+  materiality_threshold_percent: 10.0
+
+# XBRL - Basic tagging, single language
+xbrl:
+  enabled: true
+  taxonomy_version: "ESRS_2023"
+  output_format: "inline_xbrl"
+  validation_level: "basic"
+  languages:
+    - "en"
+
+# No consolidation for SMEs
+consolidation:
+  enabled: false
+  method: "operational_control"
+  subsidiaries: []
+  intercompany_elimination: false
+
+# Guided mode enabled for SMEs
+guided_mode:
+  enabled: true
+  tutorial_mode: false
+  pre_populated_examples: false
+  ai_assistance_level: "enhanced"
+  step_by_step: true
+  onboarding_extended: false
+
+# Emission factor priorities - use publicly available sources
+emission_factor_priorities:
+  - "government_published"
+  - "defra"
+  - "ipcc_2006"
+  - "epa"
+
+# Agent overrides - disable optional and advanced agents
+agent_overrides:
+  # Scope 1 - keep core, disable specialized
+  AGENT-MRV-004:
+    enabled: false          # Process emissions - unlikely for SME
+  AGENT-MRV-005:
+    enabled: false          # Fugitive emissions - unlikely for SME
+  AGENT-MRV-006:
+    enabled: false          # Land use
+  AGENT-MRV-007:
+    enabled: false          # Waste treatment on-site
+  AGENT-MRV-008:
+    enabled: false          # Agriculture
+
+  # Scope 2 - keep location and market, disable others
+  AGENT-MRV-011:
+    enabled: false          # Steam/heat
+  AGENT-MRV-012:
+    enabled: false          # Cooling
+
+  # Scope 3 - all disabled (optional for SMEs)
+  AGENT-MRV-014:
+    enabled: false
+  AGENT-MRV-015:
+    enabled: false
+  AGENT-MRV-016:
+    enabled: false
+  AGENT-MRV-017:
+    enabled: false
+  AGENT-MRV-018:
+    enabled: false
+  AGENT-MRV-019:
+    enabled: false
+  AGENT-MRV-020:
+    enabled: false
+  AGENT-MRV-021:
+    enabled: false
+  AGENT-MRV-022:
+    enabled: false
+  AGENT-MRV-023:
+    enabled: false
+  AGENT-MRV-024:
+    enabled: false
+  AGENT-MRV-025:
+    enabled: false
+  AGENT-MRV-026:
+    enabled: false
+  AGENT-MRV-027:
+    enabled: false
+  AGENT-MRV-028:
+    enabled: false
+
+  # Data agents - supplier questionnaire optional
+  AGENT-DATA-008:
+    enabled: false

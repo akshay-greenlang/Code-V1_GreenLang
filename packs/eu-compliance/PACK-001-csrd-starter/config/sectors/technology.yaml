@@ -1,0 +1,218 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - Technology Sector Preset
+# =============================================================================
+# NACE Codes: J58-J63 (Information and communication)
+# Focus areas:
+#   - Data center energy consumption and PUE
+#   - Scope 2 heavy (electricity-dominated footprint)
+#   - Remote/hybrid workforce commuting patterns
+#   - Electronic waste (WEEE) management
+#   - Cloud infrastructure carbon accounting
+#   - Software/digital product lifecycle
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  nace_codes: ["J58", "J59", "J60", "J61", "J62", "J63"]
+  sector_name: "Technology"
+  sector_group: "services"
+
+  # Key emission sources for technology companies
+  primary_emission_sources:
+    - "data_center_electricity"    # Data center power consumption
+    - "office_electricity"         # Office building electricity
+    - "cloud_infrastructure"       # Third-party cloud provider usage
+    - "employee_commuting"         # Hybrid/remote workforce
+    - "business_travel"            # Travel for client engagement
+    - "electronic_waste"           # Hardware disposal
+
+  # Data center configuration
+  data_centers:
+    enabled: true
+    pue_target: 1.3                # Power Usage Effectiveness target
+    pue_tracking: true
+    renewable_energy_target: 1.0   # 100% renewable target
+    cooling_type_tracking: true
+    server_utilization_tracking: true
+    metrics:
+      - "total_energy_consumption_kwh"
+      - "it_equipment_energy_kwh"
+      - "cooling_energy_kwh"
+      - "power_usage_effectiveness"
+      - "carbon_usage_effectiveness"
+      - "water_usage_effectiveness"
+      - "renewable_energy_percentage"
+    locations: []                  # Will be populated per-company
+    cloud_providers:
+      - name: "aws"
+        carbon_api: "aws_customer_carbon_footprint"
+        region_tracking: true
+      - name: "azure"
+        carbon_api: "microsoft_emissions_impact_dashboard"
+        region_tracking: true
+      - name: "gcp"
+        carbon_api: "google_carbon_footprint"
+        region_tracking: true
+
+  # Remote workforce configuration
+  remote_workforce:
+    enabled: true
+    hybrid_model: true
+    remote_percentage_default: 0.4   # 40% remote by default
+    home_office_emission_factors:
+      heating_kwh_per_day: 3.5
+      electricity_kwh_per_day: 2.0
+      equipment_kwh_per_day: 0.8
+    commuting_modes:
+      - "public_transit"
+      - "car_gasoline"
+      - "car_diesel"
+      - "car_electric"
+      - "bicycle"
+      - "walking"
+      - "motorcycle"
+
+  # Electronic waste (WEEE)
+  electronic_waste:
+    enabled: true
+    equipment_categories:
+      - "servers"
+      - "laptops"
+      - "monitors"
+      - "networking_equipment"
+      - "mobile_devices"
+      - "peripherals"
+    lifecycle_tracking: true
+    refurbishment_rate_target: 0.3   # 30% refurbishment target
+    recycling_rate_target: 0.95      # 95% recycling target
+    certified_recycler_required: true
+
+  # Software carbon intensity
+  software_carbon:
+    enabled: true
+    green_software_foundation_sci: true   # Software Carbon Intensity spec
+    metrics:
+      - "energy_per_functional_unit"
+      - "carbon_per_api_call"
+      - "carbon_per_user_session"
+
+  # Electricity procurement strategy
+  electricity_procurement:
+    renewable_targets:
+      re100_committed: false
+      target_year: 2030
+      target_percentage: 1.0
+    instruments:
+      - "power_purchase_agreement"
+      - "green_tariff"
+      - "renewable_energy_certificate"
+      - "guarantee_of_origin"
+    additionality_tracking: true
+
+# Scope 3 - Focus on purchased services, travel, and commuting
+scope3:
+  enabled_categories: [1, 2, 3, 5, 6, 7, 11]
+  priority_categories: [1, 6, 7, 11]
+  screening_required: true
+  materiality_threshold_percent: 3.0
+
+# Emission factor priorities for technology
+emission_factor_priorities:
+  - "cloud_provider_reported"     # AWS/Azure/GCP reported factors
+  - "grid_operator_published"     # Local grid emission factors
+  - "government_published"
+  - "iea_electricity"             # IEA grid factors
+  - "defra"
+  - "epa"
+
+# Agent overrides for technology sector
+agent_overrides:
+  # Scope 1 - minimal for tech companies
+  AGENT-MRV-001:
+    enabled: true               # Stationary combustion (office/DC backup)
+    config_overrides:
+      sources: ["backup_generators", "office_heating"]
+  AGENT-MRV-002:
+    enabled: true               # Refrigerants (data center and office HVAC)
+    config_overrides:
+      equipment_types: ["data_center_cooling", "office_hvac", "server_room_cooling"]
+  AGENT-MRV-003:
+    enabled: true               # Mobile combustion (minimal fleet)
+    config_overrides:
+      fleet_types: ["company_cars", "shuttle_buses"]
+  AGENT-MRV-004:
+    enabled: false              # Process emissions - not applicable
+  AGENT-MRV-005:
+    enabled: false              # Fugitive emissions - not applicable
+  AGENT-MRV-006:
+    enabled: false              # Land use - not applicable
+  AGENT-MRV-007:
+    enabled: false              # Waste treatment - minimal
+  AGENT-MRV-008:
+    enabled: false              # Agriculture - not applicable
+
+  # Scope 2 - CRITICAL for technology companies
+  AGENT-MRV-009:
+    enabled: true               # Location-based (grid average)
+    config_overrides:
+      grid_factor_source: "iea_co2_emissions_from_fuel_combustion"
+      sub_national_factors: true
+      hourly_matching: false
+  AGENT-MRV-010:
+    enabled: true               # Market-based (contractual instruments)
+    config_overrides:
+      instruments: ["ppa", "green_tariff", "rec", "go"]
+      residual_mix_source: "aib_residual_mix"
+      hourly_matching_enabled: true
+  AGENT-MRV-011:
+    enabled: false              # Steam/heat
+  AGENT-MRV-012:
+    enabled: true               # Cooling - applicable for co-located DCs
+    config_overrides:
+      cooling_types: ["district_cooling", "chilled_water"]
+
+  # Scope 3 - purchased services, travel, commuting, use of sold products
+  AGENT-MRV-014:
+    enabled: true               # Purchased goods (Cat 1) - hardware, cloud
+    config_overrides:
+      categories: ["hardware", "cloud_services", "software_licenses", "office_supplies"]
+  AGENT-MRV-015:
+    enabled: true               # Capital goods (Cat 2) - server hardware
+    config_overrides:
+      categories: ["servers", "networking", "office_fit_out"]
+  AGENT-MRV-017:
+    enabled: false              # Upstream transport (Cat 4) - minimal
+  AGENT-MRV-018:
+    enabled: true               # Waste (Cat 5) - e-waste focus
+    config_overrides:
+      waste_types: ["electronic_waste", "office_waste", "packaging"]
+  AGENT-MRV-019:
+    enabled: true               # Business travel (Cat 6) - significant
+    config_overrides:
+      travel_modes: ["air", "rail", "hotel", "taxi", "rental_car"]
+  AGENT-MRV-020:
+    enabled: true               # Employee commuting (Cat 7) - significant with hybrid
+    config_overrides:
+      include_remote_working: true
+      hybrid_working_model: true
+      survey_frequency: "annual"
+  AGENT-MRV-021:
+    enabled: false              # Upstream leased (Cat 8) - case dependent
+  AGENT-MRV-022:
+    enabled: false              # Downstream transport (Cat 9)
+  AGENT-MRV-023:
+    enabled: false              # Processing sold (Cat 10)
+  AGENT-MRV-024:
+    enabled: true               # Use of sold products (Cat 11) - software/hardware
+    config_overrides:
+      product_types: ["software_saas", "hardware_devices"]
+      usage_phase_energy: true
+      lifetime_assumption_years: 4
+  AGENT-MRV-025:
+    enabled: false              # End of life (Cat 12) - minimal
+  AGENT-MRV-026:
+    enabled: false              # Downstream leased (Cat 13)
+  AGENT-MRV-027:
+    enabled: false              # Franchises (Cat 14)
+  AGENT-MRV-028:
+    enabled: false              # Investments (Cat 15)

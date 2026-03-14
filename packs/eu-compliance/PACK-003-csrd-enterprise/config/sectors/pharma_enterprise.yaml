@@ -1,0 +1,195 @@
+# =============================================================================
+# PACK-003 CSRD Enterprise Pack - Pharmaceutical Enterprise Sector Preset
+# =============================================================================
+# NACE Codes: C21 (Manufacture of Pharmaceutical Products)
+# Enhanced with:
+#   - Cold chain emissions tracking (refrigerant, energy)
+#   - Clinical trial site tracking (global footprint)
+#   - Cat 1/4/5 focus (purchased goods, transport, waste)
+#   - Active pharmaceutical ingredient (API) supply chain integrity
+#   - Hazardous waste management (clinical and manufacturing)
+#   - Water usage intensity for production
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["C21"]
+  sector_name: "Pharmaceutical Enterprise"
+  sector_group: "manufacturing"
+  sub_sectors:
+    - "drug_manufacturing"
+    - "biologics_production"
+    - "research_development"
+    - "clinical_operations"
+    - "distribution_logistics"
+
+  primary_emission_sources:
+    - "manufacturing_stationary"
+    - "manufacturing_process"
+    - "cold_chain_refrigerants"
+    - "cold_chain_energy"
+    - "laboratory_operations"
+    - "clinical_trial_travel"
+    - "hazardous_waste_treatment"
+
+  # Cold chain emissions
+  cold_chain:
+    enabled: true
+    temperature_zones:
+      - id: "ambient"
+        range_c: "15-25"
+        refrigerant: null
+      - id: "controlled_room"
+        range_c: "20-25"
+        refrigerant: null
+      - id: "refrigerated"
+        range_c: "2-8"
+        refrigerant: "R-134a"
+      - id: "frozen"
+        range_c: "-20"
+        refrigerant: "R-404A"
+      - id: "ultra_cold"
+        range_c: "-70"
+        refrigerant: "R-23"
+    warehouse_count_estimate: 50
+    transport_leg_tracking: true
+    refrigerant_leak_rate_default: 0.15
+
+  # Clinical trial tracking
+  clinical_trials:
+    enabled: true
+    site_emission_tracking: true
+    travel_emission_tracking: true
+    waste_tracking: true
+    average_sites_per_trial: 120
+    average_countries_per_trial: 25
+    patient_travel_included: false
+
+  # Hazardous waste
+  hazardous_waste:
+    enabled: true
+    waste_categories:
+      - "pharmaceutical_waste"
+      - "chemical_solvents"
+      - "biological_waste"
+      - "sharps"
+      - "cytotoxic_waste"
+    incineration_tracking: true
+    treatment_emission_factors: true
+
+  # Water intensity
+  water:
+    enabled: true
+    water_intensive_processes:
+      - "api_manufacturing"
+      - "cleaning_in_place"
+      - "cooling_systems"
+      - "steam_generation"
+    water_intensity_target: "per_tonne_api"
+    water_recycling_tracking: true
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "ecoinvent"
+      description: "ecoinvent 3.10 LCA database"
+      priority: 1
+    - name: "ipcc_2006"
+      description: "IPCC 2006 Guidelines"
+      priority: 2
+    - name: "defra"
+      description: "UK DEFRA emission factors"
+      priority: 3
+
+# Scope 3 - Pharma value chain
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 9, 12]
+  priority_categories: [1, 4, 5]
+  screening_required: true
+  materiality_threshold_percent: 1.5
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "company_specific"
+  - "supplier_specific"
+  - "ecoinvent"
+  - "industry_average"
+  - "ipcc_2006"
+  - "defra"
+  - "epa"
+
+# Enterprise overrides for pharma
+enterprise:
+  supply_chain:
+    enabled: true
+    max_tiers: 4
+    questionnaire_frequency_months: 6
+    scoring_weights:
+      environmental: 0.35
+      social: 0.40
+      governance: 0.25
+    risk_threshold: 0.5
+    auto_dispatch: true
+    critical_supplier_monitoring: true
+
+  iot:
+    enabled: true
+    protocols: ["MQTT", "HTTP"]
+    aggregation_window_minutes: 15
+    max_devices: 10000
+    anomaly_alerting: true
+    data_retention_days: 365
+
+  carbon_credit:
+    enabled: true
+    registries_enabled: ["VCS", "GoldStandard"]
+    net_zero_accounting: true
+
+  predictive:
+    models_enabled: ["emission_forecast", "anomaly_detection", "drift_monitor"]
+    forecast_horizon_months: 18
+    anomaly_sensitivity: 0.88
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_unit"]
+    per_unit_definitions:
+      manufacturing: "per_tonne_api"
+      distribution: "per_unit_distributed"
+      research: "per_clinical_trial"
+
+  benchmarking:
+    peer_group_source: "nace_code"
+    percentile_targets:
+      ghg_per_revenue: 25
+      water_intensity: 25
+      hazardous_waste_intensity: 25
+      renewable_energy_share: 75
+
+# Agent overrides for pharma
+agent_overrides:
+  AGENT-MRV-001:
+    enabled: true
+  AGENT-MRV-002:
+    enabled: true
+  AGENT-MRV-003:
+    enabled: true
+  AGENT-MRV-004:
+    enabled: true
+  AGENT-MRV-005:
+    enabled: true
+  AGENT-MRV-006:
+    enabled: false
+  AGENT-MRV-007:
+    enabled: true
+  AGENT-MRV-008:
+    enabled: false
+  GL-ENT-IOT-INGEST:
+    enabled: true
+  GL-ENT-CARBON-CREDIT:
+    enabled: true
+  GL-CBAM-APP:
+    enabled: false
+  GL-VCCI-APP:
+    enabled: true
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: false

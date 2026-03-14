@@ -1,0 +1,445 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Multinational Corporation Preset
+# =============================================================================
+# For multi-jurisdiction global organizations with up to 200 subsidiaries.
+# Per-jurisdiction regulatory calendars, multi-currency with FX, all languages,
+# 10+ EU national filing formats, all scenarios, all frameworks.
+# =============================================================================
+
+# ESRS Standards - All 12 enabled
+esrs_standards:
+  - id: "ESRS1"
+    name: "General Requirements"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS1-DR1"
+      - "ESRS1-DR2"
+      - "ESRS1-DR3"
+      - "ESRS1-DR4"
+      - "ESRS1-DR5"
+  - id: "ESRS2"
+    name: "General Disclosures"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS2-BP1"
+      - "ESRS2-BP2"
+      - "ESRS2-GOV1"
+      - "ESRS2-GOV2"
+      - "ESRS2-GOV3"
+      - "ESRS2-GOV4"
+      - "ESRS2-GOV5"
+      - "ESRS2-SBM1"
+      - "ESRS2-SBM2"
+      - "ESRS2-SBM3"
+      - "ESRS2-IRO1"
+      - "ESRS2-IRO2"
+      - "ESRS2-MDR-P"
+      - "ESRS2-MDR-A"
+      - "ESRS2-MDR-M"
+      - "ESRS2-MDR-T"
+  - id: "E1"
+    name: "Climate Change"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["E1-1", "E1-2", "E1-3", "E1-4", "E1-5", "E1-6", "E1-7", "E1-8", "E1-9"]
+  - id: "E2"
+    name: "Pollution"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["E2-1", "E2-2", "E2-3", "E2-4", "E2-5", "E2-6"]
+  - id: "E3"
+    name: "Water and Marine Resources"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["E3-1", "E3-2", "E3-3", "E3-4", "E3-5"]
+  - id: "E4"
+    name: "Biodiversity and Ecosystems"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["E4-1", "E4-2", "E4-3", "E4-4", "E4-5", "E4-6"]
+  - id: "E5"
+    name: "Resource Use and Circular Economy"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["E5-1", "E5-2", "E5-3", "E5-4", "E5-5", "E5-6"]
+  - id: "S1"
+    name: "Own Workforce"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S1-1", "S1-2", "S1-3", "S1-4", "S1-5", "S1-6", "S1-7", "S1-8", "S1-9", "S1-10", "S1-11", "S1-12", "S1-13", "S1-14", "S1-15", "S1-16", "S1-17"]
+  - id: "S2"
+    name: "Workers in the Value Chain"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S2-1", "S2-2", "S2-3", "S2-4", "S2-5"]
+  - id: "S3"
+    name: "Affected Communities"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S3-1", "S3-2", "S3-3", "S3-4", "S3-5"]
+  - id: "S4"
+    name: "Consumers and End-Users"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S4-1", "S4-2", "S4-3", "S4-4", "S4-5"]
+  - id: "G1"
+    name: "Business Conduct"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["G1-1", "G1-2", "G1-3", "G1-4", "G1-5", "G1-6"]
+
+# Scope 3 - All 15 categories
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  priority_categories: [1, 3, 4, 5, 6, 9, 11, 15]
+  screening_required: true
+  materiality_threshold_percent: 1.0
+
+# XBRL - All EU official languages
+xbrl:
+  enabled: true
+  taxonomy_version: "ESRS_2023"
+  output_format: "inline_xbrl"
+  validation_level: "strict"
+  languages:
+    - "en"
+    - "de"
+    - "fr"
+    - "es"
+    - "it"
+    - "nl"
+    - "pt"
+    - "pl"
+    - "sv"
+    - "da"
+    - "fi"
+    - "el"
+    - "cs"
+    - "ro"
+    - "hu"
+    - "bg"
+    - "hr"
+    - "sk"
+    - "sl"
+    - "lt"
+    - "lv"
+    - "et"
+    - "ga"
+    - "mt"
+
+# Multi-entity consolidation - maximum scale
+consolidation:
+  enabled: true
+  method: "operational_control"
+  subsidiaries: []
+  intercompany_elimination: true
+
+# Guided mode
+guided_mode:
+  enabled: false
+  tutorial_mode: false
+  pre_populated_examples: false
+  ai_assistance_level: "standard"
+  step_by_step: false
+  onboarding_extended: false
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "company_specific"
+  - "national_inventory"
+  - "industry_average"
+  - "government_published"
+  - "ipcc_2006"
+  - "defra"
+  - "epa"
+
+# Performance for multinational workloads
+performance:
+  ghg_full_inventory_max_seconds: 1200
+  ghg_multi_entity_max_minutes: 90
+  ghg_max_data_points: 200000
+  report_esrs_max_seconds: 900
+  report_xbrl_max_seconds: 1200
+  report_consolidated_max_seconds: 1800
+  report_cross_framework_max_seconds: 600
+  data_ingestion_rps: 20000
+
+# Professional configuration for multinational corporations
+professional:
+  consolidation:
+    enabled: true
+    max_subsidiaries: 200
+    consolidation_approaches:
+      - "operational_control"
+      - "financial_control"
+      - "equity_share"
+    default_approach: "operational_control"
+    intercompany_elimination: true
+    minority_interest_adjustment: true
+    parallel_entity_processing: true
+    entity_data_timeout_seconds: 900
+
+  approval:
+    enabled: true
+    levels:
+      - role: "preparer"
+        required: true
+        auto_approve_threshold: null
+        escalation_timeout_hours: 96
+        delegation_enabled: true
+        notification_channels: ["email", "slack"]
+      - role: "reviewer"
+        required: true
+        auto_approve_threshold: 97.0
+        escalation_timeout_hours: 72
+        delegation_enabled: true
+        notification_channels: ["email", "slack", "teams"]
+      - role: "approver"
+        required: true
+        auto_approve_threshold: null
+        escalation_timeout_hours: 72
+        delegation_enabled: true
+        notification_channels: ["email", "slack", "teams"]
+      - role: "board"
+        required: true
+        auto_approve_threshold: null
+        escalation_timeout_hours: 240
+        delegation_enabled: false
+        notification_channels: ["email"]
+    require_comments_on_rejection: true
+    audit_trail_enabled: true
+    parallel_approval_allowed: true
+
+  quality_gates:
+    enabled: true
+    overall_pass_threshold: 88.0
+    run_on_commit: true
+    run_on_calculation: true
+
+  cross_framework:
+    enabled: true
+    enabled_frameworks:
+      cdp: true
+      tcfd: true
+      sbti: true
+      taxonomy: true
+      gri: true
+      sasb: true
+    mapping_version: "2024.1"
+    auto_populate_from_esrs: true
+    gap_analysis_enabled: true
+    reconciliation_checks: true
+
+  scenarios:
+    enabled: true
+    monte_carlo_enabled: true
+    monte_carlo_iterations: 15000
+    monte_carlo_confidence_level: 0.95
+    physical_risk_enabled: true
+    transition_risk_enabled: true
+    financial_impact_quantification: true
+    time_horizons: [2030, 2040, 2050, 2060]
+
+  benchmarking:
+    enabled: true
+    peer_comparison_enabled: true
+    peer_group_source: "gics"
+    max_peer_count: 30
+    esg_rating_frameworks: ["msci", "sustainalytics", "iss_esg", "cdp"]
+    update_frequency: "monthly"
+
+  stakeholder:
+    enabled: true
+    survey_enabled: true
+    survey_languages: ["en", "de", "fr", "es", "it", "nl", "pt", "pl", "sv", "da",
+                        "fi", "el", "cs", "ro", "hu", "bg", "hr", "sk", "sl", "lt",
+                        "lv", "et", "ga", "mt"]
+    response_target_per_category: 150
+    materiality_weight_in_scoring: 0.25
+    anonymous_responses_allowed: true
+
+  regulatory:
+    enabled: true
+    monitored_jurisdictions:
+      - "EU"
+      - "DE"
+      - "FR"
+      - "NL"
+      - "ES"
+      - "IT"
+      - "BE"
+      - "AT"
+      - "SE"
+      - "DK"
+      - "FI"
+      - "PT"
+      - "IE"
+      - "PL"
+      - "CZ"
+      - "RO"
+      - "HU"
+      - "GR"
+      - "LU"
+      - "BG"
+    monitored_regulations:
+      - "CSRD"
+      - "ESRS"
+      - "EU_Taxonomy"
+      - "SFDR"
+      - "CBAM"
+      - "CSDDD"
+      - "ESEF"
+    scan_frequency: "daily"
+    impact_assessment_auto: true
+    notification_channels: ["email", "slack", "teams", "dashboard", "webhook"]
+    filing_calendars:
+      DE: "Annual, April 30"
+      FR: "Annual, April 30"
+      NL: "Annual, May 31"
+      ES: "Annual, July 31"
+      IT: "Annual, April 30"
+      BE: "Annual, April 30"
+      AT: "Annual, April 30"
+      SE: "Annual, April 30"
+      DK: "Annual, May 31"
+      FI: "Annual, April 30"
+
+  data_governance:
+    enabled: true
+    data_retention_years: 10
+    data_classification_enabled: true
+    classification_levels: ["public", "internal", "confidential", "restricted", "highly_restricted"]
+    gdpr_compliance: true
+    gdpr_data_subject_access: true
+    gdpr_right_to_erasure: true
+    data_lineage_tracking: true
+    version_control_enabled: true
+    change_log_retention_years: 15
+
+  assurance:
+    enabled: true
+    assurance_level: "reasonable"
+    isae_standard: "ISAE_3000"
+    assurance_scope:
+      - "scope_1_emissions"
+      - "scope_2_emissions"
+      - "scope_3_material_categories"
+      - "esrs_e1_disclosures"
+      - "esrs_e2_disclosures"
+      - "esrs_s1_disclosures"
+      - "esrs_g1_disclosures"
+      - "eu_taxonomy_kpis"
+      - "consolidation_methodology"
+    evidence_format: "structured"
+    auditor_access_portal: true
+    evidence_retention_years: 12
+
+  intensity_metrics:
+    enabled: true
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_revenue_currency: "EUR"
+    per_revenue_unit: "million"
+
+  webhooks:
+    enabled: true
+    channels: ["approval", "quality_gate", "regulatory_change", "scenario_complete",
+               "entity_data_received", "consolidation_complete"]
+    retry_count: 5
+    retry_delay_seconds: 60
+    timeout_seconds: 15
+
+# Multi-jurisdiction specific configuration
+sector_specific:
+  multinational:
+    multi_jurisdiction: true
+    jurisdictions_count: 20
+    eu_member_states: ["DE", "FR", "NL", "ES", "IT", "BE", "AT", "SE", "DK",
+                        "FI", "PT", "IE", "PL", "CZ", "RO", "HU", "GR", "LU",
+                        "BG", "HR"]
+    non_eu_jurisdictions: []
+
+  # Multi-currency support
+  multi_currency:
+    enabled: true
+    group_reporting_currency: "EUR"
+    fx_rate_source: "ecb_daily"
+    fx_rate_date: "period_average"
+    supported_currencies: ["EUR", "GBP", "USD", "SEK", "DKK", "PLN", "CZK",
+                            "RON", "HUF", "BGN", "HRK", "CHF", "NOK"]
+    fx_gain_loss_tracking: true
+
+  # National filing formats
+  national_filing:
+    enabled: true
+    formats:
+      DE: "bundesanzeiger_xml"
+      FR: "inpi_xbrl"
+      NL: "kvk_sbr"
+      ES: "cnmv_xbrl"
+      IT: "consob_xbrl"
+      BE: "nbb_xbrl"
+      AT: "firmenbuch_xml"
+      SE: "bolagsverket_xml"
+      DK: "erhvervsstyrelsen_xbrl"
+      FI: "prh_xbrl"
+
+  # Transfer pricing
+  transfer_pricing:
+    intercompany_tracking: true
+    arm_length_documentation: true
+    country_by_country_reporting: true
+
+# Agent overrides - enable all agents for multinational
+agent_overrides:
+  AGENT-MRV-006:
+    enabled: true
+  AGENT-MRV-008:
+    enabled: true
+  AGENT-MRV-011:
+    enabled: true
+  AGENT-MRV-012:
+    enabled: true
+  AGENT-MRV-015:
+    enabled: true
+  AGENT-MRV-020:
+    enabled: true
+  AGENT-MRV-021:
+    enabled: true
+  AGENT-MRV-022:
+    enabled: true
+  AGENT-MRV-023:
+    enabled: true
+  AGENT-MRV-024:
+    enabled: true
+  AGENT-MRV-025:
+    enabled: true
+  AGENT-MRV-026:
+    enabled: true
+  AGENT-MRV-027:
+    enabled: true
+  AGENT-MRV-028:
+    enabled: true
+  AGENT-DATA-008:
+    enabled: true
+  GL-CDP-WATER:
+    enabled: true
+  GL-CDP-FORESTS:
+    enabled: true
+  GL-SBTi-FLAG:
+    enabled: true
+  GL-SBTi-FI:
+    enabled: false

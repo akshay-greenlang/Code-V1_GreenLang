@@ -1,0 +1,289 @@
+# =============================================================================
+# PACK-003 CSRD Enterprise Pack - Multi-Sector Conglomerate Preset
+# =============================================================================
+# NACE Codes: MULTI (Cross-sector holding company)
+# Enhanced with:
+#   - Complex multi-entity consolidation (200+ subsidiaries)
+#   - Cross-entity materiality aggregation
+#   - Sector-specific MRV per business unit
+#   - Multi-currency FX adjustments
+#   - Intercompany elimination at scale
+#   - Divisional reporting with roll-up
+#   - All scopes, all categories enabled
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["MULTI"]
+  sector_name: "Multi-Sector Conglomerate"
+  sector_group: "conglomerate"
+  business_divisions:
+    - id: "manufacturing"
+      nace_codes: ["C10-C33"]
+      description: "Industrial and consumer products"
+    - id: "energy"
+      nace_codes: ["D35"]
+      description: "Power generation and distribution"
+    - id: "financial_services"
+      nace_codes: ["K64-K66"]
+      description: "Banking and insurance"
+    - id: "technology"
+      nace_codes: ["J58-J63"]
+      description: "Software and IT services"
+    - id: "logistics"
+      nace_codes: ["H49-H53"]
+      description: "Transport and warehousing"
+    - id: "real_estate"
+      nace_codes: ["L68"]
+      description: "Property management"
+
+  primary_emission_sources:
+    - "combustion_stationary"
+    - "combustion_mobile"
+    - "process_emissions"
+    - "fugitive_emissions"
+    - "purchased_electricity"
+    - "purchased_heat"
+    - "financed_emissions"
+    - "data_centers"
+    - "fleet_transport"
+    - "building_operations"
+
+  # Consolidation specifics
+  consolidation_rules:
+    hierarchy_depth: 5
+    multi_currency: true
+    base_currency: "EUR"
+    fx_rate_source: "ecb_daily"
+    minority_interest_treatment: "proportional"
+    intercompany_netting: true
+    divisional_subtotals: true
+    segment_reporting: true
+
+  # Sector-specific MRV mapping
+  mrv_sector_mapping:
+    manufacturing:
+      primary_agents: ["AGENT-MRV-001", "AGENT-MRV-002", "AGENT-MRV-003", "AGENT-MRV-004", "AGENT-MRV-007"]
+      scope3_priority: [1, 3, 4, 5]
+    energy:
+      primary_agents: ["AGENT-MRV-001", "AGENT-MRV-004", "AGENT-MRV-005", "AGENT-MRV-009", "AGENT-MRV-010"]
+      scope3_priority: [1, 3, 9, 11]
+    financial_services:
+      primary_agents: ["AGENT-MRV-001", "AGENT-MRV-009", "AGENT-MRV-028"]
+      scope3_priority: [1, 6, 15]
+    technology:
+      primary_agents: ["AGENT-MRV-001", "AGENT-MRV-009", "AGENT-MRV-010"]
+      scope3_priority: [1, 2, 6, 7]
+    logistics:
+      primary_agents: ["AGENT-MRV-001", "AGENT-MRV-003", "AGENT-MRV-009"]
+      scope3_priority: [1, 3, 4, 9]
+    real_estate:
+      primary_agents: ["AGENT-MRV-001", "AGENT-MRV-002", "AGENT-MRV-009", "AGENT-MRV-010"]
+      scope3_priority: [1, 7, 13]
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "ecoinvent"
+      description: "ecoinvent 3.10 LCA database"
+      priority: 1
+    - name: "ipcc_2006"
+      description: "IPCC 2006 Guidelines"
+      priority: 2
+    - name: "defra"
+      description: "UK DEFRA emission factors"
+      priority: 3
+    - name: "epa"
+      description: "US EPA emission factors"
+      priority: 4
+    - name: "pcaf_database"
+      description: "PCAF for financial division"
+      priority: 5
+
+# Scope 3 - All 15 categories for conglomerates
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  priority_categories: [1, 3, 4, 5, 6, 11, 15]
+  screening_required: true
+  materiality_threshold_percent: 0.5
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "company_specific"
+  - "supplier_specific"
+  - "ecoinvent"
+  - "industry_average"
+  - "ipcc_2006"
+  - "defra"
+  - "epa"
+  - "pcaf_database"
+
+# Enterprise overrides for conglomerate
+enterprise:
+  consolidation:
+    enabled: true
+    max_subsidiaries: 500
+    consolidation_approaches:
+      - "operational_control"
+      - "financial_control"
+      - "equity_share"
+    default_approach: "operational_control"
+    intercompany_elimination: true
+    minority_interest_adjustment: true
+    parallel_entity_processing: true
+    entity_data_timeout_seconds: 900
+
+  supply_chain:
+    enabled: true
+    max_tiers: 5
+    questionnaire_frequency_months: 6
+    scoring_weights:
+      environmental: 0.40
+      social: 0.35
+      governance: 0.25
+    risk_threshold: 0.5
+    auto_dispatch: true
+    critical_supplier_monitoring: true
+    deforestation_screening: true
+
+  iot:
+    enabled: true
+    protocols: ["MQTT", "HTTP", "OPCUA", "MODBUS"]
+    aggregation_window_minutes: 15
+    max_devices: 50000
+    anomaly_alerting: true
+    data_retention_days: 730
+
+  carbon_credit:
+    enabled: true
+    registries_enabled: ["VCS", "GoldStandard", "ACR", "CDM"]
+    auto_retirement: false
+    vintage_tracking: true
+    price_tracking: true
+    net_zero_accounting: true
+
+  predictive:
+    models_enabled: ["emission_forecast", "anomaly_detection", "drift_monitor"]
+    forecast_horizon_months: 24
+    confidence_level: 0.95
+    anomaly_sensitivity: 0.88
+    auto_retrain_on_drift: true
+
+  narrative:
+    languages: ["en", "de", "fr", "es", "it", "nl", "pt", "pl", "sv", "da", "fi", "el", "hu", "cs", "ro"]
+    tone: "regulatory"
+    fact_checking_enabled: true
+    max_draft_tokens: 16000
+    human_review_required: true
+
+  workflow_builder:
+    max_steps: 100
+    template_sharing: true
+    max_custom_workflows: 300
+
+  scenarios:
+    enabled: true
+    monte_carlo_enabled: true
+    monte_carlo_iterations: 50000
+    physical_risk_enabled: true
+    transition_risk_enabled: true
+    financial_impact_quantification: true
+    time_horizons: [2030, 2035, 2040, 2050]
+
+  filing:
+    enabled: true
+    targets: ["ESAP", "national_registries"]
+    validation_strictness: "strict"
+    deadline_buffer_days: 21
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_unit_definitions:
+      manufacturing: "per_tonne_product"
+      energy: "per_mwh_generated"
+      financial: "per_million_aum"
+      technology: "per_server_rack"
+      logistics: "per_tonne_km"
+      real_estate: "per_sqm"
+
+  benchmarking:
+    enabled: true
+    peer_comparison_enabled: true
+    max_peer_count: 30
+    update_frequency: "monthly"
+    cross_tenant_benchmarking: true
+
+  cross_framework:
+    enabled: true
+    enabled_frameworks:
+      cdp: true
+      tcfd: true
+      sbti: true
+      taxonomy: true
+      gri: true
+      sasb: true
+      issb: true
+      tnfd: true
+
+  assurance:
+    enabled: true
+    assurance_level: "reasonable"
+    assurance_scope:
+      - "scope_1_emissions"
+      - "scope_2_emissions"
+      - "scope_3_material_categories"
+      - "esrs_e1_disclosures"
+      - "esrs_e2_disclosures"
+      - "esrs_s1_disclosures"
+      - "eu_taxonomy_kpis"
+      - "consolidation_totals"
+      - "ml_model_validation"
+
+# Agent overrides - enable everything for conglomerates
+agent_overrides:
+  AGENT-MRV-006:
+    enabled: true
+  AGENT-MRV-008:
+    enabled: true
+  AGENT-MRV-011:
+    enabled: true
+  AGENT-MRV-012:
+    enabled: true
+  AGENT-MRV-015:
+    enabled: true
+  AGENT-MRV-020:
+    enabled: true
+  AGENT-MRV-021:
+    enabled: true
+  AGENT-MRV-022:
+    enabled: true
+  AGENT-MRV-023:
+    enabled: true
+  AGENT-MRV-024:
+    enabled: true
+  AGENT-MRV-025:
+    enabled: true
+  AGENT-MRV-026:
+    enabled: true
+  AGENT-MRV-027:
+    enabled: true
+  AGENT-MRV-028:
+    enabled: true
+  GL-CDP-WATER:
+    enabled: true
+  GL-CDP-FORESTS:
+    enabled: true
+  GL-SBTi-FLAG:
+    enabled: true
+  GL-SBTi-FI:
+    enabled: true
+  GL-ENT-IOT-INGEST:
+    enabled: true
+  GL-ENT-CARBON-CREDIT:
+    enabled: true
+  GL-CBAM-APP:
+    enabled: true
+  GL-VCCI-APP:
+    enabled: true
+  GL-ISO14064-APP:
+    enabled: true
+  GL-GHG-APP:
+    enabled: true

@@ -1,0 +1,242 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - Retail Sector Preset
+# =============================================================================
+# NACE Codes: G45-G47 (Wholesale and retail trade)
+# Focus areas:
+#   - Supply chain heavy (Scope 3 Categories 1, 4, 9)
+#   - Supplier questionnaires and ESG scoring
+#   - Purchased goods and services (largest emission source)
+#   - Upstream and downstream transportation/distribution
+#   - Store energy management
+#   - Refrigerant management (food retail)
+#   - Packaging and circular economy
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  nace_codes: ["G45", "G46", "G47"]
+  sector_name: "Retail"
+  sector_group: "services"
+
+  # Key emission sources for retail
+  primary_emission_sources:
+    - "purchased_goods"            # Products sourced for resale
+    - "upstream_transportation"    # Inbound logistics
+    - "downstream_distribution"    # Outbound and last-mile delivery
+    - "store_electricity"          # Lighting, HVAC, refrigeration
+    - "refrigerant_leakage"        # Refrigerated display cases
+    - "packaging"                  # Product and transit packaging
+    - "employee_commuting"         # Store staff
+
+  # Supply chain management
+  supply_chain:
+    enabled: true
+    tier_depth: 2                  # Track suppliers to tier 2
+    supplier_count_threshold: 50   # Companies with 50+ suppliers need deep analysis
+    supplier_engagement:
+      questionnaire_enabled: true
+      annual_survey: true
+      audit_program: true
+      training_program: true
+    supplier_scoring:
+      model: "retail_supplier_esg_v2"
+      dimensions:
+        - "environmental_performance"
+        - "social_compliance"
+        - "governance_practices"
+        - "deforestation_risk"
+        - "human_rights"
+      minimum_score: 60
+      improvement_plan_threshold: 70
+    category_management:
+      food_and_beverage: true
+      apparel_textiles: true
+      electronics: true
+      home_furnishings: true
+      personal_care: true
+
+  # Store operations
+  store_operations:
+    enabled: true
+    store_types:
+      - "hypermarket"
+      - "supermarket"
+      - "convenience"
+      - "department_store"
+      - "specialty"
+      - "warehouse"
+      - "online_fulfillment"
+    energy_metrics:
+      - "kwh_per_sqm"
+      - "kwh_per_transaction"
+      - "kwh_per_revenue"
+    led_lighting_tracking: true
+    hvac_efficiency_tracking: true
+    renewable_onsite_generation: true
+
+  # Refrigerant management (critical for food retail)
+  refrigeration:
+    enabled: true
+    equipment_types:
+      - "display_cases"
+      - "walk_in_coolers"
+      - "freezers"
+      - "cold_storage"
+      - "refrigerated_transport"
+    refrigerant_types:
+      - "R-404A"
+      - "R-134a"
+      - "R-410A"
+      - "R-744"     # CO2 natural refrigerant
+      - "R-290"     # Propane natural refrigerant
+    leak_rate_target: 0.10         # 10% annual leak rate target
+    natural_refrigerant_transition: true
+
+  # Transportation and logistics
+  logistics:
+    enabled: true
+    modes:
+      - "road_truck"
+      - "rail"
+      - "ocean_freight"
+      - "air_freight"
+      - "last_mile_delivery"
+      - "reverse_logistics"
+    fleet_tracking: true
+    modal_shift_strategy: true
+    load_factor_optimization: true
+    route_optimization: true
+    electric_vehicle_adoption: true
+
+  # Packaging and circular economy
+  packaging:
+    enabled: true
+    metrics:
+      - "packaging_weight_per_product"
+      - "recycled_content_percentage"
+      - "recyclability_rate"
+      - "single_use_plastic_reduction"
+    extended_producer_responsibility: true
+    packaging_waste_reporting: true
+    circular_design_principles: true
+
+  # Food waste (for food retailers)
+  food_waste:
+    enabled: true
+    measurement_method: "direct_weighing"
+    reduction_target_percent: 50   # SDG 12.3 target by 2030
+    donation_tracking: true
+    composting_tracking: true
+
+  # Customer-facing sustainability
+  customer_engagement:
+    sustainable_product_labeling: true
+    carbon_footprint_per_product: false   # Aspirational, not required
+    take_back_programs: true
+
+# Scope 3 - Supply chain dominated
+scope3:
+  enabled_categories: [1, 3, 4, 5, 6, 7, 9, 11, 12]
+  priority_categories: [1, 4, 9, 11, 12]    # Purchased goods, transport, end-of-life
+  screening_required: true
+  materiality_threshold_percent: 2.0
+
+# Emission factor priorities for retail
+emission_factor_priorities:
+  - "supplier_specific"          # Actual supplier-reported data
+  - "product_lca"                # Product-level LCA databases
+  - "ecoinvent"
+  - "industry_average"
+  - "defra"
+  - "epa"
+
+# Agent overrides for retail
+agent_overrides:
+  # Scope 1 - stores and distribution
+  AGENT-MRV-001:
+    enabled: true               # Stationary combustion (store heating)
+    config_overrides:
+      sources: ["natural_gas_heating", "backup_generators"]
+  AGENT-MRV-002:
+    enabled: true               # Refrigerants (CRITICAL for food retail)
+    config_overrides:
+      equipment_types: ["display_cases", "walk_in_coolers", "freezers",
+                         "cold_storage", "refrigerated_transport"]
+      leak_detection_frequency: "quarterly"
+  AGENT-MRV-003:
+    enabled: true               # Mobile combustion (delivery fleet)
+    config_overrides:
+      fleet_types: ["delivery_trucks", "company_cars", "refrigerated_vehicles"]
+  AGENT-MRV-004:
+    enabled: false              # Process emissions - not applicable
+  AGENT-MRV-005:
+    enabled: false              # Fugitive emissions - not applicable
+  AGENT-MRV-006:
+    enabled: false              # Land use - not applicable
+  AGENT-MRV-007:
+    enabled: false              # Waste treatment - minimal on-site
+  AGENT-MRV-008:
+    enabled: false              # Agriculture - not applicable (sourcing handled via Scope 3)
+
+  # Scope 2 - store electricity is significant
+  AGENT-MRV-011:
+    enabled: false              # Steam/heat
+  AGENT-MRV-012:
+    enabled: false              # Cooling - handled via store operations
+
+  # Scope 3 - DOMINANT for retail
+  AGENT-MRV-014:
+    enabled: true               # Purchased goods (Cat 1) - LARGEST CATEGORY
+    config_overrides:
+      methodology: "hybrid"     # Combination of spend-based and supplier-specific
+      product_categories: ["food_beverage", "apparel", "electronics",
+                           "home", "personal_care", "general_merchandise"]
+  AGENT-MRV-015:
+    enabled: false              # Capital goods (Cat 2) - minor
+  AGENT-MRV-017:
+    enabled: true               # Upstream transport (Cat 4) - significant
+    config_overrides:
+      modes: ["road_truck", "ocean_freight", "rail", "air_freight"]
+      distance_calculation: "origin_destination"
+  AGENT-MRV-018:
+    enabled: true               # Waste (Cat 5) - packaging and food waste
+    config_overrides:
+      waste_types: ["packaging", "food_waste", "general_waste"]
+  AGENT-MRV-019:
+    enabled: true               # Business travel (Cat 6) - moderate
+  AGENT-MRV-020:
+    enabled: true               # Employee commuting (Cat 7) - store staff
+    config_overrides:
+      store_employee_mode_survey: true
+  AGENT-MRV-021:
+    enabled: false              # Upstream leased (Cat 8)
+  AGENT-MRV-022:
+    enabled: true               # Downstream transport (Cat 9) - last-mile delivery
+    config_overrides:
+      include_customer_travel: true
+      last_mile_modes: ["delivery_van", "cargo_bike", "customer_car"]
+  AGENT-MRV-023:
+    enabled: false              # Processing sold (Cat 10)
+  AGENT-MRV-024:
+    enabled: true               # Use of sold products (Cat 11) - appliances, electronics
+    config_overrides:
+      product_categories: ["electronics", "appliances"]
+  AGENT-MRV-025:
+    enabled: true               # End of life (Cat 12) - product disposal
+    config_overrides:
+      product_categories: ["packaging", "food_waste", "electronics", "textiles"]
+  AGENT-MRV-026:
+    enabled: false              # Downstream leased (Cat 13)
+  AGENT-MRV-027:
+    enabled: false              # Franchises (Cat 14)
+  AGENT-MRV-028:
+    enabled: false              # Investments (Cat 15)
+
+  # Enable supplier questionnaire - critical for retail supply chain
+  AGENT-DATA-008:
+    enabled: true
+    config_overrides:
+      questionnaire_templates: ["retail_supplier_esg", "supplier_carbon_disclosure",
+                                "deforestation_risk", "human_rights_due_diligence"]
+      response_scoring_model: "retail_supplier_v2"
+      annual_cadence: true

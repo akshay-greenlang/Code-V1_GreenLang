@@ -1,0 +1,193 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - Financial Services Sector Preset
+# =============================================================================
+# NACE Codes: K64-K66 (Financial and insurance activities)
+# Focus areas:
+#   - Financed emissions (Scope 3 Category 15)
+#   - PCAF methodology for investment portfolios
+#   - Low direct Scope 1 (office-based operations)
+#   - Scope 2 electricity (data centers, offices)
+#   - Transition risk assessment (stranded assets)
+#   - EU Taxonomy alignment reporting
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  nace_codes: ["K64", "K65", "K66"]
+  sector_name: "Financial Services"
+  sector_group: "services"
+
+  # Key emission sources for financial services
+  primary_emission_sources:
+    - "office_electricity"        # Office and branch electricity
+    - "data_center_energy"        # IT infrastructure
+    - "business_travel"           # Client meetings, conferences
+    - "employee_commuting"        # Staff transportation
+    - "financed_emissions"        # Investment and lending portfolio
+
+  # PCAF (Partnership for Carbon Accounting Financials) methodology
+  pcaf:
+    enabled: true
+    version: "2.1"
+    asset_classes:
+      - name: "listed_equity_corporate_bonds"
+        methodology: "pcaf_scope_1_2"
+        data_quality_target: 3     # PCAF data quality score (1=best, 5=worst)
+      - name: "business_loans"
+        methodology: "pcaf_revenue_based"
+        data_quality_target: 3
+      - name: "project_finance"
+        methodology: "pcaf_project_based"
+        data_quality_target: 2
+      - name: "commercial_real_estate"
+        methodology: "pcaf_building_based"
+        data_quality_target: 3
+      - name: "mortgages"
+        methodology: "pcaf_building_based"
+        data_quality_target: 3
+      - name: "sovereign_bonds"
+        methodology: "pcaf_production_based"
+        data_quality_target: 4
+
+  # Portfolio analysis configuration
+  portfolio_analysis:
+    enabled: true
+    carbon_intensity_metric: "waci"   # Weighted Average Carbon Intensity
+    financed_emissions_metric: "absolute"
+    paris_alignment_check: true
+    sector_decarbonization_approach: "sda"
+    science_based_targets_integration: true
+    benchmark_indices:
+      - "msci_world"
+      - "stoxx_europe_600"
+      - "euro_stoxx_50"
+
+  # Transition risk assessment
+  transition_risk:
+    enabled: true
+    scenarios:
+      - "iea_nze_2050"           # IEA Net Zero Emissions by 2050
+      - "ngfs_orderly"            # NGFS Orderly transition
+      - "ngfs_disorderly"         # NGFS Disorderly transition
+      - "ngfs_hot_house"          # NGFS Hot House World
+    stranded_asset_assessment: true
+    carbon_related_assets_tracking: true
+    high_carbon_sectors:
+      - "fossil_fuels"
+      - "utilities"
+      - "transportation"
+      - "heavy_industry"
+      - "agriculture"
+
+  # EU Taxonomy alignment
+  eu_taxonomy:
+    enabled: true
+    green_asset_ratio: true
+    banking_book_taxonomy_ratio: true
+    eligibility_assessment: true
+    alignment_assessment: true
+    dnsh_assessment: true        # Do No Significant Harm
+
+  # Physical risk assessment
+  physical_risk:
+    enabled: true
+    time_horizons:
+      - "short_term_2025_2030"
+      - "medium_term_2030_2040"
+      - "long_term_2040_2050"
+    hazard_types:
+      - "flood"
+      - "drought"
+      - "heat_stress"
+      - "sea_level_rise"
+      - "wildfire"
+
+  # Real estate portfolio (if applicable)
+  real_estate:
+    energy_performance_tracking: true
+    epc_rating_collection: true
+    carbon_risk_real_estate_monitor: true
+
+# Scope 3 - Dominated by Category 15 (Investments)
+scope3:
+  enabled_categories: [1, 3, 5, 6, 7, 15]
+  priority_categories: [15, 6, 7]     # Cat 15 is by far the largest
+  screening_required: true
+  materiality_threshold_percent: 1.0  # Low threshold because Cat 15 dominates
+
+# Emission factor priorities for financial services
+emission_factor_priorities:
+  - "pcaf_database"
+  - "cdp_reported"               # CDP-reported company emissions
+  - "company_annual_reports"
+  - "industry_average"
+  - "government_published"
+  - "defra"
+
+# Agent overrides for financial services
+agent_overrides:
+  # Scope 1 - minimal for financial services (office-based)
+  AGENT-MRV-001:
+    enabled: true               # Stationary combustion (office heating)
+    config_overrides:
+      sources: ["natural_gas_heating", "backup_generators"]
+  AGENT-MRV-002:
+    enabled: true               # Refrigerants (office HVAC)
+    config_overrides:
+      equipment_types: ["office_hvac", "data_center_cooling"]
+  AGENT-MRV-003:
+    enabled: true               # Mobile combustion (company fleet)
+    config_overrides:
+      fleet_types: ["company_cars"]
+  AGENT-MRV-004:
+    enabled: false              # Process emissions - not applicable
+  AGENT-MRV-005:
+    enabled: false              # Fugitive emissions - not applicable
+  AGENT-MRV-006:
+    enabled: false              # Land use - not applicable
+  AGENT-MRV-007:
+    enabled: false              # Waste treatment - minimal
+  AGENT-MRV-008:
+    enabled: false              # Agriculture - not applicable
+
+  # Scope 2 - offices and data centers
+  AGENT-MRV-011:
+    enabled: false              # Steam/heat - rarely applicable
+  AGENT-MRV-012:
+    enabled: false              # Cooling - rarely standalone
+
+  # Scope 3 - enable travel, commuting, and especially investments
+  AGENT-MRV-014:
+    enabled: true               # Purchased goods (Cat 1) - IT, office supplies
+  AGENT-MRV-015:
+    enabled: false              # Capital goods (Cat 2) - minimal
+  AGENT-MRV-017:
+    enabled: false              # Upstream transport (Cat 4) - minimal
+  AGENT-MRV-018:
+    enabled: true               # Waste generated (Cat 5) - office waste
+  AGENT-MRV-019:
+    enabled: true               # Business travel (Cat 6) - significant
+  AGENT-MRV-020:
+    enabled: true               # Employee commuting (Cat 7) - significant
+  AGENT-MRV-021:
+    enabled: false              # Upstream leased (Cat 8) - case dependent
+  AGENT-MRV-022:
+    enabled: false              # Downstream transport (Cat 9) - not applicable
+  AGENT-MRV-023:
+    enabled: false              # Processing sold (Cat 10) - not applicable
+  AGENT-MRV-024:
+    enabled: false              # Use of sold (Cat 11) - not applicable
+  AGENT-MRV-025:
+    enabled: false              # End of life (Cat 12) - not applicable
+  AGENT-MRV-026:
+    enabled: false              # Downstream leased (Cat 13) - case dependent
+  AGENT-MRV-027:
+    enabled: false              # Franchises (Cat 14) - case dependent
+  AGENT-MRV-028:
+    enabled: true               # Investments (Cat 15) - PRIMARY CATEGORY
+    config_overrides:
+      methodology: "pcaf"
+      asset_classes: ["listed_equity_corporate_bonds", "business_loans",
+                      "project_finance", "commercial_real_estate", "mortgages"]
+      attribution_factor: "outstanding_amount"
+      data_quality_scoring: true

@@ -1,0 +1,754 @@
+# =============================================================================
+# PACK-001: CSRD Starter Pack
+# GreenLang EU Compliance Pack for Corporate Sustainability Reporting Directive
+# =============================================================================
+# This pack provides a complete, pre-configured deployment of GreenLang agents
+# and workflows for CSRD compliance reporting. It bundles applications, agents,
+# workflows, presets, and templates into a single installable unit.
+#
+# Regulatory References:
+#   - CSRD: Directive (EU) 2022/2464
+#   - ESRS: Delegated Regulation (EU) 2023/2772
+#   - ESEF: Delegated Regulation (EU) 2019/815 (XBRL tagging)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-14)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: csrd-starter
+  version: "1.0.0"
+  display_name: "CSRD Starter Pack"
+  description: >-
+    Complete GreenLang deployment pack for Corporate Sustainability Reporting
+    Directive (CSRD) compliance. Includes all ESRS standards support, full
+    GHG Protocol Scope 1/2/3 calculation agents, data intake and quality
+    pipelines, workflow orchestration, and pre-built reporting templates.
+    Supports large enterprise, mid-market, SME, and first-time reporter
+    configurations with sector-specific presets.
+  category: eu-compliance
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-14"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/csrd-starter"
+  changelog_url: "https://docs.greenlang.io/packs/csrd-starter/changelog"
+
+  tags:
+    - csrd
+    - esrs
+    - eu-compliance
+    - sustainability-reporting
+    - ghg-protocol
+    - double-materiality
+    - xbrl
+    - esef
+
+  compliance_references:
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        Amends Directive 2013/34/EU, requiring large and listed EU companies
+        to report on sustainability matters using European Sustainability
+        Reporting Standards (ESRS).
+    - id: "ESRS"
+      name: "European Sustainability Reporting Standards"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Set 1 of ESRS covering cross-cutting standards (ESRS 1, ESRS 2) and
+        topical standards (E1-E5, S1-S4, G1). Defines disclosure requirements,
+        application requirements, and data points.
+    - id: "ESEF"
+      name: "European Single Electronic Format"
+      regulation: "Delegated Regulation (EU) 2019/815"
+      effective_date: "2020-01-01"
+      description: >-
+        Requires annual financial reports in XHTML format with inline XBRL
+        tagging. Extended to sustainability reporting under CSRD.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and apps included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # Application layer
+  apps:
+    - id: GL-CSRD-APP
+      version: "1.1.0"
+      description: "CSRD compliance application with ESRS disclosure management"
+      required: true
+
+  # Data intake agents (AGENT-DATA)
+  data_agents:
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts sustainability data from PDF documents and invoices"
+      required: true
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes tabular data from Excel and CSV files"
+      required: true
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Connects to SAP, Oracle, and other ERP systems for financial data"
+      required: true
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Processes and scores supplier ESG questionnaire responses"
+      required: false
+
+  # Data quality agents (AGENT-DATA)
+  quality_agents:
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all ESG metrics"
+      required: true
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects and resolves duplicate data entries"
+      required: true
+    - id: AGENT-DATA-012
+      name: "Missing Value Imputer"
+      description: "Imputes missing values using approved methodologies"
+      required: true
+    - id: AGENT-DATA-013
+      name: "Outlier Detection Agent"
+      description: "Identifies statistical outliers in ESG data"
+      required: true
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces ESRS validation rules on all data points"
+      required: true
+
+  # MRV Scope 1 agents (AGENT-MRV 001-008)
+  mrv_scope1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from stationary combustion sources"
+      required: true
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Tracks refrigerant leakage and fluorinated gas emissions"
+      required: true
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates fleet and mobile source emissions"
+      required: true
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates industrial process emissions"
+      required: true
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Tracks fugitive emissions from equipment and systems"
+      required: true
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates emissions from land use changes"
+      required: false
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates on-site waste treatment emissions"
+      required: true
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates agricultural and livestock emissions"
+      required: false
+
+  # MRV Scope 2 agents (AGENT-MRV 009-013)
+  mrv_scope2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions using grid factors"
+      required: true
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions using contractual instruments"
+      required: true
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates emissions from purchased steam and heat"
+      required: false
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates emissions from purchased cooling"
+      required: false
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 figures"
+      required: true
+
+  # MRV Scope 3 agents (AGENT-MRV 014-030)
+  mrv_scope3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Calculates Scope 3 Category 1 emissions from purchased goods"
+      required: true
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Calculates Scope 3 Category 2 emissions from capital goods"
+      required: false
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Calculates upstream fuel and energy-related emissions"
+      required: true
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Calculates upstream transportation and distribution emissions"
+      required: true
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Calculates emissions from waste generated in operations"
+      required: true
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Calculates emissions from business travel activities"
+      required: true
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Calculates emissions from employee commuting"
+      required: false
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Calculates emissions from upstream leased assets"
+      required: false
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Calculates emissions from downstream transportation"
+      required: false
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Calculates emissions from processing of sold products"
+      required: false
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Calculates emissions from use of sold products"
+      required: false
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Calculates emissions from end-of-life treatment of products"
+      required: false
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Calculates emissions from downstream leased assets"
+      required: false
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Calculates emissions from franchise operations"
+      required: false
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Calculates emissions from investment portfolio"
+      required: false
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper (Cross-Cutting)"
+      description: "Maps and classifies activities to correct Scope 3 categories"
+      required: true
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage (Cross-Cutting)"
+      description: "Provides full audit trail and data lineage for all calculations"
+      required: true
+
+  # Foundation agents (AGENT-FOUND 001-010)
+  foundation:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for ESRS compliance"
+      required: true
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (tCO2e, MWh, etc.) and reference data"
+      required: true
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks and documents all assumptions used in calculations"
+      required: true
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all data points and calculations to source evidence"
+      required: true
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access and data policies"
+      required: true
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Maintains registry of available agents and their capabilities"
+      required: true
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all calculations are reproducible with provenance tracking"
+      required: true
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Runs quality assurance checks on all agent outputs"
+      required: true
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for all agents"
+      required: true
+
+# -----------------------------------------------------------------------------
+# Workflows - Pre-defined orchestration sequences
+# -----------------------------------------------------------------------------
+workflows:
+
+  annual_reporting:
+    display_name: "Annual CSRD Report"
+    description: >-
+      End-to-end annual CSRD reporting workflow. Covers data collection,
+      validation, GHG calculations, double materiality assessment, ESRS
+      disclosure generation, XBRL tagging, and auditor package preparation.
+    schedule: "annual"
+    estimated_duration_days: 45
+    phases:
+      - name: data_collection
+        description: "Collect and ingest data from all sources"
+        agents:
+          - AGENT-DATA-001
+          - AGENT-DATA-002
+          - AGENT-DATA-003
+          - AGENT-DATA-008
+        duration_days: 10
+      - name: data_quality
+        description: "Profile, clean, and validate all collected data"
+        agents:
+          - AGENT-DATA-010
+          - AGENT-DATA-011
+          - AGENT-DATA-012
+          - AGENT-DATA-013
+          - AGENT-DATA-019
+        duration_days: 5
+      - name: ghg_calculations
+        description: "Execute all Scope 1, 2, and 3 emission calculations"
+        agents:
+          - AGENT-MRV-001
+          - AGENT-MRV-002
+          - AGENT-MRV-003
+          - AGENT-MRV-004
+          - AGENT-MRV-005
+          - AGENT-MRV-007
+          - AGENT-MRV-009
+          - AGENT-MRV-010
+          - AGENT-MRV-013
+          - AGENT-MRV-014
+          - AGENT-MRV-016
+          - AGENT-MRV-017
+          - AGENT-MRV-018
+          - AGENT-MRV-019
+          - AGENT-MRV-029
+          - AGENT-MRV-030
+        duration_days: 10
+      - name: materiality_assessment
+        description: "Conduct double materiality assessment per ESRS 1"
+        agents:
+          - GL-CSRD-APP
+        duration_days: 7
+      - name: disclosure_generation
+        description: "Generate ESRS disclosures and XBRL-tagged report"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-FOUND-005
+        duration_days: 8
+      - name: review_and_audit
+        description: "Internal review, quality checks, and auditor preparation"
+        agents:
+          - AGENT-FOUND-008
+          - AGENT-FOUND-009
+          - AGENT-MRV-030
+        duration_days: 5
+
+  quarterly_update:
+    display_name: "Quarterly Progress Update"
+    description: >-
+      Quarterly data refresh and progress tracking against annual targets.
+      Updates key metrics, flags data quality issues, and generates
+      management dashboards.
+    schedule: "quarterly"
+    estimated_duration_days: 7
+    phases:
+      - name: data_refresh
+        description: "Refresh data from automated and manual sources"
+        agents:
+          - AGENT-DATA-001
+          - AGENT-DATA-002
+          - AGENT-DATA-003
+        duration_days: 2
+      - name: quality_check
+        description: "Run quality profiling on refreshed data"
+        agents:
+          - AGENT-DATA-010
+          - AGENT-DATA-013
+          - AGENT-DATA-019
+        duration_days: 1
+      - name: recalculation
+        description: "Recalculate emissions with updated data"
+        agents:
+          - AGENT-MRV-001
+          - AGENT-MRV-009
+          - AGENT-MRV-010
+          - AGENT-MRV-014
+          - AGENT-MRV-029
+        duration_days: 2
+      - name: reporting
+        description: "Generate quarterly progress dashboards"
+        agents:
+          - GL-CSRD-APP
+        duration_days: 2
+
+  materiality_assessment:
+    display_name: "Double Materiality Assessment"
+    description: >-
+      Standalone double materiality assessment workflow per ESRS 1.
+      Identifies material sustainability topics through impact materiality
+      and financial materiality lenses using stakeholder engagement data.
+    schedule: "annual"
+    estimated_duration_days: 21
+    phases:
+      - name: stakeholder_input
+        description: "Collect and process stakeholder survey responses"
+        agents:
+          - AGENT-DATA-008
+          - AGENT-DATA-002
+        duration_days: 7
+      - name: impact_analysis
+        description: "Assess impact materiality for all ESRS topics"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-DATA-010
+        duration_days: 5
+      - name: financial_analysis
+        description: "Assess financial materiality (risks and opportunities)"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-DATA-003
+        duration_days: 5
+      - name: matrix_generation
+        description: "Generate double materiality matrix and documentation"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-FOUND-005
+        duration_days: 4
+
+  data_onboarding:
+    display_name: "Data Source Onboarding"
+    description: >-
+      Onboarding workflow for connecting new data sources. Validates data
+      formats, profiles quality, establishes automated ingestion pipelines,
+      and configures monitoring.
+    schedule: "on_demand"
+    estimated_duration_days: 5
+    phases:
+      - name: source_connection
+        description: "Connect and authenticate with data source"
+        agents:
+          - AGENT-DATA-003
+          - AGENT-DATA-001
+          - AGENT-DATA-002
+        duration_days: 1
+      - name: schema_validation
+        description: "Validate data schema and map to ESRS requirements"
+        agents:
+          - AGENT-FOUND-002
+          - AGENT-FOUND-003
+        duration_days: 1
+      - name: quality_baseline
+        description: "Establish data quality baseline and rules"
+        agents:
+          - AGENT-DATA-010
+          - AGENT-DATA-011
+          - AGENT-DATA-013
+          - AGENT-DATA-019
+        duration_days: 2
+      - name: monitoring_setup
+        description: "Configure ongoing data quality monitoring"
+        agents:
+          - AGENT-FOUND-010
+        duration_days: 1
+
+  audit_preparation:
+    display_name: "Audit Preparation"
+    description: >-
+      Prepares complete audit package for limited or reasonable assurance
+      engagement. Assembles evidence, verifies calculation trails, generates
+      reconciliation reports, and packages deliverables.
+    schedule: "annual"
+    estimated_duration_days: 14
+    phases:
+      - name: evidence_assembly
+        description: "Assemble all supporting evidence and source documents"
+        agents:
+          - AGENT-FOUND-005
+          - AGENT-FOUND-008
+          - AGENT-MRV-030
+        duration_days: 3
+      - name: calculation_verification
+        description: "Verify all calculations are reproducible and traceable"
+        agents:
+          - AGENT-FOUND-008
+          - AGENT-FOUND-009
+          - AGENT-MRV-030
+        duration_days: 4
+      - name: reconciliation
+        description: "Reconcile reported figures against source data"
+        agents:
+          - AGENT-MRV-013
+          - AGENT-DATA-019
+        duration_days: 3
+      - name: package_generation
+        description: "Generate audit package with all required deliverables"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-FOUND-005
+        duration_days: 4
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles
+# -----------------------------------------------------------------------------
+presets:
+
+  # Size-based presets
+  size_presets:
+    - id: large_enterprise
+      display_name: "Large Enterprise"
+      description: >-
+        Full deployment for large enterprises (500+ employees, EUR 40M+
+        revenue). All ESRS standards, all Scope 3 categories, multi-subsidiary
+        consolidation, multi-language, full XBRL.
+      config_file: "config/presets/large_enterprise.yaml"
+      criteria:
+        min_employees: 500
+        min_revenue_eur: 40000000
+        listed: true
+
+    - id: mid_market
+      display_name: "Mid-Market Company"
+      description: >-
+        Optimized for mid-market companies (250-500 employees). All ESRS
+        standards with material topics focus, top 5 Scope 3 categories,
+        single language, standard XBRL.
+      config_file: "config/presets/mid_market.yaml"
+      criteria:
+        min_employees: 250
+        max_employees: 500
+        min_revenue_eur: 10000000
+
+    - id: sme
+      display_name: "SME (Small/Medium Enterprise)"
+      description: >-
+        Simplified deployment for SMEs using LSME/VSME voluntary standards.
+        Scope 1+2 mandatory, Scope 3 optional, guided mode, basic XBRL.
+      config_file: "config/presets/sme.yaml"
+      criteria:
+        max_employees: 250
+        max_revenue_eur: 40000000
+
+    - id: first_time_reporter
+      display_name: "First-Time Reporter"
+      description: >-
+        Extended onboarding for organizations reporting under CSRD for the
+        first time. Tutorial mode, pre-populated examples, increased AI
+        assistance, step-by-step guidance.
+      config_file: "config/presets/first_time_reporter.yaml"
+      criteria:
+        first_report: true
+
+  # Sector-specific presets
+  sector_presets:
+    - id: manufacturing
+      display_name: "Manufacturing"
+      description: >-
+        Manufacturing sector preset with emphasis on Scope 1 process and
+        fugitive emissions, industrial emission factors, waste treatment,
+        and supply chain traceability.
+      config_file: "config/sectors/manufacturing.yaml"
+      nace_codes: ["C10-C33"]
+
+    - id: financial_services
+      display_name: "Financial Services"
+      description: >-
+        Financial services preset with emphasis on Scope 3 Category 15
+        (financed emissions), PCAF methodology, investment portfolio
+        analysis, and transition risk assessment.
+      config_file: "config/sectors/financial_services.yaml"
+      nace_codes: ["K64-K66"]
+
+    - id: technology
+      display_name: "Technology"
+      description: >-
+        Technology sector preset with emphasis on data center energy,
+        Scope 2 electricity, remote workforce commuting, and electronic
+        waste management.
+      config_file: "config/sectors/technology.yaml"
+      nace_codes: ["J58-J63"]
+
+    - id: retail
+      display_name: "Retail"
+      description: >-
+        Retail sector preset with emphasis on Scope 3 Categories 1, 4,
+        and 9 (purchased goods, transportation, downstream distribution),
+        supplier questionnaires, and product lifecycle.
+      config_file: "config/sectors/retail.yaml"
+      nace_codes: ["G45-G47"]
+
+    - id: energy
+      display_name: "Energy"
+      description: >-
+        Energy sector preset with full Scope 1 emphasis, fossil fuel
+        extraction, methane tracking, transition plan requirements, and
+        stranded asset risk assessment.
+      config_file: "config/sectors/energy.yaml"
+      nace_codes: ["B05-B09", "D35"]
+
+# -----------------------------------------------------------------------------
+# Templates - Pre-built report and disclosure templates
+# -----------------------------------------------------------------------------
+templates:
+  - id: executive_summary
+    display_name: "Executive Summary"
+    description: "Board-level executive summary of CSRD compliance status"
+    format: "pdf"
+    template_file: "templates/executive_summary.jinja2"
+
+  - id: esrs_disclosure
+    display_name: "ESRS Disclosure Report"
+    description: "Full ESRS disclosure report with all material topics"
+    format: "xhtml"
+    template_file: "templates/esrs_disclosure.jinja2"
+    xbrl_taxonomy: "ESRS_2023"
+
+  - id: materiality_matrix
+    display_name: "Double Materiality Matrix"
+    description: "Visual double materiality matrix with impact and financial dimensions"
+    format: "pdf"
+    template_file: "templates/materiality_matrix.jinja2"
+
+  - id: ghg_emissions_report
+    display_name: "GHG Emissions Report"
+    description: "Comprehensive GHG emissions report across all scopes"
+    format: "pdf"
+    template_file: "templates/ghg_emissions_report.jinja2"
+
+  - id: auditor_package
+    display_name: "Auditor Package"
+    description: "Complete audit evidence package for assurance engagement"
+    format: "zip"
+    template_file: "templates/auditor_package.jinja2"
+
+  - id: compliance_dashboard
+    display_name: "Compliance Dashboard"
+    description: "Interactive compliance status dashboard with KPIs"
+    format: "html"
+    template_file: "templates/compliance_dashboard.jinja2"
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  data_ingestion:
+    throughput_records_per_second: 5000
+    max_latency_ms: 200
+    description: "Data ingestion throughput for CSV/Excel file processing"
+
+  ghg_calculation:
+    single_scope_max_seconds: 30
+    full_inventory_max_seconds: 300
+    description: "GHG calculation execution time targets"
+
+  report_generation:
+    esrs_disclosure_max_seconds: 120
+    executive_summary_max_seconds: 60
+    xbrl_tagging_max_seconds: 180
+    description: "Report generation and XBRL tagging time targets"
+
+  api_response:
+    p50_ms: 100
+    p95_ms: 500
+    p99_ms: 2000
+    description: "API response time percentile targets"
+
+  data_quality:
+    profiling_max_seconds: 60
+    validation_max_seconds: 30
+    description: "Data quality check execution time targets"
+
+  availability:
+    target_uptime_percent: 99.9
+    max_planned_downtime_minutes_per_month: 30
+    description: "System availability targets"
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+
+  database_migrations:
+    - "V001-V006"   # Core schema
+    - "V007-V008"   # Feature flags and agent factory
+    - "V009-V010"   # Auth and RBAC
+    - "V019-V020"   # Observability
+    - "V021-V030"   # Foundation agents
+    - "V031-V050"   # Data agents
+    - "V051-V081"   # MRV agents
+    - "V082"        # CSRD application
+
+  post_install:
+    - seed_emission_factors
+    - seed_esrs_taxonomy
+    - seed_default_presets
+    - configure_scheduled_jobs
+    - run_health_checks

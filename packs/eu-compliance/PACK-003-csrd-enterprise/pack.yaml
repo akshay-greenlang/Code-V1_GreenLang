@@ -1,0 +1,1351 @@
+# =============================================================================
+# PACK-003: CSRD Enterprise Pack
+# GreenLang EU Compliance Pack for Global Enterprise CSRD Reporting
+# =============================================================================
+# This pack EXTENDS PACK-002 (CSRD Professional Pack) with enterprise-grade
+# features including multi-tenant isolation, SSO/SAML/SCIM, white-label
+# branding, AI/ML predictive analytics, IoT sensor integration, carbon
+# credit management, supply chain ESG scoring, regulatory filing automation,
+# API management with GraphQL, and a marketplace for plugins.
+#
+# Regulatory References:
+#   - CSRD: Directive (EU) 2022/2464
+#   - ESRS: Delegated Regulation (EU) 2023/2772
+#   - ESEF: Delegated Regulation (EU) 2019/815 (XBRL tagging)
+#   - ISAE 3000: Assurance Engagements Other than Audits or Reviews
+#   - ISAE 3410: Assurance Engagements on Greenhouse Gas Statements
+#   - EU Taxonomy: Regulation (EU) 2020/852
+#   - GHG Protocol: Corporate Standard, Scope 2 Guidance, Scope 3 Standard
+#   - PCAF: Global Standard for Financial Industry (v2.0)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-14)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: csrd-enterprise
+  version: "1.0.0"
+  display_name: "CSRD Enterprise Pack"
+  description: >-
+    Top-tier GreenLang deployment pack extending the CSRD Professional Pack
+    with multi-tenant isolation, SSO/SAML/SCIM identity federation,
+    white-label branding, AI/ML predictive analytics (emission forecasting,
+    anomaly detection, drift monitoring), IoT sensor data ingestion, carbon
+    credit lifecycle management, supply chain ESG risk scoring, regulatory
+    filing automation (ESAP, national registries), API management with
+    GraphQL and rate limiting, narrative generation in 24+ languages, custom
+    workflow builder, and a plugin marketplace. Designed for global
+    conglomerates, SaaS platform operators, financial enterprises, and
+    consulting firms managing multi-client deployments.
+  category: eu-compliance
+  tier: enterprise
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-14"
+  support_tier: enterprise-premium
+  documentation_url: "https://docs.greenlang.io/packs/csrd-enterprise"
+  changelog_url: "https://docs.greenlang.io/packs/csrd-enterprise/changelog"
+
+  tags:
+    - csrd
+    - esrs
+    - eu-compliance
+    - sustainability-reporting
+    - ghg-protocol
+    - double-materiality
+    - xbrl
+    - esef
+    - cdp
+    - tcfd
+    - sbti
+    - eu-taxonomy
+    - multi-entity
+    - consolidation
+    - cross-framework
+    - scenario-analysis
+    - professional-audit
+    - board-governance
+    - multi-tenant
+    - sso
+    - saml
+    - scim
+    - white-label
+    - predictive-analytics
+    - iot
+    - carbon-credits
+    - supply-chain-esg
+    - regulatory-filing
+    - graphql
+    - api-management
+    - marketplace
+    - narrative-generation
+    - workflow-builder
+
+  compliance_references:
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        Amends Directive 2013/34/EU, requiring large and listed EU companies
+        to report on sustainability matters using European Sustainability
+        Reporting Standards (ESRS).
+    - id: "ESRS"
+      name: "European Sustainability Reporting Standards"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Set 1 of ESRS covering cross-cutting standards (ESRS 1, ESRS 2) and
+        topical standards (E1-E5, S1-S4, G1). Defines disclosure requirements,
+        application requirements, and data points.
+    - id: "ESEF"
+      name: "European Single Electronic Format"
+      regulation: "Delegated Regulation (EU) 2019/815"
+      effective_date: "2020-01-01"
+      description: >-
+        Requires annual financial reports in XHTML format with inline XBRL
+        tagging. Extended to sustainability reporting under CSRD.
+    - id: "ISAE3000"
+      name: "International Standard on Assurance Engagements 3000"
+      regulation: "ISAE 3000 (Revised)"
+      effective_date: "2015-12-15"
+      description: >-
+        Framework for assurance engagements other than audits or reviews of
+        historical financial information. Used for limited and reasonable
+        assurance on sustainability reports.
+    - id: "ISAE3410"
+      name: "Assurance Engagements on GHG Statements"
+      regulation: "ISAE 3410"
+      effective_date: "2012-09-15"
+      description: >-
+        Deals with assurance engagements to report on an entity's greenhouse
+        gas statement. Requires verification of emission calculations,
+        methodology, and data sources.
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      regulation: "Regulation (EU) 2020/852"
+      effective_date: "2022-01-01"
+      description: >-
+        Classification system for environmentally sustainable economic
+        activities. Requires disclosure of Taxonomy-eligible and
+        Taxonomy-aligned turnover, CapEx, and OpEx.
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol"
+      effective_date: "2004-03-01"
+      description: >-
+        Corporate Accounting and Reporting Standard for greenhouse gas
+        emissions. Includes Scope 2 Guidance and Corporate Value Chain
+        (Scope 3) Standard.
+    - id: "PCAF"
+      name: "Partnership for Carbon Accounting Financials"
+      regulation: "PCAF Global Standard v2.0"
+      effective_date: "2022-12-01"
+      description: >-
+        Global standard for measuring and disclosing financed emissions
+        across six asset classes with data quality scoring.
+
+# -----------------------------------------------------------------------------
+# Dependencies - Extends PACK-002
+# -----------------------------------------------------------------------------
+dependencies:
+  - pack_id: "PACK-002"
+    name: "csrd-professional"
+    version: ">=1.0.0"
+    required: true
+    description: >-
+      PACK-003 extends PACK-002 and inherits all 93+ agents, 13 workflows,
+      16 templates, and 7 professional engines from the Professional Pack.
+      All PACK-001 and PACK-002 agents must be deployed before PACK-003
+      agents can be activated.
+  - pack_id: "PACK-001"
+    name: "csrd-starter"
+    version: ">=1.0.0"
+    required: true
+    description: >-
+      Transitive dependency via PACK-002. Provides the 66+ base agents,
+      5 workflows, and 6 templates from the Starter Pack.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents included in this pack
+# Inherits all 93+ agents from PACK-002 plus 42 enterprise agents
+# Total: 135+ agents
+# -----------------------------------------------------------------------------
+components:
+
+  # ---- INHERITED FROM PACK-002 (93+ agents via PACK-001 + PACK-002) ----
+  inherited:
+    pack: "PACK-002"
+    agent_count: 93
+    groups:
+      - "apps (GL-CSRD-APP)"
+      - "data_agents (AGENT-DATA-001, 002, 003, 008)"
+      - "quality_agents (AGENT-DATA-010, 011, 012, 013, 019)"
+      - "mrv_scope1 (AGENT-MRV-001 through 008)"
+      - "mrv_scope2 (AGENT-MRV-009 through 013)"
+      - "mrv_scope3 (AGENT-MRV-014 through 030)"
+      - "foundation (AGENT-FOUND-001 through 010)"
+      - "professional_apps (GL-CDP-APP, GL-TCFD-APP, GL-SBTi-APP, GL-TAXONOMY-APP)"
+      - "cdp_engines (6 agents)"
+      - "tcfd_engines (7 agents)"
+      - "sbti_engines (8 agents)"
+      - "taxonomy_engines (6 agents)"
+      - "professional_engines (7 agents)"
+
+  # ---- PACK-003 ENTERPRISE ENGINES (10 engines) ----
+
+  # Predictive Analytics Engines (3 engines)
+  predictive_engines:
+    - id: GL-ENT-PREDICT-EMISSION
+      name: "Emission Forecasting Engine"
+      version: "1.0.0"
+      description: >-
+        ML-based emission forecasting using historical data, activity trends,
+        and production schedules. Generates rolling 12-36 month forecasts with
+        confidence intervals and seasonal decomposition.
+      required: true
+    - id: GL-ENT-PREDICT-ANOMALY
+      name: "Anomaly Detection Engine"
+      version: "1.0.0"
+      description: >-
+        Statistical and ML-based anomaly detection for emission data,
+        energy consumption, and activity metrics. Identifies outliers,
+        trend breaks, and data quality issues in real-time.
+      required: true
+    - id: GL-ENT-PREDICT-DRIFT
+      name: "Model Drift Detection Engine"
+      version: "1.0.0"
+      description: >-
+        Monitors ML model performance degradation over time using PSI,
+        KS-test, and KL-divergence. Triggers automated retraining when
+        drift thresholds are exceeded.
+      required: true
+
+  # Narrative Generation Engines (2 engines)
+  narrative_engines:
+    - id: GL-ENT-NARRATIVE-GEN
+      name: "Narrative Generation Engine"
+      version: "1.0.0"
+      description: >-
+        LLM-powered narrative generation for ESRS disclosures in 24+
+        languages. Supports board, investor, regulatory, and public tone
+        presets with mandatory fact-checking against source data.
+      required: true
+    - id: GL-ENT-NARRATIVE-TRANSLATE
+      name: "Narrative Translation Engine"
+      version: "1.0.0"
+      description: >-
+        High-fidelity translation of sustainability narratives across
+        24+ EU languages with domain-specific terminology preservation
+        and regulatory term consistency.
+      required: true
+
+  # IoT Integration Engine (1 engine)
+  iot_engines:
+    - id: GL-ENT-IOT-INGEST
+      name: "IoT Sensor Data Ingestion Engine"
+      version: "1.0.0"
+      description: >-
+        Real-time ingestion of IoT sensor data via MQTT, HTTP, OPC-UA,
+        and Modbus protocols. Supports energy meters, gas flow sensors,
+        water meters, and temperature probes with configurable
+        aggregation windows and anomaly alerting.
+      required: false
+
+  # Carbon Credit Engine (1 engine)
+  carbon_credit_engines:
+    - id: GL-ENT-CARBON-CREDIT
+      name: "Carbon Credit Lifecycle Engine"
+      version: "1.0.0"
+      description: >-
+        End-to-end carbon credit lifecycle management covering issuance,
+        transfer, retirement, and cancellation across VCS, Gold Standard,
+        ACR, CAR, CDM, and Article 6.4 registries. Includes vintage
+        tracking, price monitoring, and net-zero accounting alignment.
+      required: false
+
+  # Supply Chain ESG Engine (1 engine)
+  supply_chain_engines:
+    - id: GL-ENT-SUPPLY-CHAIN-ESG
+      name: "Supply Chain ESG Risk Scoring Engine"
+      version: "1.0.0"
+      description: >-
+        Multi-tier supplier ESG risk scoring with configurable weights
+        for environmental, social, and governance dimensions. Automated
+        questionnaire dispatch, response scoring, and risk-based
+        engagement prioritization.
+      required: true
+
+  # Regulatory Filing Engine (1 engine)
+  filing_engines:
+    - id: GL-ENT-FILING-AUTO
+      name: "Regulatory Filing Automation Engine"
+      version: "1.0.0"
+      description: >-
+        Automated regulatory filing to ESAP (European Single Access Point)
+        and national registries. Handles format conversion, validation
+        against registry schemas, deadline tracking, submission receipts,
+        and amendment management.
+      required: true
+
+  # Workflow Builder Engine (1 engine)
+  workflow_builder_engines:
+    - id: GL-ENT-WORKFLOW-BUILDER
+      name: "Custom Workflow Builder Engine"
+      version: "1.0.0"
+      description: >-
+        Visual workflow builder for creating custom agent orchestration
+        pipelines. Supports conditional branching, parallel execution,
+        timer-based steps, human-in-the-loop approvals, and template
+        sharing across tenants.
+      required: true
+
+  # ---- PACK-003 ENTERPRISE APPLICATIONS ----
+  enterprise_apps:
+    - id: GL-CBAM-APP
+      version: "1.1.0"
+      name: "CBAM Reporting Application"
+      description: "Carbon Border Adjustment Mechanism reporting and compliance"
+      required: false
+    - id: GL-VCCI-APP
+      version: "1.1.0"
+      name: "Value Chain Carbon Intelligence Application"
+      description: "Scope 3 value chain carbon mapping and intelligence"
+      required: false
+    - id: GL-ISO14064-APP
+      version: "1.0.0"
+      name: "ISO 14064 Reporting Application"
+      description: "ISO 14064-1/2/3 GHG quantification and reporting"
+      required: false
+    - id: GL-GHG-APP
+      version: "1.0.0"
+      name: "GHG Protocol Reporting Application"
+      description: "GHG Protocol Corporate Standard standalone reporting"
+      required: false
+
+  # ---- PACK-003 ADDITIONAL DATA AGENTS ----
+  enterprise_data_agents:
+    - id: AGENT-DATA-004
+      name: "API Gateway Agent"
+      description: "RESTful and GraphQL API gateway for external data federation"
+      required: true
+    - id: AGENT-DATA-005
+      name: "EUDR Traceability Connector"
+      description: "EU Deforestation Regulation supply chain traceability"
+      required: false
+    - id: AGENT-DATA-006
+      name: "GIS Mapping Connector"
+      description: "Geospatial data integration for facility and supply chain mapping"
+      required: false
+    - id: AGENT-DATA-007
+      name: "Deforestation Satellite Connector"
+      description: "Satellite imagery connector for deforestation monitoring"
+      required: false
+    - id: AGENT-DATA-009
+      name: "Spend Data Categorizer"
+      description: "Spend-based emission factor mapping and categorization"
+      required: true
+    - id: AGENT-DATA-014
+      name: "Time Series Gap Filler"
+      description: "Intelligent gap filling for time-series emission data"
+      required: true
+    - id: AGENT-DATA-015
+      name: "Cross-Source Reconciliation Agent"
+      description: "Reconciles emission data across multiple source systems"
+      required: true
+    - id: AGENT-DATA-016
+      name: "Data Freshness Monitor"
+      description: "Monitors data staleness and triggers refresh workflows"
+      required: true
+    - id: AGENT-DATA-017
+      name: "Schema Migration Agent"
+      description: "Handles schema evolution and backward compatibility"
+      required: true
+    - id: AGENT-DATA-018
+      name: "Data Lineage Tracker"
+      description: "End-to-end data lineage from source to reported figure"
+      required: true
+    - id: AGENT-DATA-020
+      name: "Climate Hazard Connector"
+      description: "Physical climate risk and hazard data integration"
+      required: true
+
+  # ---- PACK-003 ADDITIONAL QUALITY AGENTS ----
+  enterprise_quality_agents:
+    - id: AGENT-DATA-013
+      name: "Outlier Detection Agent"
+      description: "Statistical outlier detection in emission time series"
+      required: true
+      config_overrides:
+        enterprise_sensitivity: true
+
+  # ---- PACK-003 EUDR AGENTS (40 agents) ----
+  eudr_agents:
+    - id: AGENT-EUDR-001
+      name: "Product Intake & Classification Agent"
+      description: "EUDR product classification and intake processing"
+      required: false
+    - id: AGENT-EUDR-002
+      name: "Supplier Registration Agent"
+      description: "EUDR supplier registration and onboarding"
+      required: false
+    - id: AGENT-EUDR-003
+      name: "Geolocation Data Collector Agent"
+      description: "Collects and validates geolocation data for EUDR"
+      required: false
+    - id: AGENT-EUDR-004
+      name: "Trade Flow Mapper Agent"
+      description: "Maps product trade flows through supply chain"
+      required: false
+    - id: AGENT-EUDR-005
+      name: "Document Collection Agent"
+      description: "Collects and indexes EUDR compliance documents"
+      required: false
+    - id: AGENT-EUDR-006
+      name: "Commodity Classifier Agent"
+      description: "Classifies commodities against EUDR Annex I"
+      required: false
+    - id: AGENT-EUDR-007
+      name: "HS Code Mapper Agent"
+      description: "Maps HS codes to EUDR commodity categories"
+      required: false
+    - id: AGENT-EUDR-008
+      name: "Volume Tracker Agent"
+      description: "Tracks product volumes through supply chain"
+      required: false
+    - id: AGENT-EUDR-009
+      name: "Batch Genealogy Agent"
+      description: "Traces batch lineage for product traceability"
+      required: false
+    - id: AGENT-EUDR-010
+      name: "Chain of Custody Verifier Agent"
+      description: "Verifies chain of custody documentation"
+      required: false
+    - id: AGENT-EUDR-011
+      name: "Mass Balance Calculator Agent"
+      description: "Calculates mass balance for mixed commodities"
+      required: false
+    - id: AGENT-EUDR-012
+      name: "Transformation Tracker Agent"
+      description: "Tracks product transformations in processing"
+      required: false
+    - id: AGENT-EUDR-013
+      name: "Multi-Tier Supplier Mapper Agent"
+      description: "Maps multi-tier supplier relationships"
+      required: false
+    - id: AGENT-EUDR-014
+      name: "Blockchain Anchoring Agent"
+      description: "Anchors traceability records to blockchain"
+      required: false
+    - id: AGENT-EUDR-015
+      name: "Interoperability Bridge Agent"
+      description: "Bridges between EUDR and other supply chain systems"
+      required: false
+    - id: AGENT-EUDR-016
+      name: "Country Risk Assessor Agent"
+      description: "Assesses country-level deforestation risk"
+      required: false
+    - id: AGENT-EUDR-017
+      name: "Geolocation Verification Agent"
+      description: "Verifies geolocation data against satellite imagery"
+      required: false
+    - id: AGENT-EUDR-018
+      name: "GPS Coordinate Validator Agent"
+      description: "Validates GPS coordinates and datum transformations"
+      required: false
+    - id: AGENT-EUDR-019
+      name: "Supplier Risk Scorer Agent"
+      description: "Scores supplier risk for EUDR compliance"
+      required: false
+    - id: AGENT-EUDR-020
+      name: "Document Authentication Agent"
+      description: "Authenticates EUDR compliance documents"
+      required: false
+    - id: AGENT-EUDR-021
+      name: "Due Diligence Orchestrator Agent"
+      description: "Orchestrates EUDR due diligence workflows"
+      required: false
+    - id: AGENT-EUDR-022
+      name: "Risk Mitigation Advisor Agent"
+      description: "Advises on EUDR risk mitigation strategies"
+      required: false
+    - id: AGENT-EUDR-023
+      name: "Compliance Decision Engine Agent"
+      description: "Makes EUDR compliance go/no-go decisions"
+      required: false
+    - id: AGENT-EUDR-024
+      name: "Audit Trail Generator Agent"
+      description: "Generates EUDR audit trails"
+      required: false
+    - id: AGENT-EUDR-025
+      name: "Reporting Package Generator Agent"
+      description: "Generates EUDR reporting packages"
+      required: false
+    - id: AGENT-EUDR-026
+      name: "Remediation Tracker Agent"
+      description: "Tracks EUDR compliance remediation actions"
+      required: false
+    - id: AGENT-EUDR-027
+      name: "Information Gathering Coordinator Agent"
+      description: "Coordinates EUDR information gathering"
+      required: false
+    - id: AGENT-EUDR-028
+      name: "Risk Assessment Coordinator Agent"
+      description: "Coordinates EUDR risk assessments"
+      required: false
+    - id: AGENT-EUDR-029
+      name: "Risk Mitigation Coordinator Agent"
+      description: "Coordinates EUDR risk mitigation activities"
+      required: false
+    - id: AGENT-EUDR-030
+      name: "Due Diligence Statement Generator Agent"
+      description: "Generates EUDR due diligence statements"
+      required: false
+    - id: AGENT-EUDR-031
+      name: "Competent Authority Interface Agent"
+      description: "Interfaces with EUDR competent authorities"
+      required: false
+    - id: AGENT-EUDR-032
+      name: "Penalty Calculator Agent"
+      description: "Calculates potential EUDR penalties"
+      required: false
+    - id: AGENT-EUDR-033
+      name: "Continuous Monitoring Agent"
+      description: "Continuous EUDR compliance monitoring"
+      required: false
+    - id: AGENT-EUDR-034
+      name: "Stakeholder Notification Agent"
+      description: "EUDR stakeholder notification management"
+      required: false
+    - id: AGENT-EUDR-035
+      name: "Training & Awareness Agent"
+      description: "EUDR training and awareness content generation"
+      required: false
+    - id: AGENT-EUDR-036
+      name: "Third-Party Audit Manager Agent"
+      description: "Manages third-party EUDR audits"
+      required: false
+    - id: AGENT-EUDR-037
+      name: "Smallholder Support Agent"
+      description: "Supports smallholder compliance under EUDR"
+      required: false
+    - id: AGENT-EUDR-038
+      name: "Legal Compliance Checker Agent"
+      description: "Checks legal compliance across jurisdictions"
+      required: false
+    - id: AGENT-EUDR-039
+      name: "Impact Assessment Agent"
+      description: "Assesses impact of EUDR on operations"
+      required: false
+    - id: AGENT-EUDR-040
+      name: "Executive Dashboard Agent"
+      description: "EUDR executive dashboard and KPI reporting"
+      required: false
+
+# -----------------------------------------------------------------------------
+# Platform Bridges - Enterprise platform integration points
+# 12 bridge modules for enterprise features
+# -----------------------------------------------------------------------------
+platform_bridges:
+  - id: GL-BRIDGE-TENANT
+    name: "Multi-Tenant Isolation Bridge"
+    module: "platform/bridges/tenant.py"
+    description: "Manages tenant isolation, resource quotas, and cross-tenant benchmarking"
+    required: true
+
+  - id: GL-BRIDGE-SAML
+    name: "SAML SSO Provider Bridge"
+    module: "platform/bridges/saml_provider.py"
+    description: "SAML 2.0 identity provider integration for enterprise SSO"
+    required: true
+
+  - id: GL-BRIDGE-OAUTH
+    name: "OAuth 2.0 Provider Bridge"
+    module: "platform/bridges/oauth_provider.py"
+    description: "OAuth 2.0 / OpenID Connect provider integration"
+    required: true
+
+  - id: GL-BRIDGE-GRAPHQL
+    name: "GraphQL Schema Bridge"
+    module: "platform/bridges/graphql_schema.py"
+    description: "GraphQL API schema generation and query resolution"
+    required: true
+
+  - id: GL-BRIDGE-AUDITOR-PORTAL
+    name: "Auditor Portal Bridge"
+    module: "platform/bridges/auditor_portal.py"
+    description: "Read-only auditor access portal with evidence navigation"
+    required: true
+
+  - id: GL-BRIDGE-FEATURE-FLAGS
+    name: "Feature Flags Bridge"
+    module: "platform/bridges/feature_flags.py"
+    description: "Enterprise feature flag management for gradual rollouts"
+    required: true
+
+  - id: GL-BRIDGE-ML-PREDICTIVE
+    name: "ML Predictive Bridge"
+    module: "platform/bridges/ml/predictive.py"
+    description: "ML model lifecycle management for predictive analytics"
+    required: true
+
+  - id: GL-BRIDGE-ML-DRIFT
+    name: "ML Drift Detection Bridge"
+    module: "platform/bridges/ml/drift_detection.py"
+    description: "Model performance monitoring and drift detection"
+    required: true
+
+  - id: GL-BRIDGE-REMOVALS
+    name: "Carbon Removals Tracker Bridge"
+    module: "platform/bridges/removals_tracker.py"
+    description: "Carbon removal and offset tracking across registries"
+    required: false
+
+  - id: GL-BRIDGE-SUPPLIER-RISK
+    name: "Supplier Risk Scorer Bridge"
+    module: "platform/bridges/supplier_risk_scorer.py"
+    description: "Multi-tier supplier risk scoring aggregation"
+    required: true
+
+  - id: GL-BRIDGE-API-KEY
+    name: "API Key Manager Bridge"
+    module: "platform/bridges/api_key_manager.py"
+    description: "API key lifecycle management with rotation and scoping"
+    required: true
+
+  - id: GL-BRIDGE-MARKETPLACE
+    name: "Marketplace Bridge"
+    module: "platform/bridges/marketplace.py"
+    description: "Plugin marketplace integration for third-party extensions"
+    required: false
+
+# -----------------------------------------------------------------------------
+# Workflows - Enterprise orchestration sequences
+# Extends PACK-002's 13 workflows with 8 enterprise workflows
+# Total: 21 workflows
+# -----------------------------------------------------------------------------
+workflows:
+
+  # ---- INHERITED FROM PACK-002 (13 workflows via PACK-001 + PACK-002) ----
+  # annual_reporting, quarterly_update, materiality_assessment,
+  # data_onboarding, audit_preparation (PACK-001)
+  # consolidated_reporting, cross_framework_alignment, scenario_analysis,
+  # continuous_compliance, stakeholder_engagement, regulatory_change_mgmt,
+  # board_governance, professional_audit (PACK-002)
+
+  predictive_forecasting:
+    display_name: "Predictive Emission Forecasting"
+    description: >-
+      ML-driven emission forecasting workflow that generates rolling
+      12-36 month forecasts using historical emission data, activity
+      trends, production schedules, and external signals. Includes
+      anomaly detection, model retraining, and board-ready forecast reports.
+    schedule: "monthly"
+    estimated_duration_days: 5
+    phases:
+      - name: data_preparation
+        description: "Prepare historical data and feature engineering"
+        agents:
+          - AGENT-DATA-014
+          - AGENT-DATA-015
+          - AGENT-DATA-016
+          - GL-ENT-PREDICT-ANOMALY
+        duration_days: 1
+      - name: model_execution
+        description: "Execute forecasting models and detect drift"
+        agents:
+          - GL-ENT-PREDICT-EMISSION
+          - GL-ENT-PREDICT-DRIFT
+        duration_days: 2
+      - name: forecast_validation
+        description: "Validate forecasts against quality gates"
+        agents:
+          - GL-PRO-QUALITY-GATE
+          - AGENT-FOUND-008
+        duration_days: 1
+      - name: forecast_reporting
+        description: "Generate forecast reports and dashboards"
+        agents:
+          - GL-ENT-NARRATIVE-GEN
+          - GL-CSRD-APP
+        duration_days: 1
+
+  iot_continuous_monitoring:
+    display_name: "IoT Continuous Emission Monitoring"
+    description: >-
+      Real-time emission monitoring using IoT sensor data from energy
+      meters, gas flow sensors, and environmental probes. Aggregates
+      sensor readings, applies emission factors, detects anomalies,
+      and updates emission inventories in near real-time.
+    schedule: "continuous"
+    estimated_duration_days: 1
+    phases:
+      - name: sensor_ingestion
+        description: "Ingest and validate IoT sensor data streams"
+        agents:
+          - GL-ENT-IOT-INGEST
+          - AGENT-DATA-019
+        duration_days: 0
+      - name: emission_calculation
+        description: "Calculate emissions from sensor readings"
+        agents:
+          - AGENT-MRV-001
+          - AGENT-MRV-009
+          - AGENT-MRV-010
+        duration_days: 0
+      - name: anomaly_detection
+        description: "Detect anomalies in sensor data and calculations"
+        agents:
+          - GL-ENT-PREDICT-ANOMALY
+          - AGENT-DATA-013
+        duration_days: 0
+      - name: inventory_update
+        description: "Update emission inventory and trigger alerts"
+        agents:
+          - AGENT-MRV-030
+          - GL-CSRD-APP
+        duration_days: 1
+
+  carbon_credit_management:
+    display_name: "Carbon Credit Lifecycle Management"
+    description: >-
+      End-to-end carbon credit management workflow covering procurement,
+      verification, retirement, and net-zero accounting alignment.
+      Tracks credits across VCS, Gold Standard, ACR, CAR, CDM, and
+      Article 6.4 registries with price monitoring and vintage analysis.
+    schedule: "quarterly"
+    estimated_duration_days: 14
+    phases:
+      - name: portfolio_assessment
+        description: "Assess current carbon credit portfolio and gaps"
+        agents:
+          - GL-ENT-CARBON-CREDIT
+          - GL-SBTi-PATHWAY
+        duration_days: 3
+      - name: credit_verification
+        description: "Verify credit quality and additionality"
+        agents:
+          - GL-ENT-CARBON-CREDIT
+          - AGENT-FOUND-005
+        duration_days: 4
+      - name: retirement_planning
+        description: "Plan credit retirements for net-zero alignment"
+        agents:
+          - GL-ENT-CARBON-CREDIT
+          - GL-SBTi-TARGET
+        duration_days: 3
+      - name: reporting
+        description: "Generate carbon credit reports and disclosures"
+        agents:
+          - GL-ENT-NARRATIVE-GEN
+          - GL-CSRD-APP
+          - AGENT-FOUND-005
+        duration_days: 4
+
+  supply_chain_esg_assessment:
+    display_name: "Supply Chain ESG Assessment"
+    description: >-
+      Multi-tier supplier ESG risk assessment workflow covering
+      questionnaire dispatch, response analysis, risk scoring, and
+      engagement prioritization. Supports CSDDD and EUDR compliance
+      requirements for value chain due diligence.
+    schedule: "semi-annual"
+    estimated_duration_days: 45
+    phases:
+      - name: supplier_mapping
+        description: "Map multi-tier supplier network and identify critical suppliers"
+        agents:
+          - GL-ENT-SUPPLY-CHAIN-ESG
+          - AGENT-DATA-008
+        duration_days: 7
+      - name: questionnaire_dispatch
+        description: "Dispatch ESG questionnaires to prioritized suppliers"
+        agents:
+          - AGENT-DATA-008
+          - GL-ENT-SUPPLY-CHAIN-ESG
+        duration_days: 5
+      - name: response_collection
+        description: "Collect and validate supplier questionnaire responses"
+        agents:
+          - AGENT-DATA-002
+          - AGENT-DATA-008
+          - AGENT-DATA-019
+        duration_days: 21
+      - name: risk_scoring
+        description: "Score supplier ESG risk across E, S, G dimensions"
+        agents:
+          - GL-ENT-SUPPLY-CHAIN-ESG
+          - GL-ENT-PREDICT-ANOMALY
+        duration_days: 5
+      - name: engagement_planning
+        description: "Generate engagement plans for high-risk suppliers"
+        agents:
+          - GL-ENT-SUPPLY-CHAIN-ESG
+          - GL-ENT-NARRATIVE-GEN
+        duration_days: 4
+      - name: supply_chain_reporting
+        description: "Generate supply chain ESG reports and CSDDD disclosures"
+        agents:
+          - GL-ENT-NARRATIVE-GEN
+          - GL-CSRD-APP
+          - AGENT-FOUND-005
+        duration_days: 3
+
+  regulatory_filing:
+    display_name: "Regulatory Filing Automation"
+    description: >-
+      Automated regulatory filing workflow for ESAP and national
+      registries. Validates filing packages, converts formats, manages
+      submission deadlines, and handles amendment cycles.
+    schedule: "annual"
+    estimated_duration_days: 14
+    phases:
+      - name: filing_preparation
+        description: "Prepare filing packages for target registries"
+        agents:
+          - GL-ENT-FILING-AUTO
+          - GL-CSRD-APP
+          - GL-PRO-QUALITY-GATE
+        duration_days: 5
+      - name: validation
+        description: "Validate filing packages against registry schemas"
+        agents:
+          - GL-ENT-FILING-AUTO
+          - AGENT-DATA-019
+          - AGENT-FOUND-008
+        duration_days: 3
+      - name: submission
+        description: "Submit filings to registries and track receipts"
+        agents:
+          - GL-ENT-FILING-AUTO
+          - AGENT-FOUND-005
+        duration_days: 3
+      - name: confirmation
+        description: "Confirm acceptance and handle amendment requests"
+        agents:
+          - GL-ENT-FILING-AUTO
+          - GL-PRO-APPROVAL
+        duration_days: 3
+
+  narrative_generation:
+    display_name: "Multi-Language Narrative Generation"
+    description: >-
+      AI-powered narrative generation workflow for ESRS disclosures
+      in 24+ languages. Generates drafts from structured data, applies
+      fact-checking against source data, supports revision tracking,
+      and produces final narratives in board, investor, regulatory,
+      and public tones.
+    schedule: "annual"
+    estimated_duration_days: 21
+    phases:
+      - name: data_assembly
+        description: "Assemble structured data for narrative generation"
+        agents:
+          - GL-CSRD-APP
+          - GL-PRO-CROSS-FRAMEWORK
+          - AGENT-FOUND-005
+        duration_days: 3
+      - name: draft_generation
+        description: "Generate narrative drafts in primary language"
+        agents:
+          - GL-ENT-NARRATIVE-GEN
+        duration_days: 5
+      - name: fact_checking
+        description: "Fact-check narratives against source data"
+        agents:
+          - GL-ENT-NARRATIVE-GEN
+          - AGENT-FOUND-008
+          - AGENT-FOUND-009
+        duration_days: 3
+      - name: translation
+        description: "Translate narratives to required languages"
+        agents:
+          - GL-ENT-NARRATIVE-TRANSLATE
+        duration_days: 5
+      - name: review_approval
+        description: "Review and approve narratives through approval chain"
+        agents:
+          - GL-PRO-APPROVAL
+          - GL-ENT-NARRATIVE-GEN
+        duration_days: 5
+
+  custom_workflow_management:
+    display_name: "Custom Workflow Management"
+    description: >-
+      Manages custom workflows created via the workflow builder.
+      Monitors execution, handles errors, and provides audit trails
+      for all custom pipeline runs.
+    schedule: "on_demand"
+    estimated_duration_days: 1
+    phases:
+      - name: workflow_validation
+        description: "Validate custom workflow definition"
+        agents:
+          - GL-ENT-WORKFLOW-BUILDER
+          - AGENT-FOUND-009
+        duration_days: 0
+      - name: workflow_execution
+        description: "Execute custom workflow steps"
+        agents:
+          - GL-ENT-WORKFLOW-BUILDER
+          - AGENT-FOUND-001
+        duration_days: 1
+      - name: audit_trail
+        description: "Generate audit trail for workflow execution"
+        agents:
+          - AGENT-FOUND-005
+          - AGENT-MRV-030
+        duration_days: 0
+
+  tenant_onboarding:
+    display_name: "Tenant Onboarding"
+    description: >-
+      Onboarding workflow for new tenants in multi-tenant deployments.
+      Provisions resources, configures SSO, applies white-label branding,
+      seeds reference data, and runs health checks.
+    schedule: "on_demand"
+    estimated_duration_days: 3
+    phases:
+      - name: tenant_provisioning
+        description: "Provision tenant resources and isolation"
+        agents:
+          - GL-ENT-WORKFLOW-BUILDER
+        duration_days: 1
+      - name: identity_setup
+        description: "Configure SSO, SAML, and SCIM provisioning"
+        agents:
+          - GL-ENT-WORKFLOW-BUILDER
+        duration_days: 1
+      - name: data_seeding
+        description: "Seed reference data and run health checks"
+        agents:
+          - AGENT-FOUND-001
+          - AGENT-FOUND-009
+        duration_days: 1
+
+# -----------------------------------------------------------------------------
+# Templates - Enterprise report templates
+# Extends PACK-002's 16 templates with 9 enterprise templates
+# Total: 25 templates
+# -----------------------------------------------------------------------------
+templates:
+
+  # ---- INHERITED FROM PACK-002 (16 templates via PACK-001 + PACK-002) ----
+  # executive_summary, esrs_disclosure, materiality_matrix,
+  # ghg_emissions_report, auditor_package, compliance_dashboard (PACK-001)
+  # consolidated_group_report, cdp_questionnaire_response, tcfd_disclosure,
+  # sbti_progress_report, eu_taxonomy_report, scenario_analysis_report,
+  # cross_framework_mapping, board_governance_package,
+  # regulatory_change_briefing, professional_audit_package (PACK-002)
+
+  # ---- PACK-003 Enterprise Templates ----
+  - id: emission_forecast_report
+    display_name: "Emission Forecast Report"
+    description: "ML-driven emission forecast with confidence intervals and scenario overlays"
+    format: "pdf"
+    template_file: "templates/emission_forecast_report.jinja2"
+
+  - id: iot_monitoring_dashboard
+    display_name: "IoT Monitoring Dashboard"
+    description: "Real-time IoT sensor dashboard with emission calculations and anomaly alerts"
+    format: "html"
+    template_file: "templates/iot_monitoring_dashboard.jinja2"
+
+  - id: carbon_credit_portfolio
+    display_name: "Carbon Credit Portfolio Report"
+    description: "Carbon credit portfolio status with vintage analysis and retirement plan"
+    format: "pdf"
+    template_file: "templates/carbon_credit_portfolio.jinja2"
+
+  - id: supply_chain_esg_scorecard
+    display_name: "Supply Chain ESG Scorecard"
+    description: "Multi-tier supplier ESG risk scorecard with engagement priorities"
+    format: "pdf"
+    template_file: "templates/supply_chain_esg_scorecard.jinja2"
+
+  - id: regulatory_filing_package
+    display_name: "Regulatory Filing Package"
+    description: "Complete filing package for ESAP and national registries"
+    format: "zip"
+    template_file: "templates/regulatory_filing_package.jinja2"
+
+  - id: multi_language_narrative
+    display_name: "Multi-Language Narrative Package"
+    description: "ESRS narrative disclosures in all configured languages"
+    format: "zip"
+    template_file: "templates/multi_language_narrative.jinja2"
+
+  - id: tenant_analytics_report
+    display_name: "Tenant Analytics Report"
+    description: "Multi-tenant usage analytics and cross-tenant benchmark report"
+    format: "pdf"
+    template_file: "templates/tenant_analytics_report.jinja2"
+
+  - id: enterprise_audit_package
+    display_name: "Enterprise Audit Package"
+    description: "Extended audit package with ML model validation and IoT data provenance"
+    format: "zip"
+    template_file: "templates/enterprise_audit_package.jinja2"
+
+  - id: white_label_report
+    display_name: "White-Label Report"
+    description: "Fully branded sustainability report with custom logo, colors, and domain"
+    format: "xhtml"
+    template_file: "templates/white_label_report.jinja2"
+    xbrl_taxonomy: "ESRS_2023"
+
+# -----------------------------------------------------------------------------
+# Integrations - Enterprise integration points
+# Extends PACK-002's integrations with 9 enterprise integrations
+# -----------------------------------------------------------------------------
+integrations:
+
+  # ---- INHERITED FROM PACK-002 ----
+  # mrv_bridge, cross_framework_bridge, webhook_manager,
+  # pack_orchestrator, setup_wizard (PACK-002)
+
+  # ---- PACK-003 Enterprise Integrations ----
+  - id: multi_tenant_manager
+    display_name: "Multi-Tenant Manager"
+    description: "Manages tenant lifecycle, isolation, quotas, and cross-tenant operations"
+    module: "integrations/multi_tenant_manager.py"
+    required: true
+
+  - id: sso_federation
+    display_name: "SSO Federation Manager"
+    description: "SAML 2.0, OAuth 2.0, and SCIM identity federation"
+    module: "integrations/sso_federation.py"
+    required: true
+
+  - id: graphql_gateway
+    display_name: "GraphQL API Gateway"
+    description: "GraphQL schema stitching and query resolution"
+    module: "integrations/graphql_gateway.py"
+    required: true
+
+  - id: iot_connector
+    display_name: "IoT Connector Framework"
+    description: "Multi-protocol IoT connector for sensor data ingestion"
+    module: "integrations/iot_connector.py"
+    required: false
+
+  - id: carbon_registry_bridge
+    display_name: "Carbon Registry Bridge"
+    description: "Integration with VCS, Gold Standard, ACR, CAR, CDM registries"
+    module: "integrations/carbon_registry_bridge.py"
+    required: false
+
+  - id: filing_gateway
+    display_name: "Regulatory Filing Gateway"
+    description: "Gateway for ESAP and national registry filing submissions"
+    module: "integrations/filing_gateway.py"
+    required: true
+
+  - id: marketplace_hub
+    display_name: "Marketplace Hub"
+    description: "Plugin marketplace discovery, installation, and lifecycle"
+    module: "integrations/marketplace_hub.py"
+    required: false
+
+  - id: white_label_engine
+    display_name: "White-Label Engine"
+    description: "Dynamic branding, theming, and custom domain management"
+    module: "integrations/white_label_engine.py"
+    required: false
+
+  - id: enterprise_health_check
+    display_name: "Enterprise Health Check"
+    description: "Deep health checks across all enterprise subsystems"
+    module: "integrations/enterprise_health_check.py"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles for enterprise use
+# -----------------------------------------------------------------------------
+presets:
+
+  # Size-based presets (enterprise tier)
+  size_presets:
+    - id: global_enterprise
+      display_name: "Global Enterprise"
+      description: >-
+        Global conglomerate with 200+ subsidiaries across 50+ countries.
+        Physical tenant isolation, full IoT integration, all registries,
+        24+ languages, all workflows, AI/ML predictive analytics.
+      config_file: "config/presets/global_enterprise.yaml"
+      criteria:
+        min_employees: 50000
+        multi_entity: true
+        max_subsidiaries: 500
+        countries: 50
+
+    - id: saas_platform
+      display_name: "SaaS Platform"
+      description: >-
+        Multi-tenant SaaS deployment for platform operators. White-label
+        branding, marketplace, API management, tenant isolation,
+        usage-based metering, and cross-tenant benchmarking.
+      config_file: "config/presets/saas_platform.yaml"
+      criteria:
+        multi_tenant: true
+        max_tenants: 500
+        saas_model: true
+
+    - id: financial_enterprise
+      display_name: "Financial Enterprise"
+      description: >-
+        Enterprise financial institution with PCAF, Taxonomy alignment,
+        SFDR PAI, auditor portal, filing to ESAP, and SBTi FI targets.
+        Cluster-level tenant isolation with strict data governance.
+      config_file: "config/presets/financial_enterprise.yaml"
+      criteria:
+        sector: "financial_services"
+        regulated: true
+        pcaf_required: true
+        min_employees: 10000
+
+    - id: consulting_firm
+      display_name: "Consulting Firm"
+      description: >-
+        Advisory firm managing multiple client engagements. White-label
+        client reporting, custom workflows per client, moderate API
+        limits, and cross-client anonymized benchmarking.
+      config_file: "config/presets/consulting_firm.yaml"
+      criteria:
+        advisory: true
+        multi_client: true
+        max_clients: 200
+
+  # Sector-specific presets (enterprise tier)
+  sector_presets:
+    - id: banking_enterprise
+      display_name: "Banking Enterprise"
+      description: >-
+        Enterprise banking with PCAF (6 asset classes), financed emissions,
+        GAR/BTAR, Cat 15, and SBTi FI targets.
+      config_file: "config/sectors/banking_enterprise.yaml"
+      nace_codes: ["K64"]
+
+    - id: oil_gas_enterprise
+      display_name: "Oil & Gas Enterprise"
+      description: >-
+        Oil and gas enterprise with methane tracking, fugitive emissions,
+        carbon credits, IoT sensors, and OGMP 2.0.
+      config_file: "config/sectors/oil_gas_enterprise.yaml"
+      nace_codes: ["B06", "B09", "C19", "D35"]
+
+    - id: automotive_enterprise
+      display_name: "Automotive Enterprise"
+      description: >-
+        Automotive enterprise with supply chain ESG, product carbon
+        footprint, Cat 1/4/11/12, and EV transition tracking.
+      config_file: "config/sectors/automotive_enterprise.yaml"
+      nace_codes: ["C29"]
+
+    - id: pharma_enterprise
+      display_name: "Pharmaceutical Enterprise"
+      description: >-
+        Pharmaceutical enterprise with cold chain emissions, clinical
+        trial site tracking, Cat 1/4/5, and supply chain integrity.
+      config_file: "config/sectors/pharma_enterprise.yaml"
+      nace_codes: ["C21"]
+
+    - id: conglomerate
+      display_name: "Multi-Sector Conglomerate"
+      description: >-
+        Multi-sector conglomerate with cross-entity consolidation,
+        sector-specific MRV, complex hierarchies, and all scopes.
+      config_file: "config/sectors/conglomerate.yaml"
+      nace_codes: ["MULTI"]
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# Enterprise pack requires dedicated infrastructure
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+    timescaledb: ">=2.13"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "scipy>=1.11"
+    - "scikit-learn>=1.3"
+    - "networkx>=3.1"
+    - "prophet>=1.1"
+    - "statsmodels>=0.14"
+    - "xgboost>=2.0"
+    - "paho-mqtt>=2.0"
+    - "asyncua>=1.0"
+    - "strawberry-graphql>=0.220"
+    - "python-saml>=1.16"
+    - "scim2-filter-parser>=1.0"
+
+  infrastructure:
+    min_cpu_cores: 16
+    min_memory_gb: 64
+    min_storage_gb: 1000
+    recommended_cpu_cores: 32
+    recommended_memory_gb: 128
+    recommended_storage_gb: 5000
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+      - "pg_partman"
+    min_connections: 100
+    recommended_connections: 300
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# Enterprise pack targets for global-scale workloads
+# -----------------------------------------------------------------------------
+performance:
+  data_ingestion:
+    throughput_records_per_second: 50000
+    max_latency_ms: 80
+    iot_events_per_second: 10000
+    description: "Data ingestion throughput for enterprise-scale multi-tenant workloads"
+
+  ghg_calculation:
+    single_scope_max_seconds: 30
+    full_inventory_max_seconds: 300
+    multi_entity_max_minutes: 30
+    max_data_points: 500000
+    description: "GHG calculation targets for 500K data points enterprise scale"
+
+  report_generation:
+    esrs_disclosure_max_seconds: 120
+    executive_summary_max_seconds: 60
+    xbrl_tagging_max_seconds: 180
+    consolidated_report_max_seconds: 300
+    cross_framework_max_seconds: 120
+    narrative_generation_max_seconds: 180
+    multi_language_max_seconds: 600
+    description: "Report generation targets including narrative generation"
+
+  predictive_analytics:
+    forecast_max_seconds: 60
+    anomaly_detection_max_seconds: 30
+    drift_check_max_seconds: 15
+    model_retraining_max_minutes: 30
+    description: "ML model execution time targets"
+
+  scenario_analysis:
+    single_scenario_max_seconds: 60
+    full_analysis_max_minutes: 15
+    monte_carlo_iterations: 50000
+    description: "Scenario analysis execution time targets"
+
+  api_response:
+    p50_ms: 40
+    p95_ms: 200
+    p99_ms: 800
+    graphql_p50_ms: 60
+    graphql_p95_ms: 300
+    description: "API response time percentile targets"
+
+  data_quality:
+    profiling_max_seconds: 60
+    validation_max_seconds: 30
+    quality_gate_max_seconds: 30
+    description: "Data quality check execution time targets"
+
+  availability:
+    target_uptime_percent: 99.99
+    max_planned_downtime_minutes_per_month: 5
+    rpo_minutes: 5
+    rto_minutes: 15
+    description: "Enterprise availability and recovery targets"
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_timescaledb_extension
+    - verify_disk_space
+    - verify_pack_001_installed
+    - verify_pack_001_healthy
+    - verify_pack_002_installed
+    - verify_pack_002_healthy
+    - verify_memory_requirements
+    - verify_network_access
+    - verify_ssl_certificates
+
+  database_migrations:
+    # PACK-001 inherited migrations
+    - "V001-V006"   # Core schema
+    - "V007-V008"   # Feature flags and agent factory
+    - "V009-V010"   # Auth and RBAC
+    - "V019-V020"   # Observability
+    - "V021-V030"   # Foundation agents
+    - "V031-V050"   # Data agents
+    - "V051-V081"   # MRV agents
+    - "V082"        # CSRD application
+    # PACK-002 inherited migrations
+    - "V085"        # CDP application
+    - "V086"        # TCFD application
+    - "V087"        # SBTi application
+    - "V088"        # EU Taxonomy application
+    - "V130-V136"   # Professional pack tables
+    # PACK-003 EUDR agent migrations
+    - "V089-V128"   # EUDR agents 001-040
+    # PACK-003 enterprise-exclusive migrations
+    - "V140"        # Multi-tenant isolation tables
+    - "V141"        # SSO / SAML / SCIM tables
+    - "V142"        # White-label configuration tables
+    - "V143"        # Predictive analytics / ML model tables
+    - "V144"        # Narrative generation tables
+    - "V145"        # IoT sensor data (TimescaleDB hypertable)
+    - "V146"        # Carbon credit registry tables
+    - "V147"        # Supply chain ESG tables
+    - "V148"        # Regulatory filing tables
+    - "V149"        # Workflow builder tables
+    - "V150"        # API management and marketplace tables
+
+  post_install:
+    - verify_pack_001_agents
+    - verify_pack_002_agents
+    - seed_emission_factors
+    - seed_esrs_taxonomy
+    - seed_cdp_questionnaire_structure
+    - seed_tcfd_framework
+    - seed_sbti_pathways
+    - seed_eu_taxonomy_criteria
+    - seed_cross_framework_mappings
+    - seed_carbon_registries
+    - seed_supply_chain_templates
+    - seed_filing_registry_schemas
+    - seed_ml_model_baselines
+    - seed_iot_device_templates
+    - seed_narrative_templates
+    - seed_default_presets
+    - configure_scheduled_jobs
+    - configure_approval_workflows
+    - configure_quality_gates
+    - configure_tenant_defaults
+    - configure_sso_providers
+    - configure_api_rate_limits
+    - run_health_checks
+    - run_enterprise_health_checks

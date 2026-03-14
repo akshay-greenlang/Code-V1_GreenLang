@@ -1,0 +1,241 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Technology Professional Sector Preset
+# =============================================================================
+# NACE Codes: J58-J63 (Information and Communication Technology)
+# Enhanced with:
+#   - SCI (Software Carbon Intensity) and PUE (Power Usage Effectiveness)
+#   - Data center energy optimization and renewable procurement
+#   - Cloud provider emission allocation (AWS, Azure, GCP)
+#   - Scope 3 digital services and SaaS product emissions
+#   - E-waste management and circular IT
+#   - Remote workforce commuting models
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["J58", "J59", "J60", "J61", "J62", "J63"]
+  sector_name: "Technology Professional"
+  sector_group: "technology"
+
+  # Primary emission sources
+  primary_emission_sources:
+    - "data_center_electricity"
+    - "office_electricity"
+    - "business_travel"
+    - "employee_commuting"
+    - "purchased_cloud_services"
+    - "electronic_equipment"
+
+  # SCI - Software Carbon Intensity
+  sci:
+    enabled: true
+    specification_version: "1.0"
+    functional_unit: "per_api_call"
+    measurement_boundary: "application"
+    reporting_frequency: "monthly"
+    target_reduction_percent: 30
+    target_year: 2030
+    sci_components:
+      energy: true
+      embodied_carbon: true
+      marginal_carbon_intensity: true
+
+  # PUE - Power Usage Effectiveness
+  pue:
+    enabled: true
+    measurement_level: "facility"
+    target_pue: 1.2
+    current_pue: null
+    reporting_frequency: "monthly"
+    cooling_method_tracking: true
+    waste_heat_recovery: false
+
+  # Data center operations
+  data_centers:
+    owned_facilities: []
+    colocation_facilities: []
+    cloud_providers:
+      - provider: "aws"
+        enabled: true
+        regions: []
+        emission_data_source: "aws_customer_carbon_footprint"
+      - provider: "azure"
+        enabled: true
+        regions: []
+        emission_data_source: "azure_emissions_impact_dashboard"
+      - provider: "gcp"
+        enabled: true
+        regions: []
+        emission_data_source: "gcp_carbon_footprint"
+    total_server_count: null
+    total_storage_petabytes: null
+    renewable_energy_percent: null
+    24_7_carbon_free_energy: false
+
+  # Digital services emissions
+  digital_services:
+    saas_product_emissions: true
+    streaming_emissions: false
+    network_data_transfer: true
+    end_user_device_emissions: true
+    allocation_method: "per_active_user"
+
+  # E-waste and circular IT
+  ewaste:
+    tracking_enabled: true
+    refurbishment_program: true
+    recycling_certification: "r2_rios"
+    take_back_program: false
+    asset_lifecycle_tracking: true
+    average_refresh_cycle_years: 4
+
+  # Remote workforce
+  remote_workforce:
+    hybrid_work_model: true
+    remote_percent: 40
+    home_office_emissions_methodology: "ghg_protocol_category_7"
+    office_space_optimization: true
+    hot_desking_ratio: 0.7
+
+  # SBTi ICT pathway
+  sbti_sector:
+    sector_classification: "ict"
+    pathway_method: "ACA"
+    convergence_year: 2040
+    near_term_target_year: 2030
+    sector_specific_pathways:
+      - subsector: "data_centers"
+        pathway: "ict_1.5C"
+        intensity_metric: "tCO2e_per_petabyte"
+      - subsector: "offices"
+        pathway: "buildings_1.5C"
+        intensity_metric: "tCO2e_per_sqm"
+      - subsector: "products"
+        pathway: "ict_1.5C"
+        intensity_metric: "tCO2e_per_unit_sold"
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "iea_data_center"
+      description: "IEA data center and network emission factors"
+      priority: 1
+    - name: "cloud_provider_reported"
+      description: "Cloud provider reported emission factors"
+      priority: 2
+    - name: "ecoinvent_electronics"
+      description: "ecoinvent electronics manufacturing factors"
+      priority: 3
+
+# Scope 3 configuration
+scope3:
+  enabled_categories: [1, 2, 3, 5, 6, 7, 8, 11, 12]
+  priority_categories: [1, 2, 7, 11]
+  screening_required: true
+  materiality_threshold_percent: 3.0
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "cloud_provider_reported"
+  - "company_specific"
+  - "iea_data_center"
+  - "industry_average"
+  - "government_published"
+
+# Professional overrides for technology
+professional:
+  scenarios:
+    scenarios:
+      - id: "iea_nze"
+        name: "IEA NZE - ICT Decarbonization"
+        source: "IEA"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "iea_aps"
+        name: "IEA APS - Digital Transition"
+        source: "IEA"
+        temperature_outcome_c: 1.7
+        enabled: true
+      - id: "ngfs_orderly"
+        name: "NGFS Orderly - Tech Innovation"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "data_growth"
+        name: "High Data Growth Scenario"
+        source: "custom"
+        temperature_outcome_c: null
+        enabled: true
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_unit_definitions:
+      technology: "per_server_rack"
+      cloud: "per_petabyte_stored"
+      saas: "per_active_user"
+      office: "per_sqm"
+
+  benchmarking:
+    peer_group_source: "gics"
+    percentile_targets:
+      pue_efficiency: 25
+      renewable_energy: 80
+      sci_intensity: 25
+      ewaste_recycling: 80
+      remote_work_optimization: 75
+
+# Agent overrides
+agent_overrides:
+  AGENT-MRV-001:
+    enabled: true
+    config_overrides:
+      source_types: ["backup_generators", "data_center_cooling"]
+  AGENT-MRV-002:
+    enabled: true
+    config_overrides:
+      focus: "data_center_cooling_systems"
+  AGENT-MRV-003:
+    enabled: true
+    config_overrides:
+      fleet_types: ["company_cars", "shuttle_buses"]
+  AGENT-MRV-004:
+    enabled: false
+  AGENT-MRV-005:
+    enabled: false
+  AGENT-MRV-006:
+    enabled: false
+  AGENT-MRV-007:
+    enabled: true
+    config_overrides:
+      waste_types: ["electronic_waste", "packaging", "office_waste"]
+  AGENT-MRV-008:
+    enabled: false
+  AGENT-MRV-011:
+    enabled: false
+  AGENT-MRV-012:
+    enabled: true
+    config_overrides:
+      data_center_cooling: true
+  AGENT-MRV-015:
+    enabled: true
+    config_overrides:
+      focus: ["servers", "networking_equipment", "storage_arrays"]
+  AGENT-MRV-020:
+    enabled: true
+    config_overrides:
+      remote_workforce_model: "hybrid"
+      home_office_emissions: true
+  AGENT-MRV-021:
+    enabled: true
+    config_overrides:
+      leased_assets: ["office_space", "colocation_racks"]
+  AGENT-MRV-024:
+    enabled: true
+    config_overrides:
+      product_types: ["software_devices", "saas_platforms"]
+  AGENT-MRV-025:
+    enabled: true
+    config_overrides:
+      ewaste_methodology: "r2_certified"
+  AGENT-DATA-008:
+    enabled: true
+    config_overrides:
+      questionnaire_templates: ["tech_supplier_esg", "cloud_provider_emissions"]

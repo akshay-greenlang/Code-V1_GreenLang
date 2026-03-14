@@ -1,0 +1,232 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Demo Mode Configuration
+# =============================================================================
+# Demo mode provides a self-contained environment for testing, training,
+# and demonstration of professional-tier features. Includes multi-entity
+# group consolidation, cross-framework alignment, approval workflows,
+# and scenario analysis with mock data.
+#
+# Usage:
+#   config = PackConfig.load(demo_mode=True)
+#   config = PackConfig.load(
+#       size_preset="enterprise_group",
+#       sector_preset="manufacturing_pro",
+#       demo_mode=True,
+#   )
+# =============================================================================
+
+# Core demo settings
+enabled: true
+use_sample_data: true
+skip_external_apis: true
+mock_ai_responses: true
+fast_execution: true
+
+# Sample data paths (relative to pack root)
+sample_company_profile: "config/demo/demo_group_profile.json"
+sample_esg_data: "config/demo/demo_subsidiary_data.csv"
+sample_group_profile: "config/demo/demo_group_profile.json"
+sample_subsidiary_data: "config/demo/demo_subsidiary_data.csv"
+
+# Demo group identity
+demo_company:
+  name: "EuroTech Holdings AG"
+  lei: "529900DEMO1234567890"
+  country: "DE"
+  city: "Munich"
+  sector: "manufacturing"
+  nace_code: "C29"
+  employees: 8000
+  revenue_eur: 2100000000
+  subsidiaries: 5
+  countries: ["DE", "FR", "NL", "PL", "SE"]
+
+# Mock data sources
+mock_sources:
+  erp:
+    enabled: true
+    type: "sap_s4hana"
+    mock_response_time_ms: 30
+    sample_accounts: 350
+    sample_cost_centers: 120
+    multi_entity: true
+
+  emission_factors:
+    enabled: true
+    database: "ecoinvent_3.10_mock"
+    factor_count: 800
+    response_time_ms: 5
+
+  grid_factors:
+    enabled: true
+    source: "iea_mock"
+    regions: ["DE", "FR", "NL", "PL", "SE"]
+    years: [2023, 2024, 2025]
+
+  suppliers:
+    enabled: true
+    supplier_count: 245
+    with_questionnaire_responses: 120
+    response_time_ms: 15
+
+  cross_framework:
+    enabled: true
+    cdp_questionnaire_mock: true
+    tcfd_structure_mock: true
+    sbti_pathway_mock: true
+    taxonomy_criteria_mock: true
+
+  scenario_data:
+    enabled: true
+    iea_scenarios_mock: true
+    ngfs_scenarios_mock: true
+    climate_model_response_time_ms: 50
+
+# Demo workflow settings
+workflows:
+  consolidated_reporting:
+    enabled: true
+    fast_mode: true
+    skip_approval_gates: true
+    auto_populate_disclosures: true
+    mock_entity_count: 5
+
+  cross_framework_alignment:
+    enabled: true
+    fast_mode: true
+    auto_map_frameworks: true
+
+  scenario_analysis:
+    enabled: true
+    fast_mode: true
+    reduced_monte_carlo: true
+    monte_carlo_iterations: 100
+
+  continuous_compliance:
+    enabled: true
+    fast_mode: true
+    mock_regulatory_changes: true
+
+  stakeholder_engagement:
+    enabled: true
+    fast_mode: true
+    pre_populated_responses: true
+
+  regulatory_change_mgmt:
+    enabled: true
+    fast_mode: true
+    mock_regulatory_feed: true
+
+  board_governance:
+    enabled: true
+    fast_mode: true
+    mock_benchmark_data: true
+
+  professional_audit:
+    enabled: true
+    fast_mode: true
+    generate_sample_evidence: true
+
+# Demo professional overrides
+professional:
+  consolidation:
+    enabled: true
+    max_subsidiaries: 10
+    parallel_entity_processing: false
+
+  approval:
+    enabled: false
+
+  quality_gates:
+    enabled: true
+    run_on_commit: false
+    run_on_calculation: true
+
+  cross_framework:
+    enabled: true
+    auto_populate_from_esrs: true
+
+  scenarios:
+    enabled: true
+    monte_carlo_enabled: false
+    physical_risk_enabled: true
+    transition_risk_enabled: true
+
+  benchmarking:
+    enabled: true
+    peer_comparison_enabled: true
+
+  regulatory:
+    enabled: true
+    scan_frequency: "manual"
+    impact_assessment_auto: false
+
+  assurance:
+    enabled: true
+    assurance_level: "limited"
+
+  webhooks:
+    enabled: false
+
+# Demo ESRS disclosure content
+demo_disclosures:
+  auto_generate: true
+  narrative_template: "professional_demo"
+  include_example_metrics: true
+  include_cross_framework_mapping: true
+  include_scenario_results: true
+  include_taxonomy_assessment: true
+
+# Performance settings for demo
+performance:
+  ghg_single_scope_max_seconds: 5
+  ghg_full_inventory_max_seconds: 30
+  ghg_multi_entity_max_minutes: 5
+  report_esrs_max_seconds: 15
+  report_summary_max_seconds: 10
+  report_xbrl_max_seconds: 20
+  report_consolidated_max_seconds: 30
+  scenario_single_max_seconds: 10
+  scenario_full_max_minutes: 3
+  quality_gate_max_seconds: 5
+
+# Agent overrides for demo - streamlined set
+agent_overrides:
+  AGENT-MRV-006:
+    enabled: false
+  AGENT-MRV-008:
+    enabled: false
+  AGENT-MRV-011:
+    enabled: false
+  AGENT-MRV-012:
+    enabled: false
+  AGENT-MRV-021:
+    enabled: false
+  AGENT-MRV-023:
+    enabled: false
+  AGENT-MRV-025:
+    enabled: false
+  AGENT-MRV-026:
+    enabled: false
+  AGENT-MRV-027:
+    enabled: false
+  AGENT-MRV-028:
+    enabled: false
+  GL-CDP-WATER:
+    enabled: false
+  GL-CDP-FORESTS:
+    enabled: false
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: false
+
+# Logging and telemetry in demo mode
+logging:
+  level: "INFO"
+  show_agent_execution_times: true
+  show_data_flow_summary: true
+  show_calculation_steps: true
+  show_consolidation_steps: true
+  show_framework_mapping: true
+  export_demo_report: true

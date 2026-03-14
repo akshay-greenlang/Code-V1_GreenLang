@@ -1,0 +1,298 @@
+{
+  "company": {
+    "legal_name": "GreenTech Manufacturing GmbH",
+    "trading_name": "GreenTech Manufacturing",
+    "lei": "529900T8BM49AURSDO55",
+    "registration_number": "HRB 123456 B",
+    "incorporation_country": "DE",
+    "incorporation_date": "2005-03-15",
+    "legal_form": "GmbH",
+    "parent_company": null,
+    "ultimate_parent": null
+  },
+
+  "headquarters": {
+    "address_line_1": "Industriestrasse 42",
+    "address_line_2": "Gebaeude C",
+    "city": "Berlin",
+    "state": "Berlin",
+    "postal_code": "10115",
+    "country": "DE",
+    "latitude": 52.5200,
+    "longitude": 13.4050
+  },
+
+  "sector": {
+    "primary_nace_code": "C29.3",
+    "primary_nace_description": "Manufacture of parts and accessories for motor vehicles",
+    "secondary_nace_codes": ["C29.1", "C22.1"],
+    "isic_code": "2930",
+    "gics_sector": "20",
+    "gics_industry_group": "2010",
+    "gics_industry": "201040",
+    "sic_code": "3714"
+  },
+
+  "financials": {
+    "reporting_currency": "EUR",
+    "fiscal_year_end": "12-31",
+    "revenue_eur": 450000000,
+    "net_income_eur": 27000000,
+    "total_assets_eur": 380000000,
+    "equity_eur": 165000000,
+    "capex_eur": 35000000,
+    "r_and_d_spend_eur": 18000000,
+    "listed": false,
+    "stock_exchange": null,
+    "ticker": null
+  },
+
+  "workforce": {
+    "total_employees": 2500,
+    "full_time_equivalents": 2350,
+    "permanent_employees": 2200,
+    "temporary_employees": 300,
+    "contractors": 150,
+    "gender_split": {
+      "male_percent": 62.0,
+      "female_percent": 37.5,
+      "non_binary_percent": 0.5
+    },
+    "age_distribution": {
+      "under_30_percent": 22.0,
+      "between_30_50_percent": 55.0,
+      "over_50_percent": 23.0
+    },
+    "countries": {
+      "DE": 1800,
+      "PL": 350,
+      "CZ": 200,
+      "RO": 100,
+      "FR": 50
+    },
+    "collective_bargaining_coverage_percent": 78.0,
+    "training_hours_per_employee": 32.0,
+    "voluntary_turnover_rate": 0.085,
+    "gender_pay_gap_percent": 4.2,
+    "management_female_percent": 28.0,
+    "board_female_percent": 33.3
+  },
+
+  "operations": {
+    "facilities": [
+      {
+        "name": "Berlin Main Plant",
+        "type": "manufacturing",
+        "address": "Industriestrasse 42, 10115 Berlin, DE",
+        "country": "DE",
+        "latitude": 52.5200,
+        "longitude": 13.4050,
+        "floor_area_sqm": 45000,
+        "employees": 1200,
+        "products": ["brake_components", "suspension_parts"],
+        "energy_sources": ["natural_gas", "grid_electricity"],
+        "iso_14001_certified": true,
+        "iso_45001_certified": true,
+        "iso_50001_certified": true
+      },
+      {
+        "name": "Berlin R&D Center",
+        "type": "office_lab",
+        "address": "Forschungsallee 8, 10117 Berlin, DE",
+        "country": "DE",
+        "latitude": 52.5220,
+        "longitude": 13.4100,
+        "floor_area_sqm": 8000,
+        "employees": 250,
+        "products": [],
+        "energy_sources": ["grid_electricity"],
+        "iso_14001_certified": false,
+        "iso_45001_certified": false,
+        "iso_50001_certified": false
+      },
+      {
+        "name": "Wroclaw Assembly Plant",
+        "type": "manufacturing",
+        "address": "ul. Fabryczna 15, 50-089 Wroclaw, PL",
+        "country": "PL",
+        "latitude": 51.1079,
+        "longitude": 17.0385,
+        "floor_area_sqm": 25000,
+        "employees": 350,
+        "products": ["steering_components", "electronic_modules"],
+        "energy_sources": ["natural_gas", "grid_electricity"],
+        "iso_14001_certified": true,
+        "iso_45001_certified": true,
+        "iso_50001_certified": false
+      },
+      {
+        "name": "Prague Logistics Hub",
+        "type": "warehouse",
+        "address": "Logisticka 3, 155 00 Prague, CZ",
+        "country": "CZ",
+        "latitude": 50.0755,
+        "longitude": 14.4378,
+        "floor_area_sqm": 15000,
+        "employees": 120,
+        "products": [],
+        "energy_sources": ["grid_electricity"],
+        "iso_14001_certified": false,
+        "iso_45001_certified": false,
+        "iso_50001_certified": false
+      },
+      {
+        "name": "Timisoara Component Plant",
+        "type": "manufacturing",
+        "address": "Str. Industriala 22, Timisoara, RO",
+        "country": "RO",
+        "latitude": 45.7489,
+        "longitude": 21.2087,
+        "floor_area_sqm": 12000,
+        "employees": 100,
+        "products": ["plastic_molded_components"],
+        "energy_sources": ["natural_gas", "grid_electricity"],
+        "iso_14001_certified": true,
+        "iso_45001_certified": false,
+        "iso_50001_certified": false
+      },
+      {
+        "name": "Lyon Sales Office",
+        "type": "office",
+        "address": "12 Rue de la Republique, 69001 Lyon, FR",
+        "country": "FR",
+        "latitude": 45.7640,
+        "longitude": 4.8357,
+        "floor_area_sqm": 500,
+        "employees": 50,
+        "products": [],
+        "energy_sources": ["grid_electricity"],
+        "iso_14001_certified": false,
+        "iso_45001_certified": false,
+        "iso_50001_certified": false
+      }
+    ],
+    "fleet": {
+      "total_vehicles": 85,
+      "diesel_trucks": 12,
+      "diesel_vans": 18,
+      "gasoline_cars": 25,
+      "diesel_cars": 15,
+      "electric_cars": 10,
+      "hybrid_cars": 5,
+      "forklifts_electric": 35,
+      "forklifts_lpg": 8
+    },
+    "products": {
+      "product_lines": [
+        "Braking systems and components",
+        "Suspension and steering parts",
+        "Electronic control modules",
+        "Plastic molded components"
+      ],
+      "primary_customers": [
+        "Major European OEMs",
+        "Tier 1 automotive suppliers",
+        "Aftermarket distributors"
+      ],
+      "annual_production_units": 12500000
+    }
+  },
+
+  "supply_chain": {
+    "total_suppliers": 245,
+    "tier_1_suppliers": 85,
+    "tier_2_suppliers": 160,
+    "critical_suppliers": 22,
+    "countries_sourced_from": 18,
+    "top_procurement_categories": [
+      {"name": "Steel and metal alloys", "spend_eur": 95000000, "percent": 32.0},
+      {"name": "Plastic resins and compounds", "spend_eur": 45000000, "percent": 15.0},
+      {"name": "Electronic components", "spend_eur": 38000000, "percent": 13.0},
+      {"name": "Rubber and elastomers", "spend_eur": 22000000, "percent": 7.5},
+      {"name": "Packaging materials", "spend_eur": 12000000, "percent": 4.0},
+      {"name": "Chemicals and coatings", "spend_eur": 18000000, "percent": 6.0},
+      {"name": "Logistics and transport", "spend_eur": 28000000, "percent": 9.5},
+      {"name": "Professional services", "spend_eur": 15000000, "percent": 5.0},
+      {"name": "Energy (direct)", "spend_eur": 14000000, "percent": 4.7},
+      {"name": "Other materials and services", "spend_eur": 10000000, "percent": 3.3}
+    ],
+    "supplier_with_iso14001_percent": 62.0,
+    "supplier_code_of_conduct_signed_percent": 88.0
+  },
+
+  "energy": {
+    "reporting_year": 2025,
+    "total_energy_mwh": 48500,
+    "electricity_mwh": 32000,
+    "natural_gas_mwh": 15200,
+    "diesel_transport_mwh": 1300,
+    "renewable_electricity_percent": 35.0,
+    "renewable_electricity_source": "green_tariff",
+    "energy_intensity_mwh_per_m_revenue": 107.8,
+    "energy_reduction_target_percent": 20.0,
+    "energy_reduction_target_year": 2030,
+    "energy_reduction_baseline_year": 2020
+  },
+
+  "emissions_baseline": {
+    "reporting_year": 2025,
+    "base_year": 2020,
+    "consolidation_approach": "operational_control",
+    "scope_1_tco2e": 8250,
+    "scope_2_location_tco2e": 12800,
+    "scope_2_market_tco2e": 8320,
+    "scope_3_tco2e": 145000,
+    "scope_3_categories": {
+      "cat_1_purchased_goods": 98000,
+      "cat_3_fuel_energy": 4200,
+      "cat_4_upstream_transport": 12500,
+      "cat_5_waste": 3800,
+      "cat_6_business_travel": 2100,
+      "cat_7_employee_commuting": 3400,
+      "cat_9_downstream_transport": 8500,
+      "cat_11_use_of_sold_products": 12500
+    },
+    "total_tco2e": 166050,
+    "intensity_tco2e_per_m_revenue": 369.0
+  },
+
+  "sustainability": {
+    "csrd_first_report_year": 2026,
+    "previous_reporting_frameworks": ["GRI", "CDP"],
+    "gri_report_published": true,
+    "cdp_climate_score": "B",
+    "cdp_water_score": "B-",
+    "sbti_committed": true,
+    "sbti_validated": false,
+    "sbti_target_type": "near_term_1.5C",
+    "net_zero_target_year": 2050,
+    "board_sustainability_committee": true,
+    "chief_sustainability_officer": true,
+    "sustainability_linked_financing": false,
+    "materiality_assessment_last_year": 2024
+  },
+
+  "certifications": [
+    {"name": "ISO 14001:2015", "scope": "Berlin Main Plant, Wroclaw Plant, Timisoara Plant", "valid_until": "2027-06-30"},
+    {"name": "ISO 45001:2018", "scope": "Berlin Main Plant, Wroclaw Plant", "valid_until": "2027-06-30"},
+    {"name": "ISO 50001:2018", "scope": "Berlin Main Plant", "valid_until": "2026-12-31"},
+    {"name": "ISO 9001:2015", "scope": "All manufacturing sites", "valid_until": "2027-03-31"},
+    {"name": "IATF 16949:2016", "scope": "All manufacturing sites", "valid_until": "2026-09-30"},
+    {"name": "EcoVadis Gold", "scope": "Company-wide", "valid_until": "2026-12-31"}
+  ],
+
+  "governance": {
+    "board_size": 6,
+    "independent_directors": 3,
+    "board_sustainability_expertise": 2,
+    "executive_committee_size": 8,
+    "sustainability_linked_compensation": true,
+    "sustainability_kpi_weight_percent": 15,
+    "anti_corruption_policy": true,
+    "whistleblower_mechanism": true,
+    "human_rights_policy": true,
+    "supplier_code_of_conduct": true,
+    "data_privacy_officer": true,
+    "tax_transparency_policy": true
+  }
+}

@@ -1,0 +1,273 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - Large Enterprise Preset
+# =============================================================================
+# For organizations with 500+ employees, EUR 40M+ revenue, or listed status.
+# Enables all ESRS standards, full Scope 3, multi-subsidiary consolidation,
+# multi-language reporting, and comprehensive XBRL tagging.
+# =============================================================================
+
+# ESRS Standards Configuration - All 12 standards enabled
+esrs_standards:
+  # Cross-cutting standards (always mandatory)
+  - id: "ESRS1"
+    name: "General Requirements"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS1-DR1"   # Basis for preparation
+      - "ESRS1-DR2"   # Minimum disclosure requirements
+      - "ESRS1-DR3"   # Estimation approaches
+      - "ESRS1-DR4"   # Sources of estimation uncertainty
+      - "ESRS1-DR5"   # Errors in prior periods
+
+  - id: "ESRS2"
+    name: "General Disclosures"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS2-BP1"   # General basis for preparation
+      - "ESRS2-BP2"   # Disclosures in relation to specific circumstances
+      - "ESRS2-GOV1"  # Role of administrative, management and supervisory bodies
+      - "ESRS2-GOV2"  # Information provided to and matters addressed by undertaking bodies
+      - "ESRS2-GOV3"  # Integration of sustainability performance in incentive schemes
+      - "ESRS2-GOV4"  # Statement on due diligence
+      - "ESRS2-GOV5"  # Risk management and internal controls
+      - "ESRS2-SBM1"  # Strategy, business model and value chain
+      - "ESRS2-SBM2"  # Interests and views of stakeholders
+      - "ESRS2-SBM3"  # Material impacts, risks and opportunities
+      - "ESRS2-IRO1"  # Description of processes to identify IROs
+      - "ESRS2-IRO2"  # Disclosure requirements in ESRS covered by sustainability statement
+      - "ESRS2-MDR-P" # Policies adopted to manage material sustainability matters
+      - "ESRS2-MDR-A" # Actions and resources in relation to material sustainability matters
+      - "ESRS2-MDR-M" # Metrics in relation to material sustainability matters
+      - "ESRS2-MDR-T" # Tracking effectiveness of policies and actions through targets
+
+  # Environment standards
+  - id: "E1"
+    name: "Climate Change"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "E1-1"   # Transition plan for climate change mitigation
+      - "E1-2"   # Policies related to climate change mitigation and adaptation
+      - "E1-3"   # Actions and resources related to climate change
+      - "E1-4"   # Targets related to climate change mitigation and adaptation
+      - "E1-5"   # Energy consumption and mix
+      - "E1-6"   # Gross Scopes 1, 2, 3 and Total GHG emissions
+      - "E1-7"   # GHG removals and GHG mitigation projects financed through carbon credits
+      - "E1-8"   # Internal carbon pricing
+      - "E1-9"   # Anticipated financial effects from material physical and transition risks
+
+  - id: "E2"
+    name: "Pollution"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "E2-1"   # Policies related to pollution
+      - "E2-2"   # Actions and resources related to pollution
+      - "E2-3"   # Targets related to pollution
+      - "E2-4"   # Pollution of air, water and soil
+      - "E2-5"   # Substances of concern and substances of very high concern
+      - "E2-6"   # Anticipated financial effects from pollution-related impacts
+
+  - id: "E3"
+    name: "Water and Marine Resources"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "E3-1"   # Policies related to water and marine resources
+      - "E3-2"   # Actions and resources related to water and marine resources
+      - "E3-3"   # Targets related to water and marine resources
+      - "E3-4"   # Water consumption
+      - "E3-5"   # Anticipated financial effects from water and marine related impacts
+
+  - id: "E4"
+    name: "Biodiversity and Ecosystems"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "E4-1"   # Transition plan and consideration of biodiversity in strategy
+      - "E4-2"   # Policies related to biodiversity and ecosystems
+      - "E4-3"   # Actions and resources related to biodiversity and ecosystems
+      - "E4-4"   # Targets related to biodiversity and ecosystems
+      - "E4-5"   # Impact metrics related to biodiversity and ecosystems change
+      - "E4-6"   # Anticipated financial effects from biodiversity and ecosystem-related impacts
+
+  - id: "E5"
+    name: "Resource Use and Circular Economy"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "E5-1"   # Policies related to resource use and circular economy
+      - "E5-2"   # Actions and resources related to resource use and circular economy
+      - "E5-3"   # Targets related to resource use and circular economy
+      - "E5-4"   # Resource inflows
+      - "E5-5"   # Resource outflows
+      - "E5-6"   # Anticipated financial effects from resource use and circular economy-related impacts
+
+  # Social standards
+  - id: "S1"
+    name: "Own Workforce"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "S1-1"   # Policies related to own workforce
+      - "S1-2"   # Processes for engaging with own workers and workers representatives
+      - "S1-3"   # Processes to remediate negative impacts and channels for own workers to raise concerns
+      - "S1-4"   # Taking action on material impacts on own workforce
+      - "S1-5"   # Targets related to managing material negative impacts
+      - "S1-6"   # Characteristics of the undertaking's employees
+      - "S1-7"   # Characteristics of non-employee workers in the undertaking's own workforce
+      - "S1-8"   # Collective bargaining coverage and social dialogue
+      - "S1-9"   # Diversity metrics
+      - "S1-10"  # Adequate wages
+      - "S1-11"  # Social protection
+      - "S1-12"  # Persons with disabilities
+      - "S1-13"  # Training and skills development metrics
+      - "S1-14"  # Health and safety metrics
+      - "S1-15"  # Work-life balance metrics
+      - "S1-16"  # Remuneration metrics (pay gap and total remuneration)
+      - "S1-17"  # Incidents, complaints and severe human rights impacts
+
+  - id: "S2"
+    name: "Workers in the Value Chain"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "S2-1"   # Policies related to value chain workers
+      - "S2-2"   # Processes for engaging with value chain workers
+      - "S2-3"   # Processes to remediate negative impacts
+      - "S2-4"   # Taking action on material impacts
+      - "S2-5"   # Targets related to managing material negative impacts
+
+  - id: "S3"
+    name: "Affected Communities"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "S3-1"   # Policies related to affected communities
+      - "S3-2"   # Processes for engaging with affected communities
+      - "S3-3"   # Processes to remediate negative impacts
+      - "S3-4"   # Taking action on material impacts
+      - "S3-5"   # Targets related to managing material negative impacts
+
+  - id: "S4"
+    name: "Consumers and End-Users"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "S4-1"   # Policies related to consumers and end-users
+      - "S4-2"   # Processes for engaging with consumers and end-users
+      - "S4-3"   # Processes to remediate negative impacts
+      - "S4-4"   # Taking action on material impacts
+      - "S4-5"   # Targets related to managing material negative impacts
+
+  # Governance standard
+  - id: "G1"
+    name: "Business Conduct"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements:
+      - "G1-1"   # Business conduct policies and corporate culture
+      - "G1-2"   # Management of relationships with suppliers
+      - "G1-3"   # Prevention and detection of corruption and bribery
+      - "G1-4"   # Incidents of corruption or bribery
+      - "G1-5"   # Political influence and lobbying activities
+      - "G1-6"   # Payment practices
+
+# Scope 3 Configuration - All 15 categories enabled
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  priority_categories: [1, 3, 4, 5, 6, 11, 15]
+  screening_required: true
+  materiality_threshold_percent: 2.0
+
+# XBRL Configuration - Full inline XBRL with multi-language
+xbrl:
+  enabled: true
+  taxonomy_version: "ESRS_2023"
+  output_format: "inline_xbrl"
+  validation_level: "strict"
+  languages:
+    - "en"
+    - "de"
+    - "fr"
+    - "es"
+    - "it"
+
+# Multi-subsidiary consolidation enabled
+consolidation:
+  enabled: true
+  method: "operational_control"
+  subsidiaries: []
+  intercompany_elimination: true
+
+# Guided mode disabled for experienced reporters
+guided_mode:
+  enabled: false
+  tutorial_mode: false
+  pre_populated_examples: false
+  ai_assistance_level: "standard"
+  step_by_step: false
+  onboarding_extended: false
+
+# Emission factor source priorities for large enterprises
+emission_factor_priorities:
+  - "company_specific"       # Supplier-provided or measured factors
+  - "industry_average"       # Sector-specific averages (e.g., ecoinvent)
+  - "government_published"   # National GHG inventories
+  - "ipcc_2006"              # IPCC Emission Factor Database
+  - "defra"                  # UK DEFRA conversion factors
+  - "epa"                    # US EPA emission factors
+
+# Performance adjustments for large enterprise workloads
+performance:
+  ghg_full_inventory_max_seconds: 600
+  report_esrs_max_seconds: 300
+  report_xbrl_max_seconds: 600
+  data_ingestion_rps: 10000
+
+# Agent overrides - ensure all optional agents are enabled
+agent_overrides:
+  AGENT-MRV-006:
+    enabled: true
+  AGENT-MRV-008:
+    enabled: true
+  AGENT-MRV-011:
+    enabled: true
+  AGENT-MRV-012:
+    enabled: true
+  AGENT-MRV-015:
+    enabled: true
+  AGENT-MRV-020:
+    enabled: true
+  AGENT-MRV-021:
+    enabled: true
+  AGENT-MRV-022:
+    enabled: true
+  AGENT-MRV-023:
+    enabled: true
+  AGENT-MRV-024:
+    enabled: true
+  AGENT-MRV-025:
+    enabled: true
+  AGENT-MRV-026:
+    enabled: true
+  AGENT-MRV-027:
+    enabled: true
+  AGENT-MRV-028:
+    enabled: true
+  AGENT-DATA-008:
+    enabled: true

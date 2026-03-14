@@ -1,0 +1,273 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Energy Professional Sector Preset
+# =============================================================================
+# NACE Codes: B05-B09 (Mining/Extraction), D35 (Energy Supply)
+# Enhanced with:
+#   - EU ETS integration and allowance management
+#   - OGMP 2.0 methane reporting (Gold Standard)
+#   - Stranded asset risk assessment
+#   - Transition plan requirements (ESRS E1-1)
+#   - Sector-specific SBTi pathways (Oil & Gas, Power)
+#   - Decommissioning and remediation tracking
+#   - Renewable energy certificate (REC/GO) management
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["B05", "B06", "B07", "B08", "B09", "D35"]
+  sector_name: "Energy Professional"
+  sector_group: "energy"
+
+  # Primary emission sources
+  primary_emission_sources:
+    - "stationary_combustion"
+    - "flaring"
+    - "venting"
+    - "fugitive_methane"
+    - "process_emissions"
+    - "mobile_combustion"
+    - "power_generation"
+    - "transmission_distribution"
+
+  # EU ETS integration
+  eu_ets:
+    enabled: true
+    installation_ids: []
+    phase: "phase_4"
+    free_allocation_tracking: true
+    benchmark_comparison: true
+    carbon_leakage_sector: true
+    msr_impact_tracking: true
+    ets_price_scenario:
+      base_eur_per_tco2: 90
+      high_eur_per_tco2: 180
+      low_eur_per_tco2: 50
+    compliance_calendar:
+      monitoring_plan_update: "December 31"
+      verified_emissions_submission: "March 31"
+      allowance_surrender: "September 30"
+    allowance_management:
+      hedging_strategy: true
+      forward_purchasing: true
+      auction_participation: true
+      free_allocation_forecast: true
+
+  # OGMP 2.0 Methane Reporting
+  ogmp:
+    enabled: true
+    reporting_level: "gold_standard"
+    source_level_measurement: true
+    reconciliation_enabled: true
+    reduction_target_percent: 45
+    reduction_target_year: 2025
+    methane_intensity_target: 0.20
+    source_categories:
+      - "production_operations"
+      - "processing_plants"
+      - "transmission_pipelines"
+      - "storage_facilities"
+      - "lng_terminals"
+      - "distribution_networks"
+    measurement_technologies:
+      - "continuous_monitoring"
+      - "periodic_measurement"
+      - "aerial_surveys"
+      - "satellite_detection"
+
+  # Stranded asset assessment
+  stranded_assets:
+    enabled: true
+    reserve_impairment_tracking: true
+    unburnable_carbon_assessment: true
+    proved_reserves_co2_content: true
+    decommissioning_provisions: true
+    asset_write_down_scenarios: true
+    breakeven_price_analysis: true
+
+  # Transition plan (ESRS E1-1)
+  transition_plan:
+    enabled: true
+    net_zero_target_year: 2050
+    interim_targets:
+      - year: 2030
+        scope_1_2_reduction_percent: 42
+        methane_reduction_percent: 75
+      - year: 2035
+        scope_1_2_reduction_percent: 60
+      - year: 2040
+        scope_1_2_reduction_percent: 75
+    capex_alignment:
+      renewable_energy_percent: null
+      fossil_fuel_maintenance_percent: null
+      ccs_ccus_percent: null
+      hydrogen_percent: null
+    workforce_transition:
+      reskilling_program: true
+      just_transition_plan: true
+      affected_workers_count: null
+
+  # SBTi pathways
+  sbti_sector:
+    sector_classification: "energy"
+    pathway_method: "SDA"
+    sector_specific_pathways:
+      - subsector: "oil_gas_integrated"
+        pathway: "oil_gas_1.5C"
+        intensity_metric: "tCO2e_per_mboe"
+      - subsector: "power_generation"
+        pathway: "power_1.5C"
+        intensity_metric: "tCO2e_per_mwh"
+      - subsector: "gas_utilities"
+        pathway: "gas_wba2C"
+        intensity_metric: "tCO2e_per_tj_delivered"
+
+  # Decommissioning
+  decommissioning:
+    tracking_enabled: true
+    provision_adequacy_assessment: true
+    environmental_remediation: true
+    timeline_tracking: true
+
+  # Renewable energy
+  renewable_energy:
+    rec_go_management: true
+    ppa_tracking: true
+    on_site_generation_tracking: true
+    storage_tracking: true
+    grid_connection_data: true
+    curtailment_tracking: true
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "api_compendium"
+      description: "API Compendium of GHG Emission Methodologies"
+      priority: 1
+    - name: "ogmp_factors"
+      description: "OGMP 2.0 methane emission factors"
+      priority: 2
+    - name: "iea_energy"
+      description: "IEA energy sector emission factors"
+      priority: 3
+    - name: "eu_ets_verified"
+      description: "EU ETS verified emissions data"
+      priority: 4
+    - name: "ipcc_energy"
+      description: "IPCC 2006 energy sector emission factors"
+      priority: 5
+
+# Scope 3 - Energy sector focus
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 14, 15]
+  priority_categories: [11, 3, 1, 9]
+  screening_required: true
+  materiality_threshold_percent: 1.0
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "continuous_monitoring"
+  - "company_specific"
+  - "api_compendium"
+  - "ogmp_factors"
+  - "eu_ets_verified"
+  - "iea_energy"
+  - "ipcc_2006"
+
+# Professional overrides for energy
+professional:
+  scenarios:
+    scenarios:
+      - id: "iea_nze"
+        name: "IEA NZE - Energy Sector"
+        source: "IEA"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "iea_aps"
+        name: "IEA APS - Energy Transition"
+        source: "IEA"
+        temperature_outcome_c: 1.7
+        enabled: true
+      - id: "iea_steps"
+        name: "IEA STEPS - Stated Policies"
+        source: "IEA"
+        temperature_outcome_c: 2.5
+        enabled: true
+      - id: "ngfs_orderly"
+        name: "NGFS Orderly - Fossil Fuel Phase-out"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_hot_house"
+        name: "NGFS Hot House - Stranded Assets"
+        source: "NGFS"
+        temperature_outcome_c: 3.0
+        enabled: true
+      - id: "oil_price_stress"
+        name: "Oil Price Stress Test"
+        source: "custom"
+        temperature_outcome_c: null
+        enabled: true
+    monte_carlo_enabled: true
+    monte_carlo_iterations: 15000
+    financial_impact_quantification: true
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_unit_definitions:
+      energy: "per_mwh_generated"
+      oil_gas: "per_mboe_produced"
+      gas: "per_tj_delivered"
+      refining: "per_barrel_throughput"
+
+  benchmarking:
+    peer_group_source: "gics"
+    percentile_targets:
+      ghg_intensity: 20
+      methane_intensity: 15
+      renewable_share: 80
+      transition_capex: 75
+      stranded_asset_exposure: 20
+
+# Agent overrides
+agent_overrides:
+  AGENT-MRV-001:
+    enabled: true
+    config_overrides:
+      source_types: ["boilers", "heaters", "turbines", "engines", "flares"]
+      fuel_types: ["natural_gas", "crude_oil", "diesel", "coal", "hydrogen"]
+  AGENT-MRV-003:
+    enabled: true
+    config_overrides:
+      fleet_types: ["service_vehicles", "marine_vessels", "helicopters"]
+  AGENT-MRV-004:
+    enabled: true
+    config_overrides:
+      process_categories: ["refining", "gas_processing", "lng_liquefaction"]
+  AGENT-MRV-005:
+    enabled: true
+    config_overrides:
+      leak_detection_method: "direct_measurement"
+      ogmp_2_0_enabled: true
+      equipment_types: ["wellheads", "compressors", "pipelines", "valves",
+                         "tanks", "dehydrators", "pneumatic_devices"]
+      methane_source_measurement: true
+  AGENT-MRV-006:
+    enabled: true
+    config_overrides:
+      land_use_types: ["mining_sites", "pipeline_corridors", "solar_farms", "wind_farms"]
+  AGENT-MRV-007:
+    enabled: true
+    config_overrides:
+      waste_types: ["produced_water", "drilling_mud", "hazardous_waste"]
+  AGENT-MRV-008:
+    enabled: false
+  AGENT-MRV-024:
+    enabled: true
+    config_overrides:
+      product_types: ["fossil_fuels_sold", "electricity_sold", "lng_sold"]
+  AGENT-DATA-008:
+    enabled: true
+    config_overrides:
+      questionnaire_templates: ["energy_supplier_esg", "methane_measurement"]
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: false

@@ -1,0 +1,193 @@
+# =============================================================================
+# PACK-003 CSRD Enterprise Pack - Automotive Enterprise Sector Preset
+# =============================================================================
+# NACE Codes: C29 (Manufacture of Motor Vehicles)
+# Enhanced with:
+#   - Supply chain ESG scoring (multi-tier, 1000+ suppliers)
+#   - Product carbon footprint (cradle-to-gate, cradle-to-grave)
+#   - Cat 1/4/11/12 emphasis (purchased goods, transport, use, end-of-life)
+#   - EV transition tracking (ICE vs BEV fleet mix, battery emissions)
+#   - EU Battery Regulation compliance readiness
+#   - CBAM preparedness for imported components
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["C29"]
+  sector_name: "Automotive Enterprise"
+  sector_group: "manufacturing"
+  sub_sectors:
+    - "passenger_vehicles"
+    - "commercial_vehicles"
+    - "components_tier1"
+    - "ev_powertrains"
+
+  primary_emission_sources:
+    - "manufacturing_stationary"
+    - "manufacturing_process"
+    - "painting_voc"
+    - "logistics_inbound"
+    - "logistics_outbound"
+    - "vehicle_use_phase"
+    - "battery_production"
+
+  # Product carbon footprint
+  product_carbon_footprint:
+    enabled: true
+    boundary: "cradle_to_grave"
+    iso_14067_compliant: true
+    lca_database: "ecoinvent_3.10"
+    vehicle_categories:
+      - id: "ice_passenger"
+        name: "ICE Passenger Vehicle"
+        lifetime_km: 200000
+      - id: "bev_passenger"
+        name: "BEV Passenger Vehicle"
+        lifetime_km: 200000
+        battery_kwh: 75
+      - id: "ice_commercial"
+        name: "ICE Commercial Vehicle"
+        lifetime_km: 500000
+      - id: "bev_commercial"
+        name: "BEV Commercial Vehicle"
+        lifetime_km: 500000
+        battery_kwh: 200
+
+  # EV transition tracking
+  ev_transition:
+    enabled: true
+    fleet_mix_tracking: true
+    battery_supply_chain_emissions: true
+    charging_infrastructure_scope3: true
+    ice_phaseout_target_year: 2035
+    bev_production_share_target_percent: 80.0
+    battery_recycling_tracking: true
+
+  # Supply chain specifics
+  automotive_supply_chain:
+    tier1_count: 500
+    tier2_count: 3000
+    critical_materials:
+      - "lithium"
+      - "cobalt"
+      - "nickel"
+      - "rare_earths"
+      - "steel"
+      - "aluminum"
+      - "copper"
+    conflict_mineral_tracking: true
+    battery_passport_enabled: true
+
+  # CBAM for automotive components
+  cbam:
+    enabled: true
+    tracked_materials:
+      - "steel"
+      - "aluminum"
+      - "electricity_embedded"
+    import_threshold_tonnes: 100
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "ecoinvent"
+      description: "ecoinvent 3.10 LCA database"
+      priority: 1
+    - name: "greet_model"
+      description: "ANL GREET Model for transport"
+      priority: 2
+    - name: "glec_framework"
+      description: "GLEC Framework for logistics"
+      priority: 3
+
+# Scope 3 - Automotive value chain
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
+  priority_categories: [1, 4, 11, 12]
+  screening_required: true
+  materiality_threshold_percent: 1.0
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "company_specific"
+  - "supplier_specific"
+  - "ecoinvent"
+  - "industry_average"
+  - "glec_framework"
+  - "government_published"
+
+# Enterprise overrides for automotive
+enterprise:
+  supply_chain:
+    enabled: true
+    max_tiers: 5
+    questionnaire_frequency_months: 6
+    scoring_weights:
+      environmental: 0.45
+      social: 0.30
+      governance: 0.25
+    risk_threshold: 0.5
+    auto_dispatch: true
+    critical_supplier_monitoring: true
+    deforestation_screening: true
+
+  iot:
+    enabled: true
+    protocols: ["MQTT", "HTTP", "OPCUA"]
+    aggregation_window_minutes: 15
+    max_devices: 20000
+    anomaly_alerting: true
+
+  carbon_credit:
+    enabled: true
+    registries_enabled: ["VCS", "GoldStandard"]
+    net_zero_accounting: true
+
+  predictive:
+    models_enabled: ["emission_forecast", "anomaly_detection", "drift_monitor"]
+    forecast_horizon_months: 24
+    anomaly_sensitivity: 0.88
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_unit"]
+    per_unit_definitions:
+      manufacturing: "per_vehicle_produced"
+      logistics: "per_tonne_km"
+      components: "per_tonne_product"
+
+  benchmarking:
+    peer_group_source: "nace_code"
+    percentile_targets:
+      ghg_per_vehicle: 25
+      renewable_energy_share: 75
+      supply_chain_esg_score: 75
+      ev_production_share: 75
+
+# Agent overrides for automotive
+agent_overrides:
+  AGENT-MRV-001:
+    enabled: true
+  AGENT-MRV-002:
+    enabled: true
+  AGENT-MRV-003:
+    enabled: true
+  AGENT-MRV-004:
+    enabled: true
+  AGENT-MRV-005:
+    enabled: true
+  AGENT-MRV-006:
+    enabled: false
+  AGENT-MRV-007:
+    enabled: true
+  AGENT-MRV-008:
+    enabled: false
+  GL-ENT-IOT-INGEST:
+    enabled: true
+  GL-ENT-CARBON-CREDIT:
+    enabled: true
+  GL-CBAM-APP:
+    enabled: true
+  GL-VCCI-APP:
+    enabled: true
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: false

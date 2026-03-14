@@ -1,0 +1,148 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - Demo Mode Configuration
+# =============================================================================
+# Demo mode provides a self-contained environment for testing, training,
+# and demonstration purposes. All external API calls are mocked, sample
+# data is loaded, and execution is optimized for speed.
+#
+# Usage:
+#   config = PackConfig.load(demo_mode=True)
+#   config = PackConfig.load(size_preset="mid_market", sector_preset="manufacturing", demo_mode=True)
+# =============================================================================
+
+# Core demo settings
+enabled: true
+use_sample_data: true
+skip_external_apis: true
+mock_ai_responses: true
+fast_execution: true
+
+# Sample data paths (relative to pack root)
+sample_company_profile: "config/demo/demo_company_profile.json"
+sample_esg_data: "config/demo/demo_esg_data.csv"
+
+# Demo company identity
+demo_company:
+  name: "GreenTech Manufacturing GmbH"
+  lei: "529900T8BM49AURSDO55"
+  country: "DE"
+  city: "Berlin"
+  sector: "manufacturing"
+  nace_code: "C29"
+  employees: 2500
+  revenue_eur: 450000000
+
+# Mock data sources
+mock_sources:
+  # ERP system mock
+  erp:
+    enabled: true
+    type: "sap_s4hana"
+    mock_response_time_ms: 50
+    sample_accounts: 150
+    sample_cost_centers: 45
+
+  # Emission factor database mock
+  emission_factors:
+    enabled: true
+    database: "ecoinvent_3.10_mock"
+    factor_count: 500
+    response_time_ms: 10
+
+  # Grid emission factor mock
+  grid_factors:
+    enabled: true
+    source: "iea_mock"
+    regions: ["DE", "FR", "PL", "US-WECC", "US-RFCE"]
+    years: [2023, 2024, 2025]
+
+  # Supplier data mock
+  suppliers:
+    enabled: true
+    supplier_count: 85
+    with_questionnaire_responses: 42
+    response_time_ms: 20
+
+  # Weather/climate data mock
+  climate:
+    enabled: false
+    source: "mock_climate_api"
+
+# Demo workflow settings
+workflows:
+  # Accelerated timelines for demo
+  annual_reporting:
+    enabled: true
+    fast_mode: true
+    skip_approval_gates: true
+    auto_populate_disclosures: true
+
+  quarterly_update:
+    enabled: true
+    fast_mode: true
+    skip_approval_gates: true
+
+  materiality_assessment:
+    enabled: true
+    fast_mode: true
+    pre_populated_stakeholder_responses: true
+    auto_score: true
+
+  data_onboarding:
+    enabled: true
+    fast_mode: true
+    skip_connection_validation: true
+
+  audit_preparation:
+    enabled: true
+    fast_mode: true
+    generate_sample_evidence: true
+
+# Demo ESRS disclosure content
+demo_disclosures:
+  auto_generate: true
+  narrative_template: "demo"
+  include_example_metrics: true
+  include_example_targets: true
+  include_example_policies: true
+
+# Performance settings for demo
+performance:
+  ghg_single_scope_max_seconds: 5
+  ghg_full_inventory_max_seconds: 30
+  report_esrs_max_seconds: 15
+  report_summary_max_seconds: 10
+  report_xbrl_max_seconds: 20
+
+# Agent overrides for demo - disable long-running optional agents
+agent_overrides:
+  AGENT-MRV-006:
+    enabled: false              # Land use - skip for demo speed
+  AGENT-MRV-008:
+    enabled: false              # Agriculture - skip for demo speed
+  AGENT-MRV-011:
+    enabled: false              # Steam/heat - skip for demo speed
+  AGENT-MRV-012:
+    enabled: false              # Cooling - skip for demo speed
+  AGENT-MRV-021:
+    enabled: false              # Upstream leased (Cat 8)
+  AGENT-MRV-022:
+    enabled: false              # Downstream transport (Cat 9)
+  AGENT-MRV-023:
+    enabled: false              # Processing sold (Cat 10)
+  AGENT-MRV-025:
+    enabled: false              # End of life (Cat 12)
+  AGENT-MRV-026:
+    enabled: false              # Downstream leased (Cat 13)
+  AGENT-MRV-027:
+    enabled: false              # Franchises (Cat 14)
+  AGENT-MRV-028:
+    enabled: false              # Investments (Cat 15)
+
+# Logging and telemetry in demo mode
+logging:
+  level: "INFO"
+  show_agent_execution_times: true
+  show_data_flow_summary: true
+  show_calculation_steps: true
+  export_demo_report: true

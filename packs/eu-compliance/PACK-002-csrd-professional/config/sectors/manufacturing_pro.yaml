@@ -1,0 +1,284 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Manufacturing Professional Sector Preset
+# =============================================================================
+# NACE Codes: C10-C33 (Manufacturing)
+# Enhanced from PACK-001 manufacturing with:
+#   - EU ETS integration and benchmark tracking
+#   - CBAM preparedness (carbon border adjustment)
+#   - Sector-specific SBTi decarbonization pathways (SDA)
+#   - Industrial scenario analysis (IEA NZE industry-specific)
+#   - Process emission intensity tracking
+#   - Enhanced supply chain decarbonization
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  nace_codes: ["C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18",
+               "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27",
+               "C28", "C29", "C30", "C31", "C32", "C33"]
+  sector_name: "Manufacturing Professional"
+  sector_group: "industrial"
+
+  # Key emission sources
+  primary_emission_sources:
+    - "stationary_combustion"
+    - "process_emissions"
+    - "fugitive_emissions"
+    - "mobile_combustion"
+    - "waste_treatment"
+    - "refrigerants"
+
+  # Enhanced emission factor databases
+  emission_factor_databases:
+    - name: "ecoinvent_3.10"
+      description: "Life cycle inventory database for industrial processes"
+      priority: 1
+    - name: "gabi_2024"
+      description: "GaBi database for manufacturing LCA"
+      priority: 2
+    - name: "eu_ets_benchmarks"
+      description: "EU ETS benchmark emission factors by product"
+      priority: 3
+    - name: "ipcc_industrial"
+      description: "IPCC industrial process emission factors"
+      priority: 4
+    - name: "eu_bref"
+      description: "Best Available Techniques Reference Documents"
+      priority: 5
+
+  # EU ETS integration
+  eu_ets:
+    enabled: true
+    installation_ids: []
+    phase: "phase_4"
+    free_allocation_tracking: true
+    benchmark_comparison: true
+    carbon_leakage_sector: false
+    ets_price_scenario:
+      base_eur_per_tco2: 90
+      high_eur_per_tco2: 150
+      low_eur_per_tco2: 60
+    compliance_calendar:
+      monitoring_plan_update: "December 31"
+      verified_emissions_submission: "March 31"
+      allowance_surrender: "September 30"
+
+  # CBAM preparedness
+  cbam:
+    enabled: true
+    affected_goods: ["iron_steel", "aluminum", "cement", "fertilizers",
+                      "electricity", "hydrogen"]
+    transition_period_tracking: true
+    embedded_emissions_calculation: true
+    supplier_data_collection: true
+    quarterly_reporting: true
+
+  # SBTi sector pathways
+  sbti_sector:
+    sector_classification: "manufacturing"
+    pathway_method: "SDA"
+    convergence_year: 2050
+    near_term_target_year: 2030
+    benchmark_intensity_metric: "tCO2e_per_tonne_product"
+    sector_specific_pathways:
+      - subsector: "cement"
+        pathway: "cement_1.5C"
+        intensity_metric: "tCO2e_per_tonne_cement"
+      - subsector: "steel"
+        pathway: "steel_1.5C"
+        intensity_metric: "tCO2e_per_tonne_steel"
+      - subsector: "aluminum"
+        pathway: "aluminum_1.5C"
+        intensity_metric: "tCO2e_per_tonne_aluminum"
+      - subsector: "chemicals"
+        pathway: "chemicals_wba2C"
+        intensity_metric: "tCO2e_per_tonne_chemical"
+      - subsector: "automotive"
+        pathway: "automotive_1.5C"
+        intensity_metric: "tCO2e_per_vehicle"
+
+  # Industrial scenario analysis parameters
+  scenario_parameters:
+    carbon_price_scenarios:
+      iea_nze: {2030: 130, 2040: 205, 2050: 250}
+      iea_aps: {2030: 90, 2040: 120, 2050: 160}
+      iea_steps: {2030: 45, 2040: 55, 2050: 65}
+    energy_price_scenarios:
+      natural_gas_eur_per_mwh:
+        low: 25
+        base: 40
+        high: 65
+      electricity_eur_per_mwh:
+        low: 60
+        base: 85
+        high: 120
+    technology_transition:
+      electrification_timeline: 2035
+      hydrogen_readiness_year: 2030
+      ccs_deployment_year: 2035
+
+  # Process categories
+  process_categories:
+    - "cement_clinker"
+    - "iron_steel"
+    - "aluminum"
+    - "glass"
+    - "ceramics"
+    - "pulp_paper"
+    - "chemicals"
+    - "petrochemicals"
+    - "food_beverage"
+    - "textiles"
+    - "electronics"
+    - "automotive"
+    - "machinery"
+
+  # Waste and circular economy
+  waste_streams:
+    - "hazardous_chemical"
+    - "metal_scrap"
+    - "plastic_waste"
+    - "packaging"
+    - "electronic_waste"
+    - "wastewater_sludge"
+    - "construction_demolition"
+    - "organic_waste"
+
+  circular_economy:
+    material_input_tracking: true
+    recycled_content_tracking: true
+    waste_diversion_target: 0.90
+    product_recyclability_assessment: true
+    product_environmental_footprint: true
+    ecodesign_compliance: true
+
+  # Supply chain
+  supply_chain:
+    tier_depth: 4
+    critical_material_tracking: true
+    supplier_questionnaire_enabled: true
+    conflict_minerals_check: true
+    deforestation_risk_check: true
+    supplier_sbti_tracking: true
+    supplier_decarbonization_plans: true
+
+  # OHS metrics
+  health_safety:
+    incident_tracking: true
+    near_miss_reporting: true
+    exposure_monitoring: true
+    safety_training_tracking: true
+    ltir_target: 0.8
+    trir_target: 2.0
+    process_safety_events: true
+
+  # Water usage
+  water:
+    intake_tracking: true
+    discharge_tracking: true
+    recycling_rate_target: 0.75
+    water_stress_assessment: true
+    water_footprint_products: true
+
+# Scope 3
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
+  priority_categories: [1, 4, 5, 11, 12]
+  screening_required: true
+  materiality_threshold_percent: 2.0
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "company_specific"
+  - "ecoinvent"
+  - "eu_ets_benchmarks"
+  - "industry_average"
+  - "government_published"
+  - "ipcc_2006"
+
+# Professional overrides for manufacturing
+professional:
+  scenarios:
+    scenarios:
+      - id: "iea_nze"
+        name: "IEA NZE - Industry Pathway"
+        source: "IEA"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "iea_aps"
+        name: "IEA APS - Industry Pathway"
+        source: "IEA"
+        temperature_outcome_c: 1.7
+        enabled: true
+      - id: "iea_steps"
+        name: "IEA STEPS - Industry Pathway"
+        source: "IEA"
+        temperature_outcome_c: 2.5
+        enabled: true
+      - id: "ngfs_orderly"
+        name: "NGFS Orderly - Industrial Transition"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_hot_house"
+        name: "NGFS Hot House - Carbon Cost Impact"
+        source: "NGFS"
+        temperature_outcome_c: 3.0
+        enabled: true
+      - id: "eu_ets_stress"
+        name: "EU ETS Stress Test"
+        source: "custom"
+        temperature_outcome_c: null
+        enabled: true
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_unit_definitions:
+      manufacturing: "per_tonne_product"
+      cement: "per_tonne_clinker"
+      steel: "per_tonne_crude_steel"
+      automotive: "per_vehicle_produced"
+
+  benchmarking:
+    percentile_targets:
+      ghg_intensity: 20
+      energy_intensity: 20
+      water_intensity: 25
+      waste_diversion: 80
+      safety_rate: 15
+      renewable_energy: 75
+
+# Agent overrides
+agent_overrides:
+  AGENT-MRV-004:
+    enabled: true
+    config_overrides:
+      process_categories: ["cement_clinker", "iron_steel", "aluminum", "glass",
+                           "ceramics", "chemicals", "automotive", "machinery"]
+      eu_ets_benchmark_enabled: true
+  AGENT-MRV-005:
+    enabled: true
+    config_overrides:
+      leak_detection_method: "component_count"
+      equipment_types: ["valves", "pumps", "compressors", "flanges", "connectors"]
+  AGENT-MRV-007:
+    enabled: true
+    config_overrides:
+      waste_treatment_methods: ["incineration", "landfill", "recycling",
+                                "composting", "wastewater_treatment"]
+  AGENT-MRV-015:
+    enabled: true
+  AGENT-MRV-022:
+    enabled: true
+  AGENT-MRV-023:
+    enabled: true
+  AGENT-MRV-024:
+    enabled: true
+  AGENT-MRV-025:
+    enabled: true
+  AGENT-DATA-008:
+    enabled: true
+    config_overrides:
+      questionnaire_templates: ["manufacturing_supplier_esg", "conflict_minerals",
+                                "supplier_decarbonization"]
+      response_scoring_model: "manufacturing_pro_v2"

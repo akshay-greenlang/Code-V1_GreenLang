@@ -1,0 +1,155 @@
+# =============================================================================
+# PACK-001 CSRD Starter Pack - Manufacturing Sector Preset
+# =============================================================================
+# NACE Codes: C10-C33 (Manufacturing)
+# Focus areas:
+#   - Heavy Scope 1 emissions (combustion, process, fugitive)
+#   - Industrial-specific emission factors
+#   - Waste treatment and circular economy
+#   - Supply chain traceability
+#   - Occupational health and safety
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  nace_codes: ["C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18",
+               "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27",
+               "C28", "C29", "C30", "C31", "C32", "C33"]
+  sector_name: "Manufacturing"
+  sector_group: "industrial"
+
+  # Key emission sources for manufacturing
+  primary_emission_sources:
+    - "stationary_combustion"     # Boilers, furnaces, kilns
+    - "process_emissions"         # Chemical and physical transformations
+    - "fugitive_emissions"        # Equipment leaks, venting
+    - "mobile_combustion"         # Forklifts, on-site vehicles
+    - "waste_treatment"           # On-site waste processing
+    - "refrigerants"              # Industrial cooling systems
+
+  # Manufacturing-specific emission factors
+  emission_factor_databases:
+    - name: "ecoinvent_3.10"
+      description: "Life cycle inventory database for industrial processes"
+      priority: 1
+    - name: "gabi_2024"
+      description: "GaBi database for manufacturing LCA"
+      priority: 2
+    - name: "eu_ets_benchmarks"
+      description: "EU ETS benchmark emission factors by product"
+      priority: 3
+    - name: "ipcc_industrial"
+      description: "IPCC industrial process emission factors"
+      priority: 4
+
+  # Industrial process categories
+  process_categories:
+    - "cement_clinker"
+    - "iron_steel"
+    - "aluminum"
+    - "glass"
+    - "ceramics"
+    - "pulp_paper"
+    - "chemicals"
+    - "petrochemicals"
+    - "food_beverage"
+    - "textiles"
+    - "electronics"
+    - "automotive"
+    - "machinery"
+
+  # Waste streams typical for manufacturing
+  waste_streams:
+    - "hazardous_chemical"
+    - "metal_scrap"
+    - "plastic_waste"
+    - "packaging"
+    - "electronic_waste"
+    - "wastewater_sludge"
+    - "construction_demolition"
+    - "organic_waste"
+
+  # Supply chain depth for manufacturing
+  supply_chain:
+    tier_depth: 3                  # Track suppliers up to tier 3
+    critical_material_tracking: true
+    supplier_questionnaire_enabled: true
+    conflict_minerals_check: true
+    deforestation_risk_check: true
+
+  # Health and safety metrics (S1 focus)
+  health_safety:
+    incident_tracking: true
+    near_miss_reporting: true
+    exposure_monitoring: true
+    safety_training_tracking: true
+    ltir_target: 1.0               # Lost Time Incident Rate target
+    trir_target: 2.5               # Total Recordable Incident Rate target
+
+  # Water usage tracking (E3)
+  water:
+    intake_tracking: true
+    discharge_tracking: true
+    recycling_rate_target: 0.7     # 70% water recycling target
+    water_stress_assessment: true
+
+  # Circular economy metrics (E5)
+  circular_economy:
+    material_input_tracking: true
+    recycled_content_tracking: true
+    waste_diversion_target: 0.85   # 85% diversion from landfill
+    product_recyclability_assessment: true
+
+# Scope 3 categories most relevant for manufacturing
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 9, 10, 11, 12]
+  priority_categories: [1, 4, 5, 11, 12]
+  screening_required: true
+  materiality_threshold_percent: 3.0
+
+# Emission factor priorities for manufacturing
+emission_factor_priorities:
+  - "company_specific"
+  - "ecoinvent"
+  - "eu_ets_benchmarks"
+  - "industry_average"
+  - "government_published"
+  - "ipcc_2006"
+
+# Agent overrides for manufacturing-specific needs
+agent_overrides:
+  # Enable process and fugitive emissions (critical for manufacturing)
+  AGENT-MRV-004:
+    enabled: true
+    config_overrides:
+      process_categories: ["cement_clinker", "iron_steel", "aluminum", "glass",
+                           "ceramics", "chemicals", "automotive", "machinery"]
+  AGENT-MRV-005:
+    enabled: true
+    config_overrides:
+      leak_detection_method: "component_count"
+      equipment_types: ["valves", "pumps", "compressors", "flanges", "connectors"]
+  AGENT-MRV-007:
+    enabled: true
+    config_overrides:
+      waste_treatment_methods: ["incineration", "landfill", "recycling",
+                                "composting", "wastewater_treatment"]
+
+  # Enable key Scope 3 categories for manufacturing
+  AGENT-MRV-022:
+    enabled: true              # Downstream transportation (Cat 9)
+  AGENT-MRV-023:
+    enabled: true              # Processing of sold products (Cat 10)
+  AGENT-MRV-024:
+    enabled: true              # Use of sold products (Cat 11)
+  AGENT-MRV-025:
+    enabled: true              # End-of-life treatment (Cat 12)
+  AGENT-MRV-015:
+    enabled: true              # Capital goods (Cat 2)
+
+  # Enable supplier questionnaire for supply chain management
+  AGENT-DATA-008:
+    enabled: true
+    config_overrides:
+      questionnaire_templates: ["manufacturing_supplier_esg", "conflict_minerals"]
+      response_scoring_model: "manufacturing_v2"

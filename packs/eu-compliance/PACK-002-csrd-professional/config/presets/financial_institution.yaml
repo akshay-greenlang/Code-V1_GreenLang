@@ -1,0 +1,437 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Financial Institution Preset
+# =============================================================================
+# For banks, insurers, and asset managers. PCAF enabled (6 asset classes),
+# GAR/BTAR enabled, financed emissions Cat 15, stranded asset analysis,
+# 6 scenarios, SBTi FI targets.
+# =============================================================================
+
+# ESRS Standards - All enabled with financial sector emphasis
+esrs_standards:
+  - id: "ESRS1"
+    name: "General Requirements"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS1-DR1"
+      - "ESRS1-DR2"
+      - "ESRS1-DR3"
+      - "ESRS1-DR4"
+      - "ESRS1-DR5"
+  - id: "ESRS2"
+    name: "General Disclosures"
+    enabled: true
+    mandatory: true
+    material: true
+    disclosure_requirements:
+      - "ESRS2-BP1"
+      - "ESRS2-BP2"
+      - "ESRS2-GOV1"
+      - "ESRS2-GOV2"
+      - "ESRS2-GOV3"
+      - "ESRS2-GOV4"
+      - "ESRS2-GOV5"
+      - "ESRS2-SBM1"
+      - "ESRS2-SBM2"
+      - "ESRS2-SBM3"
+      - "ESRS2-IRO1"
+      - "ESRS2-IRO2"
+      - "ESRS2-MDR-P"
+      - "ESRS2-MDR-A"
+      - "ESRS2-MDR-M"
+      - "ESRS2-MDR-T"
+  - id: "E1"
+    name: "Climate Change"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["E1-1", "E1-2", "E1-3", "E1-4", "E1-5", "E1-6", "E1-7", "E1-8", "E1-9"]
+  - id: "E2"
+    name: "Pollution"
+    enabled: true
+    mandatory: false
+    material: false
+    disclosure_requirements: ["E2-1", "E2-2", "E2-3"]
+  - id: "E3"
+    name: "Water and Marine Resources"
+    enabled: true
+    mandatory: false
+    material: false
+    disclosure_requirements: ["E3-1", "E3-2"]
+  - id: "E4"
+    name: "Biodiversity and Ecosystems"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["E4-1", "E4-2", "E4-3", "E4-4", "E4-5", "E4-6"]
+  - id: "E5"
+    name: "Resource Use and Circular Economy"
+    enabled: true
+    mandatory: false
+    material: false
+    disclosure_requirements: ["E5-1", "E5-2"]
+  - id: "S1"
+    name: "Own Workforce"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S1-1", "S1-2", "S1-3", "S1-4", "S1-5", "S1-6", "S1-7", "S1-8", "S1-9", "S1-10", "S1-11", "S1-12", "S1-13", "S1-14", "S1-15", "S1-16", "S1-17"]
+  - id: "S2"
+    name: "Workers in the Value Chain"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S2-1", "S2-2", "S2-3", "S2-4", "S2-5"]
+  - id: "S3"
+    name: "Affected Communities"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S3-1", "S3-2", "S3-3", "S3-4", "S3-5"]
+  - id: "S4"
+    name: "Consumers and End-Users"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["S4-1", "S4-2", "S4-3", "S4-4", "S4-5"]
+  - id: "G1"
+    name: "Business Conduct"
+    enabled: true
+    mandatory: false
+    material: true
+    disclosure_requirements: ["G1-1", "G1-2", "G1-3", "G1-4", "G1-5", "G1-6"]
+
+# Scope 3 - Emphasis on Category 15 (financed emissions)
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 7, 13, 15]
+  priority_categories: [15, 1, 6]
+  screening_required: true
+  materiality_threshold_percent: 1.0
+
+# XBRL
+xbrl:
+  enabled: true
+  taxonomy_version: "ESRS_2023"
+  output_format: "inline_xbrl"
+  validation_level: "strict"
+  languages:
+    - "en"
+    - "de"
+    - "fr"
+
+# Consolidation
+consolidation:
+  enabled: true
+  method: "financial_control"
+  subsidiaries: []
+  intercompany_elimination: true
+
+# Guided mode
+guided_mode:
+  enabled: false
+  tutorial_mode: false
+  pre_populated_examples: false
+  ai_assistance_level: "standard"
+  step_by_step: false
+  onboarding_extended: false
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "pcaf_database"
+  - "company_specific"
+  - "industry_average"
+  - "government_published"
+  - "ipcc_2006"
+
+# Performance
+performance:
+  ghg_full_inventory_max_seconds: 900
+  ghg_multi_entity_max_minutes: 60
+  report_esrs_max_seconds: 300
+  report_xbrl_max_seconds: 600
+  data_ingestion_rps: 10000
+
+# Professional configuration for financial institutions
+professional:
+  consolidation:
+    enabled: true
+    max_subsidiaries: 75
+    consolidation_approaches:
+      - "financial_control"
+      - "equity_share"
+    default_approach: "financial_control"
+    intercompany_elimination: true
+    minority_interest_adjustment: true
+    parallel_entity_processing: true
+    entity_data_timeout_seconds: 600
+
+  approval:
+    enabled: true
+    levels:
+      - role: "preparer"
+        required: true
+        auto_approve_threshold: null
+        escalation_timeout_hours: 48
+        delegation_enabled: true
+        notification_channels: ["email"]
+      - role: "reviewer"
+        required: true
+        auto_approve_threshold: null
+        escalation_timeout_hours: 48
+        delegation_enabled: true
+        notification_channels: ["email", "slack"]
+      - role: "approver"
+        required: true
+        auto_approve_threshold: null
+        escalation_timeout_hours: 48
+        delegation_enabled: true
+        notification_channels: ["email", "slack"]
+      - role: "board"
+        required: true
+        auto_approve_threshold: null
+        escalation_timeout_hours: 168
+        delegation_enabled: false
+        notification_channels: ["email"]
+    require_comments_on_rejection: true
+    audit_trail_enabled: true
+
+  quality_gates:
+    enabled: true
+    overall_pass_threshold: 92.0
+    run_on_commit: true
+    run_on_calculation: true
+
+  cross_framework:
+    enabled: true
+    enabled_frameworks:
+      cdp: true
+      tcfd: true
+      sbti: true
+      taxonomy: true
+      gri: true
+      sasb: true
+    mapping_version: "2024.1"
+    auto_populate_from_esrs: true
+    gap_analysis_enabled: true
+    reconciliation_checks: true
+
+  scenarios:
+    enabled: true
+    scenarios:
+      - id: "iea_nze"
+        name: "IEA Net Zero by 2050"
+        source: "IEA"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "iea_aps"
+        name: "IEA Announced Pledges"
+        source: "IEA"
+        temperature_outcome_c: 1.7
+        enabled: true
+      - id: "ngfs_orderly"
+        name: "NGFS Orderly Transition"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_disorderly"
+        name: "NGFS Disorderly Transition"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_hot_house"
+        name: "NGFS Hot House World"
+        source: "NGFS"
+        temperature_outcome_c: 3.0
+        enabled: true
+      - id: "ngfs_too_little"
+        name: "NGFS Too Little Too Late"
+        source: "NGFS"
+        temperature_outcome_c: 2.5
+        enabled: true
+    monte_carlo_enabled: true
+    monte_carlo_iterations: 10000
+    physical_risk_enabled: true
+    transition_risk_enabled: true
+    financial_impact_quantification: true
+
+  benchmarking:
+    enabled: true
+    peer_comparison_enabled: true
+    peer_group_source: "gics"
+    max_peer_count: 25
+    esg_rating_frameworks: ["msci", "sustainalytics", "iss_esg", "cdp"]
+
+  stakeholder:
+    enabled: true
+    survey_enabled: true
+    survey_languages: ["en", "de", "fr"]
+    response_target_per_category: 75
+
+  regulatory:
+    enabled: true
+    monitored_jurisdictions: ["EU", "DE", "FR", "NL", "LU", "IE"]
+    monitored_regulations:
+      - "CSRD"
+      - "ESRS"
+      - "EU_Taxonomy"
+      - "SFDR"
+      - "CSDDD"
+      - "CRR"
+      - "Solvency_II"
+      - "MiFID_II"
+    scan_frequency: "daily"
+    impact_assessment_auto: true
+    notification_channels: ["email", "slack", "dashboard"]
+
+  data_governance:
+    enabled: true
+    data_retention_years: 10
+    data_classification_enabled: true
+    gdpr_compliance: true
+    data_lineage_tracking: true
+    version_control_enabled: true
+    change_log_retention_years: 15
+
+  assurance:
+    enabled: true
+    assurance_level: "reasonable"
+    isae_standard: "ISAE_3410"
+    assurance_scope:
+      - "scope_1_emissions"
+      - "scope_2_emissions"
+      - "scope_3_financed_emissions"
+      - "esrs_e1_disclosures"
+      - "eu_taxonomy_kpis"
+      - "pcaf_emissions"
+    evidence_format: "structured"
+    auditor_access_portal: true
+    evidence_retention_years: 10
+
+  intensity_metrics:
+    enabled: true
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_revenue_currency: "EUR"
+    per_revenue_unit: "million"
+
+  webhooks:
+    enabled: true
+    channels: ["approval", "quality_gate", "regulatory_change", "scenario_complete"]
+
+# Financial institution specific configuration
+sector_specific:
+  financial_institution_type: "universal_bank"
+  nace_codes: ["K64", "K65", "K66"]
+
+  # PCAF (Partnership for Carbon Accounting Financials)
+  pcaf:
+    enabled: true
+    version: "2.0"
+    asset_classes:
+      - id: "listed_equity_bonds"
+        name: "Listed Equity and Corporate Bonds"
+        enabled: true
+        data_quality_target: 2
+      - id: "business_loans"
+        name: "Business Loans and Unlisted Equity"
+        enabled: true
+        data_quality_target: 3
+      - id: "project_finance"
+        name: "Project Finance"
+        enabled: true
+        data_quality_target: 2
+      - id: "commercial_real_estate"
+        name: "Commercial Real Estate"
+        enabled: true
+        data_quality_target: 3
+      - id: "mortgages"
+        name: "Mortgages"
+        enabled: true
+        data_quality_target: 3
+      - id: "motor_vehicle_loans"
+        name: "Motor Vehicle Loans"
+        enabled: true
+        data_quality_target: 4
+    attribution_factor_method: "outstanding_amount"
+    weighted_average_data_quality_target: 3.0
+
+  # EU Taxonomy - GAR/BTAR
+  taxonomy_fi:
+    gar_enabled: true
+    btar_enabled: true
+    covered_assets_scope: ["loans", "debt_securities", "equity_instruments"]
+    trading_book_included: false
+    interbank_on_demand_excluded: true
+    central_government_excluded: true
+
+  # Stranded assets
+  stranded_assets:
+    enabled: true
+    fossil_fuel_exposure_tracking: true
+    carbon_intensive_sector_tracking: true
+    transition_risk_concentration: true
+    threshold_alert_percent: 10.0
+
+  # SBTi FI specific
+  sbti_fi:
+    enabled: true
+    target_setting_approach: "portfolio_coverage"
+    sector_targets:
+      - sector: "power_generation"
+        method: "SDA"
+        pathway: "1.5C"
+      - sector: "real_estate"
+        method: "SDA"
+        pathway: "1.5C"
+      - sector: "oil_gas"
+        method: "SDA"
+        pathway: "well_below_2C"
+    portfolio_temperature_rating: true
+    implied_temperature_rise: true
+
+# Agent overrides
+agent_overrides:
+  AGENT-MRV-004:
+    enabled: false    # No process emissions for FI
+  AGENT-MRV-005:
+    enabled: false    # No fugitive emissions for FI
+  AGENT-MRV-006:
+    enabled: false    # No land use for FI
+  AGENT-MRV-007:
+    enabled: false    # Minimal waste for FI
+  AGENT-MRV-008:
+    enabled: false    # No agriculture for FI
+  AGENT-MRV-011:
+    enabled: false    # No steam for FI
+  AGENT-MRV-012:
+    enabled: false    # No cooling for FI
+  AGENT-MRV-015:
+    enabled: false    # No capital goods for FI
+  AGENT-MRV-020:
+    enabled: true     # Employee commuting
+  AGENT-MRV-022:
+    enabled: false    # No downstream transport for FI
+  AGENT-MRV-023:
+    enabled: false    # No processing of sold products for FI
+  AGENT-MRV-024:
+    enabled: false    # No use of sold products for FI
+  AGENT-MRV-025:
+    enabled: false    # No end-of-life for FI
+  AGENT-MRV-026:
+    enabled: true     # Downstream leased assets
+  AGENT-MRV-028:
+    enabled: true     # Investments (Category 15) - CRITICAL for FI
+    config_overrides:
+      pcaf_enabled: true
+      asset_classes: ["listed_equity_bonds", "business_loans", "project_finance",
+                       "commercial_real_estate", "mortgages", "motor_vehicle_loans"]
+  AGENT-DATA-008:
+    enabled: true
+  GL-CDP-WATER:
+    enabled: false
+  GL-CDP-FORESTS:
+    enabled: false
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: true     # SBTi Financial Institutions - CRITICAL

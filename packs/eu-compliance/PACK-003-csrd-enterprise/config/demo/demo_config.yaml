@@ -1,0 +1,350 @@
+# =============================================================================
+# PACK-003 CSRD Enterprise Pack - Demo Mode Configuration
+# =============================================================================
+# Demo mode provides a self-contained environment for testing, training,
+# and demonstration of enterprise-tier features. Includes multi-tenant
+# isolation, SSO simulation, white-label branding preview, predictive
+# analytics with mock models, IoT sensor simulation, carbon credit
+# portfolio demo, supply chain ESG scoring, and filing workflow preview.
+#
+# Usage:
+#   config = PackConfig.load(demo_mode=True)
+#   config = PackConfig.load(
+#       size_preset="global_enterprise",
+#       sector_preset="conglomerate",
+#       demo_mode=True,
+#   )
+# =============================================================================
+
+# Core demo settings
+enabled: true
+use_sample_data: true
+skip_external_apis: true
+mock_ai_responses: true
+fast_execution: true
+
+# Sample data paths (relative to pack root)
+sample_company_profile: "config/demo/demo_config.yaml"
+sample_esg_data: "config/demo/demo_iot_stream.csv"
+sample_group_profile: "config/demo/demo_config.yaml"
+sample_subsidiary_data: "config/demo/demo_iot_stream.csv"
+sample_tenant_profiles: "config/demo/demo_tenant_profiles.json"
+sample_iot_data: "config/demo/demo_iot_stream.csv"
+
+# Demo company identity
+demo_company:
+  name: "GlobalTech Industries AG"
+  lei: "529900DEMO9876543210"
+  country: "DE"
+  city: "Frankfurt"
+  sector: "conglomerate"
+  nace_code: "MULTI"
+  employees: 45000
+  revenue_eur: 12500000000
+  subsidiaries: 8
+  countries: ["DE", "FR", "NL", "SE", "PL", "IT", "ES", "US"]
+
+# Demo subsidiaries
+demo_subsidiaries:
+  - entity_id: "GT-MFG-DE"
+    name: "GlobalTech Manufacturing GmbH"
+    country: "DE"
+    sector: "manufacturing"
+    employees: 12000
+    revenue_eur: 3500000000
+  - entity_id: "GT-TECH-NL"
+    name: "GlobalTech Software B.V."
+    country: "NL"
+    sector: "technology"
+    employees: 3000
+    revenue_eur: 800000000
+  - entity_id: "GT-ENERGY-SE"
+    name: "GlobalTech Energy AB"
+    country: "SE"
+    sector: "energy"
+    employees: 2000
+    revenue_eur: 1500000000
+  - entity_id: "GT-FIN-FR"
+    name: "GlobalTech Finance S.A."
+    country: "FR"
+    sector: "financial_services"
+    employees: 1500
+    revenue_eur: 600000000
+  - entity_id: "GT-LOG-PL"
+    name: "GlobalTech Logistics Sp. z o.o."
+    country: "PL"
+    sector: "logistics"
+    employees: 5000
+    revenue_eur: 900000000
+  - entity_id: "GT-PHARMA-IT"
+    name: "GlobalTech Pharma S.p.A."
+    country: "IT"
+    sector: "pharma"
+    employees: 8000
+    revenue_eur: 2200000000
+  - entity_id: "GT-AUTO-ES"
+    name: "GlobalTech Automotive S.L."
+    country: "ES"
+    sector: "automotive"
+    employees: 10000
+    revenue_eur: 2800000000
+  - entity_id: "GT-RE-US"
+    name: "GlobalTech Properties Inc."
+    country: "US"
+    sector: "real_estate"
+    employees: 500
+    revenue_eur: 200000000
+
+# Mock data sources
+mock_sources:
+  erp:
+    enabled: true
+    type: "sap_s4hana"
+    mock_response_time_ms: 20
+    sample_accounts: 800
+    sample_cost_centers: 350
+    multi_entity: true
+
+  emission_factors:
+    enabled: true
+    database: "ecoinvent_3.10_mock"
+    factor_count: 1500
+    response_time_ms: 3
+
+  grid_factors:
+    enabled: true
+    source: "iea_mock"
+    regions: ["DE", "FR", "NL", "SE", "PL", "IT", "ES", "US"]
+    years: [2023, 2024, 2025]
+
+  iot_sensors:
+    enabled: true
+    device_count: 200
+    protocols: ["MQTT", "HTTP"]
+    streaming_interval_seconds: 60
+    data_file: "config/demo/demo_iot_stream.csv"
+
+  carbon_registries:
+    enabled: true
+    mock_portfolio_size: 50000
+    registries: ["VCS", "GoldStandard"]
+
+  ml_models:
+    enabled: true
+    mock_forecast_data: true
+    mock_anomaly_data: true
+    model_response_time_ms: 20
+
+  suppliers:
+    enabled: true
+    supplier_count: 500
+    with_questionnaire_responses: 300
+    response_time_ms: 10
+
+  tenants:
+    enabled: true
+    tenant_count: 3
+    profiles_file: "config/demo/demo_tenant_profiles.json"
+
+# Demo workflow settings
+workflows:
+  predictive_forecasting:
+    enabled: true
+    fast_mode: true
+    mock_models: true
+    reduced_horizon: true
+
+  iot_continuous_monitoring:
+    enabled: true
+    fast_mode: true
+    mock_sensors: true
+    sample_interval_seconds: 5
+
+  carbon_credit_management:
+    enabled: true
+    fast_mode: true
+    mock_registries: true
+
+  supply_chain_esg_assessment:
+    enabled: true
+    fast_mode: true
+    mock_questionnaires: true
+    reduced_suppliers: true
+
+  regulatory_filing:
+    enabled: true
+    fast_mode: true
+    mock_registry: true
+
+  narrative_generation:
+    enabled: true
+    fast_mode: true
+    reduced_languages: true
+    mock_llm: true
+
+  tenant_onboarding:
+    enabled: true
+    fast_mode: true
+    mock_provisioning: true
+
+# Demo enterprise overrides
+enterprise:
+  tenant:
+    enabled: true
+    isolation_level: "SHARED"
+    max_tenants: 5
+
+  sso:
+    saml_enabled: false
+    oauth_enabled: false
+    scim_enabled: false
+
+  white_label:
+    enabled: true
+    primary_color: "#1B5E20"
+    secondary_color: "#388E3C"
+    accent_color: "#4CAF50"
+    powered_by_visible: true
+
+  predictive:
+    models_enabled: ["emission_forecast", "anomaly_detection"]
+    forecast_horizon_months: 6
+    retrain_interval_days: 365
+
+  narrative:
+    languages: ["en", "de"]
+    tone: "board"
+    fact_checking_enabled: false
+    max_draft_tokens: 4000
+
+  workflow_builder:
+    max_steps: 10
+    max_custom_workflows: 5
+
+  iot:
+    enabled: true
+    protocols: ["MQTT", "HTTP"]
+    max_devices: 200
+    aggregation_window_minutes: 60
+
+  carbon_credit:
+    enabled: true
+    registries_enabled: ["VCS", "GoldStandard"]
+
+  supply_chain:
+    enabled: true
+    max_tiers: 2
+    auto_dispatch: false
+
+  filing:
+    enabled: true
+    auto_submit: false
+    validation_strictness: "relaxed"
+
+  api_management:
+    rate_limit_per_minute: 60
+    rate_limit_per_day: 10000
+    graphql_enabled: true
+
+  marketplace:
+    plugins_enabled: false
+
+  consolidation:
+    enabled: true
+    max_subsidiaries: 10
+    parallel_entity_processing: false
+
+  approval:
+    enabled: false
+
+  quality_gates:
+    enabled: true
+    run_on_commit: false
+    run_on_calculation: true
+
+  scenarios:
+    enabled: true
+    monte_carlo_enabled: false
+    physical_risk_enabled: true
+    transition_risk_enabled: true
+
+  benchmarking:
+    enabled: true
+    peer_comparison_enabled: true
+
+  regulatory:
+    enabled: true
+    scan_frequency: "manual"
+    impact_assessment_auto: false
+
+  assurance:
+    enabled: true
+    assurance_level: "limited"
+
+  webhooks:
+    enabled: false
+
+# Performance settings for demo
+performance:
+  ghg_single_scope_max_seconds: 5
+  ghg_full_inventory_max_seconds: 30
+  ghg_multi_entity_max_minutes: 5
+  report_esrs_max_seconds: 15
+  report_summary_max_seconds: 10
+  report_xbrl_max_seconds: 20
+  report_consolidated_max_seconds: 30
+  report_narrative_max_seconds: 15
+  forecast_max_seconds: 10
+  anomaly_detection_max_seconds: 5
+  scenario_single_max_seconds: 10
+  scenario_full_max_minutes: 3
+  quality_gate_max_seconds: 5
+
+# Agent overrides for demo - enable core, disable optional
+agent_overrides:
+  AGENT-MRV-006:
+    enabled: false
+  AGENT-MRV-008:
+    enabled: false
+  AGENT-MRV-011:
+    enabled: false
+  AGENT-MRV-012:
+    enabled: false
+  AGENT-MRV-021:
+    enabled: false
+  AGENT-MRV-023:
+    enabled: false
+  AGENT-MRV-025:
+    enabled: false
+  AGENT-MRV-026:
+    enabled: false
+  AGENT-MRV-027:
+    enabled: false
+  AGENT-MRV-028:
+    enabled: false
+  GL-CDP-WATER:
+    enabled: false
+  GL-CDP-FORESTS:
+    enabled: false
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: false
+  GL-CBAM-APP:
+    enabled: false
+  GL-VCCI-APP:
+    enabled: false
+  GL-ISO14064-APP:
+    enabled: false
+
+# Logging
+logging:
+  level: "INFO"
+  show_agent_execution_times: true
+  show_data_flow_summary: true
+  show_calculation_steps: true
+  show_consolidation_steps: true
+  show_framework_mapping: true
+  show_prediction_details: true
+  show_iot_data_flow: true
+  export_demo_report: true

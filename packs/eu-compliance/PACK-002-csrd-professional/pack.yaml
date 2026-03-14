@@ -1,0 +1,1014 @@
+# =============================================================================
+# PACK-002: CSRD Professional Pack
+# GreenLang EU Compliance Pack for Enterprise-Grade CSRD Reporting
+# =============================================================================
+# This pack EXTENDS PACK-001 (CSRD Starter Pack) with enterprise-grade features
+# including multi-entity consolidation, cross-framework alignment (CDP, TCFD,
+# SBTi, EU Taxonomy), scenario analysis, approval workflows, quality gates,
+# professional audit preparation, and regulatory change management.
+#
+# Regulatory References:
+#   - CSRD: Directive (EU) 2022/2464
+#   - ESRS: Delegated Regulation (EU) 2023/2772
+#   - ESEF: Delegated Regulation (EU) 2019/815 (XBRL tagging)
+#   - ISAE 3000: Assurance Engagements Other than Audits or Reviews
+#   - ISAE 3410: Assurance Engagements on Greenhouse Gas Statements
+#   - EU Taxonomy: Regulation (EU) 2020/852
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-14)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: csrd-professional
+  version: "1.0.0"
+  display_name: "CSRD Professional Pack"
+  description: >-
+    Enterprise-grade GreenLang deployment pack extending the CSRD Starter Pack
+    with multi-entity consolidation, cross-framework alignment (CDP, TCFD,
+    SBTi, EU Taxonomy), scenario analysis, approval workflows, quality gates,
+    professional audit preparation, and regulatory change management. Supports
+    corporate groups, listed companies, financial institutions, and multinational
+    organizations with up to 200 subsidiaries across 10+ jurisdictions.
+  category: eu-compliance
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-14"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/csrd-professional"
+  changelog_url: "https://docs.greenlang.io/packs/csrd-professional/changelog"
+
+  tags:
+    - csrd
+    - esrs
+    - eu-compliance
+    - sustainability-reporting
+    - ghg-protocol
+    - double-materiality
+    - xbrl
+    - esef
+    - cdp
+    - tcfd
+    - sbti
+    - eu-taxonomy
+    - multi-entity
+    - consolidation
+    - cross-framework
+    - scenario-analysis
+    - professional-audit
+    - board-governance
+
+  compliance_references:
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        Amends Directive 2013/34/EU, requiring large and listed EU companies
+        to report on sustainability matters using European Sustainability
+        Reporting Standards (ESRS).
+    - id: "ESRS"
+      name: "European Sustainability Reporting Standards"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Set 1 of ESRS covering cross-cutting standards (ESRS 1, ESRS 2) and
+        topical standards (E1-E5, S1-S4, G1). Defines disclosure requirements,
+        application requirements, and data points.
+    - id: "ESEF"
+      name: "European Single Electronic Format"
+      regulation: "Delegated Regulation (EU) 2019/815"
+      effective_date: "2020-01-01"
+      description: >-
+        Requires annual financial reports in XHTML format with inline XBRL
+        tagging. Extended to sustainability reporting under CSRD.
+    - id: "ISAE3000"
+      name: "International Standard on Assurance Engagements 3000"
+      regulation: "ISAE 3000 (Revised)"
+      effective_date: "2015-12-15"
+      description: >-
+        Framework for assurance engagements other than audits or reviews of
+        historical financial information. Used for limited and reasonable
+        assurance on sustainability reports.
+    - id: "ISAE3410"
+      name: "Assurance Engagements on GHG Statements"
+      regulation: "ISAE 3410"
+      effective_date: "2012-09-15"
+      description: >-
+        Deals with assurance engagements to report on an entity's greenhouse
+        gas statement. Requires verification of emission calculations,
+        methodology, and data sources.
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      regulation: "Regulation (EU) 2020/852"
+      effective_date: "2022-01-01"
+      description: >-
+        Classification system for environmentally sustainable economic
+        activities. Requires disclosure of Taxonomy-eligible and
+        Taxonomy-aligned turnover, CapEx, and OpEx.
+
+# -----------------------------------------------------------------------------
+# Dependencies - Extends PACK-001
+# -----------------------------------------------------------------------------
+dependencies:
+  - pack_id: "PACK-001"
+    name: "csrd-starter"
+    version: ">=1.0.0"
+    required: true
+    description: >-
+      PACK-002 extends PACK-001 and inherits all 66+ agents, 5 workflows,
+      and 6 templates from the Starter Pack. All PACK-001 agents must be
+      deployed before PACK-002 agents can be activated.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents included in this pack
+# Inherits all 66+ agents from PACK-001 plus 27 professional agents
+# Total: 93+ agents
+# -----------------------------------------------------------------------------
+components:
+
+  # ---- INHERITED FROM PACK-001 (66+ agents) ----
+  # These are listed for reference; they are resolved from the dependency.
+  inherited:
+    pack: "PACK-001"
+    agent_count: 66
+    groups:
+      - "apps (GL-CSRD-APP)"
+      - "data_agents (AGENT-DATA-001, 002, 003, 008)"
+      - "quality_agents (AGENT-DATA-010, 011, 012, 013, 019)"
+      - "mrv_scope1 (AGENT-MRV-001 through 008)"
+      - "mrv_scope2 (AGENT-MRV-009 through 013)"
+      - "mrv_scope3 (AGENT-MRV-014 through 030)"
+      - "foundation (AGENT-FOUND-001 through 010)"
+
+  # ---- PACK-002 ADDITIONAL APPS ----
+  professional_apps:
+    - id: GL-CDP-APP
+      version: "1.0.0"
+      name: "CDP Reporting Application"
+      description: "CDP Climate Change, Water Security, and Forests questionnaire automation"
+      required: true
+    - id: GL-TCFD-APP
+      version: "1.0.0"
+      name: "TCFD Reporting Application"
+      description: "Task Force on Climate-related Financial Disclosures reporting"
+      required: true
+    - id: GL-SBTi-APP
+      version: "1.0.0"
+      name: "SBTi Target Setting Application"
+      description: "Science Based Targets initiative target setting and tracking"
+      required: true
+    - id: GL-TAXONOMY-APP
+      version: "1.0.0"
+      name: "EU Taxonomy Application"
+      description: "EU Taxonomy eligibility and alignment assessment"
+      required: true
+
+  # CDP Application Engines (6 engines)
+  cdp_engines:
+    - id: GL-CDP-INTAKE
+      name: "CDP Questionnaire Intake Engine"
+      description: "Parses and maps CDP questionnaire structure for Climate, Water, Forests"
+      required: true
+    - id: GL-CDP-MAPPER
+      name: "CDP Response Mapper Engine"
+      description: "Maps ESRS data points to CDP questionnaire responses"
+      required: true
+    - id: GL-CDP-SCORER
+      name: "CDP Score Predictor Engine"
+      description: "Predicts CDP score based on response completeness and quality"
+      required: true
+    - id: GL-CDP-CLIMATE
+      name: "CDP Climate Module Engine"
+      description: "Processes CDP Climate Change questionnaire sections C0-C15"
+      required: true
+    - id: GL-CDP-WATER
+      name: "CDP Water Security Module Engine"
+      description: "Processes CDP Water Security questionnaire sections W0-W9"
+      required: false
+    - id: GL-CDP-FORESTS
+      name: "CDP Forests Module Engine"
+      description: "Processes CDP Forests questionnaire sections F0-F9"
+      required: false
+
+  # TCFD Application Engines (7 engines)
+  tcfd_engines:
+    - id: GL-TCFD-GOVERNANCE
+      name: "TCFD Governance Engine"
+      description: "Generates TCFD governance disclosures (board oversight, management role)"
+      required: true
+    - id: GL-TCFD-STRATEGY
+      name: "TCFD Strategy Engine"
+      description: "Generates TCFD strategy disclosures (risks, opportunities, resilience)"
+      required: true
+    - id: GL-TCFD-RISK
+      name: "TCFD Risk Management Engine"
+      description: "Generates TCFD risk management disclosures (identification, assessment, management)"
+      required: true
+    - id: GL-TCFD-METRICS
+      name: "TCFD Metrics & Targets Engine"
+      description: "Generates TCFD metrics and targets disclosures (GHG, climate targets)"
+      required: true
+    - id: GL-TCFD-SCENARIO
+      name: "TCFD Scenario Analysis Engine"
+      description: "Performs climate scenario analysis for TCFD strategy disclosure"
+      required: true
+    - id: GL-TCFD-PHYSICAL
+      name: "TCFD Physical Risk Engine"
+      description: "Assesses physical climate risks (acute and chronic) for TCFD"
+      required: true
+    - id: GL-TCFD-TRANSITION
+      name: "TCFD Transition Risk Engine"
+      description: "Assesses transition risks (policy, legal, technology, market, reputation)"
+      required: true
+
+  # SBTi Application Engines (8 engines)
+  sbti_engines:
+    - id: GL-SBTi-BASELINE
+      name: "SBTi Baseline Calculator Engine"
+      description: "Calculates base year emissions inventory for SBTi target setting"
+      required: true
+    - id: GL-SBTi-TARGET
+      name: "SBTi Target Generator Engine"
+      description: "Generates near-term and net-zero SBTi targets using sectoral pathways"
+      required: true
+    - id: GL-SBTi-PATHWAY
+      name: "SBTi Pathway Tracker Engine"
+      description: "Tracks progress against SBTi targets using annual emissions data"
+      required: true
+    - id: GL-SBTi-SCOPE3
+      name: "SBTi Scope 3 Screening Engine"
+      description: "Screens Scope 3 categories for SBTi relevance (40% threshold)"
+      required: true
+    - id: GL-SBTi-SECTOR
+      name: "SBTi Sector Pathway Engine"
+      description: "Applies sector-specific decarbonization pathways (SDA, ACA, GEVA)"
+      required: true
+    - id: GL-SBTi-VALIDATION
+      name: "SBTi Validation Preparation Engine"
+      description: "Prepares documentation for SBTi target validation submission"
+      required: true
+    - id: GL-SBTi-FLAG
+      name: "SBTi FLAG Targets Engine"
+      description: "Calculates Forest, Land and Agriculture (FLAG) targets"
+      required: false
+    - id: GL-SBTi-FI
+      name: "SBTi Financial Institutions Engine"
+      description: "Calculates SBTi targets for financial institutions using PCAF"
+      required: false
+
+  # EU Taxonomy Application Engines (6 engines)
+  taxonomy_engines:
+    - id: GL-TAX-ELIGIBILITY
+      name: "Taxonomy Eligibility Engine"
+      description: "Assesses economic activity eligibility against EU Taxonomy"
+      required: true
+    - id: GL-TAX-ALIGNMENT
+      name: "Taxonomy Alignment Engine"
+      description: "Evaluates substantial contribution and DNSH criteria for alignment"
+      required: true
+    - id: GL-TAX-KPI
+      name: "Taxonomy KPI Calculator Engine"
+      description: "Calculates Taxonomy-aligned turnover, CapEx, and OpEx ratios"
+      required: true
+    - id: GL-TAX-CLIMATE
+      name: "Taxonomy Climate Delegated Act Engine"
+      description: "Applies Climate Delegated Act criteria (mitigation and adaptation)"
+      required: true
+    - id: GL-TAX-ENVIRON
+      name: "Taxonomy Environmental Delegated Act Engine"
+      description: "Applies Environmental Delegated Act criteria (water, pollution, CE, biodiversity)"
+      required: true
+    - id: GL-TAX-SOCIAL
+      name: "Taxonomy Minimum Safeguards Engine"
+      description: "Evaluates minimum social safeguards (OECD, UNGP, ILO)"
+      required: true
+
+  # Professional Engines (7 engines - PACK-002 exclusive)
+  professional_engines:
+    - id: GL-PRO-CONSOLIDATION
+      name: "Multi-Entity Consolidation Engine"
+      description: >-
+        Consolidates sustainability data across subsidiaries with
+        operational control, financial control, and equity share methods.
+        Handles intercompany elimination and minority interest adjustments.
+      required: true
+    - id: GL-PRO-APPROVAL
+      name: "Approval Workflow Engine"
+      description: >-
+        Manages 4-level approval workflows (preparer, reviewer, approver,
+        board) with escalation timeouts, delegation, and audit trail.
+      required: true
+    - id: GL-PRO-QUALITY-GATE
+      name: "Quality Gate Engine"
+      description: >-
+        Enforces 3 quality gates (data completeness, calculation integrity,
+        compliance readiness) with weighted scoring and pass/fail thresholds.
+      required: true
+    - id: GL-PRO-CROSS-FRAMEWORK
+      name: "Cross-Framework Alignment Engine"
+      description: >-
+        Maps and aligns disclosures across ESRS, CDP, TCFD, SBTi, GRI,
+        SASB, and EU Taxonomy frameworks. Identifies overlaps and gaps.
+      required: true
+    - id: GL-PRO-SCENARIO
+      name: "Scenario Analysis Engine"
+      description: >-
+        Performs climate scenario analysis using IEA (NZE, APS, STEPS),
+        NGFS (Orderly, Disorderly, Hot House, Too Little Too Late), and
+        custom scenarios with Monte Carlo simulation support.
+      required: true
+    - id: GL-PRO-BENCHMARK
+      name: "Benchmarking Engine"
+      description: >-
+        Compares organizational ESG performance against sector peers,
+        ESG rating frameworks (MSCI, Sustainalytics, ISS, CDP), and
+        regulatory thresholds.
+      required: true
+    - id: GL-PRO-REGULATORY
+      name: "Regulatory Change Management Engine"
+      description: >-
+        Monitors regulatory changes across EU jurisdictions, assesses
+        impact on compliance posture, and generates remediation plans.
+      required: true
+
+# -----------------------------------------------------------------------------
+# Workflows - Professional orchestration sequences
+# Extends PACK-001's 5 workflows with 8 professional workflows
+# Total: 13 workflows
+# -----------------------------------------------------------------------------
+workflows:
+
+  # ---- INHERITED FROM PACK-001 ----
+  # annual_reporting, quarterly_update, materiality_assessment,
+  # data_onboarding, audit_preparation
+
+  consolidated_reporting:
+    display_name: "Consolidated Group Reporting"
+    description: >-
+      Multi-entity consolidated CSRD reporting workflow for corporate groups.
+      Collects data from all subsidiaries, applies consolidation methodology,
+      eliminates intercompany transactions, calculates group-level emissions,
+      and generates consolidated ESRS disclosures with entity-level breakdown.
+    schedule: "annual"
+    estimated_duration_days: 60
+    phases:
+      - name: entity_data_collection
+        description: "Collect and validate data from all subsidiary entities"
+        agents:
+          - AGENT-DATA-001
+          - AGENT-DATA-002
+          - AGENT-DATA-003
+          - GL-PRO-CONSOLIDATION
+        duration_days: 15
+      - name: entity_validation
+        description: "Run quality gates on each entity's data independently"
+        agents:
+          - AGENT-DATA-010
+          - AGENT-DATA-011
+          - AGENT-DATA-012
+          - AGENT-DATA-013
+          - AGENT-DATA-019
+          - GL-PRO-QUALITY-GATE
+        duration_days: 8
+      - name: entity_calculations
+        description: "Calculate emissions for each entity separately"
+        agents:
+          - AGENT-MRV-001
+          - AGENT-MRV-002
+          - AGENT-MRV-003
+          - AGENT-MRV-004
+          - AGENT-MRV-005
+          - AGENT-MRV-007
+          - AGENT-MRV-009
+          - AGENT-MRV-010
+          - AGENT-MRV-013
+          - AGENT-MRV-014
+          - AGENT-MRV-029
+        duration_days: 12
+      - name: consolidation
+        description: "Consolidate entity-level results into group totals"
+        agents:
+          - GL-PRO-CONSOLIDATION
+          - AGENT-MRV-013
+          - AGENT-MRV-030
+        duration_days: 5
+      - name: group_materiality
+        description: "Assess group-level double materiality across all entities"
+        agents:
+          - GL-CSRD-APP
+          - GL-PRO-CROSS-FRAMEWORK
+        duration_days: 7
+      - name: group_reporting
+        description: "Generate consolidated ESRS disclosures and XBRL package"
+        agents:
+          - GL-CSRD-APP
+          - GL-PRO-QUALITY-GATE
+          - AGENT-FOUND-005
+        duration_days: 8
+      - name: approval_and_review
+        description: "Multi-level approval workflow and board sign-off"
+        agents:
+          - GL-PRO-APPROVAL
+          - AGENT-FOUND-008
+          - AGENT-FOUND-009
+        duration_days: 5
+
+  cross_framework_alignment:
+    display_name: "Cross-Framework Alignment"
+    description: >-
+      Aligns and maps disclosures across multiple ESG reporting frameworks.
+      Generates a unified data model that serves CDP, TCFD, SBTi, EU Taxonomy,
+      GRI, and SASB requirements from a single ESRS data source.
+    schedule: "annual"
+    estimated_duration_days: 21
+    phases:
+      - name: framework_mapping
+        description: "Map ESRS data points to all target framework requirements"
+        agents:
+          - GL-PRO-CROSS-FRAMEWORK
+          - GL-CDP-MAPPER
+          - GL-TCFD-GOVERNANCE
+          - GL-TCFD-STRATEGY
+        duration_days: 5
+      - name: gap_analysis
+        description: "Identify data gaps for each target framework"
+        agents:
+          - GL-PRO-CROSS-FRAMEWORK
+          - AGENT-DATA-010
+        duration_days: 3
+      - name: cdp_preparation
+        description: "Generate CDP questionnaire responses from ESRS data"
+        agents:
+          - GL-CDP-INTAKE
+          - GL-CDP-MAPPER
+          - GL-CDP-CLIMATE
+          - GL-CDP-SCORER
+        duration_days: 4
+      - name: tcfd_preparation
+        description: "Generate TCFD disclosures from ESRS data"
+        agents:
+          - GL-TCFD-GOVERNANCE
+          - GL-TCFD-STRATEGY
+          - GL-TCFD-RISK
+          - GL-TCFD-METRICS
+        duration_days: 4
+      - name: sbti_tracking
+        description: "Update SBTi target tracking from latest emissions data"
+        agents:
+          - GL-SBTi-PATHWAY
+          - GL-SBTi-SCOPE3
+        duration_days: 3
+      - name: taxonomy_assessment
+        description: "Update EU Taxonomy eligibility and alignment metrics"
+        agents:
+          - GL-TAX-ELIGIBILITY
+          - GL-TAX-ALIGNMENT
+          - GL-TAX-KPI
+        duration_days: 2
+
+  scenario_analysis:
+    display_name: "Climate Scenario Analysis"
+    description: >-
+      Comprehensive climate scenario analysis workflow for TCFD and ESRS E1
+      strategy disclosure. Supports IEA, NGFS, and custom scenarios with
+      physical and transition risk assessment across multiple time horizons.
+    schedule: "annual"
+    estimated_duration_days: 28
+    phases:
+      - name: scenario_selection
+        description: "Select and configure climate scenarios for analysis"
+        agents:
+          - GL-PRO-SCENARIO
+          - GL-TCFD-SCENARIO
+        duration_days: 3
+      - name: physical_risk_assessment
+        description: "Assess physical climate risks across all facilities"
+        agents:
+          - GL-TCFD-PHYSICAL
+          - GL-PRO-SCENARIO
+          - AGENT-DATA-020
+        duration_days: 7
+      - name: transition_risk_assessment
+        description: "Assess transition risks from policy, technology, and market changes"
+        agents:
+          - GL-TCFD-TRANSITION
+          - GL-PRO-SCENARIO
+          - GL-PRO-REGULATORY
+        duration_days: 7
+      - name: financial_impact
+        description: "Quantify financial impacts under each scenario"
+        agents:
+          - GL-PRO-SCENARIO
+          - GL-TCFD-METRICS
+        duration_days: 5
+      - name: resilience_assessment
+        description: "Assess organizational resilience and adaptation strategies"
+        agents:
+          - GL-TCFD-STRATEGY
+          - GL-PRO-SCENARIO
+        duration_days: 3
+      - name: scenario_reporting
+        description: "Generate scenario analysis reports and visualizations"
+        agents:
+          - GL-CSRD-APP
+          - GL-TCFD-STRATEGY
+          - GL-PRO-SCENARIO
+        duration_days: 3
+
+  continuous_compliance:
+    display_name: "Continuous Compliance Monitoring"
+    description: >-
+      Ongoing compliance monitoring workflow that runs monthly to track
+      regulatory changes, data quality drift, calculation deviations,
+      and framework alignment status.
+    schedule: "monthly"
+    estimated_duration_days: 3
+    phases:
+      - name: regulatory_scan
+        description: "Scan for regulatory changes across monitored jurisdictions"
+        agents:
+          - GL-PRO-REGULATORY
+        duration_days: 1
+      - name: quality_monitoring
+        description: "Run quality gate checks on current data and calculations"
+        agents:
+          - GL-PRO-QUALITY-GATE
+          - AGENT-DATA-010
+          - AGENT-DATA-019
+        duration_days: 1
+      - name: compliance_dashboard
+        description: "Update compliance dashboards and generate alerts"
+        agents:
+          - GL-PRO-CROSS-FRAMEWORK
+          - GL-CSRD-APP
+        duration_days: 1
+
+  stakeholder_engagement:
+    display_name: "Stakeholder Engagement"
+    description: >-
+      Manages stakeholder engagement for double materiality assessment,
+      including survey design, distribution, response collection, analysis,
+      and integration into materiality scoring.
+    schedule: "annual"
+    estimated_duration_days: 35
+    phases:
+      - name: stakeholder_mapping
+        description: "Identify and classify stakeholders by category and influence"
+        agents:
+          - GL-CSRD-APP
+        duration_days: 5
+      - name: survey_design
+        description: "Design materiality surveys tailored to stakeholder groups"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-DATA-008
+        duration_days: 5
+      - name: response_collection
+        description: "Collect and process stakeholder survey responses"
+        agents:
+          - AGENT-DATA-002
+          - AGENT-DATA-008
+        duration_days: 14
+      - name: analysis_integration
+        description: "Analyze responses and integrate into materiality scoring"
+        agents:
+          - GL-CSRD-APP
+          - GL-PRO-CROSS-FRAMEWORK
+        duration_days: 7
+      - name: reporting
+        description: "Generate stakeholder engagement report"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-FOUND-005
+        duration_days: 4
+
+  regulatory_change_mgmt:
+    display_name: "Regulatory Change Management"
+    description: >-
+      Tracks regulatory developments across EU jurisdictions, assesses
+      impact on current compliance posture, and generates remediation
+      plans for upcoming regulatory changes.
+    schedule: "quarterly"
+    estimated_duration_days: 10
+    phases:
+      - name: regulatory_monitoring
+        description: "Monitor regulatory bodies for CSRD/ESRS/Taxonomy updates"
+        agents:
+          - GL-PRO-REGULATORY
+        duration_days: 2
+      - name: impact_assessment
+        description: "Assess impact of regulatory changes on compliance status"
+        agents:
+          - GL-PRO-REGULATORY
+          - GL-PRO-CROSS-FRAMEWORK
+          - GL-PRO-QUALITY-GATE
+        duration_days: 3
+      - name: remediation_planning
+        description: "Generate remediation plans and timeline for compliance gaps"
+        agents:
+          - GL-PRO-REGULATORY
+          - GL-CSRD-APP
+        duration_days: 3
+      - name: stakeholder_notification
+        description: "Notify relevant stakeholders of regulatory changes"
+        agents:
+          - GL-PRO-APPROVAL
+        duration_days: 2
+
+  board_governance:
+    display_name: "Board Governance Reporting"
+    description: >-
+      Prepares board-level sustainability governance packages including
+      ESG KPI dashboards, risk heatmaps, regulatory outlook, peer
+      benchmarks, and SBTi progress tracking for board meetings.
+    schedule: "quarterly"
+    estimated_duration_days: 7
+    phases:
+      - name: kpi_aggregation
+        description: "Aggregate ESG KPIs across all entities and frameworks"
+        agents:
+          - GL-PRO-CONSOLIDATION
+          - GL-PRO-BENCHMARK
+          - GL-PRO-CROSS-FRAMEWORK
+        duration_days: 2
+      - name: risk_assessment
+        description: "Update ESG risk heatmap and exposure analysis"
+        agents:
+          - GL-TCFD-RISK
+          - GL-TCFD-PHYSICAL
+          - GL-TCFD-TRANSITION
+        duration_days: 2
+      - name: board_package
+        description: "Generate board governance package with all materials"
+        agents:
+          - GL-CSRD-APP
+          - GL-PRO-BENCHMARK
+          - GL-SBTi-PATHWAY
+        duration_days: 3
+
+  professional_audit:
+    display_name: "Professional Audit Preparation"
+    description: >-
+      Enhanced audit preparation for limited and reasonable assurance
+      engagements per ISAE 3000/3410. Extends PACK-001 audit_preparation
+      with cross-framework evidence, group consolidation audit trail,
+      and multi-entity reconciliation.
+    schedule: "annual"
+    estimated_duration_days: 21
+    phases:
+      - name: assurance_scoping
+        description: "Define assurance scope with auditor (limited vs reasonable)"
+        agents:
+          - GL-PRO-QUALITY-GATE
+          - GL-CSRD-APP
+        duration_days: 3
+      - name: evidence_assembly
+        description: "Assemble evidence packages for all material disclosures"
+        agents:
+          - AGENT-FOUND-005
+          - AGENT-FOUND-008
+          - AGENT-MRV-030
+          - GL-PRO-CONSOLIDATION
+        duration_days: 5
+      - name: calculation_verification
+        description: "Verify all calculations across entities and frameworks"
+        agents:
+          - AGENT-FOUND-008
+          - AGENT-FOUND-009
+          - GL-PRO-QUALITY-GATE
+          - GL-PRO-CONSOLIDATION
+        duration_days: 5
+      - name: cross_framework_reconciliation
+        description: "Reconcile figures reported across all frameworks"
+        agents:
+          - GL-PRO-CROSS-FRAMEWORK
+          - AGENT-MRV-013
+          - AGENT-DATA-019
+        duration_days: 4
+      - name: audit_package_generation
+        description: "Generate ISAE 3000/3410 audit package"
+        agents:
+          - GL-CSRD-APP
+          - AGENT-FOUND-005
+          - GL-PRO-APPROVAL
+        duration_days: 4
+
+# -----------------------------------------------------------------------------
+# Templates - Professional report templates
+# Extends PACK-001's 6 templates with 10 professional templates
+# Total: 16 templates
+# -----------------------------------------------------------------------------
+templates:
+
+  # ---- INHERITED FROM PACK-001 (6 templates) ----
+  # executive_summary, esrs_disclosure, materiality_matrix,
+  # ghg_emissions_report, auditor_package, compliance_dashboard
+
+  # ---- PACK-002 Professional Templates ----
+  - id: consolidated_group_report
+    display_name: "Consolidated Group Report"
+    description: "Multi-entity consolidated ESRS disclosure with entity breakdown"
+    format: "xhtml"
+    template_file: "templates/consolidated_group_report.jinja2"
+    xbrl_taxonomy: "ESRS_2023"
+
+  - id: cdp_questionnaire_response
+    display_name: "CDP Questionnaire Response"
+    description: "Auto-generated CDP Climate Change questionnaire response"
+    format: "pdf"
+    template_file: "templates/cdp_questionnaire_response.jinja2"
+
+  - id: tcfd_disclosure
+    display_name: "TCFD Disclosure Report"
+    description: "Complete TCFD disclosure report with all four pillars"
+    format: "pdf"
+    template_file: "templates/tcfd_disclosure.jinja2"
+
+  - id: sbti_progress_report
+    display_name: "SBTi Progress Report"
+    description: "Annual SBTi target progress tracking report"
+    format: "pdf"
+    template_file: "templates/sbti_progress_report.jinja2"
+
+  - id: eu_taxonomy_report
+    display_name: "EU Taxonomy Report"
+    description: "EU Taxonomy eligibility and alignment report with KPI tables"
+    format: "xhtml"
+    template_file: "templates/eu_taxonomy_report.jinja2"
+    xbrl_taxonomy: "EU_TAXONOMY_2023"
+
+  - id: scenario_analysis_report
+    display_name: "Scenario Analysis Report"
+    description: "Climate scenario analysis report with financial impact quantification"
+    format: "pdf"
+    template_file: "templates/scenario_analysis_report.jinja2"
+
+  - id: cross_framework_mapping
+    display_name: "Cross-Framework Mapping Report"
+    description: "Framework alignment matrix showing data point coverage across frameworks"
+    format: "pdf"
+    template_file: "templates/cross_framework_mapping.jinja2"
+
+  - id: board_governance_package
+    display_name: "Board Governance Package"
+    description: "Board-level ESG governance package with KPIs, risks, and benchmarks"
+    format: "pdf"
+    template_file: "templates/board_governance_package.jinja2"
+
+  - id: regulatory_change_briefing
+    display_name: "Regulatory Change Briefing"
+    description: "Quarterly regulatory change assessment and impact briefing"
+    format: "pdf"
+    template_file: "templates/regulatory_change_briefing.jinja2"
+
+  - id: professional_audit_package
+    display_name: "Professional Audit Package"
+    description: "ISAE 3000/3410 audit evidence package with cross-framework reconciliation"
+    format: "zip"
+    template_file: "templates/professional_audit_package.jinja2"
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles for professional use
+# -----------------------------------------------------------------------------
+presets:
+
+  # Size-based presets (professional tier)
+  size_presets:
+    - id: enterprise_group
+      display_name: "Enterprise Group"
+      description: >-
+        Multi-entity corporate group with up to 100 subsidiaries. All 3
+        consolidation methods, 4-level approval, all quality gates,
+        reasonable assurance, all cross-frameworks, all scenarios.
+      config_file: "config/presets/enterprise_group.yaml"
+      criteria:
+        min_employees: 5000
+        multi_entity: true
+        max_subsidiaries: 100
+
+    - id: listed_company
+      display_name: "Listed Company"
+      description: >-
+        Stock-exchange listed company with investor reporting requirements.
+        TCFD, CDP, and SBTi alignment mandatory. Limited to reasonable
+        assurance roadmap. Investor-focused reporting templates.
+      config_file: "config/presets/listed_company.yaml"
+      criteria:
+        listed: true
+        min_employees: 1000
+        max_subsidiaries: 50
+
+    - id: financial_institution
+      display_name: "Financial Institution"
+      description: >-
+        Banks, insurers, and asset managers with PCAF financed emissions,
+        GAR/BTAR reporting, stranded asset analysis, and SBTi FI targets.
+      config_file: "config/presets/financial_institution.yaml"
+      criteria:
+        sector: "financial_services"
+        regulated: true
+        pcaf_required: true
+
+    - id: multinational
+      display_name: "Multinational Corporation"
+      description: >-
+        Multi-jurisdiction global organization with up to 200 subsidiaries.
+        Per-jurisdiction regulatory calendars, multi-currency with FX,
+        all languages, 10+ EU national filing formats.
+      config_file: "config/presets/multinational.yaml"
+      criteria:
+        min_employees: 10000
+        jurisdictions: 5
+        max_subsidiaries: 200
+
+  # Sector-specific presets (professional tier)
+  sector_presets:
+    - id: manufacturing_pro
+      display_name: "Manufacturing Professional"
+      description: >-
+        Enhanced manufacturing preset with EU ETS integration, sector-specific
+        SBTi pathways, CBAM preparedness, and industrial scenario analysis.
+      config_file: "config/sectors/manufacturing_pro.yaml"
+      nace_codes: ["C10-C33"]
+
+    - id: financial_services_pro
+      display_name: "Financial Services Professional"
+      description: >-
+        Financial services preset with PCAF (6 asset classes), GAR/BTAR
+        reporting, financed emissions (Cat 15), stranded asset analysis,
+        and SBTi FI targets.
+      config_file: "config/sectors/financial_services_pro.yaml"
+      nace_codes: ["K64-K66"]
+
+    - id: technology_pro
+      display_name: "Technology Professional"
+      description: >-
+        Technology sector preset with SCI/PUE metrics, data center energy
+        optimization, Scope 3 digital services, and cloud emissions tracking.
+      config_file: "config/sectors/technology_pro.yaml"
+      nace_codes: ["J58-J63"]
+
+    - id: energy_pro
+      display_name: "Energy Professional"
+      description: >-
+        Energy sector preset with EU ETS integration, OGMP 2.0 methane
+        reporting, stranded asset risk, transition plan requirements, and
+        sector-specific SBTi pathways.
+      config_file: "config/sectors/energy_pro.yaml"
+      nace_codes: ["B05-B09", "D35"]
+
+    - id: heavy_industry_pro
+      display_name: "Heavy Industry Professional"
+      description: >-
+        Heavy industry preset for cement, steel, chemicals, and mining
+        with process emission intensity, CBAM, EU ETS benchmarks, and
+        hard-to-abate sector pathways.
+      config_file: "config/sectors/heavy_industry_pro.yaml"
+      nace_codes: ["B05-B09", "C19-C25"]
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# Professional pack requires more resources than Starter
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "scipy>=1.11"
+    - "scikit-learn>=1.3"
+    - "networkx>=3.1"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 32
+    min_storage_gb: 250
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 64
+    recommended_storage_gb: 1000
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 50
+    recommended_connections: 100
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# Professional pack targets for multi-entity workloads
+# -----------------------------------------------------------------------------
+performance:
+  data_ingestion:
+    throughput_records_per_second: 10000
+    max_latency_ms: 150
+    description: "Data ingestion throughput for multi-entity CSV/Excel processing"
+
+  ghg_calculation:
+    single_scope_max_seconds: 45
+    full_inventory_max_seconds: 600
+    multi_entity_max_minutes: 45
+    max_data_points: 50000
+    description: "GHG calculation targets for 50K data points multi-entity"
+
+  report_generation:
+    esrs_disclosure_max_seconds: 180
+    executive_summary_max_seconds: 90
+    xbrl_tagging_max_seconds: 300
+    consolidated_report_max_seconds: 600
+    cross_framework_max_seconds: 240
+    description: "Report generation targets including consolidated group reports"
+
+  scenario_analysis:
+    single_scenario_max_seconds: 120
+    full_analysis_max_minutes: 30
+    monte_carlo_iterations: 10000
+    description: "Scenario analysis execution time targets"
+
+  api_response:
+    p50_ms: 80
+    p95_ms: 400
+    p99_ms: 1500
+    description: "API response time percentile targets"
+
+  data_quality:
+    profiling_max_seconds: 90
+    validation_max_seconds: 45
+    quality_gate_max_seconds: 60
+    description: "Data quality check execution time targets"
+
+  availability:
+    target_uptime_percent: 99.95
+    max_planned_downtime_minutes_per_month: 15
+    description: "System availability targets"
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_pack_001_installed
+    - verify_pack_001_healthy
+    - verify_memory_requirements
+
+  database_migrations:
+    # PACK-001 inherited migrations
+    - "V001-V006"   # Core schema
+    - "V007-V008"   # Feature flags and agent factory
+    - "V009-V010"   # Auth and RBAC
+    - "V019-V020"   # Observability
+    - "V021-V030"   # Foundation agents
+    - "V031-V050"   # Data agents
+    - "V051-V081"   # MRV agents
+    - "V082"        # CSRD application
+    # PACK-002 additional migrations
+    - "V085"        # CDP application
+    - "V086"        # TCFD application
+    - "V087"        # SBTi application
+    - "V088"        # EU Taxonomy application
+    - "V130"        # Professional consolidation tables
+    - "V131"        # Approval workflow tables
+    - "V132"        # Quality gate tables
+    - "V133"        # Cross-framework mapping tables
+    - "V134"        # Scenario analysis tables
+    - "V135"        # Benchmarking tables
+    - "V136"        # Regulatory change tracking tables
+
+  post_install:
+    - verify_pack_001_agents
+    - seed_emission_factors
+    - seed_esrs_taxonomy
+    - seed_cdp_questionnaire_structure
+    - seed_tcfd_framework
+    - seed_sbti_pathways
+    - seed_eu_taxonomy_criteria
+    - seed_cross_framework_mappings
+    - seed_default_presets
+    - configure_scheduled_jobs
+    - configure_approval_workflows
+    - configure_quality_gates
+    - run_health_checks

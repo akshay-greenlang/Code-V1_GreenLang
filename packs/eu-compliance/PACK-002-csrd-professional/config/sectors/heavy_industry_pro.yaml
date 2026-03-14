@@ -1,0 +1,315 @@
+# =============================================================================
+# PACK-002 CSRD Professional Pack - Heavy Industry Professional Sector Preset
+# =============================================================================
+# NACE Codes: B05-B09 (Mining), C19-C25 (Heavy Manufacturing)
+# For cement, steel, chemicals, mining, and other hard-to-abate sectors.
+# Enhanced with:
+#   - Process emission intensity benchmarking
+#   - CBAM (Carbon Border Adjustment Mechanism) compliance
+#   - EU ETS benchmark tracking and free allocation
+#   - Hard-to-abate sector decarbonization pathways
+#   - Alternative fuel and feedstock tracking
+#   - Circular economy and industrial symbiosis
+# =============================================================================
+
+sector_specific:
+  nace_codes: ["B05", "B06", "B07", "B08", "B09",
+               "C19", "C20", "C21", "C22", "C23", "C24", "C25"]
+  sector_name: "Heavy Industry Professional"
+  sector_group: "heavy_industry"
+
+  # Primary emission sources
+  primary_emission_sources:
+    - "process_emissions"
+    - "stationary_combustion"
+    - "fugitive_emissions"
+    - "waste_treatment"
+    - "mobile_combustion"
+    - "calcination"
+    - "chemical_reactions"
+    - "metal_smelting"
+
+  # Industry subsectors
+  subsectors:
+    - id: "cement"
+      name: "Cement and Clinker"
+      process_type: "calcination"
+      benchmark_metric: "tCO2_per_tonne_cement"
+      eu_ets_benchmark: 0.766
+    - id: "steel"
+      name: "Iron and Steel"
+      process_type: "blast_furnace"
+      benchmark_metric: "tCO2_per_tonne_crude_steel"
+      eu_ets_benchmark: 1.328
+    - id: "aluminum"
+      name: "Aluminum"
+      process_type: "electrolysis"
+      benchmark_metric: "tCO2_per_tonne_aluminum"
+      eu_ets_benchmark: 1.514
+    - id: "chemicals"
+      name: "Chemicals and Petrochemicals"
+      process_type: "chemical_synthesis"
+      benchmark_metric: "tCO2_per_tonne_chemical"
+      eu_ets_benchmark: null
+    - id: "glass"
+      name: "Glass"
+      process_type: "melting"
+      benchmark_metric: "tCO2_per_tonne_glass"
+      eu_ets_benchmark: 0.453
+    - id: "ceramics"
+      name: "Ceramics and Bricks"
+      process_type: "firing"
+      benchmark_metric: "tCO2_per_tonne_product"
+      eu_ets_benchmark: null
+    - id: "mining"
+      name: "Mining and Quarrying"
+      process_type: "extraction"
+      benchmark_metric: "tCO2_per_tonne_ore"
+      eu_ets_benchmark: null
+
+  # EU ETS
+  eu_ets:
+    enabled: true
+    phase: "phase_4"
+    free_allocation_tracking: true
+    benchmark_comparison: true
+    carbon_leakage_sector: true
+    cross_border_adjustment: true
+    ets_price_scenario:
+      base_eur_per_tco2: 90
+      high_eur_per_tco2: 200
+      low_eur_per_tco2: 50
+
+  # CBAM
+  cbam:
+    enabled: true
+    affected_goods: ["cement", "iron_steel", "aluminum", "fertilizers", "hydrogen"]
+    transition_period_tracking: true
+    embedded_emissions_calculation: true
+    supplier_data_collection: true
+    quarterly_reporting: true
+    cbam_certificate_management: true
+    default_value_tracking: true
+    third_country_verification: true
+
+  # Hard-to-abate decarbonization
+  decarbonization:
+    technology_pathways:
+      - technology: "green_hydrogen"
+        readiness_level: "pilot"
+        deployment_year: 2030
+        cost_premium_percent: 40
+      - technology: "ccs_ccus"
+        readiness_level: "demonstration"
+        deployment_year: 2028
+        cost_premium_percent: 35
+      - technology: "electrification"
+        readiness_level: "commercial"
+        deployment_year: 2026
+        cost_premium_percent: 15
+      - technology: "biomass_substitution"
+        readiness_level: "commercial"
+        deployment_year: 2025
+        cost_premium_percent: 20
+      - technology: "waste_heat_recovery"
+        readiness_level: "commercial"
+        deployment_year: 2025
+        cost_premium_percent: 5
+    alternative_fuels:
+      tracking_enabled: true
+      fuel_types: ["green_hydrogen", "biomass", "waste_derived_fuel",
+                    "recycled_carbon_fuels", "e_fuels"]
+    alternative_feedstocks:
+      tracking_enabled: true
+      feedstock_types: ["recycled_metals", "recycled_glass", "fly_ash",
+                         "slag", "recycled_plastics"]
+
+  # SBTi pathways
+  sbti_sector:
+    sector_classification: "heavy_industry"
+    pathway_method: "SDA"
+    convergence_year: 2050
+    sector_specific_pathways:
+      - subsector: "cement"
+        pathway: "cement_1.5C"
+        intensity_metric: "tCO2e_per_tonne_cementitious"
+        base_year_intensity: null
+      - subsector: "steel"
+        pathway: "steel_1.5C"
+        intensity_metric: "tCO2e_per_tonne_crude_steel"
+        base_year_intensity: null
+      - subsector: "aluminum"
+        pathway: "aluminum_1.5C"
+        intensity_metric: "tCO2e_per_tonne_aluminum"
+        base_year_intensity: null
+      - subsector: "chemicals"
+        pathway: "chemicals_wba2C"
+        intensity_metric: "tCO2e_per_tonne_chemical"
+        base_year_intensity: null
+
+  # Circular economy and industrial symbiosis
+  circular_economy:
+    material_input_tracking: true
+    recycled_content_tracking: true
+    secondary_raw_material_use: true
+    waste_diversion_target: 0.85
+    industrial_symbiosis:
+      enabled: true
+      waste_exchange_tracking: true
+      energy_exchange_tracking: true
+
+  # Water and pollution
+  water:
+    intake_tracking: true
+    discharge_tracking: true
+    pollutant_tracking: true
+    water_stress_assessment: true
+    acid_mine_drainage: false
+
+  # Health and safety
+  health_safety:
+    incident_tracking: true
+    near_miss_reporting: true
+    exposure_monitoring: true
+    dust_monitoring: true
+    silica_exposure: true
+    ltir_target: 0.5
+    trir_target: 1.5
+    process_safety_events: true
+    fatality_target: 0
+
+  # Emission factor databases
+  emission_factor_databases:
+    - name: "eu_ets_benchmarks"
+      priority: 1
+    - name: "wbcsd_csi"
+      description: "WBCSD Cement Sustainability Initiative"
+      priority: 2
+    - name: "worldsteel_methodology"
+      description: "World Steel Association CO2 methodology"
+      priority: 3
+    - name: "iai_methodology"
+      description: "International Aluminium Institute methodology"
+      priority: 4
+    - name: "ipcc_industrial"
+      priority: 5
+
+# Scope 3
+scope3:
+  enabled_categories: [1, 2, 3, 4, 5, 6, 9, 10, 11, 12]
+  priority_categories: [1, 3, 4, 11, 12]
+  screening_required: true
+  materiality_threshold_percent: 2.0
+
+# Emission factor priorities
+emission_factor_priorities:
+  - "continuous_monitoring"
+  - "company_specific"
+  - "eu_ets_benchmarks"
+  - "sector_association"
+  - "industry_average"
+  - "ipcc_2006"
+
+# Professional overrides
+professional:
+  scenarios:
+    scenarios:
+      - id: "iea_nze"
+        name: "IEA NZE - Heavy Industry"
+        source: "IEA"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "iea_aps"
+        name: "IEA APS - Industrial Transition"
+        source: "IEA"
+        temperature_outcome_c: 1.7
+        enabled: true
+      - id: "ngfs_orderly"
+        name: "NGFS Orderly - Industrial Transformation"
+        source: "NGFS"
+        temperature_outcome_c: 1.5
+        enabled: true
+      - id: "ngfs_hot_house"
+        name: "NGFS Hot House - Carbon Cost Shock"
+        source: "NGFS"
+        temperature_outcome_c: 3.0
+        enabled: true
+      - id: "cbam_full_cost"
+        name: "CBAM Full Carbon Cost Pass-Through"
+        source: "custom"
+        temperature_outcome_c: null
+        enabled: true
+      - id: "hydrogen_economy"
+        name: "Green Hydrogen Economy Scenario"
+        source: "custom"
+        temperature_outcome_c: null
+        enabled: true
+    monte_carlo_enabled: true
+    monte_carlo_iterations: 10000
+
+  intensity_metrics:
+    metric_types: ["per_revenue", "per_employee", "per_unit"]
+    per_unit_definitions:
+      cement: "per_tonne_cementitious"
+      steel: "per_tonne_crude_steel"
+      aluminum: "per_tonne_aluminum"
+      chemicals: "per_tonne_product"
+      glass: "per_tonne_glass"
+      mining: "per_tonne_ore_processed"
+
+  benchmarking:
+    peer_group_source: "nace_code"
+    percentile_targets:
+      process_emission_intensity: 20
+      energy_intensity: 20
+      water_intensity: 25
+      waste_diversion: 80
+      safety_rate: 10
+      recycled_content: 75
+
+# Agent overrides
+agent_overrides:
+  AGENT-MRV-004:
+    enabled: true
+    config_overrides:
+      process_categories: ["cement_clinker", "iron_steel", "aluminum",
+                           "glass", "ceramics", "chemicals"]
+      eu_ets_benchmark_enabled: true
+      process_intensity_tracking: true
+  AGENT-MRV-005:
+    enabled: true
+    config_overrides:
+      leak_detection_method: "direct_measurement"
+      equipment_types: ["valves", "pumps", "compressors", "flanges",
+                         "connectors", "pressure_relief_valves"]
+      dust_emissions: true
+  AGENT-MRV-006:
+    enabled: true
+    config_overrides:
+      land_use_types: ["mining_sites", "quarries", "tailings", "remediation_sites"]
+  AGENT-MRV-007:
+    enabled: true
+    config_overrides:
+      waste_types: ["hazardous_chemical", "slag", "fly_ash", "mining_waste",
+                     "wastewater_sludge"]
+  AGENT-MRV-008:
+    enabled: false
+  AGENT-MRV-015:
+    enabled: true
+  AGENT-MRV-022:
+    enabled: true
+  AGENT-MRV-023:
+    enabled: true
+  AGENT-MRV-024:
+    enabled: true
+  AGENT-MRV-025:
+    enabled: true
+  AGENT-DATA-008:
+    enabled: true
+    config_overrides:
+      questionnaire_templates: ["heavy_industry_esg", "cbam_supplier_data",
+                                "raw_material_sourcing"]
+  GL-SBTi-FLAG:
+    enabled: false
+  GL-SBTi-FI:
+    enabled: false

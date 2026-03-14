@@ -523,7 +523,8 @@
       "Bash(do echo \"Deactivating development deployment $id...\")",
       "Bash(do echo \"Deactivating dev-plan deployment $id...\")",
       "Bash(do gh api \"repos/akshay-greenlang/Code-V1_GreenLang/deployments/$id\" -X DELETE)",
-      "Bash(do echo \"Dismissing alert $num...\")"
+      "Bash(do echo \"Dismissing alert $num...\")",
+      "Bash(1 <<'PYEOF'\nimport sys\nsys.path.insert\\(0, 'packs/eu-compliance/PACK-003-csrd-enterprise/integrations'\\)\nimport setup_wizard as wiz_mod\nwiz = wiz_mod.EnterpriseSetupWizard\\(\\)\ndemo = wiz.run_demo\\(\\)\nstate = wiz.get_state\\(\\)\nfor step_name, step in state.steps.items\\(\\):\n    print\\(f'{step_name}: {step.status.value}'\\)\nprint\\(f'is_complete: {state.is_complete}'\\)\nprint\\(f'total_steps_completed: {demo.total_steps_completed}'\\)\nPYEOF)"
     ],
     "deny": [],
     "ask": []

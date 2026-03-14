@@ -1,0 +1,681 @@
+entity_id,entity_name,country,reporting_year,reporting_month,metric_category,metric_id,metric_name,unit,value,data_quality_score,source,verified
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,energy,E_ELEC_CONS,Electricity Consumption,MWh,3264.9,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1487.6,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1171.3,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1696.3,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,1160.8,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,6383.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,water,W_INTAKE,Water Intake,m3,2317.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,waste,WST_TOTAL,Total Waste Generated,tonnes,47.0,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,1,waste,WST_RECYCLED,Waste Recycled,tonnes,33.2,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,energy,E_ELEC_CONS,Electricity Consumption,MWh,3068.6,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1537.5,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1198.9,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1662.0,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,1099.8,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,6249.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,water,W_INTAKE,Water Intake,m3,1726.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,waste,WST_TOTAL,Total Waste Generated,tonnes,57.6,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,2,waste,WST_RECYCLED,Waste Recycled,tonnes,43.0,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,energy,E_ELEC_CONS,Electricity Consumption,MWh,2886.6,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1289.5,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1073.9,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1547.1,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,970.3,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3777.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,water,W_INTAKE,Water Intake,m3,2427.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,waste,WST_TOTAL,Total Waste Generated,tonnes,66.9,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,3,waste,WST_RECYCLED,Waste Recycled,tonnes,41.7,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,energy,E_ELEC_CONS,Electricity Consumption,MWh,2687.1,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1477.8,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1052.8,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1563.6,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,1008.7,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,5681.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,water,W_INTAKE,Water Intake,m3,2454.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,waste,WST_TOTAL,Total Waste Generated,tonnes,70.3,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,4,waste,WST_RECYCLED,Waste Recycled,tonnes,51.9,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,energy,E_ELEC_CONS,Electricity Consumption,MWh,2892.2,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1426.5,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1079.7,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1528.7,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,1006.2,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3229.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,water,W_INTAKE,Water Intake,m3,1187.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,waste,WST_TOTAL,Total Waste Generated,tonnes,63.2,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,5,waste,WST_RECYCLED,Waste Recycled,tonnes,39.2,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,energy,E_ELEC_CONS,Electricity Consumption,MWh,2684.3,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1291.0,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1003.6,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1514.5,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,958.1,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,4851.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,water,W_INTAKE,Water Intake,m3,1156.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,waste,WST_TOTAL,Total Waste Generated,tonnes,61.4,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,6,waste,WST_RECYCLED,Waste Recycled,tonnes,51.2,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,energy,E_ELEC_CONS,Electricity Consumption,MWh,2798.8,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1403.1,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,992.6,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1528.5,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,938.6,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,4897.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,water,W_INTAKE,Water Intake,m3,2482.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,waste,WST_TOTAL,Total Waste Generated,tonnes,91.2,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,7,waste,WST_RECYCLED,Waste Recycled,tonnes,67.4,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,energy,E_ELEC_CONS,Electricity Consumption,MWh,2808.9,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1454.6,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1054.7,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1453.8,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,925.8,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,4577.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,water,W_INTAKE,Water Intake,m3,1255.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,waste,WST_TOTAL,Total Waste Generated,tonnes,56.9,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,8,waste,WST_RECYCLED,Waste Recycled,tonnes,47.6,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,energy,E_ELEC_CONS,Electricity Consumption,MWh,2905.4,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1358.5,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1058.2,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1501.2,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,1026.9,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,5294.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,water,W_INTAKE,Water Intake,m3,1250.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,waste,WST_TOTAL,Total Waste Generated,tonnes,59.7,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,9,waste,WST_RECYCLED,Waste Recycled,tonnes,44.2,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,energy,E_ELEC_CONS,Electricity Consumption,MWh,2733.6,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1418.9,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1083.5,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1501.7,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,958.4,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,7988.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,water,W_INTAKE,Water Intake,m3,1666.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,waste,WST_TOTAL,Total Waste Generated,tonnes,47.3,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,10,waste,WST_RECYCLED,Waste Recycled,tonnes,28.9,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,energy,E_ELEC_CONS,Electricity Consumption,MWh,2690.7,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1428.5,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1072.4,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1505.2,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,943.0,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,4908.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,water,W_INTAKE,Water Intake,m3,2493.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,waste,WST_TOTAL,Total Waste Generated,tonnes,82.3,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,11,waste,WST_RECYCLED,Waste Recycled,tonnes,69.4,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,energy,E_ELEC_CONS,Electricity Consumption,MWh,3336.2,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,energy,E_GAS_CONS,Natural Gas Consumption,MWh,1484.2,4,erp_meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,1224.7,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,1776.3,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,1138.1,4,calculated,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,4334.0,3,fuel_cards,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,water,W_INTAKE,Water Intake,m3,1890.0,3,meter,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,waste,WST_TOTAL,Total Waste Generated,tonnes,48.9,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,12,waste,WST_RECYCLED,Waste Recycled,tonnes,34.7,3,waste_manifest,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,workforce,WF_TOTAL,Total Employees,headcount,3500,5,hr_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,workforce,WF_FEMALE_PCT,Female Employees Percent,%,39.5,5,hr_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,workforce,WF_TURNOVER,Voluntary Turnover Rate,%,11.7,4,hr_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,workforce,WF_TRAINING,Training Hours per Employee,hours,43.0,4,hr_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,workforce,WF_PAY_GAP,Gender Pay Gap,%,3.4,4,hr_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,workforce,WF_CB_COV,Collective Bargaining Coverage,%,70.0,4,hr_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,safety,HS_LTIR,Lost Time Incident Rate,rate,0.77,4,ehs_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,safety,HS_TRIR,Total Recordable Incident Rate,rate,3.78,4,ehs_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,safety,HS_FATALITIES,Work-Related Fatalities,count,0,5,ehs_system,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C1,Cat 1 Purchased Goods & Services,tCO2e,306600.0,2,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C2,Cat 2 Capital Goods,tCO2e,40304.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C3,Cat 3 Fuel & Energy,tCO2e,15634.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C4,Cat 4 Upstream Transport,tCO2e,39349.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C5,Cat 5 Waste,tCO2e,11945.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C6,Cat 6 Business Travel,tCO2e,8981.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C7,Cat 7 Employee Commuting,tCO2e,11292.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C9,Cat 9 Downstream Transport,tCO2e,33762.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C11,Cat 11 Use of Sold Products,tCO2e,65468.0,2,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,emissions,GHG_S3_C12,Cat 12 End-of-Life Treatment,tCO2e,15161.0,2,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,financial,FIN_REVENUE,Revenue,EUR_million,890.4,5,erp,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,financial,FIN_CAPEX,Capital Expenditure,EUR_million,71.2,5,erp,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,financial,FIN_ENV_CAPEX,Environmental CapEx,EUR_million,17.8,4,erp,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,taxonomy,TAX_ELIG_REV,Taxonomy-Eligible Revenue,%,63.1,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,taxonomy,TAX_ALIGN_REV,Taxonomy-Aligned Revenue,%,30.5,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,taxonomy,TAX_ELIG_CAPEX,Taxonomy-Eligible CapEx,%,83.2,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,taxonomy,TAX_ALIGN_CAPEX,Taxonomy-Aligned CapEx,%,57.0,3,calculated,false
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,energy,E_RENEW_PCT,Renewable Electricity Share,%,66.6,4,ppa_contracts,true
+ETH-DE-001,EuroTech Automotive GmbH,DE,2025,,energy,E_INTENSITY,Energy Intensity,MWh/EUR_million,56.6,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,energy,E_ELEC_CONS,Electricity Consumption,MWh,1804.6,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,energy,E_GAS_CONS,Natural Gas Consumption,MWh,748.1,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,576.4,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,320.8,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,194.3,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3169.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,water,W_INTAKE,Water Intake,m3,472.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,waste,WST_TOTAL,Total Waste Generated,tonnes,51.9,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,1,waste,WST_RECYCLED,Waste Recycled,tonnes,41.1,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,energy,E_ELEC_CONS,Electricity Consumption,MWh,1771.6,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,energy,E_GAS_CONS,Natural Gas Consumption,MWh,801.8,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,558.2,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,299.8,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,210.2,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2985.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,water,W_INTAKE,Water Intake,m3,597.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,waste,WST_TOTAL,Total Waste Generated,tonnes,42.8,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,2,waste,WST_RECYCLED,Waste Recycled,tonnes,33.5,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,energy,E_ELEC_CONS,Electricity Consumption,MWh,1552.2,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,energy,E_GAS_CONS,Natural Gas Consumption,MWh,678.9,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,506.9,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,271.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,175.1,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3261.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,water,W_INTAKE,Water Intake,m3,517.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,waste,WST_TOTAL,Total Waste Generated,tonnes,29.8,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,3,waste,WST_RECYCLED,Waste Recycled,tonnes,20.4,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,energy,E_ELEC_CONS,Electricity Consumption,MWh,1614.1,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,energy,E_GAS_CONS,Natural Gas Consumption,MWh,669.8,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,469.5,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,255.5,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,178.5,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2419.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,water,W_INTAKE,Water Intake,m3,1203.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,waste,WST_TOTAL,Total Waste Generated,tonnes,55.9,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,4,waste,WST_RECYCLED,Waste Recycled,tonnes,34.5,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,energy,E_ELEC_CONS,Electricity Consumption,MWh,1558.1,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,energy,E_GAS_CONS,Natural Gas Consumption,MWh,718.9,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,469.2,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,257.2,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,183.9,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3417.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,water,W_INTAKE,Water Intake,m3,825.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,waste,WST_TOTAL,Total Waste Generated,tonnes,52.9,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,5,waste,WST_RECYCLED,Waste Recycled,tonnes,42.4,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,energy,E_ELEC_CONS,Electricity Consumption,MWh,1527.2,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,energy,E_GAS_CONS,Natural Gas Consumption,MWh,645.0,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,472.5,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,261.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,173.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3878.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,water,W_INTAKE,Water Intake,m3,1000.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,waste,WST_TOTAL,Total Waste Generated,tonnes,61.1,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,6,waste,WST_RECYCLED,Waste Recycled,tonnes,38.2,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,energy,E_ELEC_CONS,Electricity Consumption,MWh,1560.7,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,energy,E_GAS_CONS,Natural Gas Consumption,MWh,671.8,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,493.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,256.4,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,168.2,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3060.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,water,W_INTAKE,Water Intake,m3,780.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,waste,WST_TOTAL,Total Waste Generated,tonnes,32.0,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,7,waste,WST_RECYCLED,Waste Recycled,tonnes,21.2,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,energy,E_ELEC_CONS,Electricity Consumption,MWh,1642.7,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,energy,E_GAS_CONS,Natural Gas Consumption,MWh,683.2,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,492.9,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,264.3,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,165.8,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,4666.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,water,W_INTAKE,Water Intake,m3,1142.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,waste,WST_TOTAL,Total Waste Generated,tonnes,60.4,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,8,waste,WST_RECYCLED,Waste Recycled,tonnes,50.2,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,energy,E_ELEC_CONS,Electricity Consumption,MWh,1655.8,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,energy,E_GAS_CONS,Natural Gas Consumption,MWh,662.6,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,482.3,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,259.4,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,174.5,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1922.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,water,W_INTAKE,Water Intake,m3,743.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,waste,WST_TOTAL,Total Waste Generated,tonnes,61.1,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,9,waste,WST_RECYCLED,Waste Recycled,tonnes,40.7,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,energy,E_ELEC_CONS,Electricity Consumption,MWh,1645.5,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,energy,E_GAS_CONS,Natural Gas Consumption,MWh,695.0,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,479.3,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,279.2,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,185.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3372.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,water,W_INTAKE,Water Intake,m3,1040.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,waste,WST_TOTAL,Total Waste Generated,tonnes,26.9,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,10,waste,WST_RECYCLED,Waste Recycled,tonnes,18.1,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,energy,E_ELEC_CONS,Electricity Consumption,MWh,1675.0,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,energy,E_GAS_CONS,Natural Gas Consumption,MWh,708.9,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,485.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,273.6,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,168.4,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3455.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,water,W_INTAKE,Water Intake,m3,851.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,waste,WST_TOTAL,Total Waste Generated,tonnes,55.7,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,11,waste,WST_RECYCLED,Waste Recycled,tonnes,35.6,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,energy,E_ELEC_CONS,Electricity Consumption,MWh,1924.8,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,energy,E_GAS_CONS,Natural Gas Consumption,MWh,750.9,4,erp_meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,538.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,310.0,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,206.2,4,calculated,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2437.0,3,fuel_cards,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,water,W_INTAKE,Water Intake,m3,516.0,3,meter,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,waste,WST_TOTAL,Total Waste Generated,tonnes,57.2,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,12,waste,WST_RECYCLED,Waste Recycled,tonnes,37.8,3,waste_manifest,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,workforce,WF_TOTAL,Total Employees,headcount,1800,5,hr_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,workforce,WF_FEMALE_PCT,Female Employees Percent,%,40.9,5,hr_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,workforce,WF_TURNOVER,Voluntary Turnover Rate,%,9.7,4,hr_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,workforce,WF_TRAINING,Training Hours per Employee,hours,35.0,4,hr_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,workforce,WF_PAY_GAP,Gender Pay Gap,%,4.5,4,hr_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,workforce,WF_CB_COV,Collective Bargaining Coverage,%,71.0,4,hr_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,safety,HS_LTIR,Lost Time Incident Rate,rate,1.9,4,ehs_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,safety,HS_TRIR,Total Recordable Incident Rate,rate,2.01,4,ehs_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,safety,HS_FATALITIES,Work-Related Fatalities,count,0,5,ehs_system,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C1,Cat 1 Purchased Goods & Services,tCO2e,173778.0,2,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C2,Cat 2 Capital Goods,tCO2e,23227.0,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C3,Cat 3 Fuel & Energy,tCO2e,8691.0,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C4,Cat 4 Upstream Transport,tCO2e,23244.0,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C5,Cat 5 Waste,tCO2e,7191.0,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C6,Cat 6 Business Travel,tCO2e,4796.0,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C7,Cat 7 Employee Commuting,tCO2e,6868.0,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C9,Cat 9 Downstream Transport,tCO2e,17067.0,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C11,Cat 11 Use of Sold Products,tCO2e,37657.0,2,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,emissions,GHG_S3_C12,Cat 12 End-of-Life Treatment,tCO2e,10809.0,2,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,financial,FIN_REVENUE,Revenue,EUR_million,519.6,5,erp,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,financial,FIN_CAPEX,Capital Expenditure,EUR_million,41.6,5,erp,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,financial,FIN_ENV_CAPEX,Environmental CapEx,EUR_million,10.4,4,erp,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,taxonomy,TAX_ELIG_REV,Taxonomy-Eligible Revenue,%,79.9,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,taxonomy,TAX_ALIGN_REV,Taxonomy-Aligned Revenue,%,31.8,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,taxonomy,TAX_ELIG_CAPEX,Taxonomy-Eligible CapEx,%,65.3,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,taxonomy,TAX_ALIGN_CAPEX,Taxonomy-Aligned CapEx,%,41.6,3,calculated,false
+ETH-FR-001,EuroTech France SAS,FR,2025,,energy,E_RENEW_PCT,Renewable Electricity Share,%,71.7,4,ppa_contracts,true
+ETH-FR-001,EuroTech France SAS,FR,2025,,energy,E_INTENSITY,Energy Intensity,MWh/EUR_million,53.1,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,energy,E_ELEC_CONS,Electricity Consumption,MWh,1432.6,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,energy,E_GAS_CONS,Natural Gas Consumption,MWh,487.9,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,303.0,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,786.3,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,412.3,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2785.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,water,W_INTAKE,Water Intake,m3,631.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,waste,WST_TOTAL,Total Waste Generated,tonnes,40.8,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,1,waste,WST_RECYCLED,Waste Recycled,tonnes,31.2,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,energy,E_ELEC_CONS,Electricity Consumption,MWh,1312.1,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,energy,E_GAS_CONS,Natural Gas Consumption,MWh,483.3,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,300.9,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,827.5,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,416.5,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1569.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,water,W_INTAKE,Water Intake,m3,342.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,waste,WST_TOTAL,Total Waste Generated,tonnes,16.7,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,2,waste,WST_RECYCLED,Waste Recycled,tonnes,12.3,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,energy,E_ELEC_CONS,Electricity Consumption,MWh,1172.7,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,energy,E_GAS_CONS,Natural Gas Consumption,MWh,406.7,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,272.8,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,687.0,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,351.6,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1846.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,water,W_INTAKE,Water Intake,m3,559.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,waste,WST_TOTAL,Total Waste Generated,tonnes,38.5,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,3,waste,WST_RECYCLED,Waste Recycled,tonnes,31.2,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,energy,E_ELEC_CONS,Electricity Consumption,MWh,1151.1,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,energy,E_GAS_CONS,Natural Gas Consumption,MWh,395.1,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,261.0,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,672.9,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,356.3,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2643.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,water,W_INTAKE,Water Intake,m3,427.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,waste,WST_TOTAL,Total Waste Generated,tonnes,34.0,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,4,waste,WST_RECYCLED,Waste Recycled,tonnes,25.1,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,energy,E_ELEC_CONS,Electricity Consumption,MWh,1191.3,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,energy,E_GAS_CONS,Natural Gas Consumption,MWh,368.6,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,255.7,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,735.1,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,360.9,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2447.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,water,W_INTAKE,Water Intake,m3,761.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,waste,WST_TOTAL,Total Waste Generated,tonnes,29.7,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,5,waste,WST_RECYCLED,Waste Recycled,tonnes,18.9,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,energy,E_ELEC_CONS,Electricity Consumption,MWh,1138.0,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,energy,E_GAS_CONS,Natural Gas Consumption,MWh,381.9,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,273.5,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,718.0,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,354.0,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3202.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,water,W_INTAKE,Water Intake,m3,397.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,waste,WST_TOTAL,Total Waste Generated,tonnes,20.6,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,6,waste,WST_RECYCLED,Waste Recycled,tonnes,12.9,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,energy,E_ELEC_CONS,Electricity Consumption,MWh,1215.1,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,energy,E_GAS_CONS,Natural Gas Consumption,MWh,418.2,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,260.5,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,705.8,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,329.9,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3268.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,water,W_INTAKE,Water Intake,m3,778.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,waste,WST_TOTAL,Total Waste Generated,tonnes,40.5,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,7,waste,WST_RECYCLED,Waste Recycled,tonnes,32.5,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,energy,E_ELEC_CONS,Electricity Consumption,MWh,1227.1,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,energy,E_GAS_CONS,Natural Gas Consumption,MWh,364.0,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,269.2,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,685.7,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,356.4,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2995.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,water,W_INTAKE,Water Intake,m3,778.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,waste,WST_TOTAL,Total Waste Generated,tonnes,36.0,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,8,waste,WST_RECYCLED,Waste Recycled,tonnes,24.0,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,energy,E_ELEC_CONS,Electricity Consumption,MWh,1234.5,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,energy,E_GAS_CONS,Natural Gas Consumption,MWh,374.9,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,276.9,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,733.4,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,337.3,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3026.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,water,W_INTAKE,Water Intake,m3,543.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,waste,WST_TOTAL,Total Waste Generated,tonnes,22.1,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,9,waste,WST_RECYCLED,Waste Recycled,tonnes,17.7,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,energy,E_ELEC_CONS,Electricity Consumption,MWh,1167.3,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,energy,E_GAS_CONS,Natural Gas Consumption,MWh,369.5,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,258.8,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,695.8,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,359.6,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,3347.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,water,W_INTAKE,Water Intake,m3,437.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,waste,WST_TOTAL,Total Waste Generated,tonnes,31.3,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,10,waste,WST_RECYCLED,Waste Recycled,tonnes,21.9,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,energy,E_ELEC_CONS,Electricity Consumption,MWh,1257.7,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,energy,E_GAS_CONS,Natural Gas Consumption,MWh,402.3,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,278.7,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,680.8,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,363.2,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1663.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,water,W_INTAKE,Water Intake,m3,835.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,waste,WST_TOTAL,Total Waste Generated,tonnes,21.0,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,11,waste,WST_RECYCLED,Waste Recycled,tonnes,13.2,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,energy,E_ELEC_CONS,Electricity Consumption,MWh,1371.0,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,energy,E_GAS_CONS,Natural Gas Consumption,MWh,476.8,4,erp_meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,301.3,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,822.8,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,399.4,4,calculated,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,2104.0,3,fuel_cards,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,water,W_INTAKE,Water Intake,m3,610.0,3,meter,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,waste,WST_TOTAL,Total Waste Generated,tonnes,20.7,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,12,waste,WST_RECYCLED,Waste Recycled,tonnes,16.1,3,waste_manifest,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,workforce,WF_TOTAL,Total Employees,headcount,1200,5,hr_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,workforce,WF_FEMALE_PCT,Female Employees Percent,%,35.0,5,hr_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,workforce,WF_TURNOVER,Voluntary Turnover Rate,%,11.6,4,hr_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,workforce,WF_TRAINING,Training Hours per Employee,hours,37.0,4,hr_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,workforce,WF_PAY_GAP,Gender Pay Gap,%,5.0,4,hr_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,workforce,WF_CB_COV,Collective Bargaining Coverage,%,77.0,4,hr_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,safety,HS_LTIR,Lost Time Incident Rate,rate,1.51,4,ehs_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,safety,HS_TRIR,Total Recordable Incident Rate,rate,2.41,4,ehs_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,safety,HS_FATALITIES,Work-Related Fatalities,count,0,5,ehs_system,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C1,Cat 1 Purchased Goods & Services,tCO2e,111462.0,2,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C2,Cat 2 Capital Goods,tCO2e,18532.0,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C3,Cat 3 Fuel & Energy,tCO2e,6278.0,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C4,Cat 4 Upstream Transport,tCO2e,15840.0,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C5,Cat 5 Waste,tCO2e,5866.0,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C6,Cat 6 Business Travel,tCO2e,3806.0,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C7,Cat 7 Employee Commuting,tCO2e,4596.0,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C9,Cat 9 Downstream Transport,tCO2e,13142.0,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C11,Cat 11 Use of Sold Products,tCO2e,27292.0,2,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,emissions,GHG_S3_C12,Cat 12 End-of-Life Treatment,tCO2e,7055.0,2,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,financial,FIN_REVENUE,Revenue,EUR_million,380.4,5,erp,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,financial,FIN_CAPEX,Capital Expenditure,EUR_million,30.4,5,erp,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,financial,FIN_ENV_CAPEX,Environmental CapEx,EUR_million,7.6,4,erp,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,taxonomy,TAX_ELIG_REV,Taxonomy-Eligible Revenue,%,62.4,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,taxonomy,TAX_ALIGN_REV,Taxonomy-Aligned Revenue,%,33.2,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,taxonomy,TAX_ELIG_CAPEX,Taxonomy-Eligible CapEx,%,70.5,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,taxonomy,TAX_ALIGN_CAPEX,Taxonomy-Aligned CapEx,%,58.5,3,calculated,false
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,energy,E_RENEW_PCT,Renewable Electricity Share,%,58.9,4,ppa_contracts,true
+ETH-NL-001,EuroTech Nederland B.V.,NL,2025,,energy,E_INTENSITY,Energy Intensity,MWh/EUR_million,50.5,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,energy,E_ELEC_CONS,Electricity Consumption,MWh,1076.7,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,energy,E_GAS_CONS,Natural Gas Consumption,MWh,644.2,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,450.8,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,944.1,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,776.6,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,896.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,water,W_INTAKE,Water Intake,m3,394.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,waste,WST_TOTAL,Total Waste Generated,tonnes,22.2,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,1,waste,WST_RECYCLED,Waste Recycled,tonnes,17.0,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,energy,E_ELEC_CONS,Electricity Consumption,MWh,1031.4,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,energy,E_GAS_CONS,Natural Gas Consumption,MWh,626.6,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,446.8,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,937.0,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,850.2,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1411.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,water,W_INTAKE,Water Intake,m3,280.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,waste,WST_TOTAL,Total Waste Generated,tonnes,12.0,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,2,waste,WST_RECYCLED,Waste Recycled,tonnes,8.7,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,energy,E_ELEC_CONS,Electricity Consumption,MWh,912.0,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,energy,E_GAS_CONS,Natural Gas Consumption,MWh,535.5,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,412.7,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,837.5,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,723.1,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,834.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,water,W_INTAKE,Water Intake,m3,293.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,waste,WST_TOTAL,Total Waste Generated,tonnes,10.8,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,3,waste,WST_RECYCLED,Waste Recycled,tonnes,7.1,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,energy,E_ELEC_CONS,Electricity Consumption,MWh,897.8,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,energy,E_GAS_CONS,Natural Gas Consumption,MWh,580.8,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,382.9,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,810.0,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,720.0,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,803.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,water,W_INTAKE,Water Intake,m3,510.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,waste,WST_TOTAL,Total Waste Generated,tonnes,20.5,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,4,waste,WST_RECYCLED,Waste Recycled,tonnes,13.6,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,energy,E_ELEC_CONS,Electricity Consumption,MWh,914.0,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,energy,E_GAS_CONS,Natural Gas Consumption,MWh,506.5,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,410.0,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,839.1,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,682.8,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1036.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,water,W_INTAKE,Water Intake,m3,283.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,waste,WST_TOTAL,Total Waste Generated,tonnes,30.0,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,5,waste,WST_RECYCLED,Waste Recycled,tonnes,21.9,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,energy,E_ELEC_CONS,Electricity Consumption,MWh,846.6,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,energy,E_GAS_CONS,Natural Gas Consumption,MWh,520.0,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,407.7,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,801.2,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,721.2,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1281.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,water,W_INTAKE,Water Intake,m3,638.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,waste,WST_TOTAL,Total Waste Generated,tonnes,22.5,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,6,waste,WST_RECYCLED,Waste Recycled,tonnes,18.8,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,energy,E_ELEC_CONS,Electricity Consumption,MWh,921.2,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,energy,E_GAS_CONS,Natural Gas Consumption,MWh,551.5,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,402.6,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,805.1,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,723.3,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1160.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,water,W_INTAKE,Water Intake,m3,598.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,waste,WST_TOTAL,Total Waste Generated,tonnes,25.6,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,7,waste,WST_RECYCLED,Waste Recycled,tonnes,18.4,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,energy,E_ELEC_CONS,Electricity Consumption,MWh,865.2,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,energy,E_GAS_CONS,Natural Gas Consumption,MWh,519.8,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,399.4,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,826.1,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,701.6,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1240.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,water,W_INTAKE,Water Intake,m3,326.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,waste,WST_TOTAL,Total Waste Generated,tonnes,11.9,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,8,waste,WST_RECYCLED,Waste Recycled,tonnes,8.0,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,energy,E_ELEC_CONS,Electricity Consumption,MWh,879.5,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,energy,E_GAS_CONS,Natural Gas Consumption,MWh,534.1,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,401.6,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,787.5,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,691.7,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1308.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,water,W_INTAKE,Water Intake,m3,515.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,waste,WST_TOTAL,Total Waste Generated,tonnes,11.6,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,9,waste,WST_RECYCLED,Waste Recycled,tonnes,8.1,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,energy,E_ELEC_CONS,Electricity Consumption,MWh,903.8,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,energy,E_GAS_CONS,Natural Gas Consumption,MWh,542.6,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,388.3,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,810.5,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,739.6,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1197.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,water,W_INTAKE,Water Intake,m3,510.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,waste,WST_TOTAL,Total Waste Generated,tonnes,27.9,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,10,waste,WST_RECYCLED,Waste Recycled,tonnes,22.1,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,energy,E_ELEC_CONS,Electricity Consumption,MWh,889.2,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,energy,E_GAS_CONS,Natural Gas Consumption,MWh,506.5,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,394.1,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,837.7,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,735.9,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,1570.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,water,W_INTAKE,Water Intake,m3,389.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,waste,WST_TOTAL,Total Waste Generated,tonnes,25.7,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,11,waste,WST_RECYCLED,Waste Recycled,tonnes,18.9,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,energy,E_ELEC_CONS,Electricity Consumption,MWh,1045.7,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,energy,E_GAS_CONS,Natural Gas Consumption,MWh,604.2,4,erp_meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,447.1,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,933.5,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,778.9,4,calculated,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,946.0,3,fuel_cards,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,water,W_INTAKE,Water Intake,m3,503.0,3,meter,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,waste,WST_TOTAL,Total Waste Generated,tonnes,18.6,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,12,waste,WST_RECYCLED,Waste Recycled,tonnes,11.9,3,waste_manifest,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,workforce,WF_TOTAL,Total Employees,headcount,900,5,hr_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,workforce,WF_FEMALE_PCT,Female Employees Percent,%,39.7,5,hr_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,workforce,WF_TURNOVER,Voluntary Turnover Rate,%,6.8,4,hr_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,workforce,WF_TRAINING,Training Hours per Employee,hours,39.0,4,hr_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,workforce,WF_PAY_GAP,Gender Pay Gap,%,2.6,4,hr_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,workforce,WF_CB_COV,Collective Bargaining Coverage,%,67.0,4,hr_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,safety,HS_LTIR,Lost Time Incident Rate,rate,1.35,4,ehs_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,safety,HS_TRIR,Total Recordable Incident Rate,rate,1.57,4,ehs_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,safety,HS_FATALITIES,Work-Related Fatalities,count,0,5,ehs_system,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C1,Cat 1 Purchased Goods & Services,tCO2e,59352.0,2,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C2,Cat 2 Capital Goods,tCO2e,7871.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C3,Cat 3 Fuel & Energy,tCO2e,3051.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C4,Cat 4 Upstream Transport,tCO2e,7085.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C5,Cat 5 Waste,tCO2e,2532.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C6,Cat 6 Business Travel,tCO2e,1626.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C7,Cat 7 Employee Commuting,tCO2e,2187.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C9,Cat 9 Downstream Transport,tCO2e,6803.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C11,Cat 11 Use of Sold Products,tCO2e,12837.0,2,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,emissions,GHG_S3_C12,Cat 12 End-of-Life Treatment,tCO2e,3577.0,2,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,financial,FIN_REVENUE,Revenue,EUR_million,180.0,5,erp,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,financial,FIN_CAPEX,Capital Expenditure,EUR_million,14.4,5,erp,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,financial,FIN_ENV_CAPEX,Environmental CapEx,EUR_million,3.6,4,erp,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,taxonomy,TAX_ELIG_REV,Taxonomy-Eligible Revenue,%,75.8,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,taxonomy,TAX_ALIGN_REV,Taxonomy-Aligned Revenue,%,36.3,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,taxonomy,TAX_ELIG_CAPEX,Taxonomy-Eligible CapEx,%,62.0,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,taxonomy,TAX_ALIGN_CAPEX,Taxonomy-Aligned CapEx,%,35.5,3,calculated,false
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,energy,E_RENEW_PCT,Renewable Electricity Share,%,52.0,4,ppa_contracts,true
+ETH-PL-001,EuroTech Polska Sp. z o.o.,PL,2025,,energy,E_INTENSITY,Energy Intensity,MWh/EUR_million,96.7,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,energy,E_ELEC_CONS,Electricity Consumption,MWh,603.7,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,energy,E_GAS_CONS,Natural Gas Consumption,MWh,112.2,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,116.7,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,79.2,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,34.4,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,986.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,water,W_INTAKE,Water Intake,m3,414.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,waste,WST_TOTAL,Total Waste Generated,tonnes,9.6,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,1,waste,WST_RECYCLED,Waste Recycled,tonnes,5.8,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,energy,E_ELEC_CONS,Electricity Consumption,MWh,555.0,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,energy,E_GAS_CONS,Natural Gas Consumption,MWh,108.1,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,116.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,77.5,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,32.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,946.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,water,W_INTAKE,Water Intake,m3,361.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,waste,WST_TOTAL,Total Waste Generated,tonnes,9.2,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,2,waste,WST_RECYCLED,Waste Recycled,tonnes,6.9,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,energy,E_ELEC_CONS,Electricity Consumption,MWh,512.4,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,energy,E_GAS_CONS,Natural Gas Consumption,MWh,93.8,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,103.2,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,70.1,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,28.3,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,455.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,water,W_INTAKE,Water Intake,m3,228.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,waste,WST_TOTAL,Total Waste Generated,tonnes,16.1,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,3,waste,WST_RECYCLED,Waste Recycled,tonnes,13.5,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,energy,E_ELEC_CONS,Electricity Consumption,MWh,494.8,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,energy,E_GAS_CONS,Natural Gas Consumption,MWh,103.4,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,95.8,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,68.3,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,29.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,511.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,water,W_INTAKE,Water Intake,m3,362.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,waste,WST_TOTAL,Total Waste Generated,tonnes,18.5,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,4,waste,WST_RECYCLED,Waste Recycled,tonnes,13.9,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,energy,E_ELEC_CONS,Electricity Consumption,MWh,481.1,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,energy,E_GAS_CONS,Natural Gas Consumption,MWh,107.7,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,102.8,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,66.0,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,29.3,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,706.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,water,W_INTAKE,Water Intake,m3,285.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,waste,WST_TOTAL,Total Waste Generated,tonnes,11.5,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,5,waste,WST_RECYCLED,Waste Recycled,tonnes,9.3,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,energy,E_ELEC_CONS,Electricity Consumption,MWh,508.4,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,energy,E_GAS_CONS,Natural Gas Consumption,MWh,92.3,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,103.0,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,66.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,30.0,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,951.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,water,W_INTAKE,Water Intake,m3,264.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,waste,WST_TOTAL,Total Waste Generated,tonnes,16.9,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,6,waste,WST_RECYCLED,Waste Recycled,tonnes,14.2,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,energy,E_ELEC_CONS,Electricity Consumption,MWh,481.2,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,energy,E_GAS_CONS,Natural Gas Consumption,MWh,103.4,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,98.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,65.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,28.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,969.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,water,W_INTAKE,Water Intake,m3,215.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,waste,WST_TOTAL,Total Waste Generated,tonnes,18.5,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,7,waste,WST_RECYCLED,Waste Recycled,tonnes,14.9,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,energy,E_ELEC_CONS,Electricity Consumption,MWh,472.1,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,energy,E_GAS_CONS,Natural Gas Consumption,MWh,104.5,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,96.0,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,65.8,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,29.4,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,712.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,water,W_INTAKE,Water Intake,m3,146.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,waste,WST_TOTAL,Total Waste Generated,tonnes,18.5,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,8,waste,WST_RECYCLED,Waste Recycled,tonnes,11.9,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,energy,E_ELEC_CONS,Electricity Consumption,MWh,485.6,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,energy,E_GAS_CONS,Natural Gas Consumption,MWh,104.8,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,98.4,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,69.5,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,30.1,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,638.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,water,W_INTAKE,Water Intake,m3,140.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,waste,WST_TOTAL,Total Waste Generated,tonnes,19.9,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,9,waste,WST_RECYCLED,Waste Recycled,tonnes,12.4,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,energy,E_ELEC_CONS,Electricity Consumption,MWh,511.0,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,energy,E_GAS_CONS,Natural Gas Consumption,MWh,99.8,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,102.6,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,68.3,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,29.9,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,794.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,water,W_INTAKE,Water Intake,m3,368.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,waste,WST_TOTAL,Total Waste Generated,tonnes,8.1,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,10,waste,WST_RECYCLED,Waste Recycled,tonnes,5.3,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,energy,E_ELEC_CONS,Electricity Consumption,MWh,509.6,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,energy,E_GAS_CONS,Natural Gas Consumption,MWh,96.9,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,100.8,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,66.8,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,29.6,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,746.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,water,W_INTAKE,Water Intake,m3,355.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,waste,WST_TOTAL,Total Waste Generated,tonnes,11.4,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,11,waste,WST_RECYCLED,Waste Recycled,tonnes,8.8,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,energy,E_ELEC_CONS,Electricity Consumption,MWh,561.8,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,energy,E_GAS_CONS,Natural Gas Consumption,MWh,110.4,4,erp_meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,emissions,GHG_S1_TOTAL,Scope 1 Total GHG Emissions,tCO2e,110.6,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,emissions,GHG_S2_LOC,Scope 2 Location-Based Emissions,tCO2e,74.7,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,emissions,GHG_S2_MKT,Scope 2 Market-Based Emissions,tCO2e,32.6,4,calculated,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,energy,E_DIESEL_FLEET,Fleet Diesel Consumption,liters,827.0,3,fuel_cards,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,water,W_INTAKE,Water Intake,m3,359.0,3,meter,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,waste,WST_TOTAL,Total Waste Generated,tonnes,9.4,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,12,waste,WST_RECYCLED,Waste Recycled,tonnes,6.1,3,waste_manifest,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,workforce,WF_TOTAL,Total Employees,headcount,600,5,hr_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,workforce,WF_FEMALE_PCT,Female Employees Percent,%,39.8,5,hr_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,workforce,WF_TURNOVER,Voluntary Turnover Rate,%,10.3,4,hr_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,workforce,WF_TRAINING,Training Hours per Employee,hours,45.0,4,hr_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,workforce,WF_PAY_GAP,Gender Pay Gap,%,4.3,4,hr_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,workforce,WF_CB_COV,Collective Bargaining Coverage,%,63.0,4,hr_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,safety,HS_LTIR,Lost Time Incident Rate,rate,0.65,4,ehs_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,safety,HS_TRIR,Total Recordable Incident Rate,rate,1.99,4,ehs_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,safety,HS_FATALITIES,Work-Related Fatalities,count,0,5,ehs_system,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C1,Cat 1 Purchased Goods & Services,tCO2e,39283.0,2,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C2,Cat 2 Capital Goods,tCO2e,5721.0,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C3,Cat 3 Fuel & Energy,tCO2e,1999.0,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C4,Cat 4 Upstream Transport,tCO2e,5643.0,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C5,Cat 5 Waste,tCO2e,1784.0,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C6,Cat 6 Business Travel,tCO2e,1360.0,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C7,Cat 7 Employee Commuting,tCO2e,1648.0,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C9,Cat 9 Downstream Transport,tCO2e,4839.0,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C11,Cat 11 Use of Sold Products,tCO2e,8764.0,2,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,emissions,GHG_S3_C12,Cat 12 End-of-Life Treatment,tCO2e,2632.0,2,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,financial,FIN_REVENUE,Revenue,EUR_million,129.6,5,erp,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,financial,FIN_CAPEX,Capital Expenditure,EUR_million,10.4,5,erp,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,financial,FIN_ENV_CAPEX,Environmental CapEx,EUR_million,2.6,4,erp,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,taxonomy,TAX_ELIG_REV,Taxonomy-Eligible Revenue,%,67.3,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,taxonomy,TAX_ALIGN_REV,Taxonomy-Aligned Revenue,%,51.8,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,taxonomy,TAX_ELIG_CAPEX,Taxonomy-Eligible CapEx,%,74.4,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,taxonomy,TAX_ALIGN_CAPEX,Taxonomy-Aligned CapEx,%,46.7,3,calculated,false
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,energy,E_RENEW_PCT,Renewable Electricity Share,%,47.0,4,ppa_contracts,true
+ETH-SE-001,EuroTech Sverige AB,SE,2025,,energy,E_INTENSITY,Energy Intensity,MWh/EUR_million,55.6,4,calculated,true

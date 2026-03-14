@@ -1,0 +1,501 @@
+data_point_id,esrs_standard,metric_code,metric_name,value,unit,period,source,quality_score
+DP-E1-001,E1,E1-6-S1-TOT,Scope 1 total GHG emissions,8250.00,tCO2e,2025-FY,direct_measurement,0.95
+DP-E1-002,E1,E1-6-S1-CO2,Scope 1 CO2 emissions,7850.00,tCO2e,2025-FY,direct_measurement,0.95
+DP-E1-003,E1,E1-6-S1-CH4,Scope 1 CH4 emissions,180.00,tCO2e,2025-FY,engineering_calculation,0.88
+DP-E1-004,E1,E1-6-S1-N2O,Scope 1 N2O emissions,220.00,tCO2e,2025-FY,engineering_calculation,0.88
+DP-E1-005,E1,E1-6-S1-STAT,Scope 1 stationary combustion,6200.00,tCO2e,2025-FY,direct_measurement,0.94
+DP-E1-006,E1,E1-6-S1-MOB,Scope 1 mobile combustion,1450.00,tCO2e,2025-FY,fleet_records,0.90
+DP-E1-007,E1,E1-6-S1-FUG,Scope 1 fugitive emissions,350.00,tCO2e,2025-FY,leak_detection,0.85
+DP-E1-008,E1,E1-6-S1-PROC,Scope 1 process emissions,250.00,tCO2e,2025-FY,engineering_calculation,0.82
+DP-E1-009,E1,E1-6-S2-LOC,Scope 2 location-based emissions,12800.00,tCO2e,2025-FY,grid_factor_calculation,0.92
+DP-E1-010,E1,E1-6-S2-MKT,Scope 2 market-based emissions,8320.00,tCO2e,2025-FY,contractual_instruments,0.93
+DP-E1-011,E1,E1-6-S3-TOT,Scope 3 total GHG emissions,145000.00,tCO2e,2025-FY,hybrid_calculation,0.78
+DP-E1-012,E1,E1-6-S3-C1,Scope 3 Cat 1 purchased goods,98000.00,tCO2e,2025-FY,spend_based,0.72
+DP-E1-013,E1,E1-6-S3-C3,Scope 3 Cat 3 fuel and energy,4200.00,tCO2e,2025-FY,calculation,0.85
+DP-E1-014,E1,E1-6-S3-C4,Scope 3 Cat 4 upstream transport,12500.00,tCO2e,2025-FY,distance_based,0.80
+DP-E1-015,E1,E1-6-S3-C5,Scope 3 Cat 5 waste,3800.00,tCO2e,2025-FY,waste_records,0.88
+DP-E1-016,E1,E1-6-S3-C6,Scope 3 Cat 6 business travel,2100.00,tCO2e,2025-FY,expense_records,0.90
+DP-E1-017,E1,E1-6-S3-C7,Scope 3 Cat 7 employee commuting,3400.00,tCO2e,2025-FY,survey_data,0.75
+DP-E1-018,E1,E1-6-S3-C9,Scope 3 Cat 9 downstream transport,8500.00,tCO2e,2025-FY,distance_based,0.78
+DP-E1-019,E1,E1-6-S3-C11,Scope 3 Cat 11 use of sold products,12500.00,tCO2e,2025-FY,calculation,0.70
+DP-E1-020,E1,E1-6-TOT,Total GHG emissions (location-based),166050.00,tCO2e,2025-FY,aggregated,0.82
+DP-E1-021,E1,E1-6-TOT-MKT,Total GHG emissions (market-based),161570.00,tCO2e,2025-FY,aggregated,0.82
+DP-E1-022,E1,E1-6-INT-REV,GHG intensity per revenue,369.00,tCO2e/EUR M,2025-FY,calculated,0.82
+DP-E1-023,E1,E1-6-INT-EMP,GHG intensity per employee,66.42,tCO2e/FTE,2025-FY,calculated,0.82
+DP-E1-024,E1,E1-5-TOT,Total energy consumption,48500.00,MWh,2025-FY,metered,0.96
+DP-E1-025,E1,E1-5-ELEC,Electricity consumption,32000.00,MWh,2025-FY,metered,0.97
+DP-E1-026,E1,E1-5-GAS,Natural gas consumption,15200.00,MWh,2025-FY,metered,0.96
+DP-E1-027,E1,E1-5-DIESEL,Diesel consumption (transport),1300.00,MWh,2025-FY,fleet_records,0.90
+DP-E1-028,E1,E1-5-RENEW,Renewable electricity share,35.00,%,2025-FY,contractual_instruments,0.95
+DP-E1-029,E1,E1-5-INT-REV,Energy intensity per revenue,107.80,MWh/EUR M,2025-FY,calculated,0.95
+DP-E1-030,E1,E1-5-INT-AREA,Energy intensity per floor area,0.46,MWh/sqm,2025-FY,calculated,0.94
+DP-E1-031,E1,E1-4-S1S2-TGT,Scope 1+2 reduction target,42.00,%,2030,target_setting,1.00
+DP-E1-032,E1,E1-4-S3-TGT,Scope 3 reduction target,25.00,%,2030,target_setting,1.00
+DP-E1-033,E1,E1-4-RENEW-TGT,Renewable energy target,100.00,%,2030,target_setting,1.00
+DP-E1-034,E1,E1-4-NZ-TGT,Net zero target year,2050.00,year,long_term,target_setting,1.00
+DP-E1-035,E1,E1-4-S1S2-PROG,Scope 1+2 reduction progress vs baseline,12.50,%,2025-FY,calculated,0.90
+DP-E1-036,E1,E1-8-ICP,Internal carbon price,85.00,EUR/tCO2e,2025-FY,management_decision,1.00
+DP-E1-037,E1,E1-8-ICP-TYPE,Internal carbon price type - shadow price,1.00,boolean,2025-FY,management_decision,1.00
+DP-E1-038,E1,E1-9-PHYS-RISK,Physical risk exposure - high heat stress sites,2.00,count,2025-FY,climate_scenario,0.80
+DP-E1-039,E1,E1-9-TRANS-RISK,Transition risk - carbon cost exposure,701250.00,EUR,2025-FY,scenario_analysis,0.75
+DP-E1-040,E1,E1-9-PHYS-COST,Estimated physical risk financial impact,1200000.00,EUR,2025-FY,scenario_analysis,0.70
+DP-E1-041,E1,E1-1-TRANS,Transition plan adopted,1.00,boolean,2025-FY,board_resolution,1.00
+DP-E1-042,E1,E1-1-PARIS,Paris-aligned transition plan,1.00,boolean,2025-FY,verification,0.90
+DP-E1-043,E1,E1-3-CAPEX,Climate-related CapEx,8750000.00,EUR,2025-FY,financial_records,0.95
+DP-E1-044,E1,E1-3-OPEX,Climate-related OpEx,2100000.00,EUR,2025-FY,financial_records,0.95
+DP-E1-045,E1,E1-7-OFFSET,Carbon credits purchased,500.00,tCO2e,2025-FY,registry_verification,0.98
+DP-E1-046,E1,E1-7-OFFSET-TYPE,Carbon credit type - nature based,1.00,boolean,2025-FY,registry_verification,0.98
+DP-E1-047,E1,E1-6-BIO-CO2,Biogenic CO2 emissions,120.00,tCO2,2025-FY,calculation,0.80
+DP-E1-048,E1,E1-5-ELEC-DE,Electricity consumption Germany,24500.00,MWh,2025-FY,metered,0.97
+DP-E1-049,E1,E1-5-ELEC-PL,Electricity consumption Poland,5200.00,MWh,2025-FY,metered,0.96
+DP-E1-050,E1,E1-5-ELEC-CZ,Electricity consumption Czech Republic,1500.00,MWh,2025-FY,metered,0.96
+DP-E1-051,E1,E1-5-ELEC-RO,Electricity consumption Romania,600.00,MWh,2025-FY,metered,0.95
+DP-E1-052,E1,E1-5-ELEC-FR,Electricity consumption France,200.00,MWh,2025-FY,metered,0.95
+DP-E1-053,E1,E1-5-GAS-DE,Natural gas consumption Germany,10500.00,MWh,2025-FY,metered,0.96
+DP-E1-054,E1,E1-5-GAS-PL,Natural gas consumption Poland,3200.00,MWh,2025-FY,metered,0.95
+DP-E1-055,E1,E1-5-GAS-RO,Natural gas consumption Romania,1500.00,MWh,2025-FY,metered,0.94
+DP-E1-056,E1,E1-6-S1-DE,Scope 1 emissions Germany,5600.00,tCO2e,2025-FY,direct_measurement,0.95
+DP-E1-057,E1,E1-6-S1-PL,Scope 1 emissions Poland,1700.00,tCO2e,2025-FY,direct_measurement,0.94
+DP-E1-058,E1,E1-6-S1-RO,Scope 1 emissions Romania,800.00,tCO2e,2025-FY,direct_measurement,0.93
+DP-E1-059,E1,E1-6-S1-CZ,Scope 1 emissions Czech Republic,100.00,tCO2e,2025-FY,calculation,0.88
+DP-E1-060,E1,E1-6-S1-FR,Scope 1 emissions France,50.00,tCO2e,2025-FY,calculation,0.85
+DP-E1-061,E1,E1-5-HEAT-REC,Waste heat recovered,2400.00,MWh,2025-FY,metered,0.92
+DP-E1-062,E1,E1-5-SOLAR,On-site solar generation,850.00,MWh,2025-FY,metered,0.98
+DP-E1-063,E1,E1-5-EFF-PROJ,Energy efficiency projects completed,8.00,count,2025-FY,project_records,1.00
+DP-E1-064,E1,E1-5-EFF-SAV,Energy savings from efficiency projects,1850.00,MWh,2025-FY,measurement_verification,0.90
+DP-E1-065,E1,E1-6-S1-REF,Scope 1 refrigerant emissions,350.00,tCO2e,2025-FY,leak_detection,0.85
+DP-E1-066,E1,E1-6-S2-LOC-DE,Scope 2 location-based Germany,9800.00,tCO2e,2025-FY,grid_factor_calculation,0.92
+DP-E1-067,E1,E1-6-S2-LOC-PL,Scope 2 location-based Poland,3900.00,tCO2e,2025-FY,grid_factor_calculation,0.91
+DP-E1-068,E1,E1-6-S2-LOC-CZ,Scope 2 location-based Czech Republic,690.00,tCO2e,2025-FY,grid_factor_calculation,0.91
+DP-E1-069,E1,E1-6-S2-LOC-RO,Scope 2 location-based Romania,240.00,tCO2e,2025-FY,grid_factor_calculation,0.90
+DP-E1-070,E1,E1-6-S2-LOC-FR,Scope 2 location-based France,14.00,tCO2e,2025-FY,grid_factor_calculation,0.92
+DP-E2-001,E2,E2-4-AIR-NOX,NOx emissions to air,45.20,tonnes,2025-FY,continuous_monitoring,0.94
+DP-E2-002,E2,E2-4-AIR-SOX,SOx emissions to air,12.80,tonnes,2025-FY,continuous_monitoring,0.94
+DP-E2-003,E2,E2-4-AIR-PM,Particulate matter emissions,8.50,tonnes,2025-FY,periodic_measurement,0.88
+DP-E2-004,E2,E2-4-AIR-VOC,VOC emissions to air,22.30,tonnes,2025-FY,mass_balance,0.85
+DP-E2-005,E2,E2-4-WAT-COD,Chemical oxygen demand in wastewater,185.00,tonnes,2025-FY,lab_analysis,0.92
+DP-E2-006,E2,E2-4-WAT-BOD,Biochemical oxygen demand in wastewater,62.00,tonnes,2025-FY,lab_analysis,0.92
+DP-E2-007,E2,E2-4-WAT-TSS,Total suspended solids in wastewater,28.50,tonnes,2025-FY,lab_analysis,0.91
+DP-E2-008,E2,E2-4-WAT-METAL,Heavy metals in wastewater,0.85,tonnes,2025-FY,lab_analysis,0.93
+DP-E2-009,E2,E2-5-SVHC,Substances of very high concern used,3.00,count,2025-FY,material_inventory,0.95
+DP-E2-010,E2,E2-5-SVHC-MASS,SVHC total mass,2.80,tonnes,2025-FY,material_inventory,0.90
+DP-E2-011,E2,E2-5-SOC,Substances of concern used,12.00,count,2025-FY,material_inventory,0.92
+DP-E2-012,E2,E2-5-SOC-MASS,Substances of concern total mass,45.60,tonnes,2025-FY,material_inventory,0.88
+DP-E2-013,E2,E2-4-SOIL,Soil contamination incidents,0.00,count,2025-FY,incident_records,1.00
+DP-E2-014,E2,E2-3-NOX-TGT,NOx reduction target,30.00,%,2030,target_setting,1.00
+DP-E2-015,E2,E2-3-VOC-TGT,VOC reduction target,40.00,%,2030,target_setting,1.00
+DP-E2-016,E2,E2-6-FINES,Environmental fines and penalties,0.00,EUR,2025-FY,legal_records,1.00
+DP-E2-017,E2,E2-6-REMEDIATION,Remediation provisions,350000.00,EUR,2025-FY,financial_records,0.95
+DP-E2-018,E2,E2-4-AIR-CO,Carbon monoxide emissions,15.30,tonnes,2025-FY,periodic_measurement,0.87
+DP-E2-019,E2,E2-4-WAT-N,Total nitrogen in wastewater,12.40,tonnes,2025-FY,lab_analysis,0.91
+DP-E2-020,E2,E2-4-WAT-P,Total phosphorus in wastewater,1.80,tonnes,2025-FY,lab_analysis,0.91
+DP-E3-001,E3,E3-4-INTAKE,Total water withdrawal,285000.00,m3,2025-FY,metered,0.96
+DP-E3-002,E3,E3-4-INTAKE-MUNI,Municipal water withdrawal,210000.00,m3,2025-FY,metered,0.97
+DP-E3-003,E3,E3-4-INTAKE-GW,Groundwater withdrawal,75000.00,m3,2025-FY,metered,0.95
+DP-E3-004,E3,E3-4-DISCH,Total water discharge,225000.00,m3,2025-FY,metered,0.94
+DP-E3-005,E3,E3-4-DISCH-SEWER,Discharge to municipal sewer,195000.00,m3,2025-FY,metered,0.95
+DP-E3-006,E3,E3-4-DISCH-SW,Discharge to surface water,30000.00,m3,2025-FY,metered,0.93
+DP-E3-007,E3,E3-4-CONS,Total water consumption,60000.00,m3,2025-FY,calculated,0.93
+DP-E3-008,E3,E3-4-RECYC,Water recycled and reused,142500.00,m3,2025-FY,metered,0.92
+DP-E3-009,E3,E3-4-RECYC-PCT,Water recycling rate,50.00,%,2025-FY,calculated,0.93
+DP-E3-010,E3,E3-4-STRESS,Operations in water-stressed areas,1.00,count,2025-FY,wri_aqueduct,0.88
+DP-E3-011,E3,E3-4-STRESS-VOL,Water withdrawn from stressed areas,75000.00,m3,2025-FY,metered,0.90
+DP-E3-012,E3,E3-3-RED-TGT,Water reduction target,25.00,%,2030,target_setting,1.00
+DP-E3-013,E3,E3-3-RECYC-TGT,Water recycling target,70.00,%,2030,target_setting,1.00
+DP-E3-014,E3,E3-4-INT-REV,Water intensity per revenue,633.00,m3/EUR M,2025-FY,calculated,0.93
+DP-E3-015,E3,E3-4-INT-PROD,Water intensity per unit produced,0.023,m3/unit,2025-FY,calculated,0.91
+DP-E3-016,E3,E3-4-COOL,Cooling water usage,85000.00,m3,2025-FY,metered,0.94
+DP-E3-017,E3,E3-4-PROCESS,Process water usage,120000.00,m3,2025-FY,metered,0.95
+DP-E3-018,E3,E3-4-SANITARY,Sanitary water usage,80000.00,m3,2025-FY,estimated,0.80
+DP-E3-019,E3,E3-5-COST,Water-related financial risks,450000.00,EUR,2025-FY,scenario_analysis,0.72
+DP-E3-020,E3,E3-4-RAINWATER,Rainwater harvested,8500.00,m3,2025-FY,metered,0.90
+DP-E4-001,E4,E4-5-LAND,Total land area occupied,105500.00,sqm,2025-FY,survey,0.95
+DP-E4-002,E4,E4-5-SEALED,Sealed surface area,78000.00,sqm,2025-FY,survey,0.94
+DP-E4-003,E4,E4-5-GREEN,Green area on company premises,12500.00,sqm,2025-FY,survey,0.94
+DP-E4-004,E4,E4-5-PROT,Sites near protected areas (within 5km),1.00,count,2025-FY,gis_analysis,0.98
+DP-E4-005,E4,E4-5-BIO-PLAN,Biodiversity management plan in place,1.00,boolean,2025-FY,management_records,1.00
+DP-E4-006,E4,E4-5-TREES,Trees planted (reforestation program),500.00,count,2025-FY,project_records,1.00
+DP-E4-007,E4,E4-5-SPECIES,Endangered species on company land,0.00,count,2025-FY,ecological_survey,0.92
+DP-E4-008,E4,E4-5-DEFST,Deforestation-free commitment,1.00,boolean,2025-FY,policy_document,1.00
+DP-E4-009,E4,E4-6-COST,Biodiversity-related financial risks,200000.00,EUR,2025-FY,scenario_analysis,0.68
+DP-E4-010,E4,E4-3-INVEST,Biodiversity restoration investment,125000.00,EUR,2025-FY,financial_records,0.95
+DP-E5-001,E5,E5-4-RAW,Total raw material input,82000.00,tonnes,2025-FY,procurement_records,0.93
+DP-E5-002,E5,E5-4-RECYC-IN,Recycled material input,12300.00,tonnes,2025-FY,procurement_records,0.90
+DP-E5-003,E5,E5-4-RECYC-PCT,Recycled content percentage,15.00,%,2025-FY,calculated,0.90
+DP-E5-004,E5,E5-4-RENEW-IN,Renewable material input,3280.00,tonnes,2025-FY,procurement_records,0.88
+DP-E5-005,E5,E5-4-STEEL,Steel input,45000.00,tonnes,2025-FY,procurement_records,0.95
+DP-E5-006,E5,E5-4-PLASTIC,Plastic input,18500.00,tonnes,2025-FY,procurement_records,0.94
+DP-E5-007,E5,E5-4-RUBBER,Rubber input,8200.00,tonnes,2025-FY,procurement_records,0.93
+DP-E5-008,E5,E5-4-ALUMINUM,Aluminum input,6800.00,tonnes,2025-FY,procurement_records,0.94
+DP-E5-009,E5,E5-4-CHEMICAL,Chemical input,3500.00,tonnes,2025-FY,procurement_records,0.92
+DP-E5-010,E5,E5-5-WASTE-TOT,Total waste generated,8450.00,tonnes,2025-FY,waste_records,0.94
+DP-E5-011,E5,E5-5-WASTE-HAZ,Hazardous waste generated,1250.00,tonnes,2025-FY,waste_records,0.95
+DP-E5-012,E5,E5-5-WASTE-NHAZ,Non-hazardous waste generated,7200.00,tonnes,2025-FY,waste_records,0.94
+DP-E5-013,E5,E5-5-WASTE-RECY,Waste recycled,5920.00,tonnes,2025-FY,waste_records,0.93
+DP-E5-014,E5,E5-5-WASTE-INCIN,Waste incinerated (with energy recovery),1520.00,tonnes,2025-FY,waste_records,0.93
+DP-E5-015,E5,E5-5-WASTE-LAND,Waste to landfill,845.00,tonnes,2025-FY,waste_records,0.94
+DP-E5-016,E5,E5-5-WASTE-OTHER,Waste other disposal,165.00,tonnes,2025-FY,waste_records,0.90
+DP-E5-017,E5,E5-5-DIV-RATE,Waste diversion from landfill rate,90.00,%,2025-FY,calculated,0.94
+DP-E5-018,E5,E5-3-WASTE-TGT,Waste reduction target,20.00,%,2030,target_setting,1.00
+DP-E5-019,E5,E5-3-RECYC-TGT,Recycled content target,25.00,%,2030,target_setting,1.00
+DP-E5-020,E5,E5-3-CIRC-TGT,Circular economy revenue target,10.00,%,2030,target_setting,1.00
+DP-E5-021,E5,E5-5-SCRAP-METAL,Metal scrap generated,3200.00,tonnes,2025-FY,waste_records,0.95
+DP-E5-022,E5,E5-5-SCRAP-PLAST,Plastic scrap generated,1450.00,tonnes,2025-FY,waste_records,0.94
+DP-E5-023,E5,E5-5-PACKAGING,Packaging waste generated,1800.00,tonnes,2025-FY,waste_records,0.93
+DP-E5-024,E5,E5-6-COST,Waste disposal costs,1850000.00,EUR,2025-FY,financial_records,0.95
+DP-E5-025,E5,E5-6-REV-SCRAP,Revenue from scrap sales,2400000.00,EUR,2025-FY,financial_records,0.96
+DP-E5-026,E5,E5-4-WATER-IN,Water as material input,285000.00,m3,2025-FY,metered,0.96
+DP-E5-027,E5,E5-5-EFFLUENT,Wastewater as material output,225000.00,m3,2025-FY,metered,0.94
+DP-E5-028,E5,E5-4-CIRC-REV,Revenue from circular economy products,12500000.00,EUR,2025-FY,financial_records,0.92
+DP-E5-029,E5,E5-5-WASTE-ELEC,Electronic waste generated,8.50,tonnes,2025-FY,waste_records,0.90
+DP-E5-030,E5,E5-5-WASTE-INT,Waste intensity per unit produced,0.676,kg/unit,2025-FY,calculated,0.93
+DP-S1-001,S1,S1-6-TOTAL,Total headcount,2500.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-002,S1,S1-6-PERM,Permanent employees,2200.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-003,S1,S1-6-TEMP,Temporary employees,300.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-004,S1,S1-7-CONTR,Non-employee workers (contractors),150.00,FTE,2025-12-31,hr_system,0.98
+DP-S1-005,S1,S1-6-FT,Full-time employees,2350.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-006,S1,S1-6-PT,Part-time employees,150.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-007,S1,S1-9-F-TOTAL,Female employees percentage,37.50,%,2025-12-31,hr_system,0.99
+DP-S1-008,S1,S1-9-M-TOTAL,Male employees percentage,62.00,%,2025-12-31,hr_system,0.99
+DP-S1-009,S1,S1-9-NB-TOTAL,Non-binary employees percentage,0.50,%,2025-12-31,hr_system,0.99
+DP-S1-010,S1,S1-9-F-MGMT,Female in management percentage,28.00,%,2025-12-31,hr_system,0.99
+DP-S1-011,S1,S1-9-F-BOARD,Female on board percentage,33.30,%,2025-12-31,hr_system,1.00
+DP-S1-012,S1,S1-9-F-EXEC,Female in executive committee percentage,25.00,%,2025-12-31,hr_system,1.00
+DP-S1-013,S1,S1-9-AGE-U30,Employees under 30,22.00,%,2025-12-31,hr_system,0.99
+DP-S1-014,S1,S1-9-AGE-3050,Employees 30-50,55.00,%,2025-12-31,hr_system,0.99
+DP-S1-015,S1,S1-9-AGE-O50,Employees over 50,23.00,%,2025-12-31,hr_system,0.99
+DP-S1-016,S1,S1-6-DE,Employees in Germany,1800.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-017,S1,S1-6-PL,Employees in Poland,350.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-018,S1,S1-6-CZ,Employees in Czech Republic,200.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-019,S1,S1-6-RO,Employees in Romania,100.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-020,S1,S1-6-FR,Employees in France,50.00,FTE,2025-12-31,hr_system,0.99
+DP-S1-021,S1,S1-8-CBA,Collective bargaining coverage,78.00,%,2025-12-31,hr_system,0.98
+DP-S1-022,S1,S1-8-UNION,Trade union membership rate,45.00,%,2025-12-31,hr_system,0.95
+DP-S1-023,S1,S1-8-SOCIAL,Social dialogue - works councils active,5.00,count,2025-12-31,hr_system,1.00
+DP-S1-024,S1,S1-13-TRAIN-HRS,Average training hours per employee,32.00,hours,2025-FY,lms_system,0.95
+DP-S1-025,S1,S1-13-TRAIN-COST,Training and development spend,2800000.00,EUR,2025-FY,financial_records,0.96
+DP-S1-026,S1,S1-13-TRAIN-PCT,Employees who received training,92.00,%,2025-FY,lms_system,0.94
+DP-S1-027,S1,S1-13-TRAIN-F,Average training hours female employees,34.00,hours,2025-FY,lms_system,0.94
+DP-S1-028,S1,S1-13-TRAIN-M,Average training hours male employees,30.50,hours,2025-FY,lms_system,0.94
+DP-S1-029,S1,S1-14-LTIR,Lost time incident rate,1.20,per 200000 hrs,2025-FY,ehs_system,0.97
+DP-S1-030,S1,S1-14-TRIR,Total recordable incident rate,2.80,per 200000 hrs,2025-FY,ehs_system,0.97
+DP-S1-031,S1,S1-14-FATAL,Work-related fatalities,0.00,count,2025-FY,ehs_system,1.00
+DP-S1-032,S1,S1-14-OCCILL,Occupational illness cases,3.00,count,2025-FY,ehs_system,0.98
+DP-S1-033,S1,S1-14-NEARMISS,Near-miss incidents reported,245.00,count,2025-FY,ehs_system,0.92
+DP-S1-034,S1,S1-14-LOSTDAYS,Lost days due to incidents,380.00,days,2025-FY,ehs_system,0.96
+DP-S1-035,S1,S1-14-HSE-TRAIN,H&S training hours per employee,16.00,hours,2025-FY,lms_system,0.94
+DP-S1-036,S1,S1-14-HSE-INVEST,H&S investment,1200000.00,EUR,2025-FY,financial_records,0.96
+DP-S1-037,S1,S1-15-SICK,Sickness absence rate,4.20,%,2025-FY,hr_system,0.97
+DP-S1-038,S1,S1-15-PARENTAL,Parental leave uptake rate,85.00,%,2025-FY,hr_system,0.96
+DP-S1-039,S1,S1-15-FLEX,Employees on flexible work arrangements,35.00,%,2025-FY,hr_system,0.94
+DP-S1-040,S1,S1-15-OVERTIME,Average overtime hours per employee per month,12.50,hours,2025-FY,hr_system,0.93
+DP-S1-041,S1,S1-16-GPG-MEAN,Gender pay gap (mean),4.20,%,2025-FY,payroll_analysis,0.97
+DP-S1-042,S1,S1-16-GPG-MED,Gender pay gap (median),3.80,%,2025-FY,payroll_analysis,0.97
+DP-S1-043,S1,S1-16-CEO-MED,CEO-to-median worker pay ratio,18.50,ratio,2025-FY,payroll_analysis,0.98
+DP-S1-044,S1,S1-16-CEO-TOTAL,CEO total compensation,1250000.00,EUR,2025-FY,annual_report,1.00
+DP-S1-045,S1,S1-10-LIVING,Employees earning above living wage,100.00,%,2025-FY,payroll_analysis,0.98
+DP-S1-046,S1,S1-10-ENTRY-RATIO,Entry-level wage to minimum wage ratio,1.35,ratio,2025-FY,payroll_analysis,0.97
+DP-S1-047,S1,S1-11-PENSION,Employees with supplementary pension,88.00,%,2025-12-31,hr_system,0.98
+DP-S1-048,S1,S1-11-HEALTH,Employees with supplementary health insurance,95.00,%,2025-12-31,hr_system,0.98
+DP-S1-049,S1,S1-12-DISABILITY,Employees with disabilities,3.20,%,2025-12-31,hr_system,0.96
+DP-S1-050,S1,S1-12-ACCESS,Accessibility-adapted workstations,85.00,%,2025-12-31,facility_records,0.90
+DP-S1-051,S1,S1-17-COMPLAINTS,Discrimination complaints filed,4.00,count,2025-FY,compliance_records,1.00
+DP-S1-052,S1,S1-17-RESOLVED,Complaints resolved,3.00,count,2025-FY,compliance_records,1.00
+DP-S1-053,S1,S1-17-HR-INCIDENTS,Human rights incidents,0.00,count,2025-FY,compliance_records,1.00
+DP-S1-054,S1,S1-17-WHISTLE,Whistleblower reports received,6.00,count,2025-FY,compliance_records,1.00
+DP-S1-055,S1,S1-6-TURNOVER,Voluntary turnover rate,8.50,%,2025-FY,hr_system,0.98
+DP-S1-056,S1,S1-6-HIRE-RATE,New hire rate,12.00,%,2025-FY,hr_system,0.98
+DP-S1-057,S1,S1-6-RETENTION,Employee retention rate (1 year),91.50,%,2025-FY,hr_system,0.97
+DP-S1-058,S1,S1-14-SEVERITY,Severity rate (lost days per 200k hrs),15.20,rate,2025-FY,ehs_system,0.96
+DP-S1-059,S1,S1-13-DIGITAL,Digital skills training participation,68.00,%,2025-FY,lms_system,0.92
+DP-S1-060,S1,S1-13-SUSTAIN,Sustainability training participation,75.00,%,2025-FY,lms_system,0.93
+DP-S2-001,S2,S2-1-POLICY,Supply chain labor standards policy,1.00,boolean,2025-FY,policy_document,1.00
+DP-S2-002,S2,S2-1-AUDIT,Supplier social audits conducted,42.00,count,2025-FY,audit_records,0.98
+DP-S2-003,S2,S2-1-NONCOMP,Supplier non-compliance findings,8.00,count,2025-FY,audit_records,0.97
+DP-S2-004,S2,S2-1-CORRECTIVE,Corrective action plans issued,6.00,count,2025-FY,audit_records,0.97
+DP-S2-005,S2,S2-1-TERMINATED,Supplier relationships terminated for social non-compliance,1.00,count,2025-FY,procurement_records,1.00
+DP-S2-006,S2,S2-2-GRIEVANCE,Value chain grievance mechanism available,1.00,boolean,2025-FY,policy_document,1.00
+DP-S2-007,S2,S2-2-GRIEVANCE-CASES,Grievance cases from value chain workers,3.00,count,2025-FY,compliance_records,1.00
+DP-S2-008,S2,S2-4-DD,Human rights due diligence conducted,1.00,boolean,2025-FY,dd_records,1.00
+DP-S2-009,S2,S2-4-DD-SUPPLIERS,Suppliers covered by due diligence,62.00,%,2025-FY,dd_records,0.92
+DP-S2-010,S2,S2-5-TGT-AUDIT,Supplier audit coverage target,80.00,%,2027,target_setting,1.00
+DP-S2-011,S2,S2-4-TRAIN,Supplier training sessions conducted,12.00,count,2025-FY,training_records,0.98
+DP-S2-012,S2,S2-4-INVEST,Social investment in supply chain,350000.00,EUR,2025-FY,financial_records,0.95
+DP-S2-013,S2,S2-1-CODE,Suppliers signed code of conduct,88.00,%,2025-FY,procurement_records,0.96
+DP-S2-014,S2,S2-4-CHILD,Child labor risk assessments conducted,22.00,count,2025-FY,audit_records,0.98
+DP-S2-015,S2,S2-4-FORCED,Forced labor risk assessments conducted,22.00,count,2025-FY,audit_records,0.98
+DP-S3-001,S3,S3-1-POLICY,Community engagement policy,1.00,boolean,2025-FY,policy_document,1.00
+DP-S3-002,S3,S3-4-ASSESS,Community impact assessments conducted,3.00,count,2025-FY,assessment_records,0.95
+DP-S3-003,S3,S3-4-INVEST,Community investment and donations,580000.00,EUR,2025-FY,financial_records,0.97
+DP-S3-004,S3,S3-4-VOLUNTEER,Employee volunteer hours,4200.00,hours,2025-FY,hr_system,0.90
+DP-S3-005,S3,S3-4-GRIEVANCE,Community grievance cases,2.00,count,2025-FY,compliance_records,1.00
+DP-S3-006,S3,S3-4-RESOLVED,Community grievances resolved,2.00,count,2025-FY,compliance_records,1.00
+DP-S3-007,S3,S3-4-INDIGENOUS,Indigenous peoples consultations,0.00,count,2025-FY,consultation_records,1.00
+DP-S3-008,S3,S3-5-TGT-INVEST,Community investment target,750000.00,EUR,2027,target_setting,1.00
+DP-S3-009,S3,S3-4-EDUCATION,Education program beneficiaries,350.00,count,2025-FY,program_records,0.92
+DP-S3-010,S3,S3-4-LOCAL-HIRE,Local hiring percentage (within 50km),72.00,%,2025-FY,hr_system,0.95
+DP-S4-001,S4,S4-1-POLICY,Consumer safety and quality policy,1.00,boolean,2025-FY,policy_document,1.00
+DP-S4-002,S4,S4-4-RECALLS,Product recalls,0.00,count,2025-FY,quality_records,1.00
+DP-S4-003,S4,S4-4-COMPLAINTS,Customer quality complaints,128.00,count,2025-FY,crm_system,0.95
+DP-S4-004,S4,S4-4-RESOLVED,Complaints resolved within SLA,118.00,count,2025-FY,crm_system,0.95
+DP-S4-005,S4,S4-4-PRIVACY,Data privacy incidents,1.00,count,2025-FY,compliance_records,1.00
+DP-S4-006,S4,S4-4-DATA-REQ,Data subject access requests,12.00,count,2025-FY,dpo_records,0.98
+DP-S4-007,S4,S4-5-TGT-QUALITY,Product defect rate target,0.10,%,2027,target_setting,1.00
+DP-S4-008,S4,S4-4-DEFECT,Current product defect rate,0.15,%,2025-FY,quality_records,0.96
+DP-S4-009,S4,S4-4-SAFETY-TEST,Product safety tests conducted,2400.00,count,2025-FY,quality_records,0.98
+DP-S4-010,S4,S4-4-CERT,Products with third-party safety certification,98.00,%,2025-FY,quality_records,0.97
+DP-G1-001,G1,G1-1-CODE,Code of business conduct in place,1.00,boolean,2025-FY,policy_document,1.00
+DP-G1-002,G1,G1-1-CODE-TRAIN,Employees trained on code of conduct,95.00,%,2025-FY,lms_system,0.96
+DP-G1-003,G1,G1-3-ANTI-CORR,Anti-corruption policy in place,1.00,boolean,2025-FY,policy_document,1.00
+DP-G1-004,G1,G1-3-ANTI-TRAIN,Anti-corruption training completion,92.00,%,2025-FY,lms_system,0.96
+DP-G1-005,G1,G1-4-INCIDENTS,Corruption or bribery incidents,0.00,count,2025-FY,compliance_records,1.00
+DP-G1-006,G1,G1-4-FINES,Fines for corruption or bribery,0.00,EUR,2025-FY,legal_records,1.00
+DP-G1-007,G1,G1-5-LOBBY,Political contributions and lobbying,0.00,EUR,2025-FY,financial_records,1.00
+DP-G1-008,G1,G1-5-ASSOC,Industry association memberships,8.00,count,2025-FY,management_records,1.00
+DP-G1-009,G1,G1-5-ASSOC-FEES,Industry association fees,125000.00,EUR,2025-FY,financial_records,0.98
+DP-G1-010,G1,G1-6-PAY-30,Invoices paid within 30 days,72.00,%,2025-FY,erp_system,0.97
+DP-G1-011,G1,G1-6-PAY-60,Invoices paid within 60 days,93.00,%,2025-FY,erp_system,0.97
+DP-G1-012,G1,G1-6-PAY-AVG,Average payment days to suppliers,38.00,days,2025-FY,erp_system,0.97
+DP-G1-013,G1,G1-6-PAY-SME,Average payment days to SME suppliers,32.00,days,2025-FY,erp_system,0.96
+DP-G1-014,G1,G1-2-SUPPLIER-EVAL,Suppliers evaluated on ESG criteria,62.00,%,2025-FY,procurement_records,0.93
+DP-G1-015,G1,G1-2-CRITICAL-EVAL,Critical suppliers with ESG evaluation,95.00,%,2025-FY,procurement_records,0.95
+DP-G1-016,G1,G1-1-WHISTLE,Whistleblower mechanism available,1.00,boolean,2025-FY,policy_document,1.00
+DP-G1-017,G1,G1-1-WHISTLE-CASES,Whistleblower cases reported,6.00,count,2025-FY,compliance_records,1.00
+DP-G1-018,G1,G1-1-WHISTLE-RETALIATION,Retaliation incidents,0.00,count,2025-FY,compliance_records,1.00
+DP-G1-019,G1,G1-3-RISK-ASSESS,Corruption risk assessments conducted,4.00,count,2025-FY,compliance_records,0.98
+DP-G1-020,G1,G1-4-LEGAL,Pending legal proceedings,2.00,count,2025-12-31,legal_records,1.00
+DP-ESRS2-001,ESRS2,ESRS2-GOV1-BOARD,Board meetings discussing sustainability,6.00,count,2025-FY,board_minutes,1.00
+DP-ESRS2-002,ESRS2,ESRS2-GOV1-COMM,Sustainability committee meetings,12.00,count,2025-FY,board_minutes,1.00
+DP-ESRS2-003,ESRS2,ESRS2-GOV3-LINKED,Sustainability-linked executive compensation,15.00,%,2025-FY,remuneration_report,1.00
+DP-ESRS2-004,ESRS2,ESRS2-GOV3-KPI,Number of sustainability KPIs in compensation,4.00,count,2025-FY,remuneration_report,1.00
+DP-ESRS2-005,ESRS2,ESRS2-GOV4-DD,Due diligence process in place,1.00,boolean,2025-FY,policy_document,1.00
+DP-ESRS2-006,ESRS2,ESRS2-GOV5-RISK,Sustainability in risk management framework,1.00,boolean,2025-FY,risk_framework,1.00
+DP-ESRS2-007,ESRS2,ESRS2-GOV5-IC,Internal controls over sustainability reporting,1.00,boolean,2025-FY,ic_framework,0.95
+DP-ESRS2-008,ESRS2,ESRS2-SBM1-REV,Revenue from sustainable products,67500000.00,EUR,2025-FY,financial_records,0.93
+DP-ESRS2-009,ESRS2,ESRS2-SBM1-REV-PCT,Sustainable product revenue share,15.00,%,2025-FY,calculated,0.93
+DP-ESRS2-010,ESRS2,ESRS2-SBM2-STAKEHOLDERS,Stakeholder groups engaged,8.00,count,2025-FY,engagement_records,0.95
+DP-ESRS2-011,ESRS2,ESRS2-SBM2-CHANNELS,Stakeholder engagement channels,12.00,count,2025-FY,engagement_records,0.95
+DP-ESRS2-012,ESRS2,ESRS2-SBM3-MAT-TOPICS,Material sustainability topics identified,14.00,count,2025-FY,materiality_assessment,0.90
+DP-ESRS2-013,ESRS2,ESRS2-IRO1-IMPACT,Material impact topics,9.00,count,2025-FY,materiality_assessment,0.90
+DP-ESRS2-014,ESRS2,ESRS2-IRO1-FINANCIAL,Material financial topics,7.00,count,2025-FY,materiality_assessment,0.88
+DP-ESRS2-015,ESRS2,ESRS2-IRO2-STANDARDS,ESRS standards with disclosures,10.00,count,2025-FY,reporting_scope,1.00
+DP-ESRS2-016,ESRS2,ESRS2-MDR-P-COUNT,Sustainability policies in place,18.00,count,2025-FY,policy_register,0.98
+DP-ESRS2-017,ESRS2,ESRS2-MDR-A-COUNT,Sustainability actions tracked,35.00,count,2025-FY,action_tracker,0.92
+DP-ESRS2-018,ESRS2,ESRS2-MDR-M-COUNT,Sustainability metrics reported,142.00,count,2025-FY,metric_inventory,0.95
+DP-ESRS2-019,ESRS2,ESRS2-MDR-T-COUNT,Sustainability targets set,22.00,count,2025-FY,target_register,0.96
+DP-ESRS2-020,ESRS2,ESRS2-BP1-STANDARD,Reporting standard used - ESRS,1.00,boolean,2025-FY,report_declaration,1.00
+DP-ESRS2-021,ESRS2,ESRS2-BP1-SCOPE,Organizational scope - operational control,1.00,boolean,2025-FY,report_declaration,1.00
+DP-ESRS2-022,ESRS2,ESRS2-BP1-ASSURANCE,Assurance level - limited,1.00,boolean,2025-FY,assurance_plan,1.00
+DP-ESRS2-023,ESRS2,ESRS2-SBM1-EMPLOYEES,Total employees in value chain,4500.00,count,2025-12-31,estimated,0.75
+DP-ESRS2-024,ESRS2,ESRS2-SBM1-COUNTRIES,Countries of operation,5.00,count,2025-12-31,company_records,1.00
+DP-ESRS2-025,ESRS2,ESRS2-SBM1-REVENUE,Total revenue,450000000.00,EUR,2025-FY,audited_financials,1.00
+DP-ESRS2-026,ESRS2,ESRS2-GOV1-EXPERTISE,Board members with sustainability expertise,2.00,count,2025-12-31,board_composition,1.00
+DP-ESRS2-027,ESRS2,ESRS2-GOV1-CSO,Chief Sustainability Officer appointed,1.00,boolean,2025-12-31,org_chart,1.00
+DP-ESRS2-028,ESRS2,ESRS2-GOV5-CLIMATE-RISK,Climate risks in enterprise risk management,1.00,boolean,2025-FY,risk_register,1.00
+DP-ESRS2-029,ESRS2,ESRS2-SBM1-CAPEX,Total CapEx,35000000.00,EUR,2025-FY,audited_financials,1.00
+DP-ESRS2-030,ESRS2,ESRS2-SBM1-OPEX,Total OpEx,385000000.00,EUR,2025-FY,audited_financials,1.00
+DP-E1-071,E1,E1-6-S1-Q1,Scope 1 emissions Q1,2200.00,tCO2e,2025-Q1,direct_measurement,0.93
+DP-E1-072,E1,E1-6-S1-Q2,Scope 1 emissions Q2,1950.00,tCO2e,2025-Q2,direct_measurement,0.93
+DP-E1-073,E1,E1-6-S1-Q3,Scope 1 emissions Q3,1850.00,tCO2e,2025-Q3,direct_measurement,0.93
+DP-E1-074,E1,E1-6-S1-Q4,Scope 1 emissions Q4,2250.00,tCO2e,2025-Q4,direct_measurement,0.93
+DP-E1-075,E1,E1-6-S2-LOC-Q1,Scope 2 location-based Q1,3400.00,tCO2e,2025-Q1,grid_factor_calculation,0.91
+DP-E1-076,E1,E1-6-S2-LOC-Q2,Scope 2 location-based Q2,3050.00,tCO2e,2025-Q2,grid_factor_calculation,0.91
+DP-E1-077,E1,E1-6-S2-LOC-Q3,Scope 2 location-based Q3,3150.00,tCO2e,2025-Q3,grid_factor_calculation,0.91
+DP-E1-078,E1,E1-6-S2-LOC-Q4,Scope 2 location-based Q4,3200.00,tCO2e,2025-Q4,grid_factor_calculation,0.91
+DP-E1-079,E1,E1-5-ELEC-Q1,Electricity consumption Q1,8200.00,MWh,2025-Q1,metered,0.97
+DP-E1-080,E1,E1-5-ELEC-Q2,Electricity consumption Q2,7800.00,MWh,2025-Q2,metered,0.97
+DP-E1-081,E1,E1-5-ELEC-Q3,Electricity consumption Q3,7600.00,MWh,2025-Q3,metered,0.97
+DP-E1-082,E1,E1-5-ELEC-Q4,Electricity consumption Q4,8400.00,MWh,2025-Q4,metered,0.97
+DP-E1-083,E1,E1-5-GAS-Q1,Natural gas consumption Q1,4800.00,MWh,2025-Q1,metered,0.96
+DP-E1-084,E1,E1-5-GAS-Q2,Natural gas consumption Q2,3200.00,MWh,2025-Q2,metered,0.96
+DP-E1-085,E1,E1-5-GAS-Q3,Natural gas consumption Q3,2800.00,MWh,2025-Q3,metered,0.96
+DP-E1-086,E1,E1-5-GAS-Q4,Natural gas consumption Q4,4400.00,MWh,2025-Q4,metered,0.96
+DP-E1-087,E1,E1-6-S1-2024,Scope 1 emissions prior year,8650.00,tCO2e,2024-FY,direct_measurement,0.94
+DP-E1-088,E1,E1-6-S2-LOC-2024,Scope 2 location-based prior year,13500.00,tCO2e,2024-FY,grid_factor_calculation,0.91
+DP-E1-089,E1,E1-6-S2-MKT-2024,Scope 2 market-based prior year,9100.00,tCO2e,2024-FY,contractual_instruments,0.92
+DP-E1-090,E1,E1-6-S3-TOT-2024,Scope 3 total prior year,152000.00,tCO2e,2024-FY,hybrid_calculation,0.76
+DP-E1-091,E1,E1-5-TOT-2024,Total energy prior year,51200.00,MWh,2024-FY,metered,0.95
+DP-E1-092,E1,E1-6-S1-BASE,Scope 1 emissions base year (2020),9430.00,tCO2e,2020-FY,direct_measurement,0.92
+DP-E1-093,E1,E1-6-S2-LOC-BASE,Scope 2 location-based base year (2020),15200.00,tCO2e,2020-FY,grid_factor_calculation,0.90
+DP-E1-094,E1,E1-6-S2-MKT-BASE,Scope 2 market-based base year (2020),14800.00,tCO2e,2020-FY,contractual_instruments,0.88
+DP-E1-095,E1,E1-5-GF-DE,Grid emission factor Germany,0.400,tCO2e/MWh,2025-FY,iea_published,0.95
+DP-E1-096,E1,E1-5-GF-PL,Grid emission factor Poland,0.750,tCO2e/MWh,2025-FY,iea_published,0.95
+DP-E1-097,E1,E1-5-GF-CZ,Grid emission factor Czech Republic,0.460,tCO2e/MWh,2025-FY,iea_published,0.95
+DP-E1-098,E1,E1-5-GF-RO,Grid emission factor Romania,0.400,tCO2e/MWh,2025-FY,iea_published,0.95
+DP-E1-099,E1,E1-5-GF-FR,Grid emission factor France,0.070,tCO2e/MWh,2025-FY,iea_published,0.95
+DP-E1-100,E1,E1-5-EF-NG,Natural gas emission factor,0.202,tCO2e/MWh,2025-FY,ipcc_2006,0.98
+DP-E5-031,E5,E5-4-STEEL-RECYC,Recycled steel input,8100.00,tonnes,2025-FY,procurement_records,0.92
+DP-E5-032,E5,E5-4-PLASTIC-RECYC,Recycled plastic input,1850.00,tonnes,2025-FY,procurement_records,0.90
+DP-E5-033,E5,E5-4-ALUMINUM-RECYC,Recycled aluminum input,2040.00,tonnes,2025-FY,procurement_records,0.91
+DP-E5-034,E5,E5-5-WASTE-HAZ-Q1,Hazardous waste Q1,320.00,tonnes,2025-Q1,waste_records,0.94
+DP-E5-035,E5,E5-5-WASTE-HAZ-Q2,Hazardous waste Q2,310.00,tonnes,2025-Q2,waste_records,0.94
+DP-E5-036,E5,E5-5-WASTE-HAZ-Q3,Hazardous waste Q3,295.00,tonnes,2025-Q3,waste_records,0.94
+DP-E5-037,E5,E5-5-WASTE-HAZ-Q4,Hazardous waste Q4,325.00,tonnes,2025-Q4,waste_records,0.94
+DP-E5-038,E5,E5-5-WASTE-TOT-Q1,Total waste Q1,2180.00,tonnes,2025-Q1,waste_records,0.93
+DP-E5-039,E5,E5-5-WASTE-TOT-Q2,Total waste Q2,2050.00,tonnes,2025-Q2,waste_records,0.93
+DP-E5-040,E5,E5-5-WASTE-TOT-Q3,Total waste Q3,1980.00,tonnes,2025-Q3,waste_records,0.93
+DP-E5-041,E5,E5-5-WASTE-TOT-Q4,Total waste Q4,2240.00,tonnes,2025-Q4,waste_records,0.93
+DP-E5-042,E5,E5-5-WASTE-TOT-2024,Total waste prior year,9100.00,tonnes,2024-FY,waste_records,0.92
+DP-E5-043,E5,E5-5-WASTE-HAZ-2024,Hazardous waste prior year,1380.00,tonnes,2024-FY,waste_records,0.93
+DP-E5-044,E5,E5-4-RAW-2024,Total raw material prior year,85000.00,tonnes,2024-FY,procurement_records,0.92
+DP-E5-045,E5,E5-4-RECYC-PCT-2024,Recycled content prior year,13.00,%,2024-FY,calculated,0.89
+DP-E3-021,E3,E3-4-INTAKE-Q1,Water withdrawal Q1,75000.00,m3,2025-Q1,metered,0.95
+DP-E3-022,E3,E3-4-INTAKE-Q2,Water withdrawal Q2,68000.00,m3,2025-Q2,metered,0.95
+DP-E3-023,E3,E3-4-INTAKE-Q3,Water withdrawal Q3,72000.00,m3,2025-Q3,metered,0.95
+DP-E3-024,E3,E3-4-INTAKE-Q4,Water withdrawal Q4,70000.00,m3,2025-Q4,metered,0.95
+DP-E3-025,E3,E3-4-INTAKE-2024,Water withdrawal prior year,298000.00,m3,2024-FY,metered,0.94
+DP-E3-026,E3,E3-4-RECYC-2024,Water recycled prior year,126000.00,m3,2024-FY,metered,0.91
+DP-E3-027,E3,E3-4-RECYC-PCT-2024,Water recycling rate prior year,42.00,%,2024-FY,calculated,0.91
+DP-E2-021,E2,E2-4-AIR-NOX-Q1,NOx emissions Q1,12.10,tonnes,2025-Q1,continuous_monitoring,0.93
+DP-E2-022,E2,E2-4-AIR-NOX-Q2,NOx emissions Q2,10.80,tonnes,2025-Q2,continuous_monitoring,0.93
+DP-E2-023,E2,E2-4-AIR-NOX-Q3,NOx emissions Q3,10.50,tonnes,2025-Q3,continuous_monitoring,0.93
+DP-E2-024,E2,E2-4-AIR-NOX-Q4,NOx emissions Q4,11.80,tonnes,2025-Q4,continuous_monitoring,0.93
+DP-E2-025,E2,E2-4-AIR-NOX-2024,NOx emissions prior year,48.50,tonnes,2024-FY,continuous_monitoring,0.92
+DP-E2-026,E2,E2-4-AIR-SOX-2024,SOx emissions prior year,14.20,tonnes,2024-FY,continuous_monitoring,0.92
+DP-E2-027,E2,E2-4-AIR-PM-2024,PM emissions prior year,9.10,tonnes,2024-FY,periodic_measurement,0.87
+DP-E2-028,E2,E2-4-AIR-VOC-2024,VOC emissions prior year,25.80,tonnes,2024-FY,mass_balance,0.84
+DP-S1-061,S1,S1-6-TOTAL-2024,Total headcount prior year,2420.00,FTE,2024-12-31,hr_system,0.99
+DP-S1-062,S1,S1-6-PERM-2024,Permanent employees prior year,2150.00,FTE,2024-12-31,hr_system,0.99
+DP-S1-063,S1,S1-9-F-TOTAL-2024,Female percentage prior year,36.00,%,2024-12-31,hr_system,0.99
+DP-S1-064,S1,S1-9-F-MGMT-2024,Female in management prior year,25.00,%,2024-12-31,hr_system,0.99
+DP-S1-065,S1,S1-14-LTIR-2024,Lost time incident rate prior year,1.45,per 200000 hrs,2024-FY,ehs_system,0.96
+DP-S1-066,S1,S1-14-TRIR-2024,Total recordable incident rate prior year,3.20,per 200000 hrs,2024-FY,ehs_system,0.96
+DP-S1-067,S1,S1-13-TRAIN-HRS-2024,Training hours per employee prior year,28.00,hours,2024-FY,lms_system,0.94
+DP-S1-068,S1,S1-16-GPG-MEAN-2024,Gender pay gap prior year,5.10,%,2024-FY,payroll_analysis,0.96
+DP-S1-069,S1,S1-8-CBA-2024,Collective bargaining coverage prior year,76.00,%,2024-12-31,hr_system,0.97
+DP-S1-070,S1,S1-6-TURNOVER-2024,Voluntary turnover rate prior year,9.20,%,2024-FY,hr_system,0.97
+DP-G1-021,G1,G1-6-PAY-30-2024,Invoices paid within 30 days prior year,68.00,%,2024-FY,erp_system,0.96
+DP-G1-022,G1,G1-6-PAY-AVG-2024,Average payment days prior year,42.00,days,2024-FY,erp_system,0.96
+DP-G1-023,G1,G1-3-ANTI-TRAIN-2024,Anti-corruption training prior year,88.00,%,2024-FY,lms_system,0.95
+DP-G1-024,G1,G1-4-INCIDENTS-2024,Corruption incidents prior year,0.00,count,2024-FY,compliance_records,1.00
+DP-G1-025,G1,G1-2-SUPPLIER-2024,Supplier ESG evaluation prior year,55.00,%,2024-FY,procurement_records,0.92
+DP-TAX-001,ESRS2,TAX-ELIGIBLE-CAPEX,EU Taxonomy-eligible CapEx,18200000.00,EUR,2025-FY,financial_records,0.90
+DP-TAX-002,ESRS2,TAX-ALIGNED-CAPEX,EU Taxonomy-aligned CapEx,8750000.00,EUR,2025-FY,financial_records,0.88
+DP-TAX-003,ESRS2,TAX-ELIGIBLE-REV,EU Taxonomy-eligible revenue,112500000.00,EUR,2025-FY,financial_records,0.88
+DP-TAX-004,ESRS2,TAX-ALIGNED-REV,EU Taxonomy-aligned revenue,67500000.00,EUR,2025-FY,financial_records,0.85
+DP-TAX-005,ESRS2,TAX-ELIGIBLE-OPEX,EU Taxonomy-eligible OpEx,142450000.00,EUR,2025-FY,financial_records,0.87
+DP-TAX-006,ESRS2,TAX-ALIGNED-OPEX,EU Taxonomy-aligned OpEx,57750000.00,EUR,2025-FY,financial_records,0.84
+DP-TAX-007,ESRS2,TAX-CAPEX-PCT,Taxonomy-aligned CapEx ratio,25.00,%,2025-FY,calculated,0.88
+DP-TAX-008,ESRS2,TAX-REV-PCT,Taxonomy-aligned revenue ratio,15.00,%,2025-FY,calculated,0.85
+DP-TAX-009,ESRS2,TAX-OPEX-PCT,Taxonomy-aligned OpEx ratio,15.00,%,2025-FY,calculated,0.84
+DP-TAX-010,ESRS2,TAX-ACTIVITIES,Number of Taxonomy-eligible activities,6.00,count,2025-FY,assessment,0.92
+DP-E1-101,E1,E1-6-S3-C1-STEEL,Cat 1 emissions from steel procurement,42000.00,tCO2e,2025-FY,supplier_specific,0.82
+DP-E1-102,E1,E1-6-S3-C1-PLASTIC,Cat 1 emissions from plastic procurement,18500.00,tCO2e,2025-FY,spend_based,0.70
+DP-E1-103,E1,E1-6-S3-C1-ELEC,Cat 1 emissions from electronics procurement,12800.00,tCO2e,2025-FY,spend_based,0.68
+DP-E1-104,E1,E1-6-S3-C1-RUBBER,Cat 1 emissions from rubber procurement,8200.00,tCO2e,2025-FY,spend_based,0.70
+DP-E1-105,E1,E1-6-S3-C1-CHEM,Cat 1 emissions from chemical procurement,6500.00,tCO2e,2025-FY,spend_based,0.72
+DP-E1-106,E1,E1-6-S3-C1-OTHER,Cat 1 emissions from other procurement,10000.00,tCO2e,2025-FY,spend_based,0.65
+DP-E1-107,E1,E1-6-S3-C4-ROAD,Cat 4 emissions from road transport,8750.00,tCO2e,2025-FY,distance_based,0.82
+DP-E1-108,E1,E1-6-S3-C4-RAIL,Cat 4 emissions from rail transport,1250.00,tCO2e,2025-FY,distance_based,0.80
+DP-E1-109,E1,E1-6-S3-C4-SEA,Cat 4 emissions from sea freight,2500.00,tCO2e,2025-FY,distance_based,0.78
+DP-E1-110,E1,E1-6-S3-C6-AIR,Cat 6 emissions from air travel,1470.00,tCO2e,2025-FY,expense_records,0.90
+DP-E1-111,E1,E1-6-S3-C6-RAIL,Cat 6 emissions from rail travel,210.00,tCO2e,2025-FY,expense_records,0.92
+DP-E1-112,E1,E1-6-S3-C6-HOTEL,Cat 6 emissions from hotel stays,280.00,tCO2e,2025-FY,expense_records,0.85
+DP-E1-113,E1,E1-6-S3-C6-CAR,Cat 6 emissions from rental cars,140.00,tCO2e,2025-FY,expense_records,0.88
+DP-E1-114,E1,E1-6-S3-C7-CAR,Cat 7 emissions from car commuting,2380.00,tCO2e,2025-FY,survey_data,0.73
+DP-E1-115,E1,E1-6-S3-C7-TRANSIT,Cat 7 emissions from public transit,680.00,tCO2e,2025-FY,survey_data,0.72
+DP-E1-116,E1,E1-6-S3-C7-REMOTE,Cat 7 emissions from remote work,340.00,tCO2e,2025-FY,estimated,0.65
+DP-E1-117,E1,E1-6-S3-C5-LANDFILL,Cat 5 emissions from landfill,1520.00,tCO2e,2025-FY,waste_records,0.88
+DP-E1-118,E1,E1-6-S3-C5-INCIN,Cat 5 emissions from incineration,1140.00,tCO2e,2025-FY,waste_records,0.88
+DP-E1-119,E1,E1-6-S3-C5-RECYC,Cat 5 emissions from recycling,760.00,tCO2e,2025-FY,waste_records,0.85
+DP-E1-120,E1,E1-6-S3-C5-WW,Cat 5 emissions from wastewater,380.00,tCO2e,2025-FY,calculation,0.80
+DP-SUPPLY-001,ESRS2,SUPPLY-TIER1,Tier 1 suppliers,85.00,count,2025-12-31,procurement_records,0.99
+DP-SUPPLY-002,ESRS2,SUPPLY-TIER2,Tier 2 suppliers,160.00,count,2025-12-31,procurement_records,0.95
+DP-SUPPLY-003,ESRS2,SUPPLY-TOTAL,Total suppliers,245.00,count,2025-12-31,procurement_records,0.98
+DP-SUPPLY-004,ESRS2,SUPPLY-CRITICAL,Critical suppliers,22.00,count,2025-12-31,procurement_records,0.99
+DP-SUPPLY-005,ESRS2,SUPPLY-ISO14001,Suppliers with ISO 14001,62.00,%,2025-12-31,procurement_records,0.92
+DP-SUPPLY-006,ESRS2,SUPPLY-COC,Suppliers signed code of conduct,88.00,%,2025-12-31,procurement_records,0.96
+DP-SUPPLY-007,ESRS2,SUPPLY-ESG-SCORE,Average supplier ESG score,72.00,score,2025-12-31,supplier_assessment,0.88
+DP-SUPPLY-008,ESRS2,SUPPLY-LOCAL,Local suppliers (within country),58.00,%,2025-12-31,procurement_records,0.94
+DP-SUPPLY-009,ESRS2,SUPPLY-EU,EU-based suppliers,82.00,%,2025-12-31,procurement_records,0.95
+DP-SUPPLY-010,ESRS2,SUPPLY-SPEND-TOP10,Spend concentration top 10 suppliers,45.00,%,2025-FY,procurement_records,0.97
+DP-CERT-001,ESRS2,CERT-ISO14001,ISO 14001 certified sites,3.00,count,2025-12-31,certification_records,1.00
+DP-CERT-002,ESRS2,CERT-ISO45001,ISO 45001 certified sites,2.00,count,2025-12-31,certification_records,1.00
+DP-CERT-003,ESRS2,CERT-ISO50001,ISO 50001 certified sites,1.00,count,2025-12-31,certification_records,1.00
+DP-CERT-004,ESRS2,CERT-ISO9001,ISO 9001 certified sites,4.00,count,2025-12-31,certification_records,1.00
+DP-CERT-005,ESRS2,CERT-IATF,IATF 16949 certified sites,4.00,count,2025-12-31,certification_records,1.00
+DP-CERT-006,ESRS2,CERT-ECOVADIS,EcoVadis score,72.00,score,2025-12-31,ecovadis_platform,1.00
+DP-CERT-007,ESRS2,CERT-CDP-CLIMATE,CDP Climate score,3.00,score_B,2025-FY,cdp_platform,1.00
+DP-CERT-008,ESRS2,CERT-CDP-WATER,CDP Water score,3.50,score_B_minus,2025-FY,cdp_platform,1.00
+DP-FIN-001,ESRS2,FIN-REVENUE,Total revenue,450000000.00,EUR,2025-FY,audited_financials,1.00
+DP-FIN-002,ESRS2,FIN-NET-INCOME,Net income,27000000.00,EUR,2025-FY,audited_financials,1.00
+DP-FIN-003,ESRS2,FIN-ASSETS,Total assets,380000000.00,EUR,2025-FY,audited_financials,1.00
+DP-FIN-004,ESRS2,FIN-EQUITY,Total equity,165000000.00,EUR,2025-FY,audited_financials,1.00
+DP-FIN-005,ESRS2,FIN-CAPEX,Capital expenditure,35000000.00,EUR,2025-FY,audited_financials,1.00
+DP-FIN-006,ESRS2,FIN-RD,R&D expenditure,18000000.00,EUR,2025-FY,audited_financials,1.00
+DP-FIN-007,ESRS2,FIN-GREEN-REV,Green revenue (Taxonomy-aligned),67500000.00,EUR,2025-FY,financial_records,0.88
+DP-FIN-008,ESRS2,FIN-GREEN-CAPEX,Green CapEx (Taxonomy-aligned),8750000.00,EUR,2025-FY,financial_records,0.88
+DP-FIN-009,ESRS2,FIN-SUST-INVEST,Total sustainability investment,12050000.00,EUR,2025-FY,financial_records,0.92
+DP-FIN-010,ESRS2,FIN-ENERGY-COST,Total energy cost,14000000.00,EUR,2025-FY,financial_records,0.96
+DP-E1-121,E1,E1-5-BERLIN-ELEC,Berlin plant electricity,16800.00,MWh,2025-FY,metered,0.98
+DP-E1-122,E1,E1-5-BERLIN-GAS,Berlin plant natural gas,7200.00,MWh,2025-FY,metered,0.97
+DP-E1-123,E1,E1-5-WROCLAW-ELEC,Wroclaw plant electricity,5200.00,MWh,2025-FY,metered,0.97
+DP-E1-124,E1,E1-5-WROCLAW-GAS,Wroclaw plant natural gas,3200.00,MWh,2025-FY,metered,0.96
+DP-E1-125,E1,E1-5-PRAGUE-ELEC,Prague hub electricity,1500.00,MWh,2025-FY,metered,0.96
+DP-E1-126,E1,E1-5-TIMISOARA-ELEC,Timisoara plant electricity,600.00,MWh,2025-FY,metered,0.95
+DP-E1-127,E1,E1-5-TIMISOARA-GAS,Timisoara plant natural gas,1500.00,MWh,2025-FY,metered,0.95
+DP-E1-128,E1,E1-5-RD-ELEC,R&D center electricity,7700.00,MWh,2025-FY,metered,0.97
+DP-E1-129,E1,E1-5-LYON-ELEC,Lyon office electricity,200.00,MWh,2025-FY,metered,0.94
+DP-E1-130,E1,E1-5-PPA,Power purchase agreement volume,5600.00,MWh,2025-FY,contractual,0.98
+DP-E1-131,E1,E1-5-GREEN-TARIFF,Green tariff electricity volume,5600.00,MWh,2025-FY,contractual,0.97
+DP-S1-071,S1,S1-14-BERLIN-LTIR,Berlin plant LTIR,1.05,per 200000 hrs,2025-FY,ehs_system,0.97
+DP-S1-072,S1,S1-14-WROCLAW-LTIR,Wroclaw plant LTIR,1.45,per 200000 hrs,2025-FY,ehs_system,0.97
+DP-S1-073,S1,S1-14-TIMISOARA-LTIR,Timisoara plant LTIR,1.80,per 200000 hrs,2025-FY,ehs_system,0.96
+DP-S1-074,S1,S1-14-PRAGUE-LTIR,Prague hub LTIR,0.50,per 200000 hrs,2025-FY,ehs_system,0.96
+DP-S1-075,S1,S1-9-F-BERLIN,Female percentage Berlin,35.00,%,2025-12-31,hr_system,0.99
+DP-S1-076,S1,S1-9-F-WROCLAW,Female percentage Wroclaw,42.00,%,2025-12-31,hr_system,0.99
+DP-S1-077,S1,S1-9-F-TIMISOARA,Female percentage Timisoara,48.00,%,2025-12-31,hr_system,0.99
+DP-S1-078,S1,S1-9-F-PRAGUE,Female percentage Prague,40.00,%,2025-12-31,hr_system,0.99
+DP-S1-079,S1,S1-9-F-RD,Female percentage R&D center,32.00,%,2025-12-31,hr_system,0.99
+DP-S1-080,S1,S1-9-F-LYON,Female percentage Lyon office,55.00,%,2025-12-31,hr_system,0.99
+DP-E5-046,E5,E5-5-BERLIN-WASTE,Berlin plant total waste,4200.00,tonnes,2025-FY,waste_records,0.95
+DP-E5-047,E5,E5-5-WROCLAW-WASTE,Wroclaw plant total waste,2100.00,tonnes,2025-FY,waste_records,0.94
+DP-E5-048,E5,E5-5-TIMISOARA-WASTE,Timisoara plant total waste,1200.00,tonnes,2025-FY,waste_records,0.93
+DP-E5-049,E5,E5-5-PRAGUE-WASTE,Prague hub total waste,650.00,tonnes,2025-FY,waste_records,0.92
+DP-E5-050,E5,E5-5-OTHER-WASTE,Other sites total waste,300.00,tonnes,2025-FY,waste_records,0.88
+DP-E3-028,E3,E3-4-BERLIN-WATER,Berlin plant water withdrawal,165000.00,m3,2025-FY,metered,0.97
+DP-E3-029,E3,E3-4-WROCLAW-WATER,Wroclaw plant water withdrawal,72000.00,m3,2025-FY,metered,0.96
+DP-E3-030,E3,E3-4-TIMISOARA-WATER,Timisoara plant water withdrawal,35000.00,m3,2025-FY,metered,0.95
+DP-E3-031,E3,E3-4-PRAGUE-WATER,Prague hub water withdrawal,8000.00,m3,2025-FY,metered,0.94
+DP-E3-032,E3,E3-4-OTHER-WATER,Other sites water withdrawal,5000.00,m3,2025-FY,estimated,0.80
+DP-DQ-001,ESRS2,DQ-OVERALL,Overall data quality score,0.91,score,2025-FY,data_quality_profiler,0.98
+DP-DQ-002,ESRS2,DQ-E1,E1 Climate data quality,0.92,score,2025-FY,data_quality_profiler,0.98
+DP-DQ-003,ESRS2,DQ-E2,E2 Pollution data quality,0.91,score,2025-FY,data_quality_profiler,0.97
+DP-DQ-004,ESRS2,DQ-E3,E3 Water data quality,0.93,score,2025-FY,data_quality_profiler,0.97
+DP-DQ-005,ESRS2,DQ-E4,E4 Biodiversity data quality,0.88,score,2025-FY,data_quality_profiler,0.95
+DP-DQ-006,ESRS2,DQ-E5,E5 Circular economy data quality,0.92,score,2025-FY,data_quality_profiler,0.97
+DP-DQ-007,ESRS2,DQ-S1,S1 Own workforce data quality,0.97,score,2025-FY,data_quality_profiler,0.99
+DP-DQ-008,ESRS2,DQ-S2,S2 Value chain workers data quality,0.90,score,2025-FY,data_quality_profiler,0.95
+DP-DQ-009,ESRS2,DQ-S3,S3 Communities data quality,0.88,score,2025-FY,data_quality_profiler,0.94
+DP-DQ-010,ESRS2,DQ-S4,S4 Consumers data quality,0.92,score,2025-FY,data_quality_profiler,0.96
+DP-DQ-011,ESRS2,DQ-G1,G1 Business conduct data quality,0.96,score,2025-FY,data_quality_profiler,0.99
+DP-DQ-012,ESRS2,DQ-COMPLETENESS,Data completeness rate,94.00,%,2025-FY,data_quality_profiler,0.98
+DP-DQ-013,ESRS2,DQ-ACCURACY,Data accuracy rate,91.00,%,2025-FY,data_quality_profiler,0.95
+DP-DQ-014,ESRS2,DQ-TIMELINESS,Data timeliness rate,96.00,%,2025-FY,data_quality_profiler,0.97
+DP-DQ-015,ESRS2,DQ-CONSISTENCY,Data consistency rate,93.00,%,2025-FY,data_quality_profiler,0.96
+DP-MAT-001,ESRS2,MAT-E1,E1 Climate Change materiality score - impact,4.50,score_1to5,2025-FY,materiality_assessment,0.90
+DP-MAT-002,ESRS2,MAT-E1-FIN,E1 Climate Change materiality score - financial,4.20,score_1to5,2025-FY,materiality_assessment,0.88
+DP-MAT-003,ESRS2,MAT-E2,E2 Pollution materiality score - impact,3.80,score_1to5,2025-FY,materiality_assessment,0.88
+DP-MAT-004,ESRS2,MAT-E2-FIN,E2 Pollution materiality score - financial,3.20,score_1to5,2025-FY,materiality_assessment,0.85
+DP-MAT-005,ESRS2,MAT-E3,E3 Water materiality score - impact,3.50,score_1to5,2025-FY,materiality_assessment,0.87
+DP-MAT-006,ESRS2,MAT-E3-FIN,E3 Water materiality score - financial,2.80,score_1to5,2025-FY,materiality_assessment,0.84
+DP-MAT-007,ESRS2,MAT-E4,E4 Biodiversity materiality score - impact,2.50,score_1to5,2025-FY,materiality_assessment,0.82
+DP-MAT-008,ESRS2,MAT-E4-FIN,E4 Biodiversity materiality score - financial,2.00,score_1to5,2025-FY,materiality_assessment,0.80
+DP-MAT-009,ESRS2,MAT-E5,E5 Circular Economy materiality score - impact,4.00,score_1to5,2025-FY,materiality_assessment,0.89
+DP-MAT-010,ESRS2,MAT-E5-FIN,E5 Circular Economy materiality score - financial,3.50,score_1to5,2025-FY,materiality_assessment,0.86
+DP-MAT-011,ESRS2,MAT-S1,S1 Own Workforce materiality score - impact,4.20,score_1to5,2025-FY,materiality_assessment,0.90
+DP-MAT-012,ESRS2,MAT-S1-FIN,S1 Own Workforce materiality score - financial,3.80,score_1to5,2025-FY,materiality_assessment,0.88
+DP-MAT-013,ESRS2,MAT-S2,S2 Value Chain Workers materiality score - impact,3.50,score_1to5,2025-FY,materiality_assessment,0.85
+DP-MAT-014,ESRS2,MAT-S2-FIN,S2 Value Chain Workers materiality score - financial,3.00,score_1to5,2025-FY,materiality_assessment,0.83
+DP-MAT-015,ESRS2,MAT-S3,S3 Communities materiality score - impact,2.80,score_1to5,2025-FY,materiality_assessment,0.82
+DP-MAT-016,ESRS2,MAT-S3-FIN,S3 Communities materiality score - financial,2.20,score_1to5,2025-FY,materiality_assessment,0.80
+DP-MAT-017,ESRS2,MAT-S4,S4 Consumers materiality score - impact,3.20,score_1to5,2025-FY,materiality_assessment,0.85
+DP-MAT-018,ESRS2,MAT-S4-FIN,S4 Consumers materiality score - financial,3.00,score_1to5,2025-FY,materiality_assessment,0.83
+DP-MAT-019,ESRS2,MAT-G1,G1 Business Conduct materiality score - impact,4.00,score_1to5,2025-FY,materiality_assessment,0.90
+DP-MAT-020,ESRS2,MAT-G1-FIN,G1 Business Conduct materiality score - financial,3.80,score_1to5,2025-FY,materiality_assessment,0.88
+DP-PROV-001,ESRS2,PROV-HASH,Provenance hash of current dataset,1.00,boolean,2025-FY,system_generated,1.00
+DP-PROV-002,ESRS2,PROV-RECORDS,Total data points in dataset,500.00,count,2025-FY,system_generated,1.00
+DP-PROV-003,ESRS2,PROV-SOURCES,Distinct data sources,28.00,count,2025-FY,system_generated,1.00
+DP-PROV-004,ESRS2,PROV-AVG-QUALITY,Average data quality score,0.93,score,2025-FY,data_quality_profiler,0.98
+DP-PROV-005,ESRS2,PROV-STANDARDS,ESRS standards covered,12.00,count,2025-FY,system_generated,1.00
+DP-PROV-006,ESRS2,PROV-TIMESTAMP,Dataset generation timestamp,20260314.00,YYYYMMDD,2025-FY,system_generated,1.00

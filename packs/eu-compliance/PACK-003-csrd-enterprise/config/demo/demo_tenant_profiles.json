@@ -1,0 +1,369 @@
+{
+  "tenants": [
+    {
+      "tenant_id": "tenant-globaltech",
+      "name": "GlobalTech Industries AG",
+      "tier": "enterprise",
+      "status": "active",
+      "created_at": "2025-01-15T09:00:00Z",
+      "profile": {
+        "lei": "529900DEMO9876543210",
+        "country": "DE",
+        "city": "Frankfurt",
+        "sector": "conglomerate",
+        "nace_codes": ["C29", "D35", "K64", "J62", "H49", "C21", "L68"],
+        "employees": 45000,
+        "revenue_eur": 12500000000,
+        "fiscal_year_end": "12-31",
+        "reporting_currency": "EUR",
+        "subsidiaries_count": 8,
+        "countries_of_operation": ["DE", "FR", "NL", "SE", "PL", "IT", "ES", "US"]
+      },
+      "subsidiaries": [
+        {
+          "entity_id": "GT-MFG-DE",
+          "name": "GlobalTech Manufacturing GmbH",
+          "country": "DE",
+          "ownership_pct": 100.0,
+          "consolidation_method": "full",
+          "nace_codes": ["C29"],
+          "employees": 12000,
+          "revenue_eur": 3500000000,
+          "reporting_currency": "EUR"
+        },
+        {
+          "entity_id": "GT-TECH-NL",
+          "name": "GlobalTech Software B.V.",
+          "country": "NL",
+          "ownership_pct": 100.0,
+          "consolidation_method": "full",
+          "nace_codes": ["J62"],
+          "employees": 3000,
+          "revenue_eur": 800000000,
+          "reporting_currency": "EUR"
+        },
+        {
+          "entity_id": "GT-ENERGY-SE",
+          "name": "GlobalTech Energy AB",
+          "country": "SE",
+          "ownership_pct": 85.0,
+          "consolidation_method": "proportional",
+          "nace_codes": ["D35"],
+          "employees": 2000,
+          "revenue_eur": 1500000000,
+          "reporting_currency": "SEK"
+        },
+        {
+          "entity_id": "GT-FIN-FR",
+          "name": "GlobalTech Finance S.A.",
+          "country": "FR",
+          "ownership_pct": 100.0,
+          "consolidation_method": "full",
+          "nace_codes": ["K64"],
+          "employees": 1500,
+          "revenue_eur": 600000000,
+          "reporting_currency": "EUR"
+        },
+        {
+          "entity_id": "GT-LOG-PL",
+          "name": "GlobalTech Logistics Sp. z o.o.",
+          "country": "PL",
+          "ownership_pct": 75.0,
+          "consolidation_method": "proportional",
+          "nace_codes": ["H49"],
+          "employees": 5000,
+          "revenue_eur": 900000000,
+          "reporting_currency": "PLN"
+        },
+        {
+          "entity_id": "GT-PHARMA-IT",
+          "name": "GlobalTech Pharma S.p.A.",
+          "country": "IT",
+          "ownership_pct": 100.0,
+          "consolidation_method": "full",
+          "nace_codes": ["C21"],
+          "employees": 8000,
+          "revenue_eur": 2200000000,
+          "reporting_currency": "EUR"
+        },
+        {
+          "entity_id": "GT-AUTO-ES",
+          "name": "GlobalTech Automotive S.L.",
+          "country": "ES",
+          "ownership_pct": 100.0,
+          "consolidation_method": "full",
+          "nace_codes": ["C29"],
+          "employees": 10000,
+          "revenue_eur": 2800000000,
+          "reporting_currency": "EUR"
+        },
+        {
+          "entity_id": "GT-RE-US",
+          "name": "GlobalTech Properties Inc.",
+          "country": "US",
+          "ownership_pct": 60.0,
+          "consolidation_method": "equity",
+          "nace_codes": ["L68"],
+          "employees": 500,
+          "revenue_eur": 200000000,
+          "reporting_currency": "USD"
+        }
+      ],
+      "sso_config": {
+        "saml_enabled": true,
+        "oauth_enabled": true,
+        "scim_enabled": true,
+        "idp_metadata_url": "https://idp.globaltech-demo.example.com/metadata",
+        "default_role": "viewer",
+        "jit_provisioning": true,
+        "allowed_domains": ["globaltech-demo.example.com"],
+        "mfa_required": true
+      },
+      "branding": {
+        "logo_url": "https://assets.globaltech-demo.example.com/logo.svg",
+        "primary_color": "#0D47A1",
+        "secondary_color": "#1565C0",
+        "accent_color": "#42A5F5",
+        "font_family": "Roboto, sans-serif",
+        "custom_domain": "esg.globaltech-demo.example.com",
+        "powered_by_visible": false,
+        "email_branding": true,
+        "favicon_url": "https://assets.globaltech-demo.example.com/favicon.ico"
+      },
+      "features": {
+        "multi_entity_consolidation": true,
+        "cross_framework_alignment": true,
+        "scenario_analysis": true,
+        "predictive_analytics": true,
+        "iot_integration": true,
+        "carbon_credit_management": true,
+        "supply_chain_esg": true,
+        "regulatory_filing": true,
+        "narrative_generation": true,
+        "custom_workflows": true,
+        "marketplace": true,
+        "eudr_compliance": false,
+        "approval_workflows": true,
+        "auditor_portal": true
+      },
+      "resource_quotas": {
+        "max_agents": 500,
+        "max_storage_gb": 5000,
+        "max_api_calls_per_day": 10000000,
+        "max_users": 5000,
+        "max_custom_workflows": 500
+      }
+    },
+    {
+      "tenant_id": "tenant-greenadvisors",
+      "name": "GreenAdvisors GmbH",
+      "tier": "consulting_firm",
+      "status": "active",
+      "created_at": "2025-03-01T10:30:00Z",
+      "profile": {
+        "lei": "529900DEMO1111111111",
+        "country": "DE",
+        "city": "Munich",
+        "sector": "consulting",
+        "nace_codes": ["M70"],
+        "employees": 250,
+        "revenue_eur": 45000000,
+        "fiscal_year_end": "12-31",
+        "reporting_currency": "EUR",
+        "clients_count": 5,
+        "countries_of_operation": ["DE", "AT", "CH"]
+      },
+      "clients": [
+        {
+          "client_id": "GA-CLIENT-001",
+          "name": "BavariaStahl GmbH",
+          "sector": "manufacturing",
+          "nace_codes": ["C24"],
+          "employees": 3500,
+          "engagement_type": "full_csrd"
+        },
+        {
+          "client_id": "GA-CLIENT-002",
+          "name": "AlpenEnergie AG",
+          "sector": "energy",
+          "nace_codes": ["D35"],
+          "employees": 1200,
+          "engagement_type": "full_csrd"
+        },
+        {
+          "client_id": "GA-CLIENT-003",
+          "name": "TechVentures GmbH",
+          "sector": "technology",
+          "nace_codes": ["J62"],
+          "employees": 800,
+          "engagement_type": "starter_csrd"
+        },
+        {
+          "client_id": "GA-CLIENT-004",
+          "name": "BioPharm Austria AG",
+          "sector": "pharma",
+          "nace_codes": ["C21"],
+          "employees": 2500,
+          "engagement_type": "full_csrd"
+        },
+        {
+          "client_id": "GA-CLIENT-005",
+          "name": "SwissLogistics SA",
+          "sector": "logistics",
+          "nace_codes": ["H49"],
+          "employees": 4000,
+          "engagement_type": "ghg_only"
+        }
+      ],
+      "sso_config": {
+        "saml_enabled": true,
+        "oauth_enabled": true,
+        "scim_enabled": false,
+        "idp_metadata_url": "https://idp.greenadvisors-demo.example.com/metadata",
+        "default_role": "preparer",
+        "jit_provisioning": true,
+        "allowed_domains": ["greenadvisors-demo.example.com"],
+        "mfa_required": false
+      },
+      "branding": {
+        "logo_url": "https://assets.greenadvisors-demo.example.com/logo.svg",
+        "primary_color": "#2E7D32",
+        "secondary_color": "#43A047",
+        "accent_color": "#66BB6A",
+        "font_family": "Lato, sans-serif",
+        "custom_domain": "platform.greenadvisors-demo.example.com",
+        "powered_by_visible": false,
+        "email_branding": true,
+        "favicon_url": "https://assets.greenadvisors-demo.example.com/favicon.ico"
+      },
+      "features": {
+        "multi_entity_consolidation": false,
+        "cross_framework_alignment": true,
+        "scenario_analysis": true,
+        "predictive_analytics": true,
+        "iot_integration": false,
+        "carbon_credit_management": false,
+        "supply_chain_esg": true,
+        "regulatory_filing": true,
+        "narrative_generation": true,
+        "custom_workflows": true,
+        "marketplace": true,
+        "eudr_compliance": false,
+        "approval_workflows": true,
+        "auditor_portal": true
+      },
+      "resource_quotas": {
+        "max_agents": 150,
+        "max_storage_gb": 100,
+        "max_api_calls_per_day": 200000,
+        "max_users": 50,
+        "max_custom_workflows": 200
+      }
+    },
+    {
+      "tenant_id": "tenant-nordicsustainability",
+      "name": "Nordic Sustainability AB",
+      "tier": "professional",
+      "status": "active",
+      "created_at": "2025-06-15T08:00:00Z",
+      "profile": {
+        "lei": "529900DEMO2222222222",
+        "country": "SE",
+        "city": "Stockholm",
+        "sector": "energy",
+        "nace_codes": ["D35"],
+        "employees": 4500,
+        "revenue_eur": 2800000000,
+        "fiscal_year_end": "12-31",
+        "reporting_currency": "SEK",
+        "subsidiaries_count": 3,
+        "countries_of_operation": ["SE", "NO", "FI"]
+      },
+      "subsidiaries": [
+        {
+          "entity_id": "NS-WIND-SE",
+          "name": "Nordic Wind Power AB",
+          "country": "SE",
+          "ownership_pct": 100.0,
+          "consolidation_method": "full",
+          "nace_codes": ["D35"],
+          "employees": 2000,
+          "revenue_eur": 1200000000,
+          "reporting_currency": "SEK"
+        },
+        {
+          "entity_id": "NS-HYDRO-NO",
+          "name": "Nordic Hydro AS",
+          "country": "NO",
+          "ownership_pct": 80.0,
+          "consolidation_method": "proportional",
+          "nace_codes": ["D35"],
+          "employees": 1500,
+          "revenue_eur": 900000000,
+          "reporting_currency": "NOK"
+        },
+        {
+          "entity_id": "NS-SOLAR-FI",
+          "name": "Nordic Solar Oy",
+          "country": "FI",
+          "ownership_pct": 100.0,
+          "consolidation_method": "full",
+          "nace_codes": ["D35"],
+          "employees": 1000,
+          "revenue_eur": 700000000,
+          "reporting_currency": "EUR"
+        }
+      ],
+      "sso_config": {
+        "saml_enabled": true,
+        "oauth_enabled": true,
+        "scim_enabled": false,
+        "idp_metadata_url": "https://idp.nordicsustainability-demo.example.com/metadata",
+        "default_role": "viewer",
+        "jit_provisioning": true,
+        "allowed_domains": ["nordicsustainability-demo.example.com"],
+        "mfa_required": false
+      },
+      "branding": {
+        "logo_url": "https://assets.nordicsustainability-demo.example.com/logo.svg",
+        "primary_color": "#004D40",
+        "secondary_color": "#00695C",
+        "accent_color": "#26A69A",
+        "font_family": "Source Sans Pro, sans-serif",
+        "custom_domain": "",
+        "powered_by_visible": true,
+        "email_branding": false,
+        "favicon_url": ""
+      },
+      "features": {
+        "multi_entity_consolidation": true,
+        "cross_framework_alignment": true,
+        "scenario_analysis": true,
+        "predictive_analytics": false,
+        "iot_integration": true,
+        "carbon_credit_management": true,
+        "supply_chain_esg": true,
+        "regulatory_filing": true,
+        "narrative_generation": true,
+        "custom_workflows": false,
+        "marketplace": false,
+        "eudr_compliance": false,
+        "approval_workflows": true,
+        "auditor_portal": true
+      },
+      "resource_quotas": {
+        "max_agents": 100,
+        "max_storage_gb": 250,
+        "max_api_calls_per_day": 500000,
+        "max_users": 200,
+        "max_custom_workflows": 0
+      }
+    }
+  ],
+  "metadata": {
+    "generated_at": "2026-03-14T00:00:00Z",
+    "version": "1.0.0",
+    "pack": "PACK-003",
+    "description": "Demo tenant profiles for CSRD Enterprise Pack demonstration and testing"
+  }
+}
