@@ -248,7 +248,7 @@ neo4j==5.16.0
 # VALIDATION & SECURITY
 # =============================================================================
 # Safe expression evaluation
-simpleeval==0.9.13
+simpleeval==1.0.5
 
 # Email validation
 email-validator==2.1.0
