@@ -84,7 +84,7 @@ rich==13.7.0
 scipy==1.12.0
 sentence-transformers==2.3.1
 sentry-sdk==1.40.2
-simpleeval==0.9.13
+simpleeval==1.0.5
 slowapi==0.1.9
 soupsieve==2.5
 spacy==3.7.2
