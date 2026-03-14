@@ -132,7 +132,7 @@ asyncio-mqtt==0.16.2
 # DATA SERIALIZATION & PROCESSING
 # ==============================================================================
 # Standard library extensions
-python-multipart==0.0.9
+python-multipart==0.0.22
 email-validator==2.1.0
 # Protocol buffers for efficient serialization
 protobuf==4.25.2
