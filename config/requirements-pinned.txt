@@ -173,9 +173,9 @@ pybreaker==1.0.2 \
 # SAFE EXPRESSION EVALUATION
 # =============================================================================
 
-simpleeval==0.9.13 \
-    --hash=sha256:4a30f9cc01825fe4c719c785e3762623e350c4840d5e6855c2a8496baaa65fac \
-    --hash=sha256:14970e4c4d955e9278ae72f583c438d5f65bdf87f3e8f1231231cf9db3861c67  # Safe eval
+simpleeval==1.0.5 \
+    --hash=sha256:b6b7933fffe13a345ada9917f8579c72e7b8afcfb7f7759b18fdd068aaa60486 \
+    --hash=sha256:c0de42a9f7849b7bc8c51338295341126f103a2a86beceffebafd9388e3cdfce  # Safe eval
 
 # =============================================================================
 # TRANSITIVE DEPENDENCIES (Dependabot Security Updates 2025-01-26)
