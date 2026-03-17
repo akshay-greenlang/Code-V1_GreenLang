@@ -1,0 +1,259 @@
+# =============================================================================
+# PACK-016 ESRS E1 Climate Pack - Multi-Sector Conglomerate Preset
+# =============================================================================
+# Default configuration for diversified groups operating across multiple
+# NACE sectors (conglomerates, holding companies, multi-divisional groups).
+# Supports division-level GHG inventory with group-level consolidation.
+# All emission sources enabled with sector-agnostic emission factors.
+# Scope 3 screening across all 15 categories to identify significant
+# categories. Targets may be set at group level or division level.
+#
+# Typical use cases:
+#   - Industrial conglomerates (manufacturing + services + energy)
+#   - Holding companies with diverse subsidiary portfolios
+#   - Multi-divisional groups with different sector exposures
+#   - Companies transitioning between sectors (M&A, divestiture)
+#   - First-time CSRD reporters with complex organizational structures
+#
+# Key characteristics:
+#   - All Scope 1 sources potentially relevant (combustion + process)
+#   - All Scope 2 sources relevant (electricity + heat + cooling)
+#   - All 15 Scope 3 categories screened for significance
+#   - Division-level reporting with group consolidation
+#   - Multiple GHG intensity denominators (revenue, production, FTE)
+#   - Transition plan covers multiple decarbonization pathways
+#   - Climate risk assessment across all divisions
+#   - Comprehensive emission factor coverage
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+sector: "GENERAL"
+fiscal_year_end: "12-31"
+currency: "EUR"
+reporting_boundary: "group"
+
+# --- GHG Inventory (comprehensive) ---
+ghg:
+  enabled: true
+  base_year: 2020
+  reporting_year: 2025
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  gwp_source: "IPCC_AR6"
+  gwp_time_horizon: 100
+  emission_factors_source: "DEFRA_2025"
+  emission_factors_region: "EU"
+  scopes_enabled:
+    - "SCOPE_1"
+    - "SCOPE_2_LOCATION"
+    - "SCOPE_2_MARKET"
+    - "SCOPE_3"
+  scope_3_categories:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  scope_3_significance_threshold_pct: 1.0
+  scope_3_default_method: "HYBRID"
+  kyoto_gas_disaggregation: true
+  biogenic_co2_separate: true
+  ghg_intensity_denominators:
+    - "net_revenue_eur_million"
+    - "fte"
+  base_year_recalculation_threshold_pct: 5.0
+  data_quality_scoring: true
+
+# --- Energy Consumption (all sources) ---
+energy:
+  enabled: true
+  reporting_unit: "MWh"
+  include_renewables: true
+  renewable_categories:
+    - "SOLAR"
+    - "WIND"
+    - "HYDRO"
+    - "GEOTHERMAL"
+    - "BIOMASS"
+  ppa_tracking: true
+  rec_tracking: true
+  self_generation_tracking: true
+  energy_intensity_denominators:
+    - "net_revenue_eur_million"
+    - "fte"
+  fossil_fuel_types:
+    - "NATURAL_GAS"
+    - "DIESEL"
+    - "GASOLINE"
+    - "COAL"
+    - "LPG"
+    - "FUEL_OIL"
+    - "JET_FUEL"
+  nuclear_included: true
+  district_energy_included: true
+  cross_validate_ghg: true
+  epc_rating_integration: false
+
+# --- Transition Plan (multi-pathway) ---
+transition_plan:
+  enabled: true
+  target_year: 2050
+  interim_targets_enabled: true
+  interim_target_years:
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+  locked_in_emissions_calc: true
+  capex_alignment: true
+  opex_alignment: false
+  scenario_alignment: "1.5C"
+  decarbonization_levers:
+    - "energy_efficiency"
+    - "electrification"
+    - "renewable_energy"
+    - "fuel_switching"
+    - "process_changes"
+    - "fleet_electrification"
+    - "supply_chain_engagement"
+    - "circular_economy"
+  taxonomy_alignment: true
+  has_transition_plan: true
+
+# --- Target Tracking (SBTi cross-sector) ---
+targets:
+  enabled: true
+  sbti_commitment_level: "SBTi_1_5C"
+  sbti_validated: false
+  base_year: 2020
+  base_year_approach: "FIXED"
+  target_year: 2030
+  long_term_target_year: 2050
+  target_types:
+    - "ABSOLUTE"
+    - "INTENSITY"
+    - "NET_ZERO"
+  target_scopes:
+    - "SCOPE_1"
+    - "SCOPE_2_MARKET"
+    - "SCOPE_3"
+  reduction_path: "linear"
+  intensity_denominator: "net_revenue_eur_million"
+  progress_tracking_frequency: "annual"
+  variance_analysis: true
+  base_year_recalculation_policy: true
+
+# --- Carbon Credits ---
+carbon_credits:
+  enabled: true
+  allowed_standards:
+    - "VERRA_VCS"
+    - "GOLD_STANDARD"
+    - "ACR"
+    - "CDM"
+  credit_types:
+    - "AVOIDANCE"
+    - "REMOVAL"
+  vintage_requirements: 5
+  retirement_policy: "retire_on_claim"
+  quality_assessment: true
+  sbti_offset_guidance: true
+  removal_tracking: true
+  separate_from_gross_emissions: true
+
+# --- Carbon Pricing ---
+carbon_pricing:
+  enabled: true
+  has_carbon_pricing: true
+  pricing_methods:
+    - "SHADOW_PRICE"
+  price_per_tco2e: "100.00"
+  price_currency: "EUR"
+  coverage_scope:
+    - "SCOPE_1"
+    - "SCOPE_2_MARKET"
+  coverage_share_pct: "80.0"
+  shadow_price_scenarios:
+    - scenario: "current"
+      price_per_tco2e: "100.00"
+      year: "2025"
+    - scenario: "medium"
+      price_per_tco2e: "150.00"
+      year: "2030"
+    - scenario: "high"
+      price_per_tco2e: "250.00"
+      year: "2035"
+  influences_investment_decisions: true
+  influences_procurement: false
+
+# --- Climate Risk (comprehensive) ---
+climate_risk:
+  enabled: true
+  physical_risk_types:
+    - "ACUTE"
+    - "CHRONIC"
+  transition_risk_types:
+    - "POLICY"
+    - "TECHNOLOGY"
+    - "MARKET"
+    - "REPUTATION"
+    - "LEGAL"
+  scenarios:
+    - "SSP1_2_6"
+    - "SSP2_4_5"
+    - "SSP5_8_5"
+  time_horizons:
+    - "SHORT_TERM"
+    - "MEDIUM_TERM"
+    - "LONG_TERM"
+  short_term_years: 1
+  medium_term_years: 5
+  long_term_years: 10
+  quantify_financial_effects: true
+  financial_effect_currency: "EUR"
+  opportunity_assessment: true
+  site_level_exposure: false
+  portfolio_risk: false
+  tcfd_alignment: true
+  use_climate_hazard_data: true
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  disclosure_requirements:
+    - "E1-1"
+    - "E1-2"
+    - "E1-3"
+    - "E1-4"
+    - "E1-5"
+    - "E1-6"
+    - "E1-7"
+    - "E1-8"
+    - "E1-9"
+  output_formats:
+    - "PDF"
+    - "XBRL"
+    - "HTML"
+  xbrl_tagging: true
+  sha256_provenance: true
+  multi_language: true
+  supported_languages: ["en", "de"]
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  year_over_year_comparison: true
+  data_quality_disclosure: true
+  assumption_disclosure: true
+  retention_years: 10

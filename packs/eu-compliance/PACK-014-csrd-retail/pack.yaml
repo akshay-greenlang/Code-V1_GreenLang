@@ -1,0 +1,1353 @@
+# =============================================================================
+# PACK-014: CSRD Retail & Consumer Goods Pack
+# GreenLang EU Compliance Pack for CSRD Retail Sector Disclosures (NACE G)
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for CSRD compliance tailored specifically to the retail
+# and consumer goods sector. Retail companies face unique disclosure requirements
+# under ESRS covering store-level emissions (Scope 1+2 including F-gas
+# refrigerants), extensive Scope 3 supply chain emissions (dominant for retail),
+# packaging compliance under PPWR, product sustainability under ESPR and ECGT,
+# food waste management, supply chain due diligence under CSDDD and EUDR, and
+# circular economy practices including EPR obligations for WEEE, textiles, and
+# furniture.
+#
+# This pack integrates with the Packaging and Packaging Waste Regulation (PPWR),
+# the EU Deforestation Regulation (EUDR), the Corporate Sustainability Due
+# Diligence Directive (CSDDD), the Ecodesign for Sustainable Products Regulation
+# (ESPR), the Empowering Consumers for the Green Transition (ECGT) directive,
+# the Energy Efficiency Directive (EED), and the F-Gas Regulation. It supports
+# grocery retail, apparel retail, electronics retail, general/department store
+# retail, online/e-commerce retail, and SME retailers.
+#
+# Key Capabilities:
+#   - Store-level Scope 1+2 emissions (electricity, heating, F-gas, fleet)
+#   - All 15 Scope 3 categories with retail-specific prioritization
+#   - PPWR packaging compliance (recycled content, EPR, labeling, reuse)
+#   - Product sustainability (ESPR DPP, PEF, ECGT green claims, microplastics)
+#   - Food waste measurement and 30% reduction target tracking
+#   - Supply chain due diligence (CSDDD, EUDR commodity tracing, forced labour)
+#   - Retail circular economy (WEEE/textile/furniture EPR, take-back, MCI)
+#   - Sector benchmarking (emissions/sqm, SBTi FLAG alignment, peer KPIs)
+#   - CSRD Omnibus Directive threshold assessment
+#
+# Regulatory References:
+#   - CSRD: Directive (EU) 2022/2464
+#   - ESRS: Delegated Regulation (EU) 2023/2772 (Set 1)
+#   - PPWR: Regulation (EU) 2025/40 (Packaging & Packaging Waste)
+#   - EUDR: Regulation (EU) 2023/1115 (Deforestation-free products)
+#   - CSDDD: Directive (EU) 2024/1760 (Corporate Sustainability Due Diligence)
+#   - ESPR: Regulation (EU) 2024/1781 (Ecodesign for Sustainable Products)
+#   - ECGT: Directive (EU) 2024/825 (Empowering Consumers Green Transition)
+#   - EED: Directive (EU) 2023/1791 (Energy Efficiency)
+#   - F-Gas: Regulation (EU) 2024/573 (Fluorinated Greenhouse Gases)
+#   - SBTi: Science Based Targets initiative (FLAG guidance)
+#   - GHG Protocol: Corporate Standard and Scope 3 Standard
+#
+# Retail Sub-Sectors Supported:
+#   - Grocery: Supermarkets, hypermarkets, convenience stores
+#   - Apparel: Fashion, textile, footwear, luxury retail
+#   - Electronics: Consumer electronics, IT, appliances
+#   - General: Department stores, variety stores, home furnishing
+#   - Online: E-commerce pure-play, marketplace, fulfillment
+#   - Wholesale: Cash & carry, wholesale distribution
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-16)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-014-csrd-retail
+  version: "1.0.0"
+  display_name: "CSRD Retail & Consumer Goods Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for CSRD compliance by retail and
+    consumer goods companies (NACE Division G). Includes 8 engines for store-level
+    emissions calculation, retail Scope 3 mapping, PPWR packaging compliance,
+    product sustainability and DPP, food waste management, CSDDD/EUDR supply chain
+    due diligence, retail circular economy (WEEE/textile/furniture EPR), and retail
+    sector benchmarking. Bundles all 30 MRV agents for operational emissions, 20
+    data intake/quality agents, 10 foundation agents, and 15 bridged agents for
+    EUDR traceability, CSDDD, and EU Taxonomy alignment. Supports grocery, apparel,
+    electronics, general, online, and SME retailer sub-sectors with tailored presets
+    and regulatory template packages. Addresses CSRD Omnibus Directive thresholds
+    for SME relief.
+  category: eu-compliance
+  tier: sector-specific
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-16"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/csrd-retail"
+  changelog_url: "https://docs.greenlang.io/packs/csrd-retail/changelog"
+
+  tags:
+    - csrd
+    - esrs
+    - retail
+    - consumer-goods
+    - scope-3
+    - packaging
+    - ppwr
+    - eudr
+    - csddd
+    - food-waste
+    - circular-economy
+    - epr
+    - dpp
+    - textile
+    - f-gas
+    - green-claims
+    - ecgt
+    - supply-chain
+    - due-diligence
+    - weee
+    - refrigerant
+    - sbti
+    - grocery
+    - apparel
+    - electronics
+    - e-commerce
+    - last-mile
+    - microplastics
+    - deforestation-free
+    - omnibus
+    - eu-compliance
+    - sector-specific
+
+  regulation:
+    primary:
+      name: "Corporate Sustainability Reporting Directive"
+      reference: "(EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        The CSRD mandates sustainability reporting for large undertakings and
+        listed companies under the European Sustainability Reporting Standards
+        (ESRS). Retail and consumer goods companies face sector-specific
+        disclosure requirements covering store-level emissions, extensive Scope 3
+        supply chains, packaging waste, product sustainability, food waste, and
+        circular economy obligations across multiple EU regulations.
+    secondary:
+      - name: "European Sustainability Reporting Standards (Set 1)"
+        reference: "(EU) 2023/2772"
+        effective_date: "2024-01-01"
+      - name: "Packaging and Packaging Waste Regulation"
+        reference: "(EU) 2025/40"
+        effective_date: "2025-08-12"
+      - name: "EU Deforestation Regulation"
+        reference: "(EU) 2023/1115"
+        effective_date: "2024-12-30"
+      - name: "Corporate Sustainability Due Diligence Directive"
+        reference: "(EU) 2024/1760"
+        effective_date: "2027-07-26"
+      - name: "Ecodesign for Sustainable Products Regulation"
+        reference: "(EU) 2024/1781"
+        effective_date: "2024-07-18"
+      - name: "Empowering Consumers for the Green Transition"
+        reference: "(EU) 2024/825"
+        effective_date: "2026-03-27"
+      - name: "Energy Efficiency Directive (recast)"
+        reference: "(EU) 2023/1791"
+        effective_date: "2023-10-10"
+      - name: "F-Gas Regulation (recast)"
+        reference: "(EU) 2024/573"
+        effective_date: "2024-03-11"
+
+  compliance_references:
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        Framework directive requiring in-scope retail undertakings to report
+        under ESRS. Retail companies must disclose store-level emissions, Scope 3
+        supply chain impacts, packaging compliance, food waste metrics, product
+        sustainability data, and supply chain due diligence outcomes.
+
+    - id: "ESRS"
+      name: "European Sustainability Reporting Standards"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Set 1 cross-cutting and topical standards. For retail: ESRS E1
+        (climate/store emissions and Scope 3) is critical, ESRS E2 (pollution)
+        covers F-gas refrigerants and microplastics, ESRS E5 (circular economy)
+        covers packaging waste and EPR obligations, ESRS S1/S2 cover retail
+        workforce and value chain workers.
+
+    - id: "PPWR"
+      name: "Packaging and Packaging Waste Regulation"
+      regulation: "Regulation (EU) 2025/40"
+      effective_date: "2025-08-12"
+      description: >-
+        PPWR replaces the Packaging Directive with directly applicable rules on
+        packaging sustainability. Sets mandatory recycled content targets (30%
+        PET by 2030, 10% other plastics by 2030, rising to 2040 targets),
+        recyclability requirements, reuse targets, EPR eco-modulation, and
+        harmonized labeling. Critical for all retail sub-sectors.
+
+    - id: "EUDR"
+      name: "EU Deforestation Regulation"
+      regulation: "Regulation (EU) 2023/1115"
+      effective_date: "2024-12-30"
+      description: >-
+        EUDR requires operators and traders placing palm oil, soy, cocoa,
+        coffee, rubber, timber, and cattle products on the EU market to
+        demonstrate they are deforestation-free. Retailers selling private-label
+        products containing these commodities must conduct due diligence
+        including geolocation and satellite verification.
+
+    - id: "CSDDD"
+      name: "Corporate Sustainability Due Diligence Directive"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        CSDDD requires large companies to identify, prevent, and mitigate
+        adverse human rights and environmental impacts across their value chains.
+        Retail companies with extensive global supply chains must implement due
+        diligence covering forced labour, child labour, living wages, and
+        environmental harm in sourcing countries.
+
+    - id: "ESPR"
+      name: "Ecodesign for Sustainable Products Regulation"
+      regulation: "Regulation (EU) 2024/1781"
+      effective_date: "2024-07-18"
+      description: >-
+        ESPR establishes Digital Product Passports (DPP), recycled content
+        mandates, durability, and repairability requirements. Retail companies
+        selling textiles, electronics, and furniture must provide DPP data
+        and meet product-level sustainability requirements.
+
+    - id: "ECGT"
+      name: "Empowering Consumers for the Green Transition"
+      regulation: "Directive (EU) 2024/825"
+      effective_date: "2026-03-27"
+      description: >-
+        ECGT bans generic environmental claims (eco-friendly, green, carbon
+        neutral) unless substantiated. Retailers must audit all green claims
+        on private-label and marketed products, ensuring compliance with
+        substantiation requirements and approved eco-label schemes.
+
+    - id: "F_GAS"
+      name: "F-Gas Regulation (recast)"
+      regulation: "Regulation (EU) 2024/573"
+      effective_date: "2024-03-11"
+      description: >-
+        Recast F-Gas Regulation phases down HFC quotas toward near-zero by
+        2050. Retail companies using refrigeration (especially grocery) must
+        track F-gas leakage, plan transitions to low-GWP refrigerants (R290,
+        R744, R1234YF), and report refrigerant inventory.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 retail engines)
+  # ===========================================================================
+  engines:
+    - id: store_emissions
+      name: "Store Emissions Engine"
+      description: >-
+        Calculates store-level Scope 1 and Scope 2 emissions for retail
+        locations. Scope 1 covers direct emissions from on-site heating
+        (natural gas, LPG), F-gas refrigerant leakage from commercial
+        refrigeration systems (R404A, R134A, R410A, R32, R290, R744),
+        company-owned fleet vehicles (delivery vans, forklifts), and
+        backup generators. Scope 2 covers purchased electricity, district
+        heating/cooling, and on-site renewable generation credits. Supports
+        per-store, per-sqm, and per-revenue normalization. Tracks F-gas
+        phase-down compliance per Regulation (EU) 2024/573. Supports EED
+        energy audit compliance for large retail buildings.
+        Zero-hallucination: all emission factors from national grid databases
+        and IPCC AR6 GWP values, refrigerant leakage from mass balance,
+        no LLM in calculation path.
+      required: true
+
+    - id: retail_scope3
+      name: "Retail Scope 3 Engine"
+      description: >-
+        Calculates all 15 Scope 3 categories with retail-specific prioritization.
+        For grocery: Cat 1 (purchased goods - food/beverages/FMCG) dominates at
+        60-80% of total footprint. For apparel: Cat 1 (raw materials/textiles)
+        and Cat 12 (end-of-life) are critical. For electronics: Cat 1 and Cat 11
+        (use-phase energy) are critical. Cat 4 (upstream transport) and Cat 9
+        (downstream transport including last-mile delivery) are material for all
+        sub-sectors. Supports hybrid calculation (supplier-specific, spend-based,
+        average-data), supplier engagement scoring, and hotspot identification.
+        Zero-hallucination: emission factors from DEFRA, ecoinvent, and EPA
+        databases; calculations deterministic.
+      required: true
+
+    - id: packaging_compliance
+      name: "Packaging Compliance Engine"
+      description: >-
+        Manages compliance with Packaging and Packaging Waste Regulation (EU)
+        2025/40. Tracks recycled content by packaging material (PET, HDPE, PP,
+        glass, aluminium, steel, paper/board) against mandatory PPWR targets.
+        Calculates EPR eco-modulation fees based on recyclability, recycled
+        content, and material type. Monitors harmonized labeling requirements
+        including material identification, sorting instructions, and QR codes.
+        Tracks reuse targets (transport packaging 40% by 2030, 70% by 2040).
+        Monitors packaging weight minimization and over-packaging restrictions.
+        Zero-hallucination: PPWR target thresholds from regulation annexes,
+        fee calculations deterministic.
+      required: true
+
+    - id: product_sustainability
+      name: "Product Sustainability Engine"
+      description: >-
+        Manages product-level sustainability requirements under ESPR and ECGT.
+        Generates Digital Product Passport (DPP) data per ESPR for product
+        categories requiring DPP (textiles from 2027, electronics from 2028).
+        Calculates Product Environmental Footprint (PEF) using category rules
+        (PEFCRs). Audits green claims per ECGT compliance - flags unsubstantiated
+        claims (carbon neutral, eco-friendly, sustainable) and validates against
+        approved EU Ecolabel and national schemes. Tracks textile microplastics
+        release per ESPR requirements. Zero-hallucination: PEF calculations
+        from ecoinvent/EF 3.1 database, claim validation rules from ECGT
+        annexes, no LLM in scoring.
+      required: true
+
+    - id: food_waste
+      name: "Food Waste Engine"
+      description: >-
+        Measures and tracks food waste across retail operations per EU food
+        waste reduction targets (30% reduction at retail/consumer level by
+        2030 vs 2020 baseline). Categorizes waste by food type (bakery,
+        produce, dairy, meat, prepared food, packaged, beverages), tracks
+        redistribution volumes (food banks, charities), animal feed diversion,
+        composting, and anaerobic digestion. Calculates food waste intensity
+        metrics (kg waste/EUR revenue, kg waste/sqm, waste-to-sales ratio).
+        Monitors date marking optimization (best-before vs use-by) and
+        markdown/clearance effectiveness. Integrates with store inventory
+        management systems for waste cause analysis.
+        Zero-hallucination: waste quantities from scales/POS data, emission
+        factors from WRAP/ecoinvent, calculations deterministic.
+      required: false
+
+    - id: supply_chain_due_diligence
+      name: "Supply Chain Due Diligence Engine"
+      description: >-
+        Manages supply chain due diligence obligations under CSDDD and EUDR.
+        For CSDDD: identifies adverse human rights and environmental impacts
+        across retail supply chains (forced labour, child labour, living wage
+        gaps, unsafe working conditions), generates risk assessments by country
+        and commodity, tracks remediation actions and stakeholder engagement.
+        For EUDR: traces 7 regulated commodities (palm oil, soy, cocoa, coffee,
+        rubber, timber, cattle/leather) through private-label and branded supply
+        chains, validates geolocation data and deforestation-free status using
+        satellite imagery. Screens suppliers against forced labour databases
+        and sanctions lists. LLM-assisted: entity resolution and risk narrative
+        generation; all risk scores and traceability checks are deterministic.
+      required: true
+
+    - id: retail_circular_economy
+      name: "Retail Circular Economy Engine"
+      description: >-
+        Tracks circular economy metrics specific to retail operations per ESRS E5.
+        Manages EPR obligations across multiple schemes: WEEE (electronics
+        take-back), textiles (collection and recycling), furniture (take-back
+        and reuse), batteries (portable and industrial). Tracks take-back
+        program volumes, calculates Material Circularity Indicator (MCI) at
+        product and company level, monitors product recyclability scores, and
+        assesses right-to-repair compliance. Tracks return logistics emissions
+        and second-hand/refurbished sales. Integrates with ESPR DPP for
+        product circularity data. Zero-hallucination: mass balance calculations,
+        EPR fee computations deterministic.
+      required: true
+
+    - id: retail_benchmark
+      name: "Retail Benchmark Engine"
+      description: >-
+        Benchmarks retail sustainability performance against sector peers and
+        science-based targets. KPI set includes: emissions per sqm (kgCO2e/sqm),
+        emissions per revenue (tCO2e/EUR million), energy intensity (kWh/sqm),
+        refrigerant leakage rate (%), food waste ratio, packaging recycled
+        content rate, Scope 3 supplier coverage rate, and SBTi FLAG pathway
+        alignment. Supports peer grouping by NACE code, store format, geography,
+        and revenue band. Generates gap analysis vs. SBTi 1.5C pathway,
+        sector-average decarbonization curves, and leading practice benchmarks.
+        Zero-hallucination: benchmark values from CDP, SBTi, MSCI data;
+        gap calculations deterministic.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 retail workflows)
+  # ===========================================================================
+  workflows:
+    - id: store_emissions
+      name: "Store Emissions Workflow"
+      description: >-
+        4-phase workflow: Store Data Ingestion (energy bills, refrigerant logs,
+        fleet records) -> Scope 1 Calculation (heating, refrigerants, fleet,
+        generators) -> Scope 2 Calculation (electricity, district heating/
+        cooling) -> Store Emissions Consolidation (per-store, regional, group
+        aggregation with sqm/revenue normalization). Handles multi-format store
+        data from ERP, BMS, and utility providers.
+      schedule: "quarterly"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: supply_chain_assessment
+      name: "Supply Chain Assessment Workflow"
+      description: >-
+        5-phase workflow: Supplier Master Data Enrichment -> CSDDD Risk
+        Assessment (country/commodity risk scoring) -> EUDR Commodity Tracing
+        (geolocation verification, satellite checks) -> Forced Labour Screening
+        (database checks, supplier self-declaration) -> Due Diligence Statement
+        Generation. Prioritizes Tier 1 suppliers then cascades to Tier 2-4
+        based on risk level. Supports supplier engagement via questionnaires.
+      schedule: "annual"
+      estimated_duration_minutes: 300
+      phases: 5
+
+    - id: packaging_compliance
+      name: "Packaging Compliance Workflow"
+      description: >-
+        4-phase workflow: Packaging Material Inventory -> PPWR Target Assessment
+        (recycled content by material vs. targets) -> EPR Fee Calculation
+        (eco-modulation based on recyclability) -> Labeling Compliance Check
+        (material ID, sorting instructions, QR codes). Generates PPWR compliance
+        report with gap analysis and remediation timeline.
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: product_sustainability
+      name: "Product Sustainability Workflow"
+      description: >-
+        4-phase workflow: Product Portfolio Scan -> DPP Data Generation (for
+        applicable product categories) -> Green Claims Audit (ECGT compliance
+        check on all marketing materials) -> PEF Calculation (environmental
+        footprint per product family). Generates product-level sustainability
+        scorecards and DPP data packages.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: food_waste_tracking
+      name: "Food Waste Tracking Workflow"
+      description: >-
+        4-phase workflow: Waste Data Collection (POS write-offs, scale data,
+        donation records) -> Waste Categorization (by food type, cause,
+        destination) -> Reduction Progress Tracking (vs. 2020 baseline and
+        2030 target) -> Redistribution and Diversion Reporting. Generates
+        food waste reports with root cause analysis and improvement actions.
+      schedule: "monthly"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: circular_economy
+      name: "Circular Economy Workflow"
+      description: >-
+        4-phase workflow: EPR Obligation Mapping (WEEE, textiles, furniture,
+        batteries by market) -> Take-Back Volume Tracking -> MCI Calculation
+        (material circularity indicator at product and company level) ->
+        Circular Economy Disclosure Assembly (ESRS E5 data points). Supports
+        multi-country EPR reporting with jurisdiction-specific requirements.
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: esrs_retail_disclosure
+      name: "ESRS Retail Disclosure Workflow"
+      description: >-
+        4-phase workflow: Double Materiality Assessment (retail-specific
+        impact/financial materiality) -> Data Aggregation (from all 8 engines)
+        -> ESRS Topic Compilation (E1-E5, S1-S4, G1 with retail context) ->
+        Disclosure Assembly (XBRL tagging, narrative generation, cross-reference
+        validation). Handles Omnibus threshold assessment for potential scope
+        reduction.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 4
+
+    - id: regulatory_compliance
+      name: "Regulatory Compliance Workflow"
+      description: >-
+        3-phase workflow: Regulation Applicability Scan (CSRD, PPWR, EUDR,
+        CSDDD, ESPR, ECGT, EED, F-Gas per sub-sector and jurisdiction) ->
+        Cross-Regulation Data Mapping (shared data points, consistency checks)
+        -> Unified Compliance Dashboard Update (status by regulation, deadlines,
+        gap analysis). Monitors regulatory changes affecting retail obligations.
+      schedule: "quarterly"
+      estimated_duration_minutes: 45
+      phases: 3
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 retail templates)
+  # ===========================================================================
+  templates:
+    - id: store_emissions_report
+      display_name: "Store Emissions Report"
+      description: >-
+        Store-level emissions report with Scope 1 breakdown (heating, F-gas,
+        fleet) and Scope 2 breakdown (electricity, district energy). Includes
+        per-sqm and per-revenue intensity metrics, year-over-year trends,
+        F-gas phase-down compliance status, and regional/group consolidation.
+        Compatible with ESRS E1 disclosure and CDP Climate questionnaire.
+      format: "pdf"
+      template_file: "templates/store_emissions_report.jinja2"
+      enabled: true
+
+    - id: supply_chain_report
+      display_name: "Supply Chain Due Diligence Report"
+      description: >-
+        CSDDD and EUDR supply chain due diligence report. Covers supplier
+        risk assessment results, EUDR commodity traceability status, forced
+        labour screening outcomes, remediation actions, and stakeholder
+        engagement summary. Suitable for CSDDD annual due diligence statement
+        and EUDR due diligence declarations.
+      format: "pdf"
+      template_file: "templates/supply_chain_report.jinja2"
+      enabled: true
+
+    - id: packaging_compliance_report
+      display_name: "Packaging Compliance Report"
+      description: >-
+        PPWR compliance report with recycled content by material vs. targets,
+        EPR eco-modulation fee summary, labeling compliance status, reuse
+        target progress, and remediation timeline for non-compliant packaging.
+        Includes material-level detail and regulatory deadline tracking.
+      format: "pdf"
+      template_file: "templates/packaging_compliance_report.jinja2"
+      enabled: true
+
+    - id: product_sustainability_report
+      display_name: "Product Sustainability Report"
+      description: >-
+        Product-level sustainability report covering DPP data summaries,
+        PEF calculation results, ECGT green claims audit outcomes, textile
+        microplastics assessment, and product recyclability scores. Includes
+        product family comparisons and improvement recommendations.
+      format: "pdf"
+      template_file: "templates/product_sustainability_report.jinja2"
+      enabled: true
+
+    - id: food_waste_report
+      display_name: "Food Waste Report"
+      description: >-
+        Food waste tracking report with waste by category, redistribution
+        volumes, reduction progress vs. 2030 target, root cause analysis,
+        and store-level benchmarking. Includes financial impact analysis
+        (markdown savings, donation tax benefits) and best practice sharing.
+      format: "pdf"
+      template_file: "templates/food_waste_report.jinja2"
+      enabled: true
+
+    - id: circular_economy_report
+      display_name: "Circular Economy Report"
+      description: >-
+        Circular economy metrics report per ESRS E5 covering EPR obligations
+        by scheme and jurisdiction, take-back program volumes, Material
+        Circularity Indicator (MCI) results, product recyclability scores,
+        and second-hand/refurbished sales tracking. Includes multi-country
+        EPR fee summaries and compliance status.
+      format: "pdf"
+      template_file: "templates/circular_economy_report.jinja2"
+      enabled: true
+
+    - id: retail_esg_scorecard
+      display_name: "Retail ESG Scorecard"
+      description: >-
+        Executive-level ESG scorecard combining all retail KPIs: emissions
+        per sqm, Scope 3 coverage, packaging recycled content, food waste
+        ratio, supplier DD coverage, EPR compliance rate, SBTi alignment,
+        and regulatory compliance status. Includes peer benchmarking,
+        year-over-year trends, and traffic light indicators.
+      format: "html"
+      template_file: "templates/retail_esg_scorecard.jinja2"
+      enabled: true
+
+    - id: esrs_retail_disclosure
+      display_name: "ESRS Retail Disclosure Package"
+      description: >-
+        Complete ESRS disclosure package for retail companies. Covers E1-E5,
+        S1-S4, G1 topical disclosures with retail-specific context and
+        data points. Includes XBRL-tagged datapoints, narrative sections,
+        cross-references to other reports (PPWR, EUDR, CSDDD), and
+        Omnibus threshold assessment outcome.
+      format: "xbrl"
+      template_file: "templates/esrs_retail_disclosure.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        11-phase master pipeline: Health Check -> Configuration -> Store Data
+        Ingestion -> Store Emissions Calculation -> Scope 3 Calculation ->
+        Packaging Compliance Assessment -> Product Sustainability Assessment ->
+        Food Waste Tracking -> Supply Chain Due Diligence -> Circular Economy
+        Assessment -> ESRS Disclosure Assembly. Orchestrates all retail
+        compliance phases with parallel execution where possible and
+        dependency management between engines.
+      required: true
+
+    - id: csrd_pack_bridge
+      name: "CSRD Pack Bridge"
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs (Starter/Professional/
+        Enterprise) for shared ESRS general disclosure components. Reuses
+        ESRS 2 general disclosures, governance structures, strategy
+        descriptions, and double materiality frameworks. Enables seamless
+        integration of retail-specific data into general CSRD reports.
+      required: true
+
+    - id: mrv_retail_bridge
+      name: "MRV Retail Bridge"
+      description: >-
+        Routes data from all 30 AGENT-MRV agents with retail-specific
+        weighting. Prioritizes AGENT-MRV-002 (refrigerants/F-gas for
+        commercial refrigeration), AGENT-MRV-001 (stationary combustion for
+        heating), AGENT-MRV-003 (mobile combustion for fleet), AGENT-MRV-009/
+        010 (Scope 2 electricity), and AGENT-MRV-014-028 (all 15 Scope 3
+        categories with retail emphasis on Cat 1, 4, 9). Maps emissions to
+        store locations, regions, and group consolidation.
+      required: true
+
+    - id: data_retail_bridge
+      name: "Data Retail Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for retail data intake. Routes ERP data
+        (SAP Retail, Oracle Retail, Microsoft Dynamics) through AGENT-DATA-003,
+        POS and inventory data through AGENT-DATA-002, supplier questionnaires
+        through AGENT-DATA-008, and spend data through AGENT-DATA-009. Handles
+        BMS (Building Management System) integration for store energy data,
+        refrigerant management system feeds, and waste management platform
+        integration.
+      required: true
+
+    - id: eudr_retail_bridge
+      name: "EUDR Retail Bridge"
+      description: >-
+        Connects to AGENT-EUDR agents (001-040) for EUDR commodity traceability.
+        Routes private-label product commodity data through the EUDR traceability
+        pipeline. Covers palm oil, soy, cocoa, coffee, rubber, timber, and
+        cattle/leather commodities in retail supply chains. Integrates
+        geolocation verification and satellite deforestation monitoring.
+      required: true
+
+    - id: circular_economy_bridge
+      name: "Circular Economy Bridge"
+      description: >-
+        Integration bridge for EPR scheme management across EU member states.
+        Connects to national EPR registries (WEEE, textiles, packaging, batteries,
+        furniture), tracks collection and recycling obligations, calculates
+        eco-modulation fees, and consolidates multi-country EPR reporting.
+        Supports take-back program management and reverse logistics tracking.
+      required: true
+
+    - id: supply_chain_bridge
+      name: "Supply Chain Bridge"
+      description: >-
+        Integration bridge for supply chain due diligence data collection.
+        Connects to supplier risk databases (Verisk Maplecroft, Refinitiv,
+        S&P), forced labour screening services (US CBP UFLPA Entity List,
+        UK Modern Slavery Registry), supplier self-assessment platforms
+        (Sedex, amfori BSCI, SA8000), and living wage databases (Global
+        Living Wage Coalition). Routes supplier-specific data to CSDDD
+        risk assessment engine.
+      required: true
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      description: >-
+        Connects to GL-Taxonomy-APP for activity-level taxonomy assessment.
+        Maps retail NACE codes to eligible taxonomy activities (energy
+        efficiency in buildings, low-carbon transport, circular economy
+        activities), evaluates Technical Screening Criteria, and feeds
+        taxonomy alignment ratios into ESRS disclosures.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        22-category system verification covering all 8 engines, 75 agent
+        dependencies, database connectivity, emission factor database
+        currency, PPWR target data freshness, EUDR country risk benchmarks,
+        F-gas GWP value tables, ECGT claim rule database, EPR fee schedules,
+        food waste baseline data, SBTi FLAG pathway data, and deployment
+        readiness status.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration wizard: Retail Sub-Sector Selection
+        (grocery/apparel/electronics/general/online) -> Store Portfolio
+        Registration (locations, sqm, formats) -> Refrigerant Inventory
+        Setup (F-gas types, system capacities) -> Packaging Material
+        Baseline -> Product Portfolio & DPP Scope -> EUDR Commodity
+        Mapping -> Supply Chain Tier Structure -> Reporting Preferences
+        & Omnibus Threshold Assessment.
+      required: false
+
+  # ===========================================================================
+  # Presets - Retail sub-sector specific configurations (6 presets)
+  # ===========================================================================
+  presets:
+    - id: grocery_retail
+      name: "Grocery Retail Preset"
+      description: >-
+        Full configuration for grocery and food retail: supermarkets,
+        hypermarkets, convenience stores. F-gas refrigerant tracking is
+        critical (commercial refrigeration dominates Scope 1). Food waste
+        engine fully enabled with 30% reduction target. EUDR commodity
+        tracing for palm oil, soy, cocoa, and coffee. Scope 3 Cat 1
+        (purchased goods) is critical at 60-80% of total footprint.
+        Packaging PPWR full compliance.
+      retail_sub_sector: "GROCERY"
+      enabled_engines:
+        - store_emissions
+        - retail_scope3
+        - packaging_compliance
+        - product_sustainability
+        - food_waste
+        - supply_chain_due_diligence
+        - retail_circular_economy
+        - retail_benchmark
+      file: "config/presets/grocery_retail.yaml"
+
+    - id: apparel_retail
+      name: "Apparel Retail Preset"
+      description: >-
+        Configuration for fashion, textile, and footwear retail. Textile
+        EPR is enabled. EUDR commodity tracing for rubber, timber, and
+        cattle (leather). Supply chain due diligence tier depth 4 (critical
+        for garment worker conditions). Textile microplastics tracking
+        enabled. Green claims strict audit per ECGT. DPP for textiles
+        from 2027.
+      retail_sub_sector: "APPAREL"
+      enabled_engines:
+        - store_emissions
+        - retail_scope3
+        - packaging_compliance
+        - product_sustainability
+        - supply_chain_due_diligence
+        - retail_circular_economy
+        - retail_benchmark
+      file: "config/presets/apparel_retail.yaml"
+
+    - id: electronics_retail
+      name: "Electronics Retail Preset"
+      description: >-
+        Configuration for consumer electronics, IT, and appliance retail.
+        WEEE full take-back program. DPP for electronics from 2027-2028.
+        Use-phase emissions (Cat 11) are critical for energy-consuming
+        products. Batteries EPR compliance. Right-to-repair tracking.
+      retail_sub_sector: "ELECTRONICS"
+      enabled_engines:
+        - store_emissions
+        - retail_scope3
+        - packaging_compliance
+        - product_sustainability
+        - supply_chain_due_diligence
+        - retail_circular_economy
+        - retail_benchmark
+      file: "config/presets/electronics_retail.yaml"
+
+    - id: general_retail
+      name: "General Retail Preset"
+      description: >-
+        Balanced configuration for department stores, variety retailers,
+        and home furnishing. All engines enabled with moderate intensity.
+        Multi-category product portfolio requiring broad regulatory
+        coverage (packaging, textiles, electronics, furniture).
+      retail_sub_sector: "DEPARTMENT_STORE"
+      enabled_engines:
+        - store_emissions
+        - retail_scope3
+        - packaging_compliance
+        - product_sustainability
+        - supply_chain_due_diligence
+        - retail_circular_economy
+        - retail_benchmark
+      file: "config/presets/general_retail.yaml"
+
+    - id: online_retail
+      name: "Online Retail Preset"
+      description: >-
+        Configuration for e-commerce pure-play and marketplace retailers.
+        Last-mile delivery emissions (Cat 9) are critical. E-commerce
+        packaging reuse targets (PPWR 2030). Returns logistics tracked
+        for circular economy. Fulfillment center energy efficiency
+        replaces traditional store Scope 1+2.
+      retail_sub_sector: "E_COMMERCE"
+      enabled_engines:
+        - store_emissions
+        - retail_scope3
+        - packaging_compliance
+        - product_sustainability
+        - supply_chain_due_diligence
+        - retail_circular_economy
+        - retail_benchmark
+      file: "config/presets/online_retail.yaml"
+
+    - id: sme_retailer
+      name: "SME Retailer Preset"
+      description: >-
+        Simplified configuration for small and medium-sized retailers.
+        Focuses on Scope 1+2 emissions with spend-based Scope 3.
+        Reduced engine set for faster implementation. Assesses CSRD
+        Omnibus threshold eligibility for potential exemption. 5-year
+        data retention.
+      retail_sub_sector: "CONVENIENCE"
+      enabled_engines:
+        - store_emissions
+        - retail_scope3
+        - packaging_compliance
+        - retail_benchmark
+      file: "config/presets/sme_retailer.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for operational emissions (Scope 1/2/3)
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from store heating (natural gas, LPG boilers)"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Calculates emissions from commercial refrigeration F-gas leakage"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates emissions from delivery fleet and company vehicles"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates emissions from in-store bakery, food preparation processes"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Calculates fugitive emissions from refrigerant top-ups and equipment"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates emissions from land use and land use change"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates emissions from on-site waste compaction and treatment"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates emissions from agricultural supply chain (SBTi FLAG)"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions for all stores"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates emissions from purchased district heating"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates emissions from purchased district cooling"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "FMCG, food, apparel, electronics - dominant retail Scope 3 category"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Store fit-outs, refrigeration systems, IT equipment"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Upstream fuel and energy-related emissions for store operations"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Inbound logistics from suppliers to distribution centers and stores"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Store waste, packaging waste, food waste disposal emissions"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Employee business travel emissions"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Store and office employee commuting emissions"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Emissions from leased store premises and vehicles"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Last-mile delivery, customer transport to stores"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Emissions from customer food preparation and cooking"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Energy use of sold electronics, appliances, lighting"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Emissions from product end-of-life (packaging, textiles, WEEE)"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Emissions from sub-let retail space and franchise premises"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Emissions from franchise store operations"
+      path: "greenlang/agents/mrv/franchises/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Scope 3 Category 15 investment emissions"
+      path: "greenlang/agents/mrv/investments/"
+      required: false
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps emissions across all 15 Scope 3 categories with retail prioritization"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage and audit trails for all MRV calculations"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts emissions data from utility bills, waste manifests, supplier invoices"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes store energy data, packaging inventories, and waste reports"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to SAP Retail, Oracle Retail, Microsoft Dynamics for POS/spend data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for grid factors, EPR registries, EUDR systems"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability for EUDR commodities in retail products"
+    required: true
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for store locations, delivery routing, and EUDR geolocation"
+    required: true
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for EUDR deforestation-free verification"
+    required: true
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier sustainability surveys, CSDDD self-assessments, and EUDR declarations"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Physical climate hazard data for store portfolio risk assessment"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes retail procurement spend for Scope 3 estimation"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across store energy, spend, and supplier data"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate invoices, store records, and supplier entries"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing store energy data and supplier emissions values"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption, refrigerant top-ups, and waste spikes"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in store-level energy and waste time series"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles data across ERP, BMS, utility providers, and waste haulers"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of grid factors, EPR fees, EUDR risk data, and F-gas GWP tables"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for PPWR, EUDR, and ESRS format changes"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage across the retail compliance pipeline"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces ESRS, PPWR, EUDR, CSDDD, and F-Gas validation rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates retail data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes units (tCO2e, kWh, sqm, kg, EUR) and reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in emissions, packaging, and food waste calculations"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links data points to source evidence for regulatory audit"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-store, multi-country operations"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for all compliance outputs"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors agent performance and pipeline health"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Agents (15 agents for EUDR, CSDDD, Taxonomy, and regulatory)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: eudr-traceability-agent
+    name: "EUDR Traceability Agent"
+    description: "Traces EUDR commodities through retail private-label supply chains"
+    required: true
+  - id: eudr-risk-assessment-agent
+    name: "EUDR Risk Assessment Agent"
+    description: "Assesses EUDR country and commodity risk for retail sourcing"
+    required: true
+  - id: eudr-geolocation-agent
+    name: "EUDR Geolocation Agent"
+    description: "Validates geolocation data for EUDR commodity origins"
+    required: true
+  - id: csddd-risk-agent
+    name: "CSDDD Risk Assessment Agent"
+    description: "Identifies adverse human rights and environmental impacts in supply chains"
+    required: true
+  - id: csddd-remediation-agent
+    name: "CSDDD Remediation Agent"
+    description: "Tracks remediation actions and stakeholder engagement per CSDDD"
+    required: true
+  - id: forced-labour-screening-agent
+    name: "Forced Labour Screening Agent"
+    description: "Screens suppliers against forced labour databases and sanctions lists"
+    required: true
+  - id: taxonomy-alignment-agent
+    name: "EU Taxonomy Alignment Agent"
+    description: "Assesses taxonomy eligibility and alignment for retail activities"
+    required: false
+  - id: ppwr-compliance-agent
+    name: "PPWR Compliance Agent"
+    description: "Enforces PPWR recycled content, labeling, and reuse targets"
+    required: true
+  - id: ecgt-claims-agent
+    name: "ECGT Green Claims Agent"
+    description: "Audits green claims per ECGT substantiation requirements"
+    required: true
+  - id: dpp-generation-agent
+    name: "DPP Generation Agent"
+    description: "Generates Digital Product Passport data per ESPR"
+    required: false
+  - id: fgas-tracking-agent
+    name: "F-Gas Tracking Agent"
+    description: "Tracks F-gas refrigerant inventory, leakage, and phase-down compliance"
+    required: true
+  - id: sbti-retail-agent
+    name: "SBTi Retail Agent"
+    description: "Tracks SBTi pathway alignment including FLAG guidance for food retail"
+    required: true
+  - id: omnibus-threshold-agent
+    name: "Omnibus Threshold Agent"
+    description: "Assesses CSRD Omnibus Directive threshold applicability"
+    required: true
+  - id: regulatory-change-monitor
+    name: "Regulatory Change Monitor Agent"
+    description: "Monitors PPWR, EUDR, CSDDD, ECGT, ESPR regulatory updates"
+    required: true
+  - id: climate-risk-agent
+    name: "Climate Risk Agent"
+    description: "Assesses physical climate risk for store portfolio and supply chain"
+    required: false
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 75
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    bridged_agents: 15
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  store_processing:
+    max_stores: 5000
+    max_sqm_total: 10000000
+    target_duration_minutes: 15
+    store_emission_calc_per_store_ms: 50
+  scope3:
+    max_suppliers: 50000
+    max_sku_count: 500000
+    target_duration_minutes: 60
+  packaging:
+    max_packaging_items: 100000
+    ppwr_assessment_per_item_ms: 20
+    target_duration_minutes: 15
+  food_waste:
+    max_stores_tracked: 5000
+    waste_calc_per_store_ms: 30
+    target_duration_minutes: 10
+  supply_chain_dd:
+    max_suppliers_screened: 50000
+    eudr_commodity_trace_per_item_ms: 100
+    target_duration_minutes: 90
+  cache_hit_ratio_target: 0.70
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with store-level and regional access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - retail_compliance_officer
+    - sustainability_manager
+    - store_operations_manager
+    - supply_chain_manager
+    - packaging_manager
+    - food_safety_officer
+    - external_auditor
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_ppwr_target_data
+    - verify_eudr_risk_data
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+      - "V089-V128"
+    new:
+      - "V083-PACK014-001"  # Retail store and location tables
+      - "V083-PACK014-002"  # F-gas refrigerant inventory tables
+      - "V083-PACK014-003"  # Packaging material and PPWR compliance tables
+      - "V083-PACK014-004"  # Food waste tracking tables
+      - "V083-PACK014-005"  # Supply chain due diligence tables
+      - "V083-PACK014-006"  # EPR obligation and take-back tables
+      - "V083-PACK014-007"  # Retail benchmark and KPI tables
+
+  post_install:
+    - seed_grid_emission_factors
+    - seed_fgas_gwp_values
+    - seed_ppwr_targets
+    - seed_eudr_country_risk
+    - seed_epr_fee_schedules
+    - seed_ecgt_claim_rules
+    - seed_sbti_flag_pathways
+    - seed_default_presets
+    - run_health_checks

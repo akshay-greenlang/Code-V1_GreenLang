@@ -1,0 +1,174 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - Rubber Sector Preset
+# =============================================================================
+# For companies sourcing natural rubber and rubber-derived products.
+# Focus on Southeast Asian sourcing (Thailand, Indonesia, Vietnam),
+# smallholder-dominated supply chains, tyre industry traceability,
+# and FSC/PEFC certification.
+#
+# Key CN codes: 4001 (natural rubber), 4011-4013 (tyres), 4015 (gloves)
+# Primary origins: Thailand, Indonesia, Vietnam, Cote d'Ivoire, Malaysia
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  sector_name: "Rubber"
+  sector_group: "agriculture_commodities"
+
+  # Product categories
+  primary_products:
+    - "Natural rubber (TSR - Technically Specified Rubber)"
+    - "RSS (Ribbed Smoked Sheets)"
+    - "Centrifuged latex"
+    - "Crepe rubber"
+    - "Cup lumps"
+
+  derived_products:
+    - "Passenger car tyres"
+    - "Truck/bus tyres"
+    - "Industrial rubber goods"
+    - "Rubber gloves (medical, industrial)"
+    - "Conveyor belts"
+    - "Rubber hoses"
+    - "Rubber seals and gaskets"
+    - "Shoe soles"
+
+  # Supply chain structure for rubber
+  supply_chain_tiers:
+    - tier: 1
+      name: "Manufacturer/Processor"
+      description: "Tyre manufacturers, rubber goods factories"
+    - tier: 2
+      name: "Rubber Processor"
+      description: "TSR factories, latex processors"
+    - tier: 3
+      name: "Dealer/Collector"
+      description: "Local rubber dealers and collection points"
+    - tier: 4
+      name: "Smallholder"
+      description: "Rubber tappers and smallholder farmers"
+
+  # Smallholder-centric supply chain
+  smallholder_focus:
+    smallholder_percentage_typical: 85
+    average_farm_size_ha: 2.5
+    cooperative_mapping: true
+    dealer_network_tracking: true
+    daily_cup_lump_collection: true
+
+  # Deforestation risk factors specific to rubber
+  deforestation_risk_factors:
+    - "Monoculture plantation establishment"
+    - "Protected area encroachment"
+    - "Conversion of secondary forests"
+    - "Biodiversity hotspot conversion"
+    - "Illegal land clearing in concession areas"
+    - "Cross-border rubber smuggling"
+
+  # Industry initiatives
+  industry_initiatives:
+    - name: "GPSNR"
+      description: "Global Platform for Sustainable Natural Rubber"
+      compliance_alignment: true
+    - name: "IRSG"
+      description: "International Rubber Study Group"
+      compliance_alignment: false
+
+  # Tyre industry traceability
+  tyre_traceability:
+    enabled: true
+    brand_responsibility: true
+    mixed_origin_handling: "mass_balance"
+    recycled_rubber_tracking: true
+
+# Commodities - rubber focused
+commodities:
+  - commodity_type: "rubber"
+    enabled: true
+    priority: 1
+    certification_schemes: ["FSC", "PEFC"]
+    high_risk_origins: ["THA", "IDN", "VNM", "CIV", "MYS", "CHN", "MMR", "LAO", "KHM"]
+  - commodity_type: "wood"
+    enabled: true
+    priority: 4
+    certification_schemes: ["FSC", "PEFC"]
+  - commodity_type: "oil_palm"
+    enabled: false
+    priority: 7
+  - commodity_type: "soya"
+    enabled: false
+    priority: 7
+  - commodity_type: "cattle"
+    enabled: false
+    priority: 7
+  - commodity_type: "cocoa"
+    enabled: false
+    priority: 7
+  - commodity_type: "coffee"
+    enabled: false
+    priority: 7
+
+# Supply chain - deep tracing for rubber
+supply_chain:
+  max_tier_depth: 4
+  chain_of_custody_model: "MASS_BALANCE"
+  trace_level: "batch"
+  require_plot_linkage: true
+  mixed_shipment_handling: "flag"
+
+# Geolocation - smallholder and plantation mapping
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 10000
+  batch_size: 500
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+# Cutoff date - forest cover monitoring
+cutoff_date:
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+    - "glad_alerts"
+    - "sentinel_2"
+  min_satellite_resolution_m: 10
+
+# Agent overrides for rubber focus
+agent_overrides:
+  AGENT-EUDR-001:
+    config_overrides:
+      dealer_network_mapping: true
+      processor_factory_registry: true
+      mixed_origin_tracking: true
+
+  AGENT-EUDR-002:
+    config_overrides:
+      rubber_plantation_monitoring: true
+      forest_to_rubber_conversion_detection: true
+      protected_area_buffer_km: 3
+
+  AGENT-EUDR-006:
+    config_overrides:
+      smallholder_plot_mapping: true
+      concession_boundary_support: true
+      max_typical_farm_ha: 10
+
+  AGENT-EUDR-008:
+    config_overrides:
+      dealer_collector_tier: true
+      cooperative_mapping: true
+      cross_border_tracking: true
+
+  AGENT-EUDR-015:
+    enabled: true
+    config_overrides:
+      offline_mode: true
+      gps_auto_capture: true
+      cup_lump_photo_evidence: true
+      tapper_registration: true
+
+  AGENT-EUDR-016:
+    config_overrides:
+      focus_countries: ["THA", "IDN", "VNM", "CIV", "MYS"]
+      province_level_risk: true
+      gpsnr_compliance_check: true

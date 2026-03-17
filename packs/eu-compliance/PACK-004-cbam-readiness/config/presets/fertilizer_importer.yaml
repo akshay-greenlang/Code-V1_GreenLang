@@ -1,0 +1,258 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Fertilizer Importer Preset
+# =============================================================================
+# Optimized for importers of fertilizer products (CN 28xx, 31xx).
+# Covers ammonia, urea, nitric acid, ammonium nitrate, and complex
+# fertilizers. Emphasis on N2O emissions from nitric acid production,
+# natural gas as feedstock and fuel, and precursor tracking.
+#
+# Key characteristics:
+#   - Ammonia is the key precursor for most nitrogen fertilizers
+#   - N2O emissions from nitric acid production are highly variable
+#   - Natural gas serves as both feedstock (for hydrogen) and fuel
+#   - Steam methane reforming (SMR) dominates ammonia production
+#   - CO2 from SMR is partly captured as urea feedstock
+#   - Emission intensity varies significantly by abatement technology
+# =============================================================================
+
+# Goods configuration - fertilizers focus
+goods:
+  enabled_categories:
+    - "fertilizers"
+  cn_codes_per_category:
+    fertilizers:
+      # Ammonia and inorganic chemicals
+      - "2808 00 00"   # Nitric acid; sulphonitric acids
+      - "2814 10 00"   # Anhydrous ammonia
+      - "2814 20 00"   # Ammonia in aqueous solution
+      - "2834 10 00"   # Nitrites
+      # Nitrogenous fertilizers (CN 3102)
+      - "3102 10"      # Urea
+      - "3102 21 00"   # Ammonium sulphate
+      - "3102 29 00"   # Double salts (ammonium sulphate/nitrate)
+      - "3102 30"      # Ammonium nitrate
+      - "3102 40"      # AN + calcium carbonate mixtures (CAN)
+      - "3102 50 00"   # Sodium nitrate
+      - "3102 60 00"   # Calcium nitrate + ammonium nitrate
+      - "3102 80 00"   # UAN solution
+      - "3102 90"      # Other nitrogenous fertilizers
+      # Phosphatic fertilizers (CN 3103)
+      - "3103 11 00"   # Superphosphates >=35% P2O5
+      - "3103 19 00"   # Other superphosphates
+      - "3103 90 00"   # Other phosphatic fertilizers
+      # Potassic fertilizers (CN 3104)
+      - "3104 20"      # Potassium chloride (MOP)
+      - "3104 30 00"   # Potassium sulphate (SOP)
+      - "3104 90"      # Other potassic fertilizers
+      # Compound fertilizers (CN 3105)
+      - "3105 10 00"   # Packaged products <=10 kg
+      - "3105 20"      # NPK fertilizers
+      - "3105 30 00"   # DAP (diammonium phosphate)
+      - "3105 40 00"   # MAP (monoammonium phosphate)
+      - "3105 51 00"   # NP fertilizers with nitrates
+      - "3105 59 00"   # Other NP fertilizers
+      - "3105 60 00"   # PK fertilizers
+      - "3105 90"      # Other compound fertilizers
+  precursor_tracking:
+    fertilizers:
+      - "ammonia"
+      - "nitric_acid"
+      - "urea"
+
+# Emission calculation
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 25.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+  country_carbon_price_sources:
+    - "eu_ets"
+    - "china_ets"
+    - "carbon_tax_registry"
+
+# Fertilizer-specific calculation parameters
+fertilizer_calculation:
+  # Ammonia production - the key precursor
+  ammonia_production:
+    routes:
+      steam_methane_reforming:
+        enabled: true
+        description: "SMR: natural gas feedstock + fuel"
+        typical_ef_tco2_per_tonne: 2.10
+        natural_gas_consumption_gj_per_tonne: 33.0
+        co2_from_feedstock_tco2: 1.20
+        co2_from_fuel_tco2: 0.90
+        share_of_global_production_pct: 72
+      partial_oxidation:
+        enabled: true
+        description: "POX: heavy oil or coal feedstock"
+        typical_ef_tco2_per_tonne: 3.80
+        share_of_global_production_pct: 8
+      coal_gasification:
+        enabled: true
+        description: "Coal-based ammonia (dominant in China)"
+        typical_ef_tco2_per_tonne: 4.50
+        share_of_global_production_pct: 18
+      electrolysis_green:
+        enabled: true
+        description: "Green ammonia via water electrolysis"
+        typical_ef_tco2_per_tonne: 0.30
+        share_of_global_production_pct: 2
+
+  # Nitric acid production (major N2O source)
+  nitric_acid_production:
+    ostwald_process:
+      description: "Catalytic oxidation of ammonia (Ostwald process)"
+      typical_ef_tco2e_per_tonne: 1.70
+    n2o_emission_factors:
+      no_abatement:
+        ef_kg_n2o_per_tonne_hno3: 7.0
+        ef_tco2e_per_tonne_hno3: 1.86   # 7.0 * 265/1000 = 1.855
+        description: "No N2O abatement technology"
+      nscr:
+        ef_kg_n2o_per_tonne_hno3: 1.5
+        ef_tco2e_per_tonne_hno3: 0.40
+        description: "Non-selective catalytic reduction"
+      scr:
+        ef_kg_n2o_per_tonne_hno3: 0.5
+        ef_tco2e_per_tonne_hno3: 0.13
+        description: "Selective catalytic reduction (BAT)"
+      tertiary_abatement:
+        ef_kg_n2o_per_tonne_hno3: 0.2
+        ef_tco2e_per_tonne_hno3: 0.05
+        description: "Tertiary (tail-gas) N2O abatement"
+    n2o_gwp: 265  # GWP-100 (AR5, used by CBAM)
+
+  # Urea production
+  urea_production:
+    description: "CO2 + ammonia reaction to form urea"
+    typical_ef_tco2_per_tonne: 1.60
+    co2_captured_from_ammonia: true
+    co2_release_on_application: true
+    note: >-
+      CO2 captured during ammonia production is used as feedstock for
+      urea. This CO2 is re-released when urea is applied to soil.
+      Under CBAM, the captured CO2 is deducted from ammonia emissions
+      but accounted as urea emissions.
+
+  # Ammonium nitrate (AN) production
+  ammonium_nitrate_production:
+    description: "Reaction of ammonia with nitric acid"
+    typical_ef_tco2e_per_tonne: 3.10
+    emission_components:
+      ammonia_precursor: 1.05          # ~0.5 tNH3/tAN * 2.1 tCO2e/tNH3
+      nitric_acid_precursor: 1.30      # ~0.77 tHNO3/tAN * 1.7 tCO2e/tHNO3
+      process_energy: 0.75
+
+  # Complex fertilizer conversions
+  nitrogen_content_typical:
+    ammonia: 0.82                      # 82% N content
+    urea: 0.46                         # 46% N content
+    ammonium_nitrate: 0.34             # 34% N content
+    ammonium_sulphate: 0.21            # 21% N content
+    uan_solution: 0.32                 # 32% N content
+    dap: 0.18                          # 18% N content
+    map: 0.11                          # 11% N content
+
+# Certificate configuration
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+
+# Quarterly reporting
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 7
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "EN"
+  include_supporting_documents: true
+
+# Supplier configuration
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 70.0
+  max_installations_per_supplier: 15
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis monitoring
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+
+# Verification - N2O measurement is critical
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+  sampling_methodology: "risk_based"
+
+# Pack-level settings
+reporting_year: 2026
+reporting_period: "definitive"
+transitional_mode: false
+demo_mode: false
+
+# Key source countries for fertilizer imports into EU
+source_countries_focus:
+  - country: "RU"
+    name: "Russia"
+    products: ["ammonia", "urea", "ammonium_nitrate", "npk"]
+    production_route: "steam_methane_reforming"
+    typical_ammonia_ef: 2.20
+    typical_share_pct: 25
+  - country: "EG"
+    name: "Egypt"
+    products: ["ammonia", "urea"]
+    production_route: "steam_methane_reforming"
+    typical_ammonia_ef: 2.40
+    typical_share_pct: 12
+  - country: "TT"
+    name: "Trinidad and Tobago"
+    products: ["ammonia", "urea", "uan"]
+    production_route: "steam_methane_reforming"
+    typical_ammonia_ef: 2.30
+    typical_share_pct: 10
+  - country: "US"
+    name: "United States"
+    products: ["ammonia", "urea", "uan", "dap", "map"]
+    production_route: "steam_methane_reforming"
+    typical_ammonia_ef: 2.00
+    typical_share_pct: 8
+  - country: "CN"
+    name: "China"
+    products: ["urea", "ammonium_sulphate", "npk"]
+    production_route: "coal_gasification"
+    typical_ammonia_ef: 4.50
+    typical_share_pct: 7
+  - country: "MA"
+    name: "Morocco"
+    products: ["dap", "map", "npk"]
+    production_route: "steam_methane_reforming"
+    typical_ammonia_ef: 2.50
+    typical_share_pct: 6
+  - country: "DZ"
+    name: "Algeria"
+    products: ["ammonia", "urea"]
+    production_route: "steam_methane_reforming"
+    typical_ammonia_ef: 2.30
+    typical_share_pct: 5

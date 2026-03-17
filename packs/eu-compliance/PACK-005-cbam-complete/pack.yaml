@@ -1,0 +1,1674 @@
+# =============================================================================
+# PACK-005: CBAM Complete Pack
+# GreenLang EU Compliance Pack for Carbon Border Adjustment Mechanism
+# =============================================================================
+# This pack EXTENDS PACK-004 (CBAM Readiness) to provide the complete,
+# enterprise-grade CBAM compliance solution. It adds certificate trading,
+# multi-entity group management, registry API integration, advanced analytics,
+# customs automation, cross-regulation alignment, audit management, and deep
+# precursor chain analysis.
+#
+# PACK-005 is designed for large enterprise importers, customs brokers acting
+# under delegation, and industrial groups operating across multiple EU entities.
+#
+# Regulatory References:
+#   - CBAM Regulation (EU) 2023/956 (Articles 1-35, full coverage)
+#   - CBAM Implementing Regulation (EU) 2023/1773
+#   - EU ETS Directive 2003/87/EC (as amended by Directive (EU) 2023/959)
+#   - CBAM Delegated Regulation (EU) 2024/XXX
+#   - EU Customs Code (Regulation (EU) No 952/2013) - TARIC integration
+#   - Anti-circumvention provisions (Article 27)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-14)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-005-cbam-complete
+  display_name: "CBAM Complete Pack"
+  version: "1.0.0"
+  category: eu-compliance
+  tier: complete
+  description: >-
+    Complete EU CBAM compliance solution for enterprise importers. Extends
+    PACK-004 CBAM Readiness with certificate trading optimization, multi-entity
+    group management, CBAM registry API integration, advanced Monte Carlo
+    analytics, customs automation with TARIC, cross-regulation alignment
+    (CSRD/CDP/SBTi/EU Taxonomy/EU ETS/EUDR), NCA audit management, and deep
+    precursor chain analysis (up to 5 tiers). Supports all six CBAM goods
+    categories with 160+ CN codes from Annex I.
+  extends: PACK-004-cbam-readiness
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-14"
+  support_tier: enterprise
+
+  regulation:
+    name: "EU Carbon Border Adjustment Mechanism"
+    reference: "(EU) 2023/956"
+    implementing: "(EU) 2023/1773"
+    articles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35]
+    annex_i_cn_codes_count: 167
+    delegated_acts:
+      - "(EU) 2024/XXX - Calculation of embedded emissions"
+      - "(EU) 2024/XXX - Verification requirements"
+      - "(EU) 2024/XXX - Accreditation of verifiers"
+      - "(EU) 2024/XXX - CBAM registry operation"
+      - "(EU) 2024/XXX - Certificate surrender procedures"
+    anti_circumvention: "Article 27"
+    penalties: "Article 26"
+
+  tags:
+    - cbam
+    - cbam-complete
+    - carbon-border-adjustment
+    - eu-compliance
+    - eu-ets
+    - embedded-emissions
+    - import-compliance
+    - cbam-certificates
+    - certificate-trading
+    - multi-entity
+    - group-compliance
+    - registry-api
+    - customs-automation
+    - taric
+    - cross-regulation
+    - anti-circumvention
+    - precursor-chain
+    - monte-carlo
+    - audit-management
+    - nca-readiness
+    - quarterly-reporting
+    - annual-declaration
+    - cement
+    - iron-steel
+    - aluminium
+    - fertilizers
+    - electricity
+    - hydrogen
+
+  compliance_references:
+    - id: "CBAM"
+      name: "Carbon Border Adjustment Mechanism"
+      regulation: "Regulation (EU) 2023/956"
+      effective_date: "2023-10-01"
+      transitional_end_date: "2025-12-31"
+      definitive_start_date: "2026-01-01"
+      description: >-
+        Establishes a carbon border adjustment mechanism for imports of certain
+        goods (cement, iron & steel, aluminium, fertilizers, electricity,
+        hydrogen) into the EU. During the transitional period (Oct 2023 - Dec
+        2025), importers must submit quarterly CBAM reports on embedded
+        emissions. From 2026, importers must purchase and surrender CBAM
+        certificates corresponding to the embedded emissions of imported goods,
+        adjusted for any carbon price already paid in the country of origin.
+
+    - id: "CBAM-IR"
+      name: "CBAM Implementing Regulation"
+      regulation: "Implementing Regulation (EU) 2023/1773"
+      effective_date: "2023-10-01"
+      description: >-
+        Lays down rules for the application of the CBAM Regulation during the
+        transitional period. Specifies reporting obligations, calculation
+        methodologies for embedded emissions, CBAM report format and content,
+        quarterly reporting deadlines, and the use of default values.
+
+    - id: "EU-ETS"
+      name: "EU Emissions Trading System"
+      regulation: "Directive 2003/87/EC (as amended by Directive (EU) 2023/959)"
+      effective_date: "2005-01-01"
+      description: >-
+        The EU ETS is the EU's carbon pricing mechanism. CBAM certificate
+        prices are linked to the weekly average auction price of EU ETS
+        allowances. Free allocations under EU ETS are phased out for CBAM
+        sectors between 2026 and 2034, creating full carbon pricing parity.
+
+    - id: "CBAM-DELEGATED"
+      name: "CBAM Delegated Acts"
+      regulation: "Commission Delegated Regulation (EU) 2024/XXX"
+      effective_date: "2025-01-01"
+      description: >-
+        Supplementary rules on calculation of embedded emissions, verification
+        requirements, accreditation of verifiers, CBAM registry operation,
+        and certificate surrender procedures for the definitive period.
+
+    - id: "EU-CUSTOMS-CODE"
+      name: "Union Customs Code"
+      regulation: "Regulation (EU) No 952/2013"
+      effective_date: "2016-05-01"
+      description: >-
+        EU Customs Code providing the legal framework for customs procedures
+        including TARIC classification, AEO status, and customs declarations.
+        PACK-005 integrates with TARIC for CN code validation and SAD format
+        customs declarations.
+
+    - id: "ANTI-CIRCUMVENTION"
+      name: "CBAM Anti-Circumvention"
+      regulation: "Article 27, Regulation (EU) 2023/956"
+      effective_date: "2026-01-01"
+      description: >-
+        Anti-circumvention measures to prevent practices aimed at avoiding
+        CBAM obligations. Covers changes of origin, CN code reclassification,
+        minor processing to change classification, restructuring of supply
+        chains, and manipulation of scrap ratios.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and apps included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # Application layer (inherited from PACK-004)
+  apps:
+    - id: GL-CBAM-APP
+      version: "1.1.0"
+      description: >-
+        CBAM compliance application with quarterly reporting, annual
+        declaration management, certificate tracking, supplier emissions
+        data portal, de minimis monitoring, and verification workflow.
+      required: true
+      path: "applications/GL-CBAM-APP"
+      inherited_from: "PACK-004-cbam-readiness"
+
+  # Foundation agents (inherited from PACK-004)
+  foundation_agents:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for CBAM compliance"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (tCO2e, tonnes, MWh) and reference data"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks and versions all assumptions used in CBAM calculations"
+      required: true
+      new_in: "PACK-005"
+
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all emission data and calculations to source evidence"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access control for multi-entity group operations"
+      required: true
+      new_in: "PACK-005"
+
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Service catalog for dynamic agent discovery and routing"
+      required: false
+      new_in: "PACK-005"
+
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all CBAM calculations are reproducible with provenance"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Automated quality assurance for CBAM pipeline validation"
+      required: true
+      new_in: "PACK-005"
+
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for CBAM agents"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+  # Data intake agents (inherited from PACK-004 + new)
+  data_agents:
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts embedded emission data from supplier PDF reports and customs declarations"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes import manifests and supplier emission worksheets"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Connects to SAP, Oracle, and customs management systems"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-DATA-004
+      name: "API Gateway Agent"
+      description: "Manages CBAM registry API connections and rate limiting"
+      required: true
+      new_in: "PACK-005"
+
+    - id: AGENT-DATA-005
+      name: "EUDR Traceability Connector"
+      description: "Cross-regulation connector for EUDR supply chain data sharing"
+      required: false
+      new_in: "PACK-005"
+
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Processes and scores supplier emission data questionnaires"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-DATA-009
+      name: "Spend Data Categorizer"
+      description: "Categorizes import spend data for CBAM cost allocation"
+      required: true
+      new_in: "PACK-005"
+
+  # Data quality agents (inherited from PACK-004 + new)
+  quality_agents:
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all import and emission metrics"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects duplicate import records and supplier submissions"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: AGENT-DATA-015
+      name: "Cross-Source Reconciliation Agent"
+      description: "Reconciles import data across customs, ERP, and supplier sources"
+      required: true
+      new_in: "PACK-005"
+
+    - id: AGENT-DATA-018
+      name: "Data Lineage Tracker"
+      description: "Full lineage tracking from source data to declaration submission"
+      required: true
+      new_in: "PACK-005"
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces CBAM validation rules on CN codes, emissions, and submissions"
+      required: true
+      inherited_from: "PACK-004-cbam-readiness"
+
+  # Industry-specific calculators (inherited from PACK-004 + new)
+  industry_calculators:
+    - id: steel-calculator
+      name: "Steel Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for iron and steel products (CN 72xx,
+        73xx) using BF-BOF, EAF, and DRI production routes.
+      required: true
+      path: "calculators/steel_calculator"
+      goods_categories: ["IRON_STEEL"]
+      cn_code_ranges: ["7201-7229", "7301-7326"]
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: cement-calculator
+      name: "Cement Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for cement and clinker products (CN 2523).
+      required: true
+      path: "calculators/cement_calculator"
+      goods_categories: ["CEMENT"]
+      cn_code_ranges: ["2523"]
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: aluminum-calculator
+      name: "Aluminium Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for aluminium products (CN 76xx).
+      required: true
+      path: "calculators/aluminum_calculator"
+      goods_categories: ["ALUMINIUM"]
+      cn_code_ranges: ["7601-7616"]
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: fertilizer-calculator
+      name: "Fertilizer Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for fertilizer products (CN 28xx, 31xx).
+        Covers ammonia, urea, nitric acid, ammonium nitrate, NPK, and mixed
+        fertilizers. Handles N2O process emissions, SMR feedstock CO2, and
+        precursor tracking through the ammonia-urea-AN chain.
+      required: true
+      path: "calculators/fertilizer_calculator"
+      goods_categories: ["FERTILIZERS"]
+      cn_code_ranges: ["2808", "2814", "2834", "3102-3105"]
+      new_in: "PACK-005"
+
+    - id: electricity-calculator
+      name: "Electricity Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for electricity imports (CN 2716).
+        Supports grid average, interconnector-specific, and PPA-based
+        calculations. Handles cross-border flow attribution and hourly
+        granularity when available.
+      required: true
+      path: "calculators/electricity_calculator"
+      goods_categories: ["ELECTRICITY"]
+      cn_code_ranges: ["2716"]
+      new_in: "PACK-005"
+
+    - id: hydrogen-calculator
+      name: "Hydrogen Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for hydrogen (CN 2804.10). Supports
+        grey (SMR), blue (SMR+CCS), green (electrolysis), turquoise
+        (pyrolysis), and pink (nuclear) production routes. Tracks upstream
+        electricity emissions for electrolysis pathways.
+      required: true
+      path: "calculators/hydrogen_calculator"
+      goods_categories: ["HYDROGEN"]
+      cn_code_ranges: ["2804"]
+      new_in: "PACK-005"
+
+  # Industrial MRV agents (inherited from PACK-004 + new)
+  industrial_mrv:
+    - id: steel-mrv
+      name: "Steel MRV Agent"
+      description: "Monitoring, Reporting, and Verification for steel installations"
+      required: true
+      path: "mrv/steel_mrv"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: cement-mrv
+      name: "Cement MRV Agent"
+      description: "MRV agent for cement production installations"
+      required: true
+      path: "mrv/cement_mrv"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: aluminum-mrv
+      name: "Aluminium MRV Agent"
+      description: "MRV agent for aluminium production installations"
+      required: true
+      path: "mrv/aluminum_mrv"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: fertilizer-mrv
+      name: "Fertilizer MRV Agent"
+      description: >-
+        MRV agent for fertilizer production installations. Monitors ammonia
+        synthesis, nitric acid production (N2O), urea prilling/granulation,
+        and mixed fertilizer blending.
+      required: true
+      path: "mrv/fertilizer_mrv"
+      installation_types: ["ammonia_plant", "nitric_acid_plant", "urea_plant", "npk_blending"]
+      new_in: "PACK-005"
+
+    - id: hydrogen-mrv
+      name: "Hydrogen MRV Agent"
+      description: >-
+        MRV agent for hydrogen production installations. Monitors SMR units,
+        electrolyzer systems, CCS capture rates, and electricity source tracking.
+      required: true
+      path: "mrv/hydrogen_mrv"
+      installation_types: ["smr_unit", "electrolyzer", "pyrolysis_reactor"]
+      new_in: "PACK-005"
+
+  # CBAM policy agents (inherited from PACK-004 + new)
+  cbam_policy:
+    - id: cbam-compliance-agent
+      name: "CBAM Compliance Agent"
+      description: >-
+        Enforces CBAM regulatory requirements across the entire pipeline.
+        Validates CN code classification, checks reporting deadlines,
+        monitors de minimis thresholds, verifies certificate holdings,
+        ensures data completeness per Implementing Regulation.
+      required: true
+      path: "policy/cbam_compliance_agent"
+      rules_count: 187
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: regulatory-mapping-agent
+      name: "Regulatory Mapping Agent"
+      description: >-
+        Maps CBAM data requirements to other regulatory frameworks
+        (CSRD E1, CDP Climate, SBTi, EU Taxonomy). Enables single-entry
+        multi-framework compliance data flow.
+      required: true
+      path: "policy/regulatory_mapping_agent"
+      new_in: "PACK-005"
+
+    - id: compliance-gap-analyzer
+      name: "Compliance Gap Analyzer"
+      description: >-
+        Performs gap analysis between current CBAM data and full compliance
+        requirements. Identifies missing data, methodology gaps, and
+        generates remediation plans with effort estimates.
+      required: true
+      path: "policy/compliance_gap_analyzer"
+      new_in: "PACK-005"
+
+    - id: anti-circumvention-monitor
+      name: "Anti-Circumvention Monitor"
+      description: >-
+        Monitors import patterns for potential circumvention indicators
+        per Article 27. Detects origin changes, CN code reclassification,
+        unusual scrap ratios, supply chain restructuring, and minor
+        processing to change classification.
+      required: true
+      path: "policy/anti_circumvention_monitor"
+      rule_types:
+        - "origin_change"
+        - "cn_reclassification"
+        - "scrap_ratio"
+        - "restructuring"
+        - "minor_processing"
+      new_in: "PACK-005"
+
+  # Agents bridged from other GreenLang modules
+  agents_bridged:
+    # GL-CBAM-APP v1.1 agents
+    cbam_app_agents:
+      - id: cbam-quarterly-reporter
+        name: "CBAM Quarterly Report Agent"
+        source: "GL-CBAM-APP"
+        description: "Generates XML quarterly reports for CBAM registry submission"
+
+      - id: cbam-annual-declarant
+        name: "CBAM Annual Declaration Agent"
+        source: "GL-CBAM-APP"
+        description: "Prepares and submits annual CBAM declarations"
+
+      - id: cbam-certificate-manager
+        name: "CBAM Certificate Manager"
+        source: "GL-CBAM-APP"
+        description: "Manages certificate lifecycle: purchase, hold, surrender, repurchase"
+
+      - id: cbam-supplier-portal
+        name: "CBAM Supplier Portal Agent"
+        source: "GL-CBAM-APP"
+        description: "Manages supplier self-service emission data portal"
+
+    # Industrial MRV agents bridged for precursor chain
+    industrial_mrv_agents:
+      - id: AGENT-MRV-001
+        name: "Stationary Combustion Agent"
+        source: "AGENT-MRV"
+        description: "Stationary combustion emissions for industrial installations"
+
+      - id: AGENT-MRV-004
+        name: "Process Emissions Agent"
+        source: "AGENT-MRV"
+        description: "Process emissions (calcination, chemical reactions)"
+
+      - id: AGENT-MRV-005
+        name: "Fugitive Emissions Agent"
+        source: "AGENT-MRV"
+        description: "Fugitive emissions (PFC from aluminium, N2O from nitric acid)"
+
+      - id: AGENT-MRV-009
+        name: "Scope 2 Location-Based Agent"
+        source: "AGENT-MRV"
+        description: "Grid electricity emissions for indirect CBAM calculations"
+
+      - id: AGENT-MRV-010
+        name: "Scope 2 Market-Based Agent"
+        source: "AGENT-MRV"
+        description: "PPA/contract-specific electricity emissions"
+
+    # Policy framework agents
+    policy_agents:
+      - id: cbam-compliance-policy
+        name: "CBAM Compliance Policy Engine"
+        source: "policy"
+        description: "187-rule CBAM compliance policy enforcement"
+
+      - id: regulatory-mapping
+        name: "Cross-Regulation Mapping"
+        source: "policy"
+        description: "Maps CBAM to CSRD/CDP/SBTi/Taxonomy"
+
+      - id: compliance-gap
+        name: "Compliance Gap Analysis"
+        source: "policy"
+        description: "Identifies gaps in CBAM data and methodology"
+
+  # Data assets bundled with the pack
+  data_assets:
+    - id: cbam_benchmarks
+      name: "CBAM Benchmark Data"
+      description: >-
+        Benchmark emission intensities per goods category, production route,
+        and country. Includes EU best-available-technology benchmarks and
+        industry averages for gap analysis and target-setting.
+      path: "data/cbam_benchmarks.py"
+      format: "python"
+
+    - id: cn_codes
+      name: "CN Codes Reference Database"
+      description: >-
+        Complete Combined Nomenclature code database for all CBAM Annex I
+        goods. 167 CN codes across 6 categories with descriptions, tariff
+        rates, and CBAM classification rules.
+      path: "data/cn_codes.json"
+      format: "json"
+
+    - id: emission_factors
+      name: "Emission Factor Database"
+      description: >-
+        EU default and country-specific emission factors for all goods
+        categories and production routes. Versioned by reference year.
+      path: "data/emission_factors.py"
+      format: "python"
+
+    - id: cbam_defaults
+      name: "CBAM Default Values 2024"
+      description: >-
+        Published CBAM default values for the transitional and definitive
+        periods. Includes EU default values, country default methodology,
+        and markup rules.
+      path: "data/cbam_defaults_2024.json"
+      format: "json"
+
+    - id: carbon_pricing_db
+      name: "Third-Country Carbon Pricing Database"
+      description: >-
+        Carbon pricing schemes (ETS, carbon tax) for 50+ countries.
+        Used for calculating carbon price deductions per CBAM Article 9.
+      path: "data/carbon_pricing_db.json"
+      format: "json"
+      new_in: "PACK-005"
+
+    - id: anti_circumvention_rules
+      name: "Anti-Circumvention Rule Database"
+      description: >-
+        Thresholds and detection rules for anti-circumvention monitoring
+        per Article 27. Includes pattern definitions and alert criteria.
+      path: "data/anti_circumvention_rules.json"
+      format: "json"
+      new_in: "PACK-005"
+
+# -----------------------------------------------------------------------------
+# Engines - Core processing engines (7 inherited + 8 new)
+# -----------------------------------------------------------------------------
+engines:
+
+  # INHERITED from PACK-004 (7 engines)
+  cbam_calculation:
+    display_name: "CBAM Embedded Emissions Calculation Engine"
+    version: "1.0.0"
+    inherited_from: "PACK-004-cbam-readiness"
+    description: >-
+      Deterministic calculation engine for embedded emissions per CBAM
+      methodology. Supports actual, country default, and EU default methods.
+    provenance_tracking: true
+
+  certificate:
+    display_name: "CBAM Certificate Management Engine"
+    version: "1.0.0"
+    inherited_from: "PACK-004-cbam-readiness"
+    description: >-
+      Manages CBAM certificate lifecycle: price tracking, purchase planning,
+      holding requirements, surrender scheduling, and re-purchase.
+
+  quarterly_reporting:
+    display_name: "Quarterly CBAM Report Engine"
+    version: "1.0.0"
+    inherited_from: "PACK-004-cbam-readiness"
+    description: "Generates quarterly CBAM reports per Implementing Regulation."
+
+  supplier_management:
+    display_name: "Supplier Emissions Data Management Engine"
+    version: "1.0.0"
+    inherited_from: "PACK-004-cbam-readiness"
+    description: "Manages supplier emissions data collection, validation, and scoring."
+
+  deminimis:
+    display_name: "De Minimis Assessment Engine"
+    version: "1.0.0"
+    inherited_from: "PACK-004-cbam-readiness"
+    description: "Monitors import volumes against CBAM de minimis thresholds."
+
+  verification:
+    display_name: "Verification Workflow Engine"
+    version: "1.0.0"
+    inherited_from: "PACK-004-cbam-readiness"
+    description: "Manages third-party verification of embedded emissions data."
+
+  policy_compliance:
+    display_name: "CBAM Policy Compliance Engine"
+    version: "1.0.0"
+    inherited_from: "PACK-004-cbam-readiness"
+    description: "Central compliance rule engine with 187 validation rules."
+
+  # NEW in PACK-005 (8 engines)
+  certificate_trading:
+    display_name: "Certificate Trading & Optimization Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Advanced certificate trading engine with buying strategy optimization,
+      price-triggered alerts, DCA (dollar-cost averaging) support, FIFO and
+      weighted-average valuation, budget pacing, and portfolio-level cost
+      allocation across entities. Supports Monte Carlo simulation for
+      optimal purchase timing and quantity optimization.
+    features:
+      - buying_strategy_optimization
+      - price_triggered_alerts
+      - dca_scheduling
+      - fifo_valuation
+      - weighted_average_valuation
+      - mark_to_market
+      - budget_pacing
+      - repurchase_optimization
+      - multi_entity_allocation
+      - quarterly_rebalancing
+
+  entity_group:
+    display_name: "Multi-Entity Group Management Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Manages CBAM compliance across multiple legal entities within a
+      corporate group. Supports parent-subsidiary hierarchies, delegated
+      compliance (customs representative mode), consolidated reporting,
+      cost allocation (volume/revenue/profit center/custom), and financial
+      guarantee management. Handles multi-currency consolidation.
+    features:
+      - entity_hierarchy_management
+      - delegated_compliance
+      - consolidated_reporting
+      - cost_allocation
+      - financial_guarantee_tracking
+      - multi_currency_consolidation
+      - inter_entity_transfers
+      - group_level_analytics
+
+  registry_integration:
+    display_name: "CBAM Registry API Integration Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Bidirectional integration with the EU CBAM Transitional and Definitive
+      Registries. Supports report submission, certificate purchase orders,
+      surrender execution, status polling, and registry notification
+      processing. Includes sandbox mode for testing.
+    features:
+      - report_submission
+      - certificate_purchase
+      - certificate_surrender
+      - status_polling
+      - notification_processing
+      - sandbox_mode
+      - retry_with_backoff
+      - certificate_authentication
+
+  advanced_analytics:
+    display_name: "Advanced CBAM Analytics Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Monte Carlo simulation, scenario analysis, and optimization engine
+      for CBAM cost forecasting and strategic planning. Includes emission
+      intensity benchmarking, supplier portfolio optimization, price
+      sensitivity analysis, and free allocation phase-out impact modeling.
+    features:
+      - monte_carlo_simulation
+      - scenario_tree_analysis
+      - sensitivity_analysis
+      - supplier_portfolio_optimization
+      - benchmark_comparison
+      - phase_out_impact_modeling
+      - cost_attribution
+      - what_if_analysis
+    solver: "scipy_optimize"
+    default_iterations: 10000
+
+  customs_automation:
+    display_name: "Customs Automation Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Automates customs-related CBAM processes including TARIC code
+      validation, SAD (Single Administrative Document) parsing, AEO
+      (Authorized Economic Operator) status verification, and anti-
+      circumvention pattern detection. Integrates with EU customs
+      databases for real-time CN code verification.
+    features:
+      - taric_cn_validation
+      - sad_document_parsing
+      - aeo_status_check
+      - anti_circumvention_detection
+      - origin_determination
+      - preferential_treatment_check
+      - cn_code_cache
+      - downstream_monitoring
+
+  cross_regulation:
+    display_name: "Cross-Regulation Alignment Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Maps CBAM embedded emissions data to other EU and international
+      regulatory frameworks. Enables single-entry, multi-framework data
+      flow: CBAM data auto-populates CSRD E1 disclosures, CDP Climate
+      questionnaire, SBTi target tracking, EU Taxonomy screening, EU ETS
+      monitoring, and EUDR supply chain records.
+    supported_regulations:
+      - CSRD
+      - CDP
+      - SBTi
+      - EU_TAXONOMY
+      - EU_ETS
+      - EUDR
+    mapping_rules_count: 94
+
+  audit_management:
+    display_name: "NCA Audit Management Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Manages National Competent Authority (NCA) audit readiness, evidence
+      packaging, data room preparation, auto-remediation alerts, penalty
+      risk tracking, and NCA response deadline management. Implements
+      10-year retention with encrypted evidence archival.
+    features:
+      - evidence_packaging
+      - data_room_management
+      - auto_remediation_alerts
+      - nca_response_tracking
+      - penalty_calculation
+      - evidence_encryption
+      - audit_trail_export
+      - regulatory_correspondence
+
+  precursor_chain:
+    display_name: "Deep Precursor Chain Analysis Engine"
+    version: "1.0.0"
+    new_in: "PACK-005"
+    description: >-
+      Analyzes multi-tier precursor chains up to 5 levels deep. Supports
+      mass-based, economic, and energy-based allocation methods. Handles
+      complex chains like iron ore -> pig iron -> crude steel -> HRC ->
+      coated flat product. Includes scrap classification, mass balance
+      validation, and fallback waterfall logic when actual data is
+      unavailable at intermediate tiers.
+    features:
+      - multi_tier_analysis
+      - mass_allocation
+      - economic_allocation
+      - energy_allocation
+      - scrap_classification
+      - mass_balance_validation
+      - fallback_waterfall
+      - precursor_tree_visualization
+    max_depth: 5
+    allocation_methods: ["mass", "economic", "energy"]
+
+# -----------------------------------------------------------------------------
+# Workflows - Pre-defined orchestration sequences (7 inherited + 6 new)
+# -----------------------------------------------------------------------------
+workflows:
+
+  # INHERITED from PACK-004 (7 workflows)
+  quarterly_reporting:
+    display_name: "Quarterly CBAM Report"
+    inherited_from: "PACK-004-cbam-readiness"
+    schedule: "quarterly"
+    estimated_duration_days: 14
+
+  annual_declaration:
+    display_name: "Annual CBAM Declaration"
+    inherited_from: "PACK-004-cbam-readiness"
+    schedule: "annual"
+    estimated_duration_days: 30
+
+  supplier_onboarding:
+    display_name: "Supplier Onboarding"
+    inherited_from: "PACK-004-cbam-readiness"
+    schedule: "on_demand"
+    estimated_duration_days: 21
+
+  certificate_management:
+    display_name: "Certificate Management Cycle"
+    inherited_from: "PACK-004-cbam-readiness"
+    schedule: "continuous"
+    estimated_duration_days: 365
+
+  verification_cycle:
+    display_name: "Verification Cycle"
+    inherited_from: "PACK-004-cbam-readiness"
+    schedule: "annual"
+    estimated_duration_days: 45
+
+  deminimis_assessment:
+    display_name: "De Minimis Assessment"
+    inherited_from: "PACK-004-cbam-readiness"
+    schedule: "continuous"
+    estimated_duration_days: 365
+
+  data_collection:
+    display_name: "CBAM Data Collection"
+    inherited_from: "PACK-004-cbam-readiness"
+    schedule: "weekly"
+    estimated_duration_days: 3
+
+  # NEW in PACK-005 (6 workflows)
+  certificate_trading_cycle:
+    display_name: "Certificate Trading & Optimization Cycle"
+    new_in: "PACK-005"
+    description: >-
+      End-to-end certificate trading workflow. Analyzes price trends,
+      executes buying strategy, manages portfolio valuation, performs
+      quarterly rebalancing, and optimizes surrender timing. Integrates
+      with CBAM registry for live price feeds and purchase execution.
+    schedule: "continuous"
+    estimated_duration_days: 365
+    phases:
+      - name: price_analysis
+        description: "Analyze EU ETS auction prices and certificate price trends"
+        agents: [GL-CBAM-APP, AGENT-FOUND-003]
+        duration_days: 365
+
+      - name: strategy_execution
+        description: "Execute buying strategy (DCA, price-triggered, budget-paced)"
+        agents: [GL-CBAM-APP, cbam-certificate-manager]
+        duration_days: 365
+
+      - name: portfolio_valuation
+        description: "Mark-to-market or FIFO valuation of certificate holdings"
+        agents: [GL-CBAM-APP, AGENT-FOUND-005]
+        duration_days: 365
+
+      - name: quarterly_rebalancing
+        description: "Rebalance certificate portfolio to meet quarterly holding targets"
+        agents: [GL-CBAM-APP, cbam-compliance-agent]
+        duration_days: 90
+
+      - name: surrender_optimization
+        description: "Optimize surrender quantity and timing for cost minimization"
+        agents: [GL-CBAM-APP, AGENT-FOUND-003, AGENT-FOUND-008]
+        duration_days: 30
+
+  group_consolidation:
+    display_name: "Group Consolidation Workflow"
+    new_in: "PACK-005"
+    description: >-
+      Consolidates CBAM data across all entities in a corporate group.
+      Collects entity-level import data, allocates shared costs, reconciles
+      inter-entity transfers, generates consolidated group report, and
+      prepares delegated compliance packages.
+    schedule: "quarterly"
+    estimated_duration_days: 21
+    phases:
+      - name: entity_data_collection
+        description: "Collect import and emission data from each group entity"
+        agents: [AGENT-DATA-003, AGENT-DATA-002, GL-CBAM-APP]
+        duration_days: 7
+
+      - name: inter_entity_reconciliation
+        description: "Reconcile inter-entity transfers and shared supplier data"
+        agents: [AGENT-DATA-015, AGENT-DATA-019, GL-CBAM-APP]
+        duration_days: 5
+
+      - name: cost_allocation
+        description: "Allocate shared CBAM costs across entities by chosen method"
+        agents: [GL-CBAM-APP, AGENT-FOUND-003]
+        duration_days: 3
+
+      - name: consolidated_reporting
+        description: "Generate consolidated group CBAM report"
+        agents: [GL-CBAM-APP, AGENT-FOUND-005, cbam-compliance-agent]
+        duration_days: 4
+
+      - name: delegation_packaging
+        description: "Prepare delegated compliance packages for subsidiary entities"
+        agents: [GL-CBAM-APP, AGENT-FOUND-008]
+        duration_days: 2
+
+  registry_sync:
+    display_name: "Registry Synchronization Workflow"
+    new_in: "PACK-005"
+    description: >-
+      Bidirectional synchronization with the CBAM registry. Submits reports
+      and declarations, retrieves submission status, processes registry
+      notifications, and archives registry confirmations with provenance.
+    schedule: "daily"
+    estimated_duration_days: 365
+    phases:
+      - name: outbound_submission
+        description: "Submit pending reports and declarations to registry"
+        agents: [GL-CBAM-APP, AGENT-DATA-004]
+        duration_days: 365
+
+      - name: status_polling
+        description: "Poll registry for submission status updates"
+        agents: [AGENT-DATA-004, AGENT-FOUND-010]
+        duration_days: 365
+
+      - name: notification_processing
+        description: "Process registry notifications and alerts"
+        agents: [GL-CBAM-APP, AGENT-DATA-004]
+        duration_days: 365
+
+      - name: confirmation_archival
+        description: "Archive registry confirmations with SHA-256 provenance"
+        agents: [AGENT-FOUND-005, AGENT-FOUND-008]
+        duration_days: 365
+
+  anti_circumvention_monitoring:
+    display_name: "Anti-Circumvention Monitoring"
+    new_in: "PACK-005"
+    description: >-
+      Continuous monitoring of import patterns for circumvention indicators.
+      Detects suspicious origin changes, CN code reclassifications, unusual
+      scrap ratios, supply chain restructuring, and minor processing patterns.
+      Generates compliance alerts and evidence packages for NCA defense.
+    schedule: "continuous"
+    estimated_duration_days: 365
+    phases:
+      - name: pattern_detection
+        description: "Analyze import patterns against circumvention thresholds"
+        agents: [anti-circumvention-monitor, AGENT-DATA-019]
+        duration_days: 365
+
+      - name: origin_tracking
+        description: "Track origin changes and supply chain shifts"
+        agents: [anti-circumvention-monitor, AGENT-DATA-018]
+        duration_days: 365
+
+      - name: alert_generation
+        description: "Generate alerts and evidence for suspicious patterns"
+        agents: [anti-circumvention-monitor, AGENT-FOUND-005]
+        duration_days: 365
+
+      - name: nca_defense_preparation
+        description: "Prepare defense evidence packages for NCA inquiries"
+        agents: [anti-circumvention-monitor, AGENT-FOUND-008]
+        duration_days: 30
+
+  cross_regulation_sync:
+    display_name: "Cross-Regulation Data Synchronization"
+    new_in: "PACK-005"
+    description: >-
+      Synchronizes CBAM emission data to other regulatory frameworks.
+      Maps embedded emissions to CSRD E1 disclosures, CDP questionnaire
+      responses, SBTi tracking, EU Taxonomy metrics, and EU ETS monitoring.
+    schedule: "quarterly"
+    estimated_duration_days: 7
+    phases:
+      - name: data_extraction
+        description: "Extract CBAM emission data for cross-regulation mapping"
+        agents: [GL-CBAM-APP, regulatory-mapping-agent]
+        duration_days: 2
+
+      - name: framework_mapping
+        description: "Map emissions to target framework formats"
+        agents: [regulatory-mapping-agent, AGENT-FOUND-003]
+        duration_days: 2
+
+      - name: gap_analysis
+        description: "Identify gaps between CBAM data and framework requirements"
+        agents: [compliance-gap-analyzer, AGENT-DATA-019]
+        duration_days: 2
+
+      - name: data_push
+        description: "Push mapped data to target framework modules"
+        agents: [regulatory-mapping-agent, AGENT-DATA-004]
+        duration_days: 1
+
+  nca_audit_preparation:
+    display_name: "NCA Audit Preparation"
+    new_in: "PACK-005"
+    description: >-
+      Prepares for National Competent Authority audits. Assembles evidence
+      packages, sets up secure data rooms, validates compliance completeness,
+      generates audit-ready exports, and tracks NCA correspondence deadlines.
+    schedule: "on_demand"
+    estimated_duration_days: 30
+    phases:
+      - name: evidence_assembly
+        description: "Assemble all CBAM evidence: reports, certificates, verifications"
+        agents: [AGENT-FOUND-005, AGENT-FOUND-008, GL-CBAM-APP]
+        duration_days: 7
+
+      - name: completeness_check
+        description: "Validate evidence completeness against NCA checklist"
+        agents: [cbam-compliance-agent, compliance-gap-analyzer]
+        duration_days: 5
+
+      - name: data_room_setup
+        description: "Set up encrypted data room with organized evidence"
+        agents: [GL-CBAM-APP, AGENT-FOUND-006]
+        duration_days: 3
+
+      - name: audit_export
+        description: "Generate audit-ready exports in NCA-required formats"
+        agents: [GL-CBAM-APP, AGENT-FOUND-005]
+        duration_days: 5
+
+      - name: remediation_tracking
+        description: "Track open items and remediation actions"
+        agents: [cbam-compliance-agent, AGENT-FOUND-010]
+        duration_days: 10
+
+# -----------------------------------------------------------------------------
+# Templates - Pre-built report templates (8 inherited + 6 new)
+# -----------------------------------------------------------------------------
+templates:
+
+  # INHERITED from PACK-004 (8 templates)
+  - id: quarterly_report
+    display_name: "Quarterly CBAM Report"
+    format: "xml"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  - id: annual_declaration
+    display_name: "Annual CBAM Declaration"
+    format: "xml"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  - id: certificate_dashboard
+    display_name: "Certificate Dashboard"
+    format: "html"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  - id: supplier_scorecard
+    display_name: "Supplier Scorecard"
+    format: "pdf"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  - id: compliance_status
+    display_name: "Compliance Status Report"
+    format: "pdf"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  - id: cost_projection
+    display_name: "CBAM Cost Projection"
+    format: "pdf"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  - id: deminimis_report
+    display_name: "De Minimis Monitoring Report"
+    format: "pdf"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  - id: verification_report
+    display_name: "Verification Report"
+    format: "pdf"
+    inherited_from: "PACK-004-cbam-readiness"
+
+  # NEW in PACK-005 (6 templates)
+  - id: trading_portfolio_report
+    display_name: "Certificate Trading Portfolio Report"
+    description: >-
+      Portfolio report showing certificate inventory, unrealized gains/losses,
+      FIFO/WAVG valuation, purchase history, surrender schedule, and buying
+      strategy performance against benchmark.
+    format: "pdf"
+    template_file: "templates/trading_portfolio_report.jinja2"
+    new_in: "PACK-005"
+
+  - id: group_consolidation_report
+    display_name: "Group Consolidation Report"
+    description: >-
+      Consolidated CBAM report across all entities in the group. Shows
+      entity-level breakdowns, cost allocation, inter-entity transfers,
+      and group-level totals and trends.
+    format: "pdf"
+    template_file: "templates/group_consolidation_report.jinja2"
+    new_in: "PACK-005"
+
+  - id: anti_circumvention_report
+    display_name: "Anti-Circumvention Monitoring Report"
+    description: >-
+      Report showing import pattern analysis, circumvention risk flags,
+      origin tracking, CN code change monitoring, and defense evidence
+      summary.
+    format: "pdf"
+    template_file: "templates/anti_circumvention_report.jinja2"
+    new_in: "PACK-005"
+
+  - id: cross_regulation_mapping_report
+    display_name: "Cross-Regulation Mapping Report"
+    description: >-
+      Report showing how CBAM data maps to CSRD, CDP, SBTi, EU Taxonomy,
+      and EU ETS frameworks. Highlights data coverage, gaps, and automatic
+      data flow status.
+    format: "pdf"
+    template_file: "templates/cross_regulation_mapping_report.jinja2"
+    new_in: "PACK-005"
+
+  - id: nca_audit_package
+    display_name: "NCA Audit Evidence Package"
+    description: >-
+      Complete audit evidence package for NCA inspection. Organized by
+      compliance area with index, evidence links, provenance hashes,
+      and compliance attestation.
+    format: "pdf"
+    template_file: "templates/nca_audit_package.jinja2"
+    new_in: "PACK-005"
+
+  - id: precursor_chain_report
+    display_name: "Precursor Chain Analysis Report"
+    description: >-
+      Multi-tier precursor chain visualization and analysis. Shows emission
+      allocation across tiers, mass balance validation results, fallback
+      usage, and chain-level emission intensity.
+    format: "pdf"
+    template_file: "templates/precursor_chain_report.jinja2"
+    new_in: "PACK-005"
+
+# -----------------------------------------------------------------------------
+# Integrations (6 inherited + 7 new)
+# -----------------------------------------------------------------------------
+integrations:
+
+  # INHERITED from PACK-004
+  inherited:
+    - id: cbam_app_bridge
+      display_name: "CBAM Application Bridge"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: customs_bridge
+      display_name: "Customs System Bridge"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: ets_bridge
+      display_name: "EU ETS Price Feed Bridge"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: pack_orchestrator
+      display_name: "Pack Orchestrator"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: setup_wizard
+      display_name: "Setup Wizard"
+      inherited_from: "PACK-004-cbam-readiness"
+
+    - id: health_check
+      display_name: "Health Check"
+      inherited_from: "PACK-004-cbam-readiness"
+
+  # NEW in PACK-005
+  new:
+    - id: registry_api_bridge
+      display_name: "CBAM Registry API Bridge"
+      description: >-
+        Bidirectional integration with CBAM Transitional/Definitive Registry.
+        Supports mTLS authentication, certificate purchase/surrender APIs,
+        report submission, and status polling with retry logic.
+      new_in: "PACK-005"
+
+    - id: taric_bridge
+      display_name: "TARIC Database Bridge"
+      description: >-
+        Integration with EU TARIC (Integrated Tariff) for real-time CN code
+        validation, tariff classification, and anti-dumping duty checks.
+      new_in: "PACK-005"
+
+    - id: cross_regulation_bridge
+      display_name: "Cross-Regulation Data Bridge"
+      description: >-
+        Data bridge to CSRD, CDP, SBTi, EU Taxonomy, and EUDR modules.
+        Enables automatic data flow from CBAM to other frameworks.
+      new_in: "PACK-005"
+
+    - id: erp_group_bridge
+      display_name: "Multi-Entity ERP Bridge"
+      description: >-
+        Enhanced ERP bridge supporting multi-entity group data extraction
+        with entity-level filtering, cost center mapping, and consolidation.
+      new_in: "PACK-005"
+
+    - id: carbon_pricing_feed
+      display_name: "Global Carbon Pricing Feed"
+      description: >-
+        Real-time feed of carbon prices from 50+ schemes worldwide. Used
+        for calculating CBAM carbon price deductions per Article 9.
+      new_in: "PACK-005"
+
+    - id: audit_data_room_bridge
+      display_name: "Audit Data Room Bridge"
+      description: >-
+        Integration with secure data room providers for NCA audit evidence
+        sharing. Supports encrypted upload, access logging, and expiry.
+      new_in: "PACK-005"
+
+    - id: notification_bridge
+      display_name: "Multi-Channel Notification Bridge"
+      description: >-
+        Notification bridge for alerts across email, Slack, Teams, webhooks,
+        and SMS. Supports escalation chains and role-based routing.
+      new_in: "PACK-005"
+
+# -----------------------------------------------------------------------------
+# Presets
+# -----------------------------------------------------------------------------
+presets:
+  pack_005_presets:
+    - id: enterprise_importer
+      display_name: "Enterprise Importer"
+      description: >-
+        Large multi-entity group with all features enabled. Certificate
+        trading, group consolidation, registry API, advanced analytics,
+        customs automation, cross-regulation sync, and NCA audit readiness.
+      config_file: "config/presets/enterprise_importer.yaml"
+
+    - id: customs_broker
+      display_name: "Customs Broker (Delegated)"
+      description: >-
+        Delegated compliance mode for customs brokers acting on behalf of
+        importers. Multi-client management, simplified per-client configs,
+        and consolidated billing.
+      config_file: "config/presets/customs_broker.yaml"
+
+    - id: steel_group
+      display_name: "Steel Industry Group"
+      description: >-
+        Steel-focused group with deep precursor chains (5 tiers), BF-BOF
+        and EAF route optimization, high-volume certificate trading, and
+        steel-specific anti-circumvention monitoring.
+      config_file: "config/presets/steel_group.yaml"
+
+    - id: multi_commodity_group
+      display_name: "Multi-Commodity Group"
+      description: >-
+        Diversified industrial group importing across all 6 CBAM goods
+        categories. Full feature set with multi-entity hierarchy,
+        commodity-level cost allocation, and comprehensive analytics.
+      config_file: "config/presets/multi_commodity_group.yaml"
+
+  sector_presets:
+    - id: automotive_oem
+      display_name: "Automotive OEM"
+      description: >-
+        Automotive manufacturer importing steel and aluminium. Focus on
+        supplier chain traceability, SBTi alignment, and CSRD E1 mapping.
+      config_file: "config/sectors/automotive_oem.yaml"
+      nace_codes: ["C29"]
+
+    - id: construction
+      display_name: "Construction"
+      description: >-
+        Construction sector importing cement and steel. Focus on project-
+        level emission allocation, EU Taxonomy screening, and local NCA
+        requirements.
+      config_file: "config/sectors/construction.yaml"
+      nace_codes: ["F41", "F42", "F43"]
+
+    - id: chemical_manufacturing
+      display_name: "Chemical Manufacturing"
+      description: >-
+        Chemical manufacturer importing fertilizers and hydrogen. Focus on
+        N2O tracking, hydrogen production pathway analysis, and process
+        emission verification.
+      config_file: "config/sectors/chemical_manufacturing.yaml"
+      nace_codes: ["C20"]
+
+# -----------------------------------------------------------------------------
+# CN Codes - Complete Annex I Reference (167 codes)
+# -----------------------------------------------------------------------------
+cn_codes:
+
+  cement:
+    category_id: 1
+    annex_reference: "Annex I, Section 1"
+    codes:
+      - {code: "2523 10 00", description: "Cement clinkers"}
+      - {code: "2523 21 00", description: "White Portland cement"}
+      - {code: "2523 29 00", description: "Other Portland cement"}
+      - {code: "2523 30 00", description: "Aluminous cement"}
+      - {code: "2523 90 00", description: "Other hydraulic cements"}
+
+  iron_steel:
+    category_id: 2
+    annex_reference: "Annex I, Section 2"
+    codes:
+      # Chapter 72 - Primary iron and steel
+      - {code: "7201 10 11", description: "Non-alloy pig iron containing <=0.5% phosphorus, in pigs"}
+      - {code: "7201 10 19", description: "Non-alloy pig iron containing <=0.5% phosphorus, other"}
+      - {code: "7201 10 30", description: "Non-alloy pig iron containing >0.5% phosphorus"}
+      - {code: "7201 20 00", description: "Alloy pig iron; spiegeleisen"}
+      - {code: "7202 11 20", description: "Ferro-manganese containing >2% C, >4% Si (granularity >6.3mm)"}
+      - {code: "7202 11 80", description: "Ferro-manganese containing >2% C, other"}
+      - {code: "7202 19 00", description: "Ferro-manganese containing <=2% C"}
+      - {code: "7202 21 00", description: "Ferro-silicon containing >55% Si"}
+      - {code: "7202 29 10", description: "Ferro-silicon containing >=4% but <=55% Si and >=10% Mg"}
+      - {code: "7202 29 90", description: "Ferro-silicon, other containing >=4% but <=55% Si"}
+      - {code: "7202 30 00", description: "Ferro-silico-manganese"}
+      - {code: "7202 41 10", description: "Ferro-chromium containing >4% C and >6% C"}
+      - {code: "7202 41 90", description: "Ferro-chromium containing >4% C, <=6% C"}
+      - {code: "7202 49 10", description: "Ferro-chromium containing <=0.05% C"}
+      - {code: "7202 49 50", description: "Ferro-chromium containing >0.05% and <=0.5% C"}
+      - {code: "7202 49 90", description: "Ferro-chromium containing >0.5% and <=4% C"}
+      - {code: "7202 50 00", description: "Ferro-silico-chromium"}
+      - {code: "7202 60 00", description: "Ferro-nickel"}
+      - {code: "7202 70 00", description: "Ferro-molybdenum"}
+      - {code: "7202 80 00", description: "Ferro-tungsten and ferro-silico-tungsten"}
+      - {code: "7202 91 00", description: "Ferro-titanium and ferro-silico-titanium"}
+      - {code: "7202 92 00", description: "Ferro-vanadium"}
+      - {code: "7202 93 00", description: "Ferro-niobium"}
+      - {code: "7202 99 10", description: "Ferro-phosphorus"}
+      - {code: "7202 99 30", description: "Ferro-silico-magnesium"}
+      - {code: "7202 99 80", description: "Other ferro-alloys"}
+      - {code: "7203 10 00", description: "Ferrous products obtained by direct reduction of iron ore"}
+      - {code: "7203 90 00", description: "Other spongy ferrous products in lumps, pellets or similar"}
+      - {code: "7204 10 00", description: "Waste and scrap of cast iron"}
+      - {code: "7204 21 10", description: "Waste and scrap of stainless steel containing >=8% Ni"}
+      - {code: "7204 21 90", description: "Other waste and scrap of stainless steel"}
+      - {code: "7204 29 00", description: "Waste and scrap of other alloy steel"}
+      - {code: "7204 30 00", description: "Waste and scrap of tinned iron or steel"}
+      - {code: "7204 41 10", description: "Turnings, shavings, chips, milling waste, filings"}
+      - {code: "7204 41 91", description: "Bundles of ferrous waste and scrap"}
+      - {code: "7204 41 99", description: "Other ferrous waste and scrap"}
+      - {code: "7204 49 10", description: "Fragmentised (shredded) ferrous waste and scrap"}
+      - {code: "7204 49 30", description: "Other ferrous waste and scrap in bundles"}
+      - {code: "7204 49 90", description: "Other ferrous waste and scrap"}
+      - {code: "7204 50 00", description: "Remelting scrap ingots of iron or steel"}
+      - {code: "7205 10 00", description: "Granules of pig iron, spiegeleisen, iron or steel"}
+      - {code: "7205 21 00", description: "Powders of alloy steel"}
+      - {code: "7205 29 00", description: "Powders of iron or non-alloy steel"}
+      - {code: "7206 10 00", description: "Ingots of iron and non-alloy steel"}
+      - {code: "7206 90 00", description: "Other primary forms of iron and non-alloy steel"}
+      - {code: "7207 11 14", description: "Semi-finished, rectangular cross-section, C<0.25%, width>=twice thickness"}
+      - {code: "7207 11 16", description: "Semi-finished, rectangular cross-section, C<0.25%, other"}
+      - {code: "7207 12 10", description: "Semi-finished, rectangular cross-section, C>=0.25%, <=0.6%"}
+      - {code: "7207 19 12", description: "Semi-finished, circular/polygonal cross-section, non-alloy"}
+      - {code: "7207 19 80", description: "Other semi-finished products of non-alloy steel"}
+      - {code: "7207 20 17", description: "Semi-finished of stainless steel, rectangular, >=Ni 8%"}
+      - {code: "7207 20 32", description: "Semi-finished of other alloy steel, rectangular cross-section"}
+      - {code: "7207 20 52", description: "Semi-finished of other alloy steel, circular/polygonal"}
+      - {code: "7207 20 80", description: "Other semi-finished products of alloy steel"}
+      - {code: "7208", description: "Flat-rolled products of iron/non-alloy steel, hot-rolled, width >=600mm"}
+      - {code: "7209", description: "Flat-rolled products of iron/non-alloy steel, cold-rolled, width >=600mm"}
+      - {code: "7210", description: "Flat-rolled products of iron/non-alloy steel, clad/plated/coated, width >=600mm"}
+      - {code: "7211", description: "Flat-rolled products of iron or non-alloy steel, width <600mm"}
+      - {code: "7212", description: "Flat-rolled products of iron/non-alloy steel, clad/plated/coated, width <600mm"}
+      - {code: "7213", description: "Bars and rods, hot-rolled, in irregularly wound coils, of iron or non-alloy steel"}
+      - {code: "7214", description: "Other bars and rods of iron or non-alloy steel, not further worked than forged"}
+      - {code: "7215", description: "Other bars and rods of iron or non-alloy steel"}
+      - {code: "7216", description: "Angles, shapes and sections of iron or non-alloy steel"}
+      - {code: "7217", description: "Wire of iron or non-alloy steel"}
+      - {code: "7218", description: "Stainless steel in ingots or other primary forms; semi-finished products"}
+      - {code: "7219", description: "Flat-rolled products of stainless steel, width >=600mm"}
+      - {code: "7220", description: "Flat-rolled products of stainless steel, width <600mm"}
+      - {code: "7221", description: "Bars and rods of stainless steel, hot-rolled, irregularly wound"}
+      - {code: "7222", description: "Other bars and rods of stainless steel; angles, shapes and sections"}
+      - {code: "7223", description: "Wire of stainless steel"}
+      - {code: "7224", description: "Other alloy steel in ingots or other primary forms; semi-finished products"}
+      - {code: "7225", description: "Flat-rolled products of other alloy steel, width >=600mm"}
+      - {code: "7226", description: "Flat-rolled products of other alloy steel, width <600mm"}
+      - {code: "7227", description: "Bars and rods of other alloy steel, hot-rolled, irregularly wound"}
+      - {code: "7228", description: "Other bars and rods of other alloy steel; angles, shapes, sections; hollow drill bars"}
+      - {code: "7229", description: "Wire of other alloy steel"}
+      # Chapter 73 - Articles of iron or steel
+      - {code: "7301", description: "Sheet piling of iron or steel"}
+      - {code: "7302", description: "Railway or tramway track construction material of iron or steel"}
+      - {code: "7303", description: "Tubes, pipes and hollow profiles of cast iron"}
+      - {code: "7304", description: "Tubes, pipes and hollow profiles, seamless, of iron or steel"}
+      - {code: "7305", description: "Other tubes and pipes, having circular cross-sections, external diameter >406.4mm"}
+      - {code: "7306", description: "Other tubes, pipes and hollow profiles of iron or steel"}
+      - {code: "7307", description: "Tube or pipe fittings of iron or steel"}
+      - {code: "7308", description: "Structures and parts of structures of iron or steel"}
+      - {code: "7309", description: "Reservoirs, tanks, vats and similar containers of iron or steel, >300 litres"}
+      - {code: "7310", description: "Tanks, casks, drums, cans, boxes of iron or steel, capacity <=300 litres"}
+      - {code: "7311", description: "Containers for compressed or liquefied gas, of iron or steel"}
+      - {code: "7312", description: "Stranded wire, ropes, cables, plaited bands, slings of iron or steel"}
+      - {code: "7313", description: "Barbed wire of iron or steel; twisted hoop or single flat wire"}
+      - {code: "7318", description: "Screws, bolts, nuts, coach screws, screw hooks, rivets of iron or steel"}
+      - {code: "7326", description: "Other articles of iron or steel"}
+
+  aluminium:
+    category_id: 3
+    annex_reference: "Annex I, Section 3"
+    codes:
+      - {code: "7601 10 00", description: "Unwrought aluminium, not alloyed"}
+      - {code: "7601 20 20", description: "Unwrought aluminium alloy, slabs or billets"}
+      - {code: "7601 20 80", description: "Unwrought aluminium alloy, other"}
+      - {code: "7602 00 11", description: "Aluminium waste, turnings, shavings, chips, milling waste, filings"}
+      - {code: "7602 00 19", description: "Other aluminium waste"}
+      - {code: "7602 00 90", description: "Aluminium scrap"}
+      - {code: "7603 10 00", description: "Aluminium powders of non-lamellar structure"}
+      - {code: "7603 20 00", description: "Aluminium powders of lamellar structure; aluminium flakes"}
+      - {code: "7604 10 10", description: "Aluminium bars, rods and profiles, not alloyed, hollow"}
+      - {code: "7604 10 90", description: "Aluminium bars, rods and profiles, not alloyed, other"}
+      - {code: "7604 21 00", description: "Aluminium alloy hollow profiles"}
+      - {code: "7604 29 10", description: "Aluminium alloy bars and rods"}
+      - {code: "7604 29 90", description: "Aluminium alloy profiles, other"}
+      - {code: "7605 11 00", description: "Aluminium wire, not alloyed, max cross-section >7mm"}
+      - {code: "7605 19 00", description: "Aluminium wire, not alloyed, max cross-section <=7mm"}
+      - {code: "7605 21 00", description: "Aluminium alloy wire, max cross-section >7mm"}
+      - {code: "7605 29 00", description: "Aluminium alloy wire, max cross-section <=7mm"}
+      - {code: "7606", description: "Aluminium plates, sheets and strip, thickness >0.2mm"}
+      - {code: "7607", description: "Aluminium foil (whether or not printed), thickness <=0.2mm"}
+      - {code: "7608 10 00", description: "Aluminium tubes and pipes, not alloyed"}
+      - {code: "7608 20", description: "Aluminium alloy tubes and pipes"}
+      - {code: "7609 00 00", description: "Aluminium tube or pipe fittings"}
+      - {code: "7610 10 00", description: "Aluminium doors, windows and frames; thresholds for doors"}
+      - {code: "7610 90 10", description: "Aluminium bridges and bridge-sections; towers, lattice masts"}
+      - {code: "7610 90 90", description: "Other aluminium structures and parts of structures"}
+      - {code: "7611 00 00", description: "Aluminium reservoirs, tanks, vats and similar containers, >300 litres"}
+      - {code: "7612 10 00", description: "Aluminium collapsible tubular containers, capacity <=300 litres"}
+      - {code: "7612 90 20", description: "Aluminium rigid tubular containers, capacity <=300 litres"}
+      - {code: "7612 90 80", description: "Other aluminium containers, capacity <=300 litres"}
+      - {code: "7613 00 00", description: "Aluminium containers for compressed or liquefied gas"}
+      - {code: "7614 10 00", description: "Stranded wire, cables, plaited bands of aluminium, with steel core"}
+      - {code: "7614 90 00", description: "Stranded wire, cables, plaited bands of aluminium, other"}
+      - {code: "7616 10 00", description: "Aluminium nails, tacks, staples, screws, bolts, nuts"}
+      - {code: "7616 91 00", description: "Aluminium cloth, grill, netting and fencing, of wire"}
+      - {code: "7616 99 10", description: "Aluminium castings"}
+      - {code: "7616 99 90", description: "Other articles of aluminium"}
+
+  fertilizers:
+    category_id: 4
+    annex_reference: "Annex I, Section 4"
+    codes:
+      - {code: "2808 00 00", description: "Nitric acid; sulphonitric acids"}
+      - {code: "2814 10 00", description: "Anhydrous ammonia"}
+      - {code: "2814 20 00", description: "Ammonia in aqueous solution"}
+      - {code: "2834 10 00", description: "Nitrites"}
+      - {code: "3102 10 10", description: "Urea containing >45% N (dry anhydrous product)"}
+      - {code: "3102 10 90", description: "Other urea, whether or not in aqueous solution"}
+      - {code: "3102 21 00", description: "Ammonium sulphate"}
+      - {code: "3102 29 00", description: "Double salts and mixtures of ammonium sulphate and ammonium nitrate"}
+      - {code: "3102 30 10", description: "Ammonium nitrate in aqueous solution"}
+      - {code: "3102 30 90", description: "Other ammonium nitrate"}
+      - {code: "3102 40 10", description: "Mixtures of ammonium nitrate with calcium carbonate, N <=28%"}
+      - {code: "3102 40 90", description: "Mixtures of ammonium nitrate with calcium carbonate, N >28%"}
+      - {code: "3102 50 00", description: "Sodium nitrate"}
+      - {code: "3102 60 00", description: "Double salts and mixtures of calcium nitrate and ammonium nitrate"}
+      - {code: "3102 80 00", description: "Mixtures of urea and ammonium nitrate (UAN) in aqueous/ammoniacal solution"}
+      - {code: "3102 90 00", description: "Other mineral or chemical fertilizers, nitrogenous, including mixtures"}
+      - {code: "3103 11 00", description: "Superphosphates containing >=35% P2O5 (triple superphosphate, TSP)"}
+      - {code: "3103 19 00", description: "Other superphosphates"}
+      - {code: "3103 90 00", description: "Other mineral or chemical fertilizers, phosphatic"}
+      - {code: "3104 20 10", description: "Potassium chloride, K2O <=60%"}
+      - {code: "3104 20 50", description: "Potassium chloride, K2O >60%"}
+      - {code: "3104 30 00", description: "Potassium sulphate"}
+      - {code: "3104 90 00", description: "Other mineral or chemical fertilizers, potassic"}
+      - {code: "3105 10 00", description: "Goods of this chapter in tablets or similar forms, or in packages <=10 kg"}
+      - {code: "3105 20 10", description: "NPK fertilizers, N >10%"}
+      - {code: "3105 20 90", description: "Other NPK fertilizers"}
+      - {code: "3105 30 00", description: "Diammonium hydrogenorthophosphate (DAP)"}
+      - {code: "3105 40 00", description: "Ammonium dihydrogenorthophosphate (MAP)"}
+      - {code: "3105 51 00", description: "Mineral or chemical fertilizers containing nitrates and phosphates"}
+      - {code: "3105 59 00", description: "Other mineral or chemical fertilizers containing nitrogen and phosphorus"}
+      - {code: "3105 60 00", description: "Mineral or chemical fertilizers containing phosphorus and potassium"}
+      - {code: "3105 90 20", description: "Other fertilizers, N >10%"}
+      - {code: "3105 90 80", description: "Other fertilizers, N <=10%"}
+
+  electricity:
+    category_id: 5
+    annex_reference: "Annex I, Section 5"
+    codes:
+      - {code: "2716 00 00", description: "Electrical energy"}
+
+  hydrogen:
+    category_id: 6
+    annex_reference: "Annex I, Section 6"
+    codes:
+      - {code: "2804 10 00", description: "Hydrogen"}
+
+# -----------------------------------------------------------------------------
+# Configuration
+# -----------------------------------------------------------------------------
+config:
+  presets:
+    - enterprise_importer
+    - customs_broker
+    - steel_group
+    - multi_commodity_group
+  sectors:
+    - automotive_oem
+    - construction
+    - chemical_manufacturing
+
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
+dependencies:
+  required:
+    - name: "PACK-004-cbam-readiness"
+      version: ">= 1.0.0"
+      description: "Base CBAM pack providing 7 engines, 7 workflows, and core configuration"
+
+  optional:
+    - name: "PACK-001-csrd-starter"
+      version: ">= 1.0.0"
+      description: "Cross-regulation: CSRD E1 emission mapping from CBAM data"
+
+    - name: "PACK-002-csrd-professional"
+      version: ">= 1.0.0"
+      description: "Cross-regulation: Advanced CSRD consolidation and scenario analysis"
+
+    - name: "PACK-003-csrd-enterprise"
+      version: ">= 1.0.0"
+      description: "Cross-regulation: Enterprise CSRD with multi-entity alignment"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  certificate_trading:
+    monte_carlo_10k_iterations_max_seconds: 30
+    portfolio_valuation_max_seconds: 5
+    description: "Certificate trading engine performance targets"
+
+  group_consolidation:
+    entity_data_collection_max_seconds: 60
+    consolidation_max_seconds: 30
+    description: "Group consolidation performance targets"
+
+  registry_api:
+    submission_max_seconds: 10
+    polling_interval_seconds: 60
+    max_retries: 5
+    description: "Registry API integration performance targets"
+
+  precursor_chain:
+    max_depth_5_analysis_seconds: 15
+    mass_balance_validation_seconds: 5
+    description: "Precursor chain analysis performance targets"
+
+  anti_circumvention:
+    pattern_detection_max_seconds: 10
+    full_scan_max_seconds: 120
+    description: "Anti-circumvention monitoring performance targets"
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_pack_004_installed
+    - verify_registry_api_credentials
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V083"
+    new:
+      - "V083-PACK005-001"  # Certificate trading tables
+      - "V083-PACK005-002"  # Entity group hierarchy
+      - "V083-PACK005-003"  # Registry sync state
+      - "V083-PACK005-004"  # Anti-circumvention alerts
+      - "V083-PACK005-005"  # Cross-regulation mapping
+      - "V083-PACK005-006"  # Audit evidence archive
+      - "V083-PACK005-007"  # Precursor chain analysis
+
+  post_install:
+    - seed_cbam_cn_codes
+    - seed_eu_ets_emission_factors
+    - seed_country_default_values
+    - seed_carbon_pricing_schemes
+    - seed_anti_circumvention_rules
+    - seed_cross_regulation_mappings
+    - seed_default_presets
+    - configure_registry_api_connection
+    - configure_entity_group_hierarchy
+    - run_health_checks

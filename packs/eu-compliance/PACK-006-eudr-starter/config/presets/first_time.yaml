@@ -1,0 +1,194 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - First-Time Declarant Preset
+# =============================================================================
+# For organizations making their first EUDR Due Diligence Statement.
+# Extended onboarding with tutorial mode, pre-populated examples,
+# step-by-step guidance, demo data available, and all validations
+# with detailed explanations.
+#
+# This preset can be combined with any company size. It adds guidance
+# layers on top of the standard compliance workflow.
+# =============================================================================
+
+# Operator configuration - defaults, user will set during wizard
+operator:
+  operator_type: "OPERATOR"
+  company_size: "MID_MARKET"
+
+# All commodities enabled for exploration, user selects during setup
+commodities:
+  - commodity_type: "cattle"
+    enabled: true
+    priority: 5
+    certification_schemes: []
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 3
+    certification_schemes: ["RAINFOREST_ALLIANCE", "UTZ", "FAIRTRADE"]
+  - commodity_type: "coffee"
+    enabled: true
+    priority: 3
+    certification_schemes: ["FOUR_C", "RAINFOREST_ALLIANCE"]
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 2
+    certification_schemes: ["RSPO", "ISCC"]
+  - commodity_type: "rubber"
+    enabled: true
+    priority: 4
+    certification_schemes: ["FSC", "PEFC"]
+  - commodity_type: "soya"
+    enabled: true
+    priority: 4
+    certification_schemes: ["RTRS", "PROTERRA"]
+  - commodity_type: "wood"
+    enabled: true
+    priority: 2
+    certification_schemes: ["FSC", "PEFC"]
+
+# Geolocation - standard with extra validation messages
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 10000
+  batch_size: 100
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+# Risk assessment - standard weights with explanations
+risk_assessment:
+  country_weight: 0.35
+  supplier_weight: 0.25
+  commodity_weight: 0.20
+  document_weight: 0.20
+  thresholds:
+    low_max: 25.0
+    medium_max: 50.0
+    high_max: 75.0
+    critical_min: 75.0
+  auto_escalation_enabled: false
+  reassessment_interval_days: 90
+
+# DDS - standard with step-by-step
+dds:
+  dds_type: "STANDARD"
+  auto_generate: false
+  review_required: true
+  template_version: "1.0"
+  annex_ii_version: "2023"
+  retention_years: 5
+  include_supporting_documents: true
+  multi_commodity_dds: false
+
+# EU Information System - always sandbox for first-timers
+euis:
+  sandbox_mode: true
+  auth_type: "OAUTH2"
+  submission_retry_count: 3
+  polling_interval_seconds: 60
+  timeout_seconds: 120
+  batch_submission_enabled: false
+
+# Supply chain - moderate depth
+supply_chain:
+  max_tier_depth: 2
+  chain_of_custody_model: "MASS_BALANCE"
+  trace_level: "shipment"
+  require_plot_linkage: true
+  mixed_shipment_handling: "flag"
+  upstream_data_sharing: true
+
+# Supplier management - small initial scale
+supplier:
+  bulk_import_limit: 100
+  engagement_auto_reminders: true
+  reminder_interval_days: 14
+  data_completeness_threshold: 70
+  require_certification_proof: false
+  supplier_self_assessment: true
+  auto_risk_flag: true
+
+# Compliance - all rules enabled with explanations
+compliance:
+  rules_enabled:
+    - "deforestation_free"
+    - "legal_compliance"
+    - "geolocation_required"
+    - "cutoff_date_check"
+    - "cn_code_classification"
+    - "country_risk_assessment"
+    - "supplier_risk_assessment"
+    - "dds_completeness"
+    - "document_authentication"
+    - "chain_of_custody"
+  compliance_score_threshold: 65
+  simplified_dd_enabled: true
+  penalty_tracking: true
+
+# Cutoff date - standard
+cutoff_date:
+  evidence_required: true
+  temporal_buffer_days: 0
+  satellite_verification_enabled: true
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+    - "glad_alerts"
+  min_satellite_resolution_m: 30
+
+# Reporting - standard with tutorial overlays
+reporting:
+  dashboard_refresh_interval_seconds: 300
+  report_formats: ["pdf", "html", "json"]
+  auto_generate_quarterly: false
+  auto_generate_annual: true
+  include_risk_heatmap: true
+  include_supplier_scorecard: true
+  executive_summary_enabled: true
+
+# Demo mode - enabled for first-time users to explore
+demo:
+  enabled: true
+  demo_suppliers_count: 10
+  demo_plots_count: 20
+  use_sample_data: true
+  skip_external_apis: true
+  mock_euis_responses: true
+  fast_execution: true
+
+# Guided mode settings (first-time specific)
+guided_mode:
+  enabled: true
+  tutorial_mode: true
+  step_by_step: true
+  show_article_references: true
+  show_validation_explanations: true
+  pre_populated_examples: true
+  ai_assistance_level: "enhanced"
+  onboarding_checklist:
+    - "Register operator/trader identity"
+    - "Select applicable commodities"
+    - "Configure supply chain depth"
+    - "Import initial supplier data"
+    - "Capture geolocation coordinates"
+    - "Run initial risk assessment"
+    - "Review demo DDS example"
+    - "Generate first DDS draft"
+    - "Submit test DDS to sandbox"
+
+# Agent overrides - all enabled with verbose logging
+agent_overrides:
+  AGENT-EUDR-015:
+    enabled: true
+    config_overrides:
+      tutorial_overlays: true
+
+  AGENT-EUDR-026:
+    config_overrides:
+      verbose_validation: true
+      show_article_references: true
+      step_by_step_mode: true
+
+  AGENT-EUDR-037:
+    config_overrides:
+      show_field_explanations: true
+      highlight_mandatory_fields: true

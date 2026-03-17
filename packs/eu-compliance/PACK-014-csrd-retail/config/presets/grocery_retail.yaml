@@ -1,0 +1,188 @@
+# =============================================================================
+# PACK-014 CSRD Retail Pack - Grocery Retail Preset
+# =============================================================================
+# Full configuration for grocery and food retail: supermarkets, hypermarkets,
+# convenience stores. F-gas refrigerant tracking is critical (commercial
+# refrigeration dominates Scope 1). Food waste engine fully enabled with 30%
+# reduction target. EUDR commodity tracing for palm oil, soy, cocoa, and
+# coffee. Scope 3 Cat 1 (purchased goods) is critical at 60-80% of total
+# footprint. Packaging PPWR full compliance.
+#
+# Typical use cases:
+#   - Supermarket chains (500-5000 sqm stores)
+#   - Hypermarket operators (5000+ sqm)
+#   - Convenience store networks
+#   - Specialty food retailers
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+tier: "ENTERPRISE"
+sub_sectors:
+  - "GROCERY"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Store Emissions (refrigerants CRITICAL) ---
+store_emissions:
+  enabled: true
+  store_types:
+    - "STANDARD"
+    - "EXPRESS"
+    - "FLAGSHIP"
+  refrigerant_tracking: true
+  f_gas_phase_down: true
+  fleet_tracking: true
+  renewable_on_site: false
+  heating_sources:
+    - "natural_gas"
+    - "electricity"
+  eed_energy_audit: true
+  per_sqm_normalization: true
+  per_revenue_normalization: true
+  grid_factor_source: "AIB_RESIDUAL_MIX"
+  year_over_year_tracking: true
+
+# --- Scope 3 (Cat 1 CRITICAL at 60-80%) ---
+scope3:
+  enabled: true
+  priority_categories: [1, 4, 5, 9, 14]
+  calculation_methods:
+    cat_1: "hybrid"
+    cat_4: "distance_based"
+    cat_9: "distance_based"
+    default: "spend_based"
+  supplier_data_collection: true
+  cat1_methodology: "hybrid"
+  spend_based_screening: true
+  hotspot_analysis: true
+  supplier_engagement_scoring: true
+  flag_pathway_enabled: true
+  last_mile_tracking: true
+
+# --- Packaging (PPWR full compliance) ---
+packaging:
+  enabled: true
+  ppwr_compliance: true
+  recycled_content_tracking: true
+  materials_tracked:
+    - "PET"
+    - "HDPE"
+    - "PP"
+    - "PAPER_BOARD"
+    - "GLASS"
+    - "ALUMINIUM"
+    - "STEEL"
+  epr_scheme: true
+  labeling_requirements: true
+  reuse_targets: true
+  over_packaging_monitoring: true
+  target_year: 2030
+
+# --- Product Sustainability ---
+product_sustainability:
+  enabled: true
+  dpp_enabled: false
+  pef_methodology: true
+  green_claims_audit: true
+  banned_claims:
+    - "CARBON_NEUTRAL"
+    - "ECO_FRIENDLY"
+  product_recyclability_scoring: true
+
+# --- Food Waste (CRITICAL for grocery) ---
+food_waste:
+  enabled: true
+  measurement_method: "direct_weighing"
+  reduction_target_pct: 30.0
+  baseline_year: 2020
+  redistribution_tracking: true
+  waste_categories:
+    - "BAKERY"
+    - "PRODUCE"
+    - "DAIRY"
+    - "MEAT"
+    - "PREPARED_FOOD"
+    - "PACKAGED"
+    - "BEVERAGES"
+  date_marking_optimization: true
+  markdown_effectiveness: true
+  animal_feed_diversion: true
+  composting_tracking: true
+  waste_intensity_metric: "kg_per_eur_revenue"
+
+# --- Supply Chain Due Diligence ---
+supply_chain_dd:
+  enabled: true
+  csddd_compliance: true
+  eudr_commodities:
+    - "PALM_OIL"
+    - "SOY"
+    - "COCOA"
+    - "COFFEE"
+  forced_labour_screening: true
+  supplier_tier_depth: 3
+  country_risk_assessment: true
+  living_wage_gap_analysis: true
+  sanctions_screening: true
+  stakeholder_engagement: true
+  remediation_tracking: true
+  geolocation_verification: true
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  epr_schemes:
+    - "PACKAGING"
+  mci_tracking: true
+  product_recyclability: true
+  multi_country_epr: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  kpi_set:
+    - "emissions_per_sqm"
+    - "emissions_per_revenue"
+    - "energy_intensity_kwh_sqm"
+    - "refrigerant_leakage_rate"
+    - "scope3_supplier_coverage"
+    - "packaging_recycled_content"
+    - "food_waste_ratio"
+    - "sbti_alignment"
+  peer_group: "NACE_SECTOR"
+  sbti_pathway: "1.5C"
+  sbti_flag_alignment: true
+  percentile_tracking: true
+  gap_analysis_enabled: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  store_emissions_report_enabled: true
+  supply_chain_report_enabled: true
+  packaging_report_enabled: true
+  product_sustainability_report_enabled: true
+  food_waste_report_enabled: true
+  circular_economy_report_enabled: true
+  scorecard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+  review_workflow_enabled: true
+  watermark_draft: true

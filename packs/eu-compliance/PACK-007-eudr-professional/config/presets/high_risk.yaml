@@ -1,0 +1,175 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - High-Risk Sourcing Preset
+# =============================================================================
+# Optimized for companies sourcing primarily from high-risk countries. Enhanced
+# satellite monitoring (6-hour intervals), scenario risk modeling with stress
+# testing, protected area checks, and continuous monitoring with auto-escalation.
+#
+# Typical Use Cases:
+#   - Sourcing from Brazil, Indonesia, DRC, Bolivia, Paraguay
+#   - Frontier markets with weak governance
+#   - Commodities with high deforestation correlation (palm oil, soya, cattle)
+#   - New supplier onboarding in high-risk regions
+#
+# Key Features:
+#   - Maximum satellite monitoring frequency
+#   - Highest risk sensitivity (lower thresholds)
+#   - Enhanced verification requirements
+#   - Real-time alert escalation
+#   - Mandatory protected area screening
+# =============================================================================
+
+operator:
+  company_size: "LARGE"
+  operator_type: "OPERATOR"
+
+commodities:
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 1
+    high_risk_origins: ["IDN", "MYS", "PNG", "COL"]
+  - commodity_type: "soya"
+    enabled: true
+    priority: 1
+    high_risk_origins: ["BRA", "PRY", "BOL", "ARG"]
+  - commodity_type: "cattle"
+    enabled: true
+    priority: 1
+    high_risk_origins: ["BRA", "PRY", "BOL", "COL"]
+
+geolocation:
+  coordinate_precision: 8
+  polygon_max_vertices: 50000
+  polygon_area_threshold_ha: 2.0  # Stricter than 4ha default
+  batch_size: 500
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+risk_assessment:
+  country_weight: 0.45  # Higher weight for high-risk countries
+  supplier_weight: 0.25
+  commodity_weight: 0.20
+  document_weight: 0.10
+  thresholds:
+    low_max: 15.0  # Stricter thresholds
+    medium_max: 35.0
+    high_max: 60.0
+    critical_min: 60.0
+  auto_escalation_enabled: true
+  reassessment_interval_days: 30  # Monthly reassessment
+
+dds:
+  dds_type: "STANDARD"
+  require_all_fields: true
+  enable_draft_mode: false  # No drafts for high-risk
+  retry_attempts: 5
+
+compliance:
+  require_geolocation: true
+  require_certification: true  # Mandatory certification
+  allow_self_declarations: false  # No self-declarations
+  verification_level: "ENHANCED"
+  audit_retention_years: 10
+  data_quality_threshold: 0.95
+
+cutoff_date:
+  satellite_lookback_years: 20
+  hansen_forest_change_enabled: true
+  temporal_analysis_periods: 10
+  allow_manual_override: false
+
+advanced_geolocation:
+  sentinel_integration: true
+  modis_fire_check: true
+  protected_area_check: true
+  indigenous_land_check: true
+  hansen_forest_change: true
+  resolution_meters: 5  # Highest resolution
+  temporal_periods: 10
+  alert_systems: ["GLAD", "RADD", "DETER", "GFW"]  # All systems
+
+scenario_risk:
+  simulation_count: 50000  # Maximum simulations
+  confidence_levels: [0.95, 0.99, 0.999]  # Highest confidence
+  parallel_workers: 16
+  timeout_seconds: 300
+  distributions:
+    country_risk: "BETA"
+    supplier_risk: "LOGNORMAL"
+    commodity_risk: "TRIANGULAR"
+
+satellite_monitoring:
+  providers: ["SENTINEL_1", "SENTINEL_2", "MODIS", "LANDSAT_8", "PLANET"]
+  check_interval_hours: 6  # Maximum frequency
+  alert_threshold: 0.60  # Lower threshold (more sensitive)
+  historical_months: 120  # 10 years
+  resolution_meters: 5
+
+continuous_monitoring:
+  enabled: true
+  intervals:
+    satellite_check_hours: 6
+    risk_reassessment_hours: 6
+    supplier_update_hours: 24  # Daily
+    regulatory_check_hours: 12
+  notification_channels: ["EMAIL", "WEBHOOK", "SMS", "SLACK"]
+  escalation_enabled: true
+
+portfolio:
+  max_operators: 25
+  shared_supplier_pool: false  # Isolated suppliers
+  cross_operator_reporting: true
+  cost_allocation: true
+  hierarchy_depth: 3
+
+audit_management:
+  retention_years: 10
+  hash_algorithm: "SHA-256"
+  export_formats: ["JSON", "XML", "PDF"]
+  mock_audit_enabled: true
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 20.0  # Larger buffer
+  ramsar_check: true
+  unesco_check: true
+
+regulatory_tracking:
+  eurlex_monitoring: true
+  check_interval_hours: 6  # Frequent regulatory checks
+  cross_regulation_tracking: true
+  auto_gap_analysis: true
+
+grievance:
+  enabled: true
+  anonymous_submissions: true
+  response_sla_days: 2  # Urgent response
+  resolution_sla_days: 14  # Fast resolution
+  whistleblower_protection: true
+
+cross_regulation:
+  csrd_e4_linkage: true
+  csddd_linkage: true
+  nature_restoration_linkage: true
+
+advanced_supply_chain:
+  max_tier_depth: 5
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED"]  # No mass balance
+  network_analysis: true
+  diversification_scoring: true
+
+supplier_benchmark:
+  peer_group_min_size: 5
+  scoring_dimensions: ["COMPLIANCE_SCORE", "DATA_QUALITY", "RISK_LEVEL", "CERTIFICATION_STATUS", "RESPONSE_TIME", "SUSTAINABILITY_PERFORMANCE"]
+  benchmark_frequency: "MONTHLY"  # Monthly benchmarking
+  degradation_alert: true
+
+reporting:
+  default_report_format: "PDF"
+  include_executive_summary: true
+  include_risk_heatmap: true
+  include_supplier_details: true
+  language: "en"
+  timezone: "UTC"

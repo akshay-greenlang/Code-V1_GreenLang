@@ -1,0 +1,136 @@
+# =============================================================================
+# PACK-013 CSRD Manufacturing Pack - Light Manufacturing Preset
+# =============================================================================
+# Configuration for light manufacturing and consumer goods: furniture,
+# packaging, pharmaceuticals, plastics/rubber. Circular economy is the
+# primary focus area (EPR schemes, recycled content mandates, packaging
+# waste directive). Energy intensity is lower than heavy industry. Product-
+# level sustainability is important for consumer-facing products. BAT
+# assessment is simplified or not applicable. Supply chain (Scope 3) is
+# typically the largest emission category.
+#
+# Typical use cases:
+#   - Consumer packaging manufacturers
+#   - Furniture producers (wood, metal, upholstered)
+#   - Pharmaceutical formulation and packaging
+#   - Plastic injection moulding operations
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+manufacturing_tier: "LIGHT"
+sub_sectors:
+  - "PACKAGING"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Process Emissions (lower priority) ---
+process_emissions:
+  enabled: false
+
+# --- Energy Intensity ---
+energy_intensity:
+  enabled: true
+  production_unit: "unit"
+  energy_sources:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+  benchmark_reference: "PEER_AVERAGE"
+  iso50001_certified: false
+  enpi_tracking: true
+  significant_energy_use_threshold_pct: 10.0
+  renewable_energy_tracking: true
+  energy_cost_tracking: true
+
+# --- Product Carbon Footprint ---
+product_pcf:
+  enabled: true
+  lifecycle_scope: "CRADLE_TO_GRAVE"
+  allocation_method: "MASS"
+  dpp_enabled: true
+  pef_methodology: true
+  iso14067_compliant: true
+  emission_factor_database: "ECOINVENT"
+  co_product_allocation: false
+  recycled_content_crediting: true
+  uncertainty_analysis: false
+  epd_output: true
+
+# --- Circular Economy (PRIMARY focus for light manufacturing) ---
+circular_economy:
+  enabled: true
+  waste_streams:
+    - "NON_HAZARDOUS"
+    - "RECYCLABLE"
+    - "ORGANIC"
+  recycled_content_tracking: true
+  epr_schemes:
+    - "PACKAGING"
+    - "BATTERIES"
+  material_circularity_indicator: true
+  waste_diversion_target_pct: 85.0
+  espr_recycled_content_mandates: true
+  packaging_waste_directive: true
+  closed_loop_tracking: true
+
+# --- Water & Pollution (lower priority) ---
+water_pollution:
+  enabled: false
+
+# --- BAT/BREF Compliance (not applicable for most light manufacturing) ---
+bat_compliance:
+  enabled: false
+
+# --- Supply Chain ---
+supply_chain:
+  enabled: true
+  tier_depth: 2
+  priority_categories: [1, 4, 5, 9, 12]
+  supplier_engagement_platform: "ECOVADIS"
+  spend_based_screening: true
+  supplier_specific_enabled: false
+  hybrid_method: true
+  hotspot_analysis: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  peer_group: "NACE_SECTOR"
+  kpi_set:
+    - "carbon_intensity"
+    - "energy_intensity"
+    - "circularity_rate"
+  sbti_pathway: "ONE_POINT_FIVE"
+  abatement_cost_curve: false
+  eu_ets_benchmark_comparison: false
+  bat_ael_benchmark_comparison: false
+  target_years: [2025, 2030, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  process_emissions_report_enabled: false
+  pcf_label_enabled: true
+  energy_report_enabled: true
+  circular_economy_report_enabled: true
+  bat_report_enabled: false
+  scorecard_enabled: true
+  decarbonization_roadmap_enabled: true
+  output_formats:
+    - "PDF"
+  review_workflow_enabled: true
+  watermark_draft: true

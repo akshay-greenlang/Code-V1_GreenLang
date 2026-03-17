@@ -1,0 +1,297 @@
+# =============================================================================
+# PACK-005 CBAM Complete Pack - Steel Industry Group Preset
+# =============================================================================
+# Steel-focused industrial group with deep precursor chains (5 tiers),
+# BF-BOF and EAF route optimization, high-volume certificate trading,
+# and steel-specific anti-circumvention monitoring (scrap ratio focus).
+#
+# Typical use cases:
+#   - European steel trading groups sourcing from Turkey, China, India, Russia
+#   - Automotive supply chains with steel and stainless requirements
+#   - Construction groups importing structural steel and rebar
+#   - Multi-entity steel distributors with warehousing across the EU
+# =============================================================================
+
+# Importer details
+importer:
+  company_name: ""
+  eori_number: ""
+  authorized_declarant: ""
+  eu_member_state: null
+  cbam_registry_id: ""
+
+# Iron and steel focus (with minor aluminium for stainless alloys)
+goods:
+  enabled_categories:
+    - "iron_steel"
+    - "aluminium"
+  cn_codes_per_category:
+    iron_steel:
+      # Full iron and steel CN code range
+      - "7201 10 11"
+      - "7201 10 19"
+      - "7201 10 30"
+      - "7201 20 00"
+      - "7202 11 20"
+      - "7202 11 80"
+      - "7202 19 00"
+      - "7202 21 00"
+      - "7202 29 10"
+      - "7202 29 90"
+      - "7202 30 00"
+      - "7202 41 10"
+      - "7202 41 90"
+      - "7202 49 10"
+      - "7202 49 50"
+      - "7202 49 90"
+      - "7202 50 00"
+      - "7202 60 00"
+      - "7202 70 00"
+      - "7202 80 00"
+      - "7202 91 00"
+      - "7202 92 00"
+      - "7202 93 00"
+      - "7202 99 10"
+      - "7202 99 30"
+      - "7202 99 80"
+      - "7203 10 00"
+      - "7203 90 00"
+      - "7204 10 00"
+      - "7204 21 10"
+      - "7204 21 90"
+      - "7204 29 00"
+      - "7204 30 00"
+      - "7204 41 10"
+      - "7204 41 91"
+      - "7204 41 99"
+      - "7204 49 10"
+      - "7204 49 30"
+      - "7204 49 90"
+      - "7204 50 00"
+      - "7205 10 00"
+      - "7205 21 00"
+      - "7205 29 00"
+      - "7206 10 00"
+      - "7206 90 00"
+      - "7207"
+      - "7208"
+      - "7209"
+      - "7210"
+      - "7211"
+      - "7212"
+      - "7213"
+      - "7214"
+      - "7215"
+      - "7216"
+      - "7217"
+      - "7218"
+      - "7219"
+      - "7220"
+      - "7221"
+      - "7222"
+      - "7223"
+      - "7224"
+      - "7225"
+      - "7226"
+      - "7227"
+      - "7228"
+      - "7229"
+      - "7301"
+      - "7302"
+      - "7303"
+      - "7304"
+      - "7305"
+      - "7306"
+      - "7307"
+      - "7308"
+      - "7309"
+      - "7310"
+      - "7311"
+      - "7312"
+      - "7313"
+      - "7318"
+      - "7326"
+  precursor_tracking:
+    iron_steel:
+      - "pig_iron"
+      - "direct_reduced_iron"
+      - "crude_steel"
+      - "ferro_alloys"
+      - "iron_ore_pellets"
+    aluminium:
+      - "alumina"
+      - "unwrought_aluminium"
+
+# Emission calculation - actual preferred, steel-specific
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 25.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  carbon_price_deduction_enabled: true
+  country_carbon_price_sources:
+    - "eu_ets"
+    - "uk_ets"
+    - "china_ets"
+    - "korea_ets"
+    - "carbon_tax_registry"
+
+# Certificate management - high volume
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 55
+  repurchase_enabled: true
+
+# Certificate trading - opportunistic for high volume
+trading:
+  buying_strategy: "opportunistic"
+  price_alert_below_eur: 65.0
+  price_alert_above_eur: 140.0
+  repurchase_threshold_pct: 8.0
+  valuation_method: "weighted_average"
+  auto_purchase_enabled: false
+  quarterly_holding_target_pct: 55.0
+  opportunistic_price_window_pct: 7.0
+  mark_to_market_frequency: "weekly"
+
+# Entity group - steel group hierarchy
+entity_group:
+  entities: []
+  hierarchy_enabled: true
+  cost_allocation_method: "volume"
+  consolidation_currency: "EUR"
+  delegated_compliance_mode: false
+  inter_entity_transfer_tracking: true
+  consolidated_declaration: false
+
+# Registry API
+registry:
+  use_sandbox: true
+  auth_type: "mtls"
+  polling_interval_seconds: 60
+  max_retries: 5
+  timeout_seconds: 30
+
+# Advanced analytics - full
+analytics:
+  monte_carlo_iterations: 10000
+  optimization_solver: "scipy_optimize"
+  benchmark_source: "worldsteel"
+  forecast_horizon_years: 5
+  confidence_level: 0.95
+  sensitivity_variables:
+    - "ets_price"
+    - "import_volume"
+    - "emission_intensity"
+    - "scrap_ratio"
+    - "free_allocation_pct"
+    - "exchange_rate"
+    - "iron_ore_price"
+    - "coking_coal_price"
+
+# Customs automation - steel-specific anti-circumvention
+customs:
+  sad_format: "xml"
+  aeo_check_enabled: true
+  anti_circumvention_rules:
+    - "origin_change"
+    - "cn_reclassification"
+    - "scrap_ratio"
+    - "restructuring"
+    - "minor_processing"
+  downstream_monitoring: true
+  cn_cache_ttl_hours: 24
+  origin_verification_enabled: true
+  preferential_origin_check: true
+  suspicious_pattern_alert_threshold: 2
+
+# Cross-regulation
+cross_regulation:
+  csrd_enabled: true
+  cdp_enabled: true
+  sbti_enabled: true
+  taxonomy_enabled: false
+  ets_enabled: true
+  eudr_enabled: false
+  sync_frequency_hours: 24
+
+# Audit management
+audit:
+  retention_years: 10
+  data_room_enabled: true
+  auto_remediation_alerts: true
+  nca_response_deadline_days: 30
+  penalty_tracking: true
+  evidence_encryption: true
+
+# Precursor chain - deep analysis (5 tiers for steel)
+precursor:
+  max_chain_depth: 5
+  allocation_method: "mass"
+  default_fallback_waterfall:
+    - "installation_actual"
+    - "supplier_actual"
+    - "country_default"
+    - "eu_default"
+    - "conservative_estimate"
+  scrap_classification_enabled: true
+  mass_balance_validation: true
+  mass_balance_tolerance_pct: 3.0
+  precursor_chain_visualization: true
+  chain_completeness_threshold_pct: 85.0
+
+# Quarterly reporting
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 7
+  xml_validation_enabled: true
+  report_language: "EN"
+  archive_reports: true
+
+# Supplier management - steel-focused
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 75.0
+  max_installations_per_supplier: 30
+  eori_validation_enabled: true
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+
+# Verification
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  site_visit_required: true
+
+# Pack-level
+reporting_year: 2026
+reporting_period: "definitive"
+demo_mode: false
+log_level: "INFO"
+provenance_enabled: true
+
+# Steel-specific source countries
+source_countries_focus:
+  - {country: "TR", name: "Turkey", primary_routes: ["bf_bof", "eaf"], typical_share_pct: 30}
+  - {country: "CN", name: "China", primary_routes: ["bf_bof"], typical_share_pct: 15}
+  - {country: "IN", name: "India", primary_routes: ["bf_bof", "eaf"], typical_share_pct: 12}
+  - {country: "RU", name: "Russia", primary_routes: ["bf_bof"], typical_share_pct: 10}
+  - {country: "UA", name: "Ukraine", primary_routes: ["bf_bof"], typical_share_pct: 8}
+  - {country: "KR", name: "South Korea", primary_routes: ["bf_bof", "eaf"], typical_share_pct: 7}
+  - {country: "EG", name: "Egypt", primary_routes: ["eaf"], typical_share_pct: 5}
+  - {country: "VN", name: "Vietnam", primary_routes: ["bf_bof", "eaf"], typical_share_pct: 4}
+  - {country: "BR", name: "Brazil", primary_routes: ["bf_bof"], typical_share_pct: 3}

@@ -1,0 +1,211 @@
+# =============================================================================
+# PACK-015 Double Materiality Pack - Financial Services Preset
+# =============================================================================
+# Sector-specific configuration for banks, insurers, asset managers, and
+# financial institutions. Pre-loaded with financial sector materiality
+# profile emphasizing: E1 (financed emissions, transition risk), S1
+# (workforce), S2 (investee/borrower workforce), G1 (anti-corruption,
+# lobbying, governance). Enhanced financial materiality engine with
+# portfolio-level risk assessment and scenario analysis aligned with ECB
+# climate risk guide, EBA ESG Pillar 3, and SFDR PAI indicators.
+# Stakeholder engagement includes investees, borrowers, and regulators.
+#
+# Typical use cases:
+#   - Credit institutions (banks) subject to CRR/CRD
+#   - Insurance and reinsurance undertakings (Solvency II)
+#   - Asset management companies (AIFMD, UCITS)
+#   - Financial holding companies and payment institutions
+#   - Investment firms subject to IFR/IFD
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+company_size: "LARGE_ENTERPRISE"
+sectors:
+  - "FINANCIAL_SERVICES"
+listed_entity: true
+
+# --- Impact Materiality (financed emissions emphasis) ---
+impact_materiality:
+  enabled: true
+  scoring_scale: 10
+  severity_dimensions:
+    - "scale"
+    - "scope"
+    - "irremediable_character"
+  severity_weighting: "SCALE_WEIGHTED"
+  likelihood_enabled: true
+  likelihood_scale: 10
+  positive_impacts_enabled: true
+  value_chain_boundary: true
+  multi_scorer: true
+  scorer_aggregation: "weighted_mean"
+  evidence_based_scoring: true
+  sub_topic_granularity: true
+  sub_sub_topic_granularity: true
+
+# --- Financial Materiality (scenario analysis critical) ---
+financial_materiality:
+  enabled: true
+  scoring_scale: 10
+  magnitude_type: "quantitative"
+  magnitude_currency: "EUR"
+  likelihood_enabled: true
+  time_horizon_analysis: true
+  time_horizons:
+    - "SHORT_TERM"
+    - "MEDIUM_TERM"
+    - "LONG_TERM"
+    - "VERY_LONG_TERM"
+  short_term_years: 1
+  medium_term_years: 5
+  long_term_years: 10
+  scenario_analysis: true
+  scenario_types:
+    - "orderly_transition"
+    - "disorderly_transition"
+    - "hot_house"
+    - "net_zero_2050"
+    - "delayed_transition"
+  risk_opportunity_asymmetry: true
+  cost_of_capital_impact: true
+  multi_scorer: true
+  erp_data_integration: true
+
+# --- Stakeholder Engagement (includes investees and regulators) ---
+stakeholder_engagement:
+  enabled: true
+  affected_stakeholders:
+    - "EMPLOYEES"
+    - "VALUE_CHAIN_WORKERS"
+    - "LOCAL_COMMUNITIES"
+    - "CONSUMERS"
+  statement_users:
+    - "INVESTORS"
+    - "LENDERS"
+    - "CREDITORS"
+    - "ASSET_MANAGERS"
+    - "INSURERS"
+    - "RATING_AGENCIES"
+    - "REGULATORS"
+  engagement_methods:
+    - "surveys"
+    - "interviews"
+    - "workshops"
+    - "advisory_panels"
+  stakeholder_weighting: true
+  weighting_scheme: "vulnerability_weighted"
+  sentiment_analysis: true
+  min_response_rate: 0.25
+  annual_refresh: true
+  grievance_mechanism_tracking: true
+
+# --- IRO Identification (financial sector profile) ---
+iro_identification:
+  enabled: true
+  iro_types:
+    - "IMPACT"
+    - "RISK"
+    - "OPPORTUNITY"
+  directions:
+    - "POSITIVE"
+    - "NEGATIVE"
+  temporalities:
+    - "ACTUAL"
+    - "POTENTIAL"
+  value_chain_positions:
+    - "OWN_OPERATIONS"
+    - "UPSTREAM"
+    - "DOWNSTREAM"
+  esrs_topics_in_scope:
+    - "E1"
+    - "E2"
+    - "E3"
+    - "E4"
+    - "E5"
+    - "S1"
+    - "S2"
+    - "S3"
+    - "S4"
+    - "G1"
+  sector_profile_enabled: true
+  llm_assisted_identification: true
+  max_iros_per_topic: 20
+  iro_register_export: true
+  value_chain_depth: 4
+
+# --- Materiality Matrix ---
+materiality_matrix:
+  enabled: true
+  x_axis: "financial_materiality"
+  y_axis: "impact_materiality"
+  output_formats:
+    - "html"
+    - "pdf"
+    - "svg"
+  interactive_drill_down: true
+  color_by_pillar: true
+  year_over_year_comparison: true
+  quadrant_labels: true
+  sensitivity_visualization: true
+  borderline_highlighting: true
+  topic_label_display: "full_name"
+
+# --- Threshold Scoring ---
+threshold:
+  enabled: true
+  methodology: "SECTOR_CALIBRATED"
+  impact_threshold: 5.0
+  financial_threshold: 5.0
+  percentile_cutoff: 0.60
+  sector_calibration: true
+  sensitivity_analysis: true
+  sensitivity_range_pct: 20.0
+  borderline_treatment: "flag_for_review"
+  borderline_margin_pct: 10.0
+  committee_validation: true
+  rationale_documentation: true
+
+# --- ESRS Mapping ---
+esrs_mapping:
+  enabled: true
+  include_mandatory_disclosures: true
+  sub_topic_mapping: true
+  datapoint_mapping: true
+  iro_2_table_generation: true
+  omission_rationale: true
+  xbrl_tagging: true
+  sector_standard_readiness: true
+  cross_reference_validation: true
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  iro_1_disclosure: true
+  iro_2_disclosure: true
+  sbm_3_disclosure: true
+  executive_summary: true
+  full_dma_report: true
+  audit_trail_report: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+    - "HTML"
+  multi_language: true
+  supported_languages: ["en", "de", "fr"]
+  review_workflow: true
+  watermark_draft: true
+  llm_narrative_generation: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  scoring_log: true
+  assumption_tracking: true
+  data_lineage: true
+  retention_years: 10
+  external_audit_export: true
+  version_control: true
+  change_log: true

@@ -1,0 +1,254 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Cement Importer Preset
+# =============================================================================
+# Optimized for importers of cement and clinker products (CN 2523).
+# Focus on clinker-to-cement ratio, kiln fuel factors, process emissions
+# from CaCO3 calcination, and alternative fuel substitution rates.
+#
+# Key characteristics:
+#   - Process emissions from calcination dominate (~60% of total)
+#   - Clinker-to-cement ratio is the single most important parameter
+#   - Kiln fuel combustion accounts for ~30% of emissions
+#   - Electricity ~5-10% of total emissions
+#   - Alternative fuel substitution can significantly reduce emissions
+#   - Clinker is the key precursor for all cement types
+# =============================================================================
+
+# Goods configuration - cement focus
+goods:
+  enabled_categories:
+    - "cement"
+  cn_codes_per_category:
+    cement:
+      - "2523 10 00"   # Cement clinkers
+      - "2523 21 00"   # White Portland cement
+      - "2523 29 00"   # Other Portland cement
+      - "2523 30 00"   # Aluminous cement
+      - "2523 90 00"   # Other hydraulic cements
+  precursor_tracking:
+    cement:
+      - "clinker"
+
+# Emission calculation - process emissions dominant
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 20.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+  country_carbon_price_sources:
+    - "eu_ets"
+    - "carbon_tax_registry"
+
+# Cement-specific calculation parameters
+cement_calculation:
+  # Clinker production (the main emission source)
+  clinker_production:
+    calcination_emission_factor: 0.525    # tCO2/tonne clinker (from CaCO3)
+    typical_kiln_fuel_emissions: 0.315    # tCO2/tonne clinker
+    typical_electricity_emissions: 0.035  # tCO2/tonne clinker
+    total_typical_clinker_ef: 0.84        # tCO2e/tonne clinker (EU default)
+
+    # Raw meal composition
+    caco3_content_typical_pct: 78.0       # Typical CaCO3 in raw meal
+    mgo_content_typical_pct: 1.5          # MgO from MgCO3 decomposition
+
+    # Kiln types
+    kiln_types:
+      - type: "dry_preheater_precalciner"
+        description: "Modern dry process with preheater and precalciner"
+        thermal_energy_gj_per_tonne: 3.0
+        share_of_global_capacity_pct: 60
+      - type: "dry_preheater"
+        description: "Dry process with preheater only"
+        thermal_energy_gj_per_tonne: 3.4
+        share_of_global_capacity_pct: 15
+      - type: "semi_dry"
+        description: "Semi-dry/semi-wet process"
+        thermal_energy_gj_per_tonne: 3.8
+        share_of_global_capacity_pct: 5
+      - type: "wet"
+        description: "Wet process kiln (older technology)"
+        thermal_energy_gj_per_tonne: 5.5
+        share_of_global_capacity_pct: 10
+      - type: "shaft"
+        description: "Vertical shaft kiln (small-scale)"
+        thermal_energy_gj_per_tonne: 4.5
+        share_of_global_capacity_pct: 10
+
+    # Fuel types for kiln
+    kiln_fuels:
+      - fuel: "coal"
+        ef_tco2_per_gj: 0.0946
+        typical_share_pct: 50
+      - fuel: "petroleum_coke"
+        ef_tco2_per_gj: 0.0973
+        typical_share_pct: 25
+      - fuel: "natural_gas"
+        ef_tco2_per_gj: 0.0561
+        typical_share_pct: 5
+      - fuel: "fuel_oil"
+        ef_tco2_per_gj: 0.0774
+        typical_share_pct: 5
+      - fuel: "waste_derived"
+        ef_tco2_per_gj: 0.0830
+        typical_share_pct: 10
+        biomass_fraction: 0.40
+      - fuel: "biomass"
+        ef_tco2_per_gj: 0.0000
+        typical_share_pct: 5
+        note: "Carbon-neutral under CBAM rules"
+
+  # Cement types and clinker ratios
+  cement_types:
+    - type: "CEM_I"
+      description: "Portland cement (95-100% clinker)"
+      clinker_ratio_min: 0.95
+      clinker_ratio_max: 1.00
+      clinker_ratio_typical: 0.95
+      typical_ef_tco2_per_tonne: 0.80
+
+    - type: "CEM_II_A"
+      description: "Portland-composite cement (80-94% clinker)"
+      clinker_ratio_min: 0.80
+      clinker_ratio_max: 0.94
+      clinker_ratio_typical: 0.85
+      typical_ef_tco2_per_tonne: 0.68
+      supplementary_materials: ["limestone", "fly_ash", "slag", "pozzolana"]
+
+    - type: "CEM_II_B"
+      description: "Portland-composite cement (65-79% clinker)"
+      clinker_ratio_min: 0.65
+      clinker_ratio_max: 0.79
+      clinker_ratio_typical: 0.73
+      typical_ef_tco2_per_tonne: 0.58
+      supplementary_materials: ["limestone", "fly_ash", "slag", "pozzolana"]
+
+    - type: "CEM_III_A"
+      description: "Blast-furnace cement (35-64% clinker)"
+      clinker_ratio_min: 0.35
+      clinker_ratio_max: 0.64
+      clinker_ratio_typical: 0.50
+      typical_ef_tco2_per_tonne: 0.42
+      supplementary_materials: ["blast_furnace_slag"]
+
+    - type: "CEM_III_B"
+      description: "Blast-furnace cement (20-34% clinker)"
+      clinker_ratio_min: 0.20
+      clinker_ratio_max: 0.34
+      clinker_ratio_typical: 0.27
+      typical_ef_tco2_per_tonne: 0.23
+      supplementary_materials: ["blast_furnace_slag"]
+
+    - type: "CEM_IV"
+      description: "Pozzolanic cement (45-89% clinker)"
+      clinker_ratio_min: 0.45
+      clinker_ratio_max: 0.89
+      clinker_ratio_typical: 0.65
+      typical_ef_tco2_per_tonne: 0.55
+      supplementary_materials: ["pozzolana", "fly_ash"]
+
+    - type: "CEM_V"
+      description: "Composite cement (40-64% clinker)"
+      clinker_ratio_min: 0.40
+      clinker_ratio_max: 0.64
+      clinker_ratio_typical: 0.52
+      typical_ef_tco2_per_tonne: 0.44
+      supplementary_materials: ["blast_furnace_slag", "pozzolana", "fly_ash"]
+
+    - type: "aluminous"
+      description: "Aluminous/calcium aluminate cement"
+      clinker_ratio_min: 0.00
+      clinker_ratio_max: 0.00
+      clinker_ratio_typical: 0.00
+      typical_ef_tco2_per_tonne: 0.72
+      note: "Different production process; uses bauxite, not limestone"
+
+# Certificate configuration
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+
+# Quarterly reporting
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 7
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "EN"
+  include_supporting_documents: true
+
+# Supplier configuration - kiln-level data needed
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 70.0
+  max_installations_per_supplier: 10
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis monitoring
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+
+# Verification
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+
+# Pack-level settings
+reporting_year: 2026
+reporting_period: "definitive"
+transitional_mode: false
+demo_mode: false
+
+# Key source countries for cement/clinker imports into EU
+source_countries_focus:
+  - country: "TR"
+    name: "Turkey"
+    kiln_types_common: ["dry_preheater_precalciner", "dry_preheater"]
+    typical_clinker_ef: 0.88
+    typical_share_pct: 40
+  - country: "EG"
+    name: "Egypt"
+    kiln_types_common: ["dry_preheater_precalciner"]
+    typical_clinker_ef: 0.85
+    typical_share_pct: 10
+  - country: "VN"
+    name: "Vietnam"
+    kiln_types_common: ["dry_preheater_precalciner", "shaft"]
+    typical_clinker_ef: 0.90
+    typical_share_pct: 8
+  - country: "IN"
+    name: "India"
+    kiln_types_common: ["dry_preheater_precalciner"]
+    typical_clinker_ef: 0.95
+    typical_share_pct: 7
+  - country: "CN"
+    name: "China"
+    kiln_types_common: ["dry_preheater_precalciner", "shaft"]
+    typical_clinker_ef: 0.92
+    typical_share_pct: 5
+  - country: "MA"
+    name: "Morocco"
+    kiln_types_common: ["dry_preheater_precalciner"]
+    typical_clinker_ef: 0.86
+    typical_share_pct: 5

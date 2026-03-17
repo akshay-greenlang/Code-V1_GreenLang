@@ -1,0 +1,171 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Multi-Commodity Company Preset
+# =============================================================================
+# Optimized for companies managing 3+ EUDR commodities with complex supply
+# chains (1000+ suppliers). All professional features enabled, portfolio
+# management for up to 100 operators, advanced analytics, and cross-commodity
+# risk aggregation.
+#
+# Typical Use Cases:
+#   - Food manufacturers (cocoa, coffee, soya in products)
+#   - Trading companies (multiple commodity portfolios)
+#   - Diversified agricultural companies
+#   - Consumer goods manufacturers (palm oil, wood, rubber)
+#
+# Key Features:
+#   - All 7 commodities enabled
+#   - 5-tier supply chain depth
+#   - Advanced risk scenarios across commodities
+#   - Cross-commodity analytics
+#   - Portfolio-level reporting
+# =============================================================================
+
+operator:
+  company_size: "ENTERPRISE"
+  operator_type: "OPERATOR"
+
+commodities:
+  - commodity_type: "cattle"
+    enabled: true
+    priority: 3
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 2
+  - commodity_type: "coffee"
+    enabled: true
+    priority: 2
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 1
+  - commodity_type: "rubber"
+    enabled: true
+    priority: 3
+  - commodity_type: "soya"
+    enabled: true
+    priority: 1
+  - commodity_type: "wood"
+    enabled: true
+    priority: 2
+
+geolocation:
+  coordinate_precision: 7
+  polygon_max_vertices: 20000
+  batch_size: 1000
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+risk_assessment:
+  country_weight: 0.30
+  supplier_weight: 0.25
+  commodity_weight: 0.25
+  document_weight: 0.20
+  auto_escalation_enabled: true
+  reassessment_interval_days: 60
+
+dds:
+  dds_type: "STANDARD"
+  require_all_fields: true
+  enable_draft_mode: true
+  retry_attempts: 5
+
+compliance:
+  require_geolocation: true
+  verification_level: "ENHANCED"
+  audit_retention_years: 7
+  data_quality_threshold: 0.90
+
+advanced_geolocation:
+  sentinel_integration: true
+  modis_fire_check: true
+  protected_area_check: true
+  indigenous_land_check: true
+  hansen_forest_change: true
+  resolution_meters: 10
+  temporal_periods: 5
+  alert_systems: ["GLAD", "RADD", "DETER"]
+
+scenario_risk:
+  simulation_count: 20000
+  confidence_levels: [0.90, 0.95, 0.99]
+  parallel_workers: 8
+  timeout_seconds: 120
+  distributions:
+    country_risk: "BETA"
+    supplier_risk: "LOGNORMAL"
+    commodity_risk: "NORMAL"
+
+satellite_monitoring:
+  providers: ["SENTINEL_1", "SENTINEL_2", "MODIS", "LANDSAT_8"]
+  check_interval_hours: 6
+  alert_threshold: 0.75
+  historical_months: 72
+  resolution_meters: 10
+
+continuous_monitoring:
+  enabled: true
+  intervals:
+    satellite_check_hours: 6
+    risk_reassessment_hours: 12
+    supplier_update_hours: 168
+    regulatory_check_hours: 24
+  notification_channels: ["EMAIL", "WEBHOOK", "SLACK"]
+  escalation_enabled: true
+
+portfolio:
+  max_operators: 50
+  shared_supplier_pool: true
+  cross_operator_reporting: true
+  cost_allocation: true
+  hierarchy_depth: 4
+
+audit_management:
+  retention_years: 7
+  hash_algorithm: "SHA-256"
+  export_formats: ["JSON", "XML", "PDF"]
+  mock_audit_enabled: true
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 10.0
+  ramsar_check: true
+  unesco_check: true
+
+regulatory_tracking:
+  eurlex_monitoring: true
+  check_interval_hours: 12
+  cross_regulation_tracking: true
+  auto_gap_analysis: true
+
+grievance:
+  enabled: true
+  anonymous_submissions: true
+  response_sla_days: 3
+  resolution_sla_days: 21
+  whistleblower_protection: true
+
+cross_regulation:
+  csrd_e4_linkage: true
+  csddd_linkage: true
+  nature_restoration_linkage: true
+
+advanced_supply_chain:
+  max_tier_depth: 5
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED", "MASS_BALANCE", "CONTROLLED_SOURCES"]
+  network_analysis: true
+  diversification_scoring: true
+
+supplier_benchmark:
+  peer_group_min_size: 10
+  scoring_dimensions: ["COMPLIANCE_SCORE", "DATA_QUALITY", "RISK_LEVEL", "CERTIFICATION_STATUS", "RESPONSE_TIME", "SUSTAINABILITY_PERFORMANCE"]
+  benchmark_frequency: "QUARTERLY"
+  degradation_alert: true
+
+reporting:
+  default_report_format: "PDF"
+  include_executive_summary: true
+  include_risk_heatmap: true
+  include_supplier_details: true
+  language: "en"
+  timezone: "UTC"

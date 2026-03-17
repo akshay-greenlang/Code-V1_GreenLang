@@ -1,0 +1,158 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - Cocoa & Coffee Sector Preset
+# =============================================================================
+# For companies sourcing cocoa and coffee beans and derived products.
+# Focus on Rainforest Alliance, UTZ, 4C, and Fairtrade certifications,
+# West African and Latin American sourcing, smallholder mapping, and
+# shade-grown / agroforestry practices.
+#
+# Key CN codes: 1801-1806 (cocoa), 0901/2101 (coffee)
+# Primary origins: Cote d'Ivoire, Ghana, Cameroon (cocoa);
+#                  Brazil, Vietnam, Colombia (coffee)
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  sector_name: "Cocoa & Coffee"
+  sector_group: "agriculture_commodities"
+
+  # Cocoa product chain
+  cocoa_products:
+    - "Cocoa beans (raw)"
+    - "Cocoa beans (roasted)"
+    - "Cocoa paste/liquor"
+    - "Cocoa butter"
+    - "Cocoa powder"
+    - "Chocolate (all forms)"
+    - "Confectionery"
+
+  # Coffee product chain
+  coffee_products:
+    - "Green coffee beans"
+    - "Roasted coffee beans"
+    - "Ground coffee"
+    - "Instant/soluble coffee"
+    - "Decaffeinated coffee"
+    - "Coffee extracts"
+
+  # Smallholder-centric supply chain
+  smallholder_focus:
+    smallholder_percentage_typical: 80
+    average_farm_size_ha: 3.5
+    cooperative_mapping: true
+    buying_station_tracking: true
+    farm_gate_price_tracking: false
+
+  # Supply chain tiers
+  supply_chain_tiers:
+    - tier: 1
+      name: "Exporter/Trader"
+      description: "Exporters and international traders"
+    - tier: 2
+      name: "Cooperative/Buying Station"
+      description: "Local cooperatives and collection points"
+    - tier: 3
+      name: "Farm/Plot"
+      description: "Individual smallholder farms"
+
+  # Deforestation risk factors
+  deforestation_risk_factors:
+    - "Forest encroachment by smallholders"
+    - "Shade tree removal (full-sun farming)"
+    - "Expansion into national parks and reserves"
+    - "Land tenure insecurity"
+    - "Child labor linked to frontier expansion"
+
+  # Agroforestry practices
+  agroforestry:
+    shade_grown_tracking: true
+    canopy_cover_monitoring: true
+    min_shade_cover_pct: 40
+    tree_diversity_index: true
+
+# Commodities - cocoa and coffee focused
+commodities:
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RAINFOREST_ALLIANCE", "UTZ", "FAIRTRADE", "ORGANIC"]
+    high_risk_origins: ["CIV", "GHA", "CMR", "NGA", "IDN", "SLE", "LBR"]
+  - commodity_type: "coffee"
+    enabled: true
+    priority: 1
+    certification_schemes: ["FOUR_C", "RAINFOREST_ALLIANCE", "UTZ", "FAIRTRADE", "ORGANIC"]
+    high_risk_origins: ["BRA", "VNM", "COL", "IDN", "ETH", "HND", "UGA", "PER"]
+  - commodity_type: "oil_palm"
+    enabled: false
+    priority: 7
+  - commodity_type: "wood"
+    enabled: false
+    priority: 7
+  - commodity_type: "soya"
+    enabled: false
+    priority: 7
+  - commodity_type: "cattle"
+    enabled: false
+    priority: 7
+  - commodity_type: "rubber"
+    enabled: false
+    priority: 7
+
+# Supply chain - cooperative-centric
+supply_chain:
+  max_tier_depth: 3
+  chain_of_custody_model: "SEGREGATED"
+  trace_level: "batch"
+  require_plot_linkage: true
+  mixed_shipment_handling: "flag"
+
+# Geolocation - smallholder farm mapping
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 5000
+  batch_size: 500
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+# Cutoff date - canopy cover monitoring
+cutoff_date:
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+    - "glad_alerts"
+    - "sentinel_2"
+  min_satellite_resolution_m: 10
+
+# Agent overrides for cocoa/coffee focus
+agent_overrides:
+  AGENT-EUDR-002:
+    config_overrides:
+      canopy_cover_analysis: true
+      shade_tree_detection: true
+      smallholder_plot_validation: true
+
+  AGENT-EUDR-006:
+    config_overrides:
+      cooperative_boundary_mapping: true
+      farm_polygon_simplification: true
+      max_farm_size_ha: 50
+
+  AGENT-EUDR-008:
+    config_overrides:
+      cooperative_tier_mapping: true
+      buying_station_registry: true
+      smallholder_id_tracking: true
+
+  AGENT-EUDR-015:
+    enabled: true
+    config_overrides:
+      offline_mode: true
+      gps_auto_capture: true
+      photo_evidence: true
+      smallholder_registration_form: true
+
+  AGENT-EUDR-016:
+    config_overrides:
+      focus_countries_cocoa: ["CIV", "GHA", "CMR"]
+      focus_countries_coffee: ["BRA", "VNM", "COL", "ETH"]
+      region_level_risk: true

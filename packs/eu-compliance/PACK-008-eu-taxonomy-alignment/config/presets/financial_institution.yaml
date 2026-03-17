@@ -1,0 +1,134 @@
+# =============================================================================
+# PACK-008 Preset: Financial Institution
+# =============================================================================
+# Deployment for credit institutions and investment firms subject to CRR/CRD.
+# Focused on Green Asset Ratio (GAR/BTAR) calculation, exposure classification,
+# counterparty taxonomy data aggregation, and EBA Pillar 3 disclosure templates.
+#
+# Applicable to:
+#   - Credit institutions (banks) subject to CRR
+#   - Investment firms under CRD/IFR
+#   - Financial holding companies
+#   - Institutions subject to EBA Pillar 3 ESG disclosure requirements
+#
+# Key Features:
+#   - GAR stock and flow calculation
+#   - BTAR (Banking Book Taxonomy Alignment Ratio)
+#   - Exposure classification (loans, securities, equity, mortgages, project finance)
+#   - Counterparty taxonomy data aggregation
+#   - EPC rating integration for real estate exposures
+#   - De minimis threshold handling
+#   - EBA Pillar 3 Templates 6-10
+#   - Article 8 disclosure for financial undertakings
+# =============================================================================
+
+organization_type: "FINANCIAL_INSTITUTION"
+reporting_period: "ANNUAL"
+
+objectives_in_scope:
+  - "CCM"
+  - "CCA"
+  - "WTR"
+  - "CE"
+  - "PPC"
+  - "BIO"
+
+eligibility:
+  screening_mode: "HYBRID"
+  nace_version: "NACE_REV2"
+  min_confidence: 0.80
+  batch_size: 500
+  include_transitional: true
+  include_enabling: true
+  revenue_weighted: false
+  auto_classify_nace: true
+
+sc_assessment:
+  evaluation_mode: "STANDARD"
+  threshold_strictness: "STANDARD"
+  evidence_required: true
+  quantitative_tolerance_pct: 5.0
+  track_enabling_activities: true
+  track_transitional_activities: true
+
+dnsh:
+  objectives_assessed:
+    - "CCM"
+    - "CCA"
+    - "WTR"
+    - "CE"
+    - "PPC"
+    - "BIO"
+  require_all_pass: true
+  climate_risk_assessment_enabled: true
+  evidence_required: true
+
+minimum_safeguards:
+  human_rights_check: true
+  anti_corruption_check: true
+  taxation_check: true
+  fair_competition_check: true
+  assessment_mode: "FULL"
+  require_all_pass: true
+
+kpi:
+  calculate_turnover: false
+  calculate_capex: false
+  calculate_opex: false
+  double_counting_prevention: true
+  currency: "EUR"
+
+gar:
+  calculate_stock_gar: true
+  calculate_flow_gar: true
+  calculate_btar: true
+  exposure_types:
+    - "CORPORATE_LOANS"
+    - "DEBT_SECURITIES"
+    - "EQUITY_HOLDINGS"
+    - "RESIDENTIAL_MORTGAGES"
+    - "COMMERCIAL_MORTGAGES"
+    - "PROJECT_FINANCE"
+  epc_integration: true
+  epc_threshold_rating: "C"
+  de_minimis_threshold: 0.0
+  counterparty_data_source: "DIRECT"
+  sovereign_exclusion: true
+  interbank_exclusion: true
+
+reporting:
+  article8_enabled: true
+  eba_pillar3_enabled: true
+  xbrl_tagging: true
+  nuclear_gas_supplementary: true
+  yoy_comparison: true
+  default_format: "XLSX"
+  include_methodology_note: true
+  include_audit_opinion: true
+  language: "en"
+  cross_framework_targets:
+    - "EBA_PILLAR3"
+    - "CSRD_ESRS_E1"
+
+regulatory:
+  delegated_act_version: "CLIMATE_DA_2021"
+  active_delegated_acts:
+    - "CLIMATE_DA_2021"
+    - "ENVIRONMENTAL_DA_2023"
+    - "DISCLOSURES_DA_2021"
+    - "COMPLEMENTARY_DA_2022"
+  track_updates: true
+  auto_migration: false
+  include_complementary_da: true
+
+data_quality:
+  min_quality_score: 0.85
+  completeness_threshold: 0.95
+  require_primary_data: false
+  allow_estimates: true
+
+audit_trail:
+  retention_years: 7
+  hash_algorithm: "SHA-256"
+  immutable_log: true
+  include_provenance_hash: true

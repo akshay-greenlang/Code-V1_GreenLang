@@ -1,0 +1,1558 @@
+# =============================================================================
+# PACK-015: Double Materiality Assessment Pack
+# GreenLang EU Compliance Pack for Double Materiality Assessment (DMA) per ESRS 1
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for conducting Double Materiality Assessment (DMA) as
+# required by ESRS 1, Chapter 3. Double materiality is the foundational
+# analytical process that determines which ESRS topical standards and
+# individual disclosure requirements are material for a given undertaking.
+# Without a robust DMA, CSRD reporting cannot proceed, because the DMA
+# governs the scope, depth, and content of the entire sustainability
+# statement.
+#
+# Double materiality comprises two complementary perspectives:
+#   - Impact materiality: The undertaking's actual or potential, positive
+#     or negative impacts on people and the environment (inside-out).
+#   - Financial materiality: How sustainability matters create risks and
+#     opportunities that affect (or are reasonably expected to affect) the
+#     undertaking's financial position, performance, and cash flows
+#     (outside-in).
+#
+# A sustainability matter is material if it is material from either the
+# impact perspective or the financial perspective, or both (ESRS 1 sect. 21).
+#
+# This pack implements the complete DMA lifecycle:
+#   1. Stakeholder identification and engagement (ESRS 1 sect. 22-23)
+#   2. Impact, Risk, and Opportunity (IRO) identification (ESRS 1 sect. 28-39)
+#   3. Impact materiality assessment with scoring (ESRS 1 sect. 43-48)
+#   4. Financial materiality assessment with scoring (ESRS 1 sect. 49-51)
+#   5. Materiality matrix generation and threshold application
+#   6. ESRS topical standard and sub-topic mapping
+#   7. Disclosure requirement determination (IRO-1, IRO-2, SBM-3)
+#   8. Full DMA report with audit trail and provenance
+#
+# The pack supports all ESRS topical areas:
+#   - Environmental: E1 (Climate change), E2 (Pollution), E3 (Water and
+#     marine resources), E4 (Biodiversity and ecosystems), E5 (Resource
+#     use and circular economy)
+#   - Social: S1 (Own workforce), S2 (Workers in the value chain),
+#     S3 (Affected communities), S4 (Consumers and end-users)
+#   - Governance: G1 (Business conduct)
+#
+# It covers all ESRS 1 Appendix A sub-topics and sub-sub-topics, providing
+# a granular materiality assessment that maps to specific disclosure
+# requirements in ESRS 2 and the topical standards.
+#
+# Key Capabilities:
+#   - Impact materiality scoring (scale, scope, irremediable character,
+#     likelihood for potential impacts)
+#   - Financial materiality scoring (magnitude, likelihood, time horizon)
+#   - Multi-stakeholder engagement management and weighting
+#   - IRO identification and classification per ESRS 1 sect. 28-39
+#   - Materiality matrix with configurable thresholds
+#   - ESRS topic, sub-topic, and sub-sub-topic mapping to disclosure reqs
+#   - Threshold scoring with sector-specific calibration
+#   - Full DMA report generation with XBRL tagging for IRO-1, IRO-2, SBM-3
+#   - Sector-specific materiality profiles (16+ NACE sectors)
+#   - Pre-configured presets for large enterprises, mid-market, SME,
+#     financial services, manufacturing, and multi-sector groups
+#
+# Regulatory References:
+#   - ESRS 1: General Requirements, Chapter 3 (Double Materiality as a basis
+#     for sustainability reporting)
+#   - ESRS 1 sect. 22-23: Stakeholders and their relevance to the materiality
+#     assessment process
+#   - ESRS 1 sect. 28-39: Identification and assessment of impacts, risks,
+#     and opportunities (IRO)
+#   - ESRS 1 sect. 43-48: Impact materiality (actual and potential,
+#     positive and negative impacts on people and environment)
+#   - ESRS 1 sect. 49-51: Financial materiality (risks and opportunities
+#     that affect or could affect financial position and performance)
+#   - ESRS 2 IRO-1: Description of the processes to identify and assess
+#     material impacts, risks, and opportunities
+#   - ESRS 2 IRO-2: Disclosure requirements in ESRS covered by the
+#     undertaking's sustainability statement
+#   - ESRS 2 SBM-3: Material impacts, risks, and opportunities and their
+#     interaction with strategy and business model
+#   - CSRD: Directive (EU) 2022/2464 (Corporate Sustainability Reporting
+#     Directive)
+#   - Delegated Regulation (EU) 2023/2772 (ESRS Set 1)
+#   - EFRAG Implementation Guidance IG 1: Materiality Assessment
+#   - EFRAG Implementation Guidance IG 2: Value Chain
+#   - EFRAG Implementation Guidance IG 3: ESRS Datapoints
+#
+# Sector Coverage:
+#   - All NACE macro-sectors (A through U)
+#   - Sector-agnostic base assessment applicable to any undertaking
+#   - Sector-specific materiality profiles for common industries:
+#     manufacturing, financial services, energy, real estate, transport,
+#     retail, mining, agriculture, ICT, construction, healthcare,
+#     professional services, hospitality, public administration, education,
+#     and multi-sector conglomerates
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-16)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-015-double-materiality
+  version: "1.0.0"
+  display_name: "Double Materiality Assessment Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for conducting Double Materiality
+    Assessment (DMA) per ESRS 1, Chapter 3. Includes 8 engines for impact
+    materiality scoring, financial materiality scoring, stakeholder engagement
+    management, IRO identification and classification, materiality matrix
+    generation, ESRS topic and sub-topic mapping, threshold scoring with
+    sector calibration, and full DMA report generation. Bundles all 30 MRV
+    agents for emissions data that feeds impact/financial assessment, 20
+    data intake/quality agents for stakeholder and IRO data collection, 10
+    foundation agents for orchestration, provenance, and audit. Supports
+    sector-specific materiality profiles across all NACE divisions with
+    pre-configured presets for large enterprises, mid-market companies,
+    SMEs, financial services, manufacturing, and multi-sector groups.
+    Generates ESRS 2 IRO-1, IRO-2, and SBM-3 disclosures with XBRL
+    tagging and full audit trail.
+  category: eu-compliance
+  tier: cross-cutting
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-16"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/double-materiality"
+  changelog_url: "https://docs.greenlang.io/packs/double-materiality/changelog"
+
+  tags:
+    - double-materiality
+    - dma
+    - esrs
+    - esrs-1
+    - csrd
+    - impact-materiality
+    - financial-materiality
+    - iro
+    - stakeholder-engagement
+    - materiality-matrix
+    - materiality-assessment
+    - esrs-2
+    - iro-1
+    - iro-2
+    - sbm-3
+    - disclosure-requirements
+    - sector-agnostic
+    - cross-cutting
+    - xbrl
+    - efrag
+    - nace
+    - eu-compliance
+    - sustainability-reporting
+    - risk-opportunity
+    - value-chain
+    - threshold-scoring
+    - provenance
+
+  regulation:
+    primary:
+      name: "European Sustainability Reporting Standards - General Requirements"
+      reference: "(EU) 2023/2772 - ESRS 1"
+      effective_date: "2024-01-01"
+      description: >-
+        ESRS 1 establishes the general principles, conventions, and
+        requirements for sustainability reporting under the CSRD. Chapter 3
+        defines the double materiality principle as the basis for determining
+        which sustainability matters are material. The undertaking shall apply
+        the criteria of impact materiality (ESRS 1 sect. 43-48) and financial
+        materiality (ESRS 1 sect. 49-51) to identify material sustainability
+        matters, and shall use the outcome to determine which ESRS topical
+        standards and specific disclosure requirements apply. The DMA process
+        involves stakeholder engagement (sect. 22-23), systematic
+        identification of impacts, risks, and opportunities (sect. 28-39),
+        and a structured scoring methodology.
+    secondary:
+      - name: "Corporate Sustainability Reporting Directive"
+        reference: "(EU) 2022/2464"
+        effective_date: "2024-01-01"
+      - name: "ESRS 2 General Disclosures"
+        reference: "(EU) 2023/2772 - ESRS 2"
+        effective_date: "2024-01-01"
+      - name: "ESRS E1 Climate Change"
+        reference: "(EU) 2023/2772 - ESRS E1"
+        effective_date: "2024-01-01"
+      - name: "ESRS E2 Pollution"
+        reference: "(EU) 2023/2772 - ESRS E2"
+        effective_date: "2024-01-01"
+      - name: "ESRS E3 Water and Marine Resources"
+        reference: "(EU) 2023/2772 - ESRS E3"
+        effective_date: "2024-01-01"
+      - name: "ESRS E4 Biodiversity and Ecosystems"
+        reference: "(EU) 2023/2772 - ESRS E4"
+        effective_date: "2024-01-01"
+      - name: "ESRS E5 Resource Use and Circular Economy"
+        reference: "(EU) 2023/2772 - ESRS E5"
+        effective_date: "2024-01-01"
+      - name: "ESRS S1 Own Workforce"
+        reference: "(EU) 2023/2772 - ESRS S1"
+        effective_date: "2024-01-01"
+      - name: "ESRS S2 Workers in the Value Chain"
+        reference: "(EU) 2023/2772 - ESRS S2"
+        effective_date: "2024-01-01"
+      - name: "ESRS S3 Affected Communities"
+        reference: "(EU) 2023/2772 - ESRS S3"
+        effective_date: "2024-01-01"
+      - name: "ESRS S4 Consumers and End-Users"
+        reference: "(EU) 2023/2772 - ESRS S4"
+        effective_date: "2024-01-01"
+      - name: "ESRS G1 Business Conduct"
+        reference: "(EU) 2023/2772 - ESRS G1"
+        effective_date: "2024-01-01"
+      - name: "EFRAG IG 1 Materiality Assessment Implementation Guidance"
+        reference: "EFRAG IG 1"
+        effective_date: "2024-05-01"
+      - name: "EFRAG IG 2 Value Chain Implementation Guidance"
+        reference: "EFRAG IG 2"
+        effective_date: "2024-11-01"
+      - name: "EFRAG IG 3 ESRS Datapoints Implementation Guidance"
+        reference: "EFRAG IG 3"
+        effective_date: "2024-12-01"
+
+  compliance_references:
+    - id: "ESRS_1_CHAP3"
+      name: "ESRS 1 Chapter 3 - Double Materiality"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Defines the double materiality principle requiring undertakings to
+        assess sustainability matters from both impact and financial
+        perspectives. A matter is material if it meets the threshold under
+        either impact materiality (sect. 43-48) or financial materiality
+        (sect. 49-51), or both. The assessment must consider the
+        undertaking's own operations, upstream and downstream value chain,
+        and the perspectives of affected stakeholders.
+
+    - id: "ESRS_1_S22_23"
+      name: "ESRS 1 sect. 22-23 - Stakeholders"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Requires the undertaking to consider the perspectives of affected
+        stakeholders (those whose interests are affected by the
+        undertaking's activities) and users of sustainability statements
+        (investors, lenders, creditors, asset managers, etc.) when
+        identifying and assessing material sustainability matters. The
+        undertaking shall describe how stakeholders' views have been
+        taken into account in the materiality assessment process.
+
+    - id: "ESRS_1_S28_39"
+      name: "ESRS 1 sect. 28-39 - IRO Identification"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Sets out the process for identifying impacts, risks, and
+        opportunities (IROs). Impacts are the undertaking's positive or
+        negative effects on people and the environment. Risks are
+        potential negative effects on the undertaking's financial
+        position. Opportunities are potential positive effects. The
+        undertaking shall consider its activities, business relationships,
+        and value chain when identifying IROs and shall classify them
+        by ESRS topic and sub-topic.
+
+    - id: "ESRS_1_S43_48"
+      name: "ESRS 1 sect. 43-48 - Impact Materiality"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Impact materiality assessment criteria. For actual negative impacts:
+        assessed on severity (scale, scope, irremediable character). For
+        potential negative impacts: assessed on severity and likelihood.
+        For positive impacts: assessed on scale and scope, and for
+        potential positive impacts, also on likelihood. A sustainability
+        matter is material from the impact perspective when the impact
+        is assessed as material using the appropriate criteria.
+
+    - id: "ESRS_1_S49_51"
+      name: "ESRS 1 sect. 49-51 - Financial Materiality"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Financial materiality assessment criteria. A sustainability matter
+        is material from the financial perspective if it triggers or may
+        trigger material financial effects, i.e. effects that influence
+        (or could reasonably be expected to influence) the undertaking's
+        cash flows, development, performance, position, cost of capital,
+        or access to finance over the short, medium, or long term.
+        Financial materiality considers both risks and opportunities.
+
+    - id: "ESRS_2_IRO_1"
+      name: "ESRS 2 IRO-1 - Process Description"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Mandatory disclosure requirement (ESRS 2 IRO-1) requiring the
+        undertaking to describe: (a) the process to identify and assess
+        material impacts, risks, and opportunities; (b) how the
+        undertaking has identified its stakeholders; (c) the
+        methodologies and assumptions applied; and (d) the outcome
+        of the materiality assessment.
+
+    - id: "ESRS_2_IRO_2"
+      name: "ESRS 2 IRO-2 - Disclosure Requirements Covered"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Mandatory disclosure requirement (ESRS 2 IRO-2) requiring the
+        undertaking to list all ESRS disclosure requirements included
+        or omitted in its sustainability statement as a result of the
+        materiality assessment, with explanations for each omission.
+
+    - id: "ESRS_2_SBM_3"
+      name: "ESRS 2 SBM-3 - Material IROs and Strategy"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Mandatory disclosure requirement (ESRS 2 SBM-3) requiring the
+        undertaking to describe its material impacts, risks, and
+        opportunities and how they interact with its strategy and
+        business model, including a description of the current and
+        anticipated effects, time horizons, and resilience of the
+        strategy and business model.
+
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        The CSRD establishes the legal requirement for in-scope
+        undertakings to prepare sustainability statements as part of
+        their management report. The double materiality assessment
+        is the gateway process that determines the content and scope
+        of these sustainability statements.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 DMA engines)
+  # ===========================================================================
+  engines:
+    - id: impact_materiality
+      name: "Impact Materiality Engine"
+      description: >-
+        Scores sustainability matters from the impact materiality perspective
+        per ESRS 1 sect. 43-48. For actual negative impacts, severity is
+        assessed on three dimensions: scale (how grave the impact is), scope
+        (how widespread it is), and irremediable character (whether and to
+        what extent the impact can be remediated). For potential negative
+        impacts, likelihood is added as a fourth dimension. For positive
+        impacts (actual and potential), scale and scope are assessed, with
+        likelihood for potential impacts. Supports configurable scoring
+        scales (1-5, 1-10), weighting schemes, and sector-specific
+        calibration profiles. Handles both own-operations impacts and
+        value chain impacts with appropriate boundary scoping. Maps impacts
+        to ESRS topics, sub-topics, and sub-sub-topics per Appendix A.
+        Zero-hallucination: all scoring uses deterministic formulas
+        (weighted averages, threshold comparisons), no LLM in the
+        scoring calculation path.
+      required: true
+
+    - id: financial_materiality
+      name: "Financial Materiality Engine"
+      description: >-
+        Scores sustainability matters from the financial materiality
+        perspective per ESRS 1 sect. 49-51. Assesses whether sustainability
+        matters trigger or may trigger material financial effects on the
+        undertaking's cash flows, development, performance, position, cost
+        of capital, or access to finance. Financial effects are assessed
+        using magnitude (the size of the potential financial impact in EUR
+        or as a percentage of revenue/assets) and likelihood (the
+        probability of the financial effect materializing). Time horizon
+        analysis covers short-term (0-1 year), medium-term (1-5 years),
+        and long-term (5+ years) per ESRS 1 sect. 77. Supports scenario
+        analysis for climate-related financial risks (TCFD-aligned),
+        quantitative and qualitative assessment modes, and risk-opportunity
+        asymmetry handling. Zero-hallucination: all financial magnitude
+        calculations use deterministic arithmetic (EUR thresholds,
+        percentage of revenue, probability-weighted expected values),
+        no LLM in the calculation path.
+      required: true
+
+    - id: stakeholder_engagement
+      name: "Stakeholder Engagement Engine"
+      description: >-
+        Manages the stakeholder identification and engagement process per
+        ESRS 1 sect. 22-23 and ESRS 2 IRO-1. Categorizes stakeholders
+        into affected stakeholders (employees, value chain workers,
+        communities, consumers, ecosystems) and users of sustainability
+        statements (investors, lenders, creditors, asset managers,
+        insurers, rating agencies). Tracks engagement activities
+        (surveys, interviews, workshops, advisory panels, grievance
+        mechanisms), records stakeholder perspectives on material
+        sustainability matters, and applies configurable weighting
+        to stakeholder inputs. Generates a stakeholder engagement
+        summary for IRO-1 disclosure. LLM-assisted: stakeholder
+        sentiment analysis and narrative summarization use LLM;
+        all weighting and prioritization calculations are deterministic.
+      required: true
+
+    - id: iro_identification
+      name: "IRO Identification Engine"
+      description: >-
+        Identifies and classifies impacts, risks, and opportunities (IROs)
+        per ESRS 1 sect. 28-39. An impact is the undertaking's positive
+        or negative effect on people or the environment; a risk is a
+        potential negative financial effect on the undertaking; an
+        opportunity is a potential positive financial effect. The engine
+        systematically scans across all ESRS topics, sub-topics, and
+        sub-sub-topics (Appendix A) to identify applicable IROs based
+        on the undertaking's activities, business relationships, and
+        value chain. Classifies IROs by type (impact/risk/opportunity),
+        direction (positive/negative), temporality (actual/potential),
+        value chain position (own operations/upstream/downstream), and
+        ESRS topic mapping. Generates the IRO register that feeds both
+        the impact materiality and financial materiality engines.
+        LLM-assisted: IRO identification suggestions and descriptions
+        use LLM for initial population; all classification and mapping
+        are validated deterministically against the ESRS taxonomy.
+      required: true
+
+    - id: materiality_matrix
+      name: "Materiality Matrix Engine"
+      description: >-
+        Generates the double materiality matrix combining impact
+        materiality scores and financial materiality scores. The matrix
+        plots sustainability matters on two axes: impact materiality
+        (Y-axis, severity-based) and financial materiality (X-axis,
+        magnitude/likelihood-based). Matters in the top-right quadrant
+        are material from both perspectives. Matters on either axis
+        above the threshold are material from that perspective alone.
+        Supports configurable thresholds (absolute score, percentile,
+        sector-calibrated), visual matrix generation (SVG, PNG, HTML),
+        interactive drill-down to underlying IROs, and comparison
+        across reporting periods. Handles the ESRS principle that a
+        matter is material if it meets the threshold under either
+        perspective (logical OR, not AND). Zero-hallucination: all
+        threshold comparisons and quadrant assignments are deterministic.
+      required: true
+
+    - id: esrs_topic_mapping
+      name: "ESRS Topic Mapping Engine"
+      description: >-
+        Maps material sustainability matters to specific ESRS topical
+        standards, disclosure requirements, and datapoints. Uses the
+        ESRS 1 Appendix A taxonomy of topics, sub-topics, and sub-sub-
+        topics to determine which standards apply (E1-E5, S1-S4, G1)
+        and which specific disclosure requirements must be addressed.
+        Generates the ESRS 2 IRO-2 table listing all disclosure
+        requirements that are included or excluded from the
+        sustainability statement. Handles mandatory disclosures that
+        apply regardless of materiality (ESRS 2 general disclosures)
+        versus materiality-dependent topical disclosures. Supports
+        ESRS Set 1 and future sector-specific standards. Maps to
+        EFRAG XBRL taxonomy datapoint identifiers. Zero-hallucination:
+        mapping uses a deterministic lookup against the ESRS taxonomy
+        database; no LLM in the mapping logic.
+      required: true
+
+    - id: threshold_scoring
+      name: "Threshold Scoring Engine"
+      description: >-
+        Applies configurable thresholds to determine which sustainability
+        matters cross the materiality boundary. Supports multiple
+        threshold methodologies: absolute score cutoff (e.g., impact
+        score >= 3.5 out of 5), percentile-based (e.g., top 60% of
+        scored matters), sector-calibrated (thresholds adjusted by
+        sector materiality profile), and expert-judgment-assisted
+        (threshold validation by sustainability committee). Handles
+        sensitivity analysis (how threshold changes affect the material
+        topic list), confidence intervals on scores, and borderline
+        matter treatment. Supports separate thresholds for impact and
+        financial materiality. Generates threshold rationale
+        documentation for audit. Zero-hallucination: all threshold
+        comparisons, sensitivity analyses, and percentile calculations
+        are deterministic.
+      required: true
+
+    - id: dma_report
+      name: "DMA Report Engine"
+      description: >-
+        Generates the complete Double Materiality Assessment report
+        including: (1) DMA methodology description (for ESRS 2 IRO-1);
+        (2) stakeholder engagement summary; (3) IRO register with
+        full descriptions and classifications; (4) impact materiality
+        scores with severity breakdowns; (5) financial materiality
+        scores with magnitude/likelihood breakdowns; (6) materiality
+        matrix visualization; (7) ESRS topic mapping table (for
+        ESRS 2 IRO-2); (8) material IRO narrative for ESRS 2 SBM-3;
+        (9) threshold rationale and sensitivity analysis; (10)
+        year-over-year comparison of material topics. Supports
+        PDF, HTML, and XBRL output formats. Generates XBRL-tagged
+        datapoints for IRO-1, IRO-2, and SBM-3 disclosures.
+        Includes SHA-256 provenance hashes for all scored data.
+        LLM-assisted: narrative sections (methodology description,
+        IRO descriptions, SBM-3 interaction narrative) use LLM
+        generation with human review; all numeric scores, matrices,
+        and mappings are deterministic.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 DMA workflows)
+  # ===========================================================================
+  workflows:
+    - id: impact_assessment
+      name: "Impact Assessment Workflow"
+      description: >-
+        4-phase workflow: IRO Filtering (select IROs classified as impacts)
+        -> Severity Scoring (score scale, scope, irremediable character per
+        ESRS 1 sect. 44-45) -> Likelihood Assessment (for potential impacts
+        per sect. 46) -> Impact Materiality Aggregation (combine severity
+        and likelihood into composite impact score with configurable
+        weighting). Supports both actual and potential impacts, positive
+        and negative directions, and own-operations vs. value chain
+        boundary.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: financial_assessment
+      name: "Financial Assessment Workflow"
+      description: >-
+        4-phase workflow: IRO Filtering (select IROs classified as risks
+        and opportunities) -> Magnitude Estimation (quantify potential
+        financial effects in EUR or % of revenue/assets per ESRS 1 sect.
+        50) -> Likelihood Assessment (probability of financial effect
+        materializing) -> Financial Materiality Aggregation (combine
+        magnitude and likelihood into composite financial score with
+        time horizon weighting for short/medium/long term per sect. 77).
+        Supports scenario analysis for climate-related financial risks.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: stakeholder_engagement
+      name: "Stakeholder Engagement Workflow"
+      description: >-
+        5-phase workflow: Stakeholder Identification (map affected
+        stakeholders and users of sustainability statements per ESRS 1
+        sect. 22) -> Engagement Planning (select methods: surveys,
+        interviews, workshops, advisory panels) -> Engagement Execution
+        (collect stakeholder perspectives on sustainability matters) ->
+        Input Analysis (weight and synthesize stakeholder inputs) ->
+        Integration (feed weighted stakeholder views into IRO
+        identification and materiality scoring). Generates stakeholder
+        engagement register for IRO-1 disclosure.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 5
+
+    - id: iro_identification
+      name: "IRO Identification Workflow"
+      description: >-
+        4-phase workflow: Context Analysis (map undertaking activities,
+        business relationships, and value chain structure per ESRS 1
+        sect. 28-30) -> Systematic IRO Scan (scan across all ESRS topics,
+        sub-topics, and sub-sub-topics per Appendix A) -> IRO
+        Classification (classify by type: impact/risk/opportunity,
+        direction, temporality, value chain position) -> IRO Register
+        Population (create structured register with descriptions,
+        classifications, and ESRS topic mapping). Incorporates
+        stakeholder inputs and sector-specific profiles.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 4
+
+    - id: materiality_matrix
+      name: "Materiality Matrix Workflow"
+      description: >-
+        3-phase workflow: Score Aggregation (collect impact and financial
+        materiality scores for all sustainability matters) -> Matrix
+        Generation (plot on dual-axis matrix with configurable
+        thresholds) -> Material Topic Determination (apply threshold
+        logic: material if above threshold on either axis per ESRS 1
+        sect. 21). Generates visual matrix, threshold documentation,
+        and sensitivity analysis output.
+      schedule: "annual"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: esrs_mapping
+      name: "ESRS Mapping Workflow"
+      description: >-
+        3-phase workflow: Material Topic List Finalization (confirmed
+        list of material sustainability matters) -> Disclosure
+        Requirement Mapping (map each material topic to applicable
+        ESRS topical standards and specific disclosure requirements
+        using Appendix A taxonomy) -> IRO-2 Table Generation (produce
+        ESRS 2 IRO-2 disclosure listing all included and excluded
+        disclosure requirements with rationale). Handles mandatory
+        disclosures that apply regardless of materiality.
+      schedule: "annual"
+      estimated_duration_minutes: 45
+      phases: 3
+
+    - id: full_dma
+      name: "Full DMA Workflow"
+      description: >-
+        8-phase end-to-end workflow executing the complete DMA lifecycle:
+        Stakeholder Engagement -> IRO Identification -> Impact Materiality
+        Assessment -> Financial Materiality Assessment -> Materiality
+        Matrix Generation -> Threshold Application -> ESRS Topic Mapping
+        -> DMA Report Generation. This workflow chains all other workflows
+        in the correct dependency order with data flow between phases.
+        Estimated total duration 8-12 hours for a large enterprise with
+        parallel execution where possible.
+      schedule: "annual"
+      estimated_duration_minutes: 600
+      phases: 8
+
+    - id: dma_update
+      name: "DMA Update Workflow"
+      description: >-
+        4-phase incremental workflow for updating the DMA between full
+        annual assessments: Change Trigger Assessment (identify events
+        that may affect materiality: regulatory changes, M&A,
+        significant incidents, market shifts) -> Targeted Re-scoring
+        (re-assess affected IROs only) -> Matrix Update (regenerate
+        matrix with updated scores) -> Disclosure Impact Assessment
+        (determine if material topic list has changed and whether
+        disclosure updates are needed). Supports quarterly or event-
+        driven updates without repeating the full DMA.
+      schedule: "quarterly"
+      estimated_duration_minutes: 120
+      phases: 4
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 DMA templates)
+  # ===========================================================================
+  templates:
+    - id: impact_materiality_report
+      display_name: "Impact Materiality Report"
+      description: >-
+        Detailed impact materiality assessment report showing all
+        sustainability matters scored on severity dimensions (scale,
+        scope, irremediable character) and likelihood. Includes
+        impact-by-impact breakdown, ESRS topic mapping, value chain
+        boundary indication, scoring methodology description, and
+        year-over-year comparison. Suitable for sustainability
+        committee review and external auditor inspection.
+      format: "pdf"
+      template_file: "templates/impact_materiality_report.jinja2"
+      enabled: true
+
+    - id: financial_materiality_report
+      display_name: "Financial Materiality Report"
+      description: >-
+        Detailed financial materiality assessment report showing all
+        sustainability matters scored on magnitude and likelihood with
+        time horizon analysis. Includes risk and opportunity breakdown,
+        quantified financial effects where available, scenario analysis
+        results for climate-related risks, and alignment with enterprise
+        risk management framework. Suitable for CFO review, audit
+        committee, and investor communication.
+      format: "pdf"
+      template_file: "templates/financial_materiality_report.jinja2"
+      enabled: true
+
+    - id: stakeholder_engagement_report
+      display_name: "Stakeholder Engagement Report"
+      description: >-
+        Stakeholder engagement summary report for ESRS 2 IRO-1
+        disclosure. Documents stakeholder identification, engagement
+        methods used, key themes raised by stakeholder groups,
+        how stakeholder perspectives were weighted, and how they
+        influenced the materiality assessment outcome. Includes
+        engagement activity log and stakeholder feedback summary.
+      format: "pdf"
+      template_file: "templates/stakeholder_engagement_report.jinja2"
+      enabled: true
+
+    - id: materiality_matrix_report
+      display_name: "Materiality Matrix Report"
+      description: >-
+        Visual materiality matrix with dual axes (impact vs. financial),
+        threshold lines, quadrant labels, and interactive drill-down.
+        Shows all assessed sustainability matters plotted on the matrix
+        with color coding by ESRS topic area (Environmental, Social,
+        Governance). Includes threshold rationale, sensitivity analysis
+        chart, and borderline matter discussion. Available in SVG,
+        PNG, HTML, and PDF formats.
+      format: "html"
+      template_file: "templates/materiality_matrix_report.jinja2"
+      enabled: true
+
+    - id: iro_register
+      display_name: "IRO Register"
+      description: >-
+        Complete register of all identified impacts, risks, and
+        opportunities. Each IRO record includes: unique ID, description,
+        type (impact/risk/opportunity), direction (positive/negative),
+        temporality (actual/potential), ESRS topic/sub-topic mapping,
+        value chain position, impact severity scores, financial
+        magnitude/likelihood scores, composite materiality score,
+        and material/not-material determination. Exportable as
+        structured data (JSON, CSV) for integration with GRC systems.
+      format: "json"
+      template_file: "templates/iro_register.jinja2"
+      enabled: true
+
+    - id: esrs_mapping_report
+      display_name: "ESRS Topic Mapping Report"
+      description: >-
+        ESRS 2 IRO-2 disclosure table mapping each material topic to
+        applicable ESRS topical standards and specific disclosure
+        requirements. Lists all ESRS disclosure requirements that
+        are included in the sustainability statement, with explanations
+        for any excluded requirements. Includes mandatory disclosures,
+        materiality-dependent disclosures, and datapoint-level mapping
+        to the EFRAG XBRL taxonomy.
+      format: "xbrl"
+      template_file: "templates/esrs_mapping_report.jinja2"
+      enabled: true
+
+    - id: executive_summary
+      display_name: "DMA Executive Summary"
+      description: >-
+        Board-level executive summary of the Double Materiality
+        Assessment outcome. Highlights the top 10 material topics,
+        key changes from prior year, stakeholder engagement highlights,
+        strategic implications, and recommended actions. Includes
+        a simplified materiality matrix, traffic light indicators
+        for each ESRS topic area, and a comparison with sector peers.
+        Designed for board of directors and executive committee.
+      format: "pdf"
+      template_file: "templates/executive_summary.jinja2"
+      enabled: true
+
+    - id: audit_trail_report
+      display_name: "DMA Audit Trail Report"
+      description: >-
+        Complete audit trail for the DMA process including: data
+        sources and collection dates, scoring methodology version,
+        individual scorer inputs (if multi-scorer), weighting
+        parameters, threshold settings, all intermediate calculation
+        steps, SHA-256 provenance hashes for each scoring output,
+        configuration snapshot, and change log. Designed for external
+        assurance providers conducting limited or reasonable assurance
+        on the sustainability statement.
+      format: "pdf"
+      template_file: "templates/audit_trail_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration &
+        Preset Loading -> Stakeholder Data Collection -> IRO
+        Identification & Classification -> Impact Materiality
+        Scoring -> Financial Materiality Scoring -> Materiality
+        Matrix Generation -> Threshold Application & ESRS Mapping
+        -> DMA Report Generation -> Audit Trail Finalization.
+        Orchestrates all DMA phases with dependency management,
+        parallel execution of impact and financial scoring, and
+        incremental update support.
+      required: true
+
+    - id: csrd_bridge
+      name: "CSRD Pack Bridge"
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs (Starter/Professional/
+        Enterprise) for bidirectional data flow. The DMA output
+        (material topic list, ESRS mapping, IRO register) drives
+        which sections of the CSRD sustainability statement are
+        populated. Conversely, CSRD pack operational data (emissions,
+        social metrics, governance data) feeds into the DMA scoring
+        process for evidence-based materiality assessment.
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Data Bridge"
+      description: >-
+        Routes data from all 30 AGENT-MRV agents to support evidence-
+        based impact and financial materiality scoring. Emissions data
+        (Scope 1/2/3) provides quantitative evidence for climate
+        change impact materiality (E1). Refrigerant data supports
+        pollution assessment (E2). Waste data supports resource use
+        assessment (E5). Supply chain emissions data supports value
+        chain impact scoring. Financial materiality uses emissions
+        trends to assess transition risk magnitude.
+      required: true
+
+    - id: data_bridge
+      name: "Data Quality Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for DMA data intake. Routes
+        stakeholder survey data through AGENT-DATA-008 (Supplier
+        Questionnaire Processor), sustainability metrics through
+        AGENT-DATA-002 (Excel/CSV Normalizer), ESG ratings and
+        benchmarks through AGENT-DATA-004 (API Gateway Agent),
+        and historical materiality data through AGENT-DATA-010
+        (Data Quality Profiler). Ensures data quality scoring
+        feeds into confidence levels on materiality scores.
+      required: true
+
+    - id: sector_bridge
+      name: "Sector Intelligence Bridge"
+      description: >-
+        Connects to sector-specific packs (PACK-012 Financial
+        Services, PACK-013 Manufacturing, PACK-014 Retail) to
+        import sector materiality profiles. Sector profiles provide
+        pre-populated lists of typically material topics, sector-
+        specific IRO templates, calibrated thresholds, and peer
+        benchmarking data. Supports multi-sector groups by
+        combining materiality profiles from multiple sector packs.
+      required: true
+
+    - id: regulatory_bridge
+      name: "Regulatory Intelligence Bridge"
+      description: >-
+        Connects to regulatory monitoring services to track changes
+        that may affect the materiality assessment. Monitors ESRS
+        updates (Set 1 amendments, sector-specific standards),
+        EFRAG implementation guidance updates, national transposition
+        variations, and Omnibus Directive developments. Triggers
+        DMA update workflow when material regulatory changes are
+        detected.
+      required: false
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      description: >-
+        Connects to GL-Taxonomy-APP for alignment between DMA
+        outcomes and EU Taxonomy activity assessments. Taxonomy-
+        eligible activities inform financial materiality scoring
+        (green revenue opportunities), and DMA outcomes on E1-E5
+        topics inform the Taxonomy DNSH assessment. Ensures
+        consistency between DMA and Taxonomy disclosures.
+      required: false
+
+    - id: grc_bridge
+      name: "GRC System Bridge"
+      description: >-
+        Integration bridge for enterprise Governance, Risk, and
+        Compliance (GRC) systems. Exports the IRO register and
+        financial materiality scores to GRC platforms (SAP GRC,
+        ServiceNow GRC, Archer, MetricStream). Imports enterprise
+        risk register data to feed financial materiality assessment.
+        Supports bidirectional synchronization of risk assessments.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        18-category system verification covering all 8 DMA engines,
+        75 agent dependencies, database connectivity, ESRS taxonomy
+        database currency, EFRAG datapoint catalog freshness, sector
+        materiality profile completeness, stakeholder data collection
+        readiness, scoring methodology configuration, threshold
+        calibration status, and deployment readiness. Validates
+        that all ESRS topics and sub-topics are covered in the
+        IRO identification taxonomy.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration wizard: Company Profile &
+        Sector Selection -> Stakeholder Mapping -> ESRS Topic
+        Relevance Pre-screening -> Scoring Methodology Selection
+        (scale, weighting, threshold approach) -> Value Chain
+        Boundary Definition -> Time Horizon Calibration ->
+        Sector Materiality Profile Loading -> Reporting Preferences
+        & Output Configuration.
+      required: false
+
+  # ===========================================================================
+  # Presets - DMA configuration presets (6 presets)
+  # ===========================================================================
+  presets:
+    - id: large_enterprise
+      name: "Large Enterprise Preset"
+      description: >-
+        Full configuration for large listed enterprises subject to
+        CSRD from 2024 (>500 employees, listed). All 8 engines
+        enabled with maximum granularity. 1-10 scoring scale with
+        multi-scorer aggregation. Stakeholder engagement fully
+        enabled with all categories. Full ESRS topic coverage
+        including all sub-sub-topics. Scenario analysis for
+        climate-related financial risks. XBRL output enabled.
+        10-year data retention.
+      company_size: "LARGE_ENTERPRISE"
+      enabled_engines:
+        - impact_materiality
+        - financial_materiality
+        - stakeholder_engagement
+        - iro_identification
+        - materiality_matrix
+        - esrs_topic_mapping
+        - threshold_scoring
+        - dma_report
+      file: "config/presets/large_enterprise.yaml"
+
+    - id: mid_market
+      name: "Mid-Market Preset"
+      description: >-
+        Configuration for mid-market companies (250-3000 employees,
+        non-listed or newly in scope). All engines enabled with
+        streamlined scoring (1-5 scale). Single-scorer mode with
+        optional multi-scorer. Stakeholder engagement focused on
+        key groups (employees, investors, customers). Topic-level
+        materiality assessment (without sub-sub-topic granularity).
+        7-year data retention.
+      company_size: "MID_MARKET"
+      enabled_engines:
+        - impact_materiality
+        - financial_materiality
+        - stakeholder_engagement
+        - iro_identification
+        - materiality_matrix
+        - esrs_topic_mapping
+        - threshold_scoring
+        - dma_report
+      file: "config/presets/mid_market.yaml"
+
+    - id: sme
+      name: "SME Preset"
+      description: >-
+        Simplified configuration for listed SMEs subject to CSRD
+        from 2026 or voluntary reporters. Simplified scoring (1-5)
+        with single scorer. Stakeholder engagement limited to core
+        groups. Topic-level assessment only (no sub-topic/sub-sub-
+        topic drill-down). Reduced IRO register depth. Simplified
+        report templates. 5-year data retention. Assesses Omnibus
+        threshold eligibility for potential scope reduction or
+        voluntary LSME standard adoption.
+      company_size: "SME"
+      enabled_engines:
+        - impact_materiality
+        - financial_materiality
+        - stakeholder_engagement
+        - iro_identification
+        - materiality_matrix
+        - esrs_topic_mapping
+        - dma_report
+      file: "config/presets/sme.yaml"
+
+    - id: financial_services
+      name: "Financial Services Preset"
+      description: >-
+        Sector-specific configuration for banks, insurers, asset
+        managers, and financial institutions. Pre-loaded with
+        financial sector materiality profile emphasizing: E1
+        (financed emissions, transition risk), S1 (workforce),
+        S2 (investee workforce), G1 (anti-corruption, lobbying).
+        Enhanced financial materiality engine with portfolio-level
+        risk assessment. Alignment with ECB climate risk guide,
+        EBA ESG Pillar 3, and SFDR PAI indicators. Stakeholder
+        engagement includes investees and regulators.
+      company_size: "LARGE_ENTERPRISE"
+      enabled_engines:
+        - impact_materiality
+        - financial_materiality
+        - stakeholder_engagement
+        - iro_identification
+        - materiality_matrix
+        - esrs_topic_mapping
+        - threshold_scoring
+        - dma_report
+      file: "config/presets/financial_services.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Sector-specific configuration for manufacturing companies
+        across NACE divisions B (mining) and C (manufacturing).
+        Pre-loaded with manufacturing materiality profile
+        emphasizing: E1 (process emissions, energy intensity),
+        E2 (industrial pollution, hazardous substances), E3
+        (water consumption, effluents), E5 (waste, circularity),
+        S1 (H&S, workforce), S2 (supply chain workers). Enhanced
+        impact materiality for environmental topics with
+        quantitative severity thresholds. Scope 1 emissions data
+        from MRV agents directly feeds impact scoring.
+      company_size: "LARGE_ENTERPRISE"
+      enabled_engines:
+        - impact_materiality
+        - financial_materiality
+        - stakeholder_engagement
+        - iro_identification
+        - materiality_matrix
+        - esrs_topic_mapping
+        - threshold_scoring
+        - dma_report
+      file: "config/presets/manufacturing.yaml"
+
+    - id: multi_sector
+      name: "Multi-Sector Group Preset"
+      description: >-
+        Configuration for diversified groups operating across
+        multiple NACE sectors (conglomerates, holding companies,
+        multi-divisional groups). Supports division-level DMA
+        with group-level consolidation. Combines materiality
+        profiles from multiple sectors. Handles conflicting
+        materiality outcomes across divisions (a topic may be
+        material for one division but not another). Consolidated
+        materiality matrix with division overlay. Enhanced
+        stakeholder engagement covering division-specific
+        stakeholder groups. 10-year data retention.
+      company_size: "LARGE_ENTERPRISE"
+      enabled_engines:
+        - impact_materiality
+        - financial_materiality
+        - stakeholder_engagement
+        - iro_identification
+        - materiality_matrix
+        - esrs_topic_mapping
+        - threshold_scoring
+        - dma_report
+      file: "config/presets/multi_sector.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for emissions evidence feeding DMA
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Emissions data feeds E1 impact materiality scoring for direct combustion"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "F-gas emissions data feeds E1/E2 impact materiality scoring"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Fleet emissions data feeds E1 impact materiality scoring"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Process emissions data feeds E1/E2 impact materiality scoring"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Fugitive emissions data feeds E1 impact materiality scoring"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Land use change data feeds E1/E4 impact materiality scoring"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Waste emissions data feeds E5 impact materiality scoring"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Agricultural emissions data feeds E1/E4 impact materiality scoring"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Electricity emissions data feeds E1 impact and financial materiality"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Market-based electricity data feeds E1 financial materiality (PPA value)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "District heating data feeds E1 impact materiality scoring"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "District cooling data feeds E1 impact materiality scoring"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciled Scope 2 data for consistent E1 impact scoring"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Cat 1 data feeds E1 impact materiality and value chain boundary"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Cat 2 data feeds E1 impact materiality for capital expenditure"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Cat 3 data feeds E1 upstream energy impact scoring"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Cat 4 data feeds E1/E2 value chain impact scoring"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Cat 5 data feeds E5 circular economy impact materiality"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Cat 6 data feeds E1 impact materiality (typically low materiality)"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Cat 7 data feeds E1 impact materiality (own workforce boundary)"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Cat 8 data feeds E1 impact and financial materiality (lease exposure)"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Cat 9 data feeds E1/E2 downstream value chain impact scoring"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Cat 10 data feeds E1 downstream impact scoring"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Cat 11 data feeds E1 downstream impact and financial materiality"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Cat 12 data feeds E5 circular economy impact materiality"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Cat 13 data feeds E1 financial materiality (leased asset exposure)"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Cat 14 data feeds E1 impact materiality for franchise operations"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Cat 15 data feeds E1 financial materiality (financed emissions)"
+      path: "greenlang/agents/mrv/investments/"
+      required: false
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps Scope 3 data across categories for comprehensive E1 DMA evidence"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage from MRV outputs to DMA scoring inputs"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts sustainability data from reports, ESG filings, and evidence documents"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes stakeholder survey data, materiality worksheets, and scoring matrices"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to ERP for financial data feeding financial materiality assessment"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for ESG ratings, sector benchmarks, XBRL taxonomy"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability data feeds E4 biodiversity impact materiality"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for site-level impact assessment and community mapping"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data feeds E4 biodiversity and E1 land use impact materiality"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes stakeholder surveys, materiality questionnaires, and engagement responses"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Physical climate hazard data feeds E1 financial materiality (physical risk)"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes spend data for Scope 3 evidence feeding impact materiality"
+    required: false
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across DMA inputs, scoring confidence levels"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate IROs, stakeholder entries, and survey responses"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing scoring inputs and stakeholder responses"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous materiality scores and scoring inconsistencies"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in year-over-year materiality trend data"
+    required: false
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles DMA data across stakeholder surveys, ESG ratings, and internal data"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of ESRS taxonomy, sector profiles, and ESG benchmark data"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for ESRS taxonomy updates and DMA format changes"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from source evidence to final materiality scores"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces ESRS 1 DMA validation rules and scoring consistency checks"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates DMA workflow phases using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates ESRS taxonomy schemas and DMA data models"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes units (tCO2e, EUR, FTE) and ESRS reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in DMA scoring (weighting, thresholds, boundaries)"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links materiality scores to source evidence for audit assurance"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for DMA data (scorer, reviewer, approver)"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and DMA engine capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all DMA scoring is reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for DMA outputs and scoring consistency"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors DMA engine performance and pipeline health"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Agents (12 agents for cross-pack integration and regulatory)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: csrd-disclosure-agent
+    name: "CSRD Disclosure Agent"
+    description: "Feeds DMA outcomes into CSRD sustainability statement structure"
+    required: true
+  - id: esrs-taxonomy-agent
+    name: "ESRS Taxonomy Agent"
+    description: "Maintains ESRS topic/sub-topic/sub-sub-topic taxonomy database"
+    required: true
+  - id: xbrl-tagging-agent
+    name: "XBRL Tagging Agent"
+    description: "Tags DMA datapoints with EFRAG XBRL taxonomy identifiers"
+    required: true
+  - id: sector-profile-agent
+    name: "Sector Materiality Profile Agent"
+    description: "Provides sector-specific materiality profiles for IRO pre-population"
+    required: true
+  - id: value-chain-mapping-agent
+    name: "Value Chain Mapping Agent"
+    description: "Maps value chain structure for IRO boundary determination"
+    required: true
+  - id: scenario-analysis-agent
+    name: "Scenario Analysis Agent"
+    description: "Runs climate and transition scenarios for financial materiality assessment"
+    required: false
+  - id: esg-ratings-agent
+    name: "ESG Ratings Integration Agent"
+    description: "Imports ESG ratings and benchmarks for materiality calibration"
+    required: false
+  - id: taxonomy-alignment-agent
+    name: "EU Taxonomy Alignment Agent"
+    description: "Aligns DMA outcomes with EU Taxonomy activity assessments"
+    required: false
+  - id: omnibus-threshold-agent
+    name: "Omnibus Threshold Agent"
+    description: "Assesses CSRD Omnibus Directive threshold applicability for DMA scope"
+    required: true
+  - id: regulatory-change-monitor
+    name: "Regulatory Change Monitor Agent"
+    description: "Monitors ESRS amendments, EFRAG guidance updates, Omnibus changes"
+    required: true
+  - id: assurance-readiness-agent
+    name: "Assurance Readiness Agent"
+    description: "Prepares DMA documentation for limited/reasonable assurance engagement"
+    required: true
+  - id: peer-benchmark-agent
+    name: "Peer Benchmarking Agent"
+    description: "Benchmarks DMA outcomes against sector peers' material topic lists"
+    required: false
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 72
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    bridged_agents: 12
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  iro_identification:
+    max_iro_count: 500
+    iro_classification_per_item_ms: 50
+    target_duration_minutes: 15
+  impact_scoring:
+    max_sustainability_matters: 200
+    scoring_per_matter_ms: 100
+    target_duration_minutes: 20
+  financial_scoring:
+    max_sustainability_matters: 200
+    scoring_per_matter_ms: 150
+    target_duration_minutes: 25
+  stakeholder_engagement:
+    max_stakeholder_groups: 50
+    max_survey_responses: 10000
+    survey_analysis_per_response_ms: 20
+    target_duration_minutes: 30
+  materiality_matrix:
+    matrix_generation_ms: 5000
+    sensitivity_analysis_iterations: 100
+    target_duration_minutes: 5
+  esrs_mapping:
+    max_esrs_datapoints: 1200
+    mapping_per_topic_ms: 100
+    target_duration_minutes: 10
+  report_generation:
+    max_report_pages: 200
+    target_duration_minutes: 15
+  full_dma:
+    target_duration_minutes: 600
+    parallel_scoring_enabled: true
+  cache_hit_ratio_target: 0.75
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with DMA role-based access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - dma_lead
+    - sustainability_officer
+    - impact_scorer
+    - financial_scorer
+    - stakeholder_engagement_lead
+    - sustainability_committee_member
+    - external_auditor
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+    - "cryptography>=41.0"
+    - "matplotlib>=3.7"
+    - "plotly>=5.15"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 15
+    recommended_connections: 40
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_esrs_taxonomy_database
+    - verify_sector_materiality_profiles
+    - verify_efrag_datapoint_catalog
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+    new:
+      - "V083-PACK015-001"  # DMA assessment and scoring tables
+      - "V083-PACK015-002"  # IRO register and classification tables
+      - "V083-PACK015-003"  # Stakeholder engagement and survey tables
+      - "V083-PACK015-004"  # Materiality matrix and threshold tables
+      - "V083-PACK015-005"  # ESRS topic mapping and disclosure tables
+      - "V083-PACK015-006"  # DMA report and audit trail tables
+      - "V083-PACK015-007"  # Sector materiality profile tables
+
+  post_install:
+    - seed_esrs_topic_taxonomy
+    - seed_esrs_sub_topic_taxonomy
+    - seed_esrs_disclosure_requirements
+    - seed_efrag_xbrl_datapoints
+    - seed_sector_materiality_profiles
+    - seed_scoring_methodology_defaults
+    - seed_threshold_calibration_data
+    - seed_default_presets
+    - run_health_checks

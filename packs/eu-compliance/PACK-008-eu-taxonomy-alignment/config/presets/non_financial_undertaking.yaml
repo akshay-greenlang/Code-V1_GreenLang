@@ -1,0 +1,123 @@
+# =============================================================================
+# PACK-008 Preset: Non-Financial Undertaking
+# =============================================================================
+# Standard deployment for non-financial undertakings subject to CSRD/NFRD.
+# Focused on Turnover/CapEx/OpEx KPI calculation across all 6 environmental
+# objectives with full eligibility and alignment assessment.
+#
+# Applicable to:
+#   - Companies subject to CSRD reporting obligations
+#   - Companies previously under NFRD (Non-Financial Reporting Directive)
+#   - Companies with 250+ employees or EUR 40M+ turnover
+#
+# Key Features:
+#   - All 6 environmental objectives in scope
+#   - Turnover, CapEx, OpEx KPI calculation
+#   - Article 8 mandatory disclosure tables
+#   - Double-counting prevention across objectives
+#   - CapEx plan recognition (5-year plans)
+#   - Full DNSH and minimum safeguards assessment
+# =============================================================================
+
+organization_type: "NON_FINANCIAL_UNDERTAKING"
+reporting_period: "ANNUAL"
+
+objectives_in_scope:
+  - "CCM"
+  - "CCA"
+  - "WTR"
+  - "CE"
+  - "PPC"
+  - "BIO"
+
+eligibility:
+  screening_mode: "HYBRID"
+  nace_version: "NACE_REV2"
+  min_confidence: 0.85
+  batch_size: 100
+  include_transitional: true
+  include_enabling: true
+  revenue_weighted: true
+  auto_classify_nace: true
+
+sc_assessment:
+  evaluation_mode: "STANDARD"
+  threshold_strictness: "STANDARD"
+  evidence_required: true
+  quantitative_tolerance_pct: 5.0
+  track_enabling_activities: true
+  track_transitional_activities: true
+  require_all_quantitative: true
+  gap_analysis_on_fail: true
+
+dnsh:
+  objectives_assessed:
+    - "CCM"
+    - "CCA"
+    - "WTR"
+    - "CE"
+    - "PPC"
+    - "BIO"
+  require_all_pass: true
+  climate_risk_assessment_enabled: true
+  water_framework_directive_check: true
+  circular_economy_waste_hierarchy: true
+  pollution_threshold_check: true
+  biodiversity_impact_assessment: true
+  evidence_required: true
+
+minimum_safeguards:
+  human_rights_check: true
+  anti_corruption_check: true
+  taxation_check: true
+  fair_competition_check: true
+  assessment_mode: "FULL"
+  require_all_pass: true
+
+kpi:
+  calculate_turnover: true
+  calculate_capex: true
+  calculate_opex: true
+  double_counting_prevention: true
+  capex_plan_recognition: true
+  capex_plan_max_years: 5
+  eligible_vs_aligned_breakdown: true
+  activity_level_detail: true
+  currency: "EUR"
+  rounding_precision: 2
+
+gar:
+  calculate_stock_gar: false
+  calculate_flow_gar: false
+  calculate_btar: false
+
+reporting:
+  article8_enabled: true
+  eba_pillar3_enabled: false
+  xbrl_tagging: false
+  nuclear_gas_supplementary: true
+  yoy_comparison: true
+  default_format: "PDF"
+  include_methodology_note: true
+  language: "en"
+
+regulatory:
+  delegated_act_version: "CLIMATE_DA_2021"
+  active_delegated_acts:
+    - "CLIMATE_DA_2021"
+    - "ENVIRONMENTAL_DA_2023"
+    - "DISCLOSURES_DA_2021"
+  track_updates: true
+  auto_migration: false
+
+data_quality:
+  min_quality_score: 0.80
+  completeness_threshold: 0.90
+  require_primary_data: false
+  allow_estimates: true
+
+audit_trail:
+  retention_years: 5
+  hash_algorithm: "SHA-256"
+  immutable_log: true
+  include_provenance_hash: true

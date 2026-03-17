@@ -1,0 +1,253 @@
+# =============================================================================
+# PACK-012 CSRD Financial Service Pack - Financial Conglomerate Preset
+# =============================================================================
+# Configuration for financial conglomerates with mixed banking, insurance,
+# and asset management operations. Enables all 8 engines, multi-entity
+# consolidation, cross-sector GAR/BTAR, consolidated financed emissions,
+# group-level transition plan, and inter-entity elimination rules. This is
+# the most comprehensive preset covering all regulatory frameworks.
+#
+# Typical use cases:
+#   - Universal bank groups with insurance subsidiaries
+#   - Insurance groups with banking subsidiaries
+#   - Financial holding companies with diversified operations
+#   - Cross-border groups subject to multiple NCA supervision
+# =============================================================================
+
+# --- Institution Details ---
+institution_type: "CONGLOMERATE"
+institution_name: ""
+lei_code: ""
+reporting_currency: "EUR"
+reporting_period_start: null
+reporting_period_end: null
+consolidation_scope: "GROUP"
+
+# --- PCAF Financed Emissions (all asset classes) ---
+pcaf:
+  enabled: true
+  enabled_asset_classes:
+    - "LISTED_EQUITY_CORPORATE_BONDS"
+    - "BUSINESS_LOANS_UNLISTED_EQUITY"
+    - "PROJECT_FINANCE"
+    - "COMMERCIAL_REAL_ESTATE"
+    - "MORTGAGES"
+    - "MOTOR_VEHICLE_LOANS"
+    - "SOVEREIGN_BONDS"
+  include_scope_1: true
+  include_scope_2: true
+  include_scope_3: true
+  min_data_quality_score: 5
+  target_data_quality_score: 2
+  estimation_enabled: true
+  estimation_methodology: "SECTOR_AVERAGE"
+  emission_factor_source: "PCAF_DATABASE"
+  emission_factor_vintage_year: 2024
+  attribution_method: "OUTSTANDING_DIVIDED_BY_EVIC"
+  sector_aggregation_code: "NACE_REV2"
+  year_over_year_tracking: true
+  portfolio_carbon_footprint: true
+  waci_enabled: true
+  data_quality_improvement_plan: true
+
+# --- GAR/BTAR (enabled for banking subsidiaries) ---
+gar_btar:
+  gar_enabled: true
+  btar_enabled: true
+  gar_scopes:
+    - "TURNOVER"
+    - "CAPEX"
+    - "OPEX"
+  exposure_categories:
+    - "FINANCIAL_CORPORATES"
+    - "NON_FINANCIAL_CORPORATES"
+    - "HOUSEHOLDS_MORTGAGES"
+    - "HOUSEHOLDS_MOTOR_VEHICLE"
+    - "LOCAL_GOVERNMENTS"
+    - "COLLATERAL_OBTAINED"
+  exclude_sovereign_central_bank: true
+  exclude_trading_book: true
+  flow_gar_enabled: true
+  stock_gar_enabled: true
+  btar_estimation_method: "MIXED"
+  btar_confidence_interval: true
+  taxonomy_environmental_objectives:
+    - "CLIMATE_MITIGATION"
+    - "CLIMATE_ADAPTATION"
+    - "WATER"
+    - "CIRCULAR_ECONOMY"
+    - "POLLUTION_PREVENTION"
+    - "BIODIVERSITY"
+  nace_sector_mapping_enabled: true
+  pillar3_template_output: true
+
+# --- Insurance Configuration (enabled for insurance subsidiaries) ---
+insurance:
+  enabled: true
+  attribution_method: "HYBRID"
+  enabled_lines:
+    - "COMMERCIAL_PROPERTY"
+    - "COMMERCIAL_CASUALTY"
+    - "PERSONAL_PROPERTY"
+    - "PERSONAL_AUTO"
+    - "SPECIALTY"
+    - "LIFE_HEALTH"
+    - "REINSURANCE"
+  reinsurance_adjustment: true
+  gross_net_reporting: true
+  orsa_climate_integration: true
+  solvency_ii_reporting: true
+  physical_risk_insured_assets: true
+  investment_portfolio_alignment: true
+
+# --- Climate Risk Scoring (all scenarios) ---
+climate_risk:
+  enabled: true
+  enabled_scenarios:
+    - "NET_ZERO_2050"
+    - "BELOW_2C"
+    - "DELAYED_TRANSITION"
+    - "NDCS"
+    - "DIVERGENT_NET_ZERO"
+    - "CURRENT_POLICIES"
+  physical_risk_enabled: true
+  transition_risk_enabled: true
+  physical_hazards:
+    - "FLOOD"
+    - "WILDFIRE"
+    - "STORM"
+    - "HEATWAVE"
+    - "SEA_LEVEL_RISE"
+    - "DROUGHT"
+  transition_channels:
+    - "POLICY_LEGAL"
+    - "TECHNOLOGY"
+    - "MARKET"
+    - "REPUTATION"
+    - "STRANDED_ASSETS"
+  time_horizons_years: [5, 15, 30]
+  ecb_ssm_compatible: true
+  eba_exercise_compatible: true
+  expected_credit_loss_impact: true
+  sector_heatmap_enabled: true
+  geography_heatmap_enabled: true
+  pillar3_template_4_output: true
+
+# --- Pillar 3 ESG Disclosures (for banking subsidiaries) ---
+pillar3:
+  enabled: true
+  enabled_templates:
+    - "TEMPLATE_1"
+    - "TEMPLATE_2"
+    - "TEMPLATE_3"
+    - "TEMPLATE_4"
+    - "TEMPLATE_5"
+    - "TEMPLATE_7"
+    - "TEMPLATE_8"
+    - "TEMPLATE_9"
+    - "TEMPLATE_10"
+  large_institution: false
+  total_assets_eur_bn: null
+  reporting_frequency: "SEMI_ANNUAL"
+  xbrl_output: true
+  corep_finrep_cross_validation: true
+  qualitative_narrative_enabled: true
+
+# --- FS Double Materiality (all topics) ---
+materiality:
+  enabled: true
+  esrs_topics:
+    - "E1"
+    - "E2"
+    - "E3"
+    - "E4"
+    - "E5"
+    - "S1"
+    - "S2"
+    - "S3"
+    - "S4"
+    - "G1"
+  impact_channels:
+    - "LENDING"
+    - "INVESTING"
+    - "UNDERWRITING"
+    - "ADVISORY"
+  financial_materiality_enabled: true
+  impact_materiality_enabled: true
+  stakeholder_engagement_required: true
+  materiality_threshold_financial: "LOW"
+  materiality_threshold_impact: "LOW"
+  weight_by_exposure_size: true
+  generate_iro1_documentation: true
+
+# --- Transition Plan (group-level) ---
+transition_plan:
+  enabled: true
+  sbti_fi_aligned: true
+  sbti_method: "SDA"
+  target_years: [2025, 2030, 2035, 2040, 2050]
+  sector_targets_enabled: true
+  priority_sectors:
+    - "POWER_GENERATION"
+    - "OIL_GAS"
+    - "TRANSPORT"
+    - "STEEL"
+    - "CEMENT"
+    - "REAL_ESTATE"
+    - "AGRICULTURE"
+  operational_emissions_target: true
+  financed_emissions_target: true
+  client_engagement_strategy: true
+  fossil_fuel_phasedown: true
+  capital_allocation_alignment: true
+  governance_integration: true
+  temperature_alignment_target: 1.5
+
+# --- SBTi FI ---
+sbti_fi:
+  enabled: true
+  commitment_status: "COMMITTED"
+  target_type: "NEAR_TERM"
+  portfolio_coverage_target_pct: 70.0
+  engagement_threshold_pct: 55.0
+  temperature_rating_method: true
+  sda_sectors_enabled: true
+
+# --- Data Quality ---
+data_quality:
+  pcaf_score_tracking: true
+  min_coverage_pct: 70.0
+  allow_sector_proxies: true
+  proxy_usage_cap_pct: 30.0
+  require_audited_emissions: true
+  data_quality_improvement_roadmap: true
+  stale_data_threshold_days: 365
+
+# --- Disclosure (all outputs enabled) ---
+disclosure:
+  esrs_chapter_enabled: true
+  pillar3_package_enabled: true
+  pcaf_report_enabled: true
+  gar_btar_report_enabled: true
+  climate_risk_report_enabled: true
+  sbti_fi_report_enabled: true
+  dashboard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+    - "XBRL"
+  xbrl_tagging: true
+  multi_language_support: true
+  supported_languages: ["en", "de", "fr"]
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true

@@ -1,0 +1,53 @@
+# =============================================================================
+# PACK-008 Sector: Manufacturing
+# =============================================================================
+# Sector-specific configuration for manufacturing industries including cement,
+# steel, aluminium, chemicals, automotive, plastics, and electronics.
+#
+# Key NACE Sections: C (Manufacturing)
+# Primary Objectives: CCM, CE, PPC
+# Taxonomy Activities: ~28 activities
+#
+# Relevant TSC Examples:
+#   - Cement: 0.469 tCO2e/tonne clinker (CCM threshold)
+#   - Steel: 1.331 tCO2e/tonne (EAF), 0.498 tCO2e/tonne (BOF)
+#   - Aluminium: 1.484 tCO2e/tonne primary aluminium
+#   - Chemicals: IED BAT-AEL compliance
+#   - Plastics: recycled content thresholds (CE criteria)
+# =============================================================================
+
+active_sectors:
+  - "MANUFACTURING"
+
+eligibility:
+  screening_mode: "HYBRID"
+  min_confidence: 0.90
+  include_transitional: true
+  include_enabling: true
+
+sc_assessment:
+  evaluation_mode: "STANDARD"
+  threshold_strictness: "STANDARD"
+  track_enabling_activities: true
+  track_transitional_activities: true
+
+dnsh:
+  climate_risk_assessment_enabled: true
+  water_framework_directive_check: true
+  circular_economy_waste_hierarchy: true
+  pollution_threshold_check: true
+  biodiversity_impact_assessment: true
+
+transition_activity:
+  enabled: true
+  best_available_technology_check: true
+  lock_in_avoidance_check: true
+  sunset_date_tracking: true
+  transition_pathway_documentation: true
+
+enabling_activity:
+  enabled: true
+  direct_enablement_verification: true
+
+regulatory:
+  include_complementary_da: false

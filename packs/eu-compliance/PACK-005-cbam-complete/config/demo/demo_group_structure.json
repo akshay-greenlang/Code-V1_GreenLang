@@ -1,0 +1,206 @@
+{
+  "group_id": "EURO-GROUP",
+  "group_name": "EuroSteel Group",
+  "consolidation_currency": "EUR",
+  "reporting_year": 2026,
+  "financial_guarantee_eur": 500000.00,
+  "delegated_compliance_mode": true,
+  "created_at": "2026-01-15T10:00:00Z",
+  "entities": [
+    {
+      "entity_id": "EURO-GROUP-001",
+      "entity_name": "EuroSteel Group GmbH",
+      "legal_form": "GmbH",
+      "role": "parent",
+      "eori_number": "DE327891234567",
+      "vat_number": "DE123456789",
+      "eu_member_state": "DE",
+      "city": "Hamburg",
+      "address": "Hafenstrasse 42, 20457 Hamburg, Germany",
+      "declarant_status": "granted",
+      "declarant_authorization_date": "2025-11-15",
+      "cbam_registry_id": "CBAM-DE-2026-004851",
+      "customs_office_code": "DE004301",
+      "contact": {
+        "name": "Dr. Klaus Berger",
+        "email": "cbam@eurosteel-group.de",
+        "phone": "+49 40 2345 6789"
+      },
+      "enabled_categories": ["iron_steel"],
+      "cost_allocation_pct": 50.0,
+      "annual_import_budget_eur": 45000000.00,
+      "annual_import_volume_tonnes": {
+        "iron_steel": 20000
+      },
+      "suppliers": [
+        {
+          "supplier_id": "SUPP-TR-001",
+          "supplier_name": "Anatolian Steel Works",
+          "country": "TR",
+          "share_pct": 45.0,
+          "products": ["hot_rolled_coil", "cold_rolled_coil", "rebar"]
+        },
+        {
+          "supplier_id": "SUPP-CN-001",
+          "supplier_name": "Shanghai Metals Corp",
+          "country": "CN",
+          "share_pct": 30.0,
+          "products": ["hot_rolled_coil", "plates"]
+        },
+        {
+          "supplier_id": "SUPP-EG-001",
+          "supplier_name": "Ezz Steel SAE",
+          "country": "EG",
+          "share_pct": 25.0,
+          "products": ["rebar", "sections"]
+        }
+      ]
+    },
+    {
+      "entity_id": "NORD-STAHL-001",
+      "entity_name": "NordStahl Handel GmbH",
+      "legal_form": "GmbH",
+      "role": "subsidiary",
+      "eori_number": "DE445678901234",
+      "vat_number": "DE987654321",
+      "eu_member_state": "DE",
+      "city": "Hamburg",
+      "address": "Stahlweg 15, 20539 Hamburg, Germany",
+      "declarant_status": "granted",
+      "declarant_authorization_date": "2025-12-01",
+      "cbam_registry_id": "CBAM-DE-2026-007342",
+      "customs_office_code": "DE004301",
+      "contact": {
+        "name": "Heiko Schulz",
+        "email": "cbam@nordstahl.de",
+        "phone": "+49 40 3456 7890"
+      },
+      "enabled_categories": ["iron_steel"],
+      "cost_allocation_pct": 30.0,
+      "delegated_to": "EURO-GROUP-001",
+      "annual_import_budget_eur": 28000000.00,
+      "annual_import_volume_tonnes": {
+        "iron_steel": 15000
+      },
+      "suppliers": [
+        {
+          "supplier_id": "SUPP-TR-001",
+          "supplier_name": "Anatolian Steel Works",
+          "country": "TR",
+          "share_pct": 50.0,
+          "products": ["wire_rod", "bars", "sections"]
+        },
+        {
+          "supplier_id": "SUPP-IN-002",
+          "supplier_name": "Tata Steel BSL",
+          "country": "IN",
+          "share_pct": 35.0,
+          "products": ["hot_rolled_coil", "cold_rolled_coil"]
+        },
+        {
+          "supplier_id": "SUPP-CN-001",
+          "supplier_name": "Shanghai Metals Corp",
+          "country": "CN",
+          "share_pct": 15.0,
+          "products": ["stainless_flat"]
+        }
+      ]
+    },
+    {
+      "entity_id": "ALPINE-METAL-001",
+      "entity_name": "AlpineMetal AG",
+      "legal_form": "AG",
+      "role": "subsidiary",
+      "eori_number": "AT987654321012",
+      "vat_number": "ATU12345678",
+      "eu_member_state": "AT",
+      "city": "Vienna",
+      "address": "Metallgasse 8, 1030 Wien, Austria",
+      "declarant_status": "granted",
+      "declarant_authorization_date": "2025-11-20",
+      "cbam_registry_id": "CBAM-AT-2026-001289",
+      "customs_office_code": "AT001000",
+      "contact": {
+        "name": "Dr. Maria Haider",
+        "email": "cbam@alpinemetal.at",
+        "phone": "+43 1 5678 9012"
+      },
+      "enabled_categories": ["aluminium", "cement"],
+      "cost_allocation_pct": 20.0,
+      "delegated_to": "EURO-GROUP-001",
+      "annual_import_budget_eur": 18000000.00,
+      "annual_import_volume_tonnes": {
+        "aluminium": 5000,
+        "cement": 8000
+      },
+      "suppliers": [
+        {
+          "supplier_id": "SUPP-NO-001",
+          "supplier_name": "Nordic Aluminium AS",
+          "country": "NO",
+          "share_pct": 40.0,
+          "products": ["unwrought_aluminium", "extrusions"]
+        },
+        {
+          "supplier_id": "SUPP-CN-001",
+          "supplier_name": "Shanghai Metals Corp",
+          "country": "CN",
+          "share_pct": 25.0,
+          "products": ["aluminium_sheets", "foil"]
+        },
+        {
+          "supplier_id": "SUPP-IN-001",
+          "supplier_name": "Rajasthan Cement Ltd",
+          "country": "IN",
+          "share_pct": 20.0,
+          "products": ["portland_cement", "clinker"]
+        },
+        {
+          "supplier_id": "SUPP-TR-002",
+          "supplier_name": "Cimsa Cimento",
+          "country": "TR",
+          "share_pct": 15.0,
+          "products": ["white_cement", "clinker"]
+        }
+      ]
+    }
+  ],
+  "inter_entity_relationships": [
+    {
+      "from_entity": "EURO-GROUP-001",
+      "to_entity": "NORD-STAHL-001",
+      "relationship": "parent_subsidiary",
+      "ownership_pct": 100.0,
+      "delegation_agreement_date": "2025-10-01"
+    },
+    {
+      "from_entity": "EURO-GROUP-001",
+      "to_entity": "ALPINE-METAL-001",
+      "relationship": "parent_subsidiary",
+      "ownership_pct": 85.0,
+      "delegation_agreement_date": "2025-10-15"
+    }
+  ],
+  "shared_suppliers": [
+    {
+      "supplier_id": "SUPP-TR-001",
+      "shared_by": ["EURO-GROUP-001", "NORD-STAHL-001"],
+      "data_sharing_agreement": true
+    },
+    {
+      "supplier_id": "SUPP-CN-001",
+      "shared_by": ["EURO-GROUP-001", "NORD-STAHL-001", "ALPINE-METAL-001"],
+      "data_sharing_agreement": true
+    }
+  ],
+  "group_summary": {
+    "total_entities": 3,
+    "total_member_states": 2,
+    "total_annual_import_tonnes": 48000,
+    "total_annual_import_budget_eur": 91000000.00,
+    "goods_categories": ["iron_steel", "aluminium", "cement"],
+    "supplier_count": 7,
+    "estimated_annual_embedded_emissions_tco2e": 72000,
+    "estimated_annual_cbam_cost_eur_mid": 135000
+  }
+}

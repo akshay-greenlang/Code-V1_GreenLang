@@ -1,0 +1,900 @@
+# =============================================================================
+# PACK-009: EU Climate Compliance Bundle Pack
+# GreenLang Bundle Pack for Unified EU Regulatory Compliance
+# =============================================================================
+# This BUNDLE pack composes four standalone regulation packs into a unified
+# compliance management solution. It does not extend any single pack but
+# instead orchestrates PACK-001 (CSRD), PACK-004 (CBAM), PACK-006 (EUDR),
+# and PACK-008 (EU Taxonomy) to deliver cross-regulation compliance with
+# shared data pipelines, deduplicated evidence, consolidated dashboards,
+# and unified regulatory calendars.
+#
+# The bundle eliminates data duplication across regulation silos, provides
+# cross-regulation gap analysis, and generates consolidated executive
+# reporting across all four major EU sustainability regulations.
+#
+# Key Capabilities:
+#   - Cross-framework data mapping (shared data fields across 4 regulations)
+#   - Data deduplication across regulation-specific data stores
+#   - Cross-regulation gap analysis (identify overlapping requirements)
+#   - Unified regulatory calendar (all deadlines across CSRD/CBAM/EUDR/Taxonomy)
+#   - Consolidated metrics dashboard (single pane of glass)
+#   - Multi-regulation consistency checking (detect contradictions)
+#   - Bundle-level compliance scoring (aggregate score across all regulations)
+#   - Cross-regulation evidence management (shared evidence vault)
+#
+# Constituent Packs:
+#   PACK-001: CSRD Starter Pack     - Corporate Sustainability Reporting
+#   PACK-004: CBAM Readiness Pack   - Carbon Border Adjustment Mechanism
+#   PACK-006: EUDR Starter Pack     - EU Deforestation Regulation
+#   PACK-008: EU Taxonomy Alignment - EU Taxonomy Classification
+#
+# Regulatory References:
+#   - CSRD: Directive (EU) 2022/2464
+#   - CBAM: Regulation (EU) 2023/956
+#   - EUDR: Regulation (EU) 2023/1115
+#   - EU Taxonomy: Regulation (EU) 2020/852
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-15)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-009-eu-climate-compliance-bundle
+  version: "1.0.0"
+  display_name: "EU Climate Compliance Bundle Pack"
+  description: >-
+    Unified GreenLang bundle pack that composes four EU regulation packs into a
+    single compliance management solution. Combines PACK-001 (CSRD), PACK-004
+    (CBAM), PACK-006 (EUDR), and PACK-008 (EU Taxonomy) with cross-regulation
+    orchestration, shared data pipelines, deduplicated evidence stores,
+    consolidated dashboards, and unified regulatory calendars. Provides
+    cross-framework data mapping, gap analysis, consistency checking, and
+    bundle-level compliance scoring across all four major EU sustainability
+    regulations. Designed for enterprises, financial institutions, EU importers,
+    and SMEs needing multi-regulation compliance from a single deployment.
+  category: eu-compliance
+  tier: bundle
+  extends: null
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-15"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/eu-climate-compliance-bundle"
+  changelog_url: "https://docs.greenlang.io/packs/eu-climate-compliance-bundle/changelog"
+
+  tags:
+    - eu-compliance
+    - bundle
+    - csrd
+    - cbam
+    - eudr
+    - eu-taxonomy
+    - cross-regulation
+    - consolidated-reporting
+    - regulatory-calendar
+    - gap-analysis
+    - data-deduplication
+    - multi-framework
+    - compliance-scoring
+    - evidence-management
+
+  dependencies:
+    - id: PACK-001-csrd-starter
+      version: ">=1.0.0"
+      description: "CSRD Starter Pack for corporate sustainability reporting"
+      required: true
+
+    - id: PACK-004-cbam-readiness
+      version: ">=1.0.0"
+      description: "CBAM Readiness Pack for carbon border adjustment compliance"
+      required: true
+
+    - id: PACK-006-eudr-starter
+      version: ">=1.0.0"
+      description: "EUDR Starter Pack for deforestation regulation compliance"
+      required: true
+
+    - id: PACK-008-eu-taxonomy-alignment
+      version: ">=1.0.0"
+      description: "EU Taxonomy Alignment Pack for taxonomy classification"
+      required: true
+
+  regulations:
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      reference: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        Requires large undertakings and listed SMEs to report sustainability
+        information according to European Sustainability Reporting Standards
+        (ESRS). Mandatory double materiality assessment, XBRL digital tagging,
+        and third-party assurance.
+
+    - id: "CBAM"
+      name: "Carbon Border Adjustment Mechanism"
+      reference: "Regulation (EU) 2023/956"
+      effective_date: "2023-10-01"
+      transitional_end_date: "2025-12-31"
+      definitive_start_date: "2026-01-01"
+      description: >-
+        Applies a carbon price to imports of cement, iron & steel, aluminium,
+        fertilizers, electricity, and hydrogen. Importers must report embedded
+        emissions and surrender CBAM certificates proportional to the EU ETS
+        carbon price.
+
+    - id: "EUDR"
+      name: "EU Deforestation Regulation"
+      reference: "Regulation (EU) 2023/1115"
+      effective_date: "2024-12-30"
+      sme_effective_date: "2025-06-30"
+      cutoff_date: "2020-12-31"
+      description: >-
+        Prohibits placing on the EU market commodities and products that are not
+        deforestation-free or produced in violation of local legislation. Covers
+        cattle, cocoa, coffee, oil palm, rubber, soya, and wood with mandatory
+        due diligence, geolocation verification, and risk assessment.
+
+    - id: "EU-TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      reference: "Regulation (EU) 2020/852"
+      effective_date: "2022-01-01"
+      description: >-
+        Establishes an EU classification system for environmentally sustainable
+        economic activities. Defines four conditions for taxonomy alignment:
+        substantial contribution, DNSH, minimum safeguards, and technical
+        screening criteria compliance across 6 environmental objectives.
+
+  cross_regulation_overlaps:
+    - overlap_id: "CSRD-TAXONOMY"
+      regulations: ["CSRD", "EU-TAXONOMY"]
+      shared_data_fields:
+        - "ghg_emissions_scope_1_2_3"
+        - "taxonomy_eligible_turnover"
+        - "taxonomy_aligned_capex"
+        - "environmental_objectives"
+      description: >-
+        CSRD requires disclosure of taxonomy-eligible and taxonomy-aligned
+        proportions of turnover, CapEx, and OpEx. ESRS E1 climate disclosures
+        overlap with taxonomy CCM/CCA alignment data.
+
+    - overlap_id: "CSRD-CBAM"
+      regulations: ["CSRD", "CBAM"]
+      shared_data_fields:
+        - "scope_1_emissions"
+        - "scope_3_upstream_emissions"
+        - "emission_factors"
+        - "energy_consumption"
+      description: >-
+        CSRD Scope 1/3 emissions data feeds CBAM embedded emissions calculations.
+        Both require GHG Protocol-compliant emission factors and energy data.
+
+    - overlap_id: "CSRD-EUDR"
+      regulations: ["CSRD", "EUDR"]
+      shared_data_fields:
+        - "supply_chain_mapping"
+        - "biodiversity_impact"
+        - "land_use_change"
+        - "deforestation_risk"
+      description: >-
+        CSRD ESRS E4 biodiversity disclosures overlap with EUDR deforestation
+        risk assessments. Both require supply chain traceability and land use data.
+
+    - overlap_id: "TAXONOMY-EUDR"
+      regulations: ["EU-TAXONOMY", "EUDR"]
+      shared_data_fields:
+        - "biodiversity_assessment"
+        - "land_use_classification"
+        - "forestry_activities"
+        - "sustainable_sourcing"
+      description: >-
+        Taxonomy BIO environmental objective DNSH assessment overlaps with EUDR
+        deforestation-free verification. Forestry taxonomy activities require
+        EUDR compliance evidence.
+
+    - overlap_id: "TAXONOMY-CBAM"
+      regulations: ["EU-TAXONOMY", "CBAM"]
+      shared_data_fields:
+        - "ghg_emissions_intensity"
+        - "energy_efficiency_metrics"
+        - "industrial_process_data"
+        - "emission_reduction_targets"
+      description: >-
+        Taxonomy CCM alignment data overlaps with CBAM embedded emissions for
+        industrial sectors. Both require emissions intensity calculations for
+        cement, steel, and aluminium.
+
+    - overlap_id: "CBAM-EUDR"
+      regulations: ["CBAM", "EUDR"]
+      shared_data_fields:
+        - "country_of_origin"
+        - "supplier_identification"
+        - "import_declarations"
+      description: >-
+        CBAM and EUDR share supplier identification, country of origin tracking,
+        and import declaration workflows for goods entering the EU.
+
+# -----------------------------------------------------------------------------
+# Components - Bundle-specific engines, workflows, templates, and integrations
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Cross-regulation calculation and processing engines (8 engines)
+  # ===========================================================================
+  engines:
+    - id: cross_framework_data_mapper
+      name: "Cross-Framework Data Mapper Engine"
+      description: >-
+        Maps shared data fields across all four regulation packs. Identifies
+        overlapping data requirements between CSRD, CBAM, EUDR, and EU Taxonomy
+        to enable single-source data collection. Maintains a unified data
+        dictionary with field-level cross-references, transformation rules, and
+        unit conversion mappings. Supports 200+ shared data fields across 9
+        data categories (GHG emissions, supply chain, activity classification,
+        financial data, climate risk, water/pollution, biodiversity, governance,
+        social).
+      required: true
+
+    - id: data_deduplication
+      name: "Data Deduplication Engine"
+      description: >-
+        Detects and eliminates duplicate data entries across regulation-specific
+        data stores. Uses fuzzy matching, SHA-256 hash comparison, and semantic
+        similarity to identify records collected for one regulation that satisfy
+        requirements of another. Tracks deduplication savings metrics (storage,
+        collection effort, verification cost) and maintains provenance links
+        to original source records.
+      required: true
+
+    - id: cross_regulation_gap_analyzer
+      name: "Cross-Regulation Gap Analyzer Engine"
+      description: >-
+        Analyzes compliance gaps across all four regulations simultaneously.
+        Identifies requirements that are met in one regulation but missing in
+        another, overlapping requirements with inconsistent data, and shared
+        remediation opportunities. Produces severity-classified gap inventories
+        (CRITICAL, HIGH, MEDIUM, LOW, INFO) with cross-regulation remediation
+        recommendations and estimated effort scores.
+      required: true
+
+    - id: regulatory_calendar
+      name: "Regulatory Calendar Engine"
+      description: >-
+        Maintains a unified regulatory calendar across all four EU regulations.
+        Tracks filing deadlines, data collection windows, review milestones,
+        audit dates, and board reporting cycles. Supports configurable lead
+        times, auto-reminders, dependency chains between deadlines, and
+        conflict detection when multiple regulation deadlines overlap. Handles
+        CSRD annual reporting, CBAM quarterly and annual cycles, EUDR per-shipment
+        due diligence, and Taxonomy annual disclosure timelines.
+      required: true
+
+    - id: consolidated_metrics
+      name: "Consolidated Metrics Engine"
+      description: >-
+        Aggregates compliance metrics from all four regulation packs into a
+        unified metrics dashboard. Computes bundle-level KPIs including overall
+        compliance percentage, regulation-level readiness scores, data coverage
+        ratios, evidence completeness, and audit trail integrity. Supports
+        drill-down from bundle level to regulation level to individual
+        requirement level.
+      required: true
+
+    - id: multi_regulation_consistency
+      name: "Multi-Regulation Consistency Engine"
+      description: >-
+        Detects data inconsistencies and contradictions across regulation-specific
+        submissions. Validates that GHG emissions reported for CSRD match CBAM
+        embedded emissions, taxonomy alignment data is consistent with CSRD ESRS
+        E1 disclosures, supply chain data in EUDR aligns with CSRD ESRS E4, and
+        financial data (turnover, CapEx, OpEx) is consistent across all frameworks.
+        Classifies inconsistencies as EXACT match, APPROXIMATE (within tolerance),
+        CONFLICTING, or MISSING.
+      required: true
+
+    - id: bundle_compliance_scoring
+      name: "Bundle Compliance Scoring Engine"
+      description: >-
+        Calculates composite compliance scores across all four regulations using
+        weighted scoring methodology. Configurable weights per regulation based
+        on organizational priority, materiality, and regulatory risk. Supports
+        multiple scoring presets (enterprise, financial institution, EU importer,
+        SME) with sector-specific adjustments. Produces letter grades (A-F),
+        percentage scores, and trend analysis.
+      required: true
+
+    - id: cross_regulation_evidence
+      name: "Cross-Regulation Evidence Engine"
+      description: >-
+        Manages a shared evidence vault that links documents, certificates,
+        measurements, calculations, attestations, and reports to requirements
+        across all four regulations. Eliminates duplicate evidence collection
+        by identifying when a single document satisfies requirements in multiple
+        regulations. Tracks evidence lifecycle (collected, verified, approved,
+        expired) with SHA-256 provenance hashes and retention policy enforcement.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Cross-regulation orchestration sequences (8 workflows)
+  # ===========================================================================
+  workflows:
+    - id: unified_data_collection
+      name: "Unified Data Collection Workflow"
+      description: >-
+        5-phase workflow: Requirements Mapping -> Source Identification -> Data
+        Collection -> Cross-Regulation Validation -> Distribution. Collects data
+        once and distributes to all applicable regulation packs. Uses the
+        cross-framework data mapper to identify shared fields and eliminates
+        redundant data collection requests to business units and suppliers.
+      schedule: "quarterly"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: cross_regulation_assessment
+      name: "Cross-Regulation Assessment Workflow"
+      description: >-
+        6-phase workflow: Scope Definition -> Per-Regulation Assessment ->
+        Overlap Detection -> Consistency Check -> Gap Analysis -> Consolidated
+        Report. Runs individual regulation assessments in parallel, then
+        performs cross-regulation analysis to identify overlaps, conflicts,
+        and shared remediation opportunities.
+      schedule: "quarterly"
+      estimated_duration_minutes: 180
+      phases: 6
+
+    - id: consolidated_reporting
+      name: "Consolidated Reporting Workflow"
+      description: >-
+        4-phase workflow: Data Aggregation -> Metrics Calculation -> Report
+        Generation -> Distribution. Produces unified compliance reports that
+        span all four regulations with drill-down capability. Generates
+        executive summaries, board-level dashboards, audit-ready evidence
+        packages, and regulation-specific detail reports from a single data set.
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: calendar_management
+      name: "Calendar Management Workflow"
+      description: >-
+        3-phase workflow: Deadline Scanning -> Conflict Detection -> Notification
+        Dispatch. Continuously monitors regulatory calendars across all four
+        packs, detects overlapping or conflicting deadlines, and dispatches
+        consolidated notifications with prioritized action items and resource
+        allocation recommendations.
+      schedule: "weekly"
+      estimated_duration_minutes: 15
+      phases: 3
+
+    - id: cross_framework_gap_analysis
+      name: "Cross-Framework Gap Analysis Workflow"
+      description: >-
+        4-phase workflow: Current State Scan -> Cross-Regulation Mapping ->
+        Gap Identification -> Remediation Planning. Performs comprehensive
+        gap analysis across all four regulations, identifying where compliance
+        in one regulation can be leveraged to close gaps in another. Produces
+        prioritized remediation roadmaps with effort estimates and dependency
+        chains.
+      schedule: "quarterly"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: bundle_health_check
+      name: "Bundle Health Check Workflow"
+      description: >-
+        3-phase workflow: Pack Availability Check -> Integration Verification
+        -> Status Report. Validates that all four constituent packs are
+        properly installed, configured, and operational. Checks agent
+        availability, database connectivity, API health, and configuration
+        consistency across packs.
+      schedule: "daily"
+      estimated_duration_minutes: 10
+      phases: 3
+
+    - id: data_consistency_reconciliation
+      name: "Data Consistency Reconciliation Workflow"
+      description: >-
+        4-phase workflow: Cross-Pack Data Extract -> Field-Level Comparison ->
+        Inconsistency Resolution -> Reconciliation Report. Extracts shared
+        data fields from all four regulation packs, compares values at field
+        level, flags inconsistencies, and produces reconciliation reports
+        with recommended corrections.
+      schedule: "monthly"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: annual_compliance_review
+      name: "Annual Compliance Review Workflow"
+      description: >-
+        6-phase workflow: Year-End Data Freeze -> Per-Regulation Review ->
+        Cross-Regulation Reconciliation -> Consolidated Scoring -> Board
+        Report Generation -> Action Planning. Comprehensive annual review
+        across all four regulations with year-over-year trend analysis,
+        compliance trajectory forecasting, and next-year planning.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 6
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 templates)
+  # ===========================================================================
+  templates:
+    - id: consolidated_dashboard
+      display_name: "Consolidated Compliance Dashboard"
+      description: >-
+        Single-pane-of-glass dashboard showing compliance status across all four
+        EU regulations. Includes regulation-level readiness gauges, overall
+        bundle compliance score, deadline countdown timers, data coverage heat
+        map, and drill-down to individual regulation details.
+      format: "html"
+      template_file: "templates/consolidated_dashboard.jinja2"
+      enabled: true
+
+    - id: cross_regulation_data_map
+      display_name: "Cross-Regulation Data Map"
+      description: >-
+        Visual data mapping report showing shared data fields across CSRD, CBAM,
+        EUDR, and EU Taxonomy. Includes field-level cross-references, data flow
+        diagrams, source-to-regulation traceability, and deduplication savings
+        summary.
+      format: "pdf"
+      template_file: "templates/cross_regulation_data_map.jinja2"
+      enabled: true
+
+    - id: unified_gap_analysis
+      display_name: "Unified Gap Analysis Report"
+      description: >-
+        Cross-regulation gap analysis with severity classification, shared
+        remediation opportunities, effort estimates, and prioritized action
+        plans. Highlights where compliance in one regulation can close gaps
+        in another.
+      format: "pdf"
+      template_file: "templates/unified_gap_analysis.jinja2"
+      enabled: true
+
+    - id: regulatory_calendar_report
+      display_name: "Regulatory Calendar Report"
+      description: >-
+        Consolidated regulatory calendar showing all deadlines, milestones,
+        and review dates across CSRD, CBAM, EUDR, and EU Taxonomy. Includes
+        Gantt-style timeline view, conflict highlights, and resource allocation
+        recommendations.
+      format: "pdf"
+      template_file: "templates/regulatory_calendar_report.jinja2"
+      enabled: true
+
+    - id: data_consistency_report
+      display_name: "Data Consistency Report"
+      description: >-
+        Field-level consistency report across regulation-specific data stores.
+        Shows exact matches, approximate matches (within tolerance), conflicting
+        values, and missing data with recommended corrections.
+      format: "pdf"
+      template_file: "templates/data_consistency_report.jinja2"
+      enabled: true
+
+    - id: bundle_executive_summary
+      display_name: "Bundle Executive Summary"
+      description: >-
+        Board-level executive summary covering compliance status, key risks,
+        upcoming deadlines, and strategic recommendations across all four EU
+        regulations. Includes trend charts, compliance trajectory forecast,
+        and investment recommendations.
+      format: "pdf"
+      template_file: "templates/bundle_executive_summary.jinja2"
+      enabled: true
+
+    - id: deduplication_savings
+      display_name: "Deduplication Savings Report"
+      description: >-
+        Quantifies efficiency gains from cross-regulation data sharing. Shows
+        eliminated duplicate data collection requests, shared evidence reuse,
+        storage savings, and estimated FTE reduction from unified data
+        management.
+      format: "pdf"
+      template_file: "templates/deduplication_savings.jinja2"
+      enabled: true
+
+    - id: multi_regulation_audit_trail
+      display_name: "Multi-Regulation Audit Trail"
+      description: >-
+        Comprehensive audit trail spanning all four regulations. Shows data
+        lineage from source to regulation-specific output, cross-regulation
+        evidence links, SHA-256 provenance hashes, and temporal audit log
+        with user attribution.
+      format: "pdf"
+      template_file: "templates/multi_regulation_audit_trail.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Pack bridges and cross-regulation connectors (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: bundle_orchestrator
+      name: "Bundle Orchestrator"
+      description: >-
+        Master pipeline orchestrating all four constituent packs. Manages
+        pack initialization sequence, cross-pack data flow, shared resource
+        allocation, and unified error handling. Implements 12-phase execution:
+        Health Check -> Pack Loading -> Configuration Merge -> Data Collection ->
+        CSRD Assessment -> CBAM Assessment -> EUDR Assessment -> Taxonomy
+        Assessment -> Cross-Regulation Analysis -> Consistency Check ->
+        Consolidated Reporting -> Audit Trail.
+      required: true
+
+    - id: csrd_pack_bridge
+      name: "CSRD Pack Bridge"
+      description: >-
+        Wires PACK-001 (CSRD Starter Pack) into the bundle orchestrator.
+        Provides bidirectional data flow for ESRS disclosures, GHG emissions
+        data, double materiality results, and taxonomy alignment KPIs.
+        Exposes CSRD-specific API endpoints through the unified bundle
+        interface and routes shared data fields to other pack bridges.
+      required: true
+
+    - id: cbam_pack_bridge
+      name: "CBAM Pack Bridge"
+      description: >-
+        Wires PACK-004 (CBAM Readiness Pack) into the bundle orchestrator.
+        Provides bidirectional data flow for embedded emissions, CBAM
+        certificate requirements, quarterly report data, and supplier
+        emissions declarations. Routes GHG emissions data from CSRD and
+        Taxonomy packs to CBAM calculations.
+      required: true
+
+    - id: eudr_pack_bridge
+      name: "EUDR Pack Bridge"
+      description: >-
+        Wires PACK-006 (EUDR Starter Pack) into the bundle orchestrator.
+        Provides bidirectional data flow for supply chain traceability,
+        geolocation data, deforestation risk assessments, and due diligence
+        statements. Routes biodiversity and land use data to CSRD ESRS E4
+        and Taxonomy BIO objective assessments.
+      required: true
+
+    - id: taxonomy_pack_bridge
+      name: "Taxonomy Pack Bridge"
+      description: >-
+        Wires PACK-008 (EU Taxonomy Alignment Pack) into the bundle
+        orchestrator. Provides bidirectional data flow for eligibility
+        screening, alignment assessments, KPI calculations, and GAR
+        computation. Routes taxonomy alignment data to CSRD Article 8
+        disclosures and CCM emissions data to CBAM embedded emissions.
+      required: true
+
+    - id: cross_framework_mapper_bridge
+      name: "Cross-Framework Mapper Bridge"
+      description: >-
+        Connects the cross-framework data mapper engine to all four pack
+        bridges. Maintains the unified data dictionary, manages field-level
+        cross-references, and orchestrates data transformation between
+        regulation-specific formats. Handles unit conversions, currency
+        normalization, and temporal alignment of data across different
+        reporting periods.
+      required: true
+
+    - id: shared_data_pipeline_bridge
+      name: "Shared Data Pipeline Bridge"
+      description: >-
+        Manages the shared data ingestion pipeline that feeds all four
+        regulation packs from common data sources. Connects to ERP systems,
+        supplier portals, GIS services, satellite imagery providers, and
+        emissions databases. Routes incoming data to the appropriate
+        regulation-specific processing pipelines based on field mapping rules.
+      required: true
+
+    - id: consolidated_evidence_bridge
+      name: "Consolidated Evidence Bridge"
+      description: >-
+        Connects the cross-regulation evidence engine to all four pack
+        evidence stores. Manages evidence deduplication, cross-referencing,
+        lifecycle tracking, and retention policy enforcement across packs.
+        Provides a unified evidence search and retrieval API that spans
+        all regulation-specific evidence stores.
+      required: true
+
+    - id: bundle_health_check_integration
+      name: "Bundle Health Check Integration"
+      description: >-
+        Aggregates health check results from all four constituent packs
+        into a unified bundle health dashboard. Monitors pack availability,
+        agent status, database connectivity, API health, configuration
+        validity, and cross-pack integration status. Triggers alerts
+        when any constituent pack or integration degrades.
+      required: false
+
+    - id: setup_wizard
+      name: "Bundle Setup Wizard"
+      description: >-
+        12-step guided configuration wizard for initial bundle deployment:
+        organization profile, regulation scope selection, data source
+        connection, pack-specific configuration, cross-regulation mapping,
+        calendar setup, notification preferences, evidence policy, scoring
+        weights, preset selection, validation, and deployment verification.
+        Detects existing pack installations and offers migration paths.
+      required: false
+
+# -----------------------------------------------------------------------------
+# Agents Inherited - Agents inherited from constituent packs
+# -----------------------------------------------------------------------------
+agents_inherited:
+
+  # ===========================================================================
+  # PACK-001: CSRD Starter Pack (~50 agents)
+  # ===========================================================================
+  pack_001_csrd_starter:
+    pack_id: PACK-001-csrd-starter
+    pack_name: "CSRD Starter Pack"
+    regulation: "CSRD (EU) 2022/2464"
+    agent_count: 51
+    description: >-
+      Inherits all agents from PACK-001 including GL-CSRD-APP (APP-001),
+      30 MRV agents (Scope 1/2/3), 10 data intake/quality agents, and
+      10 foundation agents for corporate sustainability reporting.
+    key_agents:
+      - id: GL-CSRD-APP
+        name: "CSRD Compliance Application"
+        description: "ESRS disclosure management and double materiality assessment"
+      - id: AGENT-MRV-001-030
+        name: "MRV Agents (Scope 1/2/3)"
+        description: "Full GHG Protocol calculation suite for all emission scopes"
+      - id: AGENT-DATA-001-019
+        name: "Data Intake/Quality Agents"
+        description: "PDF extraction, Excel normalization, ERP connection, data quality"
+      - id: AGENT-FOUND-001-010
+        name: "Foundation Agents"
+        description: "Orchestration, schema validation, unit normalization, audit trails"
+
+  # ===========================================================================
+  # PACK-004: CBAM Readiness Pack (~50 agents)
+  # ===========================================================================
+  pack_004_cbam_readiness:
+    pack_id: PACK-004-cbam-readiness
+    pack_name: "CBAM Readiness Pack"
+    regulation: "CBAM (EU) 2023/956"
+    agent_count: 47
+    description: >-
+      Inherits all agents from PACK-004 including GL-CBAM-APP (APP-002),
+      MRV agents for industrial emission calculations, CBAM-specific data
+      intake agents, and foundation agents for carbon border adjustment.
+    key_agents:
+      - id: GL-CBAM-APP
+        name: "CBAM Compliance Application"
+        description: "CBAM reporting, certificate management, and quarterly declarations"
+      - id: AGENT-MRV-001-008
+        name: "Scope 1 MRV Agents"
+        description: "Industrial emission calculations for CBAM-covered goods"
+      - id: AGENT-DATA-001-010
+        name: "Data Intake/Quality Agents"
+        description: "Supplier emission data collection, invoice extraction, normalization"
+      - id: AGENT-FOUND-001-010
+        name: "Foundation Agents"
+        description: "Orchestration, schema validation, unit normalization, audit trails"
+
+  # ===========================================================================
+  # PACK-006: EUDR Starter Pack (~60 agents)
+  # ===========================================================================
+  pack_006_eudr_starter:
+    pack_id: PACK-006-eudr-starter
+    pack_name: "EUDR Starter Pack"
+    regulation: "EUDR (EU) 2023/1115"
+    agent_count: 59
+    description: >-
+      Inherits all agents from PACK-006 including GL-EUDR-APP (APP-004),
+      40 EUDR-specific agents (supply chain traceability, risk assessment,
+      due diligence), data connectors, and foundation agents for EU
+      deforestation regulation compliance.
+    key_agents:
+      - id: GL-EUDR-APP
+        name: "EUDR Compliance Application"
+        description: "Due diligence statement generation, risk assessment, EU IS integration"
+      - id: AGENT-EUDR-001-015
+        name: "Supply Chain Traceability Agents"
+        description: "Commodity tracking, geolocation, supplier verification"
+      - id: AGENT-EUDR-016-020
+        name: "Risk Assessment Agents"
+        description: "Country risk benchmarking, deforestation monitoring, satellite analysis"
+      - id: AGENT-EUDR-021-040
+        name: "Due Diligence Agents"
+        description: "DDS generation, risk mitigation, information management"
+
+  # ===========================================================================
+  # PACK-008: EU Taxonomy Alignment Pack (~50 agents)
+  # ===========================================================================
+  pack_008_eu_taxonomy:
+    pack_id: PACK-008-eu-taxonomy-alignment
+    pack_name: "EU Taxonomy Alignment Pack"
+    regulation: "EU Taxonomy (EU) 2020/852"
+    agent_count: 51
+    description: >-
+      Inherits all agents from PACK-008 including GL-Taxonomy-APP (APP-010),
+      30 MRV agents (Scope 1/2/3), 10 data intake/quality agents, and
+      10 foundation agents for EU Taxonomy eligibility and alignment assessment.
+    key_agents:
+      - id: GL-TAXONOMY-APP
+        name: "Taxonomy Alignment Application"
+        description: "Eligibility screening, alignment assessment, KPI/GAR calculation"
+      - id: AGENT-MRV-001-030
+        name: "MRV Agents (Scope 1/2/3)"
+        description: "GHG emissions data for CCM/CCA Technical Screening Criteria"
+      - id: AGENT-DATA-001-019
+        name: "Data Intake/Quality Agents"
+        description: "Financial data extraction, supplier questionnaires, data quality"
+      - id: AGENT-FOUND-001-010
+        name: "Foundation Agents"
+        description: "Orchestration, schema validation, unit normalization, audit trails"
+
+# -----------------------------------------------------------------------------
+# Pack Summary
+# -----------------------------------------------------------------------------
+pack_summary:
+  constituent_packs: 4
+  total_inherited_agents: 208
+  agents_by_pack:
+    pack_001_csrd: 51
+    pack_004_cbam: 47
+    pack_006_eudr: 59
+    pack_008_taxonomy: 51
+  deduplicated_agent_count: ~120
+  deduplication_note: >-
+    Many agents (MRV, DATA, FOUND) are shared across constituent packs.
+    The bundle deduplicates agent instances so each agent runs once and
+    distributes results to all packs that need them. Approximately 120
+    unique agents after deduplication from ~208 total inherited references.
+  bundle_engines: 8
+  bundle_workflows: 8
+  bundle_templates: 8
+  bundle_integrations: 10
+  total_bundle_components: 34
+  total_components_with_inherited: 242
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles
+# -----------------------------------------------------------------------------
+presets:
+  bundle_presets:
+    - id: enterprise_full
+      display_name: "Enterprise Full"
+      description: >-
+        Full-featured deployment for large enterprises subject to all four EU
+        regulations. All regulations enabled at maximum capability, all engines
+        active, comprehensive cross-regulation analysis, consolidated reporting,
+        full audit trails, and XBRL digital tagging support.
+      config_file: "config/presets/enterprise_full.yaml"
+      regulations_enabled: ["CSRD", "CBAM", "EUDR", "EU-TAXONOMY"]
+      recommended_for:
+        - "Large enterprises (250+ employees)"
+        - "Listed companies on EU-regulated markets"
+        - "Companies importing CBAM goods and sourcing EUDR commodities"
+
+    - id: financial_institution
+      display_name: "Financial Institution"
+      description: >-
+        Deployment optimized for banks, asset managers, and insurance companies.
+        EU Taxonomy GAR/BTAR focus with CSRD mandatory reporting. CBAM and EUDR
+        enabled for financed emissions and portfolio-level supply chain risk.
+        EBA Pillar 3 ESG disclosure templates included.
+      config_file: "config/presets/financial_institution.yaml"
+      regulations_enabled: ["CSRD", "CBAM", "EUDR", "EU-TAXONOMY"]
+      recommended_for:
+        - "Credit institutions (banks)"
+        - "Asset managers and fund companies"
+        - "Insurance and reinsurance undertakings"
+
+    - id: eu_importer
+      display_name: "EU Importer"
+      description: >-
+        Deployment focused on EU importers of CBAM-covered goods and EUDR
+        commodities. CBAM and EUDR as primary regulations with CSRD and EU
+        Taxonomy as secondary supporting frameworks. Optimized for supply
+        chain data collection, embedded emissions calculation, and due
+        diligence statement generation.
+      config_file: "config/presets/eu_importer.yaml"
+      regulations_enabled: ["CSRD", "CBAM", "EUDR", "EU-TAXONOMY"]
+      recommended_for:
+        - "Importers of cement, steel, aluminium, fertilizers, electricity, hydrogen"
+        - "Operators placing EUDR commodities on EU market"
+        - "Trading companies with EU customs obligations"
+
+    - id: sme_essential
+      display_name: "SME Essential"
+      description: >-
+        Simplified deployment for SMEs with basic CSRD reporting and EU
+        Taxonomy obligations. CBAM and EUDR disabled by default (enable
+        individually if applicable). Reduced complexity with streamlined
+        workflows, simplified assessment modes, and lower data quality
+        thresholds.
+      config_file: "config/presets/sme_essential.yaml"
+      regulations_enabled: ["CSRD", "EU-TAXONOMY"]
+      recommended_for:
+        - "Listed SMEs subject to CSRD"
+        - "SMEs in taxonomy-relevant sectors"
+        - "SMEs preparing for voluntary CSRD adoption"
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+
+  infrastructure:
+    min_cpu_cores: 16
+    min_memory_gb: 64
+    min_storage_gb: 500
+    recommended_cpu_cores: 32
+    recommended_memory_gb: 128
+    recommended_storage_gb: 1000
+    description: >-
+      Bundle packs require higher infrastructure specifications than
+      standalone packs due to running multiple regulation packs
+      simultaneously with cross-regulation analysis engines.
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 100
+    recommended_connections: 200
+    description: >-
+      Higher connection pool requirements to support concurrent access
+      from all four constituent packs plus bundle-level engines.
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  cross_regulation_analysis:
+    full_analysis_max_seconds: 60
+    consistency_check_max_seconds: 30
+    gap_analysis_max_seconds: 45
+    description: "Cross-regulation analysis across all four packs"
+
+  data_deduplication:
+    dedup_scan_max_seconds: 30
+    field_comparison_max_seconds: 10
+    description: "Data deduplication across regulation-specific stores"
+
+  consolidated_reporting:
+    dashboard_generation_max_seconds: 15
+    executive_summary_max_seconds: 20
+    full_report_max_seconds: 60
+    description: "Consolidated report generation across all regulations"
+
+  calendar_management:
+    deadline_scan_max_seconds: 5
+    conflict_detection_max_seconds: 10
+    description: "Regulatory calendar management"
+
+  bundle_health_check:
+    full_check_max_seconds: 30
+    per_pack_check_max_seconds: 10
+    description: "Bundle and per-pack health verification"
+
+  api_latency:
+    p50_ms: 75
+    p95_ms: 300
+    p99_ms: 1500
+    description: "Bundle API latency targets (higher than standalone packs)"
+
+  availability:
+    target_percent: 99.9
+    description: "Standard availability target"

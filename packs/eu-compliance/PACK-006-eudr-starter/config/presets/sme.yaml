@@ -1,0 +1,154 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - SME Preset
+# =============================================================================
+# For SMEs (<50 employees or traders).
+# Simplified deployment with essential commodities only, 2-tier supply chain,
+# simplified DDS eligibility for low-risk country sourcing (Article 13),
+# guided mode enabled, core risk assessment only.
+#
+# Regulatory basis: Article 4 (Operator/Trader obligations), Article 13
+# (Simplified DD for traders not SMEs), transitional provisions.
+# SME traders may benefit from simplified due diligence per Article 13.
+# =============================================================================
+
+# Operator configuration - trader type for SME
+operator:
+  operator_type: "TRADER"
+  company_size: "SME"
+
+# Commodities - limited to 2-3 most common
+commodities:
+  - commodity_type: "cattle"
+    enabled: false
+    priority: 7
+    certification_schemes: []
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 2
+    certification_schemes: ["RAINFOREST_ALLIANCE"]
+  - commodity_type: "coffee"
+    enabled: true
+    priority: 1
+    certification_schemes: ["FOUR_C"]
+  - commodity_type: "oil_palm"
+    enabled: false
+    priority: 5
+    certification_schemes: []
+  - commodity_type: "rubber"
+    enabled: false
+    priority: 6
+    certification_schemes: []
+  - commodity_type: "soya"
+    enabled: false
+    priority: 4
+    certification_schemes: []
+  - commodity_type: "wood"
+    enabled: true
+    priority: 3
+    certification_schemes: ["FSC", "PEFC"]
+
+# Geolocation - basic precision
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 5000
+  batch_size: 100
+  overlap_detection_enabled: false
+  satellite_overlay_enabled: true
+
+# Risk assessment - simplified weights
+risk_assessment:
+  country_weight: 0.40
+  supplier_weight: 0.20
+  commodity_weight: 0.20
+  document_weight: 0.20
+  thresholds:
+    low_max: 30.0
+    medium_max: 55.0
+    high_max: 80.0
+    critical_min: 80.0
+  auto_escalation_enabled: true
+  reassessment_interval_days: 180
+
+# DDS - simplified where eligible
+dds:
+  dds_type: "SIMPLIFIED"
+  auto_generate: true
+  review_required: true
+  template_version: "1.0"
+  annex_ii_version: "2023"
+  retention_years: 5
+  include_supporting_documents: false
+  multi_commodity_dds: false
+
+# EU Information System - sandbox only
+euis:
+  sandbox_mode: true
+  auth_type: "OAUTH2"
+  submission_retry_count: 3
+  polling_interval_seconds: 120
+  timeout_seconds: 120
+  batch_submission_enabled: false
+
+# Supply chain - minimal depth
+supply_chain:
+  max_tier_depth: 2
+  chain_of_custody_model: "MASS_BALANCE"
+  trace_level: "shipment"
+  require_plot_linkage: true
+  mixed_shipment_handling: "flag"
+  upstream_data_sharing: false
+
+# Supplier management - small scale
+supplier:
+  bulk_import_limit: 50
+  engagement_auto_reminders: true
+  reminder_interval_days: 21
+  data_completeness_threshold: 70
+  require_certification_proof: false
+  supplier_self_assessment: false
+  auto_risk_flag: true
+
+# Compliance - essential rules only
+compliance:
+  rules_enabled:
+    - "deforestation_free"
+    - "legal_compliance"
+    - "geolocation_required"
+    - "cutoff_date_check"
+    - "cn_code_classification"
+    - "country_risk_assessment"
+    - "dds_completeness"
+  compliance_score_threshold: 60
+  simplified_dd_enabled: true
+  penalty_tracking: true
+
+# Cutoff date - basic verification
+cutoff_date:
+  evidence_required: true
+  temporal_buffer_days: 0
+  satellite_verification_enabled: true
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+  min_satellite_resolution_m: 30
+
+# Reporting - basic
+reporting:
+  dashboard_refresh_interval_seconds: 600
+  report_formats: ["pdf", "html"]
+  auto_generate_quarterly: false
+  auto_generate_annual: true
+  include_risk_heatmap: true
+  include_supplier_scorecard: false
+  executive_summary_enabled: true
+
+# Agent overrides - disable optional agents
+agent_overrides:
+  AGENT-EUDR-015:
+    enabled: false       # Mobile data collector not needed for SME
+  AGENT-EUDR-009:
+    enabled: false       # Chain of custody simplified for traders
+  AGENT-EUDR-027:
+    enabled: false       # Information gathering simplified
+  AGENT-DATA-011:
+    enabled: false       # Duplicate detection optional for small datasets

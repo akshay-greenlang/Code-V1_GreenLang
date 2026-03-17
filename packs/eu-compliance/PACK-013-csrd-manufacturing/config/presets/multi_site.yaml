@@ -1,0 +1,183 @@
+# =============================================================================
+# PACK-013 CSRD Manufacturing Pack - Multi-Site Manufacturing Group Preset
+# =============================================================================
+# Configuration for manufacturing groups with multiple facilities across
+# different locations and potentially different sub-sectors. Enables multi-
+# site consolidation, inter-site transfer tracking, group-level reporting,
+# facility-level benchmarking, and centralized data collection. All 8
+# engines are enabled with group aggregation and site-level drill-down.
+# Supports parent-subsidiary hierarchies and multi-country operations.
+#
+# Typical use cases:
+#   - Industrial conglomerates with cement, steel, and chemicals plants
+#   - Multi-national automotive groups with assembly plants in several countries
+#   - Diversified manufacturing holding companies
+#   - Multi-plant food & beverage groups
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+manufacturing_tier: "HEAVY_INDUSTRY"
+sub_sectors:
+  - "STEEL"
+  - "CEMENT"
+  - "CHEMICALS"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: true
+
+# --- Process Emissions ---
+process_emissions:
+  enabled: true
+  sub_sector: "STEEL"
+  cbam_affected: true
+  ets_phase: "PHASE_4"
+  cbam_status: "FULL_COMPLIANCE"
+  emission_sources:
+    - "combustion"
+    - "process"
+    - "fugitive"
+  mass_balance_enabled: true
+  product_allocation_enabled: true
+  allocation_method: "MASS"
+  emission_factor_source: "EU_MRV"
+  year_over_year_tracking: true
+
+# --- Energy Intensity ---
+energy_intensity:
+  enabled: true
+  production_unit: "tonne"
+  energy_sources:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+    - "COAL"
+    - "HEAVY_FUEL_OIL"
+    - "BIOMASS"
+    - "HYDROGEN"
+    - "WASTE_HEAT"
+    - "STEAM_PURCHASED"
+  benchmark_reference: "EU_ETS_BENCHMARK"
+  iso50001_certified: true
+  enpi_tracking: true
+  significant_energy_use_threshold_pct: 3.0
+  renewable_energy_tracking: true
+  energy_cost_tracking: true
+
+# --- Product Carbon Footprint ---
+product_pcf:
+  enabled: true
+  lifecycle_scope: "CRADLE_TO_GATE"
+  allocation_method: "MASS"
+  dpp_enabled: false
+  pef_methodology: true
+  iso14067_compliant: true
+  emission_factor_database: "ECOINVENT"
+  co_product_allocation: true
+  recycled_content_crediting: true
+  uncertainty_analysis: true
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  waste_streams:
+    - "HAZARDOUS"
+    - "NON_HAZARDOUS"
+    - "BY_PRODUCT"
+    - "RECYCLABLE"
+  recycled_content_tracking: true
+  material_circularity_indicator: true
+  waste_diversion_target_pct: 80.0
+  industrial_symbiosis_tracking: true
+
+# --- Water & Pollution ---
+water_pollution:
+  enabled: true
+  water_sources:
+    - "MUNICIPAL"
+    - "GROUNDWATER"
+    - "SURFACE_WATER"
+    - "RECYCLED"
+  pollutant_types:
+    - "AIR_EMISSIONS"
+    - "WATER_DISCHARGES"
+    - "WASTE_TRANSFERS"
+  water_stress_assessment: true
+  reach_svhc_tracking: true
+  eprtr_reporting: true
+  wastewater_treatment_monitoring: true
+  water_recycling_rate_tracking: true
+
+# --- BAT/BREF Compliance ---
+bat_compliance:
+  enabled: true
+  applicable_brefs:
+    - "IS_BREF"
+    - "CLM_BREF"
+    - "LVOC_BREF"
+    - "LCP_BREF"
+  compliance_level: "WITHIN_RANGE"
+  bat_ael_monitoring: true
+  transformation_plan: true
+  permit_conditions_monitoring: true
+  ied_inspection_readiness: true
+
+# --- Supply Chain ---
+supply_chain:
+  enabled: true
+  tier_depth: 3
+  priority_categories: [1, 2, 3, 4, 5, 9, 10, 12]
+  supplier_engagement_platform: "CDP_SUPPLY_CHAIN"
+  spend_based_screening: true
+  supplier_specific_enabled: true
+  hybrid_method: true
+  hotspot_analysis: true
+  cbam_import_integration: true
+  transport_mode_tracking: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  peer_group: "NACE_SECTOR"
+  kpi_set:
+    - "carbon_intensity"
+    - "energy_intensity"
+    - "water_intensity"
+    - "waste_intensity"
+    - "circularity_rate"
+  sbti_pathway: "WELL_BELOW_2C"
+  abatement_cost_curve: true
+  eu_ets_benchmark_comparison: true
+  bat_ael_benchmark_comparison: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+  gap_analysis_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  process_emissions_report_enabled: true
+  pcf_label_enabled: true
+  energy_report_enabled: true
+  circular_economy_report_enabled: true
+  bat_report_enabled: true
+  scorecard_enabled: true
+  decarbonization_roadmap_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  multi_language_support: true
+  supported_languages: ["en", "de", "fr"]
+  review_workflow_enabled: true
+  watermark_draft: true

@@ -1,0 +1,50 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Timber & Wood Products Professional Sector
+# =============================================================================
+# Professional timber supply chain configuration with FSC/PEFC/SFI verification,
+# concession mapping, sawmill tracking, pulp mill integration, and global
+# sourcing focus.
+# =============================================================================
+
+commodities:
+  - commodity_type: "wood"
+    enabled: true
+    priority: 1
+    certification_schemes: ["FSC", "PEFC", "SFI"]
+    high_risk_origins: ["BRA", "COD", "IDN", "MYS", "PNG", "MMR", "CMR", "COG", "GAB", "GHA"]
+    annual_volume_tonnes: 100000.0
+
+geolocation:
+  coordinate_precision: 7
+  polygon_max_vertices: 100000  # Large concessions
+  polygon_area_threshold_ha: 10.0  # Larger plots for timber
+  batch_size: 1000
+
+risk_assessment:
+  country_weight: 0.40
+  supplier_weight: 0.25
+  commodity_weight: 0.20
+  document_weight: 0.15
+
+compliance:
+  require_geolocation: true
+  require_certification: true
+  verification_level: "ENHANCED"
+  data_quality_threshold: 0.90
+
+advanced_geolocation:
+  resolution_meters: 10
+  temporal_periods: 10  # Longer temporal analysis
+  alert_systems: ["GLAD", "RADD"]
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 15.0  # Large buffer for timber
+  ramsar_check: true
+  unesco_check: true
+
+advanced_supply_chain:
+  max_tier_depth: 5  # Forest -> Sawmill -> Processing -> Manufacturing -> Product
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED", "CONTROLLED_SOURCES"]

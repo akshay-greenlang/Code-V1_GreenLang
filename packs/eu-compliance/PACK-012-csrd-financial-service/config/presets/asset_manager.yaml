@@ -1,0 +1,192 @@
+# =============================================================================
+# PACK-012 CSRD Financial Service Pack - Asset Management Preset
+# =============================================================================
+# Configuration for UCITS management companies and AIFM. Enables PCAF
+# financed emissions, portfolio carbon footprint (WACI), SFDR product-level
+# alignment, sustainable investment screening, and SBTi FI portfolio coverage
+# targets. Bridges to SFDR Packs (PACK-010/011) for Article 8/9 product
+# disclosures.
+#
+# Typical use cases:
+#   - UCITS fund management companies with multiple fund ranges
+#   - Alternative investment fund managers (private equity, real assets)
+#   - Multi-asset managers with cross-border distribution
+#   - Asset managers subject to dual CSRD + SFDR obligations
+# =============================================================================
+
+# --- Institution Details ---
+institution_type: "ASSET_MANAGER"
+institution_name: ""
+lei_code: ""
+reporting_currency: "EUR"
+reporting_period_start: null
+reporting_period_end: null
+consolidation_scope: "GROUP"
+
+# --- PCAF Financed Emissions ---
+pcaf:
+  enabled: true
+  enabled_asset_classes:
+    - "LISTED_EQUITY_CORPORATE_BONDS"
+    - "BUSINESS_LOANS_UNLISTED_EQUITY"
+    - "PROJECT_FINANCE"
+    - "COMMERCIAL_REAL_ESTATE"
+  include_scope_1: true
+  include_scope_2: true
+  include_scope_3: true
+  min_data_quality_score: 5
+  target_data_quality_score: 2
+  estimation_enabled: true
+  estimation_methodology: "SECTOR_AVERAGE"
+  emission_factor_source: "PCAF_DATABASE"
+  emission_factor_vintage_year: 2024
+  attribution_method: "OUTSTANDING_DIVIDED_BY_EVIC"
+  sector_aggregation_code: "GICS"
+  year_over_year_tracking: true
+  portfolio_carbon_footprint: true
+  waci_enabled: true
+  data_quality_improvement_plan: true
+
+# --- GAR/BTAR (not applicable for asset managers) ---
+gar_btar:
+  gar_enabled: false
+  btar_enabled: false
+  gar_scopes: []
+  exposure_categories: []
+  exclude_sovereign_central_bank: true
+  exclude_trading_book: true
+  flow_gar_enabled: false
+  stock_gar_enabled: false
+  nace_sector_mapping_enabled: false
+  pillar3_template_output: false
+
+# --- Insurance (disabled) ---
+insurance:
+  enabled: false
+
+# --- Climate Risk Scoring ---
+climate_risk:
+  enabled: true
+  enabled_scenarios:
+    - "NET_ZERO_2050"
+    - "BELOW_2C"
+    - "DELAYED_TRANSITION"
+    - "CURRENT_POLICIES"
+  physical_risk_enabled: true
+  transition_risk_enabled: true
+  physical_hazards:
+    - "FLOOD"
+    - "WILDFIRE"
+    - "STORM"
+    - "HEATWAVE"
+  transition_channels:
+    - "POLICY_LEGAL"
+    - "TECHNOLOGY"
+    - "MARKET"
+    - "STRANDED_ASSETS"
+  time_horizons_years: [5, 15, 30]
+  ecb_ssm_compatible: false
+  eba_exercise_compatible: false
+  expected_credit_loss_impact: false
+  sector_heatmap_enabled: true
+  geography_heatmap_enabled: true
+  pillar3_template_4_output: false
+
+# --- Pillar 3 (disabled for asset managers) ---
+pillar3:
+  enabled: false
+  enabled_templates: []
+  large_institution: false
+  reporting_frequency: "ANNUAL"
+  xbrl_output: false
+  corep_finrep_cross_validation: false
+  qualitative_narrative_enabled: false
+
+# --- FS Double Materiality ---
+materiality:
+  enabled: true
+  esrs_topics:
+    - "E1"
+    - "E2"
+    - "E4"
+    - "S1"
+    - "S2"
+    - "G1"
+  impact_channels:
+    - "INVESTING"
+    - "ADVISORY"
+  financial_materiality_enabled: true
+  impact_materiality_enabled: true
+  stakeholder_engagement_required: true
+  materiality_threshold_financial: "MEDIUM"
+  materiality_threshold_impact: "MEDIUM"
+  weight_by_exposure_size: true
+  generate_iro1_documentation: true
+
+# --- Transition Plan ---
+transition_plan:
+  enabled: true
+  sbti_fi_aligned: true
+  sbti_method: "TEMPERATURE_RATING"
+  target_years: [2025, 2030, 2040, 2050]
+  sector_targets_enabled: true
+  priority_sectors:
+    - "POWER_GENERATION"
+    - "OIL_GAS"
+    - "TRANSPORT"
+    - "REAL_ESTATE"
+  operational_emissions_target: true
+  financed_emissions_target: true
+  client_engagement_strategy: true
+  fossil_fuel_phasedown: true
+  capital_allocation_alignment: true
+  governance_integration: true
+  temperature_alignment_target: 1.5
+
+# --- SBTi FI ---
+sbti_fi:
+  enabled: true
+  commitment_status: "COMMITTED"
+  target_type: "NEAR_TERM"
+  portfolio_coverage_target_pct: 70.0
+  engagement_threshold_pct: 55.0
+  temperature_rating_method: true
+  sda_sectors_enabled: true
+
+# --- Data Quality ---
+data_quality:
+  pcaf_score_tracking: true
+  min_coverage_pct: 80.0
+  allow_sector_proxies: true
+  proxy_usage_cap_pct: 25.0
+  require_audited_emissions: false
+  data_quality_improvement_roadmap: true
+  stale_data_threshold_days: 365
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  pillar3_package_enabled: false
+  pcaf_report_enabled: true
+  gar_btar_report_enabled: false
+  climate_risk_report_enabled: true
+  sbti_fi_report_enabled: true
+  dashboard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  xbrl_tagging: false
+  multi_language_support: false
+  supported_languages: ["en"]
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true

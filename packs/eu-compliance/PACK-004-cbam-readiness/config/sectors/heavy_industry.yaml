@@ -1,0 +1,215 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Heavy Industry Sector Preset
+# =============================================================================
+# NACE Codes: C23 (Other non-metallic mineral products - cement),
+#             C24 (Basic metals - steel, aluminium), C25 (Fabricated metals)
+#
+# Combines steel, cement, and aluminium goods categories for importers
+# serving heavy industry sectors. Installation-level granularity,
+# high-volume processing, complex supply chains, and comprehensive
+# verification requirements.
+#
+# Key focus areas:
+#   - Multi-category imports (steel + cement + aluminium)
+#   - Installation-level emission data tracking
+#   - Complex precursor chains across categories
+#   - High volume requiring robust certificate management
+#   - Full verification and audit trail
+#   - ERP integration for purchase order and customs data
+# =============================================================================
+
+# Sector identification
+sector_specific:
+  nace_codes: ["C23", "C24", "C25"]
+  sector_name: "Heavy Industry"
+  sector_group: "industrial"
+
+  # Key emission sources for heavy industry
+  primary_emission_sources:
+    - "process_emissions"          # Calcination (cement), reduction (steel)
+    - "fuel_combustion"            # Kilns, furnaces, boilers
+    - "electricity_consumption"    # EAF, smelters, mills
+    - "pfc_emissions"              # Aluminium smelting
+    - "precursor_production"       # Clinker, pig iron, alumina
+
+  # Installation types tracked
+  installation_types:
+    cement:
+      - "clinker_kiln"
+      - "cement_grinding_mill"
+      - "integrated_cement_plant"
+    iron_steel:
+      - "blast_furnace"
+      - "basic_oxygen_furnace"
+      - "electric_arc_furnace"
+      - "direct_reduction_plant"
+      - "rolling_mill"
+      - "coating_line"
+    aluminium:
+      - "primary_smelter"
+      - "secondary_smelter"
+      - "alumina_refinery"
+      - "rolling_extrusion_mill"
+
+  # Emission factor databases for heavy industry
+  emission_factor_databases:
+    - name: "eu_ets_benchmarks"
+      description: "EU ETS product benchmarks for cement, steel, aluminium"
+      priority: 1
+    - name: "worldsteel_co2_tool"
+      description: "World Steel Association CO2 data collection tool"
+      priority: 2
+    - name: "global_cement_directory"
+      description: "GCCA cement emission benchmarks"
+      priority: 3
+    - name: "international_aluminium_institute"
+      description: "IAI aluminium lifecycle data"
+      priority: 4
+    - name: "ipcc_industrial"
+      description: "IPCC industrial process emission factors"
+      priority: 5
+
+# Goods categories - steel + cement + aluminium
+goods:
+  enabled_categories:
+    - "cement"
+    - "iron_steel"
+    - "aluminium"
+  precursor_tracking:
+    cement:
+      - "clinker"
+    iron_steel:
+      - "pig_iron"
+      - "direct_reduced_iron"
+      - "crude_steel"
+      - "ferro_alloys"
+    aluminium:
+      - "alumina"
+      - "unwrought_aluminium"
+
+# Emission - installation-level actual data preferred
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 25.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "industry"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+
+# Heavy industry benchmarks
+heavy_industry_benchmarks:
+  eu_ets_product_benchmarks_2026:
+    cement_clinker:
+      value: 0.766                # tCO2/tonne clinker
+      unit: "tCO2e/tonne"
+      source: "EU ETS Phase IV benchmark"
+    hot_metal:
+      value: 1.328
+      unit: "tCO2e/tonne"
+      source: "EU ETS Phase IV benchmark"
+    eaf_carbon_steel:
+      value: 0.283
+      unit: "tCO2e/tonne"
+      source: "EU ETS Phase IV benchmark"
+    eaf_high_alloy_steel:
+      value: 0.352
+      unit: "tCO2e/tonne"
+      source: "EU ETS Phase IV benchmark"
+    aluminium:
+      value: 1.514
+      unit: "tCO2e/tonne"
+      source: "EU ETS Phase IV benchmark"
+      note: "Direct emissions only; electricity not included"
+
+  # Cross-category comparisons for portfolio analysis
+  emission_intensity_ranges:
+    cement:
+      low: 0.50
+      median: 0.68
+      high: 1.00
+      unit: "tCO2e/tonne cement"
+    iron_steel_integrated:
+      low: 1.50
+      median: 1.85
+      high: 2.50
+      unit: "tCO2e/tonne crude steel"
+    iron_steel_eaf:
+      low: 0.25
+      median: 0.45
+      high: 0.70
+      unit: "tCO2e/tonne crude steel"
+    aluminium_primary:
+      low: 2.00
+      median: 8.00
+      high: 14.00
+      unit: "tCO2e/tonne primary Al"
+
+# Certificate - high volume management
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 60
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+  repurchase_enabled: true
+
+# Supplier - installation-level data
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 75.0
+  max_installations_per_supplier: 25
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# Verification - comprehensive for heavy industry
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+  remote_verification_allowed: false
+  sampling_methodology: "risk_based"
+
+# ERP integration focus
+erp_integration:
+  enabled: true
+  systems:
+    - "SAP S/4HANA"
+    - "Oracle Cloud"
+    - "Microsoft Dynamics"
+  data_sources:
+    - "purchase_orders"
+    - "customs_declarations"
+    - "bills_of_lading"
+    - "goods_receipt_notes"
+    - "supplier_invoices"
+  sync_frequency: "daily"
+
+# Source countries
+source_countries_focus:
+  - country: "TR"
+    name: "Turkey"
+    categories: ["iron_steel", "cement"]
+  - country: "CN"
+    name: "China"
+    categories: ["iron_steel", "aluminium"]
+  - country: "IN"
+    name: "India"
+    categories: ["iron_steel", "cement", "aluminium"]
+  - country: "RU"
+    name: "Russia"
+    categories: ["iron_steel", "aluminium"]
+  - country: "UA"
+    name: "Ukraine"
+    categories: ["iron_steel"]
+  - country: "EG"
+    name: "Egypt"
+    categories: ["iron_steel", "cement"]

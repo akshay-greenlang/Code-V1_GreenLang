@@ -1,0 +1,344 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Energy Trading Sector Preset
+# =============================================================================
+# NACE Codes: D35 (Electricity, gas, steam and air conditioning supply)
+#
+# Covers electricity imports into the EU and energy trading operations.
+# Focus on grid emission factors, power purchase agreements (PPAs),
+# cross-border electricity flow tracking, and interconnector-level data.
+#
+# Key characteristics:
+#   - Electricity is unique among CBAM goods (measured in MWh, not tonnes)
+#   - Grid emission factors vary enormously by country and time of day
+#   - PPAs and Guarantees of Origin (GoOs) can alter emission attribution
+#   - Cross-border flows via interconnectors require metering data
+#   - Temporal matching is important (hourly vs. annual factors)
+#   - Transmission losses must be accounted for
+# =============================================================================
+
+# Sector identification
+sector_specific:
+  nace_codes: ["D35"]
+  sector_name: "Energy Trading"
+  sector_group: "energy"
+
+  # Key characteristics of electricity CBAM
+  primary_features:
+    - "grid_emission_factors"
+    - "interconnector_metering"
+    - "ppa_tracking"
+    - "temporal_matching"
+    - "transmission_losses"
+    - "dispatch_data"
+
+  # Interconnectors tracked (EU border crossing points)
+  interconnectors:
+    - id: "UA-PL"
+      name: "Ukraine-Poland Interconnector"
+      countries: ["UA", "PL"]
+      capacity_mw: 1700
+    - id: "UA-SK"
+      name: "Ukraine-Slovakia Interconnector"
+      countries: ["UA", "SK"]
+      capacity_mw: 640
+    - id: "UA-HU"
+      name: "Ukraine-Hungary Interconnector"
+      countries: ["UA", "HU"]
+      capacity_mw: 650
+    - id: "UA-RO"
+      name: "Ukraine-Romania Interconnector"
+      countries: ["UA", "RO"]
+      capacity_mw: 600
+    - id: "CH-DE"
+      name: "Switzerland-Germany Interconnector"
+      countries: ["CH", "DE"]
+      capacity_mw: 4000
+    - id: "CH-FR"
+      name: "Switzerland-France Interconnector"
+      countries: ["CH", "FR"]
+      capacity_mw: 3200
+    - id: "CH-IT"
+      name: "Switzerland-Italy Interconnector"
+      countries: ["CH", "IT"]
+      capacity_mw: 4200
+    - id: "CH-AT"
+      name: "Switzerland-Austria Interconnector"
+      countries: ["CH", "AT"]
+      capacity_mw: 1200
+    - id: "NO-DE"
+      name: "NordLink (Norway-Germany)"
+      countries: ["NO", "DE"]
+      capacity_mw: 1400
+      cable_type: "HVDC subsea"
+    - id: "NO-NL"
+      name: "NorNed (Norway-Netherlands)"
+      countries: ["NO", "NL"]
+      capacity_mw: 700
+      cable_type: "HVDC subsea"
+    - id: "NO-DK"
+      name: "Skagerrak (Norway-Denmark)"
+      countries: ["NO", "DK"]
+      capacity_mw: 1700
+    - id: "GB-FR"
+      name: "IFA (UK-France)"
+      countries: ["GB", "FR"]
+      capacity_mw: 2000
+      cable_type: "HVDC subsea"
+    - id: "GB-NL"
+      name: "BritNed (UK-Netherlands)"
+      countries: ["GB", "NL"]
+      capacity_mw: 1000
+      cable_type: "HVDC subsea"
+    - id: "GB-BE"
+      name: "Nemo Link (UK-Belgium)"
+      countries: ["GB", "BE"]
+      capacity_mw: 1000
+      cable_type: "HVDC subsea"
+    - id: "RS-HU"
+      name: "Serbia-Hungary Interconnector"
+      countries: ["RS", "HU"]
+      capacity_mw: 600
+    - id: "BA-HR"
+      name: "Bosnia-Croatia Interconnector"
+      countries: ["BA", "HR"]
+      capacity_mw: 1000
+    - id: "ME-IT"
+      name: "Montenegro-Italy Interconnector"
+      countries: ["ME", "IT"]
+      capacity_mw: 600
+    - id: "AL-IT"
+      name: "Albania-Italy Interconnector"
+      countries: ["AL", "IT"]
+      capacity_mw: 500
+    - id: "MK-GR"
+      name: "North Macedonia-Greece Interconnector"
+      countries: ["MK", "GR"]
+      capacity_mw: 400
+    - id: "TR-GR"
+      name: "Turkey-Greece Interconnector"
+      countries: ["TR", "GR"]
+      capacity_mw: 700
+    - id: "TR-BG"
+      name: "Turkey-Bulgaria Interconnector"
+      countries: ["TR", "BG"]
+      capacity_mw: 800
+
+# Goods configuration - electricity only
+goods:
+  enabled_categories:
+    - "electricity"
+  cn_codes_per_category:
+    electricity:
+      - "2716 00 00"   # Electrical energy
+  precursor_tracking:
+    electricity: []
+
+# Emission - grid factors and temporal matching
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 15.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: false
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+  country_carbon_price_sources:
+    - "eu_ets"
+    - "uk_ets"
+    - "carbon_tax_registry"
+
+# Electricity-specific configuration
+electricity_config:
+  # Emission factor types
+  emission_factor_types:
+    annual_average:
+      description: "Annual average grid emission factor for the country"
+      granularity: "annual"
+      preferred_for: "default_reporting"
+    monthly_average:
+      description: "Monthly average grid emission factor"
+      granularity: "monthly"
+      preferred_for: "quarterly_reporting"
+    hourly_marginal:
+      description: "Hourly marginal emission factor"
+      granularity: "hourly"
+      preferred_for: "ppa_matching"
+
+  # Grid emission factors (tCO2e/MWh) by country
+  grid_emission_factors_2024:
+    # Non-EU countries exporting to EU
+    UA: 0.450    # Ukraine
+    GB: 0.200    # United Kingdom
+    NO: 0.010    # Norway (hydro)
+    CH: 0.015    # Switzerland (hydro + nuclear)
+    RS: 0.720    # Serbia (lignite)
+    BA: 0.850    # Bosnia (lignite)
+    ME: 0.450    # Montenegro
+    AL: 0.030    # Albania (hydro)
+    MK: 0.620    # North Macedonia
+    TR: 0.480    # Turkey
+    GE: 0.150    # Georgia (hydro)
+    MD: 0.500    # Moldova
+    BY: 0.420    # Belarus
+    # EU member states (for reference / comparison)
+    DE: 0.350
+    FR: 0.055
+    PL: 0.650
+    IT: 0.290
+    ES: 0.170
+    NL: 0.320
+    AT: 0.100
+    SE: 0.010
+    DK: 0.120
+    FI: 0.070
+    GR: 0.350
+    BG: 0.450
+    RO: 0.280
+    HU: 0.220
+    SK: 0.120
+    CZ: 0.400
+    HR: 0.180
+    SI: 0.230
+    PT: 0.180
+    IE: 0.300
+    BE: 0.160
+
+  # PPA and GoO configuration
+  ppa_config:
+    ppa_recognition: true
+    goo_recognition: true
+    temporal_matching:
+      enabled: true
+      granularity: "hourly"        # hourly, monthly, annual
+      description: >-
+        For PPAs to qualify for emission factor override, temporal
+        matching between generation and consumption must be demonstrated.
+    additionality_required: false
+    geographic_correlation: true
+
+  # Transmission loss factors
+  transmission_losses:
+    default_loss_pct: 3.0
+    cross_border_additional_pct: 1.0
+    per_interconnector: {}          # Override per interconnector if needed
+
+  # Data sources for electricity flows
+  data_sources:
+    - name: "ENTSO-E Transparency Platform"
+      description: "Official European TSO data on cross-border flows"
+      url: "https://transparency.entsoe.eu"
+      data_types: ["cross_border_flows", "generation_mix", "day_ahead_prices"]
+    - name: "TSO metering data"
+      description: "Direct metering data from transmission system operators"
+      data_types: ["interconnector_flows", "losses"]
+    - name: "Electricity Maps"
+      description: "Real-time and historical carbon intensity data"
+      data_types: ["emission_factors", "generation_mix"]
+
+# Certificate configuration
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: false     # No free allocation for electricity
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+
+  electricity_specific:
+    free_allocation_note: >-
+      Electricity does not receive free allocation under EU ETS.
+      Therefore, the full CBAM certificate obligation applies from
+      2026, with no phase-in period for electricity imports.
+
+# Quarterly reporting - electricity specific
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 7
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "EN"
+  include_supporting_documents: true
+
+  electricity_reporting:
+    report_granularity: "monthly"    # Monthly flow data in quarterly report
+    include_interconnector_data: true
+    include_generation_mix: true
+    include_ppa_details: true
+    include_goo_certificates: true
+
+# Supplier - TSO and generator data
+supplier:
+  auto_request_frequency_months: 1
+  quality_threshold: 80.0
+  max_installations_per_supplier: 50
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+  note: "For electricity, threshold is measured in tCO2e embedded emissions, not MWh"
+
+# Verification
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: false
+  remote_verification_allowed: true
+  sampling_methodology: "risk_based"
+
+  electricity_verification:
+    metering_data_audit: true
+    ppa_validity_check: true
+    goo_registry_confirmation: true
+    grid_factor_source_verification: true
+
+# Source countries for electricity imports
+source_countries_focus:
+  - country: "NO"
+    name: "Norway"
+    grid_factor: 0.010
+    typical_flow: "export_to_EU"
+    interconnectors: ["NO-DE", "NO-NL", "NO-DK"]
+  - country: "GB"
+    name: "United Kingdom"
+    grid_factor: 0.200
+    typical_flow: "bidirectional"
+    interconnectors: ["GB-FR", "GB-NL", "GB-BE"]
+  - country: "CH"
+    name: "Switzerland"
+    grid_factor: 0.015
+    typical_flow: "transit_and_export"
+    interconnectors: ["CH-DE", "CH-FR", "CH-IT", "CH-AT"]
+  - country: "UA"
+    name: "Ukraine"
+    grid_factor: 0.450
+    typical_flow: "export_to_EU"
+    interconnectors: ["UA-PL", "UA-SK", "UA-HU", "UA-RO"]
+  - country: "RS"
+    name: "Serbia"
+    grid_factor: 0.720
+    typical_flow: "export_to_EU"
+    interconnectors: ["RS-HU"]
+  - country: "BA"
+    name: "Bosnia & Herzegovina"
+    grid_factor: 0.850
+    typical_flow: "export_to_EU"
+    interconnectors: ["BA-HR"]
+  - country: "TR"
+    name: "Turkey"
+    grid_factor: 0.480
+    typical_flow: "export_to_EU"
+    interconnectors: ["TR-GR", "TR-BG"]

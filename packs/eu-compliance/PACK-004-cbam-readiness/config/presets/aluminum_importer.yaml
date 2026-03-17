@@ -1,0 +1,251 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Aluminium Importer Preset
+# =============================================================================
+# Optimized for importers of aluminium products (CN 76xx).
+# Emphasis on electricity-intensive production, PFC emissions from anode
+# effects, smelter-level data granularity, and alumina refining precursor
+# tracking.
+#
+# Key characteristics:
+#   - Electricity is the dominant emission driver (60-70% of total)
+#   - PFC emissions (CF4, C2F6) from anode effects are significant
+#   - Primary vs. secondary aluminium distinction is critical
+#   - Alumina (Al2O3) refining is a major precursor
+#   - Grid emission factors vary enormously by country
+# =============================================================================
+
+# Goods configuration - aluminium focus
+goods:
+  enabled_categories:
+    - "aluminium"
+  cn_codes_per_category:
+    aluminium:
+      - "7601"        # Unwrought aluminium
+      - "7602"        # Aluminium waste and scrap
+      - "7603"        # Aluminium powders and flakes
+      - "7604"        # Aluminium bars, rods and profiles
+      - "7605"        # Aluminium wire
+      - "7606"        # Aluminium plates, sheets, strip >0.2mm
+      - "7607"        # Aluminium foil <=0.2mm
+      - "7608"        # Aluminium tubes and pipes
+      - "7609"        # Aluminium tube/pipe fittings
+      - "7610"        # Aluminium structures and parts
+      - "7611"        # Aluminium reservoirs/tanks >300L
+      - "7612"        # Aluminium casks/drums <=300L
+      - "7613"        # Aluminium compressed gas containers
+      - "7614"        # Stranded wire/cables of aluminium
+      - "7616"        # Other articles of aluminium
+  precursor_tracking:
+    aluminium:
+      - "alumina"
+      - "unwrought_aluminium"
+
+# Emission calculation - electricity-intensive focus
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 30.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+  country_carbon_price_sources:
+    - "eu_ets"
+    - "china_ets"
+    - "carbon_tax_registry"
+
+# Aluminium-specific calculation parameters
+aluminium_calculation:
+  production_routes:
+    primary_smelting:
+      enabled: true
+      description: "Primary aluminium smelting via Hall-Heroult electrolysis"
+      typical_emission_intensity: 8.0  # tCO2e/tonne (global average)
+      emission_breakdown:
+        direct_process_pct: 25          # Anode consumption, PFC
+        indirect_electricity_pct: 65    # Electrolysis power
+        other_pct: 10                   # Casting, auxiliary
+      key_inputs:
+        - "alumina"
+        - "carbon_anodes"
+        - "electricity"
+        - "cryolite"
+        - "aluminium_fluoride"
+      key_emission_sources:
+        - "electrolysis_electricity"
+        - "anode_consumption_co2"
+        - "pfc_cf4"
+        - "pfc_c2f6"
+        - "baking_furnace"
+        - "casting_energy"
+      anode_type_options:
+        - "prebaked"                    # Modern, lower PFC
+        - "soderberg"                   # Older, higher PFC
+      pfc_tracking:
+        cf4_gwp: 7390                   # GWP-100 (AR6)
+        c2f6_gwp: 12200                 # GWP-100 (AR6)
+        anode_effect_frequency: "per_pot_day"
+    secondary_recycled:
+      enabled: true
+      description: "Secondary aluminium from scrap remelting"
+      typical_emission_intensity: 0.5   # tCO2e/tonne
+      key_inputs:
+        - "aluminium_scrap"
+        - "natural_gas"
+        - "electricity"
+      key_emission_sources:
+        - "melting_furnace"
+        - "dross_processing"
+    alumina_refining:
+      enabled: true
+      description: "Bayer process alumina refining (precursor)"
+      typical_emission_intensity: 1.5   # tCO2e/tonne alumina
+      alumina_to_aluminium_ratio: 1.93  # tonnes alumina per tonne aluminium
+      key_inputs:
+        - "bauxite"
+        - "caustic_soda"
+        - "steam"
+        - "electricity"
+      key_emission_sources:
+        - "digestion_steam"
+        - "calcination"
+        - "electricity"
+
+  product_categories:
+    unwrought:
+      description: "Unwrought aluminium (ingots, billets, slabs)"
+      additional_processing_emissions: 0.0
+    semi_fabricated:
+      description: "Bars, rods, profiles, wire, plates, sheets"
+      additional_processing_emissions: 0.50  # tCO2e/tonne above primary
+    foil:
+      description: "Aluminium foil (multiple rolling passes)"
+      additional_processing_emissions: 1.20
+    extruded:
+      description: "Extruded profiles and tubes"
+      additional_processing_emissions: 0.70
+    castings:
+      description: "Aluminium castings and structures"
+      additional_processing_emissions: 0.40
+
+  # Electricity grid factors by major aluminium-exporting country
+  grid_factors_tco2e_per_mwh:
+    CN: 0.58    # China (coal-heavy grid)
+    RU: 0.42    # Russia (hydro + gas)
+    IN: 0.72    # India (coal-heavy)
+    AE: 0.45    # UAE (gas-based)
+    BH: 0.50    # Bahrain (gas-based)
+    NO: 0.01    # Norway (hydro)
+    IS: 0.00    # Iceland (geothermal + hydro)
+    CA: 0.02    # Canada (hydro in Quebec)
+    BR: 0.08    # Brazil (hydro)
+    ZA: 0.95    # South Africa (coal)
+    AU: 0.65    # Australia (coal + gas)
+    NZ: 0.10    # New Zealand (hydro + geothermal)
+    MZ: 0.03    # Mozambique (hydro)
+
+  # Typical electricity consumption for primary smelting
+  electricity_consumption_kwh_per_tonne:
+    modern_prebaked: 13000
+    older_prebaked: 14500
+    soderberg: 15500
+    industry_average: 14200
+
+# Certificate configuration
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+
+# Quarterly reporting
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 7
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "EN"
+  include_supporting_documents: true
+
+# Supplier configuration - smelter-level granularity
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 70.0
+  max_installations_per_supplier: 10
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis monitoring
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+
+# Verification - critical due to high emission variability
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+  remote_verification_allowed: false
+  sampling_methodology: "risk_based"
+
+# Pack-level settings
+reporting_year: 2026
+reporting_period: "definitive"
+transitional_mode: false
+demo_mode: false
+
+# Key source countries for aluminium imports into EU
+source_countries_focus:
+  - country: "RU"
+    name: "Russia"
+    primary_routes: ["primary_smelting"]
+    power_source: "hydro_gas_mix"
+    typical_intensity: 5.5
+  - country: "CN"
+    name: "China"
+    primary_routes: ["primary_smelting"]
+    power_source: "coal_dominant"
+    typical_intensity: 12.5
+  - country: "IN"
+    name: "India"
+    primary_routes: ["primary_smelting"]
+    power_source: "coal_dominant"
+    typical_intensity: 14.0
+  - country: "NO"
+    name: "Norway"
+    primary_routes: ["primary_smelting"]
+    power_source: "hydroelectric"
+    typical_intensity: 2.5
+  - country: "IS"
+    name: "Iceland"
+    primary_routes: ["primary_smelting"]
+    power_source: "geothermal_hydro"
+    typical_intensity: 2.0
+  - country: "AE"
+    name: "UAE (Emirates Global Aluminium)"
+    primary_routes: ["primary_smelting"]
+    power_source: "natural_gas"
+    typical_intensity: 7.5
+  - country: "BH"
+    name: "Bahrain (Alba)"
+    primary_routes: ["primary_smelting"]
+    power_source: "natural_gas"
+    typical_intensity: 8.0
+  - country: "MZ"
+    name: "Mozambique (Mozal)"
+    primary_routes: ["primary_smelting"]
+    power_source: "hydroelectric"
+    typical_intensity: 3.0

@@ -1,0 +1,308 @@
+# =============================================================================
+# PACK-011 Preset: Transition Fund
+# =============================================================================
+# Article 9(1) climate transition fund with EU Climate Transition Benchmark
+# (CTB) alignment. Designed for funds investing in companies actively
+# transitioning to low-carbon business models, including companies in
+# high-emission sectors with credible decarbonization plans.
+#
+# Article 9 Sub-Type: GENERAL_9_1 (Article 9(1))
+# Sustainable Investment Minimum: 90%
+# Benchmark: CTB (Climate Transition Benchmark)
+# Focus: Transition enablers and high-emitter improvers
+#
+# Applicable to:
+#   - Climate transition equity/bond funds
+#   - High-emitter engagement funds
+#   - Just transition strategies
+#   - Industrial decarbonization funds
+#   - Green bond transition funds
+#
+# Key Features:
+#   - 90% minimum sustainable investment proportion
+#   - CTB benchmark alignment (30% decarbonization vs parent)
+#   - Carbon trajectory tracking with 7% annual target
+#   - Broader sector inclusion than PAB (transition focus)
+#   - Engagement-first approach for breach handling
+#   - Full 18 mandatory PAI + additional climate indicators
+#   - Scope 1+2+3 emissions
+#   - Transition plan assessment in governance checks
+#   - Theory-of-change impact measurement
+# =============================================================================
+
+sfdr_classification: "ARTICLE_9"
+article_9_sub_type: "GENERAL_9_1"
+reporting_frequency: "ANNUAL"
+reporting_year: 2025
+
+# --- Sustainable Objective Configuration ---
+sustainable_objective:
+  objective_type: "ENVIRONMENTAL"
+  objective_description: "Sustainable investments in companies with credible climate transition plans, enabling the shift to a low-carbon economy across all sectors"
+  environmental_objectives:
+    - "climate_change_mitigation"
+    - "clean_energy_transition"
+    - "energy_efficiency"
+    - "circular_economy"
+    - "industrial_decarbonization"
+  social_objectives:
+    - "just_transition"
+    - "decent_work"
+  sdg_alignment: [7, 8, 9, 11, 12, 13]
+  contribution_methodology: "THRESHOLD_BASED"
+  minimum_contribution_threshold_pct: 15.0
+
+# --- PAI Configuration ---
+pai:
+  enabled: true
+  pai_mandatory: true
+  enabled_mandatory_indicators: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+  additional_climate_indicators: [1, 2, 3, 4, 5, 6]
+  additional_social_indicators: []
+  min_coverage_pct: 70.0
+  coverage_adjustment: true
+  estimation_enabled: true
+  estimation_methodology: "SECTOR_AVERAGE"
+  include_scope_3: true
+  entity_level_statement: true
+  product_level_pai: true
+  prior_period_comparison: true
+  data_quality_tracking: true
+  impact_alignment_check: true
+
+# --- Taxonomy Alignment Configuration ---
+taxonomy_alignment:
+  enabled: true
+  minimum_commitment_pct: 10.0
+  include_sovereign_bonds: false
+  look_through_enabled: true
+  look_through_max_levels: 3
+  enabling_activity_disclosure: true
+  transitional_activity_disclosure: true
+  alignment_methodology: "CAPEX_BASED"
+  gas_nuclear_disclosure: true
+  verification_frequency: "QUARTERLY"
+
+# --- DNSH Configuration ---
+dnsh:
+  enabled: true
+  methodology: "COMBINED"
+  pai_indicators_used: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+  quantitative_thresholds_enabled: true
+  qualitative_assessment_enabled: true
+  evidence_required: true
+  controversial_weapons_exclusion: true
+  ungc_violations_exclusion: true
+  portfolio_wide_enforcement: true
+
+# --- Governance Configuration ---
+governance:
+  enabled: true
+  check_sound_management: true
+  check_employee_relations: true
+  check_remuneration: true
+  check_tax_compliance: true
+  minimum_governance_score: 65.0
+  require_all_dimensions_pass: true
+  controversy_flag_threshold: 2
+  monitoring_frequency: "QUARTERLY"
+  data_sources:
+    - "ESG_DATA_PROVIDER"
+    - "ANNUAL_REPORT"
+    - "PROXY_STATEMENT"
+    - "CONTROVERSY_SCREENING"
+    - "TRANSITION_PLAN_ASSESSMENT"
+  portfolio_wide_enforcement: true
+
+# --- Sustainable Investment Configuration ---
+sustainable_investment:
+  enabled: true
+  minimum_proportion_pct: 90.0
+  taxonomy_aligned_minimum_pct: 10.0
+  other_environmental_minimum_pct: 40.0
+  social_minimum_pct: 0.0
+  require_dnsh_pass: true
+  require_governance_pass: true
+  double_counting_prevention: true
+  contribution_assessment_methodology: "REVENUE_ALIGNED"
+  non_si_allocation_cap_pct: 10.0
+  non_si_purposes:
+    - "hedging"
+    - "liquidity_management"
+    - "cash_equivalents"
+
+# --- Impact Configuration ---
+impact:
+  enabled: true
+  measurement_approach: "THEORY_OF_CHANGE"
+  impact_kpis:
+    - "co2_reduced_tonnes"
+    - "capex_green_share_pct"
+    - "renewable_energy_capacity_mw"
+    - "energy_efficiency_improvement_pct"
+    - "green_revenue_transition_pct"
+    - "transition_plan_credibility_score"
+    - "sbti_target_coverage_pct"
+    - "just_transition_jobs_protected"
+  reporting_frequency: "ANNUAL"
+  external_verification: false
+  baseline_year: 2020
+  target_year: 2050
+  additionality_assessment: true
+  attribution_methodology: "ENTERPRISE_VALUE"
+  sdg_impact_mapping: true
+  track_negative_impact: true
+  impact_report_template: "STANDARD"
+
+# --- Benchmark Configuration ---
+benchmark:
+  enabled: true
+  benchmark_type: "CTB"
+  benchmark_name: ""
+  benchmark_provider: ""
+  benchmark_isin: ""
+  tracking_error_limit_bps: 500
+  comparison_frequency: "QUARTERLY"
+  explain_alignment_methodology: true
+  explain_deviation: true
+  broad_market_comparison: true
+  broad_market_index: "MSCI World"
+
+# --- Carbon Trajectory Configuration ---
+carbon_trajectory:
+  enabled: true
+  trajectory_type: "SBTi_WELL_BELOW_2C"
+  annual_decarbonization_target_pct: 7.0
+  base_year: 2019
+  target_year: 2050
+  interim_target_year: 2030
+  interim_reduction_target_pct: 30.0
+  scope_coverage:
+    - "SCOPE_1"
+    - "SCOPE_2"
+    - "SCOPE_3"
+  scope_3_phase_in: true
+  scope_3_phase_in_deadline: 2024
+  fossil_fuel_exclusion: false
+  fossil_fuel_revenue_threshold_pct: 50.0
+  track_avoided_emissions: true
+  rebalancing_on_deviation: true
+  deviation_tolerance_pct: 5.0
+
+# --- Carbon Footprint Configuration ---
+carbon_footprint:
+  enabled: true
+  calculate_waci: true
+  calculate_carbon_footprint: true
+  calculate_total_emissions: true
+  calculate_financed_emissions: true
+  scope_coverage:
+    - "SCOPE_1"
+    - "SCOPE_2"
+    - "SCOPE_3"
+  pcaf_alignment: true
+  coverage_threshold_pct: 60.0
+  benchmark_comparison: true
+  benchmark_index: ""
+  yoy_trend: true
+  attribution_analysis: true
+  currency: "EUR"
+
+# --- Downgrade Monitoring Configuration ---
+downgrade_monitoring:
+  enabled: true
+  sustainable_investment_floor_pct: 85.0
+  monitoring_frequency: "QUARTERLY"
+  alert_threshold_pct: 88.0
+  critical_threshold_pct: 83.0
+  action_on_breach: "REMEDIATION_PLAN"
+  remediation_window_days: 45
+  track_dnsh_failures: true
+  track_governance_failures: true
+  notify_compliance_team: true
+  notify_portfolio_manager: true
+  historical_tracking: true
+
+# --- EET Configuration ---
+eet:
+  enabled: true
+  eet_version: "V1_1"
+  import_enabled: true
+  export_enabled: true
+  export_format: "XLSX"
+  validate_completeness: true
+  validate_consistency: true
+  auto_populate: true
+  sfdr_classification_field: true
+  taxonomy_alignment_fields: true
+  pai_consideration_fields: true
+
+# --- Disclosure Configuration ---
+disclosure:
+  annex_iii_pre_contractual_enabled: true
+  annex_v_periodic_enabled: true
+  website_disclosure_enabled: true
+  default_format: "PDF"
+  include_methodology_note: true
+  include_data_sources: true
+  include_asset_allocation_chart: true
+  include_impact_section: true
+  include_benchmark_comparison: true
+  include_carbon_trajectory: true
+  review_workflow_enabled: true
+  version_tracking: true
+  greenwashing_check: true
+  downgrade_disclosure_plan: true
+
+# --- Screening Configuration ---
+screening:
+  negative_screening_enabled: true
+  positive_screening_enabled: true
+  norms_based_screening_enabled: true
+  negative_exclusions:
+    - "controversial_weapons"
+    - "tobacco_production"
+    - "thermal_coal_extraction"
+    - "unconventional_oil_gas"
+    - "nuclear_weapons"
+    - "civilian_firearms"
+  revenue_threshold_pct: 5.0
+  norms_frameworks:
+    - "UN_GLOBAL_COMPACT"
+    - "OECD_GUIDELINES"
+    - "ILO_CONVENTIONS"
+    - "UN_GUIDING_PRINCIPLES"
+  best_in_class_percentile: 60.0
+  screening_frequency: "QUARTERLY"
+  breach_handling: "ENGAGE_FIRST"
+  monitoring_enabled: true
+
+# --- Reporting Configuration ---
+reporting:
+  reporting_frequency: "ANNUAL"
+  reporting_period_end: "12-31"
+  reporting_deadline_days: 120
+  default_format: "PDF"
+  language: "en"
+  include_board_summary: true
+  include_impact_report: true
+
+# --- Data Quality Configuration ---
+data_quality:
+  min_quality_score: 0.80
+  min_coverage_pct: 70.0
+  estimation_limit_pct: 30.0
+  data_age_max_months: 12
+  require_audited_emissions: true
+  validation_on_ingestion: true
+  flag_low_quality: true
+  allow_sector_proxies: true
+  proxy_disclosure_required: true
+
+# --- Audit Trail Configuration ---
+audit_trail:
+  retention_years: 7
+  hash_algorithm: "SHA-256"
+  immutable_log: true
+  include_provenance_hash: true
+  track_classification_changes: true

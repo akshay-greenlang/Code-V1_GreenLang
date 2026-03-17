@@ -1,0 +1,243 @@
+# =============================================================================
+# PACK-013 CSRD Manufacturing Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for GreenManufacturing GmbH, a fictional diversified
+# manufacturing group with three facilities: a cement plant in Germany,
+# an automotive assembly plant in the Czech Republic, and a chemical
+# processing facility in the Netherlands. This configuration demonstrates
+# multi-site, multi-sector capabilities with synthetic data for demo mode.
+#
+# Company: GreenManufacturing GmbH
+# Headquarters: Frankfurt am Main, Germany
+# Employees: 4,200
+# Revenue: EUR 1.8 billion
+# Reporting Year: 2025
+# =============================================================================
+
+# --- Company Details ---
+company_name: "GreenManufacturing GmbH"
+reporting_year: 2025
+manufacturing_tier: "HEAVY_INDUSTRY"
+sub_sectors:
+  - "CEMENT"
+  - "AUTOMOTIVE"
+  - "CHEMICALS"
+
+# --- Facilities ---
+facilities:
+  - facility_id: "FAC-001-DE"
+    facility_name: "Rhein-Main Cement Plant"
+    country: "DE"
+    sub_sector: "CEMENT"
+    eu_ets_installation_id: "DE-ETS-2024-001234"
+    ied_permit_number: "IED-DE-HE-2019-0456"
+    production_capacity_tonnes: 1200000.0
+    employees: 850
+
+  - facility_id: "FAC-002-CZ"
+    facility_name: "Pilsen Automotive Assembly"
+    country: "CZ"
+    sub_sector: "AUTOMOTIVE"
+    production_capacity_tonnes: null
+    employees: 2100
+
+  - facility_id: "FAC-003-NL"
+    facility_name: "Rotterdam Chemical Processing"
+    country: "NL"
+    sub_sector: "CHEMICALS"
+    eu_ets_installation_id: "NL-ETS-2024-005678"
+    ied_permit_number: "IED-NL-ZH-2020-0789"
+    production_capacity_tonnes: 350000.0
+    employees: 1250
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  total_assets_eur: 2100000000.0
+  net_turnover_eur: 1800000000.0
+  average_employees: 4200
+  listed_entity: false
+
+# --- Process Emissions ---
+process_emissions:
+  enabled: true
+  sub_sector: "CEMENT"
+  process_lines:
+    - "KILN-1"
+    - "KILN-2"
+    - "RAW-MILL"
+    - "CEMENT-MILL"
+    - "REACTOR-A"
+    - "REACTOR-B"
+    - "DISTILLATION-1"
+  cbam_affected: true
+  ets_installation_id: "DE-ETS-2024-001234"
+  ets_phase: "PHASE_4"
+  cbam_status: "FULL_COMPLIANCE"
+  emission_sources:
+    - "combustion"
+    - "process"
+    - "fugitive"
+  mass_balance_enabled: true
+  product_allocation_enabled: true
+  allocation_method: "MASS"
+  emission_factor_source: "EU_MRV"
+  year_over_year_tracking: true
+
+# --- Energy Intensity ---
+energy_intensity:
+  enabled: true
+  production_unit: "tonne"
+  energy_sources:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+    - "COAL"
+    - "HEAVY_FUEL_OIL"
+    - "BIOMASS"
+    - "WASTE_HEAT"
+  benchmark_reference: "EU_ETS_BENCHMARK"
+  iso50001_certified: true
+  enpi_tracking: true
+  significant_energy_use_threshold_pct: 3.0
+  renewable_energy_tracking: true
+  energy_cost_tracking: true
+  baseline_year: 2019
+
+# --- Product Carbon Footprint ---
+product_pcf:
+  enabled: true
+  lifecycle_scope: "CRADLE_TO_GATE"
+  allocation_method: "MASS"
+  dpp_enabled: true
+  pef_methodology: true
+  iso14067_compliant: true
+  emission_factor_database: "ECOINVENT"
+  co_product_allocation: true
+  recycled_content_crediting: true
+  functional_unit: "1 tonne product"
+  product_families:
+    - "Portland Cement CEM I"
+    - "Blended Cement CEM II"
+    - "Vehicle Assembly (C-Segment)"
+    - "Specialty Chemicals - Grade A"
+    - "Specialty Chemicals - Grade B"
+  uncertainty_analysis: true
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  waste_streams:
+    - "HAZARDOUS"
+    - "NON_HAZARDOUS"
+    - "BY_PRODUCT"
+    - "RECYCLABLE"
+  recycled_content_tracking: true
+  epr_schemes:
+    - "END_OF_LIFE_VEHICLES"
+    - "PACKAGING"
+  material_circularity_indicator: true
+  waste_diversion_target_pct: 82.0
+  industrial_symbiosis_tracking: true
+  espr_recycled_content_mandates: true
+
+# --- Water & Pollution ---
+water_pollution:
+  enabled: true
+  water_sources:
+    - "MUNICIPAL"
+    - "GROUNDWATER"
+    - "SURFACE_WATER"
+    - "RECYCLED"
+  pollutant_types:
+    - "AIR_EMISSIONS"
+    - "WATER_DISCHARGES"
+    - "WASTE_TRANSFERS"
+  water_stress_assessment: true
+  reach_svhc_tracking: true
+  eprtr_reporting: true
+  water_framework_directive: true
+  wastewater_treatment_monitoring: true
+  water_recycling_rate_tracking: true
+  clp_hazard_classification: true
+  water_intensity_metric: "m3_per_tonne"
+
+# --- BAT/BREF Compliance ---
+bat_compliance:
+  enabled: true
+  applicable_brefs:
+    - "CLM_BREF"
+    - "LVOC_BREF"
+    - "CWW_BREF"
+    - "LCP_BREF"
+  compliance_level: "WITHIN_RANGE"
+  transformation_plan: true
+  bat_ael_monitoring: true
+  derogation_tracking: true
+  permit_conditions_monitoring: true
+  ied_inspection_readiness: true
+
+# --- Supply Chain ---
+supply_chain:
+  enabled: true
+  tier_depth: 3
+  priority_categories: [1, 2, 3, 4, 5, 9, 10, 11, 12]
+  supplier_engagement_platform: "CDP_SUPPLY_CHAIN"
+  spend_based_screening: true
+  supplier_specific_enabled: true
+  hybrid_method: true
+  hotspot_analysis: true
+  engagement_scoring: true
+  cbam_import_integration: true
+  transport_mode_tracking: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  peer_group: "NACE_SECTOR"
+  kpi_set:
+    - "carbon_intensity"
+    - "energy_intensity"
+    - "water_intensity"
+    - "waste_intensity"
+    - "circularity_rate"
+  sbti_pathway: "WELL_BELOW_2C"
+  abatement_cost_curve: true
+  eu_ets_benchmark_comparison: true
+  bat_ael_benchmark_comparison: true
+  decarbonization_technologies:
+    - "electrification"
+    - "hydrogen"
+    - "ccus"
+    - "biomass"
+    - "energy_efficiency"
+    - "waste_heat_recovery"
+  target_years: [2025, 2030, 2035, 2040, 2050]
+  gap_analysis_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  process_emissions_report_enabled: true
+  pcf_label_enabled: true
+  energy_report_enabled: true
+  circular_economy_report_enabled: true
+  bat_report_enabled: true
+  scorecard_enabled: true
+  decarbonization_roadmap_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  multi_language_support: true
+  supported_languages: ["en", "de"]
+  review_workflow_enabled: true
+  watermark_draft: true

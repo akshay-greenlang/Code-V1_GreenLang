@@ -1,0 +1,53 @@
+# =============================================================================
+# PACK-008 Sector: Energy
+# =============================================================================
+# Sector-specific configuration for the energy industry including power
+# generation, renewable energy, grid infrastructure, energy storage, and
+# district heating/cooling.
+#
+# Key NACE Sections: D (Electricity, gas, steam)
+# Primary Objectives: CCM (Climate Change Mitigation)
+# Taxonomy Activities: ~22 activities
+#
+# Relevant TSC Examples:
+#   - Electricity generation: 100g CO2e/kWh lifecycle threshold
+#   - Cogeneration: 270g CO2e/kWh lifecycle threshold
+#   - District heating: 20% improvement over BAT
+#   - Transmission/distribution: enabling activity criteria
+#   - Energy storage: enabling activity criteria
+# =============================================================================
+
+active_sectors:
+  - "ENERGY"
+
+eligibility:
+  screening_mode: "HYBRID"
+  min_confidence: 0.90
+  include_transitional: true
+  include_enabling: true
+
+sc_assessment:
+  evaluation_mode: "STANDARD"
+  threshold_strictness: "STANDARD"
+  track_enabling_activities: true
+  track_transitional_activities: true
+
+dnsh:
+  climate_risk_assessment_enabled: true
+  water_framework_directive_check: true
+  pollution_threshold_check: true
+  biodiversity_impact_assessment: true
+
+transition_activity:
+  enabled: true
+  best_available_technology_check: true
+  lock_in_avoidance_check: true
+  sunset_date_tracking: true
+
+enabling_activity:
+  enabled: true
+  direct_enablement_verification: true
+  lifecycle_consideration: true
+
+regulatory:
+  include_complementary_da: true

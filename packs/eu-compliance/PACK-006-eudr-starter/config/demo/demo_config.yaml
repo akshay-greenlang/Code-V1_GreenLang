@@ -1,0 +1,145 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - Demo Mode Configuration
+# =============================================================================
+# Demo mode provides a self-contained environment for testing, training,
+# and demonstration purposes. All external API calls are mocked, sample
+# supplier and plot data is loaded, and execution is optimized for speed.
+#
+# Usage:
+#   config = PackConfig.load(demo_mode=True)
+#   config = PackConfig.load(size_preset="mid_market", sector_preset="palm_oil", demo_mode=True)
+# =============================================================================
+
+# Core demo settings
+enabled: true
+use_sample_data: true
+skip_external_apis: true
+mock_euis_responses: true
+fast_execution: true
+
+# Sample data paths (relative to pack root)
+sample_suppliers_file: "config/demo/demo_suppliers.json"
+sample_plots_file: "config/demo/demo_plots.geojson"
+
+# Demo operator identity
+demo_operator:
+  company_name: "EcoTrade Imports GmbH"
+  eori_number: "DE123456789012345"
+  registration_country: "DEU"
+  operator_type: "OPERATOR"
+  company_size: "MID_MARKET"
+  contact_email: "eudr-compliance@ecotrade-demo.eu"
+  vat_number: "DE123456789"
+  employees: 250
+  turnover_eur: 85000000
+
+# Demo commodity selection
+demo_commodities:
+  - commodity_type: "cocoa"
+    enabled: true
+    annual_volume_tonnes: 5000
+    priority: 1
+  - commodity_type: "coffee"
+    enabled: true
+    annual_volume_tonnes: 3000
+    priority: 2
+  - commodity_type: "oil_palm"
+    enabled: true
+    annual_volume_tonnes: 10000
+    priority: 1
+  - commodity_type: "wood"
+    enabled: true
+    annual_volume_tonnes: 2000
+    priority: 3
+  - commodity_type: "soya"
+    enabled: true
+    annual_volume_tonnes: 8000
+    priority: 2
+
+# Mock data sources
+mock_sources:
+  # EU Information System mock
+  euis:
+    enabled: true
+    mock_response_time_ms: 100
+    auto_accept_dds: true
+    reference_number_prefix: "DEMO"
+    submission_success_rate: 0.95
+
+  # Satellite imagery mock
+  satellite:
+    enabled: true
+    mock_response_time_ms: 200
+    deforestation_alert_rate: 0.05
+    cloud_cover_pct: 15
+
+  # Certification registry mock
+  certifications:
+    enabled: true
+    mock_response_time_ms: 50
+    valid_certificate_rate: 0.90
+
+  # Country risk database
+  country_risk:
+    enabled: true
+    use_production_database: true
+    mock_response_time_ms: 5
+
+# Demo workflow settings
+workflows:
+  dds_generation:
+    enabled: true
+    fast_mode: true
+    skip_review_gate: true
+    auto_populate_fields: true
+
+  supplier_onboarding:
+    enabled: true
+    fast_mode: true
+    skip_document_validation: true
+    auto_approve: true
+
+  quarterly_compliance_review:
+    enabled: true
+    fast_mode: true
+
+  data_quality_baseline:
+    enabled: true
+    fast_mode: true
+
+# Demo reporting
+demo_reporting:
+  auto_generate: true
+  include_sample_risk_heatmap: true
+  include_sample_supplier_scorecard: true
+  export_demo_report: true
+
+# Performance settings for demo
+performance:
+  geolocation_single_max_ms: 10
+  risk_single_supplier_max_seconds: 1
+  dds_single_max_seconds: 5
+
+# Agent overrides for demo - enable all with fast execution
+agent_overrides:
+  AGENT-EUDR-015:
+    enabled: false           # Mobile data collector not needed in demo
+
+  AGENT-EUDR-036:
+    config_overrides:
+      mock_euis: true
+      sandbox_mode: true
+
+  AGENT-EUDR-038:
+    config_overrides:
+      demo_prefix: "DEMO"
+      sequential_numbering: true
+
+# Logging and telemetry in demo mode
+logging:
+  level: "INFO"
+  show_agent_execution_times: true
+  show_data_flow_summary: true
+  show_risk_calculation_steps: true
+  show_dds_assembly_steps: true
+  export_demo_log: true

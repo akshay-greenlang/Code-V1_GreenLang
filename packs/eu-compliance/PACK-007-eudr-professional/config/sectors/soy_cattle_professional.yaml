@@ -1,0 +1,65 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Soy & Cattle Professional Sector
+# =============================================================================
+# Professional soy and cattle supply chain configuration with RTRS/ProTerra/ISCC
+# verification, Cerrado and Chaco focus, ranch mapping, feedlot tracking, and
+# South America sourcing (Brazil, Argentina, Paraguay, Bolivia).
+# =============================================================================
+
+commodities:
+  - commodity_type: "soya"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RTRS", "PROTERRA", "ISCC"]
+    high_risk_origins: ["BRA", "ARG", "PRY", "BOL", "URY"]
+    annual_volume_tonnes: 200000.0
+  - commodity_type: "cattle"
+    enabled: true
+    priority: 1
+    certification_schemes: []
+    high_risk_origins: ["BRA", "ARG", "PRY", "BOL", "COL", "VEN", "GUY", "NIC"]
+    annual_volume_tonnes: 50000.0
+
+geolocation:
+  coordinate_precision: 7
+  polygon_max_vertices: 100000  # Large ranches/farms
+  polygon_area_threshold_ha: 10.0  # Large plots
+  batch_size: 500
+
+risk_assessment:
+  country_weight: 0.45  # Very high for Cerrado/Chaco
+  supplier_weight: 0.25
+  commodity_weight: 0.20
+  document_weight: 0.10
+
+compliance:
+  require_geolocation: true
+  require_certification: false  # Cattle often uncertified
+  verification_level: "ENHANCED"
+  data_quality_threshold: 0.90
+
+cutoff_date:
+  satellite_lookback_years: 20  # Long lookback for Cerrado
+  temporal_analysis_periods: 10
+
+advanced_geolocation:
+  resolution_meters: 10
+  temporal_periods: 10
+  alert_systems: ["GLAD", "RADD", "DETER"]
+
+satellite_monitoring:
+  check_interval_hours: 6  # Frequent monitoring for Cerrado
+  alert_threshold: 0.60  # Low threshold (sensitive)
+  historical_months: 120
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 20.0  # Large buffer for Cerrado
+  ramsar_check: true
+  unesco_check: true
+
+advanced_supply_chain:
+  max_tier_depth: 4  # Farm/Ranch -> Feedlot -> Processor -> Product
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED"]

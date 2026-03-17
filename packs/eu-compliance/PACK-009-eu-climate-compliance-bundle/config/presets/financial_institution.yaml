@@ -1,0 +1,240 @@
+# =============================================================================
+# PACK-009 Preset: Financial Institution
+# =============================================================================
+# Deployment optimized for banks, asset managers, and insurance companies.
+# EU Taxonomy GAR/BTAR focus with mandatory CSRD reporting. CBAM and EUDR
+# enabled at secondary priority for financed emissions and portfolio-level
+# supply chain risk assessment. EBA Pillar 3 ESG disclosure templates included.
+#
+# Applicable to:
+#   - Credit institutions (banks) subject to EBA Pillar 3
+#   - Asset managers and fund companies (SFDR Article 8/9)
+#   - Insurance and reinsurance undertakings
+#   - Investment firms subject to CRR/CRD
+#
+# Key Features:
+#   - EU Taxonomy at highest priority (GAR/BTAR calculation)
+#   - CSRD at highest priority (mandatory sustainability reporting)
+#   - CBAM enabled for financed emissions in industrial portfolios
+#   - EUDR enabled for portfolio-level deforestation risk
+#   - Scoring weighted toward Taxonomy (0.35) and CSRD (0.35)
+#   - EBA Pillar 3 ESG disclosure templates (Templates 6-10)
+#   - SFDR Article 8/9 product alignment tracking
+#   - Cross-regulation consistency focused on financial data
+# =============================================================================
+
+bundle_tier: "FINANCIAL_INSTITUTION"
+reporting_year: 2025
+
+# --- Regulation Configurations ---
+regulation_configs:
+  CSRD:
+    enabled: true
+    priority: 1
+    pack_id: "PACK-001-csrd-starter"
+    display_name: "Corporate Sustainability Reporting Directive"
+    regulation_reference: "Directive (EU) 2022/2464"
+    scoring_weight: 0.35
+    data_quality_threshold: 0.90
+    reporting_frequency: "ANNUAL"
+  CBAM:
+    enabled: true
+    priority: 3
+    pack_id: "PACK-004-cbam-readiness"
+    display_name: "Carbon Border Adjustment Mechanism"
+    regulation_reference: "Regulation (EU) 2023/956"
+    scoring_weight: 0.10
+    data_quality_threshold: 0.75
+    reporting_frequency: "QUARTERLY"
+  EUDR:
+    enabled: true
+    priority: 4
+    pack_id: "PACK-006-eudr-starter"
+    display_name: "EU Deforestation Regulation"
+    regulation_reference: "Regulation (EU) 2023/1115"
+    scoring_weight: 0.10
+    data_quality_threshold: 0.70
+    reporting_frequency: "PER_SHIPMENT"
+  TAXONOMY:
+    enabled: true
+    priority: 1
+    pack_id: "PACK-008-eu-taxonomy-alignment"
+    display_name: "EU Taxonomy Regulation"
+    regulation_reference: "Regulation (EU) 2020/852"
+    scoring_weight: 0.45
+    data_quality_threshold: 0.90
+    reporting_frequency: "ANNUAL"
+
+# --- Calendar Configuration ---
+calendar:
+  enabled: true
+  lead_time_days: 45
+  critical_lead_time_days: 10
+  notification_channels:
+    - "EMAIL"
+    - "TEAMS"
+    - "IN_APP"
+  conflict_detection: true
+  auto_schedule_reviews: true
+  review_lead_time_days: 21
+  include_csrd_deadlines: true
+  include_cbam_deadlines: true
+  include_eudr_deadlines: true
+  include_taxonomy_deadlines: true
+  fiscal_year_end_month: 12
+  timezone: "Europe/Frankfurt"
+
+# --- Deduplication Configuration ---
+deduplication:
+  enabled: true
+  fuzzy_match_threshold: 0.92
+  hash_comparison: true
+  semantic_similarity: true
+  auto_merge: false
+  track_savings: true
+  dedup_categories:
+    - "GHG_EMISSIONS"
+    - "FINANCIAL_DATA"
+    - "ACTIVITY_CLASSIFICATION"
+    - "CLIMATE_RISK"
+    - "GOVERNANCE"
+  batch_size: 500
+  preserve_provenance: true
+
+# --- Consistency Configuration ---
+consistency:
+  enabled: true
+  numeric_tolerance_pct: 2.0
+  date_tolerance_days: 0
+  auto_reconcile: false
+  reconciliation_action: "FLAG_FOR_REVIEW"
+  check_ghg_emissions: true
+  check_financial_data: true
+  check_supply_chain: false
+  check_taxonomy_csrd: true
+  check_cbam_taxonomy: true
+  check_eudr_taxonomy: false
+
+# --- Gap Analysis Configuration ---
+gap_analysis:
+  enabled: true
+  severity_levels:
+    - "CRITICAL"
+    - "HIGH"
+    - "MEDIUM"
+    - "LOW"
+    - "INFO"
+  include_remediation_plans: true
+  include_effort_estimates: true
+  include_cost_estimates: false
+  cross_regulation_leverage: true
+  prioritize_shared_gaps: true
+  gap_refresh_frequency: "QUARTERLY"
+  max_gaps_per_report: 75
+  include_dependency_chains: true
+
+# --- Evidence Configuration ---
+evidence:
+  enabled: true
+  evidence_types:
+    - "DOCUMENT"
+    - "CERTIFICATE"
+    - "CALCULATION"
+    - "ATTESTATION"
+    - "REPORT"
+  deduplication: true
+  hash_algorithm: "SHA-256"
+  retention_years: 10
+  lifecycle_tracking: true
+  auto_expire: true
+  require_verification: true
+  max_file_size_mb: 50
+  cross_reference_tracking: true
+
+# --- Reporting Configuration ---
+reporting:
+  enabled: true
+  default_format: "PDF"
+  generate_executive_summary: true
+  generate_dashboard: true
+  generate_gap_report: true
+  generate_calendar_report: true
+  generate_consistency_report: true
+  generate_dedup_report: true
+  generate_audit_trail: true
+  generate_data_map: true
+  include_trend_analysis: true
+  include_forecasting: true
+  language: "en"
+  timezone: "UTC"
+  xbrl_tagging: true
+  distribution_channels:
+    - "email"
+    - "in_app"
+
+# --- Scoring Configuration ---
+scoring:
+  enabled: true
+  composite_method: "WEIGHTED_AVERAGE"
+  regulation_weights:
+    CSRD: 0.35
+    CBAM: 0.10
+    EUDR: 0.10
+    TAXONOMY: 0.45
+  passing_score: 75.0
+  letter_grade_thresholds:
+    A: 90.0
+    B: 80.0
+    C: 70.0
+    D: 60.0
+    F: 0.0
+  include_trend: true
+  score_data_quality: true
+  score_evidence_completeness: true
+  score_timeliness: true
+
+# --- Data Mapper Configuration ---
+data_mapper:
+  enabled: true
+  active_categories:
+    - "GHG_EMISSIONS"
+    - "FINANCIAL_DATA"
+    - "ACTIVITY_CLASSIFICATION"
+    - "CLIMATE_RISK"
+    - "GOVERNANCE"
+  unit_conversion: true
+  currency_normalization: true
+  base_currency: "EUR"
+  temporal_alignment: true
+  field_mapping_validation: true
+  track_mapping_coverage: true
+
+# --- Health Check Configuration ---
+health_check:
+  enabled: true
+  check_interval_minutes: 10
+  check_pack_availability: true
+  check_agent_status: true
+  check_database_connectivity: true
+  check_api_health: true
+  check_configuration_validity: true
+  check_integration_status: true
+  alert_on_degradation: true
+  alert_channels:
+    - "EMAIL"
+    - "TEAMS"
+    - "IN_APP"
+
+# --- Audit Trail Configuration ---
+audit_trail:
+  enabled: true
+  retention_years: 10
+  hash_algorithm: "SHA-256"
+  immutable_log: true
+  include_provenance_hash: true
+  cross_pack_lineage: true
+  export_formats:
+    - "JSON"
+    - "XML"
+    - "PDF"
+  user_attribution: true

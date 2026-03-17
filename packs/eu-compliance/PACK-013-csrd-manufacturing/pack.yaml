@@ -1,0 +1,1360 @@
+# =============================================================================
+# PACK-013: CSRD Manufacturing Pack
+# GreenLang EU Compliance Pack for CSRD Manufacturing Sector Disclosures
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for CSRD compliance tailored specifically to the
+# manufacturing sector. Manufacturing companies face unique disclosure
+# requirements under ESRS covering process emissions, energy intensity,
+# product carbon footprints, circular economy practices, industrial water
+# and pollution management, Best Available Techniques (BAT/BREF) compliance,
+# supply chain emissions (Scope 3), and sector-specific benchmarking.
+#
+# This pack integrates with the EU Emissions Trading System (EU ETS), the
+# Carbon Border Adjustment Mechanism (CBAM), the Ecodesign for Sustainable
+# Products Regulation (ESPR), the Industrial Emissions Directive (IED/BAT),
+# and the EU Taxonomy for sustainable activities. It supports heavy industry
+# (cement, steel, aluminium, chemicals, glass, ceramics), discrete
+# manufacturing (automotive, electronics, machinery), process manufacturing
+# (chemicals, food & beverage, textiles, pulp & paper), and light
+# manufacturing (furniture, packaging, consumer goods).
+#
+# Key Capabilities:
+#   - Process emissions calculation per IED/MRV methodology (Scope 1)
+#   - Energy intensity benchmarking per EU ETS and BAT/BREF
+#   - Product Carbon Footprint (PCF) per ISO 14067 / PEF methodology
+#   - Circular economy metrics (recycled content, waste diversion, EPR)
+#   - Water consumption and pollution tracking (E-PRTR, REACH, CLP)
+#   - BAT/BREF compliance assessment per IED sector-specific BREFs
+#   - Supply chain emissions mapping (Scope 3 categories 1-12)
+#   - Manufacturing sector benchmarking against EU BAT-AEL and peers
+#   - CSRD Omnibus Directive threshold assessment
+#
+# Regulatory References:
+#   - CSRD: Directive (EU) 2022/2464
+#   - ESRS: Delegated Regulation (EU) 2023/2772 (Set 1)
+#   - EU ETS: Directive 2003/87/EC (as amended by Directive (EU) 2023/959)
+#   - IED: Directive 2010/75/EU (Industrial Emissions Directive)
+#   - CBAM: Regulation (EU) 2023/956
+#   - ESPR: Regulation (EU) 2024/1781 (Ecodesign for Sustainable Products)
+#   - EU Taxonomy: Regulation (EU) 2020/852
+#   - ISO 14067:2018 (Product Carbon Footprint)
+#   - ISO 50001:2018 (Energy Management Systems)
+#   - E-PRTR: Regulation (EC) No 166/2006
+#   - REACH: Regulation (EC) No 1907/2006
+#   - SBTi: Science Based Targets initiative (Sectoral guidance)
+#   - GHG Protocol: Product Life Cycle Standard
+#
+# Manufacturing Sub-Sectors Supported:
+#   - Heavy industry: cement, steel, aluminium, chemicals, glass, ceramics
+#   - Discrete manufacturing: automotive, electronics, machinery
+#   - Process manufacturing: chemicals, food & beverage, textiles, pulp & paper
+#   - Light manufacturing: pharmaceuticals, plastics/rubber, furniture, packaging
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-16)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-013-csrd-manufacturing
+  version: "1.0.0"
+  display_name: "CSRD Manufacturing Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for CSRD compliance by manufacturing
+    companies. Includes 8 engines for process emissions calculation, energy
+    intensity benchmarking, product carbon footprint (PCF/DPP), circular economy
+    metrics, water and pollution management, BAT/BREF compliance assessment,
+    supply chain emissions mapping, and manufacturing sector benchmarking.
+    Bundles all 30 MRV agents for operational emissions, 20 data intake/quality
+    agents, 10 foundation agents, and 7 industrial MRV agents plus 8 additional
+    bridged agents. Supports heavy industry, discrete, process, and light
+    manufacturing sub-sectors with tailored presets and regulatory template
+    packages. Addresses CSRD Omnibus Directive thresholds for SME relief.
+  category: eu-compliance
+  tier: sector-specific
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-16"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/csrd-manufacturing"
+  changelog_url: "https://docs.greenlang.io/packs/csrd-manufacturing/changelog"
+
+  tags:
+    - csrd
+    - manufacturing
+    - esrs
+    - process-emissions
+    - energy-intensity
+    - product-carbon-footprint
+    - pcf
+    - circular-economy
+    - bat-bref
+    - ied
+    - eu-ets
+    - cbam
+    - espr
+    - dpp
+    - eu-taxonomy
+    - water-pollution
+    - reach
+    - e-prtr
+    - iso-14067
+    - iso-50001
+    - sbti
+    - heavy-industry
+    - discrete-manufacturing
+    - process-manufacturing
+    - light-manufacturing
+    - cement
+    - steel
+    - aluminium
+    - chemicals
+    - automotive
+    - electronics
+    - decarbonization
+    - omnibus
+    - eu-compliance
+    - sector-specific
+
+  regulation:
+    primary:
+      name: "Corporate Sustainability Reporting Directive"
+      reference: "(EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        The CSRD mandates sustainability reporting for large undertakings and
+        listed companies under the European Sustainability Reporting Standards
+        (ESRS). Manufacturing companies face sector-specific disclosure
+        requirements covering process emissions, energy consumption, product
+        lifecycle impacts, circular economy practices, water and pollution,
+        and BAT compliance under the Industrial Emissions Directive.
+    secondary:
+      - name: "European Sustainability Reporting Standards (Set 1)"
+        reference: "(EU) 2023/2772"
+        effective_date: "2024-01-01"
+      - name: "EU Emissions Trading System"
+        reference: "Directive 2003/87/EC (as amended)"
+        effective_date: "2005-01-01"
+      - name: "Industrial Emissions Directive"
+        reference: "Directive 2010/75/EU"
+        effective_date: "2011-01-06"
+      - name: "Carbon Border Adjustment Mechanism"
+        reference: "(EU) 2023/956"
+        effective_date: "2026-01-01"
+      - name: "Ecodesign for Sustainable Products Regulation"
+        reference: "(EU) 2024/1781"
+        effective_date: "2024-07-18"
+      - name: "EU Taxonomy Regulation"
+        reference: "(EU) 2020/852"
+        effective_date: "2020-07-12"
+      - name: "E-PRTR Regulation"
+        reference: "(EC) No 166/2006"
+        effective_date: "2006-02-24"
+      - name: "REACH Regulation"
+        reference: "(EC) No 1907/2006"
+        effective_date: "2007-06-01"
+
+  compliance_references:
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        Framework directive requiring in-scope manufacturing undertakings to
+        report under ESRS. Manufacturing companies must disclose process
+        emissions, energy use, product carbon footprints, circularity metrics,
+        and BAT compliance. The Omnibus Directive proposal raises thresholds
+        potentially exempting smaller manufacturers.
+
+    - id: "ESRS"
+      name: "European Sustainability Reporting Standards"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Set 1 cross-cutting and topical standards. For manufacturing: ESRS E1
+        (climate/emissions) is critical for process and energy emissions, ESRS E2
+        (pollution) covers industrial pollutants and REACH substances, ESRS E3
+        (water) covers industrial water use, ESRS E5 (circular economy) covers
+        waste and recycled content. Sector-specific ESRS for manufacturing
+        anticipated in Set 2.
+
+    - id: "EU_ETS"
+      name: "EU Emissions Trading System"
+      regulation: "Directive 2003/87/EC (as amended by 2023/959)"
+      effective_date: "2005-01-01"
+      description: >-
+        EU carbon pricing mechanism covering energy-intensive manufacturing
+        installations. Phase 4 (2021-2030) includes tightened caps, reduced
+        free allocation for CBAM sectors, and Maritime/Aviation extensions.
+        Manufacturing installations must monitor, report, and verify (MRV)
+        their emissions annually.
+
+    - id: "IED_BAT"
+      name: "Industrial Emissions Directive / BAT"
+      regulation: "Directive 2010/75/EU"
+      effective_date: "2011-01-06"
+      description: >-
+        IED requires industrial installations to operate using Best Available
+        Techniques (BAT) as defined in sector-specific BAT Reference documents
+        (BREFs). BAT-Associated Emission Levels (BAT-AELs) set binding emission
+        limits. Manufacturing installations must demonstrate BAT compliance
+        or hold derogation permits.
+
+    - id: "CBAM"
+      name: "Carbon Border Adjustment Mechanism"
+      regulation: "Regulation (EU) 2023/956"
+      effective_date: "2026-01-01"
+      description: >-
+        CBAM applies to imports of cement, iron/steel, aluminium, fertilizers,
+        electricity, and hydrogen. Manufacturing companies importing these goods
+        or using them as inputs must track embedded emissions and purchase CBAM
+        certificates from 2026.
+
+    - id: "ESPR"
+      name: "Ecodesign for Sustainable Products Regulation"
+      regulation: "Regulation (EU) 2024/1781"
+      effective_date: "2024-07-18"
+      description: >-
+        ESPR establishes a framework for setting ecodesign requirements for
+        sustainable products, including Digital Product Passports (DPP),
+        recycled content mandates, durability requirements, and carbon
+        footprint declarations. Critical for manufacturing product-level
+        sustainability reporting.
+
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      regulation: "Regulation (EU) 2020/852"
+      effective_date: "2020-07-12"
+      description: >-
+        Classification system for environmentally sustainable economic
+        activities. Manufacturing companies must assess taxonomy eligibility
+        and alignment for their activities, applying Technical Screening
+        Criteria and DNSH/Minimum Safeguards requirements.
+
+    - id: "REACH"
+      name: "REACH Regulation"
+      regulation: "Regulation (EC) No 1907/2006"
+      effective_date: "2007-06-01"
+      description: >-
+        Registration, Evaluation, Authorisation and Restriction of Chemicals.
+        Manufacturing companies must track Substances of Very High Concern
+        (SVHCs), comply with authorisation requirements, and report chemical
+        safety information in sustainability disclosures.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 manufacturing engines)
+  # ===========================================================================
+  engines:
+    - id: process_emissions
+      name: "Process Emissions Engine"
+      description: >-
+        Calculates direct process emissions from manufacturing operations per
+        IED MRV methodology and EU ETS monitoring rules. Covers calcination
+        (cement, ceramics), chemical reactions (ammonia, nitric acid, adipic
+        acid), metal smelting (aluminium electrolysis, steel BOF/EAF), glass
+        melting, and pulp & paper processes. Supports facility-level, process
+        line-level, and product-level emission allocation. Integrates with
+        EU ETS installation identifiers and CBAM embedded emissions methodology.
+        Zero-hallucination: all emission factors from EU MRV reference tables,
+        mass balance calculations deterministic, no LLM in calculation path.
+      required: true
+
+    - id: energy_intensity
+      name: "Energy Intensity Engine"
+      description: >-
+        Calculates energy intensity metrics per production unit (GJ/tonne,
+        kWh/unit, MJ/m2) for manufacturing processes. Benchmarks against
+        BAT-AEL energy performance levels from sector-specific BREFs,
+        EU ETS benchmark values, and industry peer data. Supports ISO 50001
+        energy management integration, significant energy use (SEU)
+        identification, energy performance indicators (EnPIs), and energy
+        baseline tracking. Handles multi-energy-source sites (electricity,
+        natural gas, coal, biomass, hydrogen, waste heat recovery).
+        Zero-hallucination: energy calculations from metered data and
+        deterministic conversion factors only.
+      required: true
+
+    - id: product_carbon_footprint
+      name: "Product Carbon Footprint (PCF) Engine"
+      description: >-
+        Calculates product-level carbon footprints per ISO 14067, GHG Protocol
+        Product Standard, and EU Product Environmental Footprint (PEF)
+        methodology. Supports cradle-to-gate and cradle-to-grave lifecycle
+        scopes, multiple allocation methods (mass, economic, physical causality),
+        and Digital Product Passport (DPP) data generation per ESPR. Handles
+        multi-product manufacturing lines with shared process emissions,
+        co-product allocation, and recycled content crediting. Generates
+        PCF labels and EPD-compatible output.
+        Zero-hallucination: lifecycle emission factors from ecoinvent/GaBi
+        lookups, allocation via deterministic formulas, no LLM in numerics.
+      required: true
+
+    - id: circular_economy
+      name: "Circular Economy Engine"
+      description: >-
+        Tracks circular economy metrics per ESRS E5 and EU Taxonomy circular
+        economy criteria. Calculates recycled content ratios, waste diversion
+        rates, material circularity indicator (MCI), end-of-life recyclability
+        scores, and Extended Producer Responsibility (EPR) obligations. Supports
+        waste stream categorization (hazardous, non-hazardous, by-products),
+        industrial symbiosis tracking, and closed-loop material flow analysis.
+        Integrates with ESPR recycled content mandates and packaging waste
+        directive requirements. Zero-hallucination: mass balance calculations
+        and ratio computations are deterministic.
+      required: true
+
+    - id: water_pollution
+      name: "Water & Pollution Engine"
+      description: >-
+        Tracks water consumption, wastewater discharge, and industrial pollutant
+        emissions per ESRS E2 (pollution) and ESRS E3 (water). Covers E-PRTR
+        reportable pollutants, REACH SVHC tracking, CLP hazard classification,
+        Water Framework Directive compliance, and water stress assessment using
+        WRI Aqueduct data. Calculates water intensity metrics (m3/tonne
+        product), pollutant load factors, and treatment efficiency rates.
+        Supports multi-source water tracking (municipal, groundwater, surface,
+        recycled). Zero-hallucination: pollutant concentrations and flow
+        calculations from metered data, no LLM in measurement path.
+      required: true
+
+    - id: bat_compliance
+      name: "BAT/BREF Compliance Engine"
+      description: >-
+        Assesses compliance against Best Available Techniques Reference
+        Documents (BREFs) per Industrial Emissions Directive 2010/75/EU.
+        Covers sector-specific BREFs for cement/lime, iron/steel, non-ferrous
+        metals, large combustion plants, glass, ceramics, pulp/paper, food/
+        drink/milk, textiles, chemicals (LVOC, LVIC-S, LVIC-AAF, SIC, OFC,
+        polymers), surface treatment, waste treatment, and common waste water
+        treatment. Evaluates BAT-AEL compliance, identifies non-compliant
+        parameters, tracks BAT conclusion implementation deadlines, and
+        generates transformation plans for non-compliant installations.
+        LLM-assisted: narrative for transformation plan descriptions;
+        all BAT-AEL comparisons are deterministic lookups.
+      required: true
+
+    - id: supply_chain_emissions
+      name: "Supply Chain Emissions Engine"
+      description: >-
+        Maps and calculates Scope 3 supply chain emissions for manufacturing
+        value chains. Prioritizes categories most material to manufacturing:
+        Cat 1 (purchased goods/services - raw materials), Cat 2 (capital
+        goods - machinery), Cat 3 (fuel & energy), Cat 4 (upstream transport),
+        Cat 5 (waste), Cat 9 (downstream transport), Cat 10 (processing of
+        sold products), Cat 11 (use of sold products), Cat 12 (end-of-life).
+        Supports hybrid calculation (supplier-specific + spend-based + average),
+        supplier engagement scoring, and hotspot identification. Integrates
+        with CBAM for imported materials and CDP Supply Chain for supplier
+        data collection. Zero-hallucination: emission factors from verified
+        databases, calculations deterministic.
+      required: true
+
+    - id: manufacturing_benchmark
+      name: "Manufacturing Benchmark Engine"
+      description: >-
+        Benchmarks manufacturing performance against EU BAT-AEL values, EU ETS
+        product benchmarks, peer group averages, and SBTi sectoral pathways.
+        Calculates performance gap analysis, identifies improvement priorities,
+        and generates decarbonization roadmaps with abatement cost curves.
+        Supports KPI sets including carbon intensity (tCO2e/tonne), energy
+        intensity (GJ/tonne), water intensity (m3/tonne), waste intensity
+        (kg waste/tonne), and circularity rate. Peer grouping by NACE code,
+        production volume, and geography.
+        Zero-hallucination: benchmark values from published regulatory data,
+        gap calculations deterministic.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 manufacturing workflows)
+  # ===========================================================================
+  workflows:
+    - id: manufacturing_emissions
+      name: "Manufacturing Emissions Workflow"
+      description: >-
+        6-phase workflow: Facility Data Ingestion -> Process Line Mapping ->
+        Process Emissions Calculation -> Energy Emissions Calculation ->
+        Scope 1+2 Consolidation -> EU ETS Report Generation. Calculates all
+        direct and energy-indirect emissions for manufacturing installations,
+        maps to EU ETS installation IDs, and generates MRV-compliant output.
+        Supports multi-facility consolidation with inter-site transfers.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 6
+
+    - id: product_pcf
+      name: "Product Carbon Footprint Workflow"
+      description: >-
+        5-phase workflow: Bill of Materials Extraction -> Process Emission
+        Allocation -> Lifecycle Emission Modeling -> PCF Calculation ->
+        DPP Data Generation. Calculates product-level carbon footprints
+        for all SKUs or product families, allocates shared process emissions,
+        models upstream and downstream lifecycle phases, and generates Digital
+        Product Passport data per ESPR.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 5
+
+    - id: circular_economy
+      name: "Circular Economy Assessment Workflow"
+      description: >-
+        4-phase workflow: Material Flow Analysis -> Waste Stream Classification
+        -> Circularity Metrics Calculation -> EPR Obligation Assessment.
+        Tracks material inputs and outputs, classifies waste streams,
+        calculates recycled content and material circularity indicators,
+        and determines Extended Producer Responsibility obligations.
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: bat_compliance
+      name: "BAT Compliance Assessment Workflow"
+      description: >-
+        5-phase workflow: BREF Applicability Determination -> Monitoring Data
+        Collection -> BAT-AEL Compliance Check -> Gap Identification ->
+        Transformation Plan Generation. Determines applicable BREFs for
+        each installation, collects monitoring data, checks against BAT-AELs,
+        identifies non-compliant parameters, and generates remediation plans
+        with cost estimates and timelines.
+      schedule: "annual"
+      estimated_duration_minutes: 150
+      phases: 5
+
+    - id: supply_chain_assessment
+      name: "Supply Chain Emissions Assessment Workflow"
+      description: >-
+        5-phase workflow: Supplier Data Collection -> Spend-Based Screening ->
+        Supplier-Specific Calculation -> Hotspot Analysis -> Engagement
+        Strategy Generation. Collects supplier emissions data via questionnaires
+        and CDP Supply Chain, performs spend-based screening for uncovered
+        categories, calculates supplier-specific emissions where data allows,
+        identifies emission hotspots, and generates supplier engagement plans.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 5
+
+    - id: esrs_manufacturing
+      name: "ESRS Manufacturing Disclosure Workflow"
+      description: >-
+        6-phase workflow: Double Materiality Assessment -> Data Aggregation
+        -> ESRS Topic Compilation -> Cross-Reference Validation -> Narrative
+        Generation -> Disclosure Assembly. Performs manufacturing-sector
+        materiality assessment, aggregates data from all engines, compiles
+        ESRS E1-E5/S1-S4/G1 disclosures, cross-validates metrics, generates
+        narrative descriptions, and assembles the ESRS chapter for the
+        management report. Handles CSRD Omnibus threshold assessment.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 6
+
+    - id: decarbonization_roadmap
+      name: "Decarbonization Roadmap Workflow"
+      description: >-
+        4-phase workflow: Baseline Assessment -> Technology Option Screening
+        -> Abatement Cost Curve Generation -> Milestone Planning. Establishes
+        emission baseline by process, screens decarbonization technologies
+        (electrification, hydrogen, CCUS, biomass, efficiency), generates
+        marginal abatement cost curves, and creates phased implementation
+        milestones aligned with SBTi sectoral pathways and EU ETS phase-out.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: regulatory_compliance
+      name: "Regulatory Compliance Integration Workflow"
+      description: >-
+        4-phase workflow: Regulation Applicability Scan -> Cross-Regulation
+        Data Mapping -> Consistency Validation -> Unified Dashboard Update.
+        Scans which regulations apply (CSRD, EU ETS, CBAM, IED, ESPR,
+        Taxonomy, REACH), maps data points across requirements, validates
+        consistency, and updates the unified compliance dashboard. Monitors
+        regulatory changes affecting manufacturing obligations.
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 manufacturing templates)
+  # ===========================================================================
+  templates:
+    - id: process_emissions_report
+      display_name: "Process Emissions Report"
+      description: >-
+        Detailed process emissions report by facility, process line, and
+        emission source. Includes EU ETS installation-level aggregation,
+        CBAM embedded emissions breakdown, year-over-year trends, and
+        BAT-AEL comparison. Compatible with EU ETS annual emissions report
+        format and ESRS E1 disclosure requirements.
+      format: "pdf"
+      template_file: "templates/process_emissions_report.jinja2"
+      enabled: true
+
+    - id: product_pcf_label
+      display_name: "Product Carbon Footprint Label"
+      description: >-
+        Product-level carbon footprint label per ISO 14067 and PEF
+        methodology. Includes lifecycle stage breakdown (raw materials,
+        manufacturing, transport, use, end-of-life), functional unit
+        specification, data quality indicator, and DPP-compatible machine-
+        readable data block. Suitable for B2B product declarations and
+        consumer-facing eco-labels.
+      format: "pdf"
+      template_file: "templates/product_pcf_label.jinja2"
+      enabled: true
+
+    - id: energy_performance_report
+      display_name: "Energy Performance Report"
+      description: >-
+        Energy performance report with consumption by source, intensity
+        metrics per production unit, ISO 50001 energy review data, EnPI
+        tracking, significant energy use identification, and benchmark
+        comparison against BAT-AEL and EU ETS product benchmark values.
+        Includes energy cost analysis and renewable energy share tracking.
+      format: "pdf"
+      template_file: "templates/energy_performance_report.jinja2"
+      enabled: true
+
+    - id: circular_economy_report
+      display_name: "Circular Economy Report"
+      description: >-
+        Circular economy metrics report per ESRS E5 covering material
+        inflow/outflow analysis, recycled content ratios by product,
+        waste diversion rates by stream, material circularity indicator
+        (MCI), EPR obligation summary, and industrial symbiosis
+        opportunities. Includes ESPR recycled content compliance status.
+      format: "pdf"
+      template_file: "templates/circular_economy_report.jinja2"
+      enabled: true
+
+    - id: bat_compliance_report
+      display_name: "BAT Compliance Report"
+      description: >-
+        BAT/BREF compliance assessment report by installation. Lists
+        applicable BREFs, monitored parameters versus BAT-AELs, compliance
+        status (compliant/within-range/non-compliant/derogation), permit
+        conditions, transformation plan status, and implementation timeline.
+        Suitable for IED permit review and regulatory inspection preparation.
+      format: "pdf"
+      template_file: "templates/bat_compliance_report.jinja2"
+      enabled: true
+
+    - id: water_pollution_report
+      display_name: "Water & Pollution Report"
+      description: >-
+        Water consumption and industrial pollution report per ESRS E2/E3.
+        Covers water withdrawal by source, discharge by destination,
+        consumption intensity metrics, E-PRTR pollutant releases, REACH
+        SVHC inventory, wastewater treatment efficiency, and water stress
+        site assessment. Includes Water Framework Directive compliance status.
+      format: "pdf"
+      template_file: "templates/water_pollution_report.jinja2"
+      enabled: true
+
+    - id: manufacturing_scorecard
+      display_name: "Manufacturing Sustainability Scorecard"
+      description: >-
+        Executive-level sustainability scorecard combining all manufacturing
+        KPIs: carbon intensity, energy intensity, water intensity, waste
+        intensity, circularity rate, BAT compliance rate, supply chain
+        coverage, and SBTi pathway alignment. Includes peer benchmarking,
+        year-over-year trends, and traffic light compliance indicators
+        for all applicable regulations.
+      format: "html"
+      template_file: "templates/manufacturing_scorecard.jinja2"
+      enabled: true
+
+    - id: decarbonization_roadmap
+      display_name: "Decarbonization Roadmap"
+      description: >-
+        Visual decarbonization roadmap with emission reduction trajectory,
+        technology implementation milestones, marginal abatement cost curve
+        (MACC), investment requirements by phase, SBTi pathway alignment
+        chart, and EU ETS free allocation phase-out impact. Designed for
+        board-level strategic planning and investor communication.
+      format: "pdf"
+      template_file: "templates/decarbonization_roadmap.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        12-phase master pipeline: Health Check -> Configuration -> Facility
+        Data Ingestion -> Process Emissions Calculation -> Energy Intensity
+        Calculation -> PCF Calculation -> Circular Economy Assessment ->
+        Water & Pollution Tracking -> BAT Compliance Check -> Supply Chain
+        Emissions -> Benchmark Analysis -> ESRS Disclosure Assembly.
+        Orchestrates all manufacturing compliance phases with parallel
+        execution where possible and dependency management between engines.
+      required: true
+
+    - id: csrd_pack_bridge
+      name: "CSRD Pack Bridge"
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs (Starter/Professional/
+        Enterprise) for shared ESRS general disclosure components. Reuses
+        ESRS 2 general disclosures, governance structures, strategy
+        descriptions, and double materiality frameworks. Enables seamless
+        integration of manufacturing-specific data into general CSRD reports.
+      required: true
+
+    - id: cbam_pack_bridge
+      name: "CBAM Pack Bridge"
+      description: >-
+        Connects to PACK-004/005 CBAM Packs for embedded emissions data
+        sharing. Manufacturing companies importing CBAM-affected goods
+        (cement, steel, aluminium, fertilizers, hydrogen) can reuse process
+        emissions calculations for CBAM reporting. Bidirectional data flow
+        for supplier emissions and product-level embedded emissions.
+      required: false
+
+    - id: mrv_industrial_bridge
+      name: "MRV Industrial Bridge"
+      description: >-
+        Routes data from all 30 AGENT-MRV agents with manufacturing-specific
+        weighting. Prioritizes AGENT-MRV-001 (stationary combustion),
+        AGENT-MRV-004 (process emissions), AGENT-MRV-005 (fugitive),
+        AGENT-MRV-009/010 (Scope 2), and AGENT-MRV-014-025 (Scope 3
+        Cat 1-12). Maps emissions to process lines, product allocations,
+        and facility-level consolidation.
+      required: true
+
+    - id: data_manufacturing_bridge
+      name: "Data Manufacturing Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for manufacturing data intake. Routes
+        ERP data (SAP PP/PM, Oracle Manufacturing Cloud, Workday) through
+        AGENT-DATA-003, process PDF reports through AGENT-DATA-001, and
+        supplier questionnaires through AGENT-DATA-008. Handles MES
+        (Manufacturing Execution System) data integration, SCADA/DCS
+        historian data, and IoT sensor feeds.
+      required: true
+
+    - id: eu_ets_bridge
+      name: "EU ETS Bridge"
+      description: >-
+        Integration with EU ETS reporting infrastructure. Maps installation
+        IDs, retrieves allocation data, tracks allowance holdings, and
+        synchronizes verified emissions data. Supports EU ETS Phase 4
+        free allocation phase-out schedule and CBAM sector transition.
+      required: false
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      description: >-
+        Connects to PACK-008 EU Taxonomy Alignment Pack for activity-level
+        taxonomy assessment. Maps manufacturing NACE codes to eligible
+        taxonomy activities, retrieves Technical Screening Criteria (TSC)
+        for climate mitigation and adaptation, evaluates DNSH criteria,
+        and feeds taxonomy alignment ratios into ESRS disclosures.
+      required: false
+
+    - id: supply_chain_bridge
+      name: "Supply Chain Data Bridge"
+      description: >-
+        Integration bridge for supply chain emissions data collection.
+        Connects to CDP Supply Chain platform, EcoVadis ratings, supplier
+        self-assessment portals, and procurement ERP modules. Routes
+        supplier-specific emission factors, spend data, and transport
+        logistics data to the supply chain emissions engine.
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        20-category system verification covering all 8 engines, 75 agent
+        dependencies, database connectivity, emission factor database
+        currency, BAT-AEL reference data availability, BREF document
+        index, EU ETS benchmark data freshness, REACH SVHC list currency,
+        water stress data availability, and deployment readiness status.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        12-step guided configuration wizard: Manufacturing Tier Selection
+        (heavy/discrete/process/light) -> Sub-Sector Configuration ->
+        Facility Registration -> EU ETS Installation Mapping -> CBAM
+        Applicability Check -> Process Line Definition -> Energy Source
+        Configuration -> Product Portfolio Setup -> BAT/BREF Applicability
+        -> Water & Pollution Sources -> Supply Chain Scope -> Reporting
+        Preferences & Omnibus Threshold Assessment.
+      required: false
+
+  # ===========================================================================
+  # Presets - Manufacturing-type specific configurations (6 presets)
+  # ===========================================================================
+  presets:
+    - id: heavy_industry
+      name: "Heavy Industry Preset"
+      description: >-
+        Full configuration for energy-intensive manufacturing: cement, steel,
+        aluminium, glass, ceramics. Enables EU ETS integration, CBAM
+        reporting, BAT/BREF compliance (critical), process emissions as
+        dominant source, high energy intensity benchmarking, and SBTi
+        sectoral pathway tracking. All 8 engines enabled with heavy
+        industry calibration.
+      manufacturing_tier: "HEAVY_INDUSTRY"
+      enabled_engines:
+        - process_emissions
+        - energy_intensity
+        - product_carbon_footprint
+        - circular_economy
+        - water_pollution
+        - bat_compliance
+        - supply_chain_emissions
+        - manufacturing_benchmark
+      file: "config/presets/heavy_industry.yaml"
+
+    - id: discrete_manufacturing
+      name: "Discrete Manufacturing Preset"
+      description: >-
+        Configuration for discrete product manufacturing: automotive,
+        electronics, machinery. Product Carbon Footprint is the critical
+        engine. Supply chain emissions (Scope 3) typically dominate. ESPR
+        Digital Product Passport relevant. Lower direct process emissions
+        but significant energy and purchased goods impacts.
+      manufacturing_tier: "DISCRETE"
+      enabled_engines:
+        - process_emissions
+        - energy_intensity
+        - product_carbon_footprint
+        - circular_economy
+        - supply_chain_emissions
+        - manufacturing_benchmark
+      file: "config/presets/discrete_manufacturing.yaml"
+
+    - id: process_manufacturing
+      name: "Process Manufacturing Preset"
+      description: >-
+        Configuration for continuous process manufacturing: chemicals,
+        food & beverage, textiles, pulp & paper. Process emissions and
+        water/pollution are co-dominant. REACH/CLP compliance critical.
+        Batch tracking for production runs. BAT/BREF assessment required
+        for permitted installations.
+      manufacturing_tier: "PROCESS"
+      enabled_engines:
+        - process_emissions
+        - energy_intensity
+        - product_carbon_footprint
+        - circular_economy
+        - water_pollution
+        - bat_compliance
+        - supply_chain_emissions
+        - manufacturing_benchmark
+      file: "config/presets/process_manufacturing.yaml"
+
+    - id: light_manufacturing
+      name: "Light Manufacturing Preset"
+      description: >-
+        Configuration for light manufacturing and consumer goods: furniture,
+        packaging, pharmaceuticals, plastics/rubber. Circular economy is
+        the primary focus (EPR, recycled content, packaging waste). Lower
+        energy intensity. Product-level sustainability important for
+        consumer-facing products. Simplified BAT assessment.
+      manufacturing_tier: "LIGHT"
+      enabled_engines:
+        - energy_intensity
+        - product_carbon_footprint
+        - circular_economy
+        - supply_chain_emissions
+        - manufacturing_benchmark
+      file: "config/presets/light_manufacturing.yaml"
+
+    - id: multi_site
+      name: "Multi-Site Manufacturing Group Preset"
+      description: >-
+        Configuration for manufacturing groups with multiple facilities.
+        Enables multi-site consolidation, inter-site transfer tracking,
+        group-level reporting, facility benchmarking, and centralized
+        data collection. All 8 engines enabled with group aggregation
+        and site-level drill-down.
+      manufacturing_tier: "HEAVY_INDUSTRY"
+      enabled_engines:
+        - process_emissions
+        - energy_intensity
+        - product_carbon_footprint
+        - circular_economy
+        - water_pollution
+        - bat_compliance
+        - supply_chain_emissions
+        - manufacturing_benchmark
+      file: "config/presets/multi_site.yaml"
+
+    - id: sme_manufacturer
+      name: "SME Manufacturer Preset"
+      description: >-
+        Simplified configuration for small and medium-sized manufacturers.
+        Focuses on Scope 1+2 emissions with industry-average Scope 3.
+        Guided data entry with sector-specific templates. Reduced engine
+        set for faster implementation. Assesses CSRD Omnibus threshold
+        eligibility for potential exemption.
+      manufacturing_tier: "LIGHT"
+      enabled_engines:
+        - process_emissions
+        - energy_intensity
+        - supply_chain_emissions
+        - manufacturing_benchmark
+      file: "config/presets/sme_manufacturer.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for operational emissions (Scope 1/2/3)
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from stationary combustion (furnaces, kilns, boilers)"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Calculates emissions from refrigerants and fluorinated gases"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates emissions from forklifts, trucks, and mobile plant"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates emissions from industrial processes (calcination, smelting)"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Calculates fugitive emissions (PFC, N2O, equipment leaks)"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates emissions from land use and land use change"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates emissions from on-site waste treatment"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates emissions from agricultural operations"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates emissions from purchased steam and heating"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates emissions from purchased cooling"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Raw materials, components, and purchased inputs"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Manufacturing equipment, machinery, and infrastructure"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Upstream fuel and energy-related emissions"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Inbound logistics and raw material transport"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Third-party waste treatment and disposal"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Scope 3 Category 6 business travel emissions"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Scope 3 Category 7 employee commuting emissions"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Scope 3 Category 8 emissions from leased assets"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Outbound logistics and product distribution"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Emissions from further processing by customers"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Emissions from product use phase"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Emissions from product end-of-life disposal/recycling"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Scope 3 Category 13 emissions"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Scope 3 Category 14 emissions"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Scope 3 Category 15 emissions"
+      path: "greenlang/agents/mrv/investments/"
+      required: false
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps emissions across all 15 Scope 3 categories"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage and audit trails for all MRV calculations"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts emissions data from supplier PDFs, utility bills, and certificates"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes production data, energy logs, and waste manifests"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to SAP PP/PM, Oracle Manufacturing Cloud, and MES systems"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for BAT-AEL data, ETS prices, grid factors"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability for wood/paper/palm-based raw materials"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for water stress assessment and facility mapping"
+    required: true
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for deforestation risk in raw material sourcing"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier emissions questionnaires and sustainability surveys"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Physical climate hazard data for facility risk assessment"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes procurement spend for Scope 3 emissions estimation"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across production, energy, and emissions metrics"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate production records and supplier data entries"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing production and emissions values with documented methodology"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous production volumes, energy spikes, and emission outliers"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in production and emissions time series"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles data across ERP, MES, SCADA, and utility meter systems"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of emission factors, BAT-AEL data, and grid factors"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for regulatory reporting format changes"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage across manufacturing compliance pipeline"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces EU ETS MRV, BAT-AEL, ESRS, and CBAM validation rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates manufacturing data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes units (tCO2e, GJ, kWh, tonnes, m3) and reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in process, energy, and PCF calculations"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links data points to source evidence for regulatory audit"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-facility operations"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for all compliance outputs"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors agent performance and pipeline health"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Industrial MRV Agents (7 sector-specific)
+# ---------------------------------------------------------------------------
+agents_industrial_mrv:
+  - id: cement-mrv
+    name: "Cement MRV Agent"
+    description: "Monitoring, reporting, and verification for cement installations"
+    path: "mrv/cement_mrv"
+    required: false
+  - id: steel-mrv
+    name: "Steel MRV Agent"
+    description: "MRV agent for iron and steel production installations"
+    path: "mrv/steel_mrv"
+    required: false
+  - id: aluminum-mrv
+    name: "Aluminium MRV Agent"
+    description: "MRV agent for aluminium smelting installations"
+    path: "mrv/aluminum_mrv"
+    required: false
+  - id: fertilizer-mrv
+    name: "Fertilizer MRV Agent"
+    description: "MRV agent for fertilizer and ammonia production"
+    path: "mrv/fertilizer_mrv"
+    required: false
+  - id: hydrogen-mrv
+    name: "Hydrogen MRV Agent"
+    description: "MRV agent for hydrogen production installations"
+    path: "mrv/hydrogen_mrv"
+    required: false
+  - id: glass-mrv
+    name: "Glass MRV Agent"
+    description: "MRV agent for glass manufacturing installations"
+    path: "mrv/glass_mrv"
+    required: false
+  - id: pulp-paper-mrv
+    name: "Pulp & Paper MRV Agent"
+    description: "MRV agent for pulp and paper manufacturing"
+    path: "mrv/pulp_paper_mrv"
+    required: false
+
+# ---------------------------------------------------------------------------
+# Additional Bridged Agents (8 agents)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: bat-compliance-agent
+    name: "BAT Compliance Policy Agent"
+    description: "Enforces BAT-AEL compliance rules from IED BREFs"
+    required: true
+  - id: ecodesign-dpp-agent
+    name: "Ecodesign/DPP Agent"
+    description: "Generates Digital Product Passport data per ESPR"
+    required: false
+  - id: reach-svhc-agent
+    name: "REACH SVHC Tracking Agent"
+    description: "Tracks Substances of Very High Concern per REACH"
+    required: false
+  - id: iso50001-agent
+    name: "ISO 50001 Energy Management Agent"
+    description: "Energy management system integration per ISO 50001"
+    required: false
+  - id: cdp-supply-chain-agent
+    name: "CDP Supply Chain Agent"
+    description: "Integration with CDP Supply Chain for supplier data"
+    required: false
+  - id: sbti-manufacturing-agent
+    name: "SBTi Manufacturing Agent"
+    description: "Tracks SBTi sectoral pathway alignment for manufacturing"
+    required: true
+  - id: omnibus-threshold-agent
+    name: "Omnibus Threshold Agent"
+    description: "Assesses CSRD Omnibus Directive threshold applicability"
+    required: true
+  - id: regulatory-change-monitor
+    name: "Regulatory Change Monitor Agent"
+    description: "Monitors IED, EU ETS, CBAM, ESPR regulatory updates"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 75
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    industrial_mrv_agents: 7
+    bridged_agents: 8
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  facility_processing:
+    max_facilities: 50
+    max_process_lines_per_facility: 100
+    target_duration_minutes: 15
+    process_emission_calc_per_line_ms: 100
+  energy_intensity:
+    max_energy_sources: 20
+    benchmark_comparison_max_seconds: 10
+  product_pcf:
+    max_products: 5000
+    pcf_calculation_per_product_ms: 200
+    target_duration_minutes: 30
+  bat_compliance:
+    max_installations: 50
+    bat_ael_check_per_parameter_ms: 50
+    target_duration_minutes: 10
+  supply_chain:
+    max_suppliers: 10000
+    target_duration_minutes: 45
+  cache_hit_ratio_target: 0.70
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - manufacturing_compliance_officer
+    - ehs_manager
+    - energy_manager
+    - sustainability_officer
+    - plant_manager
+    - supply_chain_manager
+    - external_auditor
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_bat_ael_reference_data
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+    new:
+      - "V083-PACK013-001"  # Manufacturing facility tables
+      - "V083-PACK013-002"  # Process line and emission source tables
+      - "V083-PACK013-003"  # Product carbon footprint tables
+      - "V083-PACK013-004"  # Circular economy and waste tables
+      - "V083-PACK013-005"  # BAT compliance assessment tables
+      - "V083-PACK013-006"  # Water and pollution tracking tables
+      - "V083-PACK013-007"  # Manufacturing benchmark tables
+
+  post_install:
+    - seed_bat_ael_reference_data
+    - seed_eu_ets_benchmarks
+    - seed_emission_factors
+    - seed_nace_manufacturing_codes
+    - seed_reach_svhc_list
+    - seed_water_stress_data
+    - seed_default_presets
+    - run_health_checks

@@ -1,0 +1,56 @@
+# =============================================================================
+# PACK-008 Sector: Real Estate
+# =============================================================================
+# Sector-specific configuration for real estate covering building renovation,
+# new construction, acquisition/ownership of buildings, EPC improvements,
+# and property management.
+#
+# Key NACE Sections: F (Construction), L (Real estate)
+# Primary Objectives: CCM, CCA, CE
+# Taxonomy Activities: ~11 activities
+#
+# Relevant TSC Examples:
+#   - New buildings: NZEB -10% primary energy demand
+#   - Renovation: 30% primary energy demand reduction
+#   - Acquisition: EPC class A or top 15% national building stock
+#   - Individual measures: envelope, HVAC, lighting criteria
+#   - Demolition: material recovery and waste management
+# =============================================================================
+
+active_sectors:
+  - "REAL_ESTATE"
+
+eligibility:
+  screening_mode: "HYBRID"
+  min_confidence: 0.85
+  include_transitional: true
+  include_enabling: true
+
+sc_assessment:
+  evaluation_mode: "STANDARD"
+  threshold_strictness: "STANDARD"
+  track_enabling_activities: true
+
+dnsh:
+  climate_risk_assessment_enabled: true
+  water_framework_directive_check: true
+  circular_economy_waste_hierarchy: true
+  pollution_threshold_check: true
+
+gar:
+  epc_integration: true
+  epc_threshold_rating: "C"
+  exposure_types:
+    - "RESIDENTIAL_MORTGAGES"
+    - "COMMERCIAL_MORTGAGES"
+    - "PROJECT_FINANCE"
+
+transition_activity:
+  enabled: true
+  best_available_technology_check: true
+
+enabling_activity:
+  enabled: true
+
+regulatory:
+  include_complementary_da: false

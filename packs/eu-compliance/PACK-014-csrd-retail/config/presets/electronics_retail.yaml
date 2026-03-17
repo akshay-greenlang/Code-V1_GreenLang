@@ -1,0 +1,171 @@
+# =============================================================================
+# PACK-014 CSRD Retail Pack - Electronics Retail Preset
+# =============================================================================
+# Configuration for consumer electronics, IT, and appliance retail. WEEE full
+# take-back program. DPP for electronics from 2027-2028. Use-phase emissions
+# (Cat 11) are critical for energy-consuming products. Batteries EPR
+# compliance. Right-to-repair tracking.
+#
+# Typical use cases:
+#   - Consumer electronics chains
+#   - IT and computer retailers
+#   - Appliance specialists
+#   - Telecommunications retailers
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+tier: "ENTERPRISE"
+sub_sectors:
+  - "ELECTRONICS"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Store Emissions ---
+store_emissions:
+  enabled: true
+  store_types:
+    - "STANDARD"
+    - "FLAGSHIP"
+    - "WAREHOUSE"
+  refrigerant_tracking: false
+  f_gas_phase_down: false
+  fleet_tracking: true
+  renewable_on_site: false
+  heating_sources:
+    - "electricity"
+  per_sqm_normalization: true
+  per_revenue_normalization: true
+  year_over_year_tracking: true
+
+# --- Scope 3 (Cat 1 and Cat 11 CRITICAL) ---
+scope3:
+  enabled: true
+  priority_categories: [1, 2, 4, 9, 11, 12]
+  calculation_methods:
+    cat_1: "hybrid"
+    cat_11: "average_data"
+    cat_12: "average_data"
+    default: "spend_based"
+  supplier_data_collection: true
+  cat1_methodology: "hybrid"
+  spend_based_screening: true
+  hotspot_analysis: true
+  supplier_engagement_scoring: true
+  last_mile_tracking: true
+
+# --- Packaging ---
+packaging:
+  enabled: true
+  ppwr_compliance: true
+  recycled_content_tracking: true
+  materials_tracked:
+    - "PAPER_BOARD"
+    - "PS"
+    - "PP"
+    - "PET"
+  epr_scheme: true
+  labeling_requirements: true
+  reuse_targets: true
+  over_packaging_monitoring: true
+  target_year: 2030
+
+# --- Product Sustainability (DPP electronics 2027-28) ---
+product_sustainability:
+  enabled: true
+  dpp_enabled: true
+  dpp_product_categories:
+    - "smartphones"
+    - "tablets"
+    - "laptops"
+    - "televisions"
+    - "appliances"
+  pef_methodology: true
+  green_claims_audit: true
+  banned_claims:
+    - "CARBON_NEUTRAL"
+    - "ECO_FRIENDLY"
+  right_to_repair: true
+  product_recyclability_scoring: true
+  emission_factor_database: "ECOINVENT"
+
+# --- Food Waste (not applicable) ---
+food_waste:
+  enabled: false
+
+# --- Supply Chain Due Diligence ---
+supply_chain_dd:
+  enabled: true
+  csddd_compliance: true
+  eudr_commodities: []
+  forced_labour_screening: true
+  supplier_tier_depth: 3
+  country_risk_assessment: true
+  sanctions_screening: true
+  stakeholder_engagement: true
+  remediation_tracking: true
+
+# --- Circular Economy (WEEE + Batteries CRITICAL) ---
+circular_economy:
+  enabled: true
+  epr_schemes:
+    - "PACKAGING"
+    - "WEEE"
+    - "BATTERIES"
+  take_back_programs:
+    - "weee_collection"
+    - "battery_collection"
+    - "trade_in_program"
+  mci_tracking: true
+  product_recyclability: true
+  second_hand_tracking: true
+  return_logistics_emissions: true
+  repair_services: true
+  multi_country_epr: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  kpi_set:
+    - "emissions_per_sqm"
+    - "emissions_per_revenue"
+    - "scope3_supplier_coverage"
+    - "packaging_recycled_content"
+    - "sbti_alignment"
+    - "weee_collection_rate"
+    - "repair_service_volume"
+  peer_group: "NACE_SECTOR"
+  sbti_pathway: "1.5C"
+  percentile_tracking: true
+  gap_analysis_enabled: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  store_emissions_report_enabled: true
+  supply_chain_report_enabled: true
+  packaging_report_enabled: true
+  product_sustainability_report_enabled: true
+  food_waste_report_enabled: false
+  circular_economy_report_enabled: true
+  scorecard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+  review_workflow_enabled: true
+  watermark_draft: true

@@ -1,0 +1,150 @@
+# =============================================================================
+# PACK-013 CSRD Manufacturing Pack - Discrete Manufacturing Preset
+# =============================================================================
+# Configuration for discrete product manufacturing: automotive, electronics,
+# machinery. Product Carbon Footprint (PCF) is the critical engine as these
+# sectors produce distinct units with traceable bills of materials. Supply
+# chain emissions (Scope 3 Cat 1, 2, 4, 9, 11, 12) typically dominate the
+# total carbon footprint. ESPR Digital Product Passport is highly relevant.
+# Direct process emissions are lower but energy use (electricity) is
+# significant. BAT/BREF applies mainly to surface treatment operations.
+#
+# Typical use cases:
+#   - Automotive OEMs and Tier 1 suppliers
+#   - Semiconductor fabrication plants
+#   - Consumer electronics assembly
+#   - Industrial machinery and equipment manufacturers
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+manufacturing_tier: "DISCRETE"
+sub_sectors:
+  - "AUTOMOTIVE"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Process Emissions ---
+process_emissions:
+  enabled: true
+  sub_sector: "AUTOMOTIVE"
+  cbam_affected: false
+  ets_phase: "PHASE_4"
+  cbam_status: "NOT_AFFECTED"
+  emission_sources:
+    - "combustion"
+  mass_balance_enabled: false
+  product_allocation_enabled: true
+  allocation_method: "PHYSICAL_CAUSALITY"
+  emission_factor_source: "NATIONAL"
+  year_over_year_tracking: true
+
+# --- Energy Intensity ---
+energy_intensity:
+  enabled: true
+  production_unit: "unit"
+  energy_sources:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+    - "LPG"
+  benchmark_reference: "PEER_AVERAGE"
+  iso50001_certified: false
+  enpi_tracking: true
+  significant_energy_use_threshold_pct: 5.0
+  renewable_energy_tracking: true
+  energy_cost_tracking: true
+
+# --- Product Carbon Footprint (CRITICAL for discrete manufacturing) ---
+product_pcf:
+  enabled: true
+  lifecycle_scope: "CRADLE_TO_GRAVE"
+  allocation_method: "PHYSICAL_CAUSALITY"
+  dpp_enabled: true
+  pef_methodology: true
+  iso14067_compliant: true
+  emission_factor_database: "ECOINVENT"
+  co_product_allocation: false
+  recycled_content_crediting: true
+  uncertainty_analysis: true
+  epd_output: true
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  waste_streams:
+    - "NON_HAZARDOUS"
+    - "RECYCLABLE"
+    - "HAZARDOUS"
+  recycled_content_tracking: true
+  epr_schemes:
+    - "WEEE"
+    - "BATTERIES"
+    - "END_OF_LIFE_VEHICLES"
+  material_circularity_indicator: true
+  waste_diversion_target_pct: 90.0
+  espr_recycled_content_mandates: true
+
+# --- Water & Pollution (lower priority for discrete) ---
+water_pollution:
+  enabled: false
+
+# --- BAT/BREF Compliance (surface treatment only) ---
+bat_compliance:
+  enabled: false
+
+# --- Supply Chain (CRITICAL - Scope 3 dominant) ---
+supply_chain:
+  enabled: true
+  tier_depth: 3
+  priority_categories: [1, 2, 4, 9, 11, 12]
+  supplier_engagement_platform: "CDP_SUPPLY_CHAIN"
+  spend_based_screening: true
+  supplier_specific_enabled: true
+  hybrid_method: true
+  hotspot_analysis: true
+  cbam_import_integration: false
+  transport_mode_tracking: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  peer_group: "NACE_SECTOR"
+  kpi_set:
+    - "carbon_intensity"
+    - "energy_intensity"
+    - "circularity_rate"
+  sbti_pathway: "ONE_POINT_FIVE"
+  abatement_cost_curve: true
+  eu_ets_benchmark_comparison: false
+  bat_ael_benchmark_comparison: false
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  process_emissions_report_enabled: true
+  pcf_label_enabled: true
+  energy_report_enabled: true
+  circular_economy_report_enabled: true
+  bat_report_enabled: false
+  scorecard_enabled: true
+  decarbonization_roadmap_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  review_workflow_enabled: true
+  watermark_draft: true

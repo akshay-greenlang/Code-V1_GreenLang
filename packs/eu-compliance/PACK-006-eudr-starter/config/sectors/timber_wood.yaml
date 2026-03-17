@@ -1,0 +1,152 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - Timber & Wood Products Sector Preset
+# =============================================================================
+# For companies sourcing timber, wood products, pulp, paper, furniture,
+# and cork. Focus on FSC/PEFC certification, logging concession mapping,
+# species identification, and legality verification.
+#
+# Key CN codes: 4401-4421 (wood), 4501-4504 (cork), 4701-4823 (pulp/paper),
+#               4901-4911 (printed), 9401/9403 (furniture)
+# Primary origins: Brazil, Indonesia, DRC, Malaysia, Cameroon
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  sector_name: "Timber & Wood Products"
+  sector_group: "forestry"
+
+  # Product categories
+  primary_products:
+    - "Sawn timber"
+    - "Logs (roundwood)"
+    - "Veneer sheets"
+    - "Plywood"
+    - "Particle board / MDF"
+    - "Wood charcoal"
+    - "Fuel wood and chips"
+
+  derived_products:
+    - "Pulp (mechanical, chemical)"
+    - "Paper and paperboard"
+    - "Printed materials"
+    - "Wooden furniture"
+    - "Builders joinery"
+    - "Packaging (pallets, crates)"
+    - "Cork products"
+
+  # Forest management types
+  forest_types:
+    - "Natural forest (primary)"
+    - "Natural forest (secondary)"
+    - "Plantation (industrial)"
+    - "Plantation (smallholder)"
+    - "Community forest"
+    - "Concession forest"
+
+  # Timber legality verification
+  legality_checks:
+    - "Harvesting permit/license"
+    - "Annual allowable cut (AAC) compliance"
+    - "Species identification"
+    - "CITES compliance (protected species)"
+    - "Log marking and tracking"
+    - "Export permit (country of origin)"
+    - "Customs declaration"
+    - "Transport documentation"
+
+  # Species tracking
+  species_tracking:
+    enabled: true
+    cites_check: true
+    iucn_red_list_check: true
+    high_risk_species:
+      - "Swietenia macrophylla (Mahogany)"
+      - "Dalbergia spp. (Rosewood)"
+      - "Pterocarpus spp. (Padauk)"
+      - "Diospyros spp. (Ebony)"
+      - "Tectona grandis (Teak)"
+
+  # Chain of custody specific to timber
+  timber_coc:
+    percentage_based_claims: true
+    credit_based_claims: false
+    due_diligence_system: true
+    controlled_wood: true
+
+# Commodities - wood focused
+commodities:
+  - commodity_type: "wood"
+    enabled: true
+    priority: 1
+    certification_schemes: ["FSC", "PEFC", "SFI"]
+    high_risk_origins: ["BRA", "COD", "IDN", "MYS", "PNG", "MMR", "CMR", "COG", "GAB", "GHA"]
+  - commodity_type: "rubber"
+    enabled: true
+    priority: 3
+    certification_schemes: ["FSC", "PEFC"]
+  - commodity_type: "oil_palm"
+    enabled: false
+    priority: 7
+  - commodity_type: "soya"
+    enabled: false
+    priority: 7
+  - commodity_type: "cattle"
+    enabled: false
+    priority: 7
+  - commodity_type: "cocoa"
+    enabled: false
+    priority: 7
+  - commodity_type: "coffee"
+    enabled: false
+    priority: 7
+
+# Supply chain - deep tracing for timber
+supply_chain:
+  max_tier_depth: 4
+  chain_of_custody_model: "IDENTITY_PRESERVED"
+  trace_level: "lot"
+  require_plot_linkage: true
+  mixed_shipment_handling: "split"
+
+# Geolocation - concession and forest management unit mapping
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 30000
+  batch_size: 500
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+# Cutoff date - forest cover change monitoring
+cutoff_date:
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+    - "glad_alerts"
+    - "jaxa_palsar"
+  min_satellite_resolution_m: 30
+
+# Agent overrides for timber focus
+agent_overrides:
+  AGENT-EUDR-002:
+    config_overrides:
+      forest_cover_monitoring: true
+      degradation_detection: true
+      selective_logging_alerts: true
+
+  AGENT-EUDR-006:
+    config_overrides:
+      concession_boundary_mapping: true
+      forest_management_unit_tracking: true
+      protected_area_buffer_km: 5
+
+  AGENT-EUDR-012:
+    config_overrides:
+      species_identification: true
+      cites_permit_validation: true
+      harvest_license_check: true
+      log_marking_verification: true
+
+  AGENT-EUDR-016:
+    config_overrides:
+      focus_regions: ["Central Africa", "Southeast Asia", "South America"]
+      illegal_logging_risk_overlay: true

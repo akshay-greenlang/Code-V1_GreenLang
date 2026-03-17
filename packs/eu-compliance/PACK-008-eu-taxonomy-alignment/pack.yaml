@@ -1,0 +1,1017 @@
+# =============================================================================
+# PACK-008: EU Taxonomy Alignment Pack
+# GreenLang EU Compliance Pack for EU Taxonomy Regulation (EU) 2020/852
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for EU Taxonomy Regulation compliance. It bundles the
+# GL-Taxonomy-APP (APP-010) with MRV agents, data intake agents, and foundation
+# agents to deliver end-to-end taxonomy alignment assessment.
+#
+# Key Capabilities:
+#   - Activity screening against ~240 EU Taxonomy economic activities
+#   - Substantial Contribution (SC) assessment with Technical Screening Criteria
+#   - Do No Significant Harm (DNSH) assessment across 6 environmental objectives
+#   - Minimum Safeguards (MS) verification (human rights, anti-corruption, etc.)
+#   - KPI calculation: Turnover, CapEx, OpEx alignment ratios
+#   - Green Asset Ratio (GAR) and BTAR for financial institutions
+#   - Article 8 Delegated Regulation (EU) 2021/2178 disclosure templates
+#   - EBA Pillar 3 ESG disclosure templates (Templates 6-10)
+#   - Cross-regulation alignment with CSRD/ESRS E1, SFDR, TCFD, CDP
+#
+# Regulatory References:
+#   - EU Taxonomy Regulation (EU) 2020/852
+#   - Climate Delegated Act (EU) 2021/2139 (CCM, CCA)
+#   - Environmental Delegated Act (EU) 2023/2486 (WTR, CE, PPC, BIO)
+#   - Complementary Climate DA (EU) 2022/1214 (Nuclear, Gas)
+#   - Disclosures DA (EU) 2021/2178 (Article 8 templates)
+#   - Simplification DA 2025 (Omnibus simplification package)
+#
+# Environmental Objectives:
+#   1. Climate Change Mitigation (CCM)
+#   2. Climate Change Adaptation (CCA)
+#   3. Sustainable Use and Protection of Water and Marine Resources (WTR)
+#   4. Transition to a Circular Economy (CE)
+#   5. Pollution Prevention and Control (PPC)
+#   6. Protection and Restoration of Biodiversity and Ecosystems (BIO)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-15)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-008-eu-taxonomy-alignment
+  version: "1.0.0"
+  display_name: "EU Taxonomy Alignment Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for EU Taxonomy Regulation (EU) 2020/852
+    compliance. Includes GL-Taxonomy-APP (APP-010) with 10 engines, all 30 MRV agents
+    for Scope 1/2/3 emissions data, 10 data intake/quality agents, and 10 foundation
+    agents. Supports eligibility screening against ~240 economic activities, 4-condition
+    alignment assessment (SC, DNSH, MS, TSC), KPI calculation (Turnover/CapEx/OpEx),
+    Green Asset Ratio (GAR/BTAR) for financial institutions, and Article 8 / EBA
+    Pillar 3 disclosure generation. Designed for non-financial undertakings, financial
+    institutions, and asset managers across all 6 environmental objectives.
+  category: eu-compliance
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-15"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/eu-taxonomy-alignment"
+  changelog_url: "https://docs.greenlang.io/packs/eu-taxonomy-alignment/changelog"
+
+  tags:
+    - eu-taxonomy
+    - taxonomy-regulation
+    - eu-compliance
+    - standalone
+    - eligibility-screening
+    - substantial-contribution
+    - dnsh
+    - minimum-safeguards
+    - kpi-calculation
+    - green-asset-ratio
+    - article-8
+    - eba-pillar-3
+    - technical-screening-criteria
+    - environmental-objectives
+    - cross-framework
+
+  regulation:
+    name: "EU Taxonomy Regulation"
+    reference: "(EU) 2020/852"
+    effective_date: "2022-01-01"
+    articles: [1, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+    environmental_objectives: 6
+    economic_activities: 240+
+    description: >-
+      The EU Taxonomy Regulation establishes a classification system for
+      environmentally sustainable economic activities. It defines criteria
+      for determining whether an economic activity qualifies as environmentally
+      sustainable for the purposes of establishing the degree to which an
+      investment is environmentally sustainable. Organizations subject to
+      CSRD/NFRD must disclose what proportion of their activities are
+      taxonomy-eligible and taxonomy-aligned.
+
+  compliance_references:
+    - id: "EU-TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      regulation: "Regulation (EU) 2020/852"
+      effective_date: "2022-01-01"
+      description: >-
+        Framework regulation establishing the EU classification system for
+        environmentally sustainable economic activities. Defines the four
+        conditions for taxonomy alignment: substantial contribution, DNSH,
+        minimum safeguards, and technical screening criteria compliance.
+
+    - id: "ARTICLE-8-DA"
+      name: "Article 8 Disclosures Delegated Act"
+      regulation: "Delegated Regulation (EU) 2021/2178"
+      effective_date: "2022-01-01"
+      description: >-
+        Specifies the content, methodology, and presentation of information
+        to be disclosed by non-financial and financial undertakings under
+        Article 8 of the Taxonomy Regulation. Defines mandatory KPI templates
+        for turnover, CapEx, and OpEx alignment ratios.
+
+    - id: "CLIMATE-DA"
+      name: "Climate Delegated Act"
+      regulation: "Delegated Regulation (EU) 2021/2139"
+      effective_date: "2022-01-01"
+      description: >-
+        Establishes technical screening criteria for economic activities that
+        can make a substantial contribution to climate change mitigation (CCM)
+        or climate change adaptation (CCA), and criteria for determining
+        whether those activities cause no significant harm to any other
+        environmental objective.
+
+    - id: "ENVIRONMENTAL-DA"
+      name: "Environmental Delegated Act"
+      regulation: "Delegated Regulation (EU) 2023/2486"
+      effective_date: "2024-01-01"
+      description: >-
+        Establishes technical screening criteria for the remaining four
+        environmental objectives: sustainable use and protection of water
+        and marine resources (WTR), transition to a circular economy (CE),
+        pollution prevention and control (PPC), and protection and restoration
+        of biodiversity and ecosystems (BIO).
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 taxonomy engines)
+  # ===========================================================================
+  engines:
+    - id: eligibility_engine
+      name: "Taxonomy Eligibility Engine"
+      description: >-
+        NACE code mapping to ~240 taxonomy economic activities, sector-level
+        eligibility screening, batch processing for activity portfolios,
+        eligibility vs. alignment distinction, and revenue-weighted eligibility
+        ratios.
+      required: true
+
+    - id: substantial_contribution_engine
+      name: "Substantial Contribution Engine"
+      description: >-
+        Technical Screening Criteria (TSC) evaluation per environmental objective,
+        quantitative threshold checking (emissions, energy, water, waste metrics),
+        enabling activity classification (Article 16), transitional activity
+        classification (Article 10(2)), and evidence linking to TSC compliance.
+      required: true
+
+    - id: dnsh_engine
+      name: "DNSH Assessment Engine"
+      description: >-
+        Six-objective Do No Significant Harm matrix evaluation. Includes climate
+        risk and vulnerability assessment (CCA), Water Framework Directive
+        compliance (WTR), circular economy waste hierarchy check (CE), pollution
+        thresholds (PPC), and biodiversity impact assessment (BIO).
+      required: true
+
+    - id: minimum_safeguards_engine
+      name: "Minimum Safeguards Engine"
+      description: >-
+        Four-topic minimum safeguards verification: human rights due diligence
+        (UNGP, OECD Guidelines), anti-corruption procedures assessment, taxation
+        compliance verification, and fair competition assessment. Procedural and
+        outcome checks per topic with pass/fail determination.
+      required: true
+
+    - id: kpi_calculation_engine
+      name: "KPI Calculation Engine"
+      description: >-
+        Mandatory KPI calculation: turnover alignment ratio (taxonomy-aligned /
+        total turnover), CapEx alignment ratio, OpEx alignment ratio. Includes
+        double-counting prevention across objectives, activity-level financial
+        data mapping, CapEx plan recognition (5-year plans), and eligible vs.
+        aligned KPI breakdown.
+      required: true
+
+    - id: gar_engine
+      name: "Green Asset Ratio Engine"
+      description: >-
+        GAR stock calculation (on-balance-sheet assets), GAR flow calculation
+        (new originations), BTAR (Banking Book Taxonomy Alignment Ratio),
+        exposure classification (corporate loans, debt securities, equity,
+        mortgages, project finance), counterparty taxonomy data aggregation,
+        EPC rating integration for real estate exposures, and de minimis
+        threshold handling.
+      required: true
+
+    - id: tsc_engine
+      name: "Technical Screening Criteria Engine"
+      description: >-
+        Criteria lookup per activity and objective, quantitative threshold
+        evaluation, qualitative criteria assessment, delegated act version
+        management, criteria change tracking across DA versions, and gap
+        identification for non-compliant criteria.
+      required: true
+
+    - id: transition_activity_engine
+      name: "Transition Activity Engine"
+      description: >-
+        Article 10(2) transition activity identification, best available
+        technology assessment, lock-in avoidance verification, transition
+        pathway documentation, and sunset date tracking for transitional
+        status.
+      required: true
+
+    - id: enabling_activity_engine
+      name: "Enabling Activity Engine"
+      description: >-
+        Article 16 enabling activity classification, direct enablement
+        verification, life-cycle considerations, technology lock-in avoidance,
+        and market distortion assessment.
+      required: true
+
+    - id: taxonomy_reporting_engine
+      name: "Taxonomy Reporting Engine"
+      description: >-
+        Article 8 disclosure template generation, EBA Pillar 3 Templates 6-10,
+        XBRL/iXBRL tagging support, mandatory table generation (Turnover,
+        CapEx, OpEx), nuclear/gas supplementary disclosures, and year-over-year
+        comparison tables.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (10 taxonomy workflows)
+  # ===========================================================================
+  workflows:
+    - id: eligibility_screening
+      name: "Eligibility Screening Workflow"
+      description: >-
+        4-phase workflow: Activity Inventory -> NACE Mapping -> Eligibility
+        Assessment -> Eligibility Report. Screens all economic activities
+        against taxonomy eligibility criteria per environmental objective.
+      schedule: "on_demand"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: alignment_assessment
+      name: "Alignment Assessment Workflow"
+      description: >-
+        5-phase workflow: SC Evaluation -> DNSH Assessment -> MS Verification
+        -> Alignment Determination -> Evidence Package. Applies all four
+        alignment conditions to eligible activities.
+      schedule: "on_demand"
+      estimated_duration_minutes: 60
+      phases: 5
+
+    - id: kpi_calculation
+      name: "KPI Calculation Workflow"
+      description: >-
+        4-phase workflow: Financial Data Collection -> Activity Mapping ->
+        KPI Computation -> Disclosure Preparation. Calculates turnover,
+        CapEx, and OpEx alignment ratios.
+      schedule: "quarterly"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: gar_calculation
+      name: "GAR Calculation Workflow"
+      description: >-
+        4-phase workflow: Exposure Inventory -> Counterparty Data -> GAR/BTAR
+        Computation -> EBA Template Generation. For financial institutions.
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: article_8_disclosure
+      name: "Article 8 Disclosure Workflow"
+      description: >-
+        4-phase workflow: Data Validation -> Template Population -> Review &
+        Approval -> Filing Package. Generates mandatory Article 8 disclosures.
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: gap_analysis
+      name: "Gap Analysis Workflow"
+      description: >-
+        3-phase workflow: Current State Assessment -> Gap Identification ->
+        Remediation Planning. Identifies gaps in taxonomy alignment.
+      schedule: "on_demand"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: capex_plan
+      name: "CapEx Plan Workflow"
+      description: >-
+        4-phase workflow: Plan Definition -> Alignment Projection -> Approval
+        -> Monitoring. Manages 5-year CapEx plans for taxonomy alignment.
+      schedule: "annual"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: regulatory_update
+      name: "Regulatory Update Workflow"
+      description: >-
+        3-phase workflow: DA Version Tracking -> Impact Assessment -> Criteria
+        Migration. Handles delegated act updates and criteria changes.
+      schedule: "on_change"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: cross_framework_alignment
+      name: "Cross-Framework Alignment Workflow"
+      description: >-
+        4-phase workflow: Taxonomy KPI Extraction -> CSRD/ESRS Mapping -> SFDR
+        Integration -> Consolidated Disclosure. Maps taxonomy data to other
+        EU regulatory frameworks.
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: annual_taxonomy_review
+      name: "Annual Taxonomy Review Workflow"
+      description: >-
+        5-phase workflow: Activity Reassessment -> KPI Recalculation -> Trend
+        Analysis -> Board Reporting -> Action Planning. Comprehensive annual
+        review of all taxonomy assessments.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 5
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 taxonomy templates)
+  # ===========================================================================
+  templates:
+    - id: eligibility_matrix_report
+      display_name: "Eligibility Matrix Report"
+      description: "Activity-level eligibility results per objective, NACE sector breakdown"
+      format: "pdf"
+      template_file: "templates/eligibility_matrix_report.jinja2"
+      enabled: true
+
+    - id: alignment_summary_report
+      display_name: "Alignment Summary Report"
+      description: "Portfolio-level alignment results, SC/DNSH/MS pass rates, aligned vs. eligible ratios"
+      format: "pdf"
+      template_file: "templates/alignment_summary_report.jinja2"
+      enabled: true
+
+    - id: article_8_disclosure_template
+      display_name: "Article 8 Disclosure Template"
+      description: "Mandatory disclosure tables (Turnover, CapEx, OpEx), nuclear/gas supplementary templates"
+      format: "xlsx"
+      template_file: "templates/article_8_disclosure_template.jinja2"
+      enabled: true
+
+    - id: eba_pillar3_gar_report
+      display_name: "EBA Pillar 3 GAR Report"
+      description: "Templates 6-10 for credit institutions, GAR stock/flow, BTAR"
+      format: "xlsx"
+      template_file: "templates/eba_pillar3_gar_report.jinja2"
+      enabled: true
+
+    - id: kpi_dashboard
+      display_name: "KPI Dashboard"
+      description: "Turnover/CapEx/OpEx alignment ratios, year-over-year trends, activity-level breakdown"
+      format: "html"
+      template_file: "templates/kpi_dashboard.jinja2"
+      enabled: true
+
+    - id: gap_analysis_report
+      display_name: "Gap Analysis Report"
+      description: "Gap inventory, severity classification, remediation roadmap, cost estimation"
+      format: "pdf"
+      template_file: "templates/gap_analysis_report.jinja2"
+      enabled: true
+
+    - id: tsc_compliance_report
+      display_name: "TSC Compliance Report"
+      description: "Per-activity technical screening criteria results, evidence status, non-compliance details"
+      format: "pdf"
+      template_file: "templates/tsc_compliance_report.jinja2"
+      enabled: true
+
+    - id: dnsh_assessment_report
+      display_name: "DNSH Assessment Report"
+      description: "6-objective DNSH matrix, climate risk assessment, water/CE/pollution/biodiversity results"
+      format: "pdf"
+      template_file: "templates/dnsh_assessment_report.jinja2"
+      enabled: true
+
+    - id: executive_summary
+      display_name: "Executive Summary"
+      description: "Board-level overview, key metrics, regulatory compliance status, strategic recommendations"
+      format: "pdf"
+      template_file: "templates/executive_summary.jinja2"
+      enabled: true
+
+    - id: detailed_assessment_report
+      display_name: "Detailed Assessment Report"
+      description: "Full audit trail, activity-level detail, evidence inventory, provenance hashes"
+      format: "pdf"
+      template_file: "templates/detailed_assessment_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration -> Activity Inventory
+        -> Eligibility -> SC Assessment -> DNSH -> MS -> KPI/GAR -> Disclosure ->
+        Audit Trail. Orchestrates all taxonomy assessment phases.
+      required: true
+
+    - id: taxonomy_app_bridge
+      name: "Taxonomy App Bridge"
+      description: >-
+        Wires GL-Taxonomy-APP's 10 engines into pack workflows with unified
+        configuration. Provides access to ~240 economic activities, alignment
+        orchestration, and all Taxonomy-APP API endpoints.
+      required: true
+
+    - id: mrv_taxonomy_bridge
+      name: "MRV Taxonomy Bridge"
+      description: >-
+        Routes Scope 1/2/3 emissions data from all 30 MRV agents to CCM/CCA
+        Technical Screening Criteria evaluations. Maps GHG emission factors
+        to taxonomy activity thresholds.
+      required: true
+
+    - id: csrd_cross_framework_bridge
+      name: "CSRD Cross-Framework Bridge"
+      description: >-
+        Maps taxonomy KPIs to ESRS E1 disclosures, SFDR Article 8/9 product
+        disclosures, TCFD metrics, and CDP questionnaire responses for
+        consolidated multi-framework reporting.
+      required: true
+
+    - id: financial_data_bridge
+      name: "Financial Data Bridge"
+      description: >-
+        Connects ERP/finance systems for turnover, CapEx, OpEx data intake.
+        Maps general ledger accounts to taxonomy activities and provides
+        activity-level financial data for KPI calculation.
+      required: true
+
+    - id: activity_registry_bridge
+      name: "Activity Registry Bridge"
+      description: >-
+        Manages ~240 economic activity catalog with NACE code mappings, DA
+        version tracking, and TSC criteria linking. Provides activity lookup
+        and classification services.
+      required: true
+
+    - id: evidence_management_bridge
+      name: "Evidence Management Bridge"
+      description: >-
+        Links documents, certifications, audit reports, and measurement data
+        to TSC/DNSH/MS assessments. Manages evidence lifecycle and provenance.
+      required: true
+
+    - id: gar_data_bridge
+      name: "GAR Data Bridge"
+      description: >-
+        Aggregates counterparty taxonomy data for financial institution GAR
+        calculation. Handles exposure classification, EPC rating integration,
+        and de minimis threshold logic.
+      required: true
+
+    - id: regulatory_tracking_bridge
+      name: "Regulatory Tracking Bridge"
+      description: >-
+        Monitors Delegated Act updates (Climate DA, Environmental DA,
+        Complementary DA), manages criteria version transitions, and triggers
+        impact assessments on regulatory changes.
+      required: true
+
+    - id: data_quality_bridge
+      name: "Data Quality Bridge"
+      description: >-
+        Validates taxonomy data completeness, accuracy, and consistency.
+        Enforces data quality thresholds for eligibility/alignment assessments
+        and flags data gaps requiring attention.
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        20-category system verification covering app status, agent availability,
+        configuration validity, data connectivity, API health, database schema,
+        and dependency versions.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        10-step guided configuration wizard: organization type selection,
+        NACE code mapping, objective scope, financial data source connection,
+        assessment parameters, reporting preferences, integration setup,
+        validation, and deployment verification.
+      required: false
+
+  # ===========================================================================
+  # MRV Agents - All 30 MRV agents for emissions data (Scope 1/2/3)
+  # ===========================================================================
+  agents_mrv:
+
+    # -------------------------------------------------------------------------
+    # Scope 1 - Direct Emissions (8 agents)
+    # -------------------------------------------------------------------------
+    scope_1:
+      - id: AGENT-MRV-001
+        name: "Stationary Combustion Agent"
+        description: "Calculates emissions from stationary combustion sources"
+        path: "greenlang/agents/mrv/stationary_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-002
+        name: "Refrigerants & F-Gas Agent"
+        description: "Calculates emissions from refrigerants and fluorinated gases"
+        path: "greenlang/agents/mrv/refrigerants_fgas/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-003
+        name: "Mobile Combustion Agent"
+        description: "Calculates emissions from mobile combustion sources"
+        path: "greenlang/agents/mrv/mobile_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-004
+        name: "Process Emissions Agent"
+        description: "Calculates emissions from industrial processes"
+        path: "greenlang/agents/mrv/process_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-005
+        name: "Fugitive Emissions Agent"
+        description: "Calculates fugitive emissions from equipment and operations"
+        path: "greenlang/agents/mrv/fugitive_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-006
+        name: "Land Use Emissions Agent"
+        description: "Calculates emissions from land use and land use change"
+        path: "greenlang/agents/mrv/land_use_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-007
+        name: "Waste Treatment Emissions Agent"
+        description: "Calculates emissions from waste treatment and disposal"
+        path: "greenlang/agents/mrv/waste_treatment_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-008
+        name: "Agricultural Emissions Agent"
+        description: "Calculates emissions from agricultural operations"
+        path: "greenlang/agents/mrv/agricultural_emissions/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 2 - Indirect Energy Emissions (5 agents)
+    # -------------------------------------------------------------------------
+    scope_2:
+      - id: AGENT-MRV-009
+        name: "Scope 2 Location-Based Agent"
+        description: "Calculates location-based Scope 2 emissions from purchased electricity"
+        path: "greenlang/agents/mrv/scope2_location_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-010
+        name: "Scope 2 Market-Based Agent"
+        description: "Calculates market-based Scope 2 emissions using contractual instruments"
+        path: "greenlang/agents/mrv/scope2_market_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-011
+        name: "Steam/Heat Purchase Agent"
+        description: "Calculates emissions from purchased steam and heating"
+        path: "greenlang/agents/mrv/steam_heat_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-012
+        name: "Cooling Purchase Agent"
+        description: "Calculates emissions from purchased cooling"
+        path: "greenlang/agents/mrv/cooling_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-013
+        name: "Dual Reporting Reconciliation"
+        description: "Reconciles location-based and market-based Scope 2 reporting"
+        path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 3 - Value Chain Emissions (15 agents + 2 cross-cutting)
+    # -------------------------------------------------------------------------
+    scope_3:
+      - id: AGENT-MRV-014
+        name: "Purchased Goods & Services Agent (Cat 1)"
+        description: "Calculates Scope 3 Category 1 emissions from purchased goods and services"
+        path: "greenlang/agents/mrv/purchased_goods_services/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-015
+        name: "Capital Goods Agent (Cat 2)"
+        description: "Calculates Scope 3 Category 2 emissions from capital goods"
+        path: "greenlang/agents/mrv/capital_goods/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-016
+        name: "Fuel & Energy Activities Agent (Cat 3)"
+        description: "Calculates Scope 3 Category 3 upstream fuel and energy emissions"
+        path: "greenlang/agents/mrv/fuel_energy_activities/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-017
+        name: "Upstream Transportation Agent (Cat 4)"
+        description: "Calculates Scope 3 Category 4 upstream transportation and distribution emissions"
+        path: "greenlang/agents/mrv/upstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-018
+        name: "Waste Generated Agent (Cat 5)"
+        description: "Calculates Scope 3 Category 5 emissions from waste in operations"
+        path: "greenlang/agents/mrv/waste_generated/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-019
+        name: "Business Travel Agent (Cat 6)"
+        description: "Calculates Scope 3 Category 6 business travel emissions"
+        path: "greenlang/agents/mrv/business_travel/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-020
+        name: "Employee Commuting Agent (Cat 7)"
+        description: "Calculates Scope 3 Category 7 employee commuting emissions"
+        path: "greenlang/agents/mrv/employee_commuting/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-021
+        name: "Upstream Leased Assets Agent (Cat 8)"
+        description: "Calculates Scope 3 Category 8 upstream leased assets emissions"
+        path: "greenlang/agents/mrv/upstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-022
+        name: "Downstream Transportation Agent (Cat 9)"
+        description: "Calculates Scope 3 Category 9 downstream transportation emissions"
+        path: "greenlang/agents/mrv/downstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-023
+        name: "Processing of Sold Products (Cat 10)"
+        description: "Calculates Scope 3 Category 10 processing of sold products emissions"
+        path: "greenlang/agents/mrv/processing_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-024
+        name: "Use of Sold Products (Cat 11)"
+        description: "Calculates Scope 3 Category 11 use of sold products emissions"
+        path: "greenlang/agents/mrv/use_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-025
+        name: "End-of-Life Treatment (Cat 12)"
+        description: "Calculates Scope 3 Category 12 end-of-life treatment emissions"
+        path: "greenlang/agents/mrv/end_of_life_treatment/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-026
+        name: "Downstream Leased Assets (Cat 13)"
+        description: "Calculates Scope 3 Category 13 downstream leased assets emissions"
+        path: "greenlang/agents/mrv/downstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-027
+        name: "Franchises Agent (Cat 14)"
+        description: "Calculates Scope 3 Category 14 franchises emissions"
+        path: "greenlang/agents/mrv/franchises/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-028
+        name: "Investments Agent (Cat 15)"
+        description: "Calculates Scope 3 Category 15 investments emissions"
+        path: "greenlang/agents/mrv/investments/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Cross-Cutting MRV Agents (2 agents)
+    # -------------------------------------------------------------------------
+    cross_cutting:
+      - id: AGENT-MRV-029
+        name: "Scope 3 Category Mapper"
+        description: "Maps emissions data across all 15 Scope 3 categories"
+        path: "greenlang/agents/mrv/scope3_category_mapper/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-030
+        name: "Audit Trail & Lineage"
+        description: "Tracks data lineage and audit trails for all MRV calculations"
+        path: "greenlang/agents/mrv/audit_trail_lineage/"
+        required: true
+        version: "1.0.0"
+
+  # ===========================================================================
+  # Data Agents - Supporting data intake and quality agents (10 agents)
+  # ===========================================================================
+  agents_data:
+    # Data Intake (4 agents)
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts financial and activity data from PDF documents and invoices"
+      required: true
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes tabular financial and activity data from Excel/CSV files"
+      required: true
+
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Connects to ERP and finance systems for turnover, CapEx, OpEx data"
+      required: true
+
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Processes supplier taxonomy questionnaires and self-declarations"
+      required: true
+
+    # Data Quality (6 agents)
+    - id: AGENT-DATA-009
+      name: "Spend Data Categorizer"
+      description: "Categorizes spend data into taxonomy activity categories"
+      required: true
+
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all taxonomy compliance data sources"
+      required: true
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects and resolves duplicate activity, financial, and evidence records"
+      required: true
+
+    - id: AGENT-DATA-012
+      name: "Missing Value Imputer"
+      description: "Imputes missing values in taxonomy assessment datasets"
+      required: true
+
+    - id: AGENT-DATA-018
+      name: "Data Lineage Tracker"
+      description: "Tracks data lineage across taxonomy assessment pipeline"
+      required: true
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces taxonomy-specific validation rules on all compliance data"
+      required: true
+
+  # ===========================================================================
+  # Foundation Agents - Core platform agents (all 10)
+  # ===========================================================================
+  agents_foundation:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for taxonomy compliance"
+      required: true
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (financial, emissions, energy) and reference data"
+      required: true
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks all assumptions used in taxonomy assessments and calculations"
+      required: true
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all data points to source evidence for audit trails"
+      required: true
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access and data policies"
+      required: true
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Maintains registry of available agents and their capabilities"
+      required: true
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all taxonomy calculations are reproducible with provenance tracking"
+      required: true
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Runs quality assurance checks on all agent outputs"
+      required: true
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for all agents"
+      required: true
+
+# -----------------------------------------------------------------------------
+# Pack Summary
+# -----------------------------------------------------------------------------
+pack_summary:
+  total_agents: 51
+  taxonomy_app: 1
+  mrv_agents: 30
+  data_agents: 10
+  foundation_agents: 10
+  pack_engines: 10
+  pack_workflows: 10
+  pack_templates: 10
+  pack_integrations: 12
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles
+# -----------------------------------------------------------------------------
+presets:
+  size_presets:
+    - id: non_financial_undertaking
+      display_name: "Non-Financial Undertaking"
+      description: >-
+        Standard deployment for non-financial undertakings subject to CSRD/NFRD.
+        Focused on Turnover/CapEx/OpEx KPI calculation, all 6 environmental
+        objectives, full eligibility and alignment assessment.
+      config_file: "config/presets/non_financial_undertaking.yaml"
+
+    - id: financial_institution
+      display_name: "Financial Institution"
+      description: >-
+        Deployment for credit institutions and investment firms. Focused on
+        Green Asset Ratio (GAR/BTAR) calculation, exposure classification,
+        counterparty taxonomy data, EPC integration for real estate, and EBA
+        Pillar 3 disclosure templates (Templates 6-10).
+      config_file: "config/presets/financial_institution.yaml"
+
+    - id: asset_manager
+      display_name: "Asset Manager"
+      description: >-
+        Deployment for asset managers and fund companies. Investment taxonomy
+        focus with fund-level analysis, SFDR Article 8/9 product alignment,
+        portfolio-level taxonomy ratios, and investor reporting.
+      config_file: "config/presets/asset_manager.yaml"
+
+    - id: large_enterprise
+      display_name: "Large Enterprise"
+      description: >-
+        Full-featured deployment with all features enabled. All 6 environmental
+        objectives, comprehensive assessment, full Article 8 disclosure, GAR
+        calculation capability, cross-framework reporting, and advanced
+        regulatory tracking.
+      config_file: "config/presets/large_enterprise.yaml"
+
+    - id: sme_simplified
+      display_name: "SME Simplified"
+      description: >-
+        Simplified deployment for SMEs with de minimis eligibility. Focused
+        on CCM and CCA objectives, simplified assessment criteria, reduced
+        evidence requirements, and streamlined KPI calculation.
+      config_file: "config/presets/sme_simplified.yaml"
+
+  sector_presets:
+    - id: energy
+      display_name: "Energy Sector"
+      description: "Power generation, renewables, grid infrastructure, energy storage"
+      config_file: "config/sectors/energy.yaml"
+      primary_activities: ["electricity_generation", "renewables", "transmission", "storage"]
+
+    - id: manufacturing
+      display_name: "Manufacturing Sector"
+      description: "Industrial processes, cement, steel, aluminium, chemicals, automotive"
+      config_file: "config/sectors/manufacturing.yaml"
+      primary_activities: ["cement", "steel", "aluminium", "chemicals", "automotive"]
+
+    - id: real_estate
+      display_name: "Real Estate Sector"
+      description: "Building renovation, new construction, EPC improvements, property management"
+      config_file: "config/sectors/real_estate.yaml"
+      primary_activities: ["renovation", "construction", "acquisition", "management"]
+
+    - id: transport
+      display_name: "Transport Sector"
+      description: "Low-carbon vehicles, rail infrastructure, shipping, urban mobility"
+      config_file: "config/sectors/transport.yaml"
+      primary_activities: ["vehicles", "rail", "shipping", "urban_mobility"]
+
+    - id: forestry_agriculture
+      display_name: "Forestry & Agriculture Sector"
+      description: "Afforestation, forest management, restoration, organic farming"
+      config_file: "config/sectors/forestry_agriculture.yaml"
+      primary_activities: ["afforestation", "forest_management", "restoration", "organic"]
+
+    - id: financial_services
+      display_name: "Financial Services Sector"
+      description: "Banking, insurance, asset management, green bonds, sustainable finance"
+      config_file: "config/sectors/financial_services.yaml"
+      primary_activities: ["banking", "insurance", "asset_management", "green_bonds"]
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 32
+    min_storage_gb: 200
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 64
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 50
+    recommended_connections: 100
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  activity_screening:
+    single_activity_max_ms: 100
+    batch_240_max_seconds: 10
+    description: "Activity screening against ~240 taxonomy activities"
+
+  alignment_assessment:
+    single_activity_max_seconds: 5
+    batch_50_max_seconds: 60
+    description: "Full 4-condition alignment assessment per activity"
+
+  kpi_calculation:
+    full_portfolio_max_seconds: 10
+    description: "KPI calculation for Turnover/CapEx/OpEx ratios"
+
+  gar_calculation:
+    banking_book_max_seconds: 30
+    description: "Green Asset Ratio calculation for financial institutions"
+
+  report_generation:
+    article_8_template_max_seconds: 15
+    eba_pillar3_max_seconds: 20
+    executive_summary_max_seconds: 10
+    description: "Disclosure and report generation"
+
+  api_latency:
+    p50_ms: 50
+    p95_ms: 200
+    p99_ms: 1000
+
+  availability:
+    target_percent: 99.9
+    description: "Standard availability target"

@@ -1,0 +1,175 @@
+# =============================================================================
+# PACK-014 CSRD Retail Pack - Apparel Retail Preset
+# =============================================================================
+# Configuration for fashion, textile, and footwear retail. Textile EPR is
+# enabled. EUDR commodity tracing for rubber, timber, and cattle (leather).
+# Supply chain due diligence tier depth 4 (critical for garment worker
+# conditions). Textile microplastics tracking enabled. Green claims strict
+# audit per ECGT. DPP for textiles from 2027.
+#
+# Typical use cases:
+#   - Fast fashion chains
+#   - Premium/luxury fashion
+#   - Sportswear retailers
+#   - Footwear specialists
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+tier: "ENTERPRISE"
+sub_sectors:
+  - "APPAREL"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Store Emissions ---
+store_emissions:
+  enabled: true
+  store_types:
+    - "STANDARD"
+    - "FLAGSHIP"
+    - "OUTLET"
+  refrigerant_tracking: false
+  f_gas_phase_down: false
+  fleet_tracking: true
+  renewable_on_site: false
+  heating_sources:
+    - "electricity"
+    - "natural_gas"
+  per_sqm_normalization: true
+  per_revenue_normalization: true
+  year_over_year_tracking: true
+
+# --- Scope 3 (Cat 1 and Cat 12 CRITICAL) ---
+scope3:
+  enabled: true
+  priority_categories: [1, 4, 9, 12]
+  calculation_methods:
+    cat_1: "hybrid"
+    cat_4: "distance_based"
+    cat_9: "distance_based"
+    cat_12: "average_data"
+    default: "spend_based"
+  supplier_data_collection: true
+  cat1_methodology: "hybrid"
+  spend_based_screening: true
+  hotspot_analysis: true
+  supplier_engagement_scoring: true
+  last_mile_tracking: true
+
+# --- Packaging ---
+packaging:
+  enabled: true
+  ppwr_compliance: true
+  recycled_content_tracking: true
+  materials_tracked:
+    - "PAPER_BOARD"
+    - "HDPE"
+    - "PP"
+    - "BIOPLASTIC"
+  epr_scheme: true
+  labeling_requirements: true
+  reuse_targets: true
+  over_packaging_monitoring: true
+  target_year: 2030
+
+# --- Product Sustainability (DPP textiles from 2027) ---
+product_sustainability:
+  enabled: true
+  dpp_enabled: true
+  dpp_product_categories:
+    - "textiles"
+    - "footwear"
+  pef_methodology: true
+  green_claims_audit: true
+  banned_claims:
+    - "CARBON_NEUTRAL"
+    - "ECO_FRIENDLY"
+    - "SUSTAINABLE"
+  textile_microplastics: true
+  product_recyclability_scoring: true
+
+# --- Food Waste (not applicable) ---
+food_waste:
+  enabled: false
+
+# --- Supply Chain Due Diligence (CRITICAL - tier depth 4) ---
+supply_chain_dd:
+  enabled: true
+  csddd_compliance: true
+  eudr_commodities:
+    - "RUBBER"
+    - "TIMBER"
+    - "CATTLE"
+  forced_labour_screening: true
+  supplier_tier_depth: 4
+  country_risk_assessment: true
+  living_wage_gap_analysis: true
+  sanctions_screening: true
+  stakeholder_engagement: true
+  remediation_tracking: true
+  geolocation_verification: true
+  risk_assessment_platform: "SEDEX"
+
+# --- Circular Economy (textile EPR CRITICAL) ---
+circular_economy:
+  enabled: true
+  epr_schemes:
+    - "PACKAGING"
+    - "TEXTILES"
+  take_back_programs:
+    - "textile_collection"
+    - "footwear_recycling"
+  mci_tracking: true
+  product_recyclability: true
+  second_hand_tracking: true
+  return_logistics_emissions: true
+  repair_services: true
+  multi_country_epr: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  kpi_set:
+    - "emissions_per_sqm"
+    - "emissions_per_revenue"
+    - "scope3_supplier_coverage"
+    - "packaging_recycled_content"
+    - "sbti_alignment"
+    - "textile_recycled_content"
+    - "supplier_dd_coverage"
+  peer_group: "NACE_SECTOR"
+  sbti_pathway: "1.5C"
+  percentile_tracking: true
+  gap_analysis_enabled: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  store_emissions_report_enabled: true
+  supply_chain_report_enabled: true
+  packaging_report_enabled: true
+  product_sustainability_report_enabled: true
+  food_waste_report_enabled: false
+  circular_economy_report_enabled: true
+  scorecard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+  review_workflow_enabled: true
+  watermark_draft: true

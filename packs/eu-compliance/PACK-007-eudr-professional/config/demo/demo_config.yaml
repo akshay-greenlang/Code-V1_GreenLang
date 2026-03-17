@@ -1,0 +1,206 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Demo Configuration
+# =============================================================================
+# Demo mode configuration for testing, training, and evaluation purposes.
+# Uses synthetic data, mock external services, and tutorial mode for safe
+# exploration of professional-tier features without impacting production systems.
+#
+# Use Cases:
+#   - Product demonstrations
+#   - Staff training and onboarding
+#   - Proof-of-concept deployments
+#   - Integration testing
+#   - Feature evaluation before purchase
+# =============================================================================
+
+operator:
+  company_name: "Demo Corporation (Professional)"
+  eori_number: "DEMO123456789"
+  registration_country: "DEU"
+  operator_type: "OPERATOR"
+  company_size: "ENTERPRISE"
+  contact_email: "demo@greenlang.io"
+  vat_number: "DE999999999"
+
+commodities:
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RSPO", "ISCC"]
+    high_risk_origins: ["IDN", "MYS"]
+    annual_volume_tonnes: 10000.0
+
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RAINFOREST_ALLIANCE", "FAIRTRADE"]
+    high_risk_origins: ["CIV", "GHA"]
+    annual_volume_tonnes: 5000.0
+
+  - commodity_type: "wood"
+    enabled: true
+    priority: 2
+    certification_schemes: ["FSC", "PEFC"]
+    high_risk_origins: ["BRA", "IDN"]
+    annual_volume_tonnes: 8000.0
+
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 10000
+  batch_size: 100  # Smaller batches for demo
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+risk_assessment:
+  country_weight: 0.35
+  supplier_weight: 0.25
+  commodity_weight: 0.20
+  document_weight: 0.20
+  thresholds:
+    low_max: 25.0
+    medium_max: 50.0
+    high_max: 75.0
+    critical_min: 75.0
+  auto_escalation_enabled: true
+  reassessment_interval_days: 30  # Faster for demo
+
+dds:
+  dds_type: "STANDARD"
+  auto_generate_reference_number: true
+  require_all_fields: false  # Relaxed for demo
+  enable_draft_mode: true
+  submission_timeout_seconds: 60  # Shorter timeout
+  retry_attempts: 2
+
+compliance:
+  require_geolocation: true
+  require_certification: false
+  allow_self_declarations: true
+  verification_level: "STANDARD"
+  audit_retention_years: 1  # Short retention for demo
+  data_quality_threshold: 0.75
+
+cutoff_date:
+  cutoff_date: "2020-12-31"
+  satellite_lookback_years: 5  # Shorter for demo
+  hansen_forest_change_enabled: true
+  temporal_analysis_periods: 3
+  allow_manual_override: true  # Allow overrides in demo
+
+reporting:
+  default_report_format: "PDF"
+  include_executive_summary: true
+  include_risk_heatmap: true
+  include_supplier_details: true
+  language: "en"
+  timezone: "UTC"
+
+demo:
+  demo_mode_enabled: true
+  use_synthetic_data: true
+  mock_eu_is_responses: true
+  mock_satellite_imagery: true
+  tutorial_mode_enabled: true
+
+# Professional Features (all enabled for demo)
+
+advanced_geolocation:
+  sentinel_integration: true  # Mocked
+  modis_fire_check: true  # Mocked
+  protected_area_check: true
+  indigenous_land_check: true
+  hansen_forest_change: true  # Mocked
+  resolution_meters: 10
+  temporal_periods: 3  # Reduced for demo
+  alert_systems: ["GLAD", "RADD"]  # Mocked
+
+scenario_risk:
+  simulation_count: 1000  # Reduced for demo (faster)
+  confidence_levels: [0.90, 0.95]
+  seed: 42
+  parallel_workers: 2
+  timeout_seconds: 30
+  distributions:
+    country_risk: "BETA"
+    supplier_risk: "LOGNORMAL"
+    commodity_risk: "NORMAL"
+
+satellite_monitoring:
+  providers: ["SENTINEL_2", "MODIS"]  # Mocked
+  check_interval_hours: 24  # Less frequent for demo
+  alert_threshold: 0.70
+  historical_months: 24  # Shorter history
+  resolution_meters: 10
+
+continuous_monitoring:
+  enabled: true
+  intervals:
+    satellite_check_hours: 24
+    risk_reassessment_hours: 48
+    supplier_update_hours: 168
+    regulatory_check_hours: 24
+  notification_channels: ["EMAIL"]  # Email only for demo
+  escalation_enabled: true
+
+portfolio:
+  max_operators: 5  # Smaller portfolio for demo
+  shared_supplier_pool: true
+  cross_operator_reporting: true
+  cost_allocation: false  # Disabled for demo
+  hierarchy_depth: 2
+
+audit_management:
+  retention_years: 1
+  hash_algorithm: "SHA-256"
+  export_formats: ["JSON", "PDF"]
+  mock_audit_enabled: true
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 5.0
+  ramsar_check: false  # Simplified for demo
+  unesco_check: false  # Simplified for demo
+
+regulatory_tracking:
+  eurlex_monitoring: false  # Disabled for demo
+  check_interval_hours: 48
+  cross_regulation_tracking: false
+  auto_gap_analysis: false
+
+grievance:
+  enabled: true
+  anonymous_submissions: true
+  response_sla_days: 7
+  resolution_sla_days: 30
+  whistleblower_protection: true
+
+cross_regulation:
+  csrd_e4_linkage: false  # Disabled for demo
+  csddd_linkage: false
+  nature_restoration_linkage: false
+
+advanced_supply_chain:
+  max_tier_depth: 3  # Simplified for demo
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED", "MASS_BALANCE"]
+  network_analysis: true
+  diversification_scoring: true
+
+supplier_benchmark:
+  peer_group_min_size: 3  # Smaller peer groups for demo
+  scoring_dimensions: ["COMPLIANCE_SCORE", "DATA_QUALITY", "RISK_LEVEL"]
+  benchmark_frequency: "QUARTERLY"
+  degradation_alert: true
+
+# Demo-specific settings
+demo_settings:
+  synthetic_suppliers: 25
+  synthetic_plots: 100
+  synthetic_shipments: 50
+  synthetic_dds: 10
+  generate_sample_reports: true
+  enable_walkthrough: true
+  show_feature_highlights: true
+  mock_external_apis: true
+  fast_mode: true  # Skip delays for faster demo experience

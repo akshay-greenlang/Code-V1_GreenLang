@@ -1,0 +1,174 @@
+# =============================================================================
+# PACK-013 CSRD Manufacturing Pack - Heavy Industry Preset
+# =============================================================================
+# Full configuration for energy-intensive manufacturing: cement, steel,
+# aluminium, glass, ceramics. These sectors are covered by the EU ETS,
+# potentially affected by CBAM, and subject to BAT/BREF requirements
+# under the Industrial Emissions Directive. Process emissions are the
+# dominant emission source. Energy intensity benchmarking against EU ETS
+# product benchmarks and BAT-AELs is critical.
+#
+# Typical use cases:
+#   - Integrated steelworks (BF-BOF and EAF)
+#   - Cement clinker plants
+#   - Primary aluminium smelters
+#   - Float glass plants
+#   - Technical ceramics manufacturers
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+manufacturing_tier: "HEAVY_INDUSTRY"
+sub_sectors:
+  - "STEEL"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Process Emissions (CRITICAL for heavy industry) ---
+process_emissions:
+  enabled: true
+  sub_sector: "STEEL"
+  cbam_affected: true
+  ets_phase: "PHASE_4"
+  cbam_status: "FULL_COMPLIANCE"
+  emission_sources:
+    - "combustion"
+    - "process"
+    - "fugitive"
+  mass_balance_enabled: true
+  product_allocation_enabled: true
+  allocation_method: "MASS"
+  emission_factor_source: "EU_MRV"
+  year_over_year_tracking: true
+
+# --- Energy Intensity (HIGH priority) ---
+energy_intensity:
+  enabled: true
+  production_unit: "tonne"
+  energy_sources:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+    - "COAL"
+    - "HEAVY_FUEL_OIL"
+    - "WASTE_HEAT"
+  benchmark_reference: "EU_ETS_BENCHMARK"
+  iso50001_certified: true
+  enpi_tracking: true
+  significant_energy_use_threshold_pct: 3.0
+  renewable_energy_tracking: true
+  energy_cost_tracking: true
+
+# --- Product Carbon Footprint ---
+product_pcf:
+  enabled: true
+  lifecycle_scope: "CRADLE_TO_GATE"
+  allocation_method: "MASS"
+  dpp_enabled: false
+  pef_methodology: true
+  iso14067_compliant: true
+  emission_factor_database: "ECOINVENT"
+  co_product_allocation: true
+  recycled_content_crediting: true
+  uncertainty_analysis: true
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  waste_streams:
+    - "HAZARDOUS"
+    - "NON_HAZARDOUS"
+    - "BY_PRODUCT"
+    - "RECYCLABLE"
+  recycled_content_tracking: true
+  material_circularity_indicator: true
+  waste_diversion_target_pct: 85.0
+  industrial_symbiosis_tracking: true
+
+# --- Water & Pollution ---
+water_pollution:
+  enabled: true
+  water_sources:
+    - "MUNICIPAL"
+    - "GROUNDWATER"
+    - "SURFACE_WATER"
+    - "RECYCLED"
+  pollutant_types:
+    - "AIR_EMISSIONS"
+    - "WATER_DISCHARGES"
+    - "WASTE_TRANSFERS"
+  water_stress_assessment: true
+  reach_svhc_tracking: true
+  eprtr_reporting: true
+  water_framework_directive: true
+  wastewater_treatment_monitoring: true
+  water_recycling_rate_tracking: true
+
+# --- BAT/BREF Compliance (CRITICAL for heavy industry) ---
+bat_compliance:
+  enabled: true
+  applicable_brefs:
+    - "IS_BREF"
+    - "LCP_BREF"
+  compliance_level: "COMPLIANT"
+  bat_ael_monitoring: true
+  permit_conditions_monitoring: true
+  ied_inspection_readiness: true
+
+# --- Supply Chain ---
+supply_chain:
+  enabled: true
+  tier_depth: 2
+  priority_categories: [1, 3, 4, 5, 9]
+  supplier_engagement_platform: "CDP_SUPPLY_CHAIN"
+  spend_based_screening: true
+  supplier_specific_enabled: true
+  hybrid_method: true
+  hotspot_analysis: true
+  cbam_import_integration: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  peer_group: "NACE_SECTOR"
+  kpi_set:
+    - "carbon_intensity"
+    - "energy_intensity"
+    - "water_intensity"
+    - "waste_intensity"
+    - "circularity_rate"
+  sbti_pathway: "WELL_BELOW_2C"
+  abatement_cost_curve: true
+  eu_ets_benchmark_comparison: true
+  bat_ael_benchmark_comparison: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+  gap_analysis_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  process_emissions_report_enabled: true
+  pcf_label_enabled: true
+  energy_report_enabled: true
+  circular_economy_report_enabled: true
+  bat_report_enabled: true
+  scorecard_enabled: true
+  decarbonization_roadmap_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  review_workflow_enabled: true
+  watermark_draft: true

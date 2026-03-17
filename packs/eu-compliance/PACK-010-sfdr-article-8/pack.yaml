@@ -1,0 +1,1059 @@
+# =============================================================================
+# PACK-010: SFDR Article 8 Pack
+# GreenLang EU Compliance Pack for SFDR (EU) 2019/2088 Article 8 Products
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for SFDR Article 8 financial product compliance. It
+# bundles PAI indicator calculation, taxonomy alignment ratio computation,
+# SFDR-specific DNSH assessment, good governance verification, E/S
+# characteristics tracking, sustainable investment classification, portfolio
+# carbon footprint calculation, and European ESG Template (EET) management.
+#
+# Key Capabilities:
+#   - All 18 mandatory PAI indicators across 5 categories
+#   - EU Taxonomy alignment ratio for Article 8 products
+#   - SFDR-specific DNSH assessment (distinct from Taxonomy DNSH)
+#   - Article 2(17) good governance checks
+#   - E/S characteristics definition and tracking with binding elements
+#   - Sustainable investment proportion calculation
+#   - Portfolio carbon footprint (WACI, financed emissions, PCAF alignment)
+#   - European ESG Template (EET) v1.1 import/export
+#   - Pre-contractual disclosure (Annex II) generation
+#   - Periodic reporting (Annex IV) generation
+#   - Website disclosure (Annex III) generation
+#   - PAI statement generation per entity and product
+#   - Negative/positive/norms-based screening workflows
+#   - Regulatory change tracking (SFDR Level 1, RTS, ESMA Q&A updates)
+#
+# Regulatory References:
+#   - SFDR Level 1: Regulation (EU) 2019/2088
+#   - SFDR RTS: Delegated Regulation (EU) 2022/1288
+#   - Taxonomy Disclosures DA: Delegated Regulation (EU) 2021/2178
+#   - ESMA Q&A: SFDR and Taxonomy-related Q&A updates
+#   - EET Standard: European ESG Template v1.1 (FinDatEx)
+#
+# SFDR Product Classification:
+#   - Article 6: No sustainability characteristics promoted
+#   - Article 8: Promotes environmental or social characteristics
+#   - Article 8+: Article 8 with sustainable investment proportion
+#   - Article 9: Sustainable investment as objective
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-15)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-010-sfdr-article-8
+  version: "1.0.0"
+  display_name: "SFDR Article 8 Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for SFDR (EU) 2019/2088 Article 8
+    financial product compliance. Includes 8 engines for PAI indicator calculation,
+    taxonomy alignment ratio computation, SFDR-specific DNSH assessment, good
+    governance verification, E/S characteristics tracking, sustainable investment
+    classification, portfolio carbon footprint, and EET data management. Bundles
+    all 30 MRV agents for PAI emissions data, 10 data intake/quality agents, and
+    10 foundation agents. Supports pre-contractual disclosure (Annex II), periodic
+    reporting (Annex IV), website disclosure (Annex III), PAI statement generation,
+    portfolio screening, and regulatory change management. Designed for UCITS/AIF
+    fund managers, insurance undertakings, credit institutions, occupational pension
+    schemes, and discretionary portfolio managers.
+  category: eu-compliance
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-15"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/sfdr-article-8"
+  changelog_url: "https://docs.greenlang.io/packs/sfdr-article-8/changelog"
+
+  tags:
+    - sfdr
+    - article-8
+    - pai-indicators
+    - sustainable-finance
+    - esg
+    - taxonomy-alignment
+    - eu-compliance
+    - standalone
+    - pre-contractual-disclosure
+    - periodic-reporting
+    - website-disclosure
+    - eet-template
+    - portfolio-carbon-footprint
+    - good-governance
+    - sustainable-investment
+    - screening
+    - waci
+
+  regulation:
+    name: "Sustainable Finance Disclosure Regulation"
+    reference: "(EU) 2019/2088"
+    effective_date: "2021-03-10"
+    rts_effective_date: "2023-01-01"
+    articles: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    pai_indicators: 18
+    mandatory_pai_indicators: 14
+    additional_pai_indicators: 46
+    description: >-
+      The Sustainable Finance Disclosure Regulation establishes sustainability
+      disclosure obligations for financial market participants and financial
+      advisers. Article 8 products promote environmental or social
+      characteristics, or a combination of those characteristics, provided
+      that the companies in which investments are made follow good governance
+      practices. Financial market participants must provide pre-contractual
+      disclosures (Annex II), periodic reports (Annex IV), and website
+      disclosures (Annex III) for Article 8 products.
+
+  compliance_references:
+    - id: "SFDR-LEVEL1"
+      name: "SFDR Level 1"
+      regulation: "Regulation (EU) 2019/2088"
+      effective_date: "2021-03-10"
+      description: >-
+        Framework regulation establishing sustainability-related disclosure
+        obligations in the financial services sector. Defines product
+        categorization (Article 6/8/9), entity-level PAI disclosures,
+        and transparency requirements for financial market participants.
+
+    - id: "SFDR-RTS"
+      name: "SFDR Regulatory Technical Standards"
+      regulation: "Delegated Regulation (EU) 2022/1288"
+      effective_date: "2023-01-01"
+      description: >-
+        Specifies the content, methodologies, and presentation of
+        sustainability-related disclosures. Defines 18 mandatory PAI
+        indicators, pre-contractual disclosure templates (Annex II/III),
+        periodic reporting templates (Annex IV/V), and website disclosure
+        requirements. Establishes quantitative metrics for environmental
+        and social adverse impact measurement.
+
+    - id: "TAXONOMY-DISCLOSURES-DA"
+      name: "Taxonomy Disclosures Delegated Act"
+      regulation: "Delegated Regulation (EU) 2021/2178"
+      effective_date: "2022-01-01"
+      description: >-
+        Specifies the content and presentation of information to be
+        disclosed regarding the proportion of investments in taxonomy-
+        aligned economic activities. Applies to SFDR Article 8 and
+        Article 9 products making taxonomy alignment claims.
+
+    - id: "ESMA-QA"
+      name: "ESMA Q&A on SFDR"
+      regulation: "ESMA Q&A Updates"
+      effective_date: "2023-11-17"
+      description: >-
+        ESMA Questions and Answers providing supervisory guidance on
+        the application of SFDR, including PAI calculation methodologies,
+        product classification criteria, and disclosure format
+        clarifications.
+
+    - id: "EET-STANDARD"
+      name: "European ESG Template"
+      regulation: "FinDatEx EET v1.1"
+      effective_date: "2023-06-30"
+      description: >-
+        Standardized data exchange template for ESG data between product
+        manufacturers and distributors. Covers SFDR classification,
+        taxonomy alignment data, PAI data, and product-level ESG
+        characteristics for regulatory and MiFID II suitability purposes.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 SFDR engines)
+  # ===========================================================================
+  engines:
+    - id: pai_indicator_calculator
+      name: "PAI Indicator Calculator"
+      description: >-
+        Calculates all 18 mandatory Principal Adverse Impact indicators
+        across 5 categories: Climate (GHG emissions, carbon footprint,
+        GHG intensity, fossil fuel exposure, non-renewable energy share,
+        energy consumption intensity), Environment (biodiversity, water
+        emissions, hazardous waste), Social (UNGC/OECD violations, gender
+        pay gap, board gender diversity, controversial weapons), and
+        Sovereign (GHG intensity, social violations, fossil fuel revenue)
+        plus Real Estate (energy efficiency). Supports entity-level and
+        product-level PAI aggregation with coverage-adjusted calculations.
+      required: true
+
+    - id: taxonomy_alignment_ratio
+      name: "Taxonomy Alignment Ratio Engine"
+      description: >-
+        Calculates the proportion of investments in EU Taxonomy-aligned
+        economic activities for Article 8 products. Implements look-through
+        for funds-of-funds, handles sovereign bond exclusions, computes
+        enabling and transitional activity proportions, and supports
+        minimum commitment verification against pre-contractual targets.
+        Integrates with PACK-008 EU Taxonomy Alignment for activity-level
+        assessment data.
+      required: true
+
+    - id: sfdr_dnsh_engine
+      name: "SFDR DNSH Assessment Engine"
+      description: >-
+        Implements SFDR-specific Do No Significant Harm assessment for
+        sustainable investments, distinct from EU Taxonomy DNSH. Evaluates
+        adverse impact on environmental and social objectives using PAI
+        indicators as proxy metrics. Applies configurable thresholds per
+        indicator, supports both quantitative (numeric threshold) and
+        qualitative (policy-based) DNSH criteria, and generates per-investee
+        DNSH determination with evidence linking.
+      required: true
+
+    - id: good_governance_engine
+      name: "Good Governance Engine"
+      description: >-
+        Implements Article 2(17) good governance verification for investee
+        companies. Assesses four governance dimensions: sound management
+        structures, employee relations, remuneration of staff, and tax
+        compliance. Supports data-driven assessment (using governance
+        scores, controversy flags, and compliance records) and policy-based
+        assessment (evaluating corporate governance policies and codes).
+        Produces per-investee governance determination with pass/fail
+        scoring per dimension.
+      required: true
+
+    - id: esg_characteristics_engine
+      name: "E/S Characteristics Engine"
+      description: >-
+        Tracks and measures environmental and social characteristics
+        promoted by Article 8 products. Manages characteristic definitions,
+        binding elements, sustainability indicators, and measurement
+        methodologies. Links characteristics to specific ESG metrics,
+        benchmark indices, and screening criteria. Supports both
+        exclusion-based and inclusion-based characteristic promotion
+        with configurable measurement approaches.
+      required: true
+
+    - id: sustainable_investment_calculator
+      name: "Sustainable Investment Calculator"
+      description: >-
+        Classifies and calculates the proportion of sustainable investments
+        within Article 8+ products. Implements the three-pronged test:
+        (1) contributes to environmental or social objective, (2) does
+        not significantly harm any other objective (SFDR DNSH), and
+        (3) investee follows good governance practices. Categorizes
+        sustainable investments as taxonomy-aligned, other environmental,
+        or social per SFDR RTS Annex II requirements.
+      required: true
+
+    - id: portfolio_carbon_footprint
+      name: "Portfolio Carbon Footprint Engine"
+      description: >-
+        Calculates portfolio-level carbon metrics: Weighted Average Carbon
+        Intensity (WACI), portfolio carbon footprint (tCO2e/EUR million
+        invested), total carbon emissions, financed emissions per PCAF
+        standard. Supports Scope 1, Scope 2, and optional Scope 3
+        emissions. Handles coverage adjustment for partial data
+        availability, benchmark comparison, and year-over-year trend
+        analysis. Aligns with PAI indicators 1-3 methodology.
+      required: true
+
+    - id: eet_data_engine
+      name: "EET Data Engine"
+      description: >-
+        Manages European ESG Template (EET) v1.1 data import and export.
+        Maps internal SFDR data model to EET field structure, validates
+        EET data completeness and consistency, generates EET-compliant
+        output files for distribution to platforms and distributors.
+        Supports EET fields for SFDR classification, taxonomy alignment
+        proportions, PAI consideration flags, and product-level ESG
+        characteristics. Handles both manufacturer and distributor
+        EET perspectives.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 SFDR workflows)
+  # ===========================================================================
+  workflows:
+    - id: precontractual_disclosure
+      name: "Pre-Contractual Disclosure Workflow"
+      description: >-
+        5-phase workflow: Product Classification -> Characteristic Definition
+        -> Sustainability Metrics Collection -> Annex II Template Population
+        -> Review & Approval. Generates SFDR RTS Annex II pre-contractual
+        disclosure for Article 8 products including E/S characteristics
+        description, investment strategy, asset allocation, sustainability
+        indicators, and taxonomy alignment commitment.
+      schedule: "on_change"
+      estimated_duration_minutes: 90
+      phases: 5
+
+    - id: periodic_reporting
+      name: "Periodic Reporting Workflow"
+      description: >-
+        5-phase workflow: Period-End Data Collection -> PAI Calculation
+        -> Characteristic Achievement Assessment -> Annex IV Template
+        Population -> Review & Approval. Generates SFDR RTS Annex IV
+        periodic report for Article 8 products including extent to which
+        E/S characteristics were met, sustainability indicator performance,
+        top investments, asset allocation breakdown, and taxonomy alignment
+        actual vs. committed proportions.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: website_disclosure
+      name: "Website Disclosure Workflow"
+      description: >-
+        4-phase workflow: Content Assembly -> Annex III Template Population
+        -> Compliance Review -> Publication. Generates and maintains SFDR
+        RTS Annex III website disclosure including product description, E/S
+        characteristics summary, investment strategy, asset allocation,
+        sustainability indicators, methodologies, data sources, and
+        limitations. Tracks disclosure currency and triggers updates.
+      schedule: "on_change"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: pai_statement
+      name: "PAI Statement Workflow"
+      description: >-
+        4-phase workflow: Data Collection -> PAI Indicator Calculation
+        -> Statement Generation -> Review & Publication. Calculates all
+        18 mandatory PAI indicators at entity level and optionally at
+        product level. Generates SFDR Article 4 PAI statement with
+        current period values, prior period comparison, explanatory
+        notes, and actions taken to address adverse impacts.
+      schedule: "annual"
+      estimated_duration_minutes: 150
+      phases: 4
+
+    - id: portfolio_screening
+      name: "Portfolio Screening Workflow"
+      description: >-
+        4-phase workflow: Universe Definition -> Screen Application ->
+        Impact Assessment -> Compliance Verification. Applies negative
+        screening (exclusions), positive screening (best-in-class),
+        and norms-based screening against the investment universe.
+        Validates screening results against product-level binding
+        elements and generates screening compliance reports.
+      schedule: "quarterly"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: taxonomy_alignment
+      name: "Taxonomy Alignment Workflow"
+      description: >-
+        4-phase workflow: Holdings Analysis -> Taxonomy Data Collection
+        -> Alignment Ratio Calculation -> Commitment Verification.
+        Calculates actual taxonomy alignment ratio for the portfolio,
+        compares against pre-contractual minimum commitment, identifies
+        gaps requiring remediation, and generates taxonomy alignment
+        report per SFDR RTS requirements.
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: compliance_review
+      name: "Compliance Review Workflow"
+      description: >-
+        4-phase workflow: Disclosure Completeness Check -> Content
+        Accuracy Verification -> Regulatory Format Validation -> Issue
+        Resolution. Reviews all SFDR disclosures (Annex II/III/IV) for
+        completeness, accuracy, and regulatory compliance. Checks for
+        greenwashing risks, ESMA Q&A alignment, and cross-references
+        between pre-contractual commitments and periodic reporting.
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: regulatory_update
+      name: "Regulatory Update Workflow"
+      description: >-
+        3-phase workflow: Change Detection -> Impact Assessment ->
+        Implementation Planning. Monitors SFDR Level 1 amendments, RTS
+        updates, ESMA Q&A releases, EET version changes, and related
+        taxonomy regulation developments. Assesses impact on existing
+        disclosures and product classifications, and generates
+        implementation roadmaps for required changes.
+      schedule: "on_change"
+      estimated_duration_minutes: 30
+      phases: 3
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 SFDR templates)
+  # ===========================================================================
+  templates:
+    - id: annex_ii_precontractual
+      display_name: "Annex II Pre-Contractual Disclosure"
+      description: >-
+        SFDR RTS Annex II template for Article 8 products. Includes product
+        classification, E/S characteristics description, investment strategy,
+        proportion of investments, sustainability indicators, asset allocation
+        pie charts, minimum taxonomy alignment commitment, and DNSH methodology.
+      format: "pdf"
+      template_file: "templates/annex_ii_precontractual.jinja2"
+      enabled: true
+
+    - id: annex_iv_periodic
+      display_name: "Annex IV Periodic Report"
+      description: >-
+        SFDR RTS Annex IV template for Article 8 periodic reporting. Includes
+        extent to which E/S characteristics were met, sustainability indicator
+        performance vs. targets, top 15 investments, proportion of sustainability-
+        related investments, actual vs. committed taxonomy alignment, and
+        comparative performance tables.
+      format: "pdf"
+      template_file: "templates/annex_iv_periodic.jinja2"
+      enabled: true
+
+    - id: annex_iii_website
+      display_name: "Annex III Website Disclosure"
+      description: >-
+        SFDR RTS Annex III template for Article 8 website disclosure. Includes
+        summary, no sustainable investment objective statement, E/S characteristics,
+        investment strategy, proportion of investments, monitoring methodology,
+        data sources, limitations, due diligence, engagement policies, and
+        designated reference benchmark (if applicable).
+      format: "html"
+      template_file: "templates/annex_iii_website.jinja2"
+      enabled: true
+
+    - id: pai_statement_template
+      display_name: "PAI Statement"
+      description: >-
+        SFDR Article 4 PAI statement template. Includes all 18 mandatory
+        indicators with current and prior period values, explanation of
+        actions taken, and additional voluntary indicators. Supports both
+        entity-level and product-level PAI statements with data coverage
+        disclosure and estimation methodology notes.
+      format: "pdf"
+      template_file: "templates/pai_statement.jinja2"
+      enabled: true
+
+    - id: portfolio_esg_dashboard
+      display_name: "Portfolio ESG Dashboard"
+      description: >-
+        Interactive ESG metrics dashboard showing portfolio carbon footprint,
+        WACI, taxonomy alignment ratio, PAI indicator heatmap, screening
+        compliance status, E/S characteristic achievement gauges, sustainable
+        investment breakdown, and benchmark comparison charts.
+      format: "html"
+      template_file: "templates/portfolio_esg_dashboard.jinja2"
+      enabled: true
+
+    - id: taxonomy_alignment_report
+      display_name: "Taxonomy Alignment Report"
+      description: >-
+        Detailed taxonomy alignment report for Article 8 products. Includes
+        alignment ratio breakdown by environmental objective, enabling vs.
+        transitional activity proportions, sovereign bond treatment, look-
+        through methodology, and actual vs. committed alignment comparison
+        with variance analysis.
+      format: "pdf"
+      template_file: "templates/taxonomy_alignment_report.jinja2"
+      enabled: true
+
+    - id: executive_summary
+      display_name: "Executive Summary"
+      description: >-
+        Board-level overview of SFDR Article 8 compliance status. Key metrics
+        summary, regulatory compliance status, upcoming disclosure deadlines,
+        product classification overview, PAI performance highlights, and
+        strategic ESG recommendations.
+      format: "pdf"
+      template_file: "templates/executive_summary.jinja2"
+      enabled: true
+
+    - id: audit_trail_report
+      display_name: "Audit Trail Report"
+      description: >-
+        Comprehensive audit trail for all SFDR calculations and disclosures.
+        Includes data lineage from source to output, SHA-256 provenance hashes,
+        methodology documentation, assumption registry, calculation logs, and
+        reviewer approval records with timestamps.
+      format: "pdf"
+      template_file: "templates/audit_trail_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration -> Holdings
+        Ingestion -> PAI Calculation -> Taxonomy Alignment -> DNSH Assessment
+        -> Good Governance -> Characteristic Measurement -> Disclosure
+        Generation -> Audit Trail. Orchestrates all SFDR Article 8
+        compliance phases with parallel execution where possible.
+      required: true
+
+    - id: taxonomy_pack_bridge
+      name: "Taxonomy Pack Bridge"
+      description: >-
+        Connects to PACK-008 EU Taxonomy Alignment Pack for activity-level
+        taxonomy alignment data. Retrieves investee-level eligibility and
+        alignment assessments, TSC compliance results, and DNSH/MS
+        verification outcomes to feed taxonomy alignment ratio calculation
+        for Article 8 products.
+      required: true
+
+    - id: mrv_emissions_bridge
+      name: "MRV Emissions Bridge"
+      description: >-
+        Routes Scope 1/2/3 emissions data from all 30 MRV agents to PAI
+        indicator calculations (PAI 1-6). Maps GHG emission factors to
+        investee-level carbon metrics, supports coverage-adjusted
+        calculations, and handles data quality flags for estimated vs.
+        reported emissions data.
+      required: true
+
+    - id: investment_screener_bridge
+      name: "Investment Screener Bridge"
+      description: >-
+        Connects portfolio screening engine to external ESG data providers,
+        controversy monitoring services, and norms-based screening
+        databases. Routes screening results to E/S characteristics
+        compliance verification and binding element enforcement.
+      required: true
+
+    - id: portfolio_data_bridge
+      name: "Portfolio Data Bridge"
+      description: >-
+        Ingests portfolio holdings data from portfolio management systems,
+        custodians, and fund administrators. Normalizes security identifiers
+        (ISIN, LEI, SEDOL), maps holdings to investee companies, handles
+        look-through for fund-of-funds structures, and maintains point-in-
+        time portfolio snapshots for periodic reporting.
+      required: true
+
+    - id: eet_data_bridge
+      name: "EET Data Bridge"
+      description: >-
+        Manages European ESG Template (EET) data exchange. Imports EET
+        files from product manufacturers for fund-of-funds look-through,
+        exports EET-compliant data files for distribution platforms and
+        financial advisers. Validates EET field completeness and handles
+        version migration between EET releases.
+      required: true
+
+    - id: regulatory_tracking_bridge
+      name: "Regulatory Tracking Bridge"
+      description: >-
+        Monitors SFDR regulatory developments including Level 1 amendments,
+        RTS updates (EU) 2022/1288, ESMA Q&A releases, EET standard
+        changes, and related Taxonomy Regulation developments. Triggers
+        impact assessments and implementation workflows when changes are
+        detected.
+      required: true
+
+    - id: data_quality_bridge
+      name: "Data Quality Bridge"
+      description: >-
+        Validates ESG data quality across all SFDR data sources. Enforces
+        coverage thresholds for PAI calculations, flags estimated vs.
+        reported data, validates data freshness against reporting periods,
+        and ensures data completeness for disclosure generation. Integrates
+        with AGENT-DATA quality agents for profiling and validation.
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        20-category system verification covering engine status, agent
+        availability, configuration validity, data connectivity, API
+        health, database schema, dependency versions, EET template
+        availability, and disclosure template integrity.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        10-step guided configuration wizard: product classification
+        selection, E/S characteristics definition, binding elements
+        configuration, taxonomy alignment commitment, PAI indicator
+        scope, screening criteria setup, portfolio data source
+        connection, EET configuration, disclosure preferences, and
+        deployment verification.
+      required: false
+
+  # ===========================================================================
+  # MRV Agents - All 30 MRV agents for emissions data (Scope 1/2/3)
+  # ===========================================================================
+  agents_mrv:
+
+    # -------------------------------------------------------------------------
+    # Scope 1 - Direct Emissions (8 agents)
+    # -------------------------------------------------------------------------
+    scope_1:
+      - id: AGENT-MRV-001
+        name: "Stationary Combustion Agent"
+        description: "Calculates emissions from stationary combustion sources"
+        path: "greenlang/agents/mrv/stationary_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-002
+        name: "Refrigerants & F-Gas Agent"
+        description: "Calculates emissions from refrigerants and fluorinated gases"
+        path: "greenlang/agents/mrv/refrigerants_fgas/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-003
+        name: "Mobile Combustion Agent"
+        description: "Calculates emissions from mobile combustion sources"
+        path: "greenlang/agents/mrv/mobile_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-004
+        name: "Process Emissions Agent"
+        description: "Calculates emissions from industrial processes"
+        path: "greenlang/agents/mrv/process_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-005
+        name: "Fugitive Emissions Agent"
+        description: "Calculates fugitive emissions from equipment and operations"
+        path: "greenlang/agents/mrv/fugitive_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-006
+        name: "Land Use Emissions Agent"
+        description: "Calculates emissions from land use and land use change"
+        path: "greenlang/agents/mrv/land_use_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-007
+        name: "Waste Treatment Emissions Agent"
+        description: "Calculates emissions from waste treatment and disposal"
+        path: "greenlang/agents/mrv/waste_treatment_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-008
+        name: "Agricultural Emissions Agent"
+        description: "Calculates emissions from agricultural operations"
+        path: "greenlang/agents/mrv/agricultural_emissions/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 2 - Indirect Energy Emissions (5 agents)
+    # -------------------------------------------------------------------------
+    scope_2:
+      - id: AGENT-MRV-009
+        name: "Scope 2 Location-Based Agent"
+        description: "Calculates location-based Scope 2 emissions from purchased electricity"
+        path: "greenlang/agents/mrv/scope2_location_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-010
+        name: "Scope 2 Market-Based Agent"
+        description: "Calculates market-based Scope 2 emissions using contractual instruments"
+        path: "greenlang/agents/mrv/scope2_market_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-011
+        name: "Steam/Heat Purchase Agent"
+        description: "Calculates emissions from purchased steam and heating"
+        path: "greenlang/agents/mrv/steam_heat_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-012
+        name: "Cooling Purchase Agent"
+        description: "Calculates emissions from purchased cooling"
+        path: "greenlang/agents/mrv/cooling_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-013
+        name: "Dual Reporting Reconciliation"
+        description: "Reconciles location-based and market-based Scope 2 reporting"
+        path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 3 - Value Chain Emissions (15 agents)
+    # -------------------------------------------------------------------------
+    scope_3:
+      - id: AGENT-MRV-014
+        name: "Purchased Goods & Services Agent (Cat 1)"
+        description: "Calculates Scope 3 Category 1 emissions from purchased goods and services"
+        path: "greenlang/agents/mrv/purchased_goods_services/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-015
+        name: "Capital Goods Agent (Cat 2)"
+        description: "Calculates Scope 3 Category 2 emissions from capital goods"
+        path: "greenlang/agents/mrv/capital_goods/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-016
+        name: "Fuel & Energy Activities Agent (Cat 3)"
+        description: "Calculates Scope 3 Category 3 upstream fuel and energy emissions"
+        path: "greenlang/agents/mrv/fuel_energy_activities/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-017
+        name: "Upstream Transportation Agent (Cat 4)"
+        description: "Calculates Scope 3 Category 4 upstream transportation and distribution emissions"
+        path: "greenlang/agents/mrv/upstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-018
+        name: "Waste Generated Agent (Cat 5)"
+        description: "Calculates Scope 3 Category 5 emissions from waste in operations"
+        path: "greenlang/agents/mrv/waste_generated/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-019
+        name: "Business Travel Agent (Cat 6)"
+        description: "Calculates Scope 3 Category 6 business travel emissions"
+        path: "greenlang/agents/mrv/business_travel/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-020
+        name: "Employee Commuting Agent (Cat 7)"
+        description: "Calculates Scope 3 Category 7 employee commuting emissions"
+        path: "greenlang/agents/mrv/employee_commuting/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-021
+        name: "Upstream Leased Assets Agent (Cat 8)"
+        description: "Calculates Scope 3 Category 8 upstream leased assets emissions"
+        path: "greenlang/agents/mrv/upstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-022
+        name: "Downstream Transportation Agent (Cat 9)"
+        description: "Calculates Scope 3 Category 9 downstream transportation emissions"
+        path: "greenlang/agents/mrv/downstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-023
+        name: "Processing of Sold Products (Cat 10)"
+        description: "Calculates Scope 3 Category 10 processing of sold products emissions"
+        path: "greenlang/agents/mrv/processing_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-024
+        name: "Use of Sold Products (Cat 11)"
+        description: "Calculates Scope 3 Category 11 use of sold products emissions"
+        path: "greenlang/agents/mrv/use_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-025
+        name: "End-of-Life Treatment (Cat 12)"
+        description: "Calculates Scope 3 Category 12 end-of-life treatment emissions"
+        path: "greenlang/agents/mrv/end_of_life_treatment/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-026
+        name: "Downstream Leased Assets (Cat 13)"
+        description: "Calculates Scope 3 Category 13 downstream leased assets emissions"
+        path: "greenlang/agents/mrv/downstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-027
+        name: "Franchises Agent (Cat 14)"
+        description: "Calculates Scope 3 Category 14 franchises emissions"
+        path: "greenlang/agents/mrv/franchises/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-028
+        name: "Investments Agent (Cat 15)"
+        description: "Calculates Scope 3 Category 15 investments emissions"
+        path: "greenlang/agents/mrv/investments/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Cross-Cutting MRV Agents (2 agents)
+    # -------------------------------------------------------------------------
+    cross_cutting:
+      - id: AGENT-MRV-029
+        name: "Scope 3 Category Mapper"
+        description: "Maps emissions data across all 15 Scope 3 categories"
+        path: "greenlang/agents/mrv/scope3_category_mapper/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-030
+        name: "Audit Trail & Lineage"
+        description: "Tracks data lineage and audit trails for all MRV calculations"
+        path: "greenlang/agents/mrv/audit_trail_lineage/"
+        required: true
+        version: "1.0.0"
+
+  # ===========================================================================
+  # Data Agents - Supporting data intake and quality agents (10 agents)
+  # ===========================================================================
+  agents_data:
+    # Data Intake (4 agents)
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts financial and ESG data from PDF documents and reports"
+      required: true
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes tabular ESG, holdings, and emissions data from Excel/CSV files"
+      required: true
+
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Connects to portfolio management and fund administration systems"
+      required: true
+
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Processes ESG data questionnaires from investee companies and data providers"
+      required: true
+
+    # Data Quality (6 agents)
+    - id: AGENT-DATA-009
+      name: "Spend Data Categorizer"
+      description: "Categorizes investment data into SFDR-relevant classification categories"
+      required: true
+
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all SFDR compliance data sources"
+      required: true
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects and resolves duplicate holdings, PAI, and ESG data records"
+      required: true
+
+    - id: AGENT-DATA-012
+      name: "Missing Value Imputer"
+      description: "Imputes missing ESG and PAI data values with documented methodology"
+      required: true
+
+    - id: AGENT-DATA-018
+      name: "Data Lineage Tracker"
+      description: "Tracks data lineage across SFDR calculation and disclosure pipeline"
+      required: true
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces SFDR-specific validation rules on all compliance data"
+      required: true
+
+  # ===========================================================================
+  # Foundation Agents - Core platform agents (all 10)
+  # ===========================================================================
+  agents_foundation:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for SFDR compliance"
+      required: true
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (financial, emissions, ESG metrics) and reference data"
+      required: true
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks all assumptions used in SFDR calculations and disclosures"
+      required: true
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all data points to source evidence for audit trails"
+      required: true
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access and data policies"
+      required: true
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Maintains registry of available agents and their capabilities"
+      required: true
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all SFDR calculations are reproducible with provenance tracking"
+      required: true
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Runs quality assurance checks on all agent outputs"
+      required: true
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for all agents"
+      required: true
+
+# -----------------------------------------------------------------------------
+# Pack Summary
+# -----------------------------------------------------------------------------
+pack_summary:
+  total_agents: 50
+  mrv_agents: 30
+  data_agents: 10
+  foundation_agents: 10
+  pack_engines: 8
+  pack_workflows: 8
+  pack_templates: 8
+  pack_integrations: 10
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles
+# -----------------------------------------------------------------------------
+presets:
+  product_presets:
+    - id: asset_manager
+      display_name: "Asset Manager"
+      description: >-
+        Standard deployment for UCITS/AIF fund managers with Article 8 products.
+        Full PAI calculation, taxonomy alignment ratio, DNSH assessment, good
+        governance verification, and all three disclosure annexes. Optimized
+        for multi-fund management with portfolio-level aggregation and
+        fund-of-funds look-through support.
+      config_file: "config/presets/asset_manager.yaml"
+
+    - id: insurance
+      display_name: "Insurance Undertaking"
+      description: >-
+        Deployment for insurance companies managing insurance-based investment
+        products (IBIPs) classified as Article 8. Includes unit-linked fund
+        look-through, with-profits fund treatment, and Solvency II alignment.
+        Supports both life and non-life insurance product disclosure requirements.
+      config_file: "config/presets/insurance.yaml"
+
+    - id: bank
+      display_name: "Credit Institution"
+      description: >-
+        Deployment for credit institutions offering Article 8 structured
+        products, green bonds, and ESG-linked lending products. Integrates
+        with EBA Pillar 3 ESG disclosures and GAR/BTAR calculations.
+        Supports both retail and institutional product classifications.
+      config_file: "config/presets/bank.yaml"
+
+    - id: pension_fund
+      display_name: "Pension Fund"
+      description: >-
+        Deployment for occupational pension schemes (IORPs) subject to SFDR.
+        Focused on long-term sustainable investment, member communication,
+        stewardship reporting, and IORP II Directive alignment. Includes
+        entity-level PAI statement and product-level periodic reporting
+        for defined contribution arrangements.
+      config_file: "config/presets/pension_fund.yaml"
+
+    - id: wealth_manager
+      display_name: "Wealth Manager"
+      description: >-
+        Deployment for discretionary portfolio managers and MiFID investment
+        firms. Focused on model portfolio classification, client suitability
+        integration, MiFID II sustainability preference alignment, and
+        bespoke mandate ESG reporting. Supports aggregated reporting across
+        multiple client portfolios.
+      config_file: "config/presets/wealth_manager.yaml"
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 32
+    min_storage_gb: 200
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 64
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 50
+    recommended_connections: 100
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  pai_calculation:
+    single_indicator_max_ms: 200
+    all_18_indicators_max_seconds: 15
+    entity_level_max_seconds: 30
+    description: "PAI indicator calculation for portfolio and entity level"
+
+  taxonomy_alignment:
+    portfolio_ratio_max_seconds: 10
+    look_through_max_seconds: 30
+    description: "Taxonomy alignment ratio calculation for Article 8 products"
+
+  carbon_footprint:
+    waci_max_seconds: 5
+    full_footprint_max_seconds: 15
+    description: "Portfolio carbon footprint and WACI calculation"
+
+  disclosure_generation:
+    annex_ii_max_seconds: 20
+    annex_iii_max_seconds: 15
+    annex_iv_max_seconds: 25
+    pai_statement_max_seconds: 30
+    description: "Disclosure and report template generation"
+
+  screening:
+    universe_10000_max_seconds: 30
+    single_check_max_ms: 50
+    description: "Portfolio screening operations"
+
+  eet_processing:
+    import_max_seconds: 10
+    export_max_seconds: 10
+    description: "EET template import and export"
+
+  api_latency:
+    p50_ms: 50
+    p95_ms: 200
+    p99_ms: 1000
+
+  availability:
+    target_percent: 99.9
+    description: "Standard availability target"

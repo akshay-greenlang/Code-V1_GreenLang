@@ -1,0 +1,150 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - Mid-Market Preset
+# =============================================================================
+# For mid-market companies (50-500 employees).
+# Configurable commodity selection, standard DDS workflow, 3-tier supply
+# chain depth, core risk assessment, EU IS sandbox for testing.
+#
+# Regulatory basis: Article 4 (Operator obligations), Articles 8-12
+# (Due diligence system). Standard DD required.
+# =============================================================================
+
+# Operator configuration
+operator:
+  operator_type: "OPERATOR"
+  company_size: "MID_MARKET"
+
+# Commodities - enable selectively based on business
+commodities:
+  - commodity_type: "cattle"
+    enabled: false
+    priority: 5
+    certification_schemes: []
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 2
+    certification_schemes: ["RAINFOREST_ALLIANCE", "UTZ"]
+  - commodity_type: "coffee"
+    enabled: true
+    priority: 3
+    certification_schemes: ["FOUR_C", "RAINFOREST_ALLIANCE"]
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RSPO", "ISCC"]
+  - commodity_type: "rubber"
+    enabled: false
+    priority: 6
+    certification_schemes: ["FSC"]
+  - commodity_type: "soya"
+    enabled: true
+    priority: 4
+    certification_schemes: ["RTRS", "PROTERRA"]
+  - commodity_type: "wood"
+    enabled: true
+    priority: 2
+    certification_schemes: ["FSC", "PEFC"]
+
+# Geolocation - standard precision
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 10000
+  batch_size: 500
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+# Risk assessment - standard weights
+risk_assessment:
+  country_weight: 0.35
+  supplier_weight: 0.25
+  commodity_weight: 0.20
+  document_weight: 0.20
+  thresholds:
+    low_max: 25.0
+    medium_max: 50.0
+    high_max: 75.0
+    critical_min: 75.0
+  auto_escalation_enabled: true
+  reassessment_interval_days: 90
+
+# DDS - standard type
+dds:
+  dds_type: "STANDARD"
+  auto_generate: false
+  review_required: true
+  template_version: "1.0"
+  annex_ii_version: "2023"
+  retention_years: 5
+  include_supporting_documents: true
+  multi_commodity_dds: false
+
+# EU Information System - sandbox for onboarding
+euis:
+  sandbox_mode: true
+  auth_type: "OAUTH2"
+  submission_retry_count: 3
+  polling_interval_seconds: 60
+  timeout_seconds: 120
+  batch_submission_enabled: false
+
+# Supply chain - 3-tier depth
+supply_chain:
+  max_tier_depth: 3
+  chain_of_custody_model: "MASS_BALANCE"
+  trace_level: "shipment"
+  require_plot_linkage: true
+  mixed_shipment_handling: "flag"
+  upstream_data_sharing: true
+
+# Supplier management - medium scale
+supplier:
+  bulk_import_limit: 500
+  engagement_auto_reminders: true
+  reminder_interval_days: 14
+  data_completeness_threshold: 80
+  require_certification_proof: true
+  supplier_self_assessment: true
+  auto_risk_flag: true
+
+# Compliance - standard enforcement
+compliance:
+  rules_enabled:
+    - "deforestation_free"
+    - "legal_compliance"
+    - "geolocation_required"
+    - "cutoff_date_check"
+    - "cn_code_classification"
+    - "country_risk_assessment"
+    - "supplier_risk_assessment"
+    - "dds_completeness"
+    - "document_authentication"
+    - "chain_of_custody"
+  compliance_score_threshold: 70
+  simplified_dd_enabled: true
+  penalty_tracking: true
+
+# Cutoff date - standard verification
+cutoff_date:
+  evidence_required: true
+  temporal_buffer_days: 0
+  satellite_verification_enabled: true
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+    - "glad_alerts"
+  min_satellite_resolution_m: 30
+
+# Reporting - standard
+reporting:
+  dashboard_refresh_interval_seconds: 300
+  report_formats: ["pdf", "html", "json", "csv"]
+  auto_generate_quarterly: true
+  auto_generate_annual: true
+  include_risk_heatmap: true
+  include_supplier_scorecard: true
+  executive_summary_enabled: true
+
+# Agent overrides
+agent_overrides:
+  AGENT-EUDR-015:
+    enabled: false       # Mobile data collector optional for mid-market

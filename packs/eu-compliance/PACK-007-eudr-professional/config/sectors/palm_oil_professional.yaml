@@ -1,0 +1,50 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Palm Oil Professional Sector
+# =============================================================================
+# Professional palm oil supply chain configuration with RSPO/ISCC/MSPO/ISPO
+# verification, peatland checks, mill traceability, plantation mapping, and
+# Southeast Asia focus (Indonesia, Malaysia, PNG).
+# =============================================================================
+
+commodities:
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RSPO", "ISCC", "MSPO", "ISPO"]
+    high_risk_origins: ["IDN", "MYS", "PNG", "COL", "NGA", "THA"]
+    annual_volume_tonnes: 50000.0
+
+geolocation:
+  coordinate_precision: 8  # High precision for plantations
+  polygon_max_vertices: 50000  # Large plantations
+  polygon_area_threshold_ha: 2.0  # Stricter for palm
+  batch_size: 500
+
+risk_assessment:
+  country_weight: 0.40  # High country risk for palm
+  supplier_weight: 0.25
+  commodity_weight: 0.25
+  document_weight: 0.10
+
+compliance:
+  require_geolocation: true
+  require_certification: true  # Mandatory for palm
+  verification_level: "ENHANCED"
+  data_quality_threshold: 0.90
+
+advanced_geolocation:
+  resolution_meters: 5  # Highest resolution
+  temporal_periods: 10
+  alert_systems: ["GLAD", "RADD", "DETER"]  # All systems
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 10.0  # Large buffer for palm
+  ramsar_check: true  # Critical for peatlands
+  unesco_check: true
+
+advanced_supply_chain:
+  max_tier_depth: 4  # Plantation -> Mill -> Refinery -> Product
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED", "MASS_BALANCE"]

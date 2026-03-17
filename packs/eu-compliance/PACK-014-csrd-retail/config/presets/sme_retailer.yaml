@@ -1,0 +1,140 @@
+# =============================================================================
+# PACK-014 CSRD Retail Pack - SME Retailer Preset
+# =============================================================================
+# Simplified configuration for small and medium-sized retailers. Focuses on
+# Scope 1+2 emissions with spend-based Scope 3. Reduced engine set for faster
+# implementation. Assesses CSRD Omnibus threshold eligibility for potential
+# exemption. 5-year data retention.
+#
+# Typical use cases:
+#   - Independent retailers (<250 employees)
+#   - Small chain operators (<50 stores)
+#   - Franchise single-unit operators
+#   - Regional specialty retailers
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+tier: "SME"
+sub_sectors:
+  - "CONVENIENCE"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Store Emissions (simplified) ---
+store_emissions:
+  enabled: true
+  store_types:
+    - "STANDARD"
+    - "EXPRESS"
+  refrigerant_tracking: true
+  f_gas_phase_down: false
+  fleet_tracking: false
+  renewable_on_site: false
+  heating_sources:
+    - "natural_gas"
+    - "electricity"
+  per_sqm_normalization: true
+  per_revenue_normalization: true
+  year_over_year_tracking: true
+
+# --- Scope 3 (spend-based only) ---
+scope3:
+  enabled: true
+  priority_categories: [1, 4, 9]
+  calculation_methods:
+    cat_1: "spend_based"
+    default: "spend_based"
+  supplier_data_collection: false
+  cat1_methodology: "spend_based"
+  spend_based_screening: true
+  hotspot_analysis: false
+  supplier_engagement_scoring: false
+
+# --- Packaging (basic compliance) ---
+packaging:
+  enabled: true
+  ppwr_compliance: true
+  recycled_content_tracking: true
+  materials_tracked:
+    - "PET"
+    - "PAPER_BOARD"
+  epr_scheme: true
+  labeling_requirements: true
+  reuse_targets: false
+  over_packaging_monitoring: false
+  target_year: 2030
+
+# --- Product Sustainability (minimal) ---
+product_sustainability:
+  enabled: false
+
+# --- Food Waste (basic if grocery) ---
+food_waste:
+  enabled: true
+  measurement_method: "extrapolation"
+  reduction_target_pct: 30.0
+  baseline_year: 2020
+  redistribution_tracking: false
+  waste_categories:
+    - "PRODUCE"
+    - "DAIRY"
+    - "BAKERY"
+  composting_tracking: false
+  waste_intensity_metric: "kg_per_eur_revenue"
+
+# --- Supply Chain Due Diligence (minimal) ---
+supply_chain_dd:
+  enabled: false
+
+# --- Circular Economy (packaging EPR only) ---
+circular_economy:
+  enabled: true
+  epr_schemes:
+    - "PACKAGING"
+  mci_tracking: false
+  product_recyclability: false
+  multi_country_epr: false
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  kpi_set:
+    - "emissions_per_sqm"
+    - "emissions_per_revenue"
+    - "energy_intensity_kwh_sqm"
+    - "food_waste_ratio"
+  peer_group: "REVENUE_BAND"
+  sbti_pathway: "WELL_BELOW_2C"
+  percentile_tracking: false
+  gap_analysis_enabled: true
+  target_years: [2025, 2030]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  store_emissions_report_enabled: true
+  supply_chain_report_enabled: false
+  packaging_report_enabled: true
+  product_sustainability_report_enabled: false
+  food_waste_report_enabled: true
+  circular_economy_report_enabled: false
+  scorecard_enabled: true
+  output_formats:
+    - "PDF"
+  review_workflow_enabled: false
+  watermark_draft: true

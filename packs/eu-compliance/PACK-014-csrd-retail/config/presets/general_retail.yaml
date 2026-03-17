@@ -1,0 +1,171 @@
+# =============================================================================
+# PACK-014 CSRD Retail Pack - General Retail Preset
+# =============================================================================
+# Balanced configuration for department stores, variety retailers, and home
+# furnishing. All engines enabled with moderate intensity. Multi-category
+# product portfolio requiring broad regulatory coverage across packaging,
+# textiles, electronics, and furniture.
+#
+# Typical use cases:
+#   - Department store chains
+#   - Home furnishing retailers
+#   - Variety stores
+#   - Multi-category retailers
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+tier: "ENTERPRISE"
+sub_sectors:
+  - "DEPARTMENT_STORE"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Store Emissions ---
+store_emissions:
+  enabled: true
+  store_types:
+    - "FLAGSHIP"
+    - "STANDARD"
+    - "OUTLET"
+  refrigerant_tracking: true
+  f_gas_phase_down: true
+  fleet_tracking: true
+  renewable_on_site: false
+  heating_sources:
+    - "natural_gas"
+    - "electricity"
+  eed_energy_audit: true
+  per_sqm_normalization: true
+  per_revenue_normalization: true
+  year_over_year_tracking: true
+
+# --- Scope 3 ---
+scope3:
+  enabled: true
+  priority_categories: [1, 4, 9, 11, 12]
+  calculation_methods:
+    cat_1: "hybrid"
+    cat_4: "distance_based"
+    cat_9: "distance_based"
+    default: "spend_based"
+  supplier_data_collection: true
+  cat1_methodology: "hybrid"
+  spend_based_screening: true
+  hotspot_analysis: true
+  supplier_engagement_scoring: true
+  last_mile_tracking: true
+
+# --- Packaging ---
+packaging:
+  enabled: true
+  ppwr_compliance: true
+  recycled_content_tracking: true
+  materials_tracked:
+    - "PET"
+    - "HDPE"
+    - "PP"
+    - "PAPER_BOARD"
+    - "GLASS"
+  epr_scheme: true
+  labeling_requirements: true
+  reuse_targets: true
+  over_packaging_monitoring: true
+  target_year: 2030
+
+# --- Product Sustainability ---
+product_sustainability:
+  enabled: true
+  dpp_enabled: true
+  dpp_product_categories:
+    - "textiles"
+    - "electronics"
+    - "furniture"
+  pef_methodology: true
+  green_claims_audit: true
+  banned_claims:
+    - "CARBON_NEUTRAL"
+    - "ECO_FRIENDLY"
+  product_recyclability_scoring: true
+
+# --- Food Waste (limited food service) ---
+food_waste:
+  enabled: false
+
+# --- Supply Chain Due Diligence ---
+supply_chain_dd:
+  enabled: true
+  csddd_compliance: true
+  eudr_commodities:
+    - "TIMBER"
+    - "RUBBER"
+    - "CATTLE"
+  forced_labour_screening: true
+  supplier_tier_depth: 3
+  country_risk_assessment: true
+  sanctions_screening: true
+  stakeholder_engagement: true
+  remediation_tracking: true
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  epr_schemes:
+    - "PACKAGING"
+    - "TEXTILES"
+    - "WEEE"
+    - "FURNITURE"
+  take_back_programs:
+    - "textile_collection"
+    - "weee_collection"
+    - "furniture_take_back"
+  mci_tracking: true
+  product_recyclability: true
+  second_hand_tracking: false
+  multi_country_epr: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  kpi_set:
+    - "emissions_per_sqm"
+    - "emissions_per_revenue"
+    - "energy_intensity_kwh_sqm"
+    - "scope3_supplier_coverage"
+    - "packaging_recycled_content"
+    - "sbti_alignment"
+  peer_group: "NACE_SECTOR"
+  sbti_pathway: "1.5C"
+  percentile_tracking: true
+  gap_analysis_enabled: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  store_emissions_report_enabled: true
+  supply_chain_report_enabled: true
+  packaging_report_enabled: true
+  product_sustainability_report_enabled: true
+  food_waste_report_enabled: false
+  circular_economy_report_enabled: true
+  scorecard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+  review_workflow_enabled: true
+  watermark_draft: true

@@ -1,0 +1,195 @@
+# =============================================================================
+# PACK-010 Preset: Wealth Manager
+# =============================================================================
+# Deployment for discretionary portfolio managers and MiFID investment firms.
+# Focused on model portfolio classification, client suitability integration,
+# MiFID II sustainability preference alignment, and bespoke mandate ESG
+# reporting. Supports aggregated reporting across multiple client portfolios.
+#
+# Applicable to:
+#   - Discretionary portfolio managers
+#   - MiFID investment firms providing portfolio management
+#   - Private banks with ESG-integrated mandates
+#   - Multi-family offices with SFDR obligations
+#   - Robo-advisers with Article 8 model portfolios
+#
+# Key Features:
+#   - Model portfolio-level SFDR classification
+#   - MiFID II sustainability preference integration
+#   - Client suitability assessment alignment
+#   - Aggregated reporting across client portfolios
+#   - Flexible screening (supports bespoke mandate criteria)
+#   - EET data for distributor obligations
+#   - Quarterly portfolio monitoring
+#   - Customizable binding elements per mandate
+# =============================================================================
+
+sfdr_classification: "ARTICLE_8"
+reporting_frequency: "ANNUAL"
+reporting_year: 2025
+
+# --- PAI Configuration ---
+pai:
+  enabled: true
+  enabled_mandatory_indicators: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+  min_coverage_pct: 55.0
+  coverage_adjustment: true
+  estimation_enabled: true
+  estimation_methodology: "SECTOR_AVERAGE"
+  include_scope_3: false
+  entity_level_statement: true
+  product_level_pai: true
+  prior_period_comparison: true
+  data_quality_tracking: true
+
+# --- Taxonomy Alignment Configuration ---
+taxonomy_alignment:
+  enabled: true
+  minimum_commitment_pct: 0.0
+  include_sovereign_bonds: false
+  look_through_enabled: true
+  look_through_max_levels: 2
+  enabling_activity_disclosure: true
+  transitional_activity_disclosure: true
+  alignment_methodology: "REVENUE_BASED"
+  gas_nuclear_disclosure: true
+  verification_frequency: "QUARTERLY"
+
+# --- DNSH Configuration ---
+dnsh:
+  enabled: true
+  methodology: "PAI_BASED"
+  pai_indicators_used: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+  quantitative_thresholds_enabled: true
+  qualitative_assessment_enabled: true
+  evidence_required: true
+  controversial_weapons_exclusion: true
+  ungc_violations_exclusion: true
+
+# --- Governance Configuration ---
+governance:
+  enabled: true
+  check_sound_management: true
+  check_employee_relations: true
+  check_remuneration: true
+  check_tax_compliance: true
+  minimum_governance_score: 60.0
+  require_all_dimensions_pass: true
+  controversy_flag_threshold: 3
+  monitoring_frequency: "QUARTERLY"
+  data_sources:
+    - "ESG_DATA_PROVIDER"
+    - "ANNUAL_REPORT"
+
+# --- E/S Characteristics Configuration ---
+esg_characteristics:
+  environmental_characteristics:
+    - "climate_change_mitigation"
+    - "pollution_prevention"
+  social_characteristics:
+    - "human_rights"
+  binding_elements:
+    - "exclusion_criteria"
+    - "minimum_esg_score"
+  sustainability_indicators:
+    - "carbon_intensity"
+    - "esg_score"
+    - "controversy_score"
+  measurement_methodology: "MIXED"
+  benchmark_comparison: true
+  track_attainment: true
+
+# --- Sustainable Investment Configuration ---
+sustainable_investment:
+  enabled: false
+  minimum_proportion_pct: 0.0
+
+# --- Carbon Footprint Configuration ---
+carbon_footprint:
+  enabled: true
+  calculate_waci: true
+  calculate_carbon_footprint: true
+  calculate_total_emissions: false
+  calculate_financed_emissions: false
+  scope_coverage:
+    - "SCOPE_1"
+    - "SCOPE_2"
+  pcaf_alignment: false
+  coverage_threshold_pct: 50.0
+  benchmark_comparison: true
+  yoy_trend: true
+  attribution_analysis: false
+  currency: "EUR"
+
+# --- EET Configuration ---
+eet:
+  enabled: true
+  eet_version: "V1_1"
+  import_enabled: true
+  export_enabled: true
+  export_format: "XLSX"
+  validate_completeness: true
+  validate_consistency: true
+  auto_populate: true
+  sfdr_classification_field: true
+  taxonomy_alignment_fields: true
+  pai_consideration_fields: true
+
+# --- Disclosure Configuration ---
+disclosure:
+  annex_ii_enabled: true
+  annex_iii_enabled: true
+  annex_iv_enabled: true
+  default_format: "PDF"
+  include_methodology_note: true
+  include_data_sources: true
+  include_asset_allocation_chart: true
+  review_workflow_enabled: true
+  version_tracking: true
+  greenwashing_check: true
+
+# --- Screening Configuration ---
+screening:
+  negative_screening_enabled: true
+  positive_screening_enabled: true
+  norms_based_screening_enabled: true
+  negative_exclusions:
+    - "controversial_weapons"
+    - "tobacco_production"
+    - "thermal_coal_extraction"
+  revenue_threshold_pct: 5.0
+  norms_frameworks:
+    - "UN_GLOBAL_COMPACT"
+    - "OECD_GUIDELINES"
+    - "ILO_CONVENTIONS"
+  best_in_class_percentile: 75.0
+  screening_frequency: "QUARTERLY"
+  breach_handling: "DIVEST_90_DAYS"
+  monitoring_enabled: true
+
+# --- Reporting Configuration ---
+reporting:
+  reporting_frequency: "ANNUAL"
+  reporting_period_end: "12-31"
+  reporting_deadline_days: 120
+  default_format: "PDF"
+  language: "en"
+  include_board_summary: true
+
+# --- Data Quality Configuration ---
+data_quality:
+  min_quality_score: 0.75
+  min_coverage_pct: 55.0
+  estimation_limit_pct: 50.0
+  data_age_max_months: 18
+  require_audited_emissions: false
+  validation_on_ingestion: true
+  flag_low_quality: true
+  allow_sector_proxies: true
+
+# --- Audit Trail Configuration ---
+audit_trail:
+  retention_years: 5
+  hash_algorithm: "SHA-256"
+  immutable_log: true
+  include_provenance_hash: true

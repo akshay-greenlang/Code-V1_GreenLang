@@ -1,0 +1,1718 @@
+# =============================================================================
+# PACK-016: ESRS E1 Climate Change Pack
+# GreenLang EU Compliance Pack for comprehensive ESRS E1 Climate Change
+# disclosure covering all 9 E1 disclosure requirements (DR E1-1 through E1-9)
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for producing the full set of disclosures required by
+# ESRS E1 Climate Change. ESRS E1 is the topical standard within the European
+# Sustainability Reporting Standards (ESRS) that addresses climate change
+# mitigation, climate change adaptation, and energy. It is the most data-
+# intensive of all ESRS topical standards, requiring quantitative GHG
+# emissions inventories (Scope 1, 2, and 3), energy consumption and mix
+# data, GHG reduction targets aligned with the Paris Agreement, transition
+# plan disclosures, climate-related risk and opportunity analysis, and
+# financial effects of climate change.
+#
+# ESRS E1 requires undertakings to disclose:
+#   - E1-1: Transition plan for climate change mitigation
+#   - E1-2: Policies related to climate change mitigation and adaptation
+#   - E1-3: Actions and resources related to climate change
+#   - E1-4: Targets related to climate change mitigation and adaptation
+#   - E1-5: Energy consumption and mix
+#   - E1-6: Gross Scopes 1, 2, 3 and total GHG emissions
+#   - E1-7: GHG removals and GHG mitigation projects financed through
+#            carbon credits
+#   - E1-8: Internal carbon pricing
+#   - E1-9: Anticipated financial effects from material physical and
+#            transition risks and potential climate-related opportunities
+#
+# The pack implements the complete E1 disclosure lifecycle:
+#   1. GHG inventory compilation (Scope 1, 2 location/market, Scope 3
+#      all 15 categories) per GHG Protocol Corporate Standard
+#   2. Energy consumption and energy mix calculation per ESRS E1-5
+#      (total energy, fossil/nuclear/renewable breakdown, self-generated)
+#   3. GHG reduction target setting and tracking (absolute, intensity,
+#      net-zero) aligned with SBTi Corporate Net-Zero Standard
+#   4. Transition plan compilation per ESRS E1-1 (locked-in emissions,
+#      CapEx/OpEx plans, decarbonization levers, timeline)
+#   5. Climate risk and opportunity assessment per ESRS E1-9 (physical
+#      risks: acute/chronic; transition risks: policy/technology/market/
+#      reputation/legal; aligned with TCFD recommendations)
+#   6. Carbon credit and removal project tracking per ESRS E1-7
+#   7. Internal carbon pricing disclosure per ESRS E1-8
+#   8. Full E1 report generation with XBRL tagging and audit trail
+#
+# The pack depends on PACK-015 (Double Materiality Assessment Pack) for
+# the materiality determination that triggers E1 disclosures. If E1 is
+# determined to be material through the DMA process, this pack produces
+# all required E1 disclosures.
+#
+# Key Capabilities:
+#   - Full GHG Protocol-aligned emissions inventory (Scope 1, 2, 3)
+#   - Dual reporting for Scope 2 (location-based and market-based)
+#   - All 15 Scope 3 categories with multiple calculation methodologies
+#   - Energy consumption and mix with renewable/non-renewable breakdown
+#   - SBTi-aligned target setting (1.5C, well-below-2C, net-zero)
+#   - Base year recalculation and target pathway tracking
+#   - Transition plan with locked-in emissions and CapEx alignment
+#   - Physical and transition climate risk assessment (TCFD-aligned)
+#   - Anticipated financial effects quantification per E1-9
+#   - Carbon credit quality assessment (vintage, standard, additionality)
+#   - Internal carbon pricing (shadow price, implicit price, fee/levy)
+#   - IPCC AR6 GWP values for all greenhouse gases
+#   - Sector-specific emission factor databases
+#   - Full XBRL tagging to EFRAG E1 taxonomy datapoints
+#   - SHA-256 provenance for all calculated emissions values
+#   - Zero-hallucination: all GHG calculations use deterministic formulas
+#
+# Regulatory References:
+#   - EU Directive 2022/2464 (CSRD)
+#   - EU Delegated Regulation 2023/2772 (ESRS Set 1)
+#   - ESRS E1 Climate Change (all paragraphs, AR E1-1 through AR E1-81)
+#   - ESRS 1 General Requirements (Chapter 3: Double Materiality)
+#   - ESRS 2 General Disclosures (IRO-1, IRO-2, SBM-3)
+#   - GHG Protocol Corporate Accounting and Reporting Standard (2004,
+#     revised 2015)
+#   - GHG Protocol Scope 2 Guidance (2015)
+#   - GHG Protocol Corporate Value Chain (Scope 3) Standard (2011)
+#   - SBTi Corporate Net-Zero Standard v1.2 (2024)
+#   - IPCC Sixth Assessment Report (AR6) GWP values (2021)
+#   - EU Taxonomy Regulation 2020/852 (climate mitigation/adaptation)
+#   - EU Climate Benchmarks Regulation (EU) 2019/2089
+#   - Paris Agreement (2015) - 1.5C and well-below-2C pathways
+#   - ISO 14064-1:2018 - Quantification of GHG emissions and removals
+#   - TCFD Recommendations (2017) and TCFD Guidance on Metrics,
+#     Targets, and Transition Plans (2021)
+#
+# Sector Coverage:
+#   - All NACE macro-sectors (A through U)
+#   - Sector-specific emission factor databases for energy, manufacturing,
+#     transport, financial services, real estate, and agriculture
+#   - Pre-configured presets for power generation, heavy manufacturing,
+#     transport/logistics, financial services, real estate, and
+#     multi-sector conglomerates
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-16)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-016-esrs-e1-climate
+  version: "1.0.0"
+  display_name: "ESRS E1 Climate Change Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for producing all ESRS E1 Climate
+    Change disclosures (DR E1-1 through E1-9). Includes 8 engines for GHG
+    inventory compilation, energy consumption and mix calculation, GHG
+    reduction target tracking, transition plan compilation, climate risk and
+    opportunity assessment, carbon credit tracking, internal carbon pricing,
+    and full E1 report generation with XBRL tagging. Bundles all 30 MRV
+    agents for Scope 1/2/3 emissions calculation, 20 data intake/quality
+    agents for activity data collection, and 10 foundation agents for
+    orchestration, provenance, and audit. Supports GHG Protocol Corporate
+    Standard, SBTi Net-Zero alignment, IPCC AR6 GWP values, and TCFD-
+    aligned climate risk assessment. Pre-configured presets for power
+    generation, manufacturing, transport, financial services, real estate,
+    and multi-sector groups.
+  category: eu-compliance
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-16"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/esrs-e1-climate"
+  changelog_url: "https://docs.greenlang.io/packs/esrs-e1-climate/changelog"
+
+  tags:
+    - esrs-e1
+    - climate-change
+    - ghg-emissions
+    - scope-1
+    - scope-2
+    - scope-3
+    - ghg-protocol
+    - energy-consumption
+    - energy-mix
+    - transition-plan
+    - climate-risk
+    - carbon-credits
+    - carbon-pricing
+    - sbti
+    - net-zero
+    - ipcc-ar6
+    - tcfd
+    - paris-agreement
+    - eu-taxonomy
+    - csrd
+    - esrs
+    - xbrl
+    - provenance
+    - zero-hallucination
+    - eu-compliance
+    - sustainability-reporting
+    - decarbonization
+    - renewable-energy
+    - emission-factors
+
+  regulation:
+    primary:
+      name: "European Sustainability Reporting Standards - E1 Climate Change"
+      reference: "(EU) 2023/2772 - ESRS E1"
+      effective_date: "2024-01-01"
+      description: >-
+        ESRS E1 Climate Change is the topical standard that specifies
+        disclosure requirements related to the undertaking's impacts on
+        climate change, its climate change mitigation and adaptation efforts,
+        and the material risks and opportunities arising from climate change
+        and the undertaking's strategy to address them. The standard requires
+        disclosures on transition plans (E1-1), policies (E1-2), actions and
+        resources (E1-3), targets (E1-4), energy consumption and mix (E1-5),
+        GHG emissions across all scopes (E1-6), GHG removals and carbon
+        credits (E1-7), internal carbon pricing (E1-8), and anticipated
+        financial effects (E1-9). The GHG emissions disclosure follows the
+        GHG Protocol Corporate Standard methodology for Scope 1, 2 (dual
+        reporting: location-based and market-based), and Scope 3 (all 15
+        categories). Targets shall be SBTi-aligned where the undertaking
+        has committed to science-based targets.
+    secondary:
+      - name: "Corporate Sustainability Reporting Directive"
+        reference: "(EU) 2022/2464"
+        effective_date: "2024-01-01"
+      - name: "ESRS 1 General Requirements"
+        reference: "(EU) 2023/2772 - ESRS 1"
+        effective_date: "2024-01-01"
+      - name: "ESRS 2 General Disclosures"
+        reference: "(EU) 2023/2772 - ESRS 2"
+        effective_date: "2024-01-01"
+      - name: "GHG Protocol Corporate Accounting and Reporting Standard"
+        reference: "GHG Protocol (2004, revised 2015)"
+        effective_date: "2004-03-01"
+      - name: "GHG Protocol Scope 2 Guidance"
+        reference: "GHG Protocol Scope 2 (2015)"
+        effective_date: "2015-01-01"
+      - name: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+        reference: "GHG Protocol Scope 3 (2011)"
+        effective_date: "2011-10-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi Net-Zero v1.2 (2024)"
+        effective_date: "2024-01-01"
+      - name: "IPCC Sixth Assessment Report GWP Values"
+        reference: "IPCC AR6 WG1 (2021)"
+        effective_date: "2021-08-01"
+      - name: "EU Taxonomy Regulation - Climate Objectives"
+        reference: "(EU) 2020/852"
+        effective_date: "2020-07-12"
+      - name: "EU Climate Benchmarks Regulation"
+        reference: "(EU) 2019/2089"
+        effective_date: "2019-12-09"
+      - name: "Paris Agreement"
+        reference: "UNFCCC Paris Agreement (2015)"
+        effective_date: "2016-11-04"
+      - name: "ISO 14064-1 GHG Quantification"
+        reference: "ISO 14064-1:2018"
+        effective_date: "2018-12-01"
+      - name: "TCFD Recommendations"
+        reference: "TCFD (2017)"
+        effective_date: "2017-06-29"
+      - name: "EFRAG IG 1 Materiality Assessment Implementation Guidance"
+        reference: "EFRAG IG 1"
+        effective_date: "2024-05-01"
+
+  compliance_references:
+    - id: "ESRS_E1_1"
+      name: "E1-1 Transition Plan for Climate Change Mitigation"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 14-16, AR E1-1 through AR E1-12"
+      description: >-
+        Requires disclosure of the undertaking's transition plan for climate
+        change mitigation, including: how the business model and strategy
+        are compatible with the transition to a sustainable economy and
+        the 1.5C Paris Agreement target; GHG emission reduction targets
+        adopted; key decarbonization levers (energy efficiency, electrification,
+        fuel switching, use of renewable energy, phase-out of fossil fuels);
+        CapEx and OpEx plans supporting the transition; locked-in GHG
+        emissions from existing assets; and the role of carbon credits
+        in the transition plan. If no transition plan exists, the
+        undertaking shall indicate whether and when it intends to adopt one.
+
+    - id: "ESRS_E1_2"
+      name: "E1-2 Policies Related to Climate Change Mitigation and Adaptation"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 22-24, AR E1-13 through AR E1-17"
+      description: >-
+        Requires disclosure of the policies the undertaking has in place
+        to manage its material impacts, risks, and opportunities related
+        to climate change mitigation and adaptation. This includes a
+        description of the scope of the policies (activities, value chain,
+        geographies), the objectives of the policies, and how the policies
+        contribute to achieving the targets set in E1-4.
+
+    - id: "ESRS_E1_3"
+      name: "E1-3 Actions and Resources Related to Climate Change"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 26-28, AR E1-18 through AR E1-23"
+      description: >-
+        Requires disclosure of the key actions taken and planned, and
+        the resources mobilized to achieve the undertaking's climate-
+        related targets. Includes descriptions of decarbonization
+        actions (energy efficiency, electrification, renewable energy),
+        adaptation actions, the amount of current and planned CapEx and
+        OpEx associated with these actions, and how the actions relate
+        to the transition plan.
+
+    - id: "ESRS_E1_4"
+      name: "E1-4 Targets Related to Climate Change Mitigation and Adaptation"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 30-33, AR E1-24 through AR E1-37"
+      description: >-
+        Requires disclosure of the GHG emission reduction targets adopted,
+        including: whether targets are science-based and SBTi-validated;
+        scope of each target (Scope 1, 2, 3, or total); base year and
+        base year emissions; target year and target level; interim
+        milestones; methodology used (absolute contraction, sectoral
+        decarbonization approach); progress against targets; and how
+        targets relate to the Paris Agreement 1.5C pathway.
+
+    - id: "ESRS_E1_5"
+      name: "E1-5 Energy Consumption and Mix"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 35-39, AR E1-38 through AR E1-45"
+      description: >-
+        Requires disclosure of total energy consumption in MWh, broken
+        down by: fossil sources (coal, oil, gas); nuclear sources;
+        renewable sources (solar, wind, hydro, geothermal, biomass);
+        energy consumed from self-generated renewable sources; and
+        the share of renewable energy in total consumption. Also
+        requires disclosure of energy intensity ratios (energy per
+        unit of revenue or production output).
+
+    - id: "ESRS_E1_6"
+      name: "E1-6 Gross Scopes 1, 2, 3 and Total GHG Emissions"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 44-55, AR E1-46 through AR E1-62"
+      description: >-
+        Requires disclosure of: (a) gross Scope 1 GHG emissions in tCO2e;
+        (b) gross Scope 2 GHG emissions using both location-based and
+        market-based methods in tCO2e; (c) gross Scope 3 GHG emissions
+        in tCO2e broken down by significant categories; (d) total GHG
+        emissions (Scope 1 + Scope 2 + Scope 3). GHG emissions shall
+        be disaggregated by the seven Kyoto gases (CO2, CH4, N2O, HFCs,
+        PFCs, SF6, NF3) where significant. Biogenic CO2 emissions shall
+        be reported separately. GHG intensity per net revenue shall be
+        disclosed. GWP values from IPCC AR6 shall be used.
+
+    - id: "ESRS_E1_7"
+      name: "E1-7 GHG Removals and Carbon Credits"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 56-58, AR E1-63 through AR E1-68"
+      description: >-
+        Requires separate disclosure of: (a) GHG removals in the
+        undertaking's own operations and its upstream/downstream value
+        chain (e.g., DACCS, BECCS, enhanced weathering, afforestation);
+        (b) GHG mitigation projects financed through the purchase of
+        carbon credits, including the amount of GHG emission reductions
+        or removals from these projects, the crediting standards used,
+        the type of credits (avoidance vs. removal), and whether the
+        credits are certified. Carbon credits shall not be deducted
+        from GHG emissions in E1-6; they are reported separately.
+
+    - id: "ESRS_E1_8"
+      name: "E1-8 Internal Carbon Pricing"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 59-61, AR E1-69 through AR E1-73"
+      description: >-
+        Requires disclosure of whether the undertaking uses internal
+        carbon pricing and, if so: the type of internal carbon pricing
+        scheme (shadow price, internal fee/levy, implicit price derived
+        from low-carbon investment analysis); the price per tonne of
+        CO2e applied; the scope of activities covered by the internal
+        carbon price; and how the internal carbon price informs
+        investment and operational decisions.
+
+    - id: "ESRS_E1_9"
+      name: "E1-9 Anticipated Financial Effects from Climate Risks and Opportunities"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      paragraphs: "E1 para 64-68, AR E1-74 through AR E1-81"
+      description: >-
+        Requires disclosure of the anticipated financial effects of
+        material physical risks (acute: extreme weather events, floods,
+        wildfires; chronic: rising temperatures, sea level rise, water
+        stress) and transition risks (policy and legal: carbon pricing,
+        regulation; technology: low-carbon alternatives; market:
+        changing demand; reputation: stakeholder pressure) on the
+        undertaking's financial position, performance, and cash flows,
+        quantified over short, medium, and long-term time horizons.
+        Also requires disclosure of potential climate-related
+        opportunities and their anticipated financial effects.
+
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol (WRI/WBCSD)"
+      effective_date: "2004-03-01"
+      description: >-
+        The foundational methodology for corporate GHG emissions
+        accounting and reporting. Defines the organizational and
+        operational boundaries, the classification of emissions into
+        Scope 1 (direct), Scope 2 (energy indirect), and Scope 3
+        (other indirect), consolidation approaches (equity share,
+        financial control, operational control), base year selection
+        and recalculation policy, and reporting requirements. ESRS E1
+        requires GHG emissions to be calculated in accordance with
+        the GHG Protocol.
+
+    - id: "SBTI_NETZERO"
+      name: "SBTi Corporate Net-Zero Standard"
+      regulation: "Science Based Targets initiative"
+      effective_date: "2024-01-01"
+      description: >-
+        Defines requirements for corporate net-zero target setting,
+        including: near-term targets (5-10 years, aligned with 1.5C);
+        long-term targets (by 2050 at the latest, 90%+ reduction);
+        and neutralization of residual emissions. Provides sector-
+        specific decarbonization pathways and guidance on the use of
+        carbon credits. ESRS E1-4 references SBTi alignment for
+        science-based targets.
+
+    - id: "IPCC_AR6_GWP"
+      name: "IPCC AR6 Global Warming Potential Values"
+      regulation: "IPCC AR6 WG1 Chapter 7"
+      effective_date: "2021-08-01"
+      description: >-
+        The authoritative source for Global Warming Potential (GWP)
+        values used to convert greenhouse gas emissions to CO2
+        equivalents (tCO2e). ESRS E1-6 para 48 requires the use
+        of IPCC AR6 GWP values over a 100-year time horizon. Key
+        GWP-100 values: CO2=1, CH4=27.9 (fossil origin) or 27.2
+        (biogenic), N2O=273, SF6=25,200, NF3=17,400. HFC and PFC
+        GWPs vary by specific compound.
+
+    - id: "EU_TAXONOMY_CLIMATE"
+      name: "EU Taxonomy - Climate Mitigation and Adaptation"
+      regulation: "(EU) 2020/852, Delegated Regulation (EU) 2021/2139"
+      effective_date: "2022-01-01"
+      description: >-
+        The EU Taxonomy defines criteria for economic activities that
+        make a substantial contribution to climate change mitigation
+        or climate change adaptation. E1 disclosures on transition
+        plans, CapEx, and targets should be consistent with EU
+        Taxonomy alignment assessments. Activities contributing to
+        climate mitigation include renewable energy generation,
+        energy efficiency improvements, and low-carbon transport.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 E1 engines)
+  # ===========================================================================
+  engines:
+    - id: ghg_inventory
+      name: "GHG Inventory Engine"
+      description: >-
+        Compiles the complete GHG emissions inventory per GHG Protocol
+        Corporate Standard and ESRS E1-6. Calculates gross Scope 1 GHG
+        emissions from stationary combustion, mobile combustion, process
+        emissions, fugitive emissions, and land use change. Calculates
+        gross Scope 2 GHG emissions using both location-based and market-
+        based methods per GHG Protocol Scope 2 Guidance. Calculates gross
+        Scope 3 GHG emissions across all 15 categories per GHG Protocol
+        Value Chain Standard. Applies IPCC AR6 GWP-100 values for
+        conversion to tCO2e. Supports disaggregation by seven Kyoto
+        gases (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3). Calculates
+        biogenic CO2 emissions separately. Computes GHG intensity ratios
+        (tCO2e per EUR million net revenue). Routes calculation to the
+        30 AGENT-MRV agents for individual emission source processing.
+        Zero-hallucination: all emissions calculations use deterministic
+        formulas (activity data x emission factor x GWP), no LLM in
+        the calculation path.
+      esrs_paragraphs: "E1 para 44-55, AR E1-46 through AR E1-62"
+      required: true
+
+    - id: energy_consumption
+      name: "Energy Consumption and Mix Engine"
+      description: >-
+        Calculates total energy consumption in MWh and produces the
+        energy mix breakdown per ESRS E1-5. Decomposes energy consumption
+        into: fossil fuel sources (coal, oil, natural gas, LPG, diesel,
+        gasoline, jet fuel); nuclear sources; renewable sources (solar PV,
+        onshore wind, offshore wind, hydropower, geothermal, biomass,
+        biogas); purchased electricity, heat, steam, and cooling; and
+        self-generated energy. Calculates the share of renewable energy
+        in total consumption, the share of electricity from renewable
+        sources, and energy intensity ratios (MWh per EUR million revenue
+        or per unit of production). Tracks energy efficiency improvements
+        year-over-year. Validates energy data against GHG inventory for
+        consistency (energy consumption should be reconcilable with
+        Scope 1 and Scope 2 emissions). Zero-hallucination: all energy
+        aggregations and mix calculations use deterministic arithmetic.
+      esrs_paragraphs: "E1 para 35-39, AR E1-38 through AR E1-45"
+      required: true
+
+    - id: target_tracking
+      name: "GHG Reduction Target Tracking Engine"
+      description: >-
+        Tracks and reports GHG emission reduction targets per ESRS E1-4,
+        aligned with the SBTi Corporate Net-Zero Standard v1.2. Manages
+        absolute reduction targets, intensity reduction targets, and
+        net-zero targets. Tracks progress against near-term targets
+        (5-10 year) and long-term targets (by 2050). Implements base
+        year emissions recording and recalculation triggers (structural
+        changes, methodology changes, error corrections per GHG Protocol
+        base year recalculation policy). Calculates required annual
+        linear reduction rate to meet targets. Assesses alignment with
+        1.5C, well-below-2C, and net-zero pathways using SBTi sector
+        decarbonization approach (SDA) or absolute contraction approach
+        (ACA). Generates target variance analysis (actual vs. required
+        trajectory). Zero-hallucination: all target calculations,
+        trajectory modeling, and progress assessments use deterministic
+        formulas (linear interpolation, compound reduction rates).
+      esrs_paragraphs: "E1 para 30-33, AR E1-24 through AR E1-37"
+      required: true
+
+    - id: transition_plan
+      name: "Transition Plan Engine"
+      description: >-
+        Compiles and validates the transition plan disclosure per ESRS
+        E1-1. Aggregates decarbonization levers (energy efficiency,
+        electrification, fuel switching, renewable energy procurement,
+        process changes, carbon capture), their associated GHG reduction
+        potential, and the timeline for implementation. Calculates
+        locked-in GHG emissions from existing assets (using asset
+        remaining useful life and current emission rates). Tracks CapEx
+        and OpEx alignment with the transition plan. Assesses transition
+        plan compatibility with the Paris Agreement 1.5C pathway and
+        EU Taxonomy climate mitigation criteria. Maps decarbonization
+        actions to specific GHG reduction targets. Generates the
+        narrative transition plan disclosure with quantitative backing.
+        LLM-assisted: narrative sections use LLM generation with human
+        review; all quantitative calculations (locked-in emissions,
+        CapEx allocation, reduction potentials) are deterministic.
+      esrs_paragraphs: "E1 para 14-16, AR E1-1 through AR E1-12"
+      required: true
+
+    - id: climate_risk
+      name: "Climate Risk and Opportunity Engine"
+      description: >-
+        Assesses material physical risks and transition risks per ESRS
+        E1-9 and TCFD recommendations. Physical risks include: acute
+        risks (extreme weather events, floods, droughts, wildfires,
+        storms, heatwaves) and chronic risks (rising mean temperatures,
+        sea level rise, water stress, biodiversity loss, changing
+        precipitation patterns). Transition risks include: policy and
+        legal risks (carbon pricing, emission regulations, litigation);
+        technology risks (disruptive low-carbon technologies, stranded
+        assets); market risks (shifting demand, commodity prices,
+        revenue mix changes); reputation risks (consumer preferences,
+        stakeholder activism); and legal risks (climate litigation).
+        Quantifies anticipated financial effects over short-term (0-1y),
+        medium-term (1-5y), and long-term (5+y) time horizons.
+        Identifies and quantifies climate-related opportunities
+        (resource efficiency, energy sources, products/services,
+        markets, resilience). Supports scenario analysis (RCP/SSP
+        pathways). Zero-hallucination: all financial effect
+        calculations use deterministic formulas; risk identification
+        suggestions may use LLM with human validation.
+      esrs_paragraphs: "E1 para 64-68, AR E1-74 through AR E1-81"
+      required: true
+
+    - id: carbon_credit
+      name: "Carbon Credit and Removals Engine"
+      description: >-
+        Tracks GHG removals and carbon credit purchases per ESRS E1-7.
+        Records GHG removal activities in the undertaking's own
+        operations (afforestation, reforestation, soil carbon
+        sequestration, BECCS, DACCS, enhanced weathering) and value
+        chain. Manages carbon credit portfolio: tracks credits by
+        standard (Verra VCS, Gold Standard, ACR, CAR, CDM, CORSIA,
+        REDD+), type (avoidance vs. removal), vintage year, project
+        location, certification status, and retirement status.
+        Validates that carbon credits are not deducted from gross
+        GHG emissions reported in E1-6 (ESRS requirement). Assesses
+        carbon credit quality against SBTi guidance on the use of
+        offsets. Calculates the volume of credits needed to neutralize
+        residual emissions in a net-zero pathway. Zero-hallucination:
+        all credit accounting, volume calculations, and quality
+        scoring use deterministic formulas and lookup tables.
+      esrs_paragraphs: "E1 para 56-58, AR E1-63 through AR E1-68"
+      required: true
+
+    - id: carbon_pricing
+      name: "Internal Carbon Pricing Engine"
+      description: >-
+        Manages internal carbon pricing disclosure per ESRS E1-8.
+        Supports three types of internal carbon pricing: shadow price
+        (used in investment appraisals without actual cash flow),
+        internal fee/levy (actual charge applied to business units
+        based on their emissions), and implicit price (derived from
+        actual low-carbon investments made). Tracks the carbon price
+        per tCO2e, the scope of activities covered, and how the price
+        is applied to investment decisions, procurement, and operational
+        planning. Calculates the effective carbon price by comparing
+        low-carbon investments to emissions avoided. Supports multiple
+        price scenarios (current regulatory price, expected future
+        price, social cost of carbon). Zero-hallucination: all pricing
+        calculations use deterministic arithmetic.
+      esrs_paragraphs: "E1 para 59-61, AR E1-69 through AR E1-73"
+      required: true
+
+    - id: e1_report
+      name: "E1 Disclosure Report Engine"
+      description: >-
+        Generates the complete ESRS E1 Climate Change disclosure
+        including all 9 disclosure requirements: (1) E1-1 Transition
+        Plan narrative with quantitative backing; (2) E1-2 Policies
+        summary; (3) E1-3 Actions and resources with CapEx/OpEx;
+        (4) E1-4 Target table with SBTi alignment and progress;
+        (5) E1-5 Energy consumption and mix table; (6) E1-6 GHG
+        emissions tables (Scope 1, 2 location/market, 3 by category,
+        total, intensity); (7) E1-7 Carbon credits and removals
+        table; (8) E1-8 Internal carbon pricing disclosure; (9)
+        E1-9 Financial effects from climate risks/opportunities.
+        Supports PDF, HTML, and XBRL output formats. Generates
+        XBRL-tagged datapoints for all E1 quantitative disclosures
+        per EFRAG taxonomy. Includes SHA-256 provenance hashes for
+        all calculated values. LLM-assisted: narrative sections
+        (transition plan, policy descriptions, action descriptions)
+        use LLM generation with human review; all numeric tables,
+        calculations, and aggregations are deterministic.
+      esrs_paragraphs: "E1 para 14-68, all AR E1 paragraphs"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (9 E1 workflows)
+  # ===========================================================================
+  workflows:
+    - id: ghg_inventory_compilation
+      name: "GHG Inventory Compilation Workflow"
+      description: >-
+        6-phase workflow: Activity Data Collection (gather fuel
+        consumption, electricity bills, fleet data, process data,
+        refrigerant logs from ERP/manual inputs) -> Emission Factor
+        Selection (match activities to emission factors from EPA,
+        DEFRA, IEA, IPCC, national databases) -> Scope 1 Calculation
+        (route to MRV agents 001-008 for stationary/mobile/process/
+        fugitive/land-use/waste/refrigerant/agricultural emissions)
+        -> Scope 2 Calculation (route to MRV agents 009-013 for
+        location-based and market-based electricity, steam, heat,
+        cooling) -> Scope 3 Calculation (route to MRV agents 014-028
+        for all 15 categories, using MRV-029 Scope 3 Category Mapper)
+        -> GHG Aggregation (compile total inventory with Kyoto gas
+        disaggregation, biogenic CO2, intensity metrics, and MRV-030
+        audit trail). Generates the full E1-6 disclosure tables.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 6
+
+    - id: energy_mix_calculation
+      name: "Energy Consumption and Mix Workflow"
+      description: >-
+        4-phase workflow: Energy Data Collection (gather electricity
+        invoices, gas consumption, fuel purchases, renewable energy
+        certificates, PPA data, self-generation metering data) ->
+        Energy Source Classification (classify each energy input
+        as fossil/nuclear/renewable and by specific source type)
+        -> Energy Aggregation (calculate total consumption in MWh,
+        breakdown by source, renewable share, self-generated share)
+        -> Intensity Calculation (energy per EUR million revenue,
+        energy per production unit, year-over-year efficiency trend).
+        Cross-validates against GHG inventory for consistency.
+        Generates the E1-5 disclosure tables.
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: target_setting_and_tracking
+      name: "Target Setting and Tracking Workflow"
+      description: >-
+        5-phase workflow: Base Year Establishment (set or recalculate
+        base year emissions per GHG Protocol recalculation policy) ->
+        Target Definition (define absolute, intensity, and net-zero
+        targets with scope, timeline, and SBTi pathway alignment) ->
+        Progress Measurement (compare current year emissions against
+        base year and target trajectory) -> Variance Analysis (assess
+        gap between actual and required reduction, identify drivers
+        of over/under-performance) -> Target Reporting (generate
+        E1-4 disclosure with target parameters, progress percentages,
+        SBTi validation status, and interim milestones).
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 5
+
+    - id: transition_plan_compilation
+      name: "Transition Plan Compilation Workflow"
+      description: >-
+        5-phase workflow: Decarbonization Lever Inventory (catalog all
+        planned and ongoing actions: energy efficiency projects,
+        electrification, renewable procurement, fuel switching, process
+        changes, CCS/CCU) -> Locked-In Emissions Calculation (project
+        remaining emissions from existing assets based on useful life
+        and current emission rates) -> CapEx/OpEx Alignment (map
+        investment plans to decarbonization levers and quantify
+        climate-aligned CapEx as share of total) -> Pathway Alignment
+        Assessment (compare projected emissions trajectory against
+        1.5C/2C pathways and SBTi requirements) -> Transition Plan
+        Report (generate E1-1 disclosure narrative with quantitative
+        backing, timeline, and compatibility assessment).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: climate_risk_assessment
+      name: "Climate Risk and Opportunity Assessment Workflow"
+      description: >-
+        5-phase workflow: Risk Identification (systematically scan for
+        physical and transition risks using scenario analysis, sector
+        profiles, and site-level exposure data) -> Risk Quantification
+        (estimate probability and financial impact magnitude for each
+        risk across time horizons) -> Opportunity Identification
+        (identify climate-related opportunities: resource efficiency,
+        energy cost savings, new products/services, new markets,
+        resilience investments) -> Financial Effects Estimation
+        (quantify anticipated financial effects on assets, revenue,
+        costs, access to finance for risks and opportunities) ->
+        E1-9 Report Generation (compile anticipated financial effects
+        disclosure with scenario results and time horizon analysis).
+      schedule: "annual"
+      estimated_duration_minutes: 150
+      phases: 5
+
+    - id: carbon_credit_management
+      name: "Carbon Credit Management Workflow"
+      description: >-
+        4-phase workflow: Credit Inventory (catalog all carbon credits
+        held and retired: standard, project type, vintage, volume,
+        status) -> Removal Project Tracking (record GHG removals
+        from own operations: afforestation, soil carbon, DACCS,
+        BECCS) -> Quality Assessment (evaluate credit quality per
+        SBTi guidance: additionality, permanence, avoidance vs.
+        removal, co-benefits) -> E1-7 Report Generation (compile
+        carbon credit and removal disclosure, ensuring credits are
+        reported separately from gross emissions).
+      schedule: "annual"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: carbon_pricing_assessment
+      name: "Carbon Pricing Assessment Workflow"
+      description: >-
+        3-phase workflow: Pricing Mechanism Inventory (document all
+        internal carbon pricing mechanisms: shadow price, internal
+        fee, implicit price, external regulatory prices paid) ->
+        Coverage and Application Analysis (map which activities and
+        investment decisions are subject to the carbon price, quantify
+        the share of emissions covered) -> E1-8 Report Generation
+        (compile carbon pricing disclosure with price levels, coverage,
+        and how the price influences decision-making).
+      schedule: "annual"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: full_e1_disclosure
+      name: "Full E1 Disclosure Workflow"
+      description: >-
+        9-phase end-to-end workflow executing the complete E1 disclosure
+        lifecycle: GHG Inventory Compilation (E1-6) -> Energy Mix
+        Calculation (E1-5) -> Target Tracking (E1-4) -> Transition
+        Plan Compilation (E1-1) -> Policy Documentation (E1-2) ->
+        Action Documentation (E1-3) -> Carbon Credit Management
+        (E1-7) -> Carbon Pricing Assessment (E1-8) -> Climate Risk
+        Assessment (E1-9). Chains all E1 workflows in dependency
+        order with data flow between phases. GHG inventory must
+        complete before targets can be assessed; energy data feeds
+        both GHG inventory and transition plan. Parallel execution
+        where possible (E1-7 and E1-8 can run in parallel).
+      schedule: "annual"
+      estimated_duration_minutes: 480
+      phases: 9
+
+    - id: e1_quarterly_update
+      name: "E1 Quarterly Update Workflow"
+      description: >-
+        4-phase incremental workflow for quarterly GHG data updates:
+        Interim Data Collection (collect quarterly activity data for
+        Scope 1 and 2 sources) -> Interim GHG Calculation (calculate
+        quarterly emissions using annualized emission factors) ->
+        Target Progress Check (assess year-to-date progress against
+        annual reduction targets) -> Dashboard Refresh (update
+        executive dashboards with quarterly emissions trends and
+        target trajectory). Does not produce full E1 disclosure
+        but supports internal monitoring between annual reports.
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (9 E1 templates)
+  # ===========================================================================
+  templates:
+    - id: ghg_inventory_report
+      display_name: "GHG Emissions Inventory Report"
+      description: >-
+        Comprehensive GHG emissions inventory report covering E1-6.
+        Includes Scope 1 emissions table by source category (stationary
+        combustion, mobile combustion, process, fugitive, land use),
+        Scope 2 emissions with dual reporting (location-based and
+        market-based), Scope 3 emissions by category (all 15
+        categories with significance assessment), total GHG emissions,
+        Kyoto gas disaggregation table, biogenic CO2 separate
+        disclosure, GHG intensity metrics, and year-over-year trend
+        analysis. Suitable for external assurance inspection.
+      format: "pdf"
+      template_file: "templates/ghg_inventory_report.jinja2"
+      enabled: true
+
+    - id: energy_mix_report
+      display_name: "Energy Consumption and Mix Report"
+      description: >-
+        Energy disclosure report covering E1-5. Includes total energy
+        consumption table, energy source breakdown (fossil, nuclear,
+        renewable by type), self-generated vs. purchased energy,
+        electricity source breakdown, renewable energy share
+        calculation, energy intensity ratios (MWh per EUR million
+        revenue, MWh per production unit), energy efficiency
+        improvement trends, and PPA/renewable certificate summary.
+      format: "pdf"
+      template_file: "templates/energy_mix_report.jinja2"
+      enabled: true
+
+    - id: target_progress_report
+      display_name: "GHG Target Progress Report"
+      description: >-
+        Target tracking report covering E1-4. Includes target
+        parameter table (base year, target year, scope, type,
+        pathway, SBTi validation status), progress chart showing
+        actual emissions trajectory vs. required reduction pathway,
+        annual reduction rate analysis (actual vs. required),
+        interim milestone status, and target variance waterfall
+        chart showing drivers of over/under-performance.
+      format: "pdf"
+      template_file: "templates/target_progress_report.jinja2"
+      enabled: true
+
+    - id: transition_plan_report
+      display_name: "Transition Plan Report"
+      description: >-
+        Transition plan disclosure covering E1-1. Includes
+        decarbonization lever inventory with expected GHG reduction
+        per lever, locked-in emissions projection, CapEx/OpEx
+        alignment analysis (climate-aligned share), transition
+        timeline with milestones, Paris Agreement compatibility
+        assessment, EU Taxonomy alignment of transition investments,
+        and residual emissions neutralization strategy.
+      format: "pdf"
+      template_file: "templates/transition_plan_report.jinja2"
+      enabled: true
+
+    - id: climate_risk_report
+      display_name: "Climate Risk and Opportunity Report"
+      description: >-
+        Climate risk and opportunity report covering E1-9. Includes
+        physical risk register (acute and chronic, by location and
+        asset), transition risk register (policy, technology, market,
+        reputation, legal), opportunity register, anticipated
+        financial effects table by time horizon, scenario analysis
+        results (2C and 4C scenarios), asset-level exposure heat
+        map, and financial resilience assessment.
+      format: "pdf"
+      template_file: "templates/climate_risk_report.jinja2"
+      enabled: true
+
+    - id: carbon_credit_report
+      display_name: "Carbon Credit and Removals Report"
+      description: >-
+        Carbon credit disclosure covering E1-7. Includes carbon
+        credit portfolio table (standard, project type, vintage,
+        volume, avoidance/removal, certification status), GHG
+        removal activities table (type, volume, verification),
+        credit quality assessment summary, SBTi offset guidance
+        compliance check, and clear separation from gross emissions.
+      format: "pdf"
+      template_file: "templates/carbon_credit_report.jinja2"
+      enabled: true
+
+    - id: carbon_pricing_report
+      display_name: "Internal Carbon Pricing Report"
+      description: >-
+        Carbon pricing disclosure covering E1-8. Includes pricing
+        mechanism description (shadow price, fee/levy, implicit
+        price), price level table (per tCO2e, by scenario), scope
+        of activities covered, coverage as share of total emissions,
+        and description of how the carbon price influences
+        investment and operational decisions.
+      format: "pdf"
+      template_file: "templates/carbon_pricing_report.jinja2"
+      enabled: true
+
+    - id: full_e1_disclosure_report
+      display_name: "Full ESRS E1 Disclosure Report"
+      description: >-
+        Complete ESRS E1 Climate Change disclosure combining all 9
+        DR reports into a single integrated document. Includes
+        table of contents, cross-references between DRs (e.g.,
+        targets referencing GHG inventory base year, transition
+        plan referencing target pathways), executive summary with
+        key climate metrics, all quantitative disclosure tables,
+        narrative sections, XBRL tag annotations, and SHA-256
+        provenance hashes. Suitable for inclusion in the CSRD
+        sustainability statement and for external assurance.
+      format: "xbrl"
+      template_file: "templates/full_e1_disclosure.jinja2"
+      enabled: true
+
+    - id: e1_audit_trail_report
+      display_name: "E1 Audit Trail Report"
+      description: >-
+        Complete audit trail for E1 data and calculations. Includes
+        activity data sources and collection dates, emission factor
+        sources and versions, GWP values applied, calculation
+        methodology for each emission source, intermediate
+        calculation steps, SHA-256 provenance hashes for all
+        computed values, data quality scores per source, assumptions
+        registry (e.g., estimated vs. measured data split), base
+        year recalculation log, and change log. Designed for
+        external assurance providers conducting limited or
+        reasonable assurance on GHG emissions.
+      format: "pdf"
+      template_file: "templates/e1_audit_trail.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (8 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "E1 Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration &
+        Preset Loading -> Activity Data Collection from ERP/manual
+        inputs -> GHG Inventory Compilation (Scope 1, 2, 3) ->
+        Energy Mix Calculation -> Target Tracking and Variance
+        Analysis -> Transition Plan Compilation -> Carbon Credit
+        and Pricing Assessment -> Climate Risk Assessment -> Full
+        E1 Report Generation with XBRL and Audit Trail.
+        Orchestrates all E1 phases with dependency management,
+        parallel execution where possible (e.g., E1-7 and E1-8
+        concurrently), and incremental quarterly update support.
+      required: true
+
+    - id: dma_bridge
+      name: "Double Materiality Assessment Bridge"
+      description: >-
+        Connects to PACK-015 (Double Materiality Assessment Pack)
+        for materiality determination. The DMA outcome determines
+        whether E1 is material for the undertaking and therefore
+        whether E1 disclosures are required. Receives the DMA
+        materiality score for E1 sub-topics (climate change
+        mitigation, climate change adaptation, energy) and uses
+        the materiality determination to scope which E1 disclosure
+        requirements apply. If E1 is not material per the DMA,
+        only the ESRS 2 IRO-2 omission rationale is required.
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Data Bridge"
+      description: >-
+        Routes GHG emissions calculation requests to all 30 AGENT-MRV
+        agents. Scope 1 emissions flow through MRV-001 (Stationary
+        Combustion), MRV-002 (Refrigerants), MRV-003 (Mobile
+        Combustion), MRV-004 (Process Emissions), MRV-005 (Fugitive
+        Emissions), MRV-006 (Land Use), MRV-007 (Waste Treatment),
+        and MRV-008 (Agricultural Emissions). Scope 2 emissions
+        flow through MRV-009 (Location-Based), MRV-010 (Market-
+        Based), MRV-011 (Steam/Heat), MRV-012 (Cooling), and
+        MRV-013 (Dual Reporting Reconciliation). Scope 3 emissions
+        flow through MRV-014 through MRV-028 (Categories 1-15)
+        with MRV-029 (Scope 3 Category Mapper) and MRV-030 (Audit
+        Trail and Lineage). Returns calculated emissions with full
+        provenance for E1-6 disclosure tables.
+      required: true
+
+    - id: data_bridge
+      name: "Data Quality Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for E1 activity data intake.
+        Routes utility invoices and energy bills through AGENT-DATA-001
+        (PDF Extractor). Normalizes activity data spreadsheets through
+        AGENT-DATA-002 (Excel/CSV Normalizer). Connects to ERP for
+        fuel purchase records and fleet data through AGENT-DATA-003
+        (ERP Connector). Integrates external emission factor databases
+        through AGENT-DATA-004 (API Gateway). Routes supplier-reported
+        emissions through AGENT-DATA-008 (Supplier Questionnaire
+        Processor). Profiles data quality across all E1 inputs through
+        AGENT-DATA-010 (Data Quality Profiler). Ensures all activity
+        data has quality scores for the audit trail.
+      required: true
+
+    - id: csrd_bridge
+      name: "CSRD Pack Bridge"
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs for E1 disclosure
+        integration into the broader sustainability statement. The
+        E1 disclosure outputs (GHG tables, energy mix, targets,
+        transition plan, risk assessment) are formatted and inserted
+        into the appropriate section of the CSRD sustainability
+        statement structure. Ensures E1 cross-references to ESRS 2
+        disclosures (SBM-3, GOV-3, GOV-4) and other topical standards
+        (E2 pollution, E5 circular economy) are maintained.
+      required: true
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      description: >-
+        Connects to GL-Taxonomy-APP for alignment between E1 disclosures
+        and EU Taxonomy climate objectives. Taxonomy-eligible activities
+        inform the transition plan (E1-1) by quantifying the share of
+        CapEx and revenue aligned with climate mitigation and adaptation.
+        E1-6 emissions data feeds the DNSH assessment for pollution,
+        water, biodiversity, and circular economy objectives. Energy
+        mix data from E1-5 informs the substantial contribution
+        assessment for renewable energy activities.
+      required: false
+
+    - id: sbti_bridge
+      name: "SBTi Alignment Bridge"
+      description: >-
+        Connects to SBTi validation infrastructure for target alignment
+        assessment. Validates whether the undertaking's GHG reduction
+        targets (E1-4) are compatible with SBTi 1.5C, well-below-2C,
+        or net-zero pathways. Imports sector-specific decarbonization
+        pathways from the SBTi tool. Assesses the transition plan
+        (E1-1) against SBTi Corporate Net-Zero Standard requirements.
+        Exports target data in SBTi submission format.
+      required: false
+
+    - id: health_check
+      name: "E1 Health Check"
+      description: >-
+        16-category system verification covering all 8 E1 engines,
+        30 MRV agent dependencies, database connectivity, emission
+        factor database currency (EPA, DEFRA, IEA versions), GWP
+        value table completeness (IPCC AR6), SBTi pathway database
+        freshness, energy source classification completeness, carbon
+        credit standard registry, carbon pricing methodology
+        configuration, climate risk scenario data availability,
+        and deployment readiness.
+      required: false
+
+  # ===========================================================================
+  # Presets - E1 configuration presets (6 presets)
+  # ===========================================================================
+  presets:
+    - id: power_generation
+      name: "Power Generation Preset"
+      description: >-
+        Sector-specific configuration for power generation companies
+        (coal, natural gas, and renewable energy plants). Pre-loaded
+        with power sector emission factors, grid emission intensity
+        data, capacity-based GHG intensity metrics, and transition
+        plan templates for coal-to-gas-to-renewable pathways. Scope 1
+        dominated by stationary combustion. Scope 2 minimal (self-
+        generation). Scope 3 focused on fuel supply chain (Cat 3)
+        and downstream electricity use (Cat 11). Energy mix heavily
+        weighted to fuel consumption data. Targets aligned with
+        power sector SBTi SDA pathway.
+      sector: "ENERGY"
+      enabled_engines:
+        - ghg_inventory
+        - energy_consumption
+        - target_tracking
+        - transition_plan
+        - climate_risk
+        - carbon_credit
+        - carbon_pricing
+        - e1_report
+      file: "config/presets/power_generation.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Sector-specific configuration for industrial manufacturing
+        (steel, cement, chemicals, automotive, electronics, food
+        processing). Pre-loaded with process emission factors,
+        industrial fuel consumption profiles, and manufacturing-
+        specific GHG intensity metrics (per tonne of product, per
+        unit manufactured). Scope 1 includes process emissions and
+        stationary combustion. Scope 2 significant (industrial
+        electricity demand). Scope 3 dominated by purchased goods
+        (Cat 1) and upstream transport (Cat 4). Targets aligned
+        with manufacturing SBTi SDA pathway.
+      sector: "MANUFACTURING"
+      enabled_engines:
+        - ghg_inventory
+        - energy_consumption
+        - target_tracking
+        - transition_plan
+        - climate_risk
+        - carbon_credit
+        - carbon_pricing
+        - e1_report
+      file: "config/presets/manufacturing.yaml"
+
+    - id: transport
+      name: "Transport and Logistics Preset"
+      description: >-
+        Sector-specific configuration for transport, logistics,
+        and aviation companies. Pre-loaded with mobile combustion
+        emission factors (road, rail, maritime, aviation), fleet
+        fuel efficiency metrics, and transport-specific GHG
+        intensity metrics (gCO2e per tonne-km, per passenger-km).
+        Scope 1 dominated by mobile combustion (fleet operations).
+        Scope 2 modest (depot/terminal electricity). Scope 3
+        includes fuel supply chain (Cat 3) and business travel
+        (Cat 6). Targets aligned with transport SBTi SDA pathway.
+        Energy mix focused on liquid fuels with electrification
+        trajectory.
+      sector: "TRANSPORT"
+      enabled_engines:
+        - ghg_inventory
+        - energy_consumption
+        - target_tracking
+        - transition_plan
+        - climate_risk
+        - carbon_credit
+        - carbon_pricing
+        - e1_report
+      file: "config/presets/transport.yaml"
+
+    - id: financial_services
+      name: "Financial Services Preset"
+      description: >-
+        Sector-specific configuration for banks, insurers, and
+        asset managers. Own-operations emissions (Scope 1+2) are
+        typically small (offices, business travel). The dominant
+        emission source is financed emissions (Scope 3 Category 15:
+        Investments) calculated per PCAF Standard. Pre-loaded with
+        financed emissions calculation methods (attribution factor,
+        asset class data quality scores), portfolio alignment
+        metrics, and financial sector-specific GHG intensity
+        (tCO2e per EUR million invested/lent). Targets aligned
+        with financial sector SBTi guidance. Climate risk
+        assessment emphasizes portfolio-level physical and
+        transition risk.
+      sector: "FINANCIAL_SERVICES"
+      enabled_engines:
+        - ghg_inventory
+        - energy_consumption
+        - target_tracking
+        - transition_plan
+        - climate_risk
+        - carbon_credit
+        - carbon_pricing
+        - e1_report
+      file: "config/presets/financial_services.yaml"
+
+    - id: real_estate
+      name: "Real Estate Preset"
+      description: >-
+        Sector-specific configuration for real estate owners,
+        operators, and developers. Pre-loaded with building-level
+        emission factors (energy use intensity per sqm), embodied
+        carbon calculation methods, and CRREM decarbonization
+        pathways. Scope 1 from on-site heating (natural gas,
+        fuel oil). Scope 2 from purchased electricity and district
+        heating. Scope 3 includes embodied carbon of construction
+        materials (Cat 1/2), tenant energy consumption (Cat 13),
+        and end-of-life demolition (Cat 12). Targets aligned with
+        CRREM 1.5C pathways per building type and climate zone.
+        Energy mix per building with EPC rating integration.
+      sector: "REAL_ESTATE"
+      enabled_engines:
+        - ghg_inventory
+        - energy_consumption
+        - target_tracking
+        - transition_plan
+        - climate_risk
+        - carbon_credit
+        - carbon_pricing
+        - e1_report
+      file: "config/presets/real_estate.yaml"
+
+    - id: multi_sector
+      name: "Multi-Sector Conglomerate Preset"
+      description: >-
+        Default configuration for diversified groups operating
+        across multiple sectors. Supports division-level GHG
+        inventory with group-level consolidation. All emission
+        sources enabled with sector-agnostic emission factors.
+        Scope 3 screening across all 15 categories to identify
+        significant categories. Targets may be set at group level
+        or division level. Transition plan covers multiple
+        decarbonization pathways per division. Climate risk
+        assessment covers all divisions with aggregation.
+      sector: "GENERAL"
+      enabled_engines:
+        - ghg_inventory
+        - energy_consumption
+        - target_tracking
+        - transition_plan
+        - climate_risk
+        - carbon_credit
+        - carbon_pricing
+        - e1_report
+      file: "config/presets/multi_sector.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for GHG emissions calculation
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates Scope 1 emissions from boilers, furnaces, turbines, heaters, incinerators"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Calculates Scope 1 emissions from refrigerant leakage and F-gas releases"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates Scope 1 emissions from fleet vehicles, ships, aircraft"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates Scope 1 emissions from chemical and physical processes (cement, steel, chemicals)"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Calculates Scope 1 emissions from intentional/unintentional releases (gas systems, coal mines)"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates Scope 1 emissions from land use change and forestry activities"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates Scope 1 emissions from on-site waste treatment and incineration"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates Scope 1 emissions from enteric fermentation, manure, soil N2O"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based Scope 2 using grid average emission factors"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based Scope 2 using supplier-specific, residual mix, and PPA data"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates Scope 2 emissions from purchased steam and heat (district heating)"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates Scope 2 emissions from purchased cooling (district cooling)"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 per GHG Protocol Scope 2 Guidance"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Calculates Cat 1 emissions using spend-based, average-data, or supplier-specific methods"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Calculates Cat 2 emissions from capital equipment and infrastructure purchases"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Calculates Cat 3 emissions from upstream fuel production and T&D losses"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Calculates Cat 4 emissions from inbound logistics and third-party transport"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Calculates Cat 5 emissions from waste disposal (landfill, incineration, recycling)"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Calculates Cat 6 emissions from air, rail, hotel, and rental car travel"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Calculates Cat 7 emissions from employee commuting and remote working"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Calculates Cat 8 emissions from upstream leased assets not in Scope 1/2"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Calculates Cat 9 emissions from outbound logistics and product distribution"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Calculates Cat 10 emissions from downstream processing of intermediate products"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Calculates Cat 11 emissions from end-use of sold products (direct and indirect)"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Calculates Cat 12 emissions from end-of-life treatment of sold products"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Calculates Cat 13 emissions from downstream leased assets"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Calculates Cat 14 emissions from franchise operations"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Calculates Cat 15 financed emissions per PCAF Standard"
+      path: "greenlang/agents/mrv/investments/"
+      required: false
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps activity data to Scope 3 categories and selects appropriate calculation method"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage from activity data inputs to final GHG emissions outputs"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts activity data from utility invoices, energy bills, and fuel receipts"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes activity data spreadsheets, emission factor tables, and energy consumption logs"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to ERP for fuel purchase records, fleet data, utility accounts, CapEx data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for emission factor databases, grid factors, weather data"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability data for Scope 3 upstream emissions tracking"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for site-level climate risk exposure assessment (E1-9)"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for land use change emissions and carbon stock monitoring"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier-reported emissions data for Scope 3 supplier-specific calculations"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Physical climate hazard data for E1-9 physical risk assessment (flood, heat, drought maps)"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes procurement spend for Scope 3 Cat 1 spend-based emission calculations"
+    required: false
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across all E1 activity data inputs, scoring confidence levels"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate activity data entries to prevent double-counting in GHG inventory"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing activity data (e.g., months without meter readings) using estimation methods"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous activity data (e.g., spike in fuel consumption) for review"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in monthly/quarterly energy and fuel consumption time series"
+    required: false
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles activity data across sources (invoices vs. meters vs. ERP vs. estimates)"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of emission factors, grid factors, and activity data feeds"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for emission factor database updates and format changes"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from raw activity data to final calculated emissions for audit"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces GHG Protocol and ESRS E1 validation rules on activity data and emissions"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates E1 workflow phases using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates E1 data schemas and emission factor table structures"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes units (tCO2e, MWh, GJ, litres, kg, m3) and reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in E1 calculations (emission factors, estimation methods, boundaries)"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links GHG emissions to source evidence (invoices, meters, supplier reports) for audit"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for E1 data (data entry, reviewer, approver, auditor)"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available MRV agents and E1 engine capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all E1 GHG calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for E1 outputs and GHG calculation consistency"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors E1 engine performance, MRV agent health, and pipeline throughput"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Agents (10 agents for cross-pack integration and regulatory)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: ghg-protocol-compliance-agent
+    name: "GHG Protocol Compliance Agent"
+    description: "Validates GHG inventory against GHG Protocol Corporate Standard requirements"
+    required: true
+  - id: sbti-validation-agent
+    name: "SBTi Validation Agent"
+    description: "Validates GHG reduction targets against SBTi near-term, long-term, and net-zero criteria"
+    required: true
+  - id: emission-factor-agent
+    name: "Emission Factor Database Agent"
+    description: "Maintains and serves emission factors from EPA, DEFRA, IEA, IPCC, and national databases"
+    required: true
+  - id: gwp-conversion-agent
+    name: "GWP Conversion Agent"
+    description: "Applies IPCC AR6 GWP-100 values for greenhouse gas to CO2e conversion"
+    required: true
+  - id: xbrl-e1-tagging-agent
+    name: "XBRL E1 Tagging Agent"
+    description: "Tags all E1 datapoints with EFRAG XBRL taxonomy identifiers for digital reporting"
+    required: true
+  - id: csrd-disclosure-agent
+    name: "CSRD Disclosure Agent"
+    description: "Integrates E1 disclosures into CSRD sustainability statement structure"
+    required: true
+  - id: taxonomy-alignment-agent
+    name: "EU Taxonomy Alignment Agent"
+    description: "Aligns E1 data with EU Taxonomy climate mitigation/adaptation criteria"
+    required: false
+  - id: tcfd-mapping-agent
+    name: "TCFD Mapping Agent"
+    description: "Maps E1-9 climate risk disclosures to TCFD recommendation pillars"
+    required: false
+  - id: regulatory-change-monitor
+    name: "Regulatory Change Monitor Agent"
+    description: "Monitors ESRS E1 amendments, GHG Protocol updates, SBTi methodology changes"
+    required: true
+  - id: assurance-readiness-agent
+    name: "Assurance Readiness Agent"
+    description: "Prepares E1 documentation for limited/reasonable assurance on GHG emissions"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 70
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    bridged_agents: 10
+  required_packs:
+    - id: PACK-015
+      name: "Double Materiality Assessment Pack"
+      description: "Required for E1 materiality determination before disclosures"
+  agent_dependencies:
+    - "AGENT-MRV-001 through AGENT-MRV-030"
+    - "AGENT-DATA-001 through AGENT-DATA-020"
+    - "AGENT-FOUND-001 through AGENT-FOUND-010"
+  app_dependencies:
+    - "GL-GHG-APP"
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  ghg_inventory:
+    max_emission_sources: 10000
+    calculation_per_source_ms: 5
+    target_duration_minutes: 15
+  scope_1_calculation:
+    max_sources: 1000
+    target_duration_minutes: 5
+  scope_2_calculation:
+    max_meters: 500
+    target_duration_minutes: 3
+  scope_3_calculation:
+    max_categories: 15
+    max_line_items_per_category: 50000
+    target_duration_minutes: 30
+  energy_mix:
+    max_energy_sources: 500
+    target_duration_minutes: 5
+  target_tracking:
+    max_targets: 50
+    target_duration_minutes: 2
+  transition_plan:
+    max_decarbonization_levers: 100
+    target_duration_minutes: 10
+  climate_risk:
+    max_risk_items: 200
+    scenario_analysis_per_scenario_ms: 5000
+    target_duration_minutes: 20
+  report_generation:
+    max_report_pages: 150
+    target_duration_minutes: 15
+  full_e1_disclosure:
+    target_duration_minutes: 480
+    parallel_execution_enabled: true
+  max_ghg_calc_time_per_entity_s: 5
+  max_e1_report_time_s: 30
+  cache_hit_ratio_target: 0.80
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with E1 role-based access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - e1_data_entry
+    - e1_reviewer
+    - e1_approver
+    - ghg_analyst
+    - energy_manager
+    - sustainability_officer
+    - external_auditor
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+    - "cryptography>=41.0"
+    - "matplotlib>=3.7"
+    - "plotly>=5.15"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 15
+    recommended_connections: 40
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_gwp_value_table
+    - verify_sbti_pathway_database
+    - verify_pack_015_installed
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+    new:
+      - "V083-PACK016-001"  # GHG inventory and emission source tables
+      - "V083-PACK016-002"  # Energy consumption and mix tables
+      - "V083-PACK016-003"  # GHG target and progress tracking tables
+      - "V083-PACK016-004"  # Transition plan and decarbonization lever tables
+      - "V083-PACK016-005"  # Climate risk and opportunity register tables
+      - "V083-PACK016-006"  # Carbon credit and removal project tables
+      - "V083-PACK016-007"  # Internal carbon pricing tables
+      - "V083-PACK016-008"  # E1 report and audit trail tables
+
+  post_install:
+    - seed_emission_factor_database
+    - seed_gwp_ar6_values
+    - seed_grid_emission_factors
+    - seed_sbti_decarbonization_pathways
+    - seed_energy_source_classification
+    - seed_carbon_credit_standards
+    - seed_climate_risk_taxonomy
+    - seed_default_presets
+    - run_health_checks

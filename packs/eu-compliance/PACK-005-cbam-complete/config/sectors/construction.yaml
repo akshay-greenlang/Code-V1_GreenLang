@@ -1,0 +1,136 @@
+# =============================================================================
+# PACK-005 CBAM Complete Pack - Construction Sector Preset
+# =============================================================================
+# Sector overlay for construction companies importing cement and steel.
+# Focus on project-level emission allocation, EU Taxonomy screening for
+# sustainable construction, and local NCA requirements per member state.
+#
+# Construction sector imports:
+#   - Portland cement and clinker for concrete production
+#   - Structural steel (beams, rebar, sections, plates)
+#   - Steel tubes and pipes for infrastructure
+#   - Aluminium profiles for facades and glazing systems
+#
+# NACE codes: F41, F42, F43 (Construction)
+# =============================================================================
+
+# Construction-relevant goods categories
+goods:
+  enabled_categories:
+    - "cement"
+    - "iron_steel"
+    - "aluminium"
+  precursor_tracking:
+    cement: ["clinker"]
+    iron_steel: ["pig_iron", "crude_steel"]
+    aluminium: ["alumina", "unwrought_aluminium"]
+
+# Emission calculation
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 25.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+
+# Certificate management
+certificate:
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+
+# Trading - bulk quarterly for project-based purchasing
+trading:
+  buying_strategy: "bulk_quarterly"
+  valuation_method: "fifo"
+  quarterly_holding_target_pct: 50.0
+  bulk_quarterly_month_offset: 1
+  mark_to_market_frequency: "monthly"
+
+# Analytics - construction-specific
+analytics:
+  monte_carlo_iterations: 5000
+  benchmark_source: "eu_bat"
+  forecast_horizon_years: 3
+  sensitivity_variables:
+    - "ets_price"
+    - "import_volume"
+    - "emission_intensity"
+    - "cement_clinker_ratio"
+    - "free_allocation_pct"
+    - "construction_activity_index"
+
+# Customs - cement and steel focus
+customs:
+  anti_circumvention_rules:
+    - "origin_change"
+    - "cn_reclassification"
+  downstream_monitoring: false
+  origin_verification_enabled: true
+
+# Cross-regulation - EU Taxonomy critical for green buildings
+cross_regulation:
+  csrd_enabled: true
+  cdp_enabled: false
+  sbti_enabled: false
+  taxonomy_enabled: true
+  ets_enabled: true
+  eudr_enabled: false
+  mapping_rules:
+    csrd: ["E1-1", "E1-2", "E1-3", "E1-5"]
+    taxonomy: ["ccm_1", "ccm_2", "ccm_3", "ccm_7"]
+
+# Precursor chain - moderate for construction
+precursor:
+  max_chain_depth: 3
+  allocation_method: "mass"
+  scrap_classification_enabled: true
+  mass_balance_validation: true
+  mass_balance_tolerance_pct: 5.0
+  chain_completeness_threshold_pct: 75.0
+
+# Supplier management - construction-specific
+supplier:
+  quality_threshold: 70.0
+  max_installations_per_supplier: 15
+  auto_fallback_to_defaults: true
+
+# Quarterly reporting - multiple EU languages common
+quarterly:
+  report_language: "EN"
+  additional_languages: ["DE", "FR", "IT", "ES"]
+
+# Construction-specific metadata
+sector_metadata:
+  nace_codes: ["F41", "F42", "F43"]
+  sector_name: "Construction"
+  primary_materials:
+    - material: "portland_cement"
+      cn_codes: ["2523 29 00"]
+      typical_volume_tonnes_year: 20000
+      typical_sources: ["TR", "IN", "EG"]
+    - material: "cement_clinker"
+      cn_codes: ["2523 10 00"]
+      typical_volume_tonnes_year: 15000
+      typical_sources: ["TR", "VN", "PK"]
+    - material: "structural_steel"
+      cn_codes: ["7216", "7308"]
+      typical_volume_tonnes_year: 25000
+      typical_sources: ["TR", "CN", "UA"]
+    - material: "rebar"
+      cn_codes: ["7213", "7214"]
+      typical_volume_tonnes_year: 30000
+      typical_sources: ["TR", "EG", "IN"]
+    - material: "steel_tubes"
+      cn_codes: ["7304", "7305", "7306"]
+      typical_volume_tonnes_year: 8000
+      typical_sources: ["TR", "CN", "IN"]
+    - material: "aluminium_profiles"
+      cn_codes: ["7604"]
+      typical_volume_tonnes_year: 5000
+      typical_sources: ["CN", "TR"]
+  key_compliance_drivers:
+    - "EU Taxonomy CCM 7.1 Construction of new buildings"
+    - "CSRD E1 embodied carbon disclosure"
+    - "EPD (Environmental Product Declaration) alignment"
+    - "LEED/BREEAM material carbon credits"
+    - "National building regulations (ZEB requirements)"

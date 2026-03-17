@@ -1,0 +1,195 @@
+# =============================================================================
+# PACK-010 Demo Configuration
+# =============================================================================
+# Minimal demo/sandbox configuration for quick testing, onboarding, and
+# sales demonstrations. Uses synthetic portfolio data, mocked ESG provider
+# responses, and a simplified feature set for fast evaluation.
+#
+# Usage:
+#   >>> config = PackConfig.from_preset("asset_manager", demo_mode=True)
+#   Or load this file directly:
+#   >>> config = PackConfig.from_yaml("config/demo/demo_config.yaml")
+#
+# Features:
+#   - 50 sample portfolio holdings
+#   - Synthetic ESG and emissions data
+#   - Mocked ESG data provider API responses
+#   - Simplified PAI calculation (core climate indicators only)
+#   - Basic taxonomy alignment (no look-through)
+#   - Simplified screening (exclusions only)
+#   - Tutorial mode with guided onboarding steps
+#   - Reduced data quality thresholds
+#   - Short audit trail retention (1 year)
+#   - No multi-language or XBRL features
+#
+# Sample Data Paths:
+#   - data/demo/holdings/      - Synthetic portfolio holdings CSV
+#   - data/demo/esg_scores/    - Synthetic ESG scores and ratings
+#   - data/demo/emissions/     - Synthetic investee emissions data
+#   - data/demo/governance/    - Synthetic governance scores
+# =============================================================================
+
+sfdr_classification: "ARTICLE_8"
+product_name: "Demo Green Growth Fund"
+product_isin: "LU0000000001"
+reporting_frequency: "ANNUAL"
+reporting_year: 2025
+
+# --- PAI Configuration ---
+pai:
+  enabled: true
+  enabled_mandatory_indicators: [1, 2, 3, 4, 5, 6, 10, 13, 14]
+  min_coverage_pct: 30.0
+  coverage_adjustment: true
+  estimation_enabled: true
+  estimation_methodology: "SECTOR_AVERAGE"
+  include_scope_3: false
+  entity_level_statement: false
+  product_level_pai: true
+  prior_period_comparison: false
+  data_quality_tracking: false
+
+# --- Taxonomy Alignment Configuration ---
+taxonomy_alignment:
+  enabled: true
+  minimum_commitment_pct: 0.0
+  include_sovereign_bonds: false
+  look_through_enabled: false
+  look_through_max_levels: 1
+  enabling_activity_disclosure: false
+  transitional_activity_disclosure: false
+  alignment_methodology: "REVENUE_BASED"
+  gas_nuclear_disclosure: false
+  verification_frequency: "ANNUAL"
+
+# --- DNSH Configuration ---
+dnsh:
+  enabled: true
+  methodology: "PAI_BASED"
+  pai_indicators_used: [1, 2, 3, 10, 14]
+  quantitative_thresholds_enabled: true
+  qualitative_assessment_enabled: false
+  evidence_required: false
+  controversial_weapons_exclusion: true
+  ungc_violations_exclusion: true
+
+# --- Governance Configuration ---
+governance:
+  enabled: true
+  check_sound_management: true
+  check_employee_relations: true
+  check_remuneration: false
+  check_tax_compliance: false
+  minimum_governance_score: 40.0
+  require_all_dimensions_pass: false
+  controversy_flag_threshold: 5
+  monitoring_frequency: "ANNUAL"
+  data_sources:
+    - "ESG_DATA_PROVIDER"
+
+# --- E/S Characteristics Configuration ---
+esg_characteristics:
+  environmental_characteristics:
+    - "climate_change_mitigation"
+  social_characteristics:
+    - "human_rights"
+  binding_elements:
+    - "exclusion_criteria"
+  sustainability_indicators:
+    - "carbon_intensity"
+    - "esg_score"
+  measurement_methodology: "QUANTITATIVE"
+  benchmark_comparison: false
+  track_attainment: true
+
+# --- Sustainable Investment Configuration ---
+sustainable_investment:
+  enabled: false
+  minimum_proportion_pct: 0.0
+
+# --- Carbon Footprint Configuration ---
+carbon_footprint:
+  enabled: true
+  calculate_waci: true
+  calculate_carbon_footprint: true
+  calculate_total_emissions: false
+  calculate_financed_emissions: false
+  scope_coverage:
+    - "SCOPE_1"
+    - "SCOPE_2"
+  pcaf_alignment: false
+  coverage_threshold_pct: 30.0
+  benchmark_comparison: false
+  yoy_trend: false
+  attribution_analysis: false
+  currency: "EUR"
+
+# --- EET Configuration ---
+eet:
+  enabled: false
+  eet_version: "V1_1"
+  import_enabled: false
+  export_enabled: false
+
+# --- Disclosure Configuration ---
+disclosure:
+  annex_ii_enabled: true
+  annex_iii_enabled: false
+  annex_iv_enabled: true
+  default_format: "PDF"
+  include_methodology_note: false
+  include_data_sources: false
+  include_asset_allocation_chart: true
+  review_workflow_enabled: false
+  version_tracking: false
+  greenwashing_check: false
+
+# --- Screening Configuration ---
+screening:
+  negative_screening_enabled: true
+  positive_screening_enabled: false
+  norms_based_screening_enabled: false
+  negative_exclusions:
+    - "controversial_weapons"
+    - "tobacco_production"
+  revenue_threshold_pct: 10.0
+  screening_frequency: "ANNUAL"
+  breach_handling: "DIVEST_90_DAYS"
+  monitoring_enabled: false
+
+# --- Reporting Configuration ---
+reporting:
+  reporting_frequency: "ANNUAL"
+  reporting_period_end: "12-31"
+  reporting_deadline_days: 120
+  default_format: "PDF"
+  language: "en"
+  include_board_summary: false
+
+# --- Data Quality Configuration ---
+data_quality:
+  min_quality_score: 0.50
+  min_coverage_pct: 30.0
+  estimation_limit_pct: 80.0
+  data_age_max_months: 24
+  require_audited_emissions: false
+  validation_on_ingestion: false
+  flag_low_quality: false
+  allow_sector_proxies: true
+
+# --- Audit Trail Configuration ---
+audit_trail:
+  retention_years: 1
+  hash_algorithm: "SHA-256"
+  immutable_log: false
+  include_provenance_hash: true
+
+# --- Demo Configuration ---
+demo:
+  demo_mode_enabled: true
+  use_synthetic_data: true
+  mock_esg_provider: true
+  mock_portfolio_data: true
+  mock_mrv_data: true
+  tutorial_mode_enabled: true
+  sample_holdings_count: 50

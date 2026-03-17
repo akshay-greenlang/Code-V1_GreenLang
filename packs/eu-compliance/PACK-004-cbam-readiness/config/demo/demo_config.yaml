@@ -1,0 +1,144 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Demo Configuration
+# =============================================================================
+# Demo scenario: EuroSteel Imports GmbH
+# A mid-sized German steel and aluminium importer with 3 suppliers.
+# This configuration provides a complete demo environment with sample data
+# for testing and demonstration purposes.
+#
+# Company Profile:
+#   - Name: EuroSteel Imports GmbH
+#   - Location: Hamburg, Germany
+#   - EORI: DE327891234567
+#   - Primary imports: Steel (HRC, CRC, plates), Aluminium (ingots, sheets)
+#   - Secondary imports: Cement (clinker, Portland)
+#   - Annual volume: ~25,000 tonnes steel, ~3,000 tonnes aluminium, ~1,500 tonnes cement
+#   - Key suppliers: Turkey, China, India
+# =============================================================================
+
+# Importer details
+importer:
+  company_name: "EuroSteel Imports GmbH"
+  eori_number: "DE327891234567"
+  authorized_declarant: "Dr. Klaus Berger"
+  eu_member_state: "DE"
+  cbam_registry_id: "CBAM-DE-2026-004851"
+  contact_email: "cbam@eurosteel-imports.de"
+  contact_phone: "+49 40 2345 6789"
+  customs_office_code: "DE004301"
+
+# Goods categories - steel + aluminium + cement
+goods:
+  enabled_categories:
+    - "iron_steel"
+    - "aluminium"
+    - "cement"
+  precursor_tracking:
+    iron_steel:
+      - "pig_iron"
+      - "crude_steel"
+    aluminium:
+      - "alumina"
+      - "unwrought_aluminium"
+    cement:
+      - "clinker"
+
+# Emission calculation
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 25.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+
+# Certificate configuration
+certificate:
+  ets_price_source: "manual"
+  manual_price_eur_per_tco2e: 75.0
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+  repurchase_enabled: true
+
+# Quarterly reporting
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 10
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "DE"
+  additional_languages: ["EN"]
+  include_supporting_documents: true
+  archive_reports: true
+
+# Supplier management
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 65.0
+  max_installations_per_supplier: 10
+  eori_validation_enabled: false
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis monitoring
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  threshold_value_eur: 150.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+
+# Verification
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+
+# Pack-level settings
+reporting_year: 2026
+reporting_period: "definitive"
+transitional_mode: false
+demo_mode: true
+log_level: "DEBUG"
+provenance_enabled: true
+
+# Demo-specific settings
+demo:
+  sample_data_path: "config/demo/demo_imports.csv"
+  supplier_data_path: "config/demo/demo_supplier_data.json"
+  skip_external_apis: true
+  mock_ets_price: true
+  mock_registry_submission: true
+  auto_generate_quarterly_report: true
+
+  # Demo suppliers
+  suppliers:
+    - id: "SUPP-TR-001"
+      name: "Anatolian Steel Works"
+      country: "TR"
+      categories: ["iron_steel"]
+    - id: "SUPP-CN-001"
+      name: "Shanghai Aluminium Corp"
+      country: "CN"
+      categories: ["aluminium"]
+    - id: "SUPP-IN-001"
+      name: "Rajasthan Cement Ltd"
+      country: "IN"
+      categories: ["cement"]
+
+  # Demo reporting quarter
+  demo_quarter: "Q1-2026"
+  demo_quarter_start: "2026-01-01"
+  demo_quarter_end: "2026-03-31"

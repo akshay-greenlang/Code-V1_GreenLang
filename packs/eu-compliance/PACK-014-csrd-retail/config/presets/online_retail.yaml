@@ -1,0 +1,158 @@
+# =============================================================================
+# PACK-014 CSRD Retail Pack - Online Retail Preset
+# =============================================================================
+# Configuration for e-commerce pure-play and marketplace retailers. Last-mile
+# delivery emissions (Cat 9) are critical. E-commerce packaging reuse targets
+# (PPWR 2030). Returns logistics tracked for circular economy. Fulfillment
+# center energy efficiency replaces traditional store Scope 1+2.
+#
+# Typical use cases:
+#   - E-commerce pure-play retailers
+#   - Online marketplace operators
+#   - Direct-to-consumer brands
+#   - Click-and-collect operators
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+tier: "ENTERPRISE"
+sub_sectors:
+  - "E_COMMERCE"
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Store Emissions (fulfillment centers) ---
+store_emissions:
+  enabled: true
+  store_types:
+    - "WAREHOUSE"
+    - "DARK_STORE"
+  refrigerant_tracking: false
+  f_gas_phase_down: false
+  fleet_tracking: true
+  renewable_on_site: true
+  heating_sources:
+    - "electricity"
+  eed_energy_audit: true
+  per_sqm_normalization: true
+  per_revenue_normalization: true
+  year_over_year_tracking: true
+
+# --- Scope 3 (Cat 4 and Cat 9 CRITICAL) ---
+scope3:
+  enabled: true
+  priority_categories: [1, 4, 8, 9, 12]
+  calculation_methods:
+    cat_1: "hybrid"
+    cat_4: "distance_based"
+    cat_9: "distance_based"
+    default: "spend_based"
+  supplier_data_collection: true
+  cat1_methodology: "hybrid"
+  spend_based_screening: true
+  hotspot_analysis: true
+  supplier_engagement_scoring: true
+  last_mile_tracking: true
+
+# --- Packaging (e-commerce reuse 2030 CRITICAL) ---
+packaging:
+  enabled: true
+  ppwr_compliance: true
+  recycled_content_tracking: true
+  materials_tracked:
+    - "PAPER_BOARD"
+    - "HDPE"
+    - "PP"
+    - "PET"
+    - "COMPOSITE"
+  epr_scheme: true
+  labeling_requirements: true
+  reuse_targets: true
+  ecommerce_packaging_reuse: true
+  over_packaging_monitoring: true
+  target_year: 2030
+
+# --- Product Sustainability ---
+product_sustainability:
+  enabled: true
+  dpp_enabled: false
+  pef_methodology: true
+  green_claims_audit: true
+  banned_claims:
+    - "CARBON_NEUTRAL"
+    - "ECO_FRIENDLY"
+  product_recyclability_scoring: true
+
+# --- Food Waste (not applicable) ---
+food_waste:
+  enabled: false
+
+# --- Supply Chain Due Diligence ---
+supply_chain_dd:
+  enabled: true
+  csddd_compliance: true
+  eudr_commodities: []
+  forced_labour_screening: true
+  supplier_tier_depth: 3
+  country_risk_assessment: true
+  sanctions_screening: true
+  stakeholder_engagement: true
+  remediation_tracking: true
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  epr_schemes:
+    - "PACKAGING"
+  take_back_programs: []
+  mci_tracking: true
+  product_recyclability: true
+  return_logistics_emissions: true
+  multi_country_epr: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  kpi_set:
+    - "emissions_per_revenue"
+    - "emissions_per_parcel"
+    - "last_mile_intensity"
+    - "packaging_recycled_content"
+    - "return_rate_emissions"
+    - "scope3_supplier_coverage"
+    - "sbti_alignment"
+  peer_group: "REVENUE_BAND"
+  sbti_pathway: "1.5C"
+  percentile_tracking: true
+  gap_analysis_enabled: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  store_emissions_report_enabled: true
+  supply_chain_report_enabled: true
+  packaging_report_enabled: true
+  product_sustainability_report_enabled: true
+  food_waste_report_enabled: false
+  circular_economy_report_enabled: true
+  scorecard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+  review_workflow_enabled: true
+  watermark_draft: true

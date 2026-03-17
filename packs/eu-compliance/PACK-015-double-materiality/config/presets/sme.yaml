@@ -1,0 +1,171 @@
+# =============================================================================
+# PACK-015 Double Materiality Pack - SME Preset
+# =============================================================================
+# Simplified configuration for listed SMEs subject to CSRD from 2026 or
+# voluntary reporters. Simplified scoring (1-5) with single scorer.
+# Stakeholder engagement limited to core groups. Topic-level assessment
+# only (no sub-topic/sub-sub-topic drill-down). Reduced IRO register depth.
+# Simplified report templates. 5-year data retention. Assesses Omnibus
+# threshold eligibility for potential scope reduction or voluntary LSME
+# standard adoption.
+#
+# Typical use cases:
+#   - Listed SMEs (third wave CSRD from FY2026)
+#   - Voluntary SME reporters
+#   - Subsidiaries conducting standalone DMA
+#   - First-time reporters with limited sustainability resources
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2026
+company_size: "SME_LISTED"
+sectors:
+  - "GENERAL"
+listed_entity: true
+
+# --- Impact Materiality (simplified) ---
+impact_materiality:
+  enabled: true
+  scoring_scale: 5
+  severity_dimensions:
+    - "scale"
+    - "scope"
+    - "irremediable_character"
+  severity_weighting: "EQUAL"
+  likelihood_enabled: true
+  likelihood_scale: 5
+  positive_impacts_enabled: false
+  value_chain_boundary: true
+  multi_scorer: false
+  evidence_based_scoring: false
+  sub_topic_granularity: false
+  sub_sub_topic_granularity: false
+
+# --- Financial Materiality (qualitative only) ---
+financial_materiality:
+  enabled: true
+  scoring_scale: 5
+  magnitude_type: "qualitative"
+  magnitude_currency: "EUR"
+  likelihood_enabled: true
+  time_horizon_analysis: true
+  time_horizons:
+    - "SHORT_TERM"
+    - "MEDIUM_TERM"
+    - "LONG_TERM"
+  short_term_years: 1
+  medium_term_years: 5
+  long_term_years: 10
+  scenario_analysis: false
+  risk_opportunity_asymmetry: false
+  cost_of_capital_impact: false
+  multi_scorer: false
+  erp_data_integration: false
+
+# --- Stakeholder Engagement (minimal) ---
+stakeholder_engagement:
+  enabled: true
+  affected_stakeholders:
+    - "EMPLOYEES"
+    - "CONSUMERS"
+  statement_users:
+    - "INVESTORS"
+  engagement_methods:
+    - "surveys"
+  stakeholder_weighting: false
+  weighting_scheme: "equal"
+  sentiment_analysis: false
+  min_response_rate: 0.15
+  annual_refresh: true
+
+# --- IRO Identification (streamlined) ---
+iro_identification:
+  enabled: true
+  iro_types:
+    - "IMPACT"
+    - "RISK"
+    - "OPPORTUNITY"
+  directions:
+    - "POSITIVE"
+    - "NEGATIVE"
+  temporalities:
+    - "ACTUAL"
+    - "POTENTIAL"
+  value_chain_positions:
+    - "OWN_OPERATIONS"
+    - "UPSTREAM"
+  esrs_topics_in_scope:
+    - "E1"
+    - "E2"
+    - "E3"
+    - "E4"
+    - "E5"
+    - "S1"
+    - "S2"
+    - "S3"
+    - "S4"
+    - "G1"
+  sector_profile_enabled: true
+  llm_assisted_identification: true
+  max_iros_per_topic: 10
+  iro_register_export: true
+  value_chain_depth: 2
+
+# --- Materiality Matrix ---
+materiality_matrix:
+  enabled: true
+  x_axis: "financial_materiality"
+  y_axis: "impact_materiality"
+  output_formats:
+    - "pdf"
+  interactive_drill_down: false
+  color_by_pillar: true
+  year_over_year_comparison: false
+  quadrant_labels: true
+  sensitivity_visualization: false
+  borderline_highlighting: true
+  topic_label_display: "short_name"
+
+# --- Threshold Scoring (no threshold engine - built into matrix) ---
+threshold:
+  enabled: false
+
+# --- ESRS Mapping (LSME standard) ---
+esrs_mapping:
+  enabled: true
+  include_mandatory_disclosures: true
+  sub_topic_mapping: false
+  datapoint_mapping: false
+  iro_2_table_generation: true
+  omission_rationale: true
+  xbrl_tagging: true
+  lsme_standard_mapping: true
+  cross_reference_validation: false
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  iro_1_disclosure: true
+  iro_2_disclosure: true
+  sbm_3_disclosure: true
+  executive_summary: true
+  full_dma_report: true
+  audit_trail_report: false
+  output_formats:
+    - "PDF"
+  review_workflow: false
+  watermark_draft: true
+  llm_narrative_generation: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  scoring_log: true
+  assumption_tracking: true
+  data_lineage: true
+  retention_years: 5
+  external_audit_export: true
+  version_control: false
+  change_log: false

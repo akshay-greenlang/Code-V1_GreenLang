@@ -1,0 +1,177 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - Soy & Cattle Sector Preset
+# =============================================================================
+# For companies sourcing soybeans, soy-derived products, live cattle,
+# beef, and leather. Focus on South American sourcing (Brazil, Argentina,
+# Paraguay), Cerrado/Chaco biome monitoring, CAR registry integration,
+# and RTRS/ProTerra certification.
+#
+# Key CN codes: 1201, 1507, 2304 (soya); 0102, 0201, 0202, 4101 (cattle)
+# Primary origins: Brazil, Argentina, Paraguay, Bolivia
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  sector_name: "Soy & Cattle"
+  sector_group: "agriculture_commodities"
+
+  # Soy product chain
+  soy_products:
+    - "Soybeans (whole)"
+    - "Soybean meal"
+    - "Soybean oil"
+    - "Soy lecithin"
+    - "Soy protein isolate"
+    - "Animal feed (soy-based)"
+    - "Biodiesel (soy-derived)"
+
+  # Cattle product chain
+  cattle_products:
+    - "Live cattle"
+    - "Fresh/chilled beef"
+    - "Frozen beef"
+    - "Processed beef"
+    - "Bovine hides (raw)"
+    - "Leather (tanned)"
+    - "Leather goods"
+    - "Tallow/fats"
+
+  # South American biome monitoring
+  biome_monitoring:
+    cerrado:
+      enabled: true
+      description: "Brazilian Cerrado savanna biome"
+      deforestation_rate_annual_pct: 0.5
+    chaco:
+      enabled: true
+      description: "Gran Chaco (Argentina, Paraguay, Bolivia)"
+      deforestation_rate_annual_pct: 1.2
+    amazon:
+      enabled: true
+      description: "Amazon rainforest biome"
+      deforestation_rate_annual_pct: 0.3
+    pantanal:
+      enabled: true
+      description: "Pantanal wetland biome"
+      deforestation_rate_annual_pct: 0.1
+
+  # Brazil-specific integrations
+  brazil_integrations:
+    car_registry: true
+    car_description: "Cadastro Ambiental Rural (Rural Environmental Registry)"
+    inpe_prodes: true
+    inpe_description: "INPE PRODES deforestation monitoring"
+    deter_alerts: true
+    deter_description: "DETER real-time deforestation alerts"
+    gta_tracking: true
+    gta_description: "Guia de Transito Animal (cattle transit documents)"
+
+  # Cattle-specific traceability
+  cattle_traceability:
+    animal_id_tracking: true
+    farm_of_origin: true
+    calving_property: true
+    fattening_property: true
+    slaughterhouse: true
+    transit_documentation: true
+    sanitary_certificates: true
+
+  # Indirect land use change (iLUC)
+  iluc_monitoring:
+    enabled: true
+    soy_cattle_nexus: true
+    description: "Monitor indirect deforestation from cattle-to-soy land conversion"
+
+# Commodities - soy and cattle focused
+commodities:
+  - commodity_type: "soya"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RTRS", "PROTERRA", "ISCC"]
+    high_risk_origins: ["BRA", "ARG", "PRY", "BOL", "URY"]
+  - commodity_type: "cattle"
+    enabled: true
+    priority: 1
+    certification_schemes: []
+    high_risk_origins: ["BRA", "ARG", "PRY", "BOL", "COL", "VEN", "NIC"]
+  - commodity_type: "oil_palm"
+    enabled: false
+    priority: 7
+  - commodity_type: "wood"
+    enabled: false
+    priority: 7
+  - commodity_type: "cocoa"
+    enabled: false
+    priority: 7
+  - commodity_type: "coffee"
+    enabled: false
+    priority: 7
+  - commodity_type: "rubber"
+    enabled: false
+    priority: 7
+
+# Supply chain - multi-tier with cattle-specific tracking
+supply_chain:
+  max_tier_depth: 4
+  chain_of_custody_model: "IDENTITY_PRESERVED"
+  trace_level: "lot"
+  require_plot_linkage: true
+  mixed_shipment_handling: "split"
+
+# Geolocation - large-scale farm mapping
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 20000
+  batch_size: 500
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+# Cutoff date - biome-specific monitoring
+cutoff_date:
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+    - "glad_alerts"
+    - "inpe_prodes"
+    - "planet_labs"
+  min_satellite_resolution_m: 10
+
+# Agent overrides for soy/cattle focus
+agent_overrides:
+  AGENT-EUDR-001:
+    config_overrides:
+      cattle_supply_chain_model: true
+      slaughterhouse_mapping: true
+      indirect_supplier_tracking: true
+
+  AGENT-EUDR-002:
+    config_overrides:
+      biome_boundary_overlay: true
+      cerrado_monitoring: true
+      chaco_monitoring: true
+      inpe_prodes_integration: true
+      deter_alert_integration: true
+
+  AGENT-EUDR-006:
+    config_overrides:
+      car_registry_integration: true
+      large_farm_boundary_support: true
+      pasture_deforestation_detection: true
+
+  AGENT-EUDR-009:
+    config_overrides:
+      cattle_transit_document: true
+      gta_validation: true
+      sanitary_certificate_check: true
+
+  AGENT-EUDR-016:
+    config_overrides:
+      focus_countries: ["BRA", "ARG", "PRY", "BOL"]
+      state_level_risk_brazil: true
+      biome_level_risk: true
+
+  AGENT-EUDR-012:
+    config_overrides:
+      gta_document_validation: true
+      phytosanitary_certificate: true
+      export_license_check: true

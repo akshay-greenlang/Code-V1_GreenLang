@@ -1,0 +1,180 @@
+# =============================================================================
+# PACK-008 Preset: Large Enterprise
+# =============================================================================
+# Full-featured deployment with all features enabled for large enterprises.
+# All 6 environmental objectives, comprehensive assessment, full Article 8
+# disclosure, GAR calculation capability, cross-framework reporting, and
+# advanced regulatory tracking.
+#
+# Applicable to:
+#   - Large listed companies with complex multi-sector operations
+#   - Conglomerates with financial and non-financial divisions
+#   - Companies requiring maximum disclosure coverage
+#   - Organizations targeting voluntary leadership disclosures
+#
+# Key Features:
+#   - All KPI types (Turnover/CapEx/OpEx + GAR/BTAR)
+#   - All 6 environmental objectives
+#   - Full Article 8 and EBA Pillar 3 disclosure
+#   - XBRL/iXBRL digital tagging
+#   - Cross-framework alignment (CSRD, SFDR, TCFD, CDP)
+#   - Advanced regulatory tracking with auto-migration
+#   - Strict data quality requirements
+#   - Extended audit trail retention (10 years)
+# =============================================================================
+
+organization_type: "NON_FINANCIAL_UNDERTAKING"
+reporting_period: "ANNUAL"
+
+objectives_in_scope:
+  - "CCM"
+  - "CCA"
+  - "WTR"
+  - "CE"
+  - "PPC"
+  - "BIO"
+
+eligibility:
+  screening_mode: "HYBRID"
+  nace_version: "NACE_REV2"
+  min_confidence: 0.90
+  batch_size: 500
+  include_transitional: true
+  include_enabling: true
+  revenue_weighted: true
+  auto_classify_nace: true
+
+sc_assessment:
+  evaluation_mode: "STRICT"
+  threshold_strictness: "STRICT"
+  evidence_required: true
+  quantitative_tolerance_pct: 0.0
+  track_enabling_activities: true
+  track_transitional_activities: true
+  require_all_quantitative: true
+  gap_analysis_on_fail: true
+
+dnsh:
+  objectives_assessed:
+    - "CCM"
+    - "CCA"
+    - "WTR"
+    - "CE"
+    - "PPC"
+    - "BIO"
+  require_all_pass: true
+  climate_risk_assessment_enabled: true
+  water_framework_directive_check: true
+  circular_economy_waste_hierarchy: true
+  pollution_threshold_check: true
+  biodiversity_impact_assessment: true
+  evidence_required: true
+
+minimum_safeguards:
+  human_rights_check: true
+  anti_corruption_check: true
+  taxation_check: true
+  fair_competition_check: true
+  assessment_mode: "FULL"
+  require_all_pass: true
+  grievance_mechanism_required: true
+  supply_chain_due_diligence: true
+
+kpi:
+  calculate_turnover: true
+  calculate_capex: true
+  calculate_opex: true
+  double_counting_prevention: true
+  capex_plan_recognition: true
+  capex_plan_max_years: 5
+  eligible_vs_aligned_breakdown: true
+  activity_level_detail: true
+  currency: "EUR"
+  rounding_precision: 2
+
+gar:
+  calculate_stock_gar: true
+  calculate_flow_gar: true
+  calculate_btar: true
+  exposure_types:
+    - "CORPORATE_LOANS"
+    - "DEBT_SECURITIES"
+    - "EQUITY_HOLDINGS"
+    - "RESIDENTIAL_MORTGAGES"
+    - "COMMERCIAL_MORTGAGES"
+    - "PROJECT_FINANCE"
+  epc_integration: true
+  epc_threshold_rating: "B"
+  de_minimis_threshold: 0.0
+  counterparty_data_source: "DIRECT"
+  sovereign_exclusion: true
+  interbank_exclusion: true
+
+reporting:
+  article8_enabled: true
+  eba_pillar3_enabled: true
+  xbrl_tagging: true
+  nuclear_gas_supplementary: true
+  yoy_comparison: true
+  default_format: "PDF"
+  include_methodology_note: true
+  include_audit_opinion: true
+  language: "en"
+  cross_framework_targets:
+    - "CSRD_ESRS_E1"
+    - "SFDR"
+    - "TCFD"
+    - "CDP"
+    - "EBA_PILLAR3"
+
+regulatory:
+  delegated_act_version: "CLIMATE_DA_2021"
+  active_delegated_acts:
+    - "CLIMATE_DA_2021"
+    - "ENVIRONMENTAL_DA_2023"
+    - "DISCLOSURES_DA_2021"
+    - "COMPLEMENTARY_DA_2022"
+  track_updates: true
+  auto_migration: true
+  update_check_interval_hours: 12
+  include_complementary_da: true
+  include_simplification_da: true
+
+tsc:
+  strict_threshold_compliance: true
+  tolerance_margin_pct: 0.0
+  track_criteria_changes: true
+  gap_identification: true
+  evidence_linking: true
+  qualitative_assessment_enabled: true
+
+transition_activity:
+  enabled: true
+  best_available_technology_check: true
+  lock_in_avoidance_check: true
+  sunset_date_tracking: true
+  transition_pathway_documentation: true
+
+enabling_activity:
+  enabled: true
+  direct_enablement_verification: true
+  lifecycle_consideration: true
+  technology_lock_in_check: true
+  market_distortion_assessment: true
+
+data_quality:
+  min_quality_score: 0.90
+  completeness_threshold: 0.95
+  require_primary_data: true
+  allow_estimates: false
+  validation_on_ingestion: true
+
+audit_trail:
+  retention_years: 10
+  hash_algorithm: "SHA-256"
+  export_formats:
+    - "JSON"
+    - "XML"
+    - "PDF"
+  immutable_log: true
+  include_provenance_hash: true

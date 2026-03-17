@@ -1,0 +1,1460 @@
+# =============================================================================
+# PACK-004: CBAM Readiness Pack
+# GreenLang EU Compliance Pack for Carbon Border Adjustment Mechanism
+# =============================================================================
+# This pack provides a complete, pre-configured deployment of GreenLang agents
+# and workflows for EU CBAM compliance. It bundles applications, industrial MRV
+# calculators, policy engines, workflows, presets, and reporting templates into
+# a single installable unit for importers of CBAM-covered goods.
+#
+# CBAM applies to imports of cement, iron & steel, aluminium, fertilizers,
+# electricity, and hydrogen into the EU. Importers must report embedded
+# emissions and surrender CBAM certificates proportional to the carbon price
+# that would have been paid had the goods been produced in the EU under ETS.
+#
+# Regulatory References:
+#   - CBAM Regulation (EU) 2023/956
+#   - Implementing Regulation (EU) 2023/1773
+#   - EU ETS Directive 2003/87/EC (as amended)
+#
+# NOTE: This is a STANDALONE pack. It does NOT depend on PACK-001, PACK-002,
+#       or PACK-003 (CSRD packs). It can be deployed independently.
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-14)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: cbam-readiness
+  version: "1.0.0"
+  display_name: "CBAM Readiness Pack"
+  description: >-
+    Complete GreenLang deployment pack for Carbon Border Adjustment Mechanism
+    (CBAM) compliance. Covers transitional and definitive reporting periods,
+    quarterly CBAM reports, annual declarations, CBAM certificate management,
+    supplier emissions data collection, de minimis threshold monitoring, and
+    third-party verification workflows. Supports all six CBAM goods categories:
+    cement, iron & steel, aluminium, fertilizers, electricity, and hydrogen.
+  category: eu-compliance
+  regulation: CBAM
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-14"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/cbam-readiness"
+  changelog_url: "https://docs.greenlang.io/packs/cbam-readiness/changelog"
+  standalone: true
+
+  tags:
+    - cbam
+    - carbon-border-adjustment
+    - eu-compliance
+    - eu-ets
+    - embedded-emissions
+    - import-compliance
+    - cbam-certificates
+    - quarterly-reporting
+    - annual-declaration
+    - cement
+    - iron-steel
+    - aluminium
+    - fertilizers
+    - electricity
+    - hydrogen
+
+  compliance_references:
+    - id: "CBAM"
+      name: "Carbon Border Adjustment Mechanism"
+      regulation: "Regulation (EU) 2023/956"
+      effective_date: "2023-10-01"
+      transitional_end_date: "2025-12-31"
+      definitive_start_date: "2026-01-01"
+      description: >-
+        Establishes a carbon border adjustment mechanism for imports of certain
+        goods (cement, iron & steel, aluminium, fertilizers, electricity,
+        hydrogen) into the EU. During the transitional period (Oct 2023 - Dec
+        2025), importers must submit quarterly CBAM reports on embedded
+        emissions. From 2026, importers must purchase and surrender CBAM
+        certificates corresponding to the embedded emissions of imported goods,
+        adjusted for any carbon price already paid in the country of origin.
+
+    - id: "CBAM-IR"
+      name: "CBAM Implementing Regulation"
+      regulation: "Implementing Regulation (EU) 2023/1773"
+      effective_date: "2023-10-01"
+      description: >-
+        Lays down rules for the application of the CBAM Regulation during the
+        transitional period. Specifies reporting obligations, calculation
+        methodologies for embedded emissions, CBAM report format and content,
+        quarterly reporting deadlines, and the use of default values.
+
+    - id: "EU-ETS"
+      name: "EU Emissions Trading System"
+      regulation: "Directive 2003/87/EC (as amended by Directive (EU) 2023/959)"
+      effective_date: "2005-01-01"
+      description: >-
+        The EU ETS is the EU's carbon pricing mechanism. CBAM certificate
+        prices are linked to the weekly average auction price of EU ETS
+        allowances. Free allocations under EU ETS are phased out for CBAM
+        sectors between 2026 and 2034, creating full carbon pricing parity.
+
+    - id: "CBAM-DELEGATED"
+      name: "CBAM Delegated Acts"
+      regulation: "Commission Delegated Regulation (EU) 2024/XXX"
+      effective_date: "2025-01-01"
+      description: >-
+        Supplementary rules on calculation of embedded emissions, verification
+        requirements, accreditation of verifiers, CBAM registry operation,
+        and certificate surrender procedures for the definitive period.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and apps included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # Application layer
+  apps:
+    - id: GL-CBAM-APP
+      version: "1.1.0"
+      description: >-
+        CBAM compliance application with quarterly reporting, annual
+        declaration management, certificate tracking, supplier emissions
+        data portal, de minimis monitoring, and verification workflow.
+      required: true
+      path: "applications/GL-CBAM-APP"
+
+  # CBAM MVP pipeline (CLI-based)
+  cbam_pack_mvp:
+    - id: cbam-pack-mvp
+      description: >-
+        CLI pipeline for CBAM data processing, emission calculation, and
+        report generation. Provides command-line interface for batch
+        processing of import data and quarterly report generation.
+      required: false
+      path: "cbam-pack-mvp/"
+
+  # Foundation agents (AGENT-FOUND - selected subset)
+  foundation_agents:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for CBAM compliance"
+      required: true
+
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (tCO2e, tonnes, MWh) and reference data"
+      required: true
+
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all emission data and calculations to source evidence"
+      required: true
+
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all CBAM calculations are reproducible with provenance"
+      required: true
+
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for CBAM agents"
+      required: true
+
+  # Data intake agents (AGENT-DATA - selected subset)
+  data_agents:
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: >-
+        Extracts embedded emission data from supplier PDF reports, customs
+        declarations, and verification statements
+      required: true
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: >-
+        Normalizes import manifests, supplier emission worksheets, and
+        customs data from Excel and CSV files
+      required: true
+
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: >-
+        Connects to SAP, Oracle, and customs management systems for import
+        transaction data, purchase orders, and bills of lading
+      required: true
+
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: >-
+        Processes and scores supplier emission data questionnaires per CBAM
+        Implementing Regulation requirements
+      required: true
+
+  # Data quality agents (AGENT-DATA - selected subset)
+  quality_agents:
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all import and emission metrics"
+      required: true
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects duplicate import records and supplier submissions"
+      required: true
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: >-
+        Enforces CBAM validation rules on CN codes, emission values,
+        supplier data, and report submissions
+      required: true
+
+  # Industry-specific calculators (CBAM-specific)
+  industry_calculators:
+    - id: steel-calculator
+      name: "Steel Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for iron and steel products (CN 72xx,
+        73xx) using BF-BOF, EAF, and DRI production routes. Handles
+        precursor tracking for pig iron, DRI, crude steel, and finished
+        products. Supports actual, country default, and EU default values.
+      required: true
+      path: "calculators/steel_calculator"
+      goods_categories: ["IRON_STEEL"]
+      cn_code_ranges: ["7201-7229", "7301-7326"]
+
+    - id: cement-calculator
+      name: "Cement Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for cement and clinker products (CN
+        2523). Covers clinker production, cement grinding, and blending.
+        Handles process emissions (CaCO3 calcination), fuel combustion,
+        and electricity consumption. Clinker-to-cement ratio is a key
+        parameter.
+      required: true
+      path: "calculators/cement_calculator"
+      goods_categories: ["CEMENT"]
+      cn_code_ranges: ["2523"]
+
+    - id: aluminum-calculator
+      name: "Aluminium Embedded Emissions Calculator"
+      description: >-
+        Calculates embedded emissions for aluminium products (CN 76xx).
+        Covers primary smelting (Hall-Heroult), secondary/recycled aluminium,
+        and semi-fabrication. Accounts for anode effects (PFC emissions),
+        electricity consumption (major driver), and alumina refining as
+        precursor.
+      required: true
+      path: "calculators/aluminum_calculator"
+      goods_categories: ["ALUMINIUM"]
+      cn_code_ranges: ["7601-7616"]
+
+  # Industrial MRV agents (CBAM-specific monitoring, reporting, verification)
+  industrial_mrv:
+    - id: steel-mrv
+      name: "Steel MRV Agent"
+      description: >-
+        Monitoring, Reporting, and Verification agent for steel production
+        installations. Collects installation-level data, validates against
+        CBAM methodologies, and supports verification workflows.
+      required: true
+      path: "mrv/steel_mrv"
+      installation_types: ["blast_furnace", "electric_arc_furnace", "direct_reduction"]
+
+    - id: cement-mrv
+      name: "Cement MRV Agent"
+      description: >-
+        MRV agent for cement production installations. Tracks clinker
+        production, kiln fuel consumption, raw meal composition, and
+        alternative fuel substitution rates.
+      required: true
+      path: "mrv/cement_mrv"
+      installation_types: ["clinker_kiln", "cement_mill", "integrated_plant"]
+
+    - id: aluminum-mrv
+      name: "Aluminium MRV Agent"
+      description: >-
+        MRV agent for aluminium production installations. Monitors smelter
+        energy consumption, anode consumption, PFC emissions from anode
+        effects, and alumina precursor emissions.
+      required: true
+      path: "mrv/aluminum_mrv"
+      installation_types: ["primary_smelter", "secondary_smelter", "rolling_mill"]
+
+  # CBAM policy compliance agent
+  cbam_policy:
+    - id: cbam-compliance-agent
+      name: "CBAM Compliance Agent"
+      description: >-
+        Enforces CBAM regulatory requirements across the entire pipeline.
+        Validates CN code classification, checks reporting deadlines,
+        monitors de minimis thresholds, verifies certificate holdings,
+        ensures data completeness per Implementing Regulation, and flags
+        non-compliance risks. Acts as the central policy enforcement point.
+      required: true
+      path: "policy/cbam_compliance_agent"
+      rules_count: 187
+      rule_categories:
+        - "cn_code_validation"
+        - "emission_calculation"
+        - "reporting_deadlines"
+        - "certificate_management"
+        - "supplier_data_quality"
+        - "deminimis_thresholds"
+        - "verification_requirements"
+        - "declaration_completeness"
+
+# -----------------------------------------------------------------------------
+# Engines - Core processing engines within the pack
+# -----------------------------------------------------------------------------
+engines:
+
+  cbam_calculation:
+    display_name: "CBAM Embedded Emissions Calculation Engine"
+    description: >-
+      Deterministic calculation engine for embedded emissions per CBAM
+      methodology. Supports direct (actual), country default, and EU default
+      calculation methods. Handles precursor emissions, indirect emissions
+      from electricity, and complex product aggregation. Zero hallucination:
+      all calculations use published emission factors and arithmetic only.
+    version: "1.0.0"
+    calculation_methods:
+      - actual_emissions
+      - country_default_values
+      - eu_default_values
+      - installation_specific
+    output_unit: "tCO2e/tonne"
+    provenance_tracking: true
+
+  certificate:
+    display_name: "CBAM Certificate Management Engine"
+    description: >-
+      Manages CBAM certificate lifecycle: price tracking (linked to EU ETS
+      weekly auction price), purchase planning, holding requirements, surrender
+      scheduling, re-purchase after price adjustments, and year-end
+      reconciliation. Implements the 80% quarterly holding rule and May 31
+      surrender deadline.
+    version: "1.0.0"
+    price_sources:
+      - eu_ets_auction_weekly
+      - eu_ets_spot
+      - manual_override
+    certificate_features:
+      - price_tracking
+      - purchase_planning
+      - holding_monitoring
+      - surrender_scheduling
+      - free_allocation_deduction
+      - carbon_price_deduction
+      - cost_forecasting
+
+  quarterly_reporting:
+    display_name: "Quarterly CBAM Report Engine"
+    description: >-
+      Generates quarterly CBAM reports per Implementing Regulation (EU)
+      2023/1773. Covers all required fields: importer identification,
+      goods imported per CN code, country of origin, installation details,
+      embedded emissions (direct and indirect), calculation methodology
+      used, and carbon price paid in country of origin. Supports XML
+      format for CBAM registry submission.
+    version: "1.0.0"
+    report_format: "XML"
+    supported_languages: ["EN", "DE", "FR", "IT", "ES", "NL", "PL", "PT"]
+    validation_rules_count: 92
+    submission_channels:
+      - cbam_registry_upload
+      - xml_file_export
+      - json_api
+
+  supplier_management:
+    display_name: "Supplier Emissions Data Management Engine"
+    description: >-
+      Manages supplier emissions data collection, validation, and scoring.
+      Sends structured questionnaires to third-country suppliers, tracks
+      response rates and data quality, validates installation-level emission
+      data, and maintains a supplier quality scorecard. Supports fallback
+      to default values when actual data is unavailable.
+    version: "1.0.0"
+    questionnaire_formats: ["JSON", "XML", "CSV", "Excel"]
+    scoring_dimensions:
+      - data_completeness
+      - data_accuracy
+      - timeliness
+      - verification_status
+      - methodology_compliance
+    max_installations_per_supplier: 50
+
+  deminimis:
+    display_name: "De Minimis Assessment Engine"
+    description: >-
+      Monitors import volumes against CBAM de minimis thresholds. Under
+      Article 2(4) of the CBAM Regulation, consignments with an intrinsic
+      value not exceeding EUR 150 are exempt. Additionally, small importers
+      below specified annual tonnage thresholds may qualify for simplified
+      reporting. Engine tracks cumulative volumes, alerts at configurable
+      thresholds, and assesses exemption eligibility.
+    version: "1.0.0"
+    threshold_types:
+      - consignment_value_eur
+      - annual_tonnage
+      - annual_embedded_emissions
+    alert_levels: [80, 90, 95, 100]
+    monitoring_frequency: "per_import"
+
+  verification:
+    display_name: "Verification Workflow Engine"
+    description: >-
+      Manages third-party verification of embedded emissions data. Supports
+      annual and biennial verification cycles, tracks verifier accreditation,
+      manages evidence packages, monitors materiality thresholds, and
+      generates verification-ready data exports. Implements verification
+      requirements from CBAM Delegated Acts.
+    version: "1.0.0"
+    verification_standards:
+      - "ISO_14064-3"
+      - "ISO_14065"
+      - "CBAM_DELEGATED"
+    evidence_types:
+      - installation_monitoring_plan
+      - emission_calculation_workbook
+      - fuel_analysis_certificates
+      - meter_calibration_records
+      - production_records
+      - electricity_consumption_records
+    materiality_default_pct: 5.0
+
+  policy_compliance:
+    display_name: "CBAM Policy Compliance Engine"
+    description: >-
+      Central compliance rule engine that validates all CBAM data, reports,
+      and declarations against regulatory requirements. Implements 187
+      validation rules covering CN code accuracy, emission calculation
+      methodology compliance, reporting completeness, deadline adherence,
+      certificate holding requirements, and supplier data quality. Provides
+      compliance scoring and risk assessment.
+    version: "1.0.0"
+    total_rules: 187
+    rule_categories:
+      cn_code_validation: 24
+      emission_methodology: 38
+      reporting_completeness: 31
+      deadline_compliance: 16
+      certificate_requirements: 22
+      supplier_data_quality: 28
+      declaration_accuracy: 18
+      verification_rules: 10
+    severity_levels: ["critical", "major", "minor", "advisory"]
+    compliance_score_method: "weighted_average"
+
+# -----------------------------------------------------------------------------
+# Workflows - Pre-defined orchestration sequences
+# -----------------------------------------------------------------------------
+workflows:
+
+  quarterly_reporting:
+    display_name: "Quarterly CBAM Report"
+    description: >-
+      End-to-end quarterly CBAM reporting workflow. Collects import data,
+      calculates embedded emissions per goods category, validates against
+      CBAM rules, generates XML report, and prepares submission package
+      for the CBAM registry. Must be submitted within one month after the
+      end of each quarter.
+    schedule: "quarterly"
+    deadlines:
+      q1_report: "April 30"
+      q2_report: "July 31"
+      q3_report: "October 31"
+      q4_report: "January 31"
+    estimated_duration_days: 14
+    phases:
+      - name: data_collection
+        description: >-
+          Collect import transaction data from customs systems, ERP, and
+          supplier submissions for the reporting quarter
+        agents:
+          - AGENT-DATA-001
+          - AGENT-DATA-002
+          - AGENT-DATA-003
+          - AGENT-DATA-008
+        duration_days: 4
+
+      - name: data_quality
+        description: >-
+          Profile, deduplicate, and validate all collected import and
+          emission data against CBAM requirements
+        agents:
+          - AGENT-DATA-010
+          - AGENT-DATA-011
+          - AGENT-DATA-019
+        duration_days: 2
+
+      - name: emission_calculation
+        description: >-
+          Calculate embedded emissions for all imported goods using actual,
+          country default, or EU default values
+        agents:
+          - steel-calculator
+          - cement-calculator
+          - aluminum-calculator
+          - AGENT-FOUND-003
+        duration_days: 3
+
+      - name: report_generation
+        description: >-
+          Generate quarterly CBAM report in XML format with all required
+          fields per Implementing Regulation
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-005
+        duration_days: 2
+
+      - name: compliance_review
+        description: >-
+          Run compliance checks, validate report completeness, and prepare
+          submission package for CBAM registry
+        agents:
+          - cbam-compliance-agent
+          - AGENT-FOUND-008
+        duration_days: 2
+
+      - name: submission
+        description: >-
+          Submit quarterly report to CBAM registry and archive evidence
+          package with full provenance
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-010
+        duration_days: 1
+
+  annual_declaration:
+    display_name: "Annual CBAM Declaration"
+    description: >-
+      Annual CBAM declaration workflow for the definitive period (from 2026).
+      Consolidates quarterly data, reconciles certificates, calculates
+      surrender obligations, prepares annual declaration, and coordinates
+      with verification. Declaration due by May 31 each year for the
+      preceding calendar year.
+    schedule: "annual"
+    deadline: "May 31"
+    estimated_duration_days: 30
+    phases:
+      - name: data_consolidation
+        description: >-
+          Consolidate all four quarterly reports into annual totals per
+          goods category, CN code, and country of origin
+        agents:
+          - GL-CBAM-APP
+          - AGENT-DATA-010
+          - AGENT-DATA-019
+        duration_days: 5
+
+      - name: certificate_reconciliation
+        description: >-
+          Reconcile CBAM certificates held against actual embedded emissions.
+          Calculate surrender obligation, net of carbon price deductions
+          and free allocation phase-out adjustments.
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-003
+        duration_days: 5
+
+      - name: declaration_preparation
+        description: >-
+          Prepare annual CBAM declaration with all required disclosures:
+          total embedded emissions, certificates surrendered, carbon price
+          deductions, and methodology statements
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-005
+          - cbam-compliance-agent
+        duration_days: 7
+
+      - name: verification_coordination
+        description: >-
+          Coordinate with accredited verifier for annual verification of
+          embedded emissions data and calculation methodologies
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-008
+        duration_days: 8
+
+      - name: declaration_submission
+        description: >-
+          Submit annual declaration to CBAM registry and surrender required
+          certificates
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-010
+        duration_days: 5
+
+  supplier_onboarding:
+    display_name: "Supplier Onboarding"
+    description: >-
+      Onboards new third-country suppliers for CBAM compliance. Registers
+      supplier and installation details, sends emission data questionnaire,
+      validates responses, establishes data quality baseline, and configures
+      ongoing data collection schedule.
+    schedule: "on_demand"
+    estimated_duration_days: 21
+    phases:
+      - name: registration
+        description: >-
+          Register supplier details: company name, country, installations,
+          production processes, and initial CBAM goods mapping
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-002
+        duration_days: 3
+
+      - name: questionnaire_dispatch
+        description: >-
+          Generate and send installation-level emission data questionnaire
+          per CBAM Implementing Regulation requirements
+        agents:
+          - AGENT-DATA-008
+          - GL-CBAM-APP
+        duration_days: 2
+
+      - name: data_collection
+        description: >-
+          Receive, parse, and ingest supplier emission data submissions
+          in JSON, XML, CSV, or Excel format
+        agents:
+          - AGENT-DATA-001
+          - AGENT-DATA-002
+          - AGENT-DATA-008
+        duration_days: 10
+
+      - name: data_validation
+        description: >-
+          Validate supplier emission data: completeness, methodology
+          compliance, plausibility checks, and cross-reference with
+          known default values
+        agents:
+          - AGENT-DATA-010
+          - AGENT-DATA-019
+          - cbam-compliance-agent
+        duration_days: 3
+
+      - name: quality_scoring
+        description: >-
+          Score supplier data quality, establish baseline metrics, and
+          configure ongoing monitoring thresholds
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-010
+        duration_days: 3
+
+  certificate_management:
+    display_name: "Certificate Management Cycle"
+    description: >-
+      Ongoing CBAM certificate management workflow. Monitors EU ETS auction
+      prices, plans certificate purchases, tracks holdings against quarterly
+      targets, manages surrender timing, and handles re-purchase after price
+      adjustments. Runs continuously with weekly price updates.
+    schedule: "continuous"
+    estimated_duration_days: 365
+    phases:
+      - name: price_monitoring
+        description: >-
+          Monitor weekly EU ETS auction prices and update CBAM certificate
+          pricing. Track price trends for purchase planning.
+        agents:
+          - GL-CBAM-APP
+        duration_days: 365
+
+      - name: purchase_planning
+        description: >-
+          Plan certificate purchases based on forecasted import volumes,
+          embedded emissions, and price trajectories. Optimize purchase
+          timing and quantity.
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-003
+        duration_days: 365
+
+      - name: holding_compliance
+        description: >-
+          Monitor certificate holdings against quarterly targets. Alert
+          when holdings fall below required thresholds (80% of estimated
+          quarterly obligation).
+        agents:
+          - cbam-compliance-agent
+          - AGENT-FOUND-010
+        duration_days: 365
+
+      - name: surrender_execution
+        description: >-
+          Execute certificate surrender by May 31 deadline. Calculate
+          final surrender quantity, apply carbon price deductions, and
+          confirm submission to CBAM registry.
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-005
+        duration_days: 30
+
+  verification_cycle:
+    display_name: "Verification Cycle"
+    description: >-
+      Annual verification cycle for CBAM embedded emissions. Prepares
+      evidence package, coordinates with accredited verifier, manages
+      review iterations, and archives verification opinions.
+    schedule: "annual"
+    estimated_duration_days: 45
+    phases:
+      - name: evidence_preparation
+        description: >-
+          Assemble all evidence for verification: monitoring plans,
+          calculation workbooks, fuel analyses, meter records, and
+          production data per installation
+        agents:
+          - AGENT-FOUND-005
+          - AGENT-FOUND-008
+          - steel-mrv
+          - cement-mrv
+          - aluminum-mrv
+        duration_days: 10
+
+      - name: verifier_engagement
+        description: >-
+          Engage accredited verifier, share evidence package, and
+          coordinate site visit schedule
+        agents:
+          - GL-CBAM-APP
+        duration_days: 5
+
+      - name: review_and_response
+        description: >-
+          Respond to verifier queries, provide additional evidence,
+          resolve findings, and address non-conformities
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-005
+          - cbam-compliance-agent
+        duration_days: 20
+
+      - name: opinion_archival
+        description: >-
+          Receive verification opinion, archive with full provenance,
+          and link to annual declaration
+        agents:
+          - AGENT-FOUND-005
+          - AGENT-FOUND-008
+          - AGENT-FOUND-010
+        duration_days: 5
+
+      - name: corrective_actions
+        description: >-
+          Implement corrective actions from verification findings,
+          update monitoring plans, and confirm closure
+        agents:
+          - GL-CBAM-APP
+          - cbam-compliance-agent
+        duration_days: 5
+
+  deminimis_assessment:
+    display_name: "De Minimis Assessment"
+    description: >-
+      Ongoing monitoring of import volumes against CBAM de minimis
+      thresholds. Assesses whether an importer qualifies for simplified
+      reporting or exemption based on annual tonnage and value thresholds.
+    schedule: "continuous"
+    estimated_duration_days: 365
+    phases:
+      - name: volume_monitoring
+        description: >-
+          Continuously track cumulative import volumes and embedded
+          emissions against de minimis thresholds by goods category
+        agents:
+          - GL-CBAM-APP
+          - AGENT-FOUND-010
+        duration_days: 365
+
+      - name: threshold_alerting
+        description: >-
+          Generate alerts at configurable thresholds (80%, 90%, 95%,
+          100%) to warn importers approaching de minimis limits
+        agents:
+          - cbam-compliance-agent
+          - AGENT-FOUND-010
+        duration_days: 365
+
+      - name: exemption_assessment
+        description: >-
+          When requested, formally assess de minimis exemption
+          eligibility and generate compliance documentation
+        agents:
+          - cbam-compliance-agent
+          - GL-CBAM-APP
+          - AGENT-FOUND-005
+        duration_days: 5
+
+  data_collection:
+    display_name: "CBAM Data Collection"
+    description: >-
+      Periodic data collection workflow for gathering import transactions,
+      customs declarations, supplier emission data, and carbon price
+      information. Can be triggered manually or scheduled for weekly
+      automated collection from connected systems.
+    schedule: "weekly"
+    estimated_duration_days: 3
+    phases:
+      - name: customs_data_fetch
+        description: >-
+          Fetch import transaction data from customs management systems,
+          ERP modules, and trade compliance platforms
+        agents:
+          - AGENT-DATA-003
+          - AGENT-DATA-002
+        duration_days: 1
+
+      - name: supplier_data_fetch
+        description: >-
+          Collect emission data submissions from suppliers and process
+          pending questionnaire responses
+        agents:
+          - AGENT-DATA-008
+          - AGENT-DATA-001
+        duration_days: 1
+
+      - name: data_quality_check
+        description: >-
+          Run quality profiling and validation on newly collected data,
+          flag issues for resolution
+        agents:
+          - AGENT-DATA-010
+          - AGENT-DATA-011
+          - AGENT-DATA-019
+        duration_days: 1
+
+# -----------------------------------------------------------------------------
+# Templates - Pre-built report and disclosure templates
+# -----------------------------------------------------------------------------
+templates:
+
+  - id: quarterly_report
+    display_name: "Quarterly CBAM Report"
+    description: >-
+      XML report per CBAM Implementing Regulation (EU) 2023/1773 for
+      quarterly submission to the CBAM registry. Includes all required
+      fields: importer ID, goods imported, CN codes, quantities, countries
+      of origin, installations, embedded emissions, and methodology used.
+    format: "xml"
+    template_file: "templates/quarterly_report.jinja2"
+    validation_schema: "templates/schemas/quarterly_report.xsd"
+
+  - id: annual_declaration
+    display_name: "Annual CBAM Declaration"
+    description: >-
+      Annual declaration for CBAM registry submission (definitive period).
+      Consolidates annual embedded emissions, certificate surrender
+      details, carbon price deductions, and methodology statements.
+    format: "xml"
+    template_file: "templates/annual_declaration.jinja2"
+    validation_schema: "templates/schemas/annual_declaration.xsd"
+
+  - id: certificate_dashboard
+    display_name: "Certificate Dashboard"
+    description: >-
+      Interactive dashboard showing certificate holdings, purchase history,
+      price trends, surrender obligations, and cost projections.
+    format: "html"
+    template_file: "templates/certificate_dashboard.jinja2"
+
+  - id: supplier_scorecard
+    display_name: "Supplier Scorecard"
+    description: >-
+      Supplier-level scorecard showing data quality score, emission
+      intensity, verification status, response timeliness, and
+      methodology compliance per installation.
+    format: "pdf"
+    template_file: "templates/supplier_scorecard.jinja2"
+
+  - id: compliance_status
+    display_name: "Compliance Status Report"
+    description: >-
+      Compliance overview showing status against all CBAM requirements:
+      reporting deadlines, certificate holdings, supplier data coverage,
+      verification status, and de minimis monitoring.
+    format: "pdf"
+    template_file: "templates/compliance_status.jinja2"
+
+  - id: cost_projection
+    display_name: "CBAM Cost Projection"
+    description: >-
+      Forward-looking cost projection based on import forecasts, emission
+      intensities, EU ETS price scenarios (low/mid/high), and free
+      allocation phase-out schedule. Helps budget for CBAM certificate
+      purchases.
+    format: "pdf"
+    template_file: "templates/cost_projection.jinja2"
+
+  - id: deminimis_report
+    display_name: "De Minimis Monitoring Report"
+    description: >-
+      Report showing cumulative import volumes against de minimis
+      thresholds by goods category, with trend lines and threshold
+      alerts.
+    format: "pdf"
+    template_file: "templates/deminimis_report.jinja2"
+
+  - id: verification_report
+    display_name: "Verification Report"
+    description: >-
+      Report packaging all verification evidence, verifier opinions,
+      corrective actions, and compliance statements for audit trail.
+    format: "pdf"
+    template_file: "templates/verification_report.jinja2"
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles
+# -----------------------------------------------------------------------------
+presets:
+
+  # Commodity-based presets
+  commodity_presets:
+    - id: steel_importer
+      display_name: "Steel Importer"
+      description: >-
+        Optimized for importers of iron and steel products (CN 72xx, 73xx).
+        Enables BF-BOF and EAF calculation methods, high-volume processing,
+        actual emission data preferred, full indirect emissions tracking,
+        and complex precursor chain (pig iron to finished products).
+      config_file: "config/presets/steel_importer.yaml"
+      goods_categories: ["IRON_STEEL"]
+
+    - id: aluminum_importer
+      display_name: "Aluminium Importer"
+      description: >-
+        Optimized for aluminium importers (CN 76xx). Emphasis on electricity-
+        intensive production, PFC emissions from anode effects, smelter-level
+        granularity, and alumina refining precursor tracking.
+      config_file: "config/presets/aluminum_importer.yaml"
+      goods_categories: ["ALUMINIUM"]
+
+    - id: cement_importer
+      display_name: "Cement Importer"
+      description: >-
+        Optimized for cement and clinker importers (CN 2523). Focus on
+        clinker ratio, kiln fuel factors, process emissions from calcination,
+        and alternative fuel substitution rates.
+      config_file: "config/presets/cement_importer.yaml"
+      goods_categories: ["CEMENT"]
+
+    - id: fertilizer_importer
+      display_name: "Fertilizer Importer"
+      description: >-
+        Optimized for fertilizer importers (CN 28xx, 31xx). Covers ammonia,
+        urea, nitric acid, ammonium nitrate. Emphasis on N2O emissions,
+        process-specific factors, and precursor tracking.
+      config_file: "config/presets/fertilizer_importer.yaml"
+      goods_categories: ["FERTILIZERS"]
+
+    - id: multi_commodity
+      display_name: "Multi-Commodity Importer"
+      description: >-
+        Full deployment for importers of multiple CBAM goods categories.
+        All six categories enabled, complex multi-supplier supply chains,
+        full precursor tracking, comprehensive reporting.
+      config_file: "config/presets/multi_commodity.yaml"
+      goods_categories:
+        - "CEMENT"
+        - "IRON_STEEL"
+        - "ALUMINIUM"
+        - "FERTILIZERS"
+        - "ELECTRICITY"
+        - "HYDROGEN"
+
+    - id: small_importer
+      display_name: "Small Importer (De Minimis)"
+      description: >-
+        Simplified deployment for small importers potentially eligible
+        for de minimis treatment (<50 tonnes/year). Focus on threshold
+        monitoring, simplified reporting, and exemption documentation.
+      config_file: "config/presets/small_importer.yaml"
+      goods_categories: []  # Configured per instance
+
+  # Sector-based presets
+  sector_presets:
+    - id: heavy_industry
+      display_name: "Heavy Industry"
+      description: >-
+        Preset for heavy industry importers combining steel, cement, and
+        aluminium. Installation-level granularity, high-volume processing,
+        complex supply chains, and full verification requirements.
+      config_file: "config/sectors/heavy_industry.yaml"
+      nace_codes: ["C24", "C23", "C25"]
+
+    - id: chemicals
+      display_name: "Chemicals & Fertilizers"
+      description: >-
+        Preset for chemicals sector importers of fertilizers and hydrogen.
+        Process emissions focus, N2O and NH3 tracking, ammonia production
+        routes, and hydrogen production pathways.
+      config_file: "config/sectors/chemicals.yaml"
+      nace_codes: ["C20", "C21"]
+
+    - id: energy_trading
+      display_name: "Energy Trading"
+      description: >-
+        Preset for electricity importers and energy traders. Grid emission
+        factors, power purchase agreements (PPAs), cross-border flow
+        tracking, and interconnector-level data.
+      config_file: "config/sectors/energy_trading.yaml"
+      nace_codes: ["D35"]
+
+# -----------------------------------------------------------------------------
+# CBAM Goods Categories - Annex I of Regulation (EU) 2023/956
+# -----------------------------------------------------------------------------
+goods_categories:
+
+  cement:
+    display_name: "Cement"
+    annex_reference: "Annex I, Section 1"
+    cn_codes:
+      - code: "2523 10 00"
+        description: "Cement clinkers"
+      - code: "2523 21 00"
+        description: "White Portland cement"
+      - code: "2523 29 00"
+        description: "Other Portland cement"
+      - code: "2523 30 00"
+        description: "Aluminous cement"
+      - code: "2523 90 00"
+        description: "Other hydraulic cements"
+    precursors:
+      - "clinker"
+    key_emission_sources:
+      - "calcination_process"
+      - "kiln_fuel_combustion"
+      - "electricity_consumption"
+    typical_emission_intensity:
+      range_low_tco2e_per_tonne: 0.5
+      range_high_tco2e_per_tonne: 1.0
+      eu_average_tco2e_per_tonne: 0.68
+
+  iron_steel:
+    display_name: "Iron and Steel"
+    annex_reference: "Annex I, Section 2"
+    cn_codes:
+      # Iron products
+      - code: "7201"
+        description: "Pig iron and spiegeleisen"
+      - code: "7202"
+        description: "Ferro-alloys"
+      - code: "7203"
+        description: "Ferrous products from direct reduction of iron ore"
+      - code: "7204"
+        description: "Ferrous waste and scrap"
+      - code: "7205"
+        description: "Granules and powders of pig iron"
+      - code: "7206"
+        description: "Iron and non-alloy steel ingots"
+      - code: "7207"
+        description: "Semi-finished products of iron or non-alloy steel"
+      - code: "7208"
+        description: "Flat-rolled products of iron/non-alloy steel, hot-rolled, >=600mm wide"
+      - code: "7209"
+        description: "Flat-rolled products of iron/non-alloy steel, cold-rolled, >=600mm wide"
+      - code: "7210"
+        description: "Flat-rolled products of iron/non-alloy steel, clad, plated, coated, >=600mm"
+      - code: "7211"
+        description: "Flat-rolled products of iron/non-alloy steel, <600mm wide"
+      - code: "7212"
+        description: "Flat-rolled products of iron/non-alloy steel, clad/plated/coated, <600mm"
+      - code: "7213"
+        description: "Bars and rods, hot-rolled, of iron or non-alloy steel"
+      - code: "7214"
+        description: "Bars and rods of iron/non-alloy steel, forged, cold-formed, cold-finished"
+      - code: "7215"
+        description: "Other bars and rods of iron or non-alloy steel"
+      - code: "7216"
+        description: "Angles, shapes and sections of iron or non-alloy steel"
+      - code: "7217"
+        description: "Wire of iron or non-alloy steel"
+      # Stainless and alloy steel
+      - code: "7218"
+        description: "Stainless steel ingots and semi-finished products"
+      - code: "7219"
+        description: "Flat-rolled products of stainless steel, >=600mm wide"
+      - code: "7220"
+        description: "Flat-rolled products of stainless steel, <600mm wide"
+      - code: "7221"
+        description: "Bars and rods of stainless steel, hot-rolled"
+      - code: "7222"
+        description: "Bars and rods of stainless steel, cold-formed"
+      - code: "7223"
+        description: "Wire of stainless steel"
+      - code: "7224"
+        description: "Other alloy steel ingots and semi-finished products"
+      - code: "7225"
+        description: "Flat-rolled products of other alloy steel, >=600mm wide"
+      - code: "7226"
+        description: "Flat-rolled products of other alloy steel, <600mm wide"
+      - code: "7227"
+        description: "Bars and rods of other alloy steel, hot-rolled"
+      - code: "7228"
+        description: "Bars and rods of other alloy steel, forged, cold-formed"
+      - code: "7229"
+        description: "Wire of other alloy steel"
+      # Articles of iron or steel
+      - code: "7301"
+        description: "Sheet piling of iron or steel"
+      - code: "7302"
+        description: "Railway or tramway track construction material"
+      - code: "7303"
+        description: "Tubes, pipes and hollow profiles of cast iron"
+      - code: "7304"
+        description: "Tubes, pipes and hollow profiles, seamless, of iron or steel"
+      - code: "7305"
+        description: "Tubes and pipes, welded, circular cross-section, >406.4mm external diameter"
+      - code: "7306"
+        description: "Tubes, pipes and hollow profiles, welded, of iron or steel"
+      - code: "7307"
+        description: "Tube or pipe fittings of iron or steel"
+      - code: "7308"
+        description: "Structures and parts of structures of iron or steel"
+      - code: "7309"
+        description: "Reservoirs, tanks, vats of iron or steel, >300 litres"
+      - code: "7310"
+        description: "Tanks, casks, drums, cans, boxes of iron or steel, <=300 litres"
+      - code: "7311"
+        description: "Containers for compressed or liquefied gas of iron or steel"
+      - code: "7312"
+        description: "Stranded wire, ropes, cables of iron or steel"
+      - code: "7313"
+        description: "Barbed wire of iron or steel"
+      - code: "7318"
+        description: "Screws, bolts, nuts, coach screws, hooks, rivets of iron or steel"
+      - code: "7326"
+        description: "Other articles of iron or steel"
+    precursors:
+      - "pig_iron"
+      - "direct_reduced_iron"
+      - "crude_steel"
+      - "ferro_alloys"
+    production_routes:
+      - "bf_bof"            # Blast Furnace - Basic Oxygen Furnace
+      - "eaf"               # Electric Arc Furnace
+      - "dri_eaf"           # Direct Reduced Iron - EAF
+      - "smelting_reduction" # COREX, FINEX, HISarna
+    key_emission_sources:
+      - "coke_oven_gas"
+      - "blast_furnace_gas"
+      - "bof_gas"
+      - "eaf_electricity"
+      - "lime_calcination"
+      - "carbon_electrode_consumption"
+    typical_emission_intensity:
+      bf_bof_tco2e_per_tonne: 1.85
+      eaf_tco2e_per_tonne: 0.45
+      dri_eaf_tco2e_per_tonne: 1.10
+      eu_average_tco2e_per_tonne: 1.52
+
+  aluminium:
+    display_name: "Aluminium"
+    annex_reference: "Annex I, Section 3"
+    cn_codes:
+      - code: "7601"
+        description: "Unwrought aluminium"
+      - code: "7602"
+        description: "Aluminium waste and scrap"
+      - code: "7603"
+        description: "Aluminium powders and flakes"
+      - code: "7604"
+        description: "Aluminium bars, rods and profiles"
+      - code: "7605"
+        description: "Aluminium wire"
+      - code: "7606"
+        description: "Aluminium plates, sheets and strip, >0.2mm thick"
+      - code: "7607"
+        description: "Aluminium foil, <=0.2mm thick"
+      - code: "7608"
+        description: "Aluminium tubes and pipes"
+      - code: "7609"
+        description: "Aluminium tube or pipe fittings"
+      - code: "7610"
+        description: "Aluminium structures and parts of structures"
+      - code: "7611"
+        description: "Aluminium reservoirs, tanks, vats, >300 litres"
+      - code: "7612"
+        description: "Aluminium casks, drums, cans, boxes, <=300 litres"
+      - code: "7613"
+        description: "Aluminium containers for compressed or liquefied gas"
+      - code: "7614"
+        description: "Stranded wire, cables, plaited bands of aluminium"
+      - code: "7616"
+        description: "Other articles of aluminium"
+    precursors:
+      - "alumina"
+      - "unwrought_aluminium"
+    production_routes:
+      - "primary_smelting"    # Hall-Heroult electrolysis
+      - "secondary_recycled"  # Scrap remelting
+    key_emission_sources:
+      - "electrolysis_electricity"
+      - "anode_consumption"
+      - "pfc_emissions"
+      - "alumina_refining"
+      - "casting_energy"
+    typical_emission_intensity:
+      primary_tco2e_per_tonne: 8.0
+      secondary_tco2e_per_tonne: 0.5
+      eu_average_tco2e_per_tonne: 6.8
+
+  fertilizers:
+    display_name: "Fertilizers"
+    annex_reference: "Annex I, Section 4"
+    cn_codes:
+      - code: "2808 00 00"
+        description: "Nitric acid; sulphonitric acids"
+      - code: "2814 10 00"
+        description: "Anhydrous ammonia"
+      - code: "2814 20 00"
+        description: "Ammonia in aqueous solution"
+      - code: "2834 10 00"
+        description: "Nitrites"
+      - code: "3102 10"
+        description: "Urea"
+      - code: "3102 21 00"
+        description: "Ammonium sulphate"
+      - code: "3102 29 00"
+        description: "Double salts of ammonium sulphate and ammonium nitrate"
+      - code: "3102 30"
+        description: "Ammonium nitrate"
+      - code: "3102 40"
+        description: "Mixtures of ammonium nitrate with calcium carbonate"
+      - code: "3102 50 00"
+        description: "Sodium nitrate"
+      - code: "3102 60 00"
+        description: "Double salts of calcium nitrate and ammonium nitrate"
+      - code: "3102 80 00"
+        description: "Mixtures of urea and ammonium nitrate (UAN)"
+      - code: "3102 90"
+        description: "Other mineral or chemical fertilizers, nitrogenous"
+      - code: "3103"
+        description: "Mineral or chemical fertilizers, phosphatic"
+      - code: "3104"
+        description: "Mineral or chemical fertilizers, potassic"
+      - code: "3105 10 00"
+        description: "Fertilizer products in tablets or packages, <=10 kg"
+      - code: "3105 20"
+        description: "NPK fertilizers"
+      - code: "3105 30 00"
+        description: "Diammonium hydrogenorthophosphate (DAP)"
+      - code: "3105 40 00"
+        description: "Ammonium dihydrogenorthophosphate (MAP)"
+      - code: "3105 51 00"
+        description: "NP fertilizers containing nitrates and phosphates"
+      - code: "3105 59 00"
+        description: "Other NP fertilizers"
+      - code: "3105 60 00"
+        description: "PK fertilizers"
+      - code: "3105 90"
+        description: "Other compound fertilizers"
+    precursors:
+      - "ammonia"
+      - "nitric_acid"
+      - "urea"
+    production_routes:
+      - "haber_bosch"          # Ammonia synthesis
+      - "steam_methane_reforming"
+      - "ostwald_process"      # Nitric acid
+      - "prilling_granulation" # Urea/AN
+    key_emission_sources:
+      - "natural_gas_feedstock"
+      - "process_co2"
+      - "n2o_from_nitric_acid"
+      - "steam_generation"
+    typical_emission_intensity:
+      ammonia_tco2e_per_tonne: 2.1
+      urea_tco2e_per_tonne: 1.6
+      ammonium_nitrate_tco2e_per_tonne: 3.1
+      eu_average_nitrogen_fertilizer: 2.5
+
+  electricity:
+    display_name: "Electricity"
+    annex_reference: "Annex I, Section 5"
+    cn_codes:
+      - code: "2716 00 00"
+        description: "Electrical energy"
+    precursors: []
+    key_emission_sources:
+      - "grid_generation_mix"
+      - "interconnector_flows"
+      - "ppa_specific_sources"
+    typical_emission_intensity:
+      range_low_tco2e_per_mwh: 0.05
+      range_high_tco2e_per_mwh: 1.2
+      eu_average_tco2e_per_mwh: 0.23
+
+  hydrogen:
+    display_name: "Hydrogen"
+    annex_reference: "Annex I, Section 6"
+    cn_codes:
+      - code: "2804 10 00"
+        description: "Hydrogen"
+    precursors: []
+    production_routes:
+      - "grey"              # SMR without CCS
+      - "blue"              # SMR with CCS
+      - "green"             # Electrolysis with renewable electricity
+      - "turquoise"         # Methane pyrolysis
+      - "pink"              # Nuclear-powered electrolysis
+    key_emission_sources:
+      - "natural_gas_feedstock"
+      - "process_co2"
+      - "electricity_for_electrolysis"
+    typical_emission_intensity:
+      grey_tco2e_per_tonne: 10.0
+      blue_tco2e_per_tonne: 3.0
+      green_tco2e_per_tonne: 0.5
+      eu_average_tco2e_per_tonne: 9.0
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 10
+    recommended_connections: 30
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  data_ingestion:
+    throughput_records_per_second: 3000
+    max_latency_ms: 250
+    description: "Import data ingestion throughput"
+
+  emission_calculation:
+    single_product_max_seconds: 5
+    full_quarterly_report_max_seconds: 120
+    batch_1000_imports_max_seconds: 60
+    description: "Embedded emission calculation time targets"
+
+  report_generation:
+    quarterly_report_max_seconds: 60
+    annual_declaration_max_seconds: 120
+    certificate_dashboard_max_seconds: 30
+    description: "Report generation time targets"
+
+  api_response:
+    p50_ms: 100
+    p95_ms: 500
+    p99_ms: 2000
+    description: "API response time percentile targets"
+
+  data_quality:
+    profiling_max_seconds: 30
+    validation_max_seconds: 15
+    description: "Data quality check execution time targets"
+
+  availability:
+    target_uptime_percent: 99.9
+    max_planned_downtime_minutes_per_month: 30
+    description: "System availability targets"
+
+# -----------------------------------------------------------------------------
+# CBAM Timeline - Key regulatory milestones
+# -----------------------------------------------------------------------------
+cbam_timeline:
+  transitional_period:
+    start: "2023-10-01"
+    end: "2025-12-31"
+    obligations:
+      - "Quarterly CBAM reports (no financial obligation)"
+      - "Report embedded emissions using actual, country default, or EU default values"
+      - "Report direct and indirect emissions"
+      - "Report carbon price paid in country of origin"
+
+  definitive_period:
+    start: "2026-01-01"
+    obligations:
+      - "Annual CBAM declaration by May 31"
+      - "Purchase and surrender CBAM certificates"
+      - "Verified embedded emissions (accredited verifier)"
+      - "Only actual emissions or country defaults (EU defaults phased out)"
+
+  free_allocation_phaseout:
+    schedule:
+      2026: 97.5   # 2.5% reduction
+      2027: 95.0
+      2028: 90.0
+      2029: 82.5
+      2030: 75.0
+      2031: 60.0
+      2032: 45.0
+      2033: 30.0
+      2034: 0.0     # Full CBAM coverage
+    description: >-
+      EU ETS free allocations for CBAM sectors are gradually phased out
+      from 2026 to 2034. CBAM certificate obligations increase inversely.
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+
+  database_migrations:
+    - "V001-V006"    # Core schema
+    - "V007-V008"    # Feature flags and agent factory
+    - "V009-V010"    # Auth and RBAC
+    - "V019-V020"    # Observability
+    - "V021-V030"    # Foundation agents (selected subset)
+    - "V031-V050"    # Data agents (selected subset)
+    - "V083"         # CBAM application schema
+
+  post_install:
+    - seed_cbam_cn_codes
+    - seed_eu_ets_emission_factors
+    - seed_country_default_values
+    - seed_default_presets
+    - configure_quarterly_schedule
+    - run_health_checks

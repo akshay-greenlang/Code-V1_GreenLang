@@ -1,0 +1,1120 @@
+# =============================================================================
+# PACK-007: EUDR Professional Pack
+# GreenLang EU Compliance Pack for EU Deforestation Regulation (Professional)
+# =============================================================================
+# This pack provides an enterprise-grade, pre-configured deployment of GreenLang
+# agents and workflows for EU Deforestation Regulation (EUDR) compliance at the
+# Professional tier. It bundles all 40 EUDR agents, advanced data connectors,
+# sophisticated workflows, and professional-grade features for mid-to-large
+# enterprises managing complex, multi-commodity, multi-geography supply chains.
+#
+# Professional Tier Features (extends PACK-006 Starter):
+#   - All 40 EUDR agents (vs 18 in Starter)
+#   - Advanced geolocation with Sentinel/MODIS integration
+#   - Scenario-based risk modeling (Monte Carlo, confidence intervals)
+#   - Real-time satellite monitoring (6-hour intervals)
+#   - Multi-operator portfolio management (up to 100 operators)
+#   - Advanced audit trail with SHA-256 provenance
+#   - Protected area & indigenous land checks (WDPA, KBA)
+#   - Supplier benchmarking & degradation scoring
+#   - Regulatory change tracking (EUR-Lex monitoring)
+#   - Grievance mechanism with whistleblower protection
+#   - Cross-regulation linkage (CSRD E4, CSDDD)
+#
+# Regulatory References:
+#   - EUDR: Regulation (EU) 2023/1115
+#   - Articles: 3, 4, 8, 9, 10, 11, 12, 13, 29, 33
+#   - Cutoff Date: 31 December 2020
+#   - Commodities: 7 (cattle, cocoa, coffee, oil palm, rubber, soya, wood)
+#   - Annex I CN Codes: 400+ product classifications
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-15)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-007-eudr-professional
+  version: "1.0.0"
+  display_name: "EUDR Professional Pack"
+  description: >-
+    Enterprise-grade GreenLang deployment pack for EU Deforestation Regulation
+    (EUDR) compliance. Includes all 40 EUDR agents, advanced geolocation with
+    Sentinel/MODIS integration, scenario-based risk modeling, real-time satellite
+    monitoring, multi-operator portfolio management, protected area checks,
+    supplier benchmarking, regulatory change tracking, and grievance mechanisms.
+    Designed for mid-to-large enterprises managing complex multi-commodity
+    supply chains across multiple geographies with 500+ suppliers.
+  category: eu-compliance
+  tier: professional
+  extends: PACK-006-eudr-starter
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-15"
+  support_tier: enterprise-plus
+  documentation_url: "https://docs.greenlang.io/packs/eudr-professional"
+  changelog_url: "https://docs.greenlang.io/packs/eudr-professional/changelog"
+
+  tags:
+    - eudr
+    - eu-deforestation
+    - eu-compliance
+    - professional
+    - supply-chain
+    - traceability
+    - geolocation
+    - due-diligence
+    - deforestation-free
+    - risk-assessment
+    - commodity-compliance
+    - satellite-monitoring
+    - portfolio-management
+    - multi-operator
+    - advanced-analytics
+
+  regulation:
+    name: "EU Deforestation Regulation"
+    reference: "(EU) 2023/1115"
+    effective_date: "2024-12-30"
+    sme_effective_date: "2025-06-30"
+    articles: [3, 4, 8, 9, 10, 11, 12, 13, 29, 33]
+    cutoff_date: "2020-12-31"
+    commodities: 7
+    annex_i_cn_codes: 400+
+    description: >-
+      The EU Deforestation Regulation prohibits the placing on the EU market,
+      making available on the EU market, or exporting from the EU, of relevant
+      commodities and products unless they are deforestation-free, produced in
+      accordance with the relevant legislation of the country of production,
+      and covered by a due diligence statement.
+
+  compliance_references:
+    - id: "EUDR"
+      name: "EU Deforestation Regulation"
+      regulation: "Regulation (EU) 2023/1115"
+      effective_date: "2024-12-30"
+      description: >-
+        Regulation on deforestation-free products. Establishes mandatory due
+        diligence requirements for operators and traders placing specified
+        commodities and derived products on the EU market.
+    - id: "EUDR-DDS"
+      name: "Due Diligence Statement Requirements"
+      regulation: "Regulation (EU) 2023/1115, Article 4(2)"
+      effective_date: "2024-12-30"
+      description: >-
+        Operators must submit a Due Diligence Statement (DDS) to the EU
+        Information System prior to placing products on the market. The DDS
+        must contain information per Article 4(2) and Annex II.
+    - id: "EUDR-GEO"
+      name: "Geolocation Requirements"
+      regulation: "Regulation (EU) 2023/1115, Article 9(1)(d)"
+      effective_date: "2024-12-30"
+      description: >-
+        Geolocation coordinates of all plots of land where commodities were
+        produced. For plots above 4 hectares, polygon coordinates are required.
+        For plots at or below 4 hectares, a single GPS point is sufficient.
+    - id: "EUDR-BENCH"
+      name: "Country Benchmarking System"
+      regulation: "Regulation (EU) 2023/1115, Article 29"
+      effective_date: "2024-12-30"
+      description: >-
+        The Commission classifies countries or parts thereof as low, standard,
+        or high risk based on deforestation rates, forest cover, agricultural
+        expansion, and governance indicators.
+    - id: "EUDR-EUIS"
+      name: "EU Information System"
+      regulation: "Regulation (EU) 2023/1115, Article 33"
+      effective_date: "2024-12-30"
+      description: >-
+        Electronic interface for submission and verification of due diligence
+        statements, reference number generation, and competent authority access.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 Professional engines)
+  # ===========================================================================
+  engines:
+    - id: advanced_geolocation_engine
+      name: "Advanced Geolocation Engine"
+      description: >-
+        Advanced geolocation verification with Sentinel-1/2, MODIS fire detection,
+        protected area overlays (WDPA, KBA), indigenous land checks, Hansen forest
+        change analysis, and multi-temporal analysis across 5 time periods at 10m
+        resolution.
+      required: true
+      professional_feature: true
+
+    - id: scenario_risk_engine
+      name: "Scenario Risk Engine"
+      description: >-
+        Monte Carlo simulation engine with 10,000+ scenarios, confidence intervals
+        (90%, 95%, 99%), parallel workers, and probabilistic risk distributions
+        for country, supplier, and commodity factors.
+      required: true
+      professional_feature: true
+
+    - id: supplier_benchmarking_engine
+      name: "Supplier Benchmarking Engine"
+      description: >-
+        Peer group benchmarking with 6 scoring dimensions (compliance, quality,
+        risk, certification, responsiveness, sustainability), quarterly frequency,
+        and degradation alert thresholds.
+      required: true
+      professional_feature: true
+
+    - id: continuous_monitoring_engine
+      name: "Continuous Monitoring Engine"
+      description: >-
+        Real-time monitoring across all risk dimensions with configurable intervals
+        (hourly, daily, weekly), multi-channel notifications (email, webhook, SMS),
+        and auto-escalation workflows for critical events.
+      required: true
+      professional_feature: true
+
+    - id: multi_operator_portfolio_engine
+      name: "Multi-Operator Portfolio Engine"
+      description: >-
+        Portfolio management for up to 100 operators with shared supplier pools,
+        cross-operator reporting, cost allocation, and 3-level organizational
+        hierarchy support.
+      required: true
+      professional_feature: true
+
+    - id: advanced_audit_trail_engine
+      name: "Advanced Audit Trail Engine"
+      description: >-
+        SHA-256 provenance hashing, 5-year retention, immutable audit logs,
+        export in JSON/XML/PDF formats, and mock audit simulation mode for
+        compliance testing.
+      required: true
+      professional_feature: true
+
+    - id: protected_area_engine
+      name: "Protected Area Engine"
+      description: >-
+        Comprehensive protected area checking against WDPA (World Database on
+        Protected Areas), KBA (Key Biodiversity Areas), indigenous lands, 5km
+        buffer zones, Ramsar wetlands, and UNESCO heritage sites.
+      required: true
+      professional_feature: true
+
+    - id: supply_chain_analytics_engine
+      name: "Supply Chain Analytics Engine"
+      description: >-
+        Advanced supply chain network analysis with 5-tier depth, all chain of
+        custody models (identity preserved, segregated, mass balance, controlled),
+        network topology analysis, and diversification scoring.
+      required: true
+      professional_feature: true
+
+    - id: regulatory_change_engine
+      name: "Regulatory Change Engine"
+      description: >-
+        EUR-Lex monitoring (24-hour check intervals), cross-regulation tracking
+        (CSRD E4, CSDDD, Nature Restoration), auto gap analysis, and impact
+        assessment workflows.
+      required: true
+      professional_feature: true
+
+    - id: grievance_mechanism_engine
+      name: "Grievance Mechanism Engine"
+      description: >-
+        Anonymous grievance submissions, 5-day response SLA, 30-day resolution
+        SLA, whistleblower protection protocols, case management workflows, and
+        stakeholder notification system.
+      required: true
+      professional_feature: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (10 Professional workflows)
+  # ===========================================================================
+  workflows:
+    - id: dds_generation_pro
+      name: "DDS Generation Workflow (Professional)"
+      description: >-
+        End-to-end workflow for generating a complete Due Diligence Statement
+        with professional-grade features: advanced geolocation, scenario risk
+        analysis, satellite monitoring, protected area checks, and comprehensive
+        audit trail.
+      schedule: "on_demand"
+      estimated_duration_days: 10
+      extends: "dds_generation"
+      professional_features:
+        - Advanced geolocation with Sentinel/MODIS
+        - Scenario-based risk modeling
+        - Protected area overlay
+        - Real-time satellite alerts
+
+    - id: supplier_onboarding_pro
+      name: "Supplier Onboarding Workflow (Professional)"
+      description: >-
+        Enhanced supplier onboarding with benchmarking analysis, degradation
+        scoring, multi-tier mapping (up to 5 tiers), certification verification,
+        and baseline risk assessment across all dimensions.
+      schedule: "on_demand"
+      estimated_duration_days: 7
+      extends: "supplier_onboarding"
+      professional_features:
+        - Peer group benchmarking
+        - 5-tier supply chain mapping
+        - Certification registry verification
+        - Baseline degradation scoring
+
+    - id: quarterly_compliance_review_pro
+      name: "Quarterly Compliance Review (Professional)"
+      description: >-
+        Comprehensive quarterly review with scenario risk reassessment, supplier
+        benchmarking updates, satellite imagery refresh, protected area re-checks,
+        and executive dashboard generation.
+      schedule: "quarterly"
+      estimated_duration_days: 5
+      extends: "quarterly_compliance_review"
+      professional_features:
+        - Scenario risk updates
+        - Benchmarking refresh
+        - Satellite imagery delta analysis
+        - Executive reporting
+
+    - id: continuous_monitoring_workflow
+      name: "Continuous Monitoring Workflow"
+      description: >-
+        Real-time monitoring workflow with 6-hour satellite check intervals,
+        hourly alert processing, multi-channel notifications, and auto-escalation
+        for critical events (deforestation alerts, regulatory changes).
+      schedule: "continuous"
+      estimated_duration_days: 0
+      professional_feature: true
+
+    - id: portfolio_consolidation
+      name: "Multi-Operator Portfolio Consolidation"
+      description: >-
+        Consolidates compliance data across multiple operators (subsidiaries,
+        divisions, legal entities) with shared supplier pools, cross-operator
+        risk aggregation, and group-level reporting.
+      schedule: "monthly"
+      estimated_duration_days: 3
+      professional_feature: true
+
+    - id: advanced_risk_scenario_analysis
+      name: "Advanced Risk Scenario Analysis"
+      description: >-
+        Monte Carlo simulation workflow with 10,000 scenarios, confidence
+        interval calculation, sensitivity analysis, and stress testing for
+        country benchmark changes, supplier failures, and commodity volatility.
+      schedule: "on_demand"
+      estimated_duration_days: 2
+      professional_feature: true
+
+    - id: protected_area_screening
+      name: "Protected Area Screening Workflow"
+      description: >-
+        Comprehensive screening of all production plots against WDPA, KBA,
+        indigenous lands, Ramsar sites, UNESCO heritage sites, with 5km buffer
+        zone analysis and conflict resolution workflows.
+      schedule: "on_demand"
+      estimated_duration_days: 2
+      professional_feature: true
+
+    - id: regulatory_change_impact
+      name: "Regulatory Change Impact Assessment"
+      description: >-
+        Automated monitoring of EUR-Lex for EUDR amendments, cross-regulation
+        updates (CSRD E4, CSDDD), gap analysis against new requirements, and
+        remediation action planning.
+      schedule: "daily"
+      estimated_duration_days: 1
+      professional_feature: true
+
+    - id: grievance_case_management
+      name: "Grievance Case Management Workflow"
+      description: >-
+        End-to-end grievance handling from anonymous submission through
+        investigation, response (5-day SLA), resolution (30-day SLA), and
+        closeout with full whistleblower protection protocols.
+      schedule: "on_demand"
+      estimated_duration_days: 30
+      professional_feature: true
+
+    - id: supplier_degradation_alert
+      name: "Supplier Degradation Alert Workflow"
+      description: >-
+        Quarterly benchmarking with degradation detection (quality decline,
+        risk increase, certification lapse), alert triggers, supplier
+        engagement workflows, and corrective action tracking.
+      schedule: "quarterly"
+      estimated_duration_days: 2
+      professional_feature: true
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 Professional templates)
+  # ===========================================================================
+  templates:
+    - id: dds_professional_report
+      display_name: "Due Diligence Statement (Professional)"
+      description: "Professional-grade DDS with scenario risk analysis, satellite evidence, and audit trail"
+      format: "pdf"
+      template_file: "templates/dds_professional_report.jinja2"
+      annex_version: "Annex II (Professional)"
+      enabled: true
+      professional_feature: true
+
+    - id: scenario_risk_report
+      display_name: "Scenario Risk Analysis Report"
+      description: "Monte Carlo simulation results with confidence intervals and sensitivity analysis"
+      format: "pdf"
+      template_file: "templates/scenario_risk_report.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: portfolio_dashboard
+      display_name: "Multi-Operator Portfolio Dashboard"
+      description: "Group-level dashboard aggregating compliance across all operators"
+      format: "html"
+      template_file: "templates/portfolio_dashboard.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: supplier_benchmarking_report
+      display_name: "Supplier Benchmarking Report"
+      description: "Peer group benchmarking with 6-dimension scoring and degradation trends"
+      format: "pdf"
+      template_file: "templates/supplier_benchmarking_report.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: protected_area_report
+      display_name: "Protected Area Screening Report"
+      description: "WDPA/KBA/indigenous land overlay results with conflict identification"
+      format: "pdf"
+      template_file: "templates/protected_area_report.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: satellite_monitoring_dashboard
+      display_name: "Satellite Monitoring Dashboard"
+      description: "Real-time satellite alerts from Sentinel-1/2, MODIS, GLAD, RADD systems"
+      format: "html"
+      template_file: "templates/satellite_monitoring_dashboard.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: regulatory_change_report
+      display_name: "Regulatory Change Impact Report"
+      description: "EUR-Lex monitoring results with gap analysis and remediation plan"
+      format: "pdf"
+      template_file: "templates/regulatory_change_report.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: grievance_case_report
+      display_name: "Grievance Case Report"
+      description: "Grievance case summary with investigation findings and resolution actions"
+      format: "pdf"
+      template_file: "templates/grievance_case_report.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: audit_trail_export
+      display_name: "Audit Trail Export"
+      description: "Complete audit trail with SHA-256 hashes in JSON/XML/PDF format"
+      format: "json"
+      template_file: "templates/audit_trail_export.jinja2"
+      enabled: true
+      professional_feature: true
+
+    - id: executive_summary_pro
+      display_name: "EUDR Executive Summary (Professional)"
+      description: "Board-level summary with scenario analysis, portfolio view, and strategic recommendations"
+      format: "pdf"
+      template_file: "templates/executive_summary_pro.jinja2"
+      enabled: true
+      professional_feature: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 Professional)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator_pro
+      name: "Pack Orchestrator (Professional)"
+      description: "Master orchestrator for all 40 EUDR agents with professional workflow support"
+      required: true
+      professional_feature: true
+
+    - id: eudr_app_bridge_pro
+      name: "EUDR Application Bridge (Professional)"
+      description: "Connects the EUDR Professional pack to GL-EUDR-APP v1.0 with all features enabled"
+      required: true
+      professional_feature: true
+
+    - id: sentinel_bridge
+      name: "Sentinel Satellite Bridge"
+      description: "Connects to Copernicus Sentinel-1/2 data hub for radar and optical imagery"
+      required: true
+      professional_feature: true
+
+    - id: modis_bridge
+      name: "MODIS Fire Bridge"
+      description: "Connects to NASA MODIS active fire detection system for real-time alerts"
+      required: true
+      professional_feature: true
+
+    - id: wdpa_bridge
+      name: "WDPA Protected Areas Bridge"
+      description: "Connects to World Database on Protected Areas for overlay analysis"
+      required: true
+      professional_feature: true
+
+    - id: kba_bridge
+      name: "KBA Biodiversity Bridge"
+      description: "Connects to Key Biodiversity Areas database for conservation area checks"
+      required: true
+      professional_feature: true
+
+    - id: eurlex_bridge
+      name: "EUR-Lex Regulatory Bridge"
+      description: "Monitors EUR-Lex for EUDR regulatory changes and amendments"
+      required: true
+      professional_feature: true
+
+    - id: certification_registry_bridge
+      name: "Certification Registry Bridge"
+      description: "Connects to FSC, PEFC, RSPO, ISCC, and other certification registries for verification"
+      required: true
+      professional_feature: true
+
+    - id: grievance_portal_bridge
+      name: "Grievance Portal Bridge"
+      description: "Anonymous grievance submission portal with case management integration"
+      required: false
+      professional_feature: true
+
+    - id: portfolio_aggregator
+      name: "Portfolio Aggregator"
+      description: "Aggregates compliance data across multiple operators for group reporting"
+      required: false
+      professional_feature: true
+
+    - id: advanced_analytics_bridge
+      name: "Advanced Analytics Bridge"
+      description: "Connects to business intelligence and analytics platforms for custom reporting"
+      required: false
+      professional_feature: true
+
+    - id: setup_wizard_pro
+      name: "Setup Wizard (Professional)"
+      description: "Guided setup wizard with professional configuration options and portfolio setup"
+      required: false
+      professional_feature: true
+
+  # ===========================================================================
+  # EUDR Agents - All 40 EUDR agents included in Professional Pack
+  # ===========================================================================
+  agents_eudr:
+
+    # -------------------------------------------------------------------------
+    # Supply Chain Traceability (15 agents - ALL included)
+    # -------------------------------------------------------------------------
+    supply_chain_traceability:
+      - id: AGENT-EUDR-001
+        name: "Supply Chain Mapper"
+        description: "Maps multi-tier supply chains for EUDR-regulated commodities"
+        path: "greenlang/agents/eudr/supply_chain_mapper/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-002
+        name: "Geolocation Verification"
+        description: "Verifies geolocation coordinates and polygons for production plots"
+        path: "greenlang/agents/eudr/geolocation_verification/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-003
+        name: "Commodity Classifier"
+        description: "Classifies products against Annex I CN codes"
+        path: "greenlang/agents/eudr/commodity_classifier/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-004
+        name: "Operator Registry"
+        description: "Manages operator and trader registry with EORI validation"
+        path: "greenlang/agents/eudr/operator_registry/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-005
+        name: "Product Mapping"
+        description: "Maps products to commodities and CN codes with multi-commodity support"
+        path: "greenlang/agents/eudr/product_mapping/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-006
+        name: "Plot Boundary Manager"
+        description: "Manages plot boundary polygons, area calculations, and overlap detection"
+        path: "greenlang/agents/eudr/plot_boundary/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-007
+        name: "GPS Coordinate Validator"
+        description: "Validates GPS coordinate formats, precision, and datum transformations"
+        path: "greenlang/agents/eudr/gps_coordinate_validator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-008
+        name: "Multi-Tier Supplier Tracker"
+        description: "Tracks suppliers across multiple tiers with traceability links"
+        path: "greenlang/agents/eudr/multi_tier_supplier/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-009
+        name: "Chain of Custody Agent"
+        description: "Manages chain of custody models (identity preserved, segregated, mass balance)"
+        path: "greenlang/agents/eudr/chain_of_custody/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-010
+        name: "Traceability Link Validator"
+        description: "Validates end-to-end traceability links from plot to product"
+        path: "greenlang/agents/eudr/traceability_link_validator/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-011
+        name: "Batch Tracking"
+        description: "Tracks commodity batches through processing and transformation stages"
+        path: "greenlang/agents/eudr/batch_tracking/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-012
+        name: "Document Authentication"
+        description: "Authenticates and validates supply chain documents, certificates, and permits"
+        path: "greenlang/agents/eudr/document_authentication/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-013
+        name: "Certification Verifier"
+        description: "Verifies voluntary certifications against registry databases (FSC, RSPO, etc.)"
+        path: "greenlang/agents/eudr/certification_verifier/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-014
+        name: "Blockchain Anchor"
+        description: "Anchors critical data to blockchain for immutable audit trail"
+        path: "greenlang/agents/eudr/blockchain_anchor/"
+        required: false
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-015
+        name: "Mobile Data Collector"
+        description: "Enables field-level data collection via mobile devices with GPS capture"
+        path: "greenlang/agents/eudr/mobile_data_collector/"
+        required: false
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Risk Assessment (5 agents - ALL included)
+    # -------------------------------------------------------------------------
+    risk_assessment:
+      - id: AGENT-EUDR-016
+        name: "Country Risk Evaluator"
+        description: "Evaluates country-level deforestation risk using Article 29 benchmarking"
+        path: "greenlang/agents/eudr/country_risk_evaluator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-017
+        name: "Supplier Risk Scorer"
+        description: "Calculates composite supplier risk scores with weighted factor analysis"
+        path: "greenlang/agents/eudr/supplier_risk_scorer/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-018
+        name: "Commodity Risk Analyzer"
+        description: "Analyzes commodity-specific risk factors including origin, certification, and volume"
+        path: "greenlang/agents/eudr/commodity_risk_analyzer/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-019
+        name: "Historical Risk Analyzer"
+        description: "Analyzes historical deforestation patterns using satellite time series"
+        path: "greenlang/agents/eudr/historical_risk_analyzer/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-020
+        name: "Predictive Risk Modeler"
+        description: "Predicts future deforestation risk using ML and scenario modeling"
+        path: "greenlang/agents/eudr/predictive_risk_modeler/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+    # -------------------------------------------------------------------------
+    # Due Diligence Core (6 agents - ALL included)
+    # -------------------------------------------------------------------------
+    due_diligence_core:
+      - id: AGENT-EUDR-021
+        name: "Cutoff Date Verifier"
+        description: "Verifies no deforestation after 31 December 2020 using satellite evidence"
+        path: "greenlang/agents/eudr/cutoff_date_verifier/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-022
+        name: "Forest Cover Analyzer"
+        description: "Analyzes forest cover changes using Hansen Global Forest Change data"
+        path: "greenlang/agents/eudr/forest_cover_analyzer/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-023
+        name: "Land Use Compliance"
+        description: "Verifies compliance with country-of-production land use laws"
+        path: "greenlang/agents/eudr/land_use_compliance/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-024
+        name: "Environmental Law Verifier"
+        description: "Verifies compliance with environmental protection laws"
+        path: "greenlang/agents/eudr/environmental_law_verifier/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-025
+        name: "Indigenous Rights Checker"
+        description: "Verifies respect for indigenous peoples' rights and FPIC protocols"
+        path: "greenlang/agents/eudr/indigenous_rights_checker/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-026
+        name: "Due Diligence Orchestrator"
+        description: "Orchestrates the full due diligence process per Articles 8-12"
+        path: "greenlang/agents/eudr/due_diligence_orchestrator/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Support Agents (3 agents - ALL included)
+    # -------------------------------------------------------------------------
+    support_agents:
+      - id: AGENT-EUDR-027
+        name: "Information Gathering"
+        description: "Gathers and organizes all required information per Article 9"
+        path: "greenlang/agents/eudr/information_gathering/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-028
+        name: "Risk Assessment Engine"
+        description: "Implements the risk assessment procedure per Article 10"
+        path: "greenlang/agents/eudr/risk_assessment_engine/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-029
+        name: "Mitigation Manager"
+        description: "Manages risk mitigation measures and effectiveness tracking"
+        path: "greenlang/agents/eudr/mitigation_manager/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+    # -------------------------------------------------------------------------
+    # Due Diligence Workflow (11 agents - ALL included)
+    # -------------------------------------------------------------------------
+    due_diligence_workflow:
+      - id: AGENT-EUDR-030
+        name: "Documentation Generator"
+        description: "Generates compliance documentation, reports, and evidence packages"
+        path: "greenlang/agents/eudr/documentation_generator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-031
+        name: "Evidence Collector"
+        description: "Collects and organizes all supporting evidence for due diligence"
+        path: "greenlang/agents/eudr/evidence_collector/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-032
+        name: "Validation Orchestrator"
+        description: "Orchestrates all validation checks across agents"
+        path: "greenlang/agents/eudr/validation_orchestrator/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-033
+        name: "Approval Workflow Manager"
+        description: "Manages multi-stage approval workflows with role-based routing"
+        path: "greenlang/agents/eudr/approval_workflow_manager/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-034
+        name: "Compliance Status Tracker"
+        description: "Tracks compliance status across all suppliers and commodities"
+        path: "greenlang/agents/eudr/compliance_status_tracker/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-035
+        name: "Notification Manager"
+        description: "Manages multi-channel notifications for stakeholders"
+        path: "greenlang/agents/eudr/notification_manager/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-036
+        name: "EU Information System Interface"
+        description: "Interfaces with the EUDR EU Information System for DDS submission"
+        path: "greenlang/agents/eudr/eu_information_system_interface/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-037
+        name: "DDS Statement Creator"
+        description: "Creates Due Diligence Statements conforming to Annex II format"
+        path: "greenlang/agents/eudr/due_diligence_statement_creator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-038
+        name: "Reference Number Generator"
+        description: "Generates and manages unique DDS reference numbers per Article 4(2)"
+        path: "greenlang/agents/eudr/reference_number_generator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-039
+        name: "Submission Validator"
+        description: "Validates DDS submissions against all EUDR requirements before submission"
+        path: "greenlang/agents/eudr/submission_validator/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+      - id: AGENT-EUDR-040
+        name: "Post-Submission Monitor"
+        description: "Monitors DDS status after submission and handles competent authority queries"
+        path: "greenlang/agents/eudr/post_submission_monitor/"
+        required: true
+        version: "1.0.0"
+        professional_feature: true
+
+  # ===========================================================================
+  # Data Agents - Supporting data intake and quality agents (10 agents)
+  # ===========================================================================
+  agents_data:
+    # Data Intake (7 agents)
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts supply chain data from PDF documents, invoices, and certificates"
+      required: true
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes tabular supplier and commodity data from Excel/CSV files"
+      required: true
+
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Connects to ERP and finance systems for transactional data"
+      required: true
+
+    - id: AGENT-DATA-005
+      name: "EUDR Traceability Connector"
+      description: "Dedicated connector for EUDR traceability data sources and APIs"
+      required: true
+
+    - id: AGENT-DATA-006
+      name: "GIS/Mapping Connector"
+      description: "Connects to GIS platforms for spatial analysis and mapping"
+      required: true
+
+    - id: AGENT-DATA-007
+      name: "Deforestation Satellite Connector"
+      description: "Connects to satellite imagery services (GFW, Copernicus, GLAD, RADD)"
+      required: true
+
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Processes supplier questionnaires and self-declarations"
+      required: true
+
+    # Data Quality (3 agents)
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all EUDR compliance data sources"
+      required: true
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects and resolves duplicate supplier, plot, and shipment records"
+      required: true
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces EUDR-specific validation rules on all compliance data"
+      required: true
+
+  # ===========================================================================
+  # Foundation Agents - Core platform agents (all 10)
+  # ===========================================================================
+  agents_foundation:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for EUDR compliance"
+      required: true
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (hectares, coordinates) and reference data"
+      required: true
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks all assumptions used in risk assessments and calculations"
+      required: true
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all data points to source evidence for audit trails"
+      required: true
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access and data policies"
+      required: true
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Maintains registry of available agents and their capabilities"
+      required: true
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all risk calculations are reproducible with provenance tracking"
+      required: true
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Runs quality assurance checks on all agent outputs"
+      required: true
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for all agents"
+      required: true
+
+# -----------------------------------------------------------------------------
+# Professional Pack Summary
+# -----------------------------------------------------------------------------
+pack_summary:
+  total_agents: 60
+  eudr_agents: 40
+  data_agents: 10
+  foundation_agents: 10
+  professional_engines: 10
+  professional_workflows: 10
+  professional_templates: 10
+  professional_integrations: 12
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles (Professional tier)
+# -----------------------------------------------------------------------------
+presets:
+  size_presets:
+    - id: multi_commodity
+      display_name: "Multi-Commodity Company"
+      description: >-
+        Professional deployment for companies managing 3+ EUDR commodities
+        with complex supply chains (1000+ suppliers). All professional features
+        enabled, portfolio management for up to 100 operators, advanced analytics.
+      config_file: "config/presets/multi_commodity.yaml"
+
+    - id: high_risk
+      display_name: "High-Risk Sourcing"
+      description: >-
+        Optimized for companies sourcing primarily from high-risk countries.
+        Enhanced satellite monitoring (6-hour intervals), scenario risk modeling,
+        protected area checks, and continuous monitoring enabled.
+      config_file: "config/presets/high_risk.yaml"
+
+    - id: trading_company
+      display_name: "Trading Company"
+      description: >-
+        Professional setup for trading companies managing large volumes across
+        multiple suppliers and customers. Batch tracking, chain of custody
+        verification, and multi-tier traceability enabled.
+      config_file: "config/presets/trading_company.yaml"
+
+    - id: multi_subsidiary
+      display_name: "Multi-Subsidiary Group"
+      description: >-
+        Group-level deployment for companies with multiple subsidiaries or
+        divisions. Portfolio management, shared supplier pools, cross-operator
+        reporting, and cost allocation enabled.
+      config_file: "config/presets/multi_subsidiary.yaml"
+
+    - id: industry_association
+      display_name: "Industry Association"
+      description: >-
+        Deployment for industry associations managing compliance for multiple
+        member companies. Portfolio aggregation, benchmarking, best practice
+        sharing, and association-level reporting.
+      config_file: "config/presets/industry_association.yaml"
+
+  sector_presets:
+    - id: palm_oil_professional
+      display_name: "Palm Oil (Professional)"
+      description: "Professional palm oil supply chain with RSPO/ISCC verification, peatland checks, mill traceability"
+      config_file: "config/sectors/palm_oil_professional.yaml"
+      primary_commodities: ["oil_palm"]
+
+    - id: timber_professional
+      display_name: "Timber & Wood Products (Professional)"
+      description: "Professional timber supply chain with FSC/PEFC verification, concession mapping, sawmill tracking"
+      config_file: "config/sectors/timber_professional.yaml"
+      primary_commodities: ["wood"]
+
+    - id: cocoa_coffee_professional
+      display_name: "Cocoa & Coffee (Professional)"
+      description: "Professional cocoa/coffee with Rainforest Alliance/4C verification, cooperative mapping"
+      config_file: "config/sectors/cocoa_coffee_professional.yaml"
+      primary_commodities: ["cocoa", "coffee"]
+
+    - id: soy_cattle_professional
+      display_name: "Soy & Cattle (Professional)"
+      description: "Professional soy/cattle with Cerrado focus, RTRS/ProTerra verification, ranch mapping"
+      config_file: "config/sectors/soy_cattle_professional.yaml"
+      primary_commodities: ["soya", "cattle"]
+
+    - id: rubber_professional
+      display_name: "Rubber (Professional)"
+      description: "Professional rubber with Southeast Asia focus, plantation mapping, processor tracking"
+      config_file: "config/sectors/rubber_professional.yaml"
+      primary_commodities: ["rubber"]
+
+    - id: multi_commodity_sector
+      display_name: "Multi-Commodity (Professional)"
+      description: "Professional multi-commodity setup with all 7 commodities, cross-commodity analytics"
+      config_file: "config/sectors/multi_commodity.yaml"
+      primary_commodities: ["cattle", "cocoa", "coffee", "oil_palm", "rubber", "soya", "wood"]
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements (Professional tier)
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+    elasticsearch: ">=8"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "shapely>=2.0"
+    - "pyproj>=3.6"
+    - "geojson>=3.0"
+    - "rasterio>=1.3"
+    - "scipy>=1.11"
+    - "scikit-learn>=1.3"
+
+  infrastructure:
+    min_cpu_cores: 16
+    min_memory_gb: 64
+    min_storage_gb: 500
+    recommended_cpu_cores: 32
+    recommended_memory_gb: 128
+    recommended_storage_gb: 2000
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+      - "postgis"
+    min_connections: 100
+    recommended_connections: 200
+
+# -----------------------------------------------------------------------------
+# Performance Targets (Professional tier)
+# -----------------------------------------------------------------------------
+performance:
+  data_ingestion:
+    throughput_records_per_second: 10000
+    max_latency_ms: 100
+    description: "High-performance data ingestion for large-scale deployments"
+
+  geolocation_verification:
+    single_coordinate_max_ms: 30
+    polygon_verification_max_ms: 300
+    batch_10000_max_seconds: 60
+    description: "Advanced geolocation with Sentinel/MODIS integration"
+
+  risk_assessment:
+    single_supplier_max_seconds: 3
+    batch_1000_max_seconds: 120
+    scenario_simulation_10k_max_minutes: 5
+    description: "Scenario-based risk modeling with Monte Carlo simulation"
+
+  dds_generation:
+    single_dds_max_seconds: 15
+    batch_100_max_seconds: 180
+    description: "Optimized DDS generation with professional features"
+
+  satellite_monitoring:
+    check_interval_hours: 6
+    alert_processing_max_seconds: 60
+    description: "Real-time satellite monitoring with 6-hour check intervals"
+
+  api_latency:
+    p50_ms: 50
+    p95_ms: 200
+    p99_ms: 1000
+
+  availability:
+    target_percent: 99.95
+    description: "Enterprise-grade availability with professional SLA"

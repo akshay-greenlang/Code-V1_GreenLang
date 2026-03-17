@@ -1,0 +1,1185 @@
+# =============================================================================
+# PACK-011: SFDR Article 9 Pack
+# GreenLang EU Compliance Pack for SFDR (EU) 2019/2088 Article 9 Products
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for SFDR Article 9 "dark green" financial product
+# compliance. Article 9 products have sustainable investment as their objective,
+# requiring significantly higher thresholds and more rigorous disclosure
+# compared to Article 8 products. This pack bundles sustainable objective
+# verification, enhanced DNSH assessment, full taxonomy alignment computation,
+# impact measurement and reporting, benchmark alignment monitoring, mandatory
+# PAI indicator calculation, carbon trajectory tracking, and investment universe
+# management.
+#
+# Key Capabilities:
+#   - Sustainable investment objective verification per Article 9(1)/(2)/(3)
+#   - Enhanced DNSH assessment with stricter thresholds for all holdings
+#   - Full EU Taxonomy alignment computation for sustainable investments
+#   - Impact measurement framework with KPI tracking and SDG mapping
+#   - EU Climate Benchmark alignment (CTB/PAB) per Article 9(3)
+#   - All 18 mandatory PAI indicators with mandatory consideration
+#   - Carbon trajectory tracking with decarbonization pathway monitoring
+#   - Investment universe screening and eligibility management
+#   - Pre-contractual disclosure (Annex III) generation
+#   - Periodic reporting (Annex V) generation
+#   - Website disclosure generation
+#   - Article 5 information integration for sustainable products
+#   - Downgrade risk monitoring (Article 9 to Article 8 reclassification)
+#   - Regulatory change tracking (SFDR Level 1, RTS, ESMA Q&A updates)
+#
+# Regulatory References:
+#   - SFDR Level 1: Regulation (EU) 2019/2088
+#   - SFDR RTS: Delegated Regulation (EU) 2022/1288
+#   - Taxonomy Disclosures DA: Delegated Regulation (EU) 2021/2178
+#   - Benchmarks Regulation: Regulation (EU) 2016/1011 (as amended)
+#   - ESMA Q&A: SFDR and Taxonomy-related Q&A updates
+#   - EET Standard: European ESG Template v1.1 (FinDatEx)
+#
+# SFDR Article 9 Sub-Types:
+#   - Article 9(1): General sustainable investment objective (environmental/social)
+#   - Article 9(2): Index-based sustainable investment objective (passive tracking)
+#   - Article 9(3): Carbon emission reduction objective (CTB/PAB alignment)
+#
+# Key Differences from Article 8 (PACK-010):
+#   - ALL investments must be sustainable (minimum 95% threshold)
+#   - DNSH assessment required for ALL holdings, not just sustainable portion
+#   - PAI consideration is mandatory (not optional)
+#   - Annex III pre-contractual / Annex V periodic (vs. Annex II/IV for Art. 8)
+#   - Benchmark designation mandatory for Art. 9(2) and Art. 9(3)
+#   - Carbon reduction trajectory required for Art. 9(3)
+#   - Downgrade risk monitoring for potential Article 9 -> 8 reclassification
+#   - Impact measurement and reporting as core requirement
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-15)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-011-sfdr-article-9
+  version: "1.0.0"
+  display_name: "SFDR Article 9 Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for SFDR (EU) 2019/2088 Article 9
+    "dark green" financial product compliance. Includes 8 engines for sustainable
+    objective verification, enhanced DNSH assessment, full taxonomy alignment
+    computation, impact measurement and reporting, benchmark alignment monitoring,
+    mandatory PAI indicator calculation, carbon trajectory tracking, and investment
+    universe management. Bundles all 30 MRV agents for PAI emissions data, 10 data
+    intake/quality agents, and 10 foundation agents. Supports pre-contractual
+    disclosure (Annex III), periodic reporting (Annex V), website disclosure,
+    impact reporting, benchmark methodology documentation, downgrade risk
+    monitoring, and regulatory change management. Designed for fund managers,
+    insurance undertakings, and financial market participants offering Article 9
+    sustainable investment products.
+  category: eu-compliance
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-15"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/sfdr-article-9"
+  changelog_url: "https://docs.greenlang.io/packs/sfdr-article-9/changelog"
+
+  tags:
+    - sfdr
+    - article-9
+    - dark-green
+    - sustainable-investment
+    - pai-indicators
+    - sustainable-finance
+    - esg
+    - taxonomy-alignment
+    - eu-compliance
+    - standalone
+    - pre-contractual-disclosure
+    - periodic-reporting
+    - website-disclosure
+    - eet-template
+    - portfolio-carbon-footprint
+    - impact-measurement
+    - benchmark-alignment
+    - carbon-trajectory
+    - ctb
+    - pab
+    - dnsh
+    - annex-iii
+    - annex-v
+
+  regulation:
+    name: "Sustainable Finance Disclosure Regulation"
+    reference: "(EU) 2019/2088"
+    effective_date: "2021-03-10"
+    rts_effective_date: "2023-01-01"
+    articles: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    focus_articles: [2, 5, 9]
+    pai_indicators: 18
+    mandatory_pai_indicators: 14
+    additional_pai_indicators: 46
+    description: >-
+      The Sustainable Finance Disclosure Regulation establishes sustainability
+      disclosure obligations for financial market participants and financial
+      advisers. Article 9 products have sustainable investment as their
+      objective. Where a financial product has sustainable investment as its
+      objective per Article 9(1), the pre-contractual and periodic disclosures
+      must include: (a) information on how the designated index is aligned
+      with the objective, (b) an explanation of how and why the designated
+      index differs from a broad market index, or (c) if no index is
+      designated, an explanation of how the sustainable investment objective
+      is to be attained. Article 9(3) products target carbon emission
+      reductions and must designate a Climate Transition Benchmark (CTB) or
+      Paris-Aligned Benchmark (PAB).
+
+  compliance_references:
+    - id: "SFDR-LEVEL1"
+      name: "SFDR Level 1"
+      regulation: "Regulation (EU) 2019/2088"
+      effective_date: "2021-03-10"
+      description: >-
+        Framework regulation establishing sustainability-related disclosure
+        obligations in the financial services sector. Article 9 defines
+        products with sustainable investment as their objective. Article 5
+        requires transparency of sustainability-related information in
+        pre-contractual disclosures. Article 2(17) defines sustainable
+        investment with the three-pronged test: contribution to E/S
+        objective, DNSH, and good governance.
+
+    - id: "SFDR-RTS"
+      name: "SFDR Regulatory Technical Standards"
+      regulation: "Delegated Regulation (EU) 2022/1288"
+      effective_date: "2023-01-01"
+      description: >-
+        Specifies the content, methodologies, and presentation of
+        sustainability-related disclosures. For Article 9 products:
+        Annex III defines pre-contractual disclosure templates, Annex V
+        defines periodic reporting templates. Establishes specific
+        requirements for sustainable investment objective documentation,
+        benchmark alignment explanation, and impact measurement reporting.
+
+    - id: "TAXONOMY-DISCLOSURES-DA"
+      name: "Taxonomy Disclosures Delegated Act"
+      regulation: "Delegated Regulation (EU) 2021/2178"
+      effective_date: "2022-01-01"
+      description: >-
+        Specifies the content and presentation of information to be
+        disclosed regarding the proportion of investments in taxonomy-
+        aligned economic activities. Article 9 products must disclose
+        taxonomy alignment proportions for their sustainable investments,
+        distinguishing between environmental objectives.
+
+    - id: "BENCHMARKS-REGULATION"
+      name: "EU Benchmarks Regulation (Climate Benchmarks)"
+      regulation: "Regulation (EU) 2016/1011 (as amended by (EU) 2019/2089)"
+      effective_date: "2020-04-30"
+      description: >-
+        Establishes EU Climate Transition Benchmarks (CTB) and EU Paris-
+        Aligned Benchmarks (PAB) with minimum standards for methodology,
+        decarbonization trajectory, and sector exclusions. Article 9(3)
+        SFDR products with carbon emission reduction objectives must
+        designate a CTB or PAB as reference benchmark, or explain how
+        the continuous effort to attain the objective of reducing carbon
+        emissions is ensured.
+
+    - id: "ESMA-QA"
+      name: "ESMA Q&A on SFDR"
+      regulation: "ESMA Q&A Updates"
+      effective_date: "2023-11-17"
+      description: >-
+        ESMA Questions and Answers providing supervisory guidance on
+        the application of SFDR, including Article 9 product classification
+        criteria, minimum sustainable investment thresholds, PAI calculation
+        methodologies, and downgrade risk considerations for Article 9
+        products that cannot sustain their sustainable investment objective.
+
+    - id: "EET-STANDARD"
+      name: "European ESG Template"
+      regulation: "FinDatEx EET v1.1"
+      effective_date: "2023-06-30"
+      description: >-
+        Standardized data exchange template for ESG data between product
+        manufacturers and distributors. Covers SFDR Article 9 classification,
+        taxonomy alignment data, PAI data, sustainable investment proportions,
+        and product-level ESG characteristics for regulatory and MiFID II
+        suitability purposes.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 SFDR Article 9 engines)
+  # ===========================================================================
+  engines:
+    - id: sustainable_objective_engine
+      name: "Sustainable Objective Engine"
+      description: >-
+        Verifies and monitors the sustainable investment objective for Article 9
+        products. Evaluates whether the product's investments contribute to an
+        environmental or social objective per Article 2(17). Supports three
+        Article 9 sub-types: general sustainable objective (9(1)), index-based
+        sustainable objective (9(2)), and carbon emission reduction objective
+        (9(3)). Tracks minimum sustainable investment proportion (default 95%),
+        classifies sustainable investments as taxonomy-aligned, other
+        environmental, or social, and monitors continuous objective attainment
+        with breach detection and remediation workflow triggers.
+      required: true
+
+    - id: enhanced_dnsh_engine
+      name: "Enhanced DNSH Assessment Engine"
+      description: >-
+        Implements enhanced Do No Significant Harm assessment for Article 9
+        products. Unlike Article 8 where DNSH applies only to the sustainable
+        investment portion, Article 9 requires DNSH assessment for ALL
+        holdings in the portfolio. Uses all 18 mandatory PAI indicators as
+        proxy metrics with stricter thresholds than Article 8. Applies both
+        quantitative (numeric threshold) and qualitative (policy-based)
+        criteria. Generates per-investee DNSH determination with evidence
+        linking. Supports automatic exclusion for controversial weapons
+        (PAI 14) and UNGC/OECD violations (PAI 10).
+      required: true
+
+    - id: full_taxonomy_alignment
+      name: "Full Taxonomy Alignment Engine"
+      description: >-
+        Calculates comprehensive EU Taxonomy alignment for Article 9 products.
+        Computes the proportion of taxonomy-aligned sustainable investments
+        broken down by environmental objective (climate mitigation, adaptation,
+        water, circular economy, pollution prevention, biodiversity). Implements
+        look-through for funds-of-funds, handles sovereign bond exclusions,
+        computes enabling and transitional activity proportions. For Article 9
+        products, taxonomy alignment is reported as a subset of sustainable
+        investments, distinguishing between taxonomy-aligned and other
+        environmental or social sustainable investments.
+      required: true
+
+    - id: impact_measurement_engine
+      name: "Impact Measurement Engine"
+      description: >-
+        Measures and reports the real-world impact of the Article 9 product's
+        sustainable investments. Defines impact KPIs linked to the product's
+        sustainable objective, tracks progress against impact targets, maps
+        investments to UN Sustainable Development Goals (SDGs), calculates
+        impact attribution at portfolio and investee level. Supports
+        environmental impact metrics (emissions avoided, renewable energy
+        generated, water saved), social impact metrics (jobs created,
+        communities served, health outcomes), and governance impact metrics.
+        Generates impact reports per Annex V periodic disclosure requirements.
+      required: true
+
+    - id: benchmark_alignment_engine
+      name: "Benchmark Alignment Engine"
+      description: >-
+        Monitors alignment with designated benchmarks for Article 9 products.
+        For Article 9(2) index-based products, verifies that the designated
+        index is consistent with the sustainable investment objective and
+        explains how the index methodology reflects the objective. For
+        Article 9(3) carbon reduction products, monitors alignment with
+        EU Climate Transition Benchmark (CTB) or EU Paris-Aligned Benchmark
+        (PAB), including year-on-year decarbonization trajectory, sector
+        exclusion compliance, and baseline carbon intensity comparison.
+        Generates benchmark methodology documentation for Annex III disclosure.
+      required: true
+
+    - id: pai_mandatory_engine
+      name: "PAI Mandatory Engine"
+      description: >-
+        Calculates all 18 mandatory Principal Adverse Impact indicators with
+        mandatory consideration for Article 9 products. Unlike Article 8
+        where PAI consideration may be optional, Article 9 requires PAI
+        consideration as part of the DNSH assessment for all sustainable
+        investments. Covers 5 categories: Climate (GHG emissions, carbon
+        footprint, GHG intensity, fossil fuel exposure, non-renewable energy
+        share, energy consumption intensity), Environment (biodiversity, water
+        emissions, hazardous waste), Social (UNGC/OECD violations, gender
+        pay gap, board gender diversity, controversial weapons), Sovereign
+        (GHG intensity, social violations), and Real Estate (energy efficiency).
+        Supports entity-level and product-level aggregation with coverage-
+        adjusted calculations and mandatory scope 3 inclusion.
+      required: true
+
+    - id: carbon_trajectory_engine
+      name: "Carbon Trajectory Engine"
+      description: >-
+        Tracks portfolio carbon emissions trajectory against science-based
+        decarbonization pathways for Article 9(3) products. Monitors year-on-
+        year carbon intensity reduction against the 7% annual decarbonization
+        target (PAB) or sector-specific pathway (CTB). Calculates portfolio
+        carbon budget, temperature alignment score, forward-looking emissions
+        projections, and implied temperature rise. Supports both backward-
+        looking (actual emissions) and forward-looking (target-based) carbon
+        trajectory analysis. Generates carbon trajectory reports with deviation
+        alerts when portfolio is off-track.
+      required: true
+
+    - id: investment_universe_engine
+      name: "Investment Universe Engine"
+      description: >-
+        Manages the eligible investment universe for Article 9 products.
+        Applies multi-layer screening: sustainable investment eligibility
+        (contribution test), DNSH screening (enhanced thresholds), good
+        governance verification, sector exclusions (fossil fuels, controversial
+        weapons, tobacco), and benchmark-specific exclusions for CTB/PAB
+        alignment. Generates investable universe reports, monitors universe
+        changes, and triggers rebalancing alerts when holdings drift outside
+        the eligible universe. Supports custom investment policy overlays
+        and ESG integration criteria.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 SFDR Article 9 workflows)
+  # ===========================================================================
+  workflows:
+    - id: annex_iii_disclosure
+      name: "Annex III Pre-Contractual Disclosure Workflow"
+      description: >-
+        5-phase workflow: Product Classification -> Sustainable Objective
+        Definition -> Investment Strategy Documentation -> Annex III Template
+        Population -> Review & Approval. Generates SFDR RTS Annex III pre-
+        contractual disclosure for Article 9 products including sustainable
+        investment objective description, how the objective is attained,
+        designated benchmark information (if applicable), minimum sustainable
+        investment proportion, taxonomy alignment commitment, DNSH methodology,
+        and PAI consideration approach.
+      schedule: "on_change"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: annex_v_reporting
+      name: "Annex V Periodic Reporting Workflow"
+      description: >-
+        5-phase workflow: Period-End Data Collection -> Impact Measurement
+        -> Sustainable Objective Achievement Assessment -> Annex V Template
+        Population -> Review & Approval. Generates SFDR RTS Annex V periodic
+        report for Article 9 products including extent to which sustainable
+        investment objective was met, impact performance vs. targets, top
+        investments, sustainable investment proportion actual vs. committed,
+        taxonomy alignment breakdown, benchmark comparison, and carbon
+        trajectory progress (for Art. 9(3)).
+      schedule: "annual"
+      estimated_duration_minutes: 150
+      phases: 5
+
+    - id: sustainable_verification
+      name: "Sustainable Investment Verification Workflow"
+      description: >-
+        4-phase workflow: Holdings Analysis -> Three-Pronged Test (Contribution
+        + DNSH + Governance) -> Classification -> Monitoring. Continuously
+        verifies that all portfolio holdings meet the sustainable investment
+        definition per Article 2(17). Monitors the minimum sustainable
+        investment threshold (default 95%), triggers alerts when proportion
+        drops below target, and initiates remediation workflows for
+        non-qualifying holdings.
+      schedule: "quarterly"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: impact_reporting
+      name: "Impact Reporting Workflow"
+      description: >-
+        4-phase workflow: Impact Data Collection -> KPI Calculation ->
+        SDG Mapping -> Report Generation. Measures real-world impact of
+        sustainable investments against defined objectives. Calculates
+        impact attribution, compares performance against impact targets,
+        and generates impact reports for inclusion in Annex V periodic
+        disclosure and standalone impact documentation.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: benchmark_monitoring
+      name: "Benchmark Monitoring Workflow"
+      description: >-
+        4-phase workflow: Benchmark Data Collection -> Alignment Calculation
+        -> Deviation Analysis -> Report Generation. Monitors portfolio
+        alignment with designated CTB or PAB benchmark for Article 9(2)
+        and 9(3) products. Tracks year-on-year decarbonization trajectory,
+        sector exclusion compliance, and benchmark methodology consistency.
+        Generates benchmark alignment reports and triggers alerts on
+        significant deviations.
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: pai_mandatory_workflow
+      name: "PAI Mandatory Calculation Workflow"
+      description: >-
+        4-phase workflow: Data Collection -> PAI Indicator Calculation ->
+        Statement Generation -> Review & Publication. Calculates all 18
+        mandatory PAI indicators at entity level and product level with
+        mandatory consideration. Generates SFDR Article 4 PAI statement
+        with current period values, prior period comparison, Scope 3
+        emissions, explanatory notes, and actions taken to address
+        adverse impacts. For Article 9, PAI consideration is mandatory
+        and feeds into the enhanced DNSH assessment.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 4
+
+    - id: downgrade_monitoring
+      name: "Downgrade Monitoring Workflow"
+      description: >-
+        3-phase workflow: Risk Assessment -> Threshold Monitoring ->
+        Reclassification Planning. Continuously monitors whether the
+        Article 9 product can sustain its sustainable investment objective.
+        Tracks key downgrade risk indicators: sustainable investment
+        proportion falling below threshold, inability to demonstrate
+        objective attainment, benchmark tracking error exceeding limits,
+        regulatory definition changes, and data quality deterioration.
+        Per ESMA guidance, products that cannot sustain Article 9
+        classification must be reclassified to Article 8 with updated
+        disclosures.
+      schedule: "monthly"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: regulatory_update
+      name: "Regulatory Update Workflow"
+      description: >-
+        3-phase workflow: Change Detection -> Impact Assessment ->
+        Implementation Planning. Monitors SFDR Level 1 amendments, RTS
+        updates, ESMA Q&A releases, Benchmarks Regulation changes, EET
+        version changes, and related Taxonomy Regulation developments.
+        Assesses impact on existing Article 9 disclosures, product
+        classifications, and sustainable investment methodologies.
+        Generates implementation roadmaps for required changes.
+      schedule: "on_change"
+      estimated_duration_minutes: 30
+      phases: 3
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 SFDR Article 9 templates)
+  # ===========================================================================
+  templates:
+    - id: annex_iii_precontractual
+      display_name: "Annex III Pre-Contractual Disclosure"
+      description: >-
+        SFDR RTS Annex III template for Article 9 products. Includes sustainable
+        investment objective description, how the objective is attained (index-
+        based or active strategy), designated benchmark information (CTB/PAB for
+        Article 9(3)), minimum sustainable investment proportion, taxonomy-aligned
+        vs. other environmental vs. social investment breakdown, enhanced DNSH
+        methodology, mandatory PAI consideration approach, good governance
+        criteria, and investment restrictions.
+      format: "pdf"
+      template_file: "templates/annex_iii_precontractual.jinja2"
+      enabled: true
+
+    - id: annex_v_periodic
+      display_name: "Annex V Periodic Report"
+      description: >-
+        SFDR RTS Annex V template for Article 9 periodic reporting. Includes
+        extent to which sustainable investment objective was attained, impact
+        performance vs. targets, top 15 investments, sustainable investment
+        proportion actual vs. committed, taxonomy alignment breakdown by
+        environmental objective, benchmark comparison and tracking error
+        analysis, carbon trajectory progress, and comparative performance.
+      format: "pdf"
+      template_file: "templates/annex_v_periodic.jinja2"
+      enabled: true
+
+    - id: impact_report
+      display_name: "Impact Report"
+      description: >-
+        Standalone impact report for Article 9 products. Includes impact
+        theory of change, KPI dashboard, SDG contribution mapping, impact
+        attribution analysis, forward-looking impact projections, case
+        studies from investee companies, and methodology notes. Designed
+        for both regulatory and investor communication purposes.
+      format: "pdf"
+      template_file: "templates/impact_report.jinja2"
+      enabled: true
+
+    - id: benchmark_methodology
+      display_name: "Benchmark Methodology Report"
+      description: >-
+        Benchmark methodology documentation for Article 9(2) and 9(3)
+        products. Explains how the designated index or benchmark is
+        consistent with the sustainable investment objective, methodology
+        for tracking alignment, deviation thresholds and remediation
+        procedures, and comparison with broad market index performance.
+        For CTB/PAB: decarbonization pathway documentation, sector
+        exclusion methodology, and base year carbon intensity calculation.
+      format: "pdf"
+      template_file: "templates/benchmark_methodology.jinja2"
+      enabled: true
+
+    - id: sustainable_dashboard
+      display_name: "Sustainable Investment Dashboard"
+      description: >-
+        Interactive dashboard showing sustainable investment objective
+        attainment, real-time sustainable investment proportion, taxonomy
+        alignment breakdown, impact KPI gauges, benchmark alignment status,
+        carbon trajectory chart, PAI indicator heatmap, DNSH compliance
+        status, downgrade risk indicators, and investment universe coverage.
+      format: "html"
+      template_file: "templates/sustainable_dashboard.jinja2"
+      enabled: true
+
+    - id: pai_mandatory_report
+      display_name: "PAI Mandatory Report"
+      description: >-
+        SFDR Article 4 PAI statement template with mandatory consideration
+        for Article 9 products. Includes all 18 mandatory indicators with
+        current and prior period values, Scope 3 emissions data, explanation
+        of actions taken to address adverse impacts, and additional voluntary
+        indicators. Enhanced with data quality metrics, estimation methodology
+        disclosure, and cross-reference to product-level DNSH assessment.
+      format: "pdf"
+      template_file: "templates/pai_mandatory_report.jinja2"
+      enabled: true
+
+    - id: carbon_trajectory_report
+      display_name: "Carbon Trajectory Report"
+      description: >-
+        Carbon trajectory tracking report for Article 9(3) products.
+        Includes portfolio carbon intensity time series, year-on-year
+        reduction rate vs. 7% PAB target, sector-level carbon attribution,
+        forward-looking emissions projections, temperature alignment score,
+        science-based target progress, and deviation analysis with
+        corrective action recommendations.
+      format: "pdf"
+      template_file: "templates/carbon_trajectory_report.jinja2"
+      enabled: true
+
+    - id: audit_trail_report
+      display_name: "Audit Trail Report"
+      description: >-
+        Comprehensive audit trail for all SFDR Article 9 calculations and
+        disclosures. Includes data lineage from source to output, SHA-256
+        provenance hashes, methodology documentation, assumption registry,
+        calculation logs, sustainable investment verification records,
+        benchmark alignment audit, and reviewer approval records with
+        timestamps.
+      format: "pdf"
+      template_file: "templates/audit_trail_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        12-phase master pipeline: Health Check -> Configuration -> Holdings
+        Ingestion -> Sustainable Objective Verification -> Enhanced DNSH
+        Assessment -> Good Governance -> Taxonomy Alignment -> Impact
+        Measurement -> PAI Mandatory Calculation -> Benchmark Alignment ->
+        Disclosure Generation -> Audit Trail. Orchestrates all SFDR
+        Article 9 compliance phases with parallel execution where possible.
+        Extended from Article 8 pipeline with sustainable verification
+        and impact measurement phases.
+      required: true
+
+    - id: article8_pack_bridge
+      name: "Article 8 Pack Bridge"
+      description: >-
+        Connects to PACK-010 SFDR Article 8 Pack for shared component
+        reuse and downgrade pathway support. Enables data sharing between
+        Article 8 and Article 9 products under the same entity, supports
+        Article 9 to Article 8 downgrade migration, and shares PAI
+        calculation infrastructure and governance assessment results
+        across both product types.
+      required: true
+
+    - id: taxonomy_pack_bridge
+      name: "Taxonomy Pack Bridge"
+      description: >-
+        Connects to PACK-008 EU Taxonomy Alignment Pack for activity-level
+        taxonomy alignment data. Retrieves investee-level eligibility and
+        alignment assessments, TSC compliance results, and DNSH/MS
+        verification outcomes to feed full taxonomy alignment calculation
+        for Article 9 products. Enhanced integration for six environmental
+        objective breakdown reporting.
+      required: true
+
+    - id: mrv_emissions_bridge
+      name: "MRV Emissions Bridge"
+      description: >-
+        Routes Scope 1/2/3 emissions data from all 30 MRV agents to PAI
+        indicator calculations (PAI 1-6) and carbon trajectory tracking.
+        Maps GHG emission factors to investee-level carbon metrics, supports
+        coverage-adjusted calculations, handles data quality flags for
+        estimated vs. reported emissions data. Enhanced for Article 9 with
+        mandatory Scope 3 inclusion and science-based target alignment.
+      required: true
+
+    - id: benchmark_data_bridge
+      name: "Benchmark Data Bridge"
+      description: >-
+        Connects to benchmark data providers for CTB, PAB, and custom
+        benchmark index data. Ingests benchmark constituents, sector
+        weights, carbon intensity metrics, and decarbonization trajectories.
+        Supports EU Climate Transition Benchmark and EU Paris-Aligned
+        Benchmark methodologies per Regulation (EU) 2016/1011. Handles
+        benchmark rebalancing events and methodology changes.
+      required: true
+
+    - id: impact_data_bridge
+      name: "Impact Data Bridge"
+      description: >-
+        Connects to impact data providers and investee company reporting
+        systems for impact measurement data. Ingests impact KPIs, SDG
+        contribution data, avoided emissions calculations, and social
+        impact metrics. Supports IRIS+, GIIN ImpactAlpha, and proprietary
+        impact frameworks. Validates impact data quality and attribution
+        methodology.
+      required: true
+
+    - id: eet_data_bridge
+      name: "EET Data Bridge"
+      description: >-
+        Manages European ESG Template (EET) data exchange for Article 9
+        products. Imports EET files from product manufacturers for fund-
+        of-funds look-through, exports EET-compliant data files for
+        distribution platforms and financial advisers. Enhanced with
+        Article 9 specific EET fields including sustainable investment
+        objective type, impact metrics, and benchmark alignment data.
+      required: true
+
+    - id: regulatory_bridge
+      name: "Regulatory Bridge"
+      description: >-
+        Monitors SFDR regulatory developments including Level 1 amendments,
+        RTS updates (EU) 2022/1288, ESMA Q&A releases, Benchmarks Regulation
+        changes, EET standard changes, and related Taxonomy Regulation
+        developments. Enhanced for Article 9 with downgrade risk regulatory
+        monitoring and sustainable investment definition tracking.
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        22-category system verification covering engine status, agent
+        availability, configuration validity, data connectivity, API
+        health, database schema, dependency versions, EET template
+        availability, disclosure template integrity, benchmark data
+        connectivity, and impact data source availability.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        12-step guided configuration wizard: Article 9 sub-type selection
+        (9(1)/9(2)/9(3)), sustainable objective definition, benchmark
+        designation (CTB/PAB/custom), impact KPI configuration, minimum
+        sustainable investment threshold, DNSH methodology, PAI indicator
+        scope, investment universe rules, portfolio data source connection,
+        EET configuration, disclosure preferences, and deployment
+        verification.
+      required: false
+
+  # ===========================================================================
+  # MRV Agents - All 30 MRV agents for emissions data (Scope 1/2/3)
+  # ===========================================================================
+  agents_mrv:
+
+    # -------------------------------------------------------------------------
+    # Scope 1 - Direct Emissions (8 agents)
+    # -------------------------------------------------------------------------
+    scope_1:
+      - id: AGENT-MRV-001
+        name: "Stationary Combustion Agent"
+        description: "Calculates emissions from stationary combustion sources"
+        path: "greenlang/agents/mrv/stationary_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-002
+        name: "Refrigerants & F-Gas Agent"
+        description: "Calculates emissions from refrigerants and fluorinated gases"
+        path: "greenlang/agents/mrv/refrigerants_fgas/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-003
+        name: "Mobile Combustion Agent"
+        description: "Calculates emissions from mobile combustion sources"
+        path: "greenlang/agents/mrv/mobile_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-004
+        name: "Process Emissions Agent"
+        description: "Calculates emissions from industrial processes"
+        path: "greenlang/agents/mrv/process_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-005
+        name: "Fugitive Emissions Agent"
+        description: "Calculates fugitive emissions from equipment and operations"
+        path: "greenlang/agents/mrv/fugitive_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-006
+        name: "Land Use Emissions Agent"
+        description: "Calculates emissions from land use and land use change"
+        path: "greenlang/agents/mrv/land_use_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-007
+        name: "Waste Treatment Emissions Agent"
+        description: "Calculates emissions from waste treatment and disposal"
+        path: "greenlang/agents/mrv/waste_treatment_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-008
+        name: "Agricultural Emissions Agent"
+        description: "Calculates emissions from agricultural operations"
+        path: "greenlang/agents/mrv/agricultural_emissions/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 2 - Indirect Energy Emissions (5 agents)
+    # -------------------------------------------------------------------------
+    scope_2:
+      - id: AGENT-MRV-009
+        name: "Scope 2 Location-Based Agent"
+        description: "Calculates location-based Scope 2 emissions from purchased electricity"
+        path: "greenlang/agents/mrv/scope2_location_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-010
+        name: "Scope 2 Market-Based Agent"
+        description: "Calculates market-based Scope 2 emissions using contractual instruments"
+        path: "greenlang/agents/mrv/scope2_market_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-011
+        name: "Steam/Heat Purchase Agent"
+        description: "Calculates emissions from purchased steam and heating"
+        path: "greenlang/agents/mrv/steam_heat_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-012
+        name: "Cooling Purchase Agent"
+        description: "Calculates emissions from purchased cooling"
+        path: "greenlang/agents/mrv/cooling_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-013
+        name: "Dual Reporting Reconciliation"
+        description: "Reconciles location-based and market-based Scope 2 reporting"
+        path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 3 - Value Chain Emissions (15 agents)
+    # -------------------------------------------------------------------------
+    scope_3:
+      - id: AGENT-MRV-014
+        name: "Purchased Goods & Services Agent (Cat 1)"
+        description: "Calculates Scope 3 Category 1 emissions from purchased goods and services"
+        path: "greenlang/agents/mrv/purchased_goods_services/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-015
+        name: "Capital Goods Agent (Cat 2)"
+        description: "Calculates Scope 3 Category 2 emissions from capital goods"
+        path: "greenlang/agents/mrv/capital_goods/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-016
+        name: "Fuel & Energy Activities Agent (Cat 3)"
+        description: "Calculates Scope 3 Category 3 upstream fuel and energy emissions"
+        path: "greenlang/agents/mrv/fuel_energy_activities/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-017
+        name: "Upstream Transportation Agent (Cat 4)"
+        description: "Calculates Scope 3 Category 4 upstream transportation and distribution emissions"
+        path: "greenlang/agents/mrv/upstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-018
+        name: "Waste Generated Agent (Cat 5)"
+        description: "Calculates Scope 3 Category 5 emissions from waste in operations"
+        path: "greenlang/agents/mrv/waste_generated/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-019
+        name: "Business Travel Agent (Cat 6)"
+        description: "Calculates Scope 3 Category 6 business travel emissions"
+        path: "greenlang/agents/mrv/business_travel/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-020
+        name: "Employee Commuting Agent (Cat 7)"
+        description: "Calculates Scope 3 Category 7 employee commuting emissions"
+        path: "greenlang/agents/mrv/employee_commuting/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-021
+        name: "Upstream Leased Assets Agent (Cat 8)"
+        description: "Calculates Scope 3 Category 8 upstream leased assets emissions"
+        path: "greenlang/agents/mrv/upstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-022
+        name: "Downstream Transportation Agent (Cat 9)"
+        description: "Calculates Scope 3 Category 9 downstream transportation emissions"
+        path: "greenlang/agents/mrv/downstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-023
+        name: "Processing of Sold Products (Cat 10)"
+        description: "Calculates Scope 3 Category 10 processing of sold products emissions"
+        path: "greenlang/agents/mrv/processing_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-024
+        name: "Use of Sold Products (Cat 11)"
+        description: "Calculates Scope 3 Category 11 use of sold products emissions"
+        path: "greenlang/agents/mrv/use_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-025
+        name: "End-of-Life Treatment (Cat 12)"
+        description: "Calculates Scope 3 Category 12 end-of-life treatment emissions"
+        path: "greenlang/agents/mrv/end_of_life_treatment/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-026
+        name: "Downstream Leased Assets (Cat 13)"
+        description: "Calculates Scope 3 Category 13 downstream leased assets emissions"
+        path: "greenlang/agents/mrv/downstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-027
+        name: "Franchises Agent (Cat 14)"
+        description: "Calculates Scope 3 Category 14 franchises emissions"
+        path: "greenlang/agents/mrv/franchises/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-028
+        name: "Investments Agent (Cat 15)"
+        description: "Calculates Scope 3 Category 15 investments emissions"
+        path: "greenlang/agents/mrv/investments/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Cross-Cutting MRV Agents (2 agents)
+    # -------------------------------------------------------------------------
+    cross_cutting:
+      - id: AGENT-MRV-029
+        name: "Scope 3 Category Mapper"
+        description: "Maps emissions data across all 15 Scope 3 categories"
+        path: "greenlang/agents/mrv/scope3_category_mapper/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-030
+        name: "Audit Trail & Lineage"
+        description: "Tracks data lineage and audit trails for all MRV calculations"
+        path: "greenlang/agents/mrv/audit_trail_lineage/"
+        required: true
+        version: "1.0.0"
+
+  # ===========================================================================
+  # Data Agents - Supporting data intake and quality agents (10 agents)
+  # ===========================================================================
+  agents_data:
+    # Data Intake (4 agents)
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts financial and ESG data from PDF documents and reports"
+      required: true
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes tabular ESG, holdings, and emissions data from Excel/CSV files"
+      required: true
+
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Connects to portfolio management and fund administration systems"
+      required: true
+
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Processes ESG data questionnaires from investee companies and data providers"
+      required: true
+
+    # Data Quality (6 agents)
+    - id: AGENT-DATA-009
+      name: "Spend Data Categorizer"
+      description: "Categorizes investment data into SFDR-relevant classification categories"
+      required: true
+
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all SFDR compliance data sources"
+      required: true
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects and resolves duplicate holdings, PAI, and ESG data records"
+      required: true
+
+    - id: AGENT-DATA-012
+      name: "Missing Value Imputer"
+      description: "Imputes missing ESG and PAI data values with documented methodology"
+      required: true
+
+    - id: AGENT-DATA-018
+      name: "Data Lineage Tracker"
+      description: "Tracks data lineage across SFDR calculation and disclosure pipeline"
+      required: true
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces SFDR-specific validation rules on all compliance data"
+      required: true
+
+  # ===========================================================================
+  # Foundation Agents - Core platform agents (all 10)
+  # ===========================================================================
+  agents_foundation:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for SFDR compliance"
+      required: true
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (financial, emissions, ESG metrics) and reference data"
+      required: true
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks all assumptions used in SFDR calculations and disclosures"
+      required: true
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all data points to source evidence for audit trails"
+      required: true
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access and data policies"
+      required: true
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Maintains registry of available agents and their capabilities"
+      required: true
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all SFDR calculations are reproducible with provenance tracking"
+      required: true
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Runs quality assurance checks on all agent outputs"
+      required: true
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for all agents"
+      required: true
+
+# -----------------------------------------------------------------------------
+# Pack Summary
+# -----------------------------------------------------------------------------
+pack_summary:
+  total_agents: 50
+  mrv_agents: 30
+  data_agents: 10
+  foundation_agents: 10
+  pack_engines: 8
+  pack_workflows: 8
+  pack_templates: 8
+  pack_integrations: 10
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles
+# -----------------------------------------------------------------------------
+presets:
+  product_presets:
+    - id: impact_fund
+      display_name: "Impact Fund"
+      description: >-
+        Deployment for Article 9(1) impact investment funds with environmental
+        and/or social sustainable objectives. Full impact measurement framework
+        with SDG mapping, impact KPI tracking, and theory of change reporting.
+        95% minimum sustainable investment proportion. Comprehensive DNSH and
+        governance assessment. Supports both environmental and social impact
+        funds with configurable impact categories and measurement approaches.
+      config_file: "config/presets/impact_fund.yaml"
+
+    - id: climate_fund
+      display_name: "Climate Fund"
+      description: >-
+        Deployment for Article 9(3) carbon emission reduction funds with
+        EU Paris-Aligned Benchmark (PAB) designation. Mandatory 7% year-on-year
+        decarbonization trajectory, carbon budget tracking, temperature
+        alignment scoring, and forward-looking emissions projections. 95%
+        minimum sustainable investment proportion with enhanced fossil fuel
+        exclusions per PAB methodology. Science-based target integration.
+      config_file: "config/presets/climate_fund.yaml"
+
+    - id: social_fund
+      display_name: "Social Fund"
+      description: >-
+        Deployment for Article 9(1) social objective funds focused on social
+        sustainability outcomes. Prioritizes social PAI indicators (10-14),
+        social impact KPIs (jobs, health, education, inclusion), and social
+        DNSH criteria. 90% minimum sustainable investment proportion with
+        social taxonomy alignment tracking. Supports affordable housing,
+        healthcare, education, and financial inclusion themes.
+      config_file: "config/presets/social_fund.yaml"
+
+    - id: esg_leader_fund
+      display_name: "ESG Leader Fund"
+      description: >-
+        Deployment for Article 9(1) best-in-class ESG leader funds that invest
+        in companies demonstrating top-tier ESG performance. 95% minimum
+        sustainable investment proportion with enhanced governance screening.
+        Full PAI calculation with all 18 mandatory indicators. Positive
+        screening with top-quartile ESG score requirement. Supports multi-
+        factor ESG integration with quality, momentum, and controversy overlays.
+      config_file: "config/presets/esg_leader_fund.yaml"
+
+    - id: transition_fund
+      display_name: "Transition Fund"
+      description: >-
+        Deployment for Article 9(1) transition financing funds investing in
+        companies committed to climate and sustainability transition. EU Climate
+        Transition Benchmark (CTB) alignment with sector-specific decarbonization
+        pathways. 90% minimum sustainable investment proportion. Enhanced focus
+        on forward-looking metrics: science-based targets, transition plans,
+        capex alignment, and green revenue trajectories. Supports high-emitter
+        engagement and transition bond strategies.
+      config_file: "config/presets/transition_fund.yaml"
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 32
+    min_storage_gb: 200
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 64
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 50
+    recommended_connections: 100
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  sustainable_verification:
+    single_holding_max_ms: 100
+    full_portfolio_max_seconds: 20
+    continuous_monitoring_interval_seconds: 300
+    description: "Sustainable investment verification for all holdings"
+
+  enhanced_dnsh:
+    single_investee_max_ms: 150
+    full_portfolio_max_seconds: 25
+    description: "Enhanced DNSH assessment for all portfolio holdings"
+
+  pai_calculation:
+    single_indicator_max_ms: 200
+    all_18_indicators_max_seconds: 15
+    entity_level_max_seconds: 30
+    description: "PAI indicator calculation with mandatory Scope 3"
+
+  taxonomy_alignment:
+    portfolio_ratio_max_seconds: 10
+    six_objective_breakdown_max_seconds: 15
+    look_through_max_seconds: 30
+    description: "Full taxonomy alignment ratio with environmental objective breakdown"
+
+  impact_measurement:
+    kpi_calculation_max_seconds: 10
+    sdg_mapping_max_seconds: 5
+    full_impact_report_max_seconds: 30
+    description: "Impact measurement and SDG mapping"
+
+  benchmark_alignment:
+    tracking_error_max_seconds: 5
+    decarbonization_trajectory_max_seconds: 10
+    description: "Benchmark alignment and carbon trajectory calculations"
+
+  carbon_trajectory:
+    trajectory_calculation_max_seconds: 10
+    temperature_alignment_max_seconds: 15
+    description: "Carbon trajectory and temperature alignment scoring"
+
+  disclosure_generation:
+    annex_iii_max_seconds: 25
+    annex_v_max_seconds: 30
+    impact_report_max_seconds: 20
+    pai_statement_max_seconds: 30
+    description: "Disclosure and report template generation"
+
+  screening:
+    universe_10000_max_seconds: 30
+    single_check_max_ms: 50
+    description: "Investment universe screening operations"
+
+  eet_processing:
+    import_max_seconds: 10
+    export_max_seconds: 10
+    description: "EET template import and export"
+
+  api_latency:
+    p50_ms: 50
+    p95_ms: 200
+    p99_ms: 1000
+
+  availability:
+    target_percent: 99.9
+    description: "Standard availability target"

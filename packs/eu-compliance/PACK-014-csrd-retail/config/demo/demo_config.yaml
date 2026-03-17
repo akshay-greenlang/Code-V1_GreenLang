@@ -1,0 +1,259 @@
+# =============================================================================
+# PACK-014 CSRD Retail Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for EuroRetail Group, a fictional diversified retail
+# group with three store types: a Berlin flagship grocery store, a Lyon
+# fashion boutique, and an Amsterdam online fulfillment hub. This
+# configuration demonstrates multi-format, multi-country capabilities
+# with synthetic data for demo mode.
+#
+# Company: EuroRetail Group AG
+# Headquarters: Zurich, Switzerland (EU operations)
+# Revenue: EUR 2.8 billion
+# Employees: 8,500
+# Stores: 450 across 12 EU countries
+# Reporting Year: 2025
+# =============================================================================
+
+# --- Company Details ---
+company_name: "EuroRetail Group AG"
+reporting_year: 2025
+tier: "ENTERPRISE"
+sub_sectors:
+  - "GROCERY"
+  - "APPAREL"
+  - "E_COMMERCE"
+
+# --- Stores ---
+stores:
+  - store_id: "STORE-001-DE"
+    store_name: "Berlin Flagship Store"
+    country: "DE"
+    sub_sector: "GROCERY"
+    store_type: "FLAGSHIP"
+    floor_area_sqm: 5000.0
+    sales_area_sqm: 3800.0
+    employees: 120
+    has_refrigeration: true
+    refrigerant_types:
+      - "R404A"
+      - "R134A"
+    has_food_department: true
+    annual_revenue_eur: 18500000.0
+
+  - store_id: "STORE-002-FR"
+    store_name: "Lyon Fashion Boutique"
+    country: "FR"
+    sub_sector: "APPAREL"
+    store_type: "STANDARD"
+    floor_area_sqm: 800.0
+    sales_area_sqm: 650.0
+    employees: 25
+    has_refrigeration: false
+    refrigerant_types: []
+    has_food_department: false
+    annual_revenue_eur: 3200000.0
+
+  - store_id: "STORE-003-NL"
+    store_name: "Amsterdam Online Hub"
+    country: "NL"
+    sub_sector: "E_COMMERCE"
+    store_type: "WAREHOUSE"
+    floor_area_sqm: 15000.0
+    sales_area_sqm: 0.0
+    employees: 200
+    has_refrigeration: true
+    refrigerant_types:
+      - "R744"
+    has_food_department: false
+    annual_revenue_eur: 85000000.0
+
+# --- Omnibus Threshold ---
+omnibus_threshold:
+  enabled: true
+  total_assets_eur: 3200000000.0
+  net_turnover_eur: 2800000000.0
+  average_employees: 8500
+  listed_entity: true
+
+# --- Store Emissions ---
+store_emissions:
+  enabled: true
+  store_types:
+    - "FLAGSHIP"
+    - "STANDARD"
+    - "WAREHOUSE"
+  refrigerant_tracking: true
+  f_gas_phase_down: true
+  fleet_tracking: true
+  renewable_on_site: true
+  heating_sources:
+    - "natural_gas"
+    - "electricity"
+    - "district_heating"
+  eed_energy_audit: true
+  per_sqm_normalization: true
+  per_revenue_normalization: true
+  grid_factor_source: "AIB_RESIDUAL_MIX"
+  year_over_year_tracking: true
+
+# --- Scope 3 ---
+scope3:
+  enabled: true
+  priority_categories: [1, 4, 5, 8, 9, 11, 12, 14]
+  calculation_methods:
+    cat_1: "hybrid"
+    cat_4: "distance_based"
+    cat_9: "distance_based"
+    cat_11: "average_data"
+    cat_12: "average_data"
+    default: "spend_based"
+  supplier_data_collection: true
+  cat1_methodology: "hybrid"
+  spend_based_screening: true
+  hotspot_analysis: true
+  supplier_engagement_scoring: true
+  flag_pathway_enabled: true
+  last_mile_tracking: true
+
+# --- Packaging ---
+packaging:
+  enabled: true
+  ppwr_compliance: true
+  recycled_content_tracking: true
+  materials_tracked:
+    - "PET"
+    - "HDPE"
+    - "PP"
+    - "PAPER_BOARD"
+    - "GLASS"
+    - "ALUMINIUM"
+    - "COMPOSITE"
+  epr_scheme: true
+  labeling_requirements: true
+  reuse_targets: true
+  ecommerce_packaging_reuse: true
+  over_packaging_monitoring: true
+  target_year: 2030
+
+# --- Product Sustainability ---
+product_sustainability:
+  enabled: true
+  dpp_enabled: true
+  dpp_product_categories:
+    - "textiles"
+    - "footwear"
+  pef_methodology: true
+  green_claims_audit: true
+  banned_claims:
+    - "CARBON_NEUTRAL"
+    - "ECO_FRIENDLY"
+    - "SUSTAINABLE"
+  textile_microplastics: true
+  product_recyclability_scoring: true
+
+# --- Food Waste ---
+food_waste:
+  enabled: true
+  measurement_method: "direct_weighing"
+  reduction_target_pct: 30.0
+  baseline_year: 2020
+  redistribution_tracking: true
+  waste_categories:
+    - "BAKERY"
+    - "PRODUCE"
+    - "DAIRY"
+    - "MEAT"
+    - "PREPARED_FOOD"
+    - "PACKAGED"
+    - "BEVERAGES"
+  date_marking_optimization: true
+  markdown_effectiveness: true
+  animal_feed_diversion: true
+  composting_tracking: true
+  waste_intensity_metric: "kg_per_eur_revenue"
+
+# --- Supply Chain Due Diligence ---
+supply_chain_dd:
+  enabled: true
+  csddd_compliance: true
+  eudr_commodities:
+    - "PALM_OIL"
+    - "SOY"
+    - "COCOA"
+    - "COFFEE"
+    - "RUBBER"
+    - "TIMBER"
+    - "CATTLE"
+  forced_labour_screening: true
+  supplier_tier_depth: 4
+  country_risk_assessment: true
+  living_wage_gap_analysis: true
+  sanctions_screening: true
+  stakeholder_engagement: true
+  remediation_tracking: true
+  geolocation_verification: true
+  risk_assessment_platform: "MAPLECROFT"
+
+# --- Circular Economy ---
+circular_economy:
+  enabled: true
+  epr_schemes:
+    - "PACKAGING"
+    - "TEXTILES"
+  take_back_programs:
+    - "textile_collection"
+    - "footwear_recycling"
+  mci_tracking: true
+  product_recyclability: true
+  second_hand_tracking: true
+  return_logistics_emissions: true
+  repair_services: false
+  multi_country_epr: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  kpi_set:
+    - "emissions_per_sqm"
+    - "emissions_per_revenue"
+    - "energy_intensity_kwh_sqm"
+    - "refrigerant_leakage_rate"
+    - "scope3_supplier_coverage"
+    - "packaging_recycled_content"
+    - "food_waste_ratio"
+    - "sbti_alignment"
+  peer_group: "NACE_SECTOR"
+  sbti_pathway: "1.5C"
+  sbti_flag_alignment: true
+  percentile_tracking: true
+  gap_analysis_enabled: true
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  store_emissions_report_enabled: true
+  supply_chain_report_enabled: true
+  packaging_report_enabled: true
+  product_sustainability_report_enabled: true
+  food_waste_report_enabled: true
+  circular_economy_report_enabled: true
+  scorecard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+  multi_language_support: true
+  supported_languages: ["en", "de", "fr", "nl"]
+  review_workflow_enabled: true
+  watermark_draft: true

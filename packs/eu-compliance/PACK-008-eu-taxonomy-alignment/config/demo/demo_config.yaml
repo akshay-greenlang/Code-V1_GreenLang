@@ -1,0 +1,108 @@
+# =============================================================================
+# PACK-008 Demo Configuration
+# =============================================================================
+# Minimal demo configuration for quick testing and onboarding. Uses synthetic
+# data, mocked ERP/MRV responses, and a reduced set of sample activities.
+#
+# Usage:
+#   >>> config = PackConfig.load(demo_mode=True)
+#   Or load this file directly for standalone demo runs.
+#
+# Features:
+#   - 10 sample economic activities
+#   - Synthetic financial data (Turnover/CapEx/OpEx)
+#   - Mocked MRV emissions data
+#   - CCM + CCA objectives only
+#   - Simplified assessment mode
+#   - Tutorial mode with guided steps
+# =============================================================================
+
+organization_type: "NON_FINANCIAL_UNDERTAKING"
+organization_name: "Demo Corp GmbH"
+reporting_period: "ANNUAL"
+reporting_year: 2025
+
+objectives_in_scope:
+  - "CCM"
+  - "CCA"
+
+active_sectors:
+  - "MANUFACTURING"
+  - "ENERGY"
+
+eligibility:
+  screening_mode: "NACE_BASED"
+  nace_version: "NACE_REV2"
+  min_confidence: 0.70
+  batch_size: 10
+
+sc_assessment:
+  evaluation_mode: "SIMPLIFIED"
+  threshold_strictness: "LENIENT"
+  evidence_required: false
+
+dnsh:
+  objectives_assessed:
+    - "CCM"
+    - "CCA"
+    - "WTR"
+    - "CE"
+    - "PPC"
+    - "BIO"
+  require_all_pass: true
+  climate_risk_assessment_enabled: false
+  evidence_required: false
+
+minimum_safeguards:
+  human_rights_check: true
+  anti_corruption_check: true
+  taxation_check: true
+  fair_competition_check: true
+  assessment_mode: "DECLARATION"
+
+kpi:
+  calculate_turnover: true
+  calculate_capex: true
+  calculate_opex: false
+  double_counting_prevention: true
+  currency: "EUR"
+
+gar:
+  calculate_stock_gar: false
+  calculate_flow_gar: false
+  calculate_btar: false
+
+reporting:
+  article8_enabled: true
+  eba_pillar3_enabled: false
+  xbrl_tagging: false
+  nuclear_gas_supplementary: false
+  yoy_comparison: false
+  default_format: "PDF"
+
+regulatory:
+  delegated_act_version: "CLIMATE_DA_2021"
+  active_delegated_acts:
+    - "CLIMATE_DA_2021"
+    - "DISCLOSURES_DA_2021"
+  track_updates: false
+
+data_quality:
+  min_quality_score: 0.50
+  completeness_threshold: 0.60
+  require_primary_data: false
+  allow_estimates: true
+
+audit_trail:
+  retention_years: 1
+  hash_algorithm: "SHA-256"
+  immutable_log: false
+  include_provenance_hash: true
+
+demo:
+  demo_mode_enabled: true
+  use_synthetic_data: true
+  mock_erp_responses: true
+  mock_mrv_data: true
+  tutorial_mode_enabled: true
+  sample_activities_count: 10

@@ -1,0 +1,248 @@
+# =============================================================================
+# PACK-016 ESRS E1 Climate Pack - Financial Services Preset
+# =============================================================================
+# Sector-specific configuration for banks, insurers, asset managers, and
+# other financial institutions across NACE division K (Financial and
+# Insurance Activities). Own-operations emissions (Scope 1 + 2) are
+# typically small (offices, business travel, data centers). The dominant
+# emission source is financed emissions (Scope 3 Category 15: Investments)
+# calculated per the Partnership for Carbon Accounting Financials (PCAF)
+# Standard. Climate risk assessment emphasizes portfolio-level physical
+# and transition risk exposure.
+#
+# Typical use cases:
+#   - Universal and retail banks (lending portfolios)
+#   - Investment banks and capital markets
+#   - Insurance and reinsurance companies (underwriting portfolios)
+#   - Asset management companies (fund-level emissions)
+#   - Private equity and venture capital firms
+#   - Development finance institutions
+#   - Pension funds and sovereign wealth funds
+#
+# Key characteristics:
+#   - Low Scope 1+2 (offices, business travel, data centers)
+#   - Dominant Scope 3 Cat 15 (financed/insured emissions per PCAF)
+#   - GHG intensity per EUR million invested/lent is key metric
+#   - Portfolio alignment metrics (implied temperature rise)
+#   - Transition plan focuses on portfolio decarbonization
+#   - SBTi financial sector guidance applies
+#   - Climate risk = portfolio physical + transition risk (ECB, EBA)
+#   - SFDR PAI indicator integration
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+sector: "FINANCIAL_SERVICES"
+fiscal_year_end: "12-31"
+currency: "EUR"
+reporting_boundary: "group"
+
+# --- GHG Inventory (financed emissions dominated) ---
+ghg:
+  enabled: true
+  base_year: 2020
+  reporting_year: 2025
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  gwp_source: "IPCC_AR6"
+  gwp_time_horizon: 100
+  emission_factors_source: "DEFRA_2025"
+  emission_factors_region: "EU"
+  scopes_enabled:
+    - "SCOPE_1"
+    - "SCOPE_2_LOCATION"
+    - "SCOPE_2_MARKET"
+    - "SCOPE_3"
+  scope_3_categories:
+    - 1
+    - 3
+    - 5
+    - 6
+    - 7
+    - 8
+    - 15
+  scope_3_significance_threshold_pct: 0.5
+  scope_3_default_method: "SUPPLIER_SPECIFIC"
+  kyoto_gas_disaggregation: true
+  biogenic_co2_separate: true
+  ghg_intensity_denominators:
+    - "net_revenue_eur_million"
+    - "eur_million_invested"
+    - "eur_million_lent"
+  base_year_recalculation_threshold_pct: 5.0
+  data_quality_scoring: true
+
+# --- Energy Consumption (offices and data centers) ---
+energy:
+  enabled: true
+  reporting_unit: "MWh"
+  include_renewables: true
+  renewable_categories:
+    - "SOLAR"
+    - "WIND"
+    - "HYDRO"
+  ppa_tracking: true
+  rec_tracking: true
+  self_generation_tracking: true
+  energy_intensity_denominators:
+    - "net_revenue_eur_million"
+    - "fte"
+    - "sqm_office"
+  fossil_fuel_types:
+    - "NATURAL_GAS"
+    - "DIESEL"
+  nuclear_included: true
+  district_energy_included: true
+  cross_validate_ghg: true
+  epc_rating_integration: true
+
+# --- Transition Plan (portfolio decarbonization) ---
+transition_plan:
+  enabled: true
+  target_year: 2050
+  interim_targets_enabled: true
+  interim_target_years:
+    - 2030
+    - 2035
+    - 2040
+    - 2045
+  locked_in_emissions_calc: false
+  capex_alignment: true
+  opex_alignment: false
+  scenario_alignment: "1.5C"
+  decarbonization_levers:
+    - "portfolio_decarbonization"
+    - "green_lending"
+    - "green_bonds"
+    - "engagement_with_investees"
+    - "divestment_from_fossil"
+    - "renewable_energy_procurement"
+    - "office_energy_efficiency"
+  taxonomy_alignment: true
+  has_transition_plan: true
+
+# --- Target Tracking (SBTi financial sector) ---
+targets:
+  enabled: true
+  sbti_commitment_level: "SBTi_1_5C"
+  sbti_validated: false
+  base_year: 2020
+  base_year_approach: "FIXED"
+  target_year: 2030
+  long_term_target_year: 2050
+  target_types:
+    - "ABSOLUTE"
+    - "INTENSITY"
+  target_scopes:
+    - "SCOPE_1"
+    - "SCOPE_2_MARKET"
+    - "SCOPE_3"
+  reduction_path: "linear"
+  intensity_denominator: "eur_million_invested"
+  progress_tracking_frequency: "annual"
+  variance_analysis: true
+  base_year_recalculation_policy: true
+
+# --- Carbon Credits ---
+carbon_credits:
+  enabled: true
+  allowed_standards:
+    - "VERRA_VCS"
+    - "GOLD_STANDARD"
+    - "ACR"
+  credit_types:
+    - "REMOVAL"
+  vintage_requirements: 3
+  retirement_policy: "retire_on_claim"
+  quality_assessment: true
+  sbti_offset_guidance: true
+  removal_tracking: false
+  separate_from_gross_emissions: true
+
+# --- Carbon Pricing ---
+carbon_pricing:
+  enabled: true
+  has_carbon_pricing: true
+  pricing_methods:
+    - "SHADOW_PRICE"
+  price_per_tco2e: "120.00"
+  price_currency: "EUR"
+  coverage_scope:
+    - "SCOPE_1"
+    - "SCOPE_2_MARKET"
+    - "SCOPE_3"
+  coverage_share_pct: "60.0"
+  shadow_price_scenarios:
+    - scenario: "current"
+      price_per_tco2e: "120.00"
+      year: "2025"
+    - scenario: "medium"
+      price_per_tco2e: "180.00"
+      year: "2030"
+    - scenario: "high"
+      price_per_tco2e: "300.00"
+      year: "2035"
+  influences_investment_decisions: true
+  influences_procurement: false
+
+# --- Climate Risk (portfolio-level emphasis) ---
+climate_risk:
+  enabled: true
+  physical_risk_types:
+    - "ACUTE"
+    - "CHRONIC"
+  transition_risk_types:
+    - "POLICY"
+    - "TECHNOLOGY"
+    - "MARKET"
+    - "REPUTATION"
+    - "LEGAL"
+  scenarios:
+    - "SSP1_2_6"
+    - "SSP2_4_5"
+    - "SSP3_7_0"
+    - "SSP5_8_5"
+  time_horizons:
+    - "SHORT_TERM"
+    - "MEDIUM_TERM"
+    - "LONG_TERM"
+  short_term_years: 1
+  medium_term_years: 5
+  long_term_years: 10
+  quantify_financial_effects: true
+  financial_effect_currency: "EUR"
+  opportunity_assessment: true
+  site_level_exposure: false
+  portfolio_risk: true
+  tcfd_alignment: true
+  use_climate_hazard_data: true
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  disclosure_requirements:
+    - "E1-1"
+    - "E1-2"
+    - "E1-3"
+    - "E1-4"
+    - "E1-5"
+    - "E1-6"
+    - "E1-7"
+    - "E1-8"
+    - "E1-9"
+  output_formats:
+    - "PDF"
+    - "XBRL"
+    - "HTML"
+  xbrl_tagging: true
+  sha256_provenance: true
+  multi_language: true
+  supported_languages: ["en", "de", "fr"]
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  year_over_year_comparison: true
+  data_quality_disclosure: true
+  assumption_disclosure: true
+  retention_years: 10

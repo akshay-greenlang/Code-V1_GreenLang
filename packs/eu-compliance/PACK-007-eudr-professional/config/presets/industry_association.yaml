@@ -1,0 +1,170 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Industry Association Preset
+# =============================================================================
+# Deployment for industry associations managing compliance for multiple member
+# companies. Portfolio aggregation, cross-member benchmarking, best practice
+# sharing, anonymized reporting, and association-level analytics.
+#
+# Typical Use Cases:
+#   - Trade associations (e.g., cocoa associations, timber federations)
+#   - Industry coalitions and platforms
+#   - Sustainability certification bodies
+#   - Sector-wide compliance initiatives
+#
+# Key Features:
+#   - Multi-member portfolio (up to 100 members)
+#   - Anonymized benchmarking
+#   - Best practice library
+#   - Industry-level risk mapping
+#   - Shared supplier verification
+# =============================================================================
+
+operator:
+  company_size: "ENTERPRISE"
+  operator_type: "OPERATOR"
+
+commodities:
+  - commodity_type: "cattle"
+    enabled: true
+    priority: 3
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 1
+  - commodity_type: "coffee"
+    enabled: true
+    priority: 1
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 1
+  - commodity_type: "rubber"
+    enabled: true
+    priority: 2
+  - commodity_type: "soya"
+    enabled: true
+    priority: 2
+  - commodity_type: "wood"
+    enabled: true
+    priority: 1
+
+geolocation:
+  coordinate_precision: 6
+  polygon_max_vertices: 10000
+  batch_size: 1000
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+risk_assessment:
+  country_weight: 0.35
+  supplier_weight: 0.25
+  commodity_weight: 0.25
+  document_weight: 0.15
+  auto_escalation_enabled: false  # Association decides escalation
+  reassessment_interval_days: 90
+
+dds:
+  dds_type: "STANDARD"
+  require_all_fields: true
+  enable_draft_mode: true
+  retry_attempts: 3
+
+compliance:
+  require_geolocation: true
+  verification_level: "STANDARD"
+  audit_retention_years: 5
+  data_quality_threshold: 0.80
+
+advanced_geolocation:
+  sentinel_integration: true
+  modis_fire_check: true
+  protected_area_check: true
+  indigenous_land_check: true
+  hansen_forest_change: true
+  resolution_meters: 10
+  temporal_periods: 5
+  alert_systems: ["GLAD", "RADD"]
+
+scenario_risk:
+  simulation_count: 10000
+  confidence_levels: [0.90, 0.95]
+  parallel_workers: 4
+  timeout_seconds: 60
+  distributions:
+    country_risk: "BETA"
+    supplier_risk: "LOGNORMAL"
+    commodity_risk: "NORMAL"
+
+satellite_monitoring:
+  providers: ["SENTINEL_2", "MODIS"]
+  check_interval_hours: 24
+  alert_threshold: 0.70
+  historical_months: 48
+  resolution_meters: 10
+
+continuous_monitoring:
+  enabled: true
+  intervals:
+    satellite_check_hours: 24
+    risk_reassessment_hours: 48
+    supplier_update_hours: 168
+    regulatory_check_hours: 24
+  notification_channels: ["EMAIL", "WEBHOOK"]
+  escalation_enabled: false  # Members manage their own escalation
+
+portfolio:
+  max_operators: 100  # Up to 100 member companies
+  shared_supplier_pool: true  # Shared verification across members
+  cross_operator_reporting: true  # Industry-level reporting
+  cost_allocation: true  # Allocate costs to members
+  hierarchy_depth: 2  # Association -> Members
+
+audit_management:
+  retention_years: 5
+  hash_algorithm: "SHA-256"
+  export_formats: ["JSON", "XML", "PDF"]
+  mock_audit_enabled: true
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 5.0
+  ramsar_check: true
+  unesco_check: true
+
+regulatory_tracking:
+  eurlex_monitoring: true
+  check_interval_hours: 24
+  cross_regulation_tracking: true
+  auto_gap_analysis: true
+
+grievance:
+  enabled: true
+  anonymous_submissions: true
+  response_sla_days: 7
+  resolution_sla_days: 30
+  whistleblower_protection: true
+
+cross_regulation:
+  csrd_e4_linkage: false
+  csddd_linkage: true
+  nature_restoration_linkage: false
+
+advanced_supply_chain:
+  max_tier_depth: 4
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED", "MASS_BALANCE", "CONTROLLED_SOURCES"]
+  network_analysis: true
+  diversification_scoring: true
+
+supplier_benchmark:
+  peer_group_min_size: 20  # Large peer groups for associations
+  scoring_dimensions: ["COMPLIANCE_SCORE", "DATA_QUALITY", "RISK_LEVEL", "CERTIFICATION_STATUS"]
+  benchmark_frequency: "QUARTERLY"
+  degradation_alert: true
+
+reporting:
+  default_report_format: "PDF"
+  include_executive_summary: true
+  include_risk_heatmap: true
+  include_supplier_details: false  # Anonymized for associations
+  language: "en"
+  timezone: "UTC"

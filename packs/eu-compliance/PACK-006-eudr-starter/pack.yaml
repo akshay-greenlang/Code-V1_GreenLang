@@ -1,0 +1,1438 @@
+# =============================================================================
+# PACK-006: EUDR Starter Pack
+# GreenLang EU Compliance Pack for EU Deforestation Regulation
+# =============================================================================
+# This pack provides a complete, pre-configured deployment of GreenLang agents
+# and workflows for EU Deforestation Regulation (EUDR) compliance. It bundles
+# EUDR-specific agents, data connectors, workflows, presets, and templates
+# into a single installable unit for due diligence statement generation,
+# geolocation verification, risk assessment, and supply chain traceability.
+#
+# Regulatory References:
+#   - EUDR: Regulation (EU) 2023/1115
+#   - Articles: 3 (Prohibition), 4 (Operator Obligations), 8 (Due Diligence),
+#               9 (DDS), 10 (Information), 11 (Risk Assessment), 12 (Risk Mitigation),
+#               13 (Simplified DD), 29 (Country Benchmarking), 33 (EU IS)
+#   - Cutoff Date: 31 December 2020
+#   - Commodities: Cattle, Cocoa, Coffee, Oil Palm, Rubber, Soya, Wood
+#   - Annex I CN Codes: 400+ product classifications
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-14)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-006-eudr-starter
+  version: "1.0.0"
+  display_name: "EUDR Starter Pack"
+  description: >-
+    Complete GreenLang deployment pack for EU Deforestation Regulation (EUDR)
+    compliance. Includes supply chain traceability, geolocation verification,
+    risk assessment, due diligence statement generation, commodity classification,
+    and EU Information System integration. Supports all 7 EUDR commodities with
+    400+ CN code classifications, 200+ country risk benchmarks, and configurable
+    presets for large operators, mid-market companies, SMEs, and first-time
+    declarants.
+  category: eu-compliance
+  tier: starter
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-14"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/eudr-starter"
+  changelog_url: "https://docs.greenlang.io/packs/eudr-starter/changelog"
+
+  tags:
+    - eudr
+    - eu-deforestation
+    - eu-compliance
+    - supply-chain
+    - traceability
+    - geolocation
+    - due-diligence
+    - deforestation-free
+    - risk-assessment
+    - commodity-compliance
+
+  regulation:
+    name: "EU Deforestation Regulation"
+    reference: "(EU) 2023/1115"
+    effective_date: "2024-12-30"
+    sme_effective_date: "2025-06-30"
+    articles: [3, 4, 8, 9, 10, 11, 12, 13, 29, 33]
+    cutoff_date: "2020-12-31"
+    commodities: 7
+    annex_i_cn_codes: 400+
+    description: >-
+      The EU Deforestation Regulation prohibits the placing on the EU market,
+      making available on the EU market, or exporting from the EU, of relevant
+      commodities and products unless they are deforestation-free, produced in
+      accordance with the relevant legislation of the country of production,
+      and covered by a due diligence statement.
+
+  compliance_references:
+    - id: "EUDR"
+      name: "EU Deforestation Regulation"
+      regulation: "Regulation (EU) 2023/1115"
+      effective_date: "2024-12-30"
+      description: >-
+        Regulation on deforestation-free products. Establishes mandatory due
+        diligence requirements for operators and traders placing specified
+        commodities and derived products on the EU market.
+    - id: "EUDR-DDS"
+      name: "Due Diligence Statement Requirements"
+      regulation: "Regulation (EU) 2023/1115, Article 4(2)"
+      effective_date: "2024-12-30"
+      description: >-
+        Operators must submit a Due Diligence Statement (DDS) to the EU
+        Information System prior to placing products on the market. The DDS
+        must contain information per Article 4(2) and Annex II.
+    - id: "EUDR-GEO"
+      name: "Geolocation Requirements"
+      regulation: "Regulation (EU) 2023/1115, Article 9(1)(d)"
+      effective_date: "2024-12-30"
+      description: >-
+        Geolocation coordinates of all plots of land where commodities were
+        produced. For plots above 4 hectares, polygon coordinates are required.
+        For plots at or below 4 hectares, a single GPS point is sufficient.
+    - id: "EUDR-BENCH"
+      name: "Country Benchmarking System"
+      regulation: "Regulation (EU) 2023/1115, Article 29"
+      effective_date: "2024-12-30"
+      description: >-
+        The Commission classifies countries or parts thereof as low, standard,
+        or high risk based on deforestation rates, forest cover, agricultural
+        expansion, and governance indicators.
+    - id: "EUDR-EUIS"
+      name: "EU Information System"
+      regulation: "Regulation (EU) 2023/1115, Article 33"
+      effective_date: "2024-12-30"
+      description: >-
+        Electronic interface for submission and verification of due diligence
+        statements, reference number generation, and competent authority access.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines
+  # ===========================================================================
+  engines:
+    - id: dds_assembly_engine
+      name: "DDS Assembly Engine"
+      description: >-
+        Assembles complete Due Diligence Statements by collecting, validating,
+        and formatting all required information per Article 4(2) and Annex II.
+      required: true
+
+    - id: geolocation_engine
+      name: "Geolocation Verification Engine"
+      description: >-
+        Verifies geolocation data including coordinate validation, polygon
+        area calculation, CRS transformation, and overlap detection with
+        protected areas and deforestation alerts.
+      required: true
+
+    - id: risk_scoring_engine
+      name: "Risk Scoring Engine"
+      description: >-
+        Calculates composite risk scores using weighted factors for country
+        risk, supplier risk, commodity risk, and documentation completeness
+        per Article 10.
+      required: true
+
+    - id: commodity_classification_engine
+      name: "Commodity Classification Engine"
+      description: >-
+        Classifies products against EUDR Annex I CN codes to determine
+        whether they fall within scope of the regulation. Handles multi-
+        commodity derived products and mixed shipments.
+      required: true
+
+    - id: supplier_compliance_engine
+      name: "Supplier Compliance Engine"
+      description: >-
+        Tracks and assesses supplier-level compliance status across all tiers
+        of the supply chain. Manages engagement workflows, data collection,
+        and compliance scoring.
+      required: true
+
+    - id: cutoff_date_engine
+      name: "Cutoff Date Verification Engine"
+      description: >-
+        Verifies that production plots have not been subject to deforestation
+        or forest degradation after 31 December 2020 using satellite imagery,
+        historical land use data, and temporal analysis.
+      required: true
+
+    - id: policy_compliance_engine
+      name: "Policy Compliance Engine"
+      description: >-
+        Validates compliance with the relevant legislation of the country of
+        production, including land use rights, environmental regulations,
+        labour laws, and tax obligations.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences
+  # ===========================================================================
+  workflows:
+    - id: dds_generation
+      name: "DDS Generation Workflow"
+      description: >-
+        End-to-end workflow for generating a complete Due Diligence Statement.
+        Covers data collection, geolocation verification, risk assessment,
+        mitigation review, and DDS submission to the EU Information System.
+      schedule: "on_demand"
+      estimated_duration_days: 14
+      phases:
+        - name: data_collection
+          description: "Collect supply chain data, geolocation, and documentation"
+          agents:
+            - AGENT-EUDR-001
+            - AGENT-EUDR-002
+            - AGENT-EUDR-007
+            - AGENT-EUDR-008
+            - AGENT-EUDR-012
+            - AGENT-EUDR-015
+          duration_days: 5
+        - name: verification
+          description: "Verify geolocation, validate coordinates, check cutoff date"
+          agents:
+            - AGENT-EUDR-002
+            - AGENT-EUDR-006
+            - AGENT-EUDR-007
+            - AGENT-EUDR-009
+          duration_days: 3
+        - name: risk_assessment
+          description: "Assess country, supplier, and commodity risk"
+          agents:
+            - AGENT-EUDR-016
+            - AGENT-EUDR-017
+            - AGENT-EUDR-018
+            - AGENT-EUDR-028
+          duration_days: 2
+        - name: dds_assembly
+          description: "Assemble DDS, generate reference number, submit to EUIS"
+          agents:
+            - AGENT-EUDR-026
+            - AGENT-EUDR-030
+            - AGENT-EUDR-037
+            - AGENT-EUDR-038
+            - AGENT-EUDR-036
+          duration_days: 4
+
+    - id: supplier_onboarding
+      name: "Supplier Onboarding Workflow"
+      description: >-
+        Onboarding workflow for new suppliers entering the EUDR-compliant
+        supply chain. Captures supplier data, validates documentation,
+        performs initial risk assessment, and establishes traceability links.
+      schedule: "on_demand"
+      estimated_duration_days: 10
+      phases:
+        - name: supplier_registration
+          description: "Register supplier, capture basic information"
+          agents:
+            - AGENT-EUDR-001
+            - AGENT-EUDR-008
+          duration_days: 2
+        - name: documentation_collection
+          description: "Collect and authenticate supplier documentation"
+          agents:
+            - AGENT-EUDR-012
+            - AGENT-EUDR-015
+            - AGENT-DATA-001
+          duration_days: 3
+        - name: geolocation_capture
+          description: "Capture and validate plot geolocations"
+          agents:
+            - AGENT-EUDR-002
+            - AGENT-EUDR-006
+            - AGENT-EUDR-007
+          duration_days: 2
+        - name: initial_risk_assessment
+          description: "Perform initial risk scoring on new supplier"
+          agents:
+            - AGENT-EUDR-016
+            - AGENT-EUDR-017
+            - AGENT-EUDR-018
+          duration_days: 3
+
+    - id: quarterly_compliance_review
+      name: "Quarterly Compliance Review"
+      description: >-
+        Periodic compliance review to reassess risk levels, update supplier
+        statuses, verify ongoing data quality, and generate management reports.
+      schedule: "quarterly"
+      estimated_duration_days: 7
+      phases:
+        - name: data_refresh
+          description: "Refresh supplier data and satellite imagery"
+          agents:
+            - AGENT-EUDR-001
+            - AGENT-EUDR-002
+            - AGENT-DATA-005
+          duration_days: 2
+        - name: risk_reassessment
+          description: "Reassess risk scores with updated data"
+          agents:
+            - AGENT-EUDR-016
+            - AGENT-EUDR-017
+            - AGENT-EUDR-018
+            - AGENT-EUDR-028
+          duration_days: 2
+        - name: compliance_reporting
+          description: "Generate compliance status reports and dashboards"
+          agents:
+            - AGENT-EUDR-030
+            - AGENT-EUDR-026
+          duration_days: 3
+
+    - id: data_quality_baseline
+      name: "Data Quality Baseline"
+      description: >-
+        Establishes data quality baseline for EUDR compliance data. Profiles
+        all data sources, identifies gaps, validates coordinate accuracy, and
+        sets quality thresholds.
+      schedule: "on_demand"
+      estimated_duration_days: 5
+      phases:
+        - name: data_profiling
+          description: "Profile all EUDR data sources for quality"
+          agents:
+            - AGENT-DATA-010
+            - AGENT-DATA-011
+            - AGENT-DATA-019
+          duration_days: 2
+        - name: geolocation_validation
+          description: "Validate all stored coordinates and polygons"
+          agents:
+            - AGENT-EUDR-002
+            - AGENT-EUDR-007
+          duration_days: 2
+        - name: gap_analysis
+          description: "Identify data gaps and remediation priorities"
+          agents:
+            - AGENT-EUDR-026
+            - AGENT-DATA-010
+          duration_days: 1
+
+    - id: risk_reassessment
+      name: "Risk Reassessment Workflow"
+      description: >-
+        Targeted risk reassessment triggered by changes in country benchmarking,
+        supplier circumstances, or regulatory updates.
+      schedule: "on_demand"
+      estimated_duration_days: 3
+      phases:
+        - name: trigger_analysis
+          description: "Analyze trigger event and determine scope of reassessment"
+          agents:
+            - AGENT-EUDR-016
+            - AGENT-EUDR-027
+          duration_days: 1
+        - name: risk_recalculation
+          description: "Recalculate risk scores for affected suppliers/commodities"
+          agents:
+            - AGENT-EUDR-017
+            - AGENT-EUDR-018
+            - AGENT-EUDR-028
+          duration_days: 1
+        - name: mitigation_update
+          description: "Update mitigation measures and compliance status"
+          agents:
+            - AGENT-EUDR-026
+            - AGENT-EUDR-030
+          duration_days: 1
+
+    - id: bulk_import
+      name: "Bulk Import Workflow"
+      description: >-
+        Bulk import workflow for large-scale supplier and plot data ingestion.
+        Supports CSV, Excel, GeoJSON, and API-based import with validation,
+        deduplication, and quality checks.
+      schedule: "on_demand"
+      estimated_duration_days: 3
+      phases:
+        - name: data_ingestion
+          description: "Ingest and normalize bulk data files"
+          agents:
+            - AGENT-DATA-001
+            - AGENT-DATA-002
+            - AGENT-DATA-005
+          duration_days: 1
+        - name: validation_dedup
+          description: "Validate, deduplicate, and quality-check imported data"
+          agents:
+            - AGENT-DATA-010
+            - AGENT-DATA-011
+            - AGENT-DATA-019
+          duration_days: 1
+        - name: integration
+          description: "Integrate validated data into EUDR compliance database"
+          agents:
+            - AGENT-EUDR-001
+            - AGENT-EUDR-008
+            - AGENT-EUDR-002
+          duration_days: 1
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates
+  # ===========================================================================
+  templates:
+    - id: dds_standard_report
+      display_name: "Due Diligence Statement (Standard)"
+      description: "Full DDS report for standard risk operators per Article 4(2) and Annex II"
+      format: "pdf"
+      template_file: "templates/dds_standard_report.jinja2"
+      annex_version: "Annex II"
+      enabled: true
+
+    - id: dds_simplified_report
+      display_name: "Due Diligence Statement (Simplified)"
+      description: "Simplified DDS for low-risk country sourcing per Article 13"
+      format: "pdf"
+      template_file: "templates/dds_simplified_report.jinja2"
+      annex_version: "Annex II (Simplified)"
+      enabled: true
+
+    - id: compliance_dashboard
+      display_name: "EUDR Compliance Dashboard"
+      description: "Interactive compliance status dashboard with KPIs, risk heatmaps, and supplier status"
+      format: "html"
+      template_file: "templates/compliance_dashboard.jinja2"
+      enabled: true
+
+    - id: supplier_risk_report
+      display_name: "Supplier Risk Report"
+      description: "Detailed supplier-level risk assessment report with scoring breakdown"
+      format: "pdf"
+      template_file: "templates/supplier_risk_report.jinja2"
+      enabled: true
+
+    - id: country_risk_matrix
+      display_name: "Country Risk Matrix"
+      description: "Country-by-commodity risk matrix with Article 29 benchmarking overlay"
+      format: "pdf"
+      template_file: "templates/country_risk_matrix.jinja2"
+      enabled: true
+
+    - id: geolocation_report
+      display_name: "Geolocation Verification Report"
+      description: "Plot geolocation verification report with coordinate validation and satellite overlay"
+      format: "pdf"
+      template_file: "templates/geolocation_report.jinja2"
+      enabled: true
+
+    - id: executive_summary
+      display_name: "EUDR Executive Summary"
+      description: "Board-level executive summary of EUDR compliance posture and risk exposure"
+      format: "pdf"
+      template_file: "templates/executive_summary.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: "Master orchestrator that coordinates all EUDR pack agents and workflows"
+      required: true
+
+    - id: eudr_app_bridge
+      name: "EUDR Application Bridge"
+      description: "Connects the EUDR pack to the GL-EUDR-APP v1.0 application layer"
+      required: true
+
+    - id: traceability_bridge
+      name: "Traceability Data Bridge"
+      description: "Bridges EUDR traceability connector (AGENT-DATA-005) with supply chain agents"
+      required: true
+
+    - id: satellite_bridge
+      name: "Satellite Data Bridge"
+      description: "Bridges deforestation satellite connector (AGENT-DATA-007) with verification agents"
+      required: true
+
+    - id: gis_bridge
+      name: "GIS Data Bridge"
+      description: "Bridges GIS/mapping connector (AGENT-DATA-006) with geolocation agents"
+      required: true
+
+    - id: eu_information_system_bridge
+      name: "EU Information System Bridge"
+      description: "Manages communication with the EU Information System for DDS submission and reference numbers"
+      required: true
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: "Guided setup wizard for initial EUDR pack configuration and commodity selection"
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: "Verifies all pack agents, data sources, and integrations are operational"
+      required: false
+
+  # ===========================================================================
+  # EUDR Agents - 18 of 40 EUDR agents included in Starter Pack
+  # ===========================================================================
+  agents_eudr:
+
+    # -------------------------------------------------------------------------
+    # Supply Chain Traceability (8 agents)
+    # -------------------------------------------------------------------------
+    supply_chain_traceability:
+      - id: AGENT-EUDR-001
+        name: "Supply Chain Mapper"
+        description: "Maps multi-tier supply chains for EUDR-regulated commodities"
+        path: "greenlang/agents/eudr/supply_chain_mapper/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-002
+        name: "Geolocation Verification"
+        description: "Verifies geolocation coordinates and polygons for production plots"
+        path: "greenlang/agents/eudr/geolocation_verification/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-006
+        name: "Plot Boundary Manager"
+        description: "Manages plot boundary polygons, area calculations, and overlap detection"
+        path: "greenlang/agents/eudr/plot_boundary/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-007
+        name: "GPS Coordinate Validator"
+        description: "Validates GPS coordinate formats, precision, and datum transformations"
+        path: "greenlang/agents/eudr/gps_coordinate_validator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-008
+        name: "Multi-Tier Supplier Tracker"
+        description: "Tracks suppliers across multiple tiers with traceability links"
+        path: "greenlang/agents/eudr/multi_tier_supplier/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-009
+        name: "Chain of Custody Agent"
+        description: "Manages chain of custody models (identity preserved, segregated, mass balance)"
+        path: "greenlang/agents/eudr/chain_of_custody/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-012
+        name: "Document Authentication"
+        description: "Authenticates and validates supply chain documents, certificates, and permits"
+        path: "greenlang/agents/eudr/document_authentication/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-015
+        name: "Mobile Data Collector"
+        description: "Enables field-level data collection via mobile devices with GPS capture"
+        path: "greenlang/agents/eudr/mobile_data_collector/"
+        required: false
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Risk Assessment (3 agents)
+    # -------------------------------------------------------------------------
+    risk_assessment:
+      - id: AGENT-EUDR-016
+        name: "Country Risk Evaluator"
+        description: "Evaluates country-level deforestation risk using Article 29 benchmarking"
+        path: "greenlang/agents/eudr/country_risk_evaluator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-017
+        name: "Supplier Risk Scorer"
+        description: "Calculates composite supplier risk scores with weighted factor analysis"
+        path: "greenlang/agents/eudr/supplier_risk_scorer/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-018
+        name: "Commodity Risk Analyzer"
+        description: "Analyzes commodity-specific risk factors including origin, certification, and volume"
+        path: "greenlang/agents/eudr/commodity_risk_analyzer/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Due Diligence Core (3 agents)
+    # -------------------------------------------------------------------------
+    due_diligence_core:
+      - id: AGENT-EUDR-026
+        name: "Due Diligence Orchestrator"
+        description: "Orchestrates the full due diligence process per Articles 8-12"
+        path: "greenlang/agents/eudr/due_diligence_orchestrator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-027
+        name: "Information Gathering"
+        description: "Gathers and organizes all required information per Article 9"
+        path: "greenlang/agents/eudr/information_gathering/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-028
+        name: "Risk Assessment Engine"
+        description: "Implements the risk assessment procedure per Article 10"
+        path: "greenlang/agents/eudr/risk_assessment_engine/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Due Diligence Workflow (4 agents)
+    # -------------------------------------------------------------------------
+    due_diligence_workflow:
+      - id: AGENT-EUDR-030
+        name: "Documentation Generator"
+        description: "Generates compliance documentation, reports, and evidence packages"
+        path: "greenlang/agents/eudr/documentation_generator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-036
+        name: "EU Information System Interface"
+        description: "Interfaces with the EUDR EU Information System for DDS submission"
+        path: "greenlang/agents/eudr/eu_information_system_interface/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-037
+        name: "DDS Statement Creator"
+        description: "Creates Due Diligence Statements conforming to Annex II format"
+        path: "greenlang/agents/eudr/due_diligence_statement_creator/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-EUDR-038
+        name: "Reference Number Generator"
+        description: "Generates and manages unique DDS reference numbers per Article 4(2)"
+        path: "greenlang/agents/eudr/reference_number_generator/"
+        required: true
+        version: "1.0.0"
+
+  # ===========================================================================
+  # Data Agents - Supporting data intake and quality agents
+  # ===========================================================================
+  agents_data:
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts supply chain data from PDF documents, invoices, and certificates"
+      required: true
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes tabular supplier and commodity data from Excel/CSV files"
+      required: true
+
+    - id: AGENT-DATA-005
+      name: "EUDR Traceability Connector"
+      description: "Dedicated connector for EUDR traceability data sources and APIs"
+      required: true
+
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality across all EUDR compliance data sources"
+      required: true
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects and resolves duplicate supplier, plot, and shipment records"
+      required: true
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces EUDR-specific validation rules on all compliance data"
+      required: true
+
+  # ===========================================================================
+  # Foundation Agents - Core platform agents (all 10)
+  # ===========================================================================
+  agents_foundation:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas for EUDR compliance"
+      required: true
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes units (hectares, coordinates) and reference data"
+      required: true
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks all assumptions used in risk assessments and calculations"
+      required: true
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links all data points to source evidence for audit trails"
+      required: true
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access and data policies"
+      required: true
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Maintains registry of available agents and their capabilities"
+      required: true
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all risk calculations are reproducible with provenance tracking"
+      required: true
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Runs quality assurance checks on all agent outputs"
+      required: true
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Provides monitoring, logging, and telemetry for all agents"
+      required: true
+
+  # ===========================================================================
+  # Data Connectors - External data source connectors
+  # ===========================================================================
+  data_connectors:
+    - id: eudr_traceability_connector
+      name: "EUDR Traceability Connector"
+      description: "Connects to EUDR traceability data sources, customs systems, and trade databases"
+      path: "greenlang/agents/data/eudr_traceability/"
+      required: true
+
+    - id: deforestation_satellite_connector
+      name: "Deforestation Satellite Connector"
+      description: "Connects to satellite imagery services (Global Forest Watch, Copernicus, GLAD)"
+      path: "greenlang/agents/data/deforestation_satellite/"
+      required: true
+
+    - id: gis_mapping_connector
+      name: "GIS/Mapping Connector"
+      description: "Connects to GIS platforms for spatial analysis and mapping"
+      path: "greenlang/agents/data/gis_connector/"
+      required: true
+
+# -----------------------------------------------------------------------------
+# Commodities - EUDR Article 1 regulated commodities and Annex I CN codes
+# -----------------------------------------------------------------------------
+commodities:
+
+  cattle:
+    display_name: "Cattle"
+    eudr_article: "Article 1(1)(a)"
+    description: >-
+      Cattle and products derived from cattle, including beef, leather, hides,
+      and tallow. Covers live animals and processed products.
+    cn_codes:
+      - "0102"   # Live bovine animals
+      - "0201"   # Meat of bovine animals, fresh or chilled
+      - "0202"   # Meat of bovine animals, frozen
+      - "0206"   # Edible offal of bovine animals
+      - "0210"   # Meat and edible offal, salted, dried, smoked
+      - "1501"   # Pig fat and poultry fat (bovine tallow)
+      - "1502"   # Fats of bovine animals, sheep or goats
+      - "1602"   # Other prepared or preserved meat
+      - "4101"   # Raw hides and skins of bovine
+      - "4104"   # Tanned or crust hides of bovine
+      - "4107"   # Leather further prepared after tanning
+      - "4301"   # Raw furskins
+    high_risk_origins:
+      - "BRA"    # Brazil
+      - "ARG"    # Argentina
+      - "PRY"    # Paraguay
+      - "BOL"    # Bolivia
+      - "COL"    # Colombia
+      - "VEN"    # Venezuela
+      - "GUY"    # Guyana
+      - "NIC"    # Nicaragua
+    certifications: []
+    key_deforestation_drivers:
+      - "Pasture expansion"
+      - "Illegal land clearing"
+      - "Cattle ranching in Cerrado biome"
+
+  cocoa:
+    display_name: "Cocoa"
+    eudr_article: "Article 1(1)(b)"
+    description: >-
+      Cocoa beans and products derived from cocoa, including cocoa butter,
+      cocoa powder, chocolate, and confectionery.
+    cn_codes:
+      - "1801"   # Cocoa beans, whole or broken
+      - "1802"   # Cocoa shells, husks, skins and waste
+      - "1803"   # Cocoa paste
+      - "1804"   # Cocoa butter, fat and oil
+      - "1805"   # Cocoa powder, not containing added sugar
+      - "1806"   # Chocolate and other food preparations containing cocoa
+    high_risk_origins:
+      - "CIV"    # Cote d'Ivoire
+      - "GHA"    # Ghana
+      - "CMR"    # Cameroon
+      - "NGA"    # Nigeria
+      - "IDN"    # Indonesia
+      - "SLE"    # Sierra Leone
+      - "LBR"    # Liberia
+    certifications:
+      - "RAINFOREST_ALLIANCE"
+      - "UTZ"
+      - "FAIRTRADE"
+      - "ORGANIC"
+    key_deforestation_drivers:
+      - "Smallholder farm expansion"
+      - "Shade-tree removal"
+      - "Encroachment into forest reserves"
+
+  coffee:
+    display_name: "Coffee"
+    eudr_article: "Article 1(1)(c)"
+    description: >-
+      Coffee beans and products derived from coffee, including roasted,
+      ground, instant, and decaffeinated coffee.
+    cn_codes:
+      - "0901"   # Coffee, roasted or not, decaffeinated or not
+      - "2101"   # Extracts, essences and concentrates of coffee
+    high_risk_origins:
+      - "BRA"    # Brazil
+      - "VNM"    # Vietnam
+      - "COL"    # Colombia
+      - "IDN"    # Indonesia
+      - "ETH"    # Ethiopia
+      - "HND"    # Honduras
+      - "UGA"    # Uganda
+      - "PER"    # Peru
+    certifications:
+      - "FOUR_C"
+      - "RAINFOREST_ALLIANCE"
+      - "UTZ"
+      - "FAIRTRADE"
+      - "ORGANIC"
+    key_deforestation_drivers:
+      - "Highland forest conversion"
+      - "Sun coffee expansion"
+      - "Smallholder encroachment"
+
+  oil_palm:
+    display_name: "Oil Palm"
+    eudr_article: "Article 1(1)(d)"
+    description: >-
+      Oil palm and products derived from oil palm, including palm oil,
+      palm kernel oil, and oleochemicals.
+    cn_codes:
+      - "1207"   # Other oil seeds (palm nuts/kernels)
+      - "1511"   # Palm oil and its fractions
+      - "1513"   # Coconut (copra), palm kernel or babassu oil
+      - "1516"   # Animal or vegetable fats, hydrogenated
+      - "2915"   # Saturated acyclic monocarboxylic acids (fatty acids)
+      - "2916"   # Unsaturated acyclic monocarboxylic acids
+      - "3401"   # Soap (palm-derived)
+      - "3823"   # Industrial monocarboxylic fatty acids
+      - "3826"   # Biodiesel (palm-derived)
+    high_risk_origins:
+      - "IDN"    # Indonesia
+      - "MYS"    # Malaysia
+      - "PNG"    # Papua New Guinea
+      - "COL"    # Colombia
+      - "NGA"    # Nigeria
+      - "THA"    # Thailand
+      - "GTM"    # Guatemala
+      - "HND"    # Honduras
+    certifications:
+      - "RSPO"
+      - "ISCC"
+      - "MSPO"
+      - "ISPO"
+    key_deforestation_drivers:
+      - "Large-scale plantation expansion"
+      - "Peatland drainage and conversion"
+      - "Smallholder encroachment into primary forest"
+
+  rubber:
+    display_name: "Rubber"
+    eudr_article: "Article 1(1)(e)"
+    description: >-
+      Natural rubber and products derived from rubber, including tyres,
+      gloves, and industrial rubber goods.
+    cn_codes:
+      - "4001"   # Natural rubber in primary forms
+      - "4005"   # Compounded rubber, unvulcanised
+      - "4006"   # Other forms of unvulcanised rubber
+      - "4007"   # Vulcanised rubber thread and cord
+      - "4008"   # Plates, sheets, strip of vulcanised rubber
+      - "4010"   # Conveyor or transmission belts of vulcanised rubber
+      - "4011"   # New pneumatic tyres, of rubber
+      - "4012"   # Retreaded or used pneumatic tyres
+      - "4013"   # Inner tubes, of rubber
+      - "4015"   # Articles of apparel (rubber gloves)
+      - "4016"   # Other articles of vulcanised rubber
+      - "4017"   # Hard rubber in all forms
+    high_risk_origins:
+      - "THA"    # Thailand
+      - "IDN"    # Indonesia
+      - "VNM"    # Vietnam
+      - "CIV"    # Cote d'Ivoire
+      - "MYS"    # Malaysia
+      - "CHN"    # China
+      - "MMR"    # Myanmar
+      - "LAO"    # Laos
+      - "KHM"    # Cambodia
+    certifications:
+      - "FSC"
+      - "PEFC"
+    key_deforestation_drivers:
+      - "Plantation expansion into protected areas"
+      - "Conversion of secondary forests"
+      - "Monoculture establishment in biodiversity hotspots"
+
+  soya:
+    display_name: "Soya"
+    eudr_article: "Article 1(1)(f)"
+    description: >-
+      Soybeans and products derived from soya, including soybean oil,
+      soybean meal, and soy lecithin.
+    cn_codes:
+      - "1201"   # Soya beans, whether or not broken
+      - "1208"   # Flours and meals of oil seeds (soya)
+      - "1507"   # Soya-bean oil and its fractions
+      - "2304"   # Oil-cake and other solid residues of soya-bean
+      - "2309"   # Preparations for animal feeding (soy-based)
+    high_risk_origins:
+      - "BRA"    # Brazil
+      - "ARG"    # Argentina
+      - "USA"    # United States
+      - "PRY"    # Paraguay
+      - "BOL"    # Bolivia
+      - "URY"    # Uruguay
+    certifications:
+      - "RTRS"
+      - "PROTERRA"
+      - "ISCC"
+    key_deforestation_drivers:
+      - "Agricultural frontier expansion (Cerrado, Chaco)"
+      - "Large-scale mechanized farming"
+      - "Indirect land use change"
+
+  wood:
+    display_name: "Wood"
+    eudr_article: "Article 1(1)(g)"
+    description: >-
+      Wood and products derived from wood, including timber, charcoal,
+      pulp, paper, printed products, furniture, and cork.
+    cn_codes:
+      - "4401"   # Fuel wood, wood chips, sawdust
+      - "4402"   # Wood charcoal
+      - "4403"   # Wood in the rough
+      - "4404"   # Hoopwood, split poles, stakes
+      - "4405"   # Wood wool, wood flour
+      - "4406"   # Railway or tramway sleepers of wood
+      - "4407"   # Wood sawn or chipped lengthwise
+      - "4408"   # Veneer sheets and sheets for plywood
+      - "4409"   # Wood continuously shaped along edges
+      - "4410"   # Particle board and similar board
+      - "4411"   # Fibreboard of wood or other ligneous materials
+      - "4412"   # Plywood, veneered panels and similar laminated wood
+      - "4413"   # Densified wood
+      - "4414"   # Wooden frames for paintings, photographs
+      - "4415"   # Packing cases, boxes, crates of wood
+      - "4416"   # Casks, barrels, vats of wood
+      - "4417"   # Tools, tool bodies, tool handles of wood
+      - "4418"   # Builders joinery and carpentry of wood
+      - "4419"   # Tableware and kitchenware of wood
+      - "4420"   # Wood marquetry and inlaid wood
+      - "4421"   # Other articles of wood
+      - "4501"   # Natural cork, raw or simply prepared
+      - "4502"   # Natural cork, debacked or roughly squared
+      - "4503"   # Articles of natural cork
+      - "4504"   # Agglomerated cork
+      - "4701"   # Mechanical wood pulp
+      - "4702"   # Chemical wood pulp, dissolving grades
+      - "4703"   # Chemical wood pulp, soda or sulphate
+      - "4704"   # Chemical wood pulp, sulphite
+      - "4705"   # Wood pulp obtained by combination of processes
+      - "4706"   # Pulps of fibres derived from recovered paper
+      - "4707"   # Recovered paper or paperboard
+      - "4801"   # Newsprint
+      - "4802"   # Uncoated paper and paperboard for writing
+      - "4803"   # Toilet or facial tissue stock
+      - "4804"   # Uncoated kraft paper and paperboard
+      - "4805"   # Other uncoated paper and paperboard
+      - "4806"   # Vegetable parchment, greaseproof papers
+      - "4807"   # Composite paper and paperboard
+      - "4808"   # Paper and paperboard, corrugated
+      - "4809"   # Carbon paper, self-copy paper
+      - "4810"   # Coated paper and paperboard
+      - "4811"   # Paper and paperboard, coated, impregnated
+      - "4812"   # Filter blocks, slabs of paper pulp
+      - "4813"   # Cigarette paper
+      - "4814"   # Wallpaper and similar wall coverings
+      - "4816"   # Carbon paper, self-copy paper (in rolls)
+      - "4817"   # Envelopes, letter cards of paper
+      - "4818"   # Toilet paper and similar paper for household
+      - "4819"   # Cartons, boxes, cases, bags of paper
+      - "4820"   # Registers, account books, notebooks
+      - "4821"   # Paper or paperboard labels
+      - "4822"   # Bobbins, spools of paper pulp
+      - "4823"   # Other paper, paperboard, cellulose wadding
+      - "4901"   # Printed books, brochures, leaflets
+      - "4902"   # Newspapers, journals, periodicals
+      - "4903"   # Children's picture, drawing or colouring books
+      - "4904"   # Music, printed or in manuscript
+      - "4905"   # Maps and hydrographic or similar charts
+      - "4906"   # Plans and drawings for architectural purposes
+      - "4907"   # Unused postage, revenue stamps
+      - "4908"   # Transfers (decalcomanias)
+      - "4909"   # Printed or illustrated postcards
+      - "4910"   # Calendars of any kind, printed
+      - "4911"   # Other printed matter, including printed pictures
+      - "9401"   # Seats (wooden seating)
+      - "9403"   # Other furniture (wooden furniture)
+      - "9406"   # Prefabricated buildings (wooden)
+    high_risk_origins:
+      - "BRA"    # Brazil
+      - "COD"    # Democratic Republic of Congo
+      - "IDN"    # Indonesia
+      - "MYS"    # Malaysia
+      - "PNG"    # Papua New Guinea
+      - "MMR"    # Myanmar
+      - "CMR"    # Cameroon
+      - "COG"    # Republic of Congo
+      - "GAB"    # Gabon
+      - "GHA"    # Ghana
+    certifications:
+      - "FSC"
+      - "PEFC"
+      - "SFI"
+    key_deforestation_drivers:
+      - "Illegal logging"
+      - "Selective logging leading to degradation"
+      - "Conversion to agriculture or plantations"
+      - "Infrastructure development in forested areas"
+
+# -----------------------------------------------------------------------------
+# Country Risk Database - Article 29 Benchmarking (200+ countries)
+# -----------------------------------------------------------------------------
+# Classification per Article 29 criteria:
+#   HIGH_RISK: High deforestation rate, weak governance, low enforcement
+#   STANDARD_RISK: Default classification (majority of countries)
+#   LOW_RISK: Low deforestation rate, strong governance, EU member states
+# -----------------------------------------------------------------------------
+country_risk_database:
+
+  # HIGH RISK countries (significant deforestation risk)
+  high_risk:
+    - {iso3: "BRA", name: "Brazil", region: "South America", forest_cover_pct: 59.0, annual_deforestation_rate: 0.45, governance_score: 0.42}
+    - {iso3: "IDN", name: "Indonesia", region: "Southeast Asia", forest_cover_pct: 49.1, annual_deforestation_rate: 0.75, governance_score: 0.40}
+    - {iso3: "COD", name: "Democratic Republic of Congo", region: "Central Africa", forest_cover_pct: 67.3, annual_deforestation_rate: 0.40, governance_score: 0.18}
+    - {iso3: "BOL", name: "Bolivia", region: "South America", forest_cover_pct: 50.6, annual_deforestation_rate: 0.50, governance_score: 0.35}
+    - {iso3: "PRY", name: "Paraguay", region: "South America", forest_cover_pct: 38.6, annual_deforestation_rate: 0.80, governance_score: 0.38}
+    - {iso3: "MYS", name: "Malaysia", region: "Southeast Asia", forest_cover_pct: 54.6, annual_deforestation_rate: 0.40, governance_score: 0.52}
+    - {iso3: "PNG", name: "Papua New Guinea", region: "Oceania", forest_cover_pct: 74.1, annual_deforestation_rate: 0.35, governance_score: 0.25}
+    - {iso3: "COG", name: "Republic of Congo", region: "Central Africa", forest_cover_pct: 65.4, annual_deforestation_rate: 0.20, governance_score: 0.22}
+    - {iso3: "MMR", name: "Myanmar", region: "Southeast Asia", forest_cover_pct: 42.9, annual_deforestation_rate: 0.85, governance_score: 0.15}
+    - {iso3: "CMR", name: "Cameroon", region: "Central Africa", forest_cover_pct: 39.8, annual_deforestation_rate: 0.30, governance_score: 0.28}
+    - {iso3: "CIV", name: "Cote d'Ivoire", region: "West Africa", forest_cover_pct: 8.9, annual_deforestation_rate: 2.60, governance_score: 0.30}
+    - {iso3: "GHA", name: "Ghana", region: "West Africa", forest_cover_pct: 21.0, annual_deforestation_rate: 1.20, governance_score: 0.48}
+    - {iso3: "NGA", name: "Nigeria", region: "West Africa", forest_cover_pct: 7.2, annual_deforestation_rate: 3.70, governance_score: 0.32}
+    - {iso3: "LAO", name: "Laos", region: "Southeast Asia", forest_cover_pct: 58.0, annual_deforestation_rate: 0.70, governance_score: 0.28}
+    - {iso3: "KHM", name: "Cambodia", region: "Southeast Asia", forest_cover_pct: 46.3, annual_deforestation_rate: 1.30, governance_score: 0.25}
+    - {iso3: "NIC", name: "Nicaragua", region: "Central America", forest_cover_pct: 25.9, annual_deforestation_rate: 1.10, governance_score: 0.28}
+    - {iso3: "SLE", name: "Sierra Leone", region: "West Africa", forest_cover_pct: 24.5, annual_deforestation_rate: 0.90, governance_score: 0.22}
+    - {iso3: "LBR", name: "Liberia", region: "West Africa", forest_cover_pct: 43.4, annual_deforestation_rate: 0.60, governance_score: 0.20}
+    - {iso3: "GAB", name: "Gabon", region: "Central Africa", forest_cover_pct: 88.0, annual_deforestation_rate: 0.10, governance_score: 0.32}
+    - {iso3: "VEN", name: "Venezuela", region: "South America", forest_cover_pct: 52.3, annual_deforestation_rate: 0.40, governance_score: 0.15}
+    - {iso3: "GUY", name: "Guyana", region: "South America", forest_cover_pct: 84.0, annual_deforestation_rate: 0.05, governance_score: 0.35}
+    - {iso3: "SUR", name: "Suriname", region: "South America", forest_cover_pct: 93.0, annual_deforestation_rate: 0.05, governance_score: 0.30}
+    - {iso3: "GTM", name: "Guatemala", region: "Central America", forest_cover_pct: 33.0, annual_deforestation_rate: 1.00, governance_score: 0.32}
+    - {iso3: "HND", name: "Honduras", region: "Central America", forest_cover_pct: 41.0, annual_deforestation_rate: 1.50, governance_score: 0.30}
+    - {iso3: "TZA", name: "Tanzania", region: "East Africa", forest_cover_pct: 50.6, annual_deforestation_rate: 0.80, governance_score: 0.35}
+    - {iso3: "MOZ", name: "Mozambique", region: "East Africa", forest_cover_pct: 36.4, annual_deforestation_rate: 0.40, governance_score: 0.25}
+    - {iso3: "MDG", name: "Madagascar", region: "East Africa", forest_cover_pct: 21.3, annual_deforestation_rate: 1.10, governance_score: 0.22}
+    - {iso3: "AGO", name: "Angola", region: "Southern Africa", forest_cover_pct: 46.0, annual_deforestation_rate: 0.20, governance_score: 0.20}
+
+  # LOW RISK countries (EU-27 + select OECD + strong governance)
+  low_risk:
+    # EU-27 Member States
+    - {iso3: "AUT", name: "Austria", region: "Western Europe"}
+    - {iso3: "BEL", name: "Belgium", region: "Western Europe"}
+    - {iso3: "BGR", name: "Bulgaria", region: "Eastern Europe"}
+    - {iso3: "HRV", name: "Croatia", region: "Southern Europe"}
+    - {iso3: "CYP", name: "Cyprus", region: "Southern Europe"}
+    - {iso3: "CZE", name: "Czech Republic", region: "Central Europe"}
+    - {iso3: "DNK", name: "Denmark", region: "Northern Europe"}
+    - {iso3: "EST", name: "Estonia", region: "Northern Europe"}
+    - {iso3: "FIN", name: "Finland", region: "Northern Europe"}
+    - {iso3: "FRA", name: "France", region: "Western Europe"}
+    - {iso3: "DEU", name: "Germany", region: "Western Europe"}
+    - {iso3: "GRC", name: "Greece", region: "Southern Europe"}
+    - {iso3: "HUN", name: "Hungary", region: "Central Europe"}
+    - {iso3: "IRL", name: "Ireland", region: "Western Europe"}
+    - {iso3: "ITA", name: "Italy", region: "Southern Europe"}
+    - {iso3: "LVA", name: "Latvia", region: "Northern Europe"}
+    - {iso3: "LTU", name: "Lithuania", region: "Northern Europe"}
+    - {iso3: "LUX", name: "Luxembourg", region: "Western Europe"}
+    - {iso3: "MLT", name: "Malta", region: "Southern Europe"}
+    - {iso3: "NLD", name: "Netherlands", region: "Western Europe"}
+    - {iso3: "POL", name: "Poland", region: "Central Europe"}
+    - {iso3: "PRT", name: "Portugal", region: "Southern Europe"}
+    - {iso3: "ROU", name: "Romania", region: "Eastern Europe"}
+    - {iso3: "SVK", name: "Slovakia", region: "Central Europe"}
+    - {iso3: "SVN", name: "Slovenia", region: "Central Europe"}
+    - {iso3: "ESP", name: "Spain", region: "Southern Europe"}
+    - {iso3: "SWE", name: "Sweden", region: "Northern Europe"}
+    # EEA / EFTA
+    - {iso3: "ISL", name: "Iceland", region: "Northern Europe"}
+    - {iso3: "LIE", name: "Liechtenstein", region: "Western Europe"}
+    - {iso3: "NOR", name: "Norway", region: "Northern Europe"}
+    - {iso3: "CHE", name: "Switzerland", region: "Western Europe"}
+    # Other OECD with strong forest governance
+    - {iso3: "GBR", name: "United Kingdom", region: "Western Europe"}
+    - {iso3: "CAN", name: "Canada", region: "North America"}
+    - {iso3: "AUS", name: "Australia", region: "Oceania"}
+    - {iso3: "NZL", name: "New Zealand", region: "Oceania"}
+    - {iso3: "JPN", name: "Japan", region: "East Asia"}
+    - {iso3: "KOR", name: "South Korea", region: "East Asia"}
+    - {iso3: "SGP", name: "Singapore", region: "Southeast Asia"}
+
+  # STANDARD RISK countries (all others not classified as HIGH or LOW)
+  standard_risk:
+    # Americas
+    - {iso3: "USA", name: "United States", region: "North America"}
+    - {iso3: "MEX", name: "Mexico", region: "Central America"}
+    - {iso3: "ARG", name: "Argentina", region: "South America"}
+    - {iso3: "CHL", name: "Chile", region: "South America"}
+    - {iso3: "COL", name: "Colombia", region: "South America"}
+    - {iso3: "PER", name: "Peru", region: "South America"}
+    - {iso3: "ECU", name: "Ecuador", region: "South America"}
+    - {iso3: "URY", name: "Uruguay", region: "South America"}
+    - {iso3: "CRI", name: "Costa Rica", region: "Central America"}
+    - {iso3: "PAN", name: "Panama", region: "Central America"}
+    - {iso3: "SLV", name: "El Salvador", region: "Central America"}
+    - {iso3: "DOM", name: "Dominican Republic", region: "Caribbean"}
+    - {iso3: "JAM", name: "Jamaica", region: "Caribbean"}
+    - {iso3: "TTO", name: "Trinidad and Tobago", region: "Caribbean"}
+    - {iso3: "CUB", name: "Cuba", region: "Caribbean"}
+    - {iso3: "HTI", name: "Haiti", region: "Caribbean"}
+    - {iso3: "BLZ", name: "Belize", region: "Central America"}
+    # Asia
+    - {iso3: "CHN", name: "China", region: "East Asia"}
+    - {iso3: "IND", name: "India", region: "South Asia"}
+    - {iso3: "THA", name: "Thailand", region: "Southeast Asia"}
+    - {iso3: "VNM", name: "Vietnam", region: "Southeast Asia"}
+    - {iso3: "PHL", name: "Philippines", region: "Southeast Asia"}
+    - {iso3: "BGD", name: "Bangladesh", region: "South Asia"}
+    - {iso3: "PAK", name: "Pakistan", region: "South Asia"}
+    - {iso3: "LKA", name: "Sri Lanka", region: "South Asia"}
+    - {iso3: "NPL", name: "Nepal", region: "South Asia"}
+    - {iso3: "TWN", name: "Taiwan", region: "East Asia"}
+    - {iso3: "MNG", name: "Mongolia", region: "East Asia"}
+    - {iso3: "TUR", name: "Turkey", region: "Western Asia"}
+    - {iso3: "ISR", name: "Israel", region: "Western Asia"}
+    - {iso3: "GEO", name: "Georgia", region: "Western Asia"}
+    - {iso3: "ARM", name: "Armenia", region: "Western Asia"}
+    - {iso3: "AZE", name: "Azerbaijan", region: "Western Asia"}
+    - {iso3: "KAZ", name: "Kazakhstan", region: "Central Asia"}
+    - {iso3: "UZB", name: "Uzbekistan", region: "Central Asia"}
+    - {iso3: "TKM", name: "Turkmenistan", region: "Central Asia"}
+    - {iso3: "KGZ", name: "Kyrgyzstan", region: "Central Asia"}
+    - {iso3: "TJK", name: "Tajikistan", region: "Central Asia"}
+    # Africa
+    - {iso3: "ZAF", name: "South Africa", region: "Southern Africa"}
+    - {iso3: "KEN", name: "Kenya", region: "East Africa"}
+    - {iso3: "ETH", name: "Ethiopia", region: "East Africa"}
+    - {iso3: "UGA", name: "Uganda", region: "East Africa"}
+    - {iso3: "RWA", name: "Rwanda", region: "East Africa"}
+    - {iso3: "BDI", name: "Burundi", region: "East Africa"}
+    - {iso3: "MWI", name: "Malawi", region: "East Africa"}
+    - {iso3: "ZMB", name: "Zambia", region: "Southern Africa"}
+    - {iso3: "ZWE", name: "Zimbabwe", region: "Southern Africa"}
+    - {iso3: "BWA", name: "Botswana", region: "Southern Africa"}
+    - {iso3: "NAM", name: "Namibia", region: "Southern Africa"}
+    - {iso3: "SWZ", name: "Eswatini", region: "Southern Africa"}
+    - {iso3: "LSO", name: "Lesotho", region: "Southern Africa"}
+    - {iso3: "SEN", name: "Senegal", region: "West Africa"}
+    - {iso3: "MLI", name: "Mali", region: "West Africa"}
+    - {iso3: "BFA", name: "Burkina Faso", region: "West Africa"}
+    - {iso3: "NER", name: "Niger", region: "West Africa"}
+    - {iso3: "TCD", name: "Chad", region: "Central Africa"}
+    - {iso3: "CAF", name: "Central African Republic", region: "Central Africa"}
+    - {iso3: "GNQ", name: "Equatorial Guinea", region: "Central Africa"}
+    - {iso3: "GNB", name: "Guinea-Bissau", region: "West Africa"}
+    - {iso3: "GIN", name: "Guinea", region: "West Africa"}
+    - {iso3: "TGO", name: "Togo", region: "West Africa"}
+    - {iso3: "BEN", name: "Benin", region: "West Africa"}
+    - {iso3: "GMB", name: "Gambia", region: "West Africa"}
+    - {iso3: "MRT", name: "Mauritania", region: "West Africa"}
+    - {iso3: "CPV", name: "Cabo Verde", region: "West Africa"}
+    - {iso3: "STP", name: "Sao Tome and Principe", region: "Central Africa"}
+    - {iso3: "DJI", name: "Djibouti", region: "East Africa"}
+    - {iso3: "ERI", name: "Eritrea", region: "East Africa"}
+    - {iso3: "SOM", name: "Somalia", region: "East Africa"}
+    - {iso3: "SSD", name: "South Sudan", region: "East Africa"}
+    - {iso3: "SDN", name: "Sudan", region: "North Africa"}
+    - {iso3: "EGY", name: "Egypt", region: "North Africa"}
+    - {iso3: "LBY", name: "Libya", region: "North Africa"}
+    - {iso3: "TUN", name: "Tunisia", region: "North Africa"}
+    - {iso3: "DZA", name: "Algeria", region: "North Africa"}
+    - {iso3: "MAR", name: "Morocco", region: "North Africa"}
+    - {iso3: "MUS", name: "Mauritius", region: "East Africa"}
+    - {iso3: "SYC", name: "Seychelles", region: "East Africa"}
+    - {iso3: "COM", name: "Comoros", region: "East Africa"}
+    # Middle East
+    - {iso3: "SAU", name: "Saudi Arabia", region: "Western Asia"}
+    - {iso3: "ARE", name: "United Arab Emirates", region: "Western Asia"}
+    - {iso3: "QAT", name: "Qatar", region: "Western Asia"}
+    - {iso3: "KWT", name: "Kuwait", region: "Western Asia"}
+    - {iso3: "BHR", name: "Bahrain", region: "Western Asia"}
+    - {iso3: "OMN", name: "Oman", region: "Western Asia"}
+    - {iso3: "JOR", name: "Jordan", region: "Western Asia"}
+    - {iso3: "LBN", name: "Lebanon", region: "Western Asia"}
+    - {iso3: "IRQ", name: "Iraq", region: "Western Asia"}
+    - {iso3: "IRN", name: "Iran", region: "Western Asia"}
+    - {iso3: "AFG", name: "Afghanistan", region: "South Asia"}
+    - {iso3: "YEM", name: "Yemen", region: "Western Asia"}
+    - {iso3: "SYR", name: "Syria", region: "Western Asia"}
+    # Europe (non-EU)
+    - {iso3: "UKR", name: "Ukraine", region: "Eastern Europe"}
+    - {iso3: "MDA", name: "Moldova", region: "Eastern Europe"}
+    - {iso3: "BLR", name: "Belarus", region: "Eastern Europe"}
+    - {iso3: "RUS", name: "Russia", region: "Eastern Europe"}
+    - {iso3: "SRB", name: "Serbia", region: "Southern Europe"}
+    - {iso3: "BIH", name: "Bosnia and Herzegovina", region: "Southern Europe"}
+    - {iso3: "MNE", name: "Montenegro", region: "Southern Europe"}
+    - {iso3: "ALB", name: "Albania", region: "Southern Europe"}
+    - {iso3: "MKD", name: "North Macedonia", region: "Southern Europe"}
+    - {iso3: "XKX", name: "Kosovo", region: "Southern Europe"}
+    - {iso3: "AND", name: "Andorra", region: "Southern Europe"}
+    - {iso3: "MCO", name: "Monaco", region: "Western Europe"}
+    - {iso3: "SMR", name: "San Marino", region: "Southern Europe"}
+    - {iso3: "VAT", name: "Vatican City", region: "Southern Europe"}
+    # Oceania
+    - {iso3: "FJI", name: "Fiji", region: "Oceania"}
+    - {iso3: "SLB", name: "Solomon Islands", region: "Oceania"}
+    - {iso3: "VUT", name: "Vanuatu", region: "Oceania"}
+    - {iso3: "WSM", name: "Samoa", region: "Oceania"}
+    - {iso3: "TON", name: "Tonga", region: "Oceania"}
+    - {iso3: "TLS", name: "Timor-Leste", region: "Southeast Asia"}
+    - {iso3: "BRN", name: "Brunei", region: "Southeast Asia"}
+
+# -----------------------------------------------------------------------------
+# Presets - Pre-configured deployment profiles
+# -----------------------------------------------------------------------------
+presets:
+
+  # Size-based presets
+  size_presets:
+    - id: large_operator
+      display_name: "Large Operator"
+      description: >-
+        Full deployment for large operators (>500 employees, >EUR 150M turnover).
+        All 7 commodities enabled, full DDS workflow, multi-tier supply chain
+        depth (5 tiers), all risk assessment dimensions, EU IS production
+        integration, and advanced analytics.
+      config_file: "config/presets/large_operator.yaml"
+      criteria:
+        min_employees: 500
+        min_turnover_eur: 150000000
+        operator_type: "OPERATOR"
+
+    - id: mid_market
+      display_name: "Mid-Market Company"
+      description: >-
+        Optimized for mid-market companies (50-500 employees). Configurable
+        commodity selection, standard DDS workflow, 3-tier supply chain depth,
+        core risk assessment, EU IS sandbox integration.
+      config_file: "config/presets/mid_market.yaml"
+      criteria:
+        min_employees: 50
+        max_employees: 500
+        operator_type: "OPERATOR"
+
+    - id: sme
+      display_name: "SME (Small/Medium Enterprise)"
+      description: >-
+        Simplified deployment for SMEs (<50 employees or traders). Simplified
+        DDS where eligible, 2-tier supply chain, guided mode enabled, core
+        risk assessment only.
+      config_file: "config/presets/sme.yaml"
+      criteria:
+        max_employees: 50
+        operator_type: "TRADER"
+
+    - id: first_time
+      display_name: "First-Time Declarant"
+      description: >-
+        Extended onboarding for organizations making their first DDS submission.
+        Tutorial mode, pre-populated examples, step-by-step guidance, demo
+        data available, all validations with detailed explanations.
+      config_file: "config/presets/first_time.yaml"
+      criteria:
+        first_declaration: true
+
+  # Sector-specific presets (by commodity focus)
+  sector_presets:
+    - id: palm_oil
+      display_name: "Palm Oil"
+      description: "Palm oil and derivatives supply chain with RSPO/ISCC certification support"
+      config_file: "config/sectors/palm_oil.yaml"
+      primary_commodities: ["oil_palm"]
+
+    - id: timber_wood
+      display_name: "Timber & Wood Products"
+      description: "Timber, wood products, pulp, and paper supply chain with FSC/PEFC certification"
+      config_file: "config/sectors/timber_wood.yaml"
+      primary_commodities: ["wood"]
+
+    - id: cocoa_coffee
+      display_name: "Cocoa & Coffee"
+      description: "Cocoa and coffee supply chains with Rainforest Alliance/4C certification"
+      config_file: "config/sectors/cocoa_coffee.yaml"
+      primary_commodities: ["cocoa", "coffee"]
+
+    - id: soy_cattle
+      display_name: "Soy & Cattle"
+      description: "Soy and cattle supply chains with focus on South American sourcing"
+      config_file: "config/sectors/soy_cattle.yaml"
+      primary_commodities: ["soya", "cattle"]
+
+    - id: rubber
+      display_name: "Rubber"
+      description: "Natural rubber supply chain with Southeast Asian sourcing focus"
+      config_file: "config/sectors/rubber.yaml"
+      primary_commodities: ["rubber"]
+
+# -----------------------------------------------------------------------------
+# Templates (report templates metadata)
+# -----------------------------------------------------------------------------
+report_templates:
+  - id: dds_standard
+    display_name: "Standard DDS Report"
+    format: "pdf"
+    template_file: "templates/dds_standard_report.jinja2"
+    description: "Standard Due Diligence Statement per Annex II"
+
+  - id: dds_simplified
+    display_name: "Simplified DDS Report"
+    format: "pdf"
+    template_file: "templates/dds_simplified_report.jinja2"
+    description: "Simplified DDS for low-risk country sourcing (Article 13)"
+
+  - id: compliance_dashboard
+    display_name: "Compliance Dashboard"
+    format: "html"
+    template_file: "templates/compliance_dashboard.jinja2"
+    description: "Interactive EUDR compliance status dashboard"
+
+  - id: supplier_risk
+    display_name: "Supplier Risk Report"
+    format: "pdf"
+    template_file: "templates/supplier_risk_report.jinja2"
+    description: "Supplier-level risk assessment with scoring breakdown"
+
+  - id: country_risk
+    display_name: "Country Risk Matrix"
+    format: "pdf"
+    template_file: "templates/country_risk_matrix.jinja2"
+    description: "Country-by-commodity risk matrix"
+
+  - id: geolocation
+    display_name: "Geolocation Report"
+    format: "pdf"
+    template_file: "templates/geolocation_report.jinja2"
+    description: "Plot geolocation verification with satellite overlay"
+
+  - id: executive_summary
+    display_name: "Executive Summary"
+    format: "pdf"
+    template_file: "templates/executive_summary.jinja2"
+    description: "Board-level EUDR compliance summary"
+
+# -----------------------------------------------------------------------------
+# Requirements - System and infrastructure requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=14"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "shapely>=2.0"
+    - "pyproj>=3.6"
+    - "geojson>=3.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+      - "postgis"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  data_ingestion:
+    throughput_records_per_second: 5000
+    max_latency_ms: 200
+    description: "Data ingestion throughput for supplier and plot data"
+
+  geolocation_verification:
+    single_coordinate_max_ms: 50
+    polygon_verification_max_ms: 500
+    batch_1000_max_seconds: 30
+    description: "Geolocation coordinate and polygon verification"
+
+  risk_assessment:
+    single_supplier_max_seconds: 5
+    batch_100_max_seconds: 60
+    country_risk_lookup_max_ms: 10
+    description: "Risk scoring calculation times"
+
+  dds_generation:
+    single_dds_max_seconds: 30
+    batch_50_max_seconds: 300
+    description: "DDS assembly and generation"
+
+  api_latency:
+    p50_ms: 100
+    p95_ms: 500
+    p99_ms: 2000
+
+  availability:
+    target_percent: 99.9
+    description: "Target system availability"

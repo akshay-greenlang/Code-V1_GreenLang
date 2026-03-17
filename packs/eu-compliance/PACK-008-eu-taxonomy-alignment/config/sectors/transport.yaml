@@ -1,0 +1,52 @@
+# =============================================================================
+# PACK-008 Sector: Transport
+# =============================================================================
+# Sector-specific configuration for the transport sector including low-carbon
+# vehicles, rail infrastructure, inland shipping, urban mobility, cycling
+# infrastructure, and logistics.
+#
+# Key NACE Sections: H (Transportation and storage)
+# Primary Objectives: CCM, PPC
+# Taxonomy Activities: ~18 activities
+#
+# Relevant TSC Examples:
+#   - Passenger cars: 0g CO2/km tailpipe (zero-emission vehicles)
+#   - Light commercial: 0g CO2/km (zero-emission) or specific thresholds
+#   - Heavy-duty vehicles: zero direct CO2 emissions
+#   - Rail: zero direct tailpipe CO2 emissions or bimodal criteria
+#   - Inland waterway: zero direct CO2 emissions or hybrid thresholds
+#   - Urban and suburban transport: zero direct CO2 emissions
+# =============================================================================
+
+active_sectors:
+  - "TRANSPORT"
+
+eligibility:
+  screening_mode: "HYBRID"
+  min_confidence: 0.85
+  include_transitional: true
+  include_enabling: true
+
+sc_assessment:
+  evaluation_mode: "STANDARD"
+  threshold_strictness: "STANDARD"
+  track_enabling_activities: true
+  track_transitional_activities: true
+
+dnsh:
+  climate_risk_assessment_enabled: true
+  pollution_threshold_check: true
+  biodiversity_impact_assessment: true
+
+transition_activity:
+  enabled: true
+  best_available_technology_check: true
+  lock_in_avoidance_check: true
+  sunset_date_tracking: true
+
+enabling_activity:
+  enabled: true
+  direct_enablement_verification: true
+
+regulatory:
+  include_complementary_da: false

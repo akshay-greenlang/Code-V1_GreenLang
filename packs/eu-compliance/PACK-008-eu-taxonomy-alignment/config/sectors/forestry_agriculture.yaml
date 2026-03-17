@@ -1,0 +1,51 @@
+# =============================================================================
+# PACK-008 Sector: Forestry & Agriculture
+# =============================================================================
+# Sector-specific configuration for forestry and agriculture including
+# afforestation, reforestation, forest management, ecosystem restoration,
+# organic farming, and agricultural practices.
+#
+# Key NACE Sections: A (Agriculture, forestry and fishing)
+# Primary Objectives: CCM, CCA, BIO
+# Taxonomy Activities: ~14 activities
+#
+# Relevant TSC Examples:
+#   - Afforestation: forest management plan, climate benefit analysis
+#   - Reforestation: 30-year GHG benefit demonstration
+#   - Forest management: sustainable forest management plan
+#   - Restoration of wetlands: biodiversity net gain
+#   - Conservation forestry: habitat conservation measures
+#   - Livestock: Scope 1+2 emission intensity thresholds
+# =============================================================================
+
+active_sectors:
+  - "FORESTRY_AGRICULTURE"
+
+eligibility:
+  screening_mode: "HYBRID"
+  min_confidence: 0.80
+  include_transitional: true
+  include_enabling: false
+
+sc_assessment:
+  evaluation_mode: "STANDARD"
+  threshold_strictness: "STANDARD"
+  track_transitional_activities: true
+
+dnsh:
+  climate_risk_assessment_enabled: true
+  water_framework_directive_check: true
+  circular_economy_waste_hierarchy: false
+  pollution_threshold_check: true
+  biodiversity_impact_assessment: true
+
+transition_activity:
+  enabled: true
+  best_available_technology_check: true
+  transition_pathway_documentation: true
+
+enabling_activity:
+  enabled: false
+
+regulatory:
+  include_complementary_da: false

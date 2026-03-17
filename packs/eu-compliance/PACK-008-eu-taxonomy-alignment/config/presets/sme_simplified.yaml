@@ -1,0 +1,121 @@
+# =============================================================================
+# PACK-008 Preset: SME Simplified
+# =============================================================================
+# Simplified deployment for Small and Medium Enterprises. Reduced scope with
+# focus on CCM and CCA objectives, simplified assessment criteria, reduced
+# evidence requirements, and streamlined KPI calculation.
+#
+# Applicable to:
+#   - SMEs subject to CSRD under extended scope (2026+)
+#   - SMEs voluntarily adopting taxonomy reporting
+#   - Companies eligible for simplified reporting under Omnibus DA
+#   - Subsidiaries within group reporting with limited operations
+#
+# Key Features:
+#   - CCM and CCA objectives only (first wave)
+#   - Simplified SC evaluation mode
+#   - Declaration-based minimum safeguards
+#   - Turnover KPI only (CapEx/OpEx optional)
+#   - De minimis threshold eligible
+#   - Reduced evidence requirements
+#   - Simplified Article 8 disclosure
+# =============================================================================
+
+organization_type: "NON_FINANCIAL_UNDERTAKING"
+reporting_period: "ANNUAL"
+
+objectives_in_scope:
+  - "CCM"
+  - "CCA"
+
+eligibility:
+  screening_mode: "NACE_BASED"
+  nace_version: "NACE_REV2"
+  min_confidence: 0.75
+  batch_size: 50
+  include_transitional: true
+  include_enabling: false
+  revenue_weighted: true
+  auto_classify_nace: true
+
+sc_assessment:
+  evaluation_mode: "SIMPLIFIED"
+  threshold_strictness: "LENIENT"
+  evidence_required: false
+  quantitative_tolerance_pct: 10.0
+  track_enabling_activities: false
+  track_transitional_activities: true
+  require_all_quantitative: false
+  gap_analysis_on_fail: false
+
+dnsh:
+  objectives_assessed:
+    - "CCM"
+    - "CCA"
+    - "WTR"
+    - "CE"
+    - "PPC"
+    - "BIO"
+  require_all_pass: true
+  climate_risk_assessment_enabled: true
+  water_framework_directive_check: false
+  circular_economy_waste_hierarchy: false
+  pollution_threshold_check: false
+  biodiversity_impact_assessment: false
+  evidence_required: false
+
+minimum_safeguards:
+  human_rights_check: true
+  anti_corruption_check: true
+  taxation_check: true
+  fair_competition_check: true
+  assessment_mode: "DECLARATION"
+  require_all_pass: true
+
+kpi:
+  calculate_turnover: true
+  calculate_capex: false
+  calculate_opex: false
+  double_counting_prevention: true
+  capex_plan_recognition: false
+  eligible_vs_aligned_breakdown: false
+  activity_level_detail: false
+  currency: "EUR"
+  rounding_precision: 1
+
+gar:
+  calculate_stock_gar: false
+  calculate_flow_gar: false
+  calculate_btar: false
+
+reporting:
+  article8_enabled: true
+  eba_pillar3_enabled: false
+  xbrl_tagging: false
+  nuclear_gas_supplementary: false
+  yoy_comparison: false
+  default_format: "PDF"
+  include_methodology_note: false
+  language: "en"
+
+regulatory:
+  delegated_act_version: "CLIMATE_DA_2021"
+  active_delegated_acts:
+    - "CLIMATE_DA_2021"
+    - "DISCLOSURES_DA_2021"
+  track_updates: false
+  auto_migration: false
+  include_complementary_da: false
+  include_simplification_da: true
+
+data_quality:
+  min_quality_score: 0.70
+  completeness_threshold: 0.80
+  require_primary_data: false
+  allow_estimates: true
+
+audit_trail:
+  retention_years: 3
+  hash_algorithm: "SHA-256"
+  immutable_log: true
+  include_provenance_hash: true

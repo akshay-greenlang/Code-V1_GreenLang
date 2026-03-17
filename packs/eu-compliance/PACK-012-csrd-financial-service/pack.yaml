@@ -1,0 +1,1311 @@
+# =============================================================================
+# PACK-012: CSRD Financial Service Pack
+# GreenLang EU Compliance Pack for CSRD Financial Institution Sector Disclosures
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for CSRD compliance tailored specifically to financial
+# institutions. Financial services companies face unique disclosure requirements
+# under ESRS, including financed emissions (PCAF), Green Asset Ratio (GAR),
+# Banking Book Taxonomy Alignment Ratio (BTAR), insurance underwriting
+# emissions, climate risk stress testing (NGFS scenarios), EBA Pillar 3 ESG
+# disclosures, and financial sector double materiality assessment. This pack
+# bundles all required calculation engines, regulatory templates, and cross-
+# regulation bridges to produce a unified compliance output.
+#
+# Key Capabilities:
+#   - Financed emissions calculation per PCAF Global Standard (6 asset classes)
+#   - Insurance underwriting emissions calculation per PCAF extension
+#   - Green Asset Ratio (GAR) computation per EBA ITS (turnover, CapEx, OpEx)
+#   - Banking Book Taxonomy Alignment Ratio (BTAR) computation
+#   - Climate risk scoring (physical + transition) per NGFS scenarios
+#   - Financial sector double materiality assessment (ESRS E1-E5, S1-S4, G1)
+#   - Financial sector transition plan generation per ESRS E1
+#   - EBA Pillar 3 ESG risk disclosure templates (CRR Article 449a)
+#   - SBTi Financial Institutions target-setting integration
+#   - Cross-regulation alignment (SFDR, EU Taxonomy, Solvency II)
+#
+# Regulatory References:
+#   - CSRD: Directive (EU) 2022/2464
+#   - ESRS: Delegated Regulation (EU) 2023/2772 (Set 1)
+#   - EU Taxonomy: Regulation (EU) 2020/852
+#   - CRR/CRD VI: Regulation (EU) 575/2013 (as amended), Article 449a
+#   - SFDR: Regulation (EU) 2019/2088
+#   - Solvency II: Directive 2009/138/EC (as amended)
+#   - PCAF Global GHG Accounting Standard for Financial Industry (v3)
+#   - SBTi Financial Institutions Framework (v1.1)
+#   - EBA ITS on Pillar 3 ESG Disclosures (2022/01, 2024 update)
+#
+# Financial Institution Types Supported:
+#   - Credit institutions (banks) - GAR, BTAR, Pillar 3
+#   - Insurance / reinsurance undertakings - Solvency II, underwriting emissions
+#   - Asset management companies - SFDR bridge, WACI, portfolio alignment
+#   - Investment firms (MiFID II) - product governance, ESG preferences
+#   - Pension funds (IORP II) - stewardship, long-horizon climate risk
+#   - Financial conglomerates - multi-entity consolidation, cross-sector
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-15)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-012-csrd-financial-service
+  version: "1.0.0"
+  display_name: "CSRD Financial Service Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for CSRD compliance by financial
+    institutions. Includes 8 engines for financed emissions (PCAF), insurance
+    underwriting emissions, Green Asset Ratio (GAR), Banking Book Taxonomy
+    Alignment Ratio (BTAR), climate risk scoring, financial sector double
+    materiality, transition plan generation, and EBA Pillar 3 ESG disclosures.
+    Bundles all 30 MRV agents for operational emissions, 20 data intake/quality
+    agents, 10 foundation agents, and 9 financial sector-specific agents plus
+    2 climate risk agents and 1 policy guard agent. Supports bank, insurance,
+    asset manager, investment firm, pension fund, and conglomerate institution
+    types with tailored presets and regulatory template packages.
+  category: eu-compliance
+  tier: sector-specific
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-15"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/csrd-financial-service"
+  changelog_url: "https://docs.greenlang.io/packs/csrd-financial-service/changelog"
+
+  tags:
+    - csrd
+    - financial-services
+    - esrs
+    - financed-emissions
+    - pcaf
+    - green-asset-ratio
+    - gar
+    - btar
+    - pillar-3
+    - eba
+    - climate-risk
+    - ngfs
+    - insurance
+    - solvency-ii
+    - sfdr
+    - eu-taxonomy
+    - transition-plan
+    - double-materiality
+    - sbti-fi
+    - banking
+    - asset-management
+    - pension-fund
+    - eu-compliance
+    - sector-specific
+
+  regulation:
+    primary:
+      name: "Corporate Sustainability Reporting Directive"
+      reference: "(EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        The CSRD mandates sustainability reporting for large undertakings and
+        listed companies under the European Sustainability Reporting Standards
+        (ESRS). Financial institutions face additional sector-specific disclosure
+        requirements covering financed emissions, taxonomy alignment ratios,
+        climate risk exposure, and prudential ESG integration.
+    secondary:
+      - name: "European Sustainability Reporting Standards (Set 1)"
+        reference: "(EU) 2023/2772"
+        effective_date: "2024-01-01"
+      - name: "EU Taxonomy Regulation"
+        reference: "(EU) 2020/852"
+        effective_date: "2020-07-12"
+      - name: "Capital Requirements Regulation (CRR/CRD VI)"
+        reference: "(EU) 575/2013 as amended"
+        effective_date: "2014-01-01"
+        articles: [449, "449a"]
+      - name: "Sustainable Finance Disclosure Regulation"
+        reference: "(EU) 2019/2088"
+        effective_date: "2021-03-10"
+      - name: "Solvency II Directive"
+        reference: "2009/138/EC as amended"
+        effective_date: "2016-01-01"
+      - name: "PCAF Global GHG Accounting Standard"
+        reference: "v3 (2024)"
+        effective_date: "2020-11-18"
+      - name: "SBTi Financial Institutions Framework"
+        reference: "v1.1"
+        effective_date: "2024-01-01"
+      - name: "EBA ITS on Pillar 3 ESG Disclosures"
+        reference: "EBA/ITS/2022/01 (2024 update)"
+        effective_date: "2023-06-28"
+
+  compliance_references:
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        Framework directive requiring in-scope undertakings to report under ESRS.
+        Financial institutions are in-scope from FY2024 (large PIEs) or FY2025
+        (large non-PIE financial undertakings). Requires double materiality
+        assessment, transition plan disclosure, and value chain coverage.
+
+    - id: "ESRS"
+      name: "European Sustainability Reporting Standards"
+      regulation: "Delegated Regulation (EU) 2023/2772"
+      effective_date: "2024-01-01"
+      description: >-
+        Set 1 cross-cutting and topical standards: ESRS 1 (general requirements),
+        ESRS 2 (general disclosures), ESRS E1-E5 (environmental), ESRS S1-S4
+        (social), ESRS G1 (governance). Financial institutions apply these plus
+        upcoming sector-specific ESRS for financial services. ESRS E1 is
+        particularly critical for financed emissions and transition plans.
+
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      regulation: "Regulation (EU) 2020/852"
+      effective_date: "2020-07-12"
+      description: >-
+        Classification system for environmentally sustainable economic activities.
+        Financial institutions must disclose their Green Asset Ratio (GAR) showing
+        the proportion of taxonomy-aligned assets. Banks compute GAR for on-
+        balance-sheet exposures; insurers compute for investment portfolios and
+        underwriting. The BTAR extends this to the banking book.
+
+    - id: "CRR_CRD_VI"
+      name: "Capital Requirements Regulation / CRD VI"
+      regulation: "Regulation (EU) 575/2013 as amended"
+      effective_date: "2014-01-01"
+      description: >-
+        Article 449a of CRR requires credit institutions to disclose ESG risks.
+        CRD VI amendments integrate ESG risk management into the prudential
+        framework. EBA ITS specify templates for Pillar 3 ESG risk disclosures
+        covering transition risk, physical risk, mitigating actions, and key
+        performance indicators.
+
+    - id: "SFDR"
+      name: "Sustainable Finance Disclosure Regulation"
+      regulation: "Regulation (EU) 2019/2088"
+      effective_date: "2021-03-10"
+      description: >-
+        SFDR requires financial market participants and financial advisers to
+        make sustainability-related disclosures. Financial institutions subject
+        to both CSRD and SFDR must ensure consistency between ESRS disclosures
+        and SFDR product-level disclosures (Articles 8/9 products).
+
+    - id: "SOLVENCY_II"
+      name: "Solvency II Directive"
+      regulation: "Directive 2009/138/EC as amended"
+      effective_date: "2016-01-01"
+      description: >-
+        Insurance prudential framework. Amended to integrate sustainability
+        risk in ORSA (Own Risk and Solvency Assessment), investment policy,
+        and climate scenario analysis. Insurance undertakings must assess
+        climate-related risks across both assets and liabilities sides.
+
+    - id: "PCAF"
+      name: "PCAF Global GHG Accounting Standard"
+      regulation: "PCAF v3 (2024)"
+      effective_date: "2020-11-18"
+      description: >-
+        The Partnership for Carbon Accounting Financials Global Standard
+        provides harmonized methods to measure and disclose GHG emissions
+        associated with loans, investments, and insurance portfolios.
+        Covers 6 asset classes with data quality scoring (1-5).
+
+    - id: "SBTI_FI"
+      name: "SBTi Financial Institutions Framework"
+      regulation: "SBTi FI v1.1"
+      effective_date: "2024-01-01"
+      description: >-
+        Science Based Targets initiative framework for financial institutions
+        to set decarbonization targets aligned with Paris Agreement goals.
+        Covers portfolio alignment, sectoral decarbonization approach (SDA),
+        and temperature rating methodology.
+
+    - id: "EBA_PILLAR3_ITS"
+      name: "EBA ITS on Pillar 3 ESG Disclosures"
+      regulation: "EBA/ITS/2022/01 (2024 update)"
+      effective_date: "2023-06-28"
+      description: >-
+        EBA Implementing Technical Standards specifying uniform disclosure
+        formats and templates for ESG risk information under CRR Article 449a.
+        Templates cover: qualitative information on ESG risks (Template 1),
+        scope 3 financed emissions by sector (Template 2), exposures by
+        physical risk (Template 4), GAR (Template 7-10), BTAR (Template 10).
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 FS-specific engines)
+  # ===========================================================================
+  engines:
+    - id: financed_emissions
+      name: "Financed Emissions Engine"
+      description: >-
+        Calculates financed GHG emissions per PCAF Global Standard v3 across
+        all six asset classes: listed equity and corporate bonds, business loans
+        and unlisted equity, project finance, commercial real estate, mortgages,
+        and motor vehicle loans. Implements attribution factor methodology
+        (outstanding amount / total equity + debt), handles data quality scoring
+        (score 1 = verified, score 5 = estimated), supports absolute and
+        intensity metrics (tCO2e, tCO2e/EUR million), Scope 1+2+3 breakdowns,
+        sector-level aggregation (NACE Rev.2), and year-over-year trend analysis.
+        Zero-hallucination: all emission factors from PCAF database lookups,
+        attribution from deterministic formula, no LLM in calculation path.
+      required: true
+
+    - id: insurance_underwriting
+      name: "Insurance Underwriting Emissions Engine"
+      description: >-
+        Calculates insurance-associated emissions for underwriting portfolios
+        per PCAF Insurance-Associated Emissions Standard. Covers commercial
+        lines and personal lines across property, casualty, specialty, and
+        life/health. Implements premium-based and claims-based attribution
+        methods, handles reinsurance ceding adjustments, supports gross and
+        net emission calculations, and computes insurance carbon footprint
+        intensity metrics. For Solvency II reporting, integrates with ORSA
+        climate scenario modules. Zero-hallucination: deterministic premium
+        attribution ratios and emission factor lookups only.
+      required: true
+
+    - id: green_asset_ratio
+      name: "Green Asset Ratio (GAR) Engine"
+      description: >-
+        Computes the Green Asset Ratio per EBA ITS templates (Templates 7-10)
+        for credit institutions. Calculates the proportion of taxonomy-aligned
+        on-balance-sheet exposures across three KPIs: turnover-based GAR,
+        CapEx-based GAR, and OpEx-based GAR. Handles all exposure categories:
+        financial corporates, non-financial corporates, households (mortgages,
+        motor vehicle loans), local governments, and collateral-based exposures.
+        Applies NACE sector mapping, manages sovereign and central bank
+        exclusions, and computes flow vs. stock GAR. Supports voluntary BTAR
+        calculation for banking book exposures not covered by mandatory GAR.
+        Zero-hallucination: deterministic ratio calculations from exposure
+        and taxonomy alignment data, no LLM inference.
+      required: true
+
+    - id: btar_calculator
+      name: "BTAR Calculator Engine"
+      description: >-
+        Computes the Banking Book Taxonomy Alignment Ratio (BTAR) as a
+        complementary voluntary KPI to GAR. BTAR covers banking book
+        exposures not captured by mandatory GAR, including SME exposures
+        without taxonomy reporting, interbank lending, and trading book
+        positions where applicable. Implements EBA-recommended estimation
+        methodologies for counterparties without published taxonomy alignment
+        data, applies NACE-sector proxies, and generates confidence intervals
+        for estimated alignment. Supports both top-down (sector average) and
+        bottom-up (counterparty-level) estimation approaches.
+        Zero-hallucination: deterministic calculation with clearly flagged
+        estimation layers, full provenance for every data point.
+      required: true
+
+    - id: climate_risk_scoring
+      name: "Climate Risk Scoring Engine"
+      description: >-
+        Scores portfolio-level climate risk across physical and transition
+        dimensions using NGFS scenarios (Net Zero 2050, Below 2C, Delayed
+        Transition, NDCs, Divergent Net Zero, Current Policies). Computes
+        physical risk exposure by hazard type: acute (flood, wildfire, storm,
+        heatwave) and chronic (sea level rise, drought, temperature shift).
+        Computes transition risk by channel: policy/legal, technology, market,
+        reputation, and stranded assets. Generates risk heatmaps by sector
+        (NACE), geography, and time horizon (short 0-5y, medium 5-15y, long
+        15-30y). Supports ECB/SSM climate stress test scenarios and EBA
+        one-off climate risk exercise parameters. Zero-hallucination: risk
+        scores from lookup tables and deterministic scoring matrices, no LLM.
+      required: true
+
+    - id: fs_double_materiality
+      name: "FS Double Materiality Engine"
+      description: >-
+        Performs double materiality assessment tailored to financial sector
+        specificities per ESRS 1 (IRO-1). Evaluates financial materiality
+        (risks and opportunities from sustainability matters) and impact
+        materiality (impacts on people and environment through lending,
+        investing, and underwriting). Handles indirect impacts via financed
+        activities (Scope 3 Category 15), applies financial sector impact
+        channels (lending decisions, investment allocation, insurance
+        coverage, advisory influence), and weights materiality by exposure
+        size. Generates sector-specific sustainability matters list covering
+        climate (E1), pollution (E2), biodiversity (E3), water (E4),
+        circular economy (E5), own workforce (S1), value chain workers (S2),
+        affected communities (S3), consumers (S4), and governance (G1).
+        LLM-assisted: materiality scoring uses LLM for qualitative assessment
+        of stakeholder perspectives; quantitative thresholds are deterministic.
+      required: true
+
+    - id: fs_transition_plan
+      name: "FS Transition Plan Engine"
+      description: >-
+        Generates financial institution transition plans per ESRS E1
+        (E1-1 Transition Plan) with financial sector extensions. Covers
+        decarbonization targets for financed emissions by sector (aligned
+        with SBTi FI sectoral decarbonization approach), operational
+        emissions reduction targets, client engagement strategy, green
+        product development roadmap, fossil fuel exposure phase-down
+        schedule, capital allocation alignment with Paris goals, and
+        governance integration of transition objectives. Generates
+        milestone tracking with interim targets (2025, 2030, 2035, 2040,
+        2050). LLM-assisted: narrative generation for strategy description;
+        all targets and metrics are deterministic calculations.
+      required: true
+
+    - id: pillar3_esg
+      name: "Pillar 3 ESG Disclosure Engine"
+      description: >-
+        Generates EBA Pillar 3 ESG risk disclosures per CRR Article 449a
+        and EBA ITS. Produces all required templates: Template 1 (qualitative
+        ESG risk information), Template 2 (Scope 3 financed emissions by
+        NACE sector), Template 3 (exposures to top carbon-intensive firms),
+        Template 4 (exposures by physical risk, acute and chronic), Template 5
+        (mitigating actions: green lending, ESG bonds, insurance products),
+        Template 7-10 (GAR KPIs and BTAR). Handles large institution
+        reporting requirements (total assets > EUR 750bn for extended
+        Template 2/3 requirements). Zero-hallucination: all template
+        population from deterministic aggregation of exposure data, risk
+        scores, and taxonomy alignment ratios.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 FS workflows)
+  # ===========================================================================
+  workflows:
+    - id: financed_emissions_workflow
+      name: "Financed Emissions Calculation Workflow"
+      description: >-
+        5-phase workflow: Portfolio Data Ingestion -> Counterparty Matching
+        -> PCAF Attribution Calculation -> Data Quality Scoring -> Report
+        Generation. Calculates financed emissions across all asset classes
+        with PCAF data quality scores, generates sector-level aggregations,
+        and produces ESRS E1 financed emissions disclosures plus Pillar 3
+        Template 2 data. Supports incremental recalculation when portfolio
+        positions change.
+      schedule: "quarterly"
+      estimated_duration_minutes: 180
+      phases: 5
+
+    - id: gar_btar_workflow
+      name: "GAR/BTAR Calculation Workflow"
+      description: >-
+        6-phase workflow: Exposure Data Extraction -> NACE Classification
+        -> Taxonomy Alignment Lookup -> GAR Ratio Calculation -> BTAR
+        Estimation -> EBA Template Population. Computes Green Asset Ratio
+        across turnover, CapEx, and OpEx bases for all eligible exposure
+        categories. Extends to BTAR for non-covered banking book positions
+        with estimation methodologies. Produces Pillar 3 Templates 7-10.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 6
+
+    - id: insurance_emissions_workflow
+      name: "Insurance Emissions Workflow"
+      description: >-
+        4-phase workflow: Underwriting Portfolio Extraction -> Premium/Claims
+        Attribution -> Emission Factor Application -> Solvency II Integration.
+        Calculates insurance-associated emissions for underwriting portfolios,
+        handles reinsurance adjustments, and feeds into ORSA climate scenario
+        analysis. Generates insurer-specific ESRS E1 disclosures.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: climate_stress_test
+      name: "Climate Stress Test Workflow"
+      description: >-
+        5-phase workflow: Scenario Selection (NGFS) -> Exposure Mapping ->
+        Physical Risk Assessment -> Transition Risk Assessment -> Stress
+        Test Report Generation. Runs portfolio-level climate stress tests
+        using NGFS scenarios, produces ECB/SSM-compatible output, generates
+        risk heatmaps by sector and geography, and calculates expected
+        credit loss adjustments under adverse climate scenarios.
+      schedule: "annual"
+      estimated_duration_minutes: 300
+      phases: 5
+
+    - id: fs_materiality
+      name: "FS Double Materiality Workflow"
+      description: >-
+        5-phase workflow: Stakeholder Identification -> Impact Channel
+        Mapping -> Financial Risk Assessment -> Materiality Matrix
+        Generation -> ESRS Topic Determination. Performs double materiality
+        assessment with financial sector impact channels (lending, investing,
+        underwriting, advisory). Determines which ESRS topics (E1-E5, S1-S4,
+        G1) are material and requires detailed disclosure. Outputs IRO-1
+        assessment documentation.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 5
+
+    - id: transition_plan
+      name: "Transition Plan Workflow"
+      description: >-
+        4-phase workflow: Baseline Emissions Inventory -> Target Setting
+        (SBTi FI alignment) -> Action Plan Development -> Milestone
+        Tracking Setup. Generates ESRS E1-1 transition plan with sector-
+        specific decarbonization pathways, interim targets, capital
+        allocation plans, and governance integration. Produces board-
+        ready transition plan document with quantified milestones.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: pillar3_reporting
+      name: "Pillar 3 ESG Reporting Workflow"
+      description: >-
+        5-phase workflow: Data Aggregation -> Template Population ->
+        Cross-Validation -> Review & Approval -> Publication. Generates
+        all EBA Pillar 3 ESG disclosure templates (Templates 1-10) from
+        upstream engine outputs (financed emissions, GAR/BTAR, climate
+        risk scores). Cross-validates against COREP/FINREP data for
+        consistency. Handles semi-annual and annual reporting cycles.
+      schedule: "semi_annual"
+      estimated_duration_minutes: 180
+      phases: 5
+
+    - id: regulatory_integration
+      name: "Regulatory Integration Workflow"
+      description: >-
+        3-phase workflow: Cross-Regulation Mapping -> Consistency Check
+        -> Unified Dashboard Update. Ensures consistency across CSRD/ESRS,
+        Pillar 3, SFDR, Taxonomy, and Solvency II disclosures. Maps
+        data points across regulatory requirements, identifies
+        inconsistencies, and generates a unified regulatory compliance
+        dashboard. Monitors for regulatory changes affecting financial
+        institution reporting obligations.
+      schedule: "on_change"
+      estimated_duration_minutes: 60
+      phases: 3
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 FS templates)
+  # ===========================================================================
+  templates:
+    - id: pcaf_report
+      display_name: "PCAF Financed Emissions Report"
+      description: >-
+        PCAF-aligned financed emissions report with asset class breakdown,
+        data quality scores (1-5), sector-level aggregations (NACE Rev.2),
+        Scope 1+2+3 split, year-over-year trend analysis, and portfolio
+        carbon footprint intensity metrics. Compliant with PCAF Global
+        Standard v3 reporting requirements.
+      format: "pdf"
+      template_file: "templates/pcaf_report.jinja2"
+      enabled: true
+
+    - id: gar_btar_report
+      display_name: "GAR/BTAR Disclosure Report"
+      description: >-
+        EBA ITS-compliant Green Asset Ratio and Banking Book Taxonomy
+        Alignment Ratio disclosure. Populates Templates 7-10 with turnover,
+        CapEx, and OpEx GAR calculations, exposure category breakdowns,
+        NACE sector mapping, flow vs. stock ratios, and BTAR estimation
+        methodology documentation. Includes environmental objective
+        breakdown per EU Taxonomy.
+      format: "xlsx"
+      template_file: "templates/gar_btar_report.jinja2"
+      enabled: true
+
+    - id: pillar3_esg
+      display_name: "Pillar 3 ESG Disclosure Package"
+      description: >-
+        Complete EBA Pillar 3 ESG disclosure package containing all
+        required templates (1-10). Template 1: qualitative ESG risk
+        information; Template 2: financed emissions by sector; Template 3:
+        top carbon-intensive exposures; Template 4: physical risk exposures;
+        Template 5: mitigating actions; Templates 7-10: GAR/BTAR. Formatted
+        per EBA ITS specifications with XBRL tagging support.
+      format: "xlsx"
+      template_file: "templates/pillar3_esg.jinja2"
+      enabled: true
+
+    - id: climate_risk_report
+      display_name: "Climate Risk Assessment Report"
+      description: >-
+        Climate risk assessment report with NGFS scenario analysis results,
+        physical and transition risk heatmaps, sector-geography risk matrix,
+        expected credit loss impact estimates, stressed capital ratios, and
+        time-horizon analysis (short/medium/long term). Compatible with
+        ECB/SSM climate stress test reporting format.
+      format: "pdf"
+      template_file: "templates/climate_risk_report.jinja2"
+      enabled: true
+
+    - id: fs_esrs_chapter
+      display_name: "Financial Services ESRS Chapter"
+      description: >-
+        ESRS disclosure chapter tailored to financial institutions. Covers
+        ESRS E1 (climate, with financed emissions and transition plan),
+        ESRS E2-E5 (other environmental topics as material), ESRS S1-S4
+        (social topics), and ESRS G1 (governance). Includes financial
+        sector-specific metrics, impact channel descriptions, and cross-
+        references to Pillar 3 and SFDR disclosures. Structured for
+        direct inclusion in the management report.
+      format: "pdf"
+      template_file: "templates/fs_esrs_chapter.jinja2"
+      enabled: true
+
+    - id: financed_emissions_dashboard
+      display_name: "Financed Emissions Dashboard"
+      description: >-
+        Interactive dashboard displaying real-time financed emissions
+        portfolio view. Includes asset class treemap, sector heatmap,
+        data quality distribution chart, Scope 1/2/3 waterfall, top 20
+        counterparty emissions table, year-over-year trend lines,
+        target vs. actual progress gauge, and SBTi FI alignment tracker.
+      format: "html"
+      template_file: "templates/financed_emissions_dashboard.jinja2"
+      enabled: true
+
+    - id: insurance_esg
+      display_name: "Insurance ESG Report"
+      description: >-
+        Insurance undertaking ESG report combining underwriting emissions,
+        investment portfolio alignment, Solvency II climate scenario
+        results, ORSA sustainability integration, and physical risk
+        exposure analysis for insured assets. Includes Solvency II
+        specific disclosures and EIOPA prudential sustainability guidance.
+      format: "pdf"
+      template_file: "templates/insurance_esg.jinja2"
+      enabled: true
+
+    - id: sbti_fi_report
+      display_name: "SBTi Financial Institutions Report"
+      description: >-
+        SBTi Financial Institutions target-setting and progress report.
+        Includes portfolio temperature alignment scores, sectoral
+        decarbonization approach (SDA) target tracking, portfolio coverage
+        metrics, engagement funnel analysis, and Paris-aligned capital
+        allocation assessment. Compatible with SBTi FI v1.1 reporting
+        template.
+      format: "pdf"
+      template_file: "templates/sbti_fi_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        14-phase master pipeline: Health Check -> Configuration -> Portfolio
+        Data Ingestion -> Counterparty Enrichment -> Financed Emissions
+        Calculation -> Insurance Emissions (if applicable) -> GAR/BTAR
+        Calculation -> Climate Risk Scoring -> Double Materiality Assessment
+        -> Transition Plan Generation -> Pillar 3 Template Population ->
+        ESRS Disclosure Assembly -> Cross-Regulation Validation -> Audit
+        Trail Generation. Orchestrates all financial services compliance
+        phases with parallel execution where possible and dependency
+        management between engines.
+      required: true
+
+    - id: csrd_pack_bridge
+      name: "CSRD Pack Bridge"
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs (Starter/Professional/
+        Enterprise) for shared ESRS general disclosure components. Reuses
+        ESRS 2 general disclosures, governance structures, strategy
+        descriptions, and metrics frameworks. Enables seamless upgrade
+        from general CSRD compliance to financial sector-specific pack
+        without re-entering base ESRS configuration.
+      required: true
+
+    - id: sfdr_pack_bridge
+      name: "SFDR Pack Bridge"
+      description: >-
+        Connects to PACK-010/011 SFDR Article 8/9 Packs for product-level
+        disclosure consistency. Ensures CSRD entity-level disclosures align
+        with SFDR product-level PAI indicators, taxonomy alignment ratios,
+        and sustainable investment proportions. Shares PAI calculation
+        infrastructure and benchmark alignment data between CSRD and SFDR
+        reporting obligations.
+      required: true
+
+    - id: taxonomy_pack_bridge
+      name: "Taxonomy Pack Bridge"
+      description: >-
+        Connects to PACK-008 EU Taxonomy Alignment Pack for activity-level
+        taxonomy alignment data. Retrieves counterparty-level eligibility
+        and alignment assessments, TSC compliance results, and DNSH/MS
+        verification outcomes to feed GAR/BTAR calculations and ESRS
+        taxonomy-related disclosures.
+      required: true
+
+    - id: mrv_investments_bridge
+      name: "MRV Investments Bridge"
+      description: >-
+        Routes data from AGENT-MRV-028 (Investments Agent, Scope 3 Cat 15)
+        and all 30 MRV agents for operational emissions. Maps counterparty
+        emissions data to PCAF attribution calculations, supports data
+        quality scoring, handles Scope 1+2+3 disaggregation, and provides
+        emissions factor lookups for sector-based estimation. Critical
+        bridge for financed emissions calculation.
+      required: true
+
+    - id: finance_agent_bridge
+      name: "Finance Agent Bridge"
+      description: >-
+        Connects to 9 financial sector-specific agents for core banking,
+        insurance, and investment data. Routes exposure data from loan
+        management systems, portfolio positions from custody and PMS,
+        insurance policy data from policy administration systems, and
+        counterparty data from KYC/AML systems. Handles COREP/FINREP
+        data alignment for Pillar 3 consistency checks.
+      required: true
+
+    - id: climate_risk_bridge
+      name: "Climate Risk Bridge"
+      description: >-
+        Connects to 2 climate risk agents (AGENT-DATA-020 Climate Hazard
+        Connector) and external NGFS scenario data providers. Routes
+        physical hazard data (flood maps, wildfire risk, sea level
+        projections), transition scenario parameters (carbon price paths,
+        technology adoption curves), and stress test parameters from
+        ECB/SSM/EBA exercises.
+      required: true
+
+    - id: eba_pillar3_bridge
+      name: "EBA Pillar 3 Bridge"
+      description: >-
+        Connects to EBA reporting infrastructure for Pillar 3 ESG template
+        submission. Handles XBRL taxonomy mapping for ESG templates, validates
+        output against EBA validation rules, cross-references with COREP
+        and FINREP submissions for data consistency, and manages the
+        semi-annual/annual publication workflow.
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        24-category system verification covering all 8 engines, 72 agent
+        dependencies, database connectivity, PCAF factor database currency,
+        NGFS scenario data availability, EBA template version check, NACE
+        classification tables, taxonomy alignment data freshness, SFDR
+        bridge connectivity, and deployment readiness status.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        14-step guided configuration wizard: Institution Type Selection
+        (bank/insurance/asset_manager/investment_firm/pension_fund/
+        conglomerate) -> Regulatory Scope (CSRD+Pillar3+SFDR+Solvency) ->
+        Portfolio Data Source Connection -> Counterparty Database Setup ->
+        PCAF Asset Class Configuration -> GAR/BTAR Scope Definition ->
+        Climate Scenario Selection -> Materiality Preferences ->
+        Transition Plan Parameters -> Pillar 3 Template Selection ->
+        Cross-Regulation Mapping -> Reporting Calendar -> Disclosure
+        Preferences -> Deployment Verification.
+      required: false
+
+  # ===========================================================================
+  # Presets - Institution-type specific configurations (6 presets)
+  # ===========================================================================
+  presets:
+    - id: bank
+      name: "Credit Institution Preset"
+      description: >-
+        Full configuration for CRR-regulated credit institutions. Enables
+        GAR (mandatory), BTAR (voluntary), Pillar 3 ESG (mandatory for
+        large institutions), PCAF financed emissions, NGFS climate stress
+        testing, and SBTi FI target tracking. Includes all EBA templates.
+      institution_type: "BANK"
+      enabled_engines:
+        - financed_emissions
+        - green_asset_ratio
+        - btar_calculator
+        - climate_risk_scoring
+        - fs_double_materiality
+        - fs_transition_plan
+        - pillar3_esg
+      file: "config/presets/bank.yaml"
+
+    - id: insurance
+      name: "Insurance Undertaking Preset"
+      description: >-
+        Configuration for Solvency II-regulated insurance and reinsurance
+        undertakings. Enables underwriting emissions, investment portfolio
+        alignment, ORSA climate integration, physical risk exposure for
+        insured assets, and Solvency II prudential sustainability reporting.
+      institution_type: "INSURANCE"
+      enabled_engines:
+        - financed_emissions
+        - insurance_underwriting
+        - climate_risk_scoring
+        - fs_double_materiality
+        - fs_transition_plan
+      file: "config/presets/insurance.yaml"
+
+    - id: asset_manager
+      name: "Asset Management Preset"
+      description: >-
+        Configuration for UCITS management companies and AIFM. Enables
+        PCAF financed emissions, portfolio carbon footprint (WACI), SFDR
+        product-level alignment, sustainable investment screening, and
+        SBTi FI portfolio coverage targets. Bridges to SFDR Packs for
+        Article 8/9 product disclosures.
+      institution_type: "ASSET_MANAGER"
+      enabled_engines:
+        - financed_emissions
+        - climate_risk_scoring
+        - fs_double_materiality
+        - fs_transition_plan
+      file: "config/presets/asset_manager.yaml"
+
+    - id: investment_firm
+      name: "Investment Firm Preset"
+      description: >-
+        Configuration for MiFID II investment firms. Enables ESG product
+        governance, client ESG preference matching, portfolio alignment
+        assessment, and limited Pillar 3 reporting (Class 2 firms). Lighter
+        configuration focused on advisory and portfolio management services.
+      institution_type: "INVESTMENT_FIRM"
+      enabled_engines:
+        - financed_emissions
+        - climate_risk_scoring
+        - fs_double_materiality
+        - fs_transition_plan
+      file: "config/presets/investment_firm.yaml"
+
+    - id: pension_fund
+      name: "Pension Fund Preset"
+      description: >-
+        Configuration for IORP II-regulated pension schemes. Enables long-
+        horizon climate risk analysis (30+ year projections), stewardship
+        and engagement tracking, TCFD-aligned scenario analysis, beneficiary
+        interest alignment, and intergenerational equity assessment.
+      institution_type: "PENSION_FUND"
+      enabled_engines:
+        - financed_emissions
+        - climate_risk_scoring
+        - fs_double_materiality
+        - fs_transition_plan
+      file: "config/presets/pension_fund.yaml"
+
+    - id: conglomerate
+      name: "Financial Conglomerate Preset"
+      description: >-
+        Configuration for financial conglomerates with mixed banking,
+        insurance, and asset management operations. Enables all 8 engines,
+        multi-entity consolidation, cross-sector GAR/BTAR, consolidated
+        financed emissions, group-level transition plan, and inter-entity
+        elimination rules.
+      institution_type: "CONGLOMERATE"
+      enabled_engines:
+        - financed_emissions
+        - insurance_underwriting
+        - green_asset_ratio
+        - btar_calculator
+        - climate_risk_scoring
+        - fs_double_materiality
+        - fs_transition_plan
+        - pillar3_esg
+      file: "config/presets/conglomerate.yaml"
+
+  # ===========================================================================
+  # MRV Agents - All 30 MRV agents for operational emissions (Scope 1/2/3)
+  # ===========================================================================
+  agents_mrv:
+
+    # -------------------------------------------------------------------------
+    # Scope 1 - Direct Emissions (8 agents)
+    # -------------------------------------------------------------------------
+    scope_1:
+      - id: AGENT-MRV-001
+        name: "Stationary Combustion Agent"
+        description: "Calculates emissions from stationary combustion sources"
+        path: "greenlang/agents/mrv/stationary_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-002
+        name: "Refrigerants & F-Gas Agent"
+        description: "Calculates emissions from refrigerants and fluorinated gases"
+        path: "greenlang/agents/mrv/refrigerants_fgas/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-003
+        name: "Mobile Combustion Agent"
+        description: "Calculates emissions from mobile combustion sources"
+        path: "greenlang/agents/mrv/mobile_combustion/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-004
+        name: "Process Emissions Agent"
+        description: "Calculates emissions from industrial processes"
+        path: "greenlang/agents/mrv/process_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-005
+        name: "Fugitive Emissions Agent"
+        description: "Calculates fugitive emissions from equipment and operations"
+        path: "greenlang/agents/mrv/fugitive_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-006
+        name: "Land Use Emissions Agent"
+        description: "Calculates emissions from land use and land use change"
+        path: "greenlang/agents/mrv/land_use_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-007
+        name: "Waste Treatment Emissions Agent"
+        description: "Calculates emissions from waste treatment and disposal"
+        path: "greenlang/agents/mrv/waste_treatment_emissions/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-008
+        name: "Agricultural Emissions Agent"
+        description: "Calculates emissions from agricultural operations"
+        path: "greenlang/agents/mrv/agricultural_emissions/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 2 - Indirect Energy Emissions (5 agents)
+    # -------------------------------------------------------------------------
+    scope_2:
+      - id: AGENT-MRV-009
+        name: "Scope 2 Location-Based Agent"
+        description: "Calculates location-based Scope 2 emissions"
+        path: "greenlang/agents/mrv/scope2_location_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-010
+        name: "Scope 2 Market-Based Agent"
+        description: "Calculates market-based Scope 2 emissions"
+        path: "greenlang/agents/mrv/scope2_market_based/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-011
+        name: "Steam/Heat Purchase Agent"
+        description: "Calculates emissions from purchased steam and heating"
+        path: "greenlang/agents/mrv/steam_heat_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-012
+        name: "Cooling Purchase Agent"
+        description: "Calculates emissions from purchased cooling"
+        path: "greenlang/agents/mrv/cooling_purchase/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-013
+        name: "Dual Reporting Reconciliation"
+        description: "Reconciles location-based and market-based Scope 2"
+        path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Scope 3 - Value Chain Emissions (15 agents)
+    # -------------------------------------------------------------------------
+    scope_3:
+      - id: AGENT-MRV-014
+        name: "Purchased Goods & Services Agent (Cat 1)"
+        description: "Scope 3 Category 1 emissions"
+        path: "greenlang/agents/mrv/purchased_goods_services/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-015
+        name: "Capital Goods Agent (Cat 2)"
+        description: "Scope 3 Category 2 emissions"
+        path: "greenlang/agents/mrv/capital_goods/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-016
+        name: "Fuel & Energy Activities Agent (Cat 3)"
+        description: "Scope 3 Category 3 emissions"
+        path: "greenlang/agents/mrv/fuel_energy_activities/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-017
+        name: "Upstream Transportation Agent (Cat 4)"
+        description: "Scope 3 Category 4 emissions"
+        path: "greenlang/agents/mrv/upstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-018
+        name: "Waste Generated Agent (Cat 5)"
+        description: "Scope 3 Category 5 emissions"
+        path: "greenlang/agents/mrv/waste_generated/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-019
+        name: "Business Travel Agent (Cat 6)"
+        description: "Scope 3 Category 6 emissions"
+        path: "greenlang/agents/mrv/business_travel/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-020
+        name: "Employee Commuting Agent (Cat 7)"
+        description: "Scope 3 Category 7 emissions"
+        path: "greenlang/agents/mrv/employee_commuting/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-021
+        name: "Upstream Leased Assets Agent (Cat 8)"
+        description: "Scope 3 Category 8 emissions"
+        path: "greenlang/agents/mrv/upstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-022
+        name: "Downstream Transportation Agent (Cat 9)"
+        description: "Scope 3 Category 9 emissions"
+        path: "greenlang/agents/mrv/downstream_transportation/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-023
+        name: "Processing of Sold Products (Cat 10)"
+        description: "Scope 3 Category 10 emissions"
+        path: "greenlang/agents/mrv/processing_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-024
+        name: "Use of Sold Products (Cat 11)"
+        description: "Scope 3 Category 11 emissions"
+        path: "greenlang/agents/mrv/use_sold_products/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-025
+        name: "End-of-Life Treatment (Cat 12)"
+        description: "Scope 3 Category 12 emissions"
+        path: "greenlang/agents/mrv/end_of_life_treatment/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-026
+        name: "Downstream Leased Assets (Cat 13)"
+        description: "Scope 3 Category 13 emissions"
+        path: "greenlang/agents/mrv/downstream_leased_assets/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-027
+        name: "Franchises Agent (Cat 14)"
+        description: "Scope 3 Category 14 emissions"
+        path: "greenlang/agents/mrv/franchises/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-028
+        name: "Investments Agent (Cat 15)"
+        description: "Scope 3 Category 15 investments emissions (PCAF bridge)"
+        path: "greenlang/agents/mrv/investments/"
+        required: true
+        version: "1.0.0"
+
+    # -------------------------------------------------------------------------
+    # Cross-Cutting MRV Agents (2 agents)
+    # -------------------------------------------------------------------------
+    cross_cutting:
+      - id: AGENT-MRV-029
+        name: "Scope 3 Category Mapper"
+        description: "Maps emissions data across all 15 Scope 3 categories"
+        path: "greenlang/agents/mrv/scope3_category_mapper/"
+        required: true
+        version: "1.0.0"
+
+      - id: AGENT-MRV-030
+        name: "Audit Trail & Lineage"
+        description: "Tracks data lineage and audit trails for MRV calculations"
+        path: "greenlang/agents/mrv/audit_trail_lineage/"
+        required: true
+        version: "1.0.0"
+
+  # ===========================================================================
+  # Data Agents - Supporting data intake and quality agents (20 agents)
+  # ===========================================================================
+  agents_data:
+    # Data Intake (9 agents)
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extracts financial data from PDF documents, loan agreements, and reports"
+      required: true
+
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalizes tabular exposure, portfolio, and emissions data"
+      required: true
+
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Connects to core banking, treasury, and portfolio management systems"
+      required: true
+
+    - id: AGENT-DATA-004
+      name: "API Gateway Agent"
+      description: "Routes external API connections for ESG data providers"
+      required: true
+
+    - id: AGENT-DATA-005
+      name: "EUDR Traceability Connector"
+      description: "Optional connector for supply chain traceability in lending"
+      required: false
+
+    - id: AGENT-DATA-006
+      name: "GIS/Mapping Connector"
+      description: "Geospatial data for physical risk assessment of collateral"
+      required: true
+
+    - id: AGENT-DATA-007
+      name: "Deforestation Satellite Connector"
+      description: "Satellite data for biodiversity and land-use risk in portfolios"
+      required: false
+
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Processes counterparty ESG data questionnaires"
+      required: true
+
+    - id: AGENT-DATA-020
+      name: "Climate Hazard Connector"
+      description: "Physical climate hazard data for risk scoring engine"
+      required: true
+
+    # Data Quality (11 agents)
+    - id: AGENT-DATA-009
+      name: "Spend Data Categorizer"
+      description: "Categorizes exposures into NACE sectors and PCAF asset classes"
+      required: true
+
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profiles data quality for PCAF scoring and regulatory confidence"
+      required: true
+
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detects duplicate counterparties, exposures, and ESG records"
+      required: true
+
+    - id: AGENT-DATA-012
+      name: "Missing Value Imputer"
+      description: "Imputes missing emissions and ESG values with documented methodology"
+      required: true
+
+    - id: AGENT-DATA-013
+      name: "Outlier Detection Agent"
+      description: "Detects outlier emission factors and anomalous ESG data"
+      required: true
+
+    - id: AGENT-DATA-014
+      name: "Time Series Gap Filler"
+      description: "Fills temporal gaps in emissions and financial time series"
+      required: true
+
+    - id: AGENT-DATA-015
+      name: "Cross-Source Reconciliation"
+      description: "Reconciles data across core banking, risk, and ESG systems"
+      required: true
+
+    - id: AGENT-DATA-016
+      name: "Data Freshness Monitor"
+      description: "Monitors staleness of ESG data and emission factors"
+      required: true
+
+    - id: AGENT-DATA-017
+      name: "Schema Migration Agent"
+      description: "Manages schema evolution for regulatory template updates"
+      required: true
+
+    - id: AGENT-DATA-018
+      name: "Data Lineage Tracker"
+      description: "Tracks data lineage across financial services compliance pipeline"
+      required: true
+
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Enforces PCAF, GAR, Pillar 3, and ESRS validation rules"
+      required: true
+
+  # ===========================================================================
+  # Foundation Agents - Core platform agents (all 10)
+  # ===========================================================================
+  agents_foundation:
+    - id: AGENT-FOUND-001
+      name: "GreenLang Orchestrator (DAG)"
+      description: "Orchestrates agent execution using directed acyclic graphs"
+      required: true
+    - id: AGENT-FOUND-002
+      name: "Schema Compiler & Validator"
+      description: "Compiles and validates data schemas"
+      required: true
+    - id: AGENT-FOUND-003
+      name: "Unit & Reference Normalizer"
+      description: "Normalizes financial units (EUR, USD, bps) and reference data"
+      required: true
+    - id: AGENT-FOUND-004
+      name: "Assumptions Registry"
+      description: "Tracks all assumptions in PCAF/GAR/Pillar 3 calculations"
+      required: true
+    - id: AGENT-FOUND-005
+      name: "Citations & Evidence Agent"
+      description: "Links data points to source evidence for regulatory audit"
+      required: true
+    - id: AGENT-FOUND-006
+      name: "Access & Policy Guard"
+      description: "Enforces role-based access and Chinese wall policies"
+      required: true
+    - id: AGENT-FOUND-007
+      name: "Agent Registry & Service Catalog"
+      description: "Maintains registry of available agents and capabilities"
+      required: true
+    - id: AGENT-FOUND-008
+      name: "Reproducibility Agent"
+      description: "Ensures all calculations are reproducible with SHA-256 provenance"
+      required: true
+    - id: AGENT-FOUND-009
+      name: "QA Test Harness"
+      description: "Automated quality assurance for all compliance outputs"
+      required: true
+    - id: AGENT-FOUND-010
+      name: "Observability & Telemetry Agent"
+      description: "Monitors agent performance and pipeline health"
+      required: true
+
+  # ===========================================================================
+  # Financial Sector-Specific Agents (9 FIN + 2 CLIMATE + 1 POLICY)
+  # ===========================================================================
+  agents_financial_sector:
+    - id: AGENT-FIN-001
+      name: "PCAF Attribution Engine Agent"
+      description: "Deterministic PCAF attribution factor calculations"
+      required: true
+
+    - id: AGENT-FIN-002
+      name: "Counterparty ESG Enrichment Agent"
+      description: "Enriches counterparty records with ESG data from providers"
+      required: true
+
+    - id: AGENT-FIN-003
+      name: "NACE Sector Classification Agent"
+      description: "Classifies counterparties by NACE Rev.2 sector codes"
+      required: true
+
+    - id: AGENT-FIN-004
+      name: "Exposure Aggregation Agent"
+      description: "Aggregates exposure data across asset classes and entities"
+      required: true
+
+    - id: AGENT-FIN-005
+      name: "GAR Eligibility Assessment Agent"
+      description: "Assesses taxonomy eligibility for GAR denominator/numerator"
+      required: true
+
+    - id: AGENT-FIN-006
+      name: "Insurance Portfolio Analyzer Agent"
+      description: "Analyzes insurance portfolio for underwriting emissions"
+      required: true
+
+    - id: AGENT-FIN-007
+      name: "Stress Test Parameter Agent"
+      description: "Manages NGFS and regulatory stress test parameters"
+      required: true
+
+    - id: AGENT-FIN-008
+      name: "Prudential Data Mapper Agent"
+      description: "Maps data between COREP/FINREP and ESG reporting"
+      required: true
+
+    - id: AGENT-FIN-009
+      name: "SBTi Target Tracker Agent"
+      description: "Tracks portfolio alignment against SBTi FI targets"
+      required: true
+
+    - id: AGENT-CLIMATE-001
+      name: "Physical Risk Scoring Agent"
+      description: "Scores physical climate risk for collateral and exposures"
+      required: true
+
+    - id: AGENT-CLIMATE-002
+      name: "Transition Risk Scoring Agent"
+      description: "Scores transition risk by sector, geography, and scenario"
+      required: true
+
+    - id: AGENT-POLICY-001
+      name: "Regulatory Change Monitor Agent"
+      description: "Monitors EBA, EIOPA, ESMA regulatory changes for FS"
+      required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 72
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    financial_sector_agents: 9
+    climate_agents: 2
+    policy_agents: 1
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  portfolio_processing:
+    max_counterparties: 50000
+    target_duration_minutes: 30
+    pcaf_calculation_per_counterparty_ms: 50
+  gar_calculation:
+    max_exposures: 100000
+    target_duration_minutes: 45
+  pillar3_template_generation:
+    target_duration_minutes: 15
+  climate_stress_test:
+    max_scenarios: 6
+    target_duration_minutes: 60
+  cache_hit_ratio_target: 0.70
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with Chinese wall enforcement"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - fs_compliance_officer
+    - fs_risk_analyst
+    - fs_portfolio_manager
+    - fs_sustainability_officer
+    - fs_external_auditor
+    - fs_admin

@@ -1,0 +1,271 @@
+# =============================================================================
+# PACK-005 CBAM Complete Pack - Demo Configuration
+# =============================================================================
+# Demo scenario: EuroSteel Group GmbH (parent) + 2 subsidiaries
+# A multi-entity German industrial group importing steel, aluminium, and cement.
+#
+# Group Structure:
+#   - Parent: EuroSteel Group GmbH (Hamburg, Germany) - group CBAM declarant
+#   - Sub 1: NordStahl Handel GmbH (Hamburg) - steel trading
+#   - Sub 2: AlpineMetal AG (Vienna, Austria) - aluminium and cement
+#
+# Annual import volumes:
+#   - Steel: ~35,000 tonnes (parent: 20,000t, NordStahl: 15,000t)
+#   - Aluminium: ~5,000 tonnes (AlpineMetal)
+#   - Cement: ~8,000 tonnes (AlpineMetal)
+#
+# Key suppliers: Turkey, China, India, Norway, Egypt
+# =============================================================================
+
+# Parent entity importer details
+importer:
+  company_name: "EuroSteel Group GmbH"
+  eori_number: "DE327891234567"
+  authorized_declarant: "Dr. Klaus Berger"
+  eu_member_state: "DE"
+  cbam_registry_id: "CBAM-DE-2026-004851"
+  contact_email: "cbam@eurosteel-group.de"
+  contact_phone: "+49 40 2345 6789"
+  customs_office_code: "DE004301"
+
+# Multi-commodity
+goods:
+  enabled_categories:
+    - "iron_steel"
+    - "aluminium"
+    - "cement"
+  precursor_tracking:
+    iron_steel:
+      - "pig_iron"
+      - "crude_steel"
+      - "direct_reduced_iron"
+    aluminium:
+      - "alumina"
+      - "unwrought_aluminium"
+    cement:
+      - "clinker"
+
+# Emission calculation
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 25.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+
+# Certificate configuration - manual price for demo
+certificate:
+  ets_price_source: "manual"
+  manual_price_eur_per_tco2e: 75.0
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 55
+  repurchase_enabled: true
+
+# Certificate trading
+trading:
+  buying_strategy: "dca"
+  price_alert_below_eur: 60.0
+  price_alert_above_eur: 120.0
+  repurchase_threshold_pct: 10.0
+  valuation_method: "weighted_average"
+  auto_purchase_enabled: false
+  quarterly_holding_target_pct: 55.0
+  dca_frequency_weeks: 4
+  dca_fixed_amount_eur: 50000
+  mark_to_market_frequency: "weekly"
+
+# Entity group - 3-entity hierarchy
+entity_group:
+  entities:
+    - entity_id: "EURO-GROUP-001"
+      entity_name: "EuroSteel Group GmbH"
+      eori_number: "DE327891234567"
+      role: "parent"
+      eu_member_state: "DE"
+      declarant_status: "granted"
+      enabled_categories: ["iron_steel"]
+      cost_allocation_pct: 50.0
+
+    - entity_id: "NORD-STAHL-001"
+      entity_name: "NordStahl Handel GmbH"
+      eori_number: "DE445678901234"
+      role: "subsidiary"
+      eu_member_state: "DE"
+      declarant_status: "granted"
+      enabled_categories: ["iron_steel"]
+      cost_allocation_pct: 30.0
+      delegated_to: "EURO-GROUP-001"
+
+    - entity_id: "ALPINE-METAL-001"
+      entity_name: "AlpineMetal AG"
+      eori_number: "AT987654321012"
+      role: "subsidiary"
+      eu_member_state: "AT"
+      declarant_status: "granted"
+      enabled_categories: ["aluminium", "cement"]
+      cost_allocation_pct: 20.0
+      delegated_to: "EURO-GROUP-001"
+
+  hierarchy_enabled: true
+  cost_allocation_method: "custom"
+  consolidation_currency: "EUR"
+  delegated_compliance_mode: true
+  financial_guarantee_eur: 500000
+  inter_entity_transfer_tracking: true
+  consolidated_declaration: false
+
+# Registry API - sandbox for demo
+registry:
+  use_sandbox: true
+  auth_type: "mtls"
+  cert_path: ""
+  key_path: ""
+  polling_interval_seconds: 120
+  max_retries: 3
+  timeout_seconds: 30
+
+# Analytics
+analytics:
+  monte_carlo_iterations: 5000
+  optimization_solver: "scipy_optimize"
+  benchmark_source: "eu_bat"
+  forecast_horizon_years: 3
+  confidence_level: 0.95
+
+# Customs
+customs:
+  sad_format: "xml"
+  aeo_check_enabled: false
+  anti_circumvention_rules:
+    - "origin_change"
+    - "cn_reclassification"
+    - "scrap_ratio"
+  downstream_monitoring: false
+  cn_cache_ttl_hours: 24
+  origin_verification_enabled: true
+
+# Cross-regulation
+cross_regulation:
+  csrd_enabled: true
+  cdp_enabled: false
+  sbti_enabled: false
+  taxonomy_enabled: false
+  ets_enabled: true
+  eudr_enabled: false
+  sync_frequency_hours: 48
+
+# Audit management
+audit:
+  retention_years: 10
+  data_room_enabled: false
+  auto_remediation_alerts: true
+  nca_response_deadline_days: 30
+  penalty_tracking: true
+  evidence_encryption: false
+
+# Precursor chain
+precursor:
+  max_chain_depth: 4
+  allocation_method: "mass"
+  scrap_classification_enabled: true
+  mass_balance_validation: true
+  mass_balance_tolerance_pct: 5.0
+  precursor_chain_visualization: true
+  chain_completeness_threshold_pct: 75.0
+
+# Quarterly reporting
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 14
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "DE"
+  additional_languages: ["EN"]
+  include_supporting_documents: true
+  archive_reports: true
+
+# Supplier management
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 65.0
+  max_installations_per_supplier: 15
+  eori_validation_enabled: false
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  threshold_value_eur: 150.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+
+# Verification
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+
+# Pack-level settings
+reporting_year: 2026
+reporting_period: "definitive"
+transitional_mode: false
+demo_mode: true
+log_level: "DEBUG"
+provenance_enabled: true
+
+# Demo-specific settings
+demo:
+  sample_data_path: "config/demo/demo_import_portfolio.csv"
+  group_structure_path: "config/demo/demo_group_structure.json"
+  skip_external_apis: true
+  mock_ets_price: true
+  mock_registry_submission: true
+  auto_generate_quarterly_report: true
+
+  demo_quarter: "Q1-2026"
+  demo_quarter_start: "2026-01-01"
+  demo_quarter_end: "2026-03-31"
+
+  demo_suppliers:
+    - id: "SUPP-TR-001"
+      name: "Anatolian Steel Works"
+      country: "TR"
+      categories: ["iron_steel"]
+      installations: ["BF-BOF plant Iskenderun", "EAF plant Izmir"]
+
+    - id: "SUPP-CN-001"
+      name: "Shanghai Metals Corp"
+      country: "CN"
+      categories: ["iron_steel", "aluminium"]
+      installations: ["BF-BOF Baosteel Shanghai", "Smelter Henan"]
+
+    - id: "SUPP-IN-001"
+      name: "Rajasthan Cement Ltd"
+      country: "IN"
+      categories: ["cement"]
+      installations: ["Clinker kiln Jaipur", "Cement mill Udaipur"]
+
+    - id: "SUPP-NO-001"
+      name: "Nordic Aluminium AS"
+      country: "NO"
+      categories: ["aluminium"]
+      installations: ["Primary smelter Mosjoen"]
+
+    - id: "SUPP-EG-001"
+      name: "Ezz Steel SAE"
+      country: "EG"
+      categories: ["iron_steel"]
+      installations: ["EAF plant Suez"]

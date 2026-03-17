@@ -1,0 +1,50 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Rubber Professional Sector
+# =============================================================================
+# Professional rubber supply chain configuration with FSC/PEFC verification,
+# Southeast Asia focus (Thailand, Indonesia, Vietnam), plantation mapping,
+# processor tracking, and smallholder aggregation.
+# =============================================================================
+
+commodities:
+  - commodity_type: "rubber"
+    enabled: true
+    priority: 1
+    certification_schemes: ["FSC", "PEFC"]
+    high_risk_origins: ["THA", "IDN", "VNM", "CIV", "MYS", "CHN", "MMR", "LAO", "KHM"]
+    annual_volume_tonnes: 30000.0
+
+geolocation:
+  coordinate_precision: 7
+  polygon_max_vertices: 20000
+  polygon_area_threshold_ha: 4.0
+  batch_size: 1000
+
+risk_assessment:
+  country_weight: 0.35
+  supplier_weight: 0.25
+  commodity_weight: 0.25
+  document_weight: 0.15
+
+compliance:
+  require_geolocation: true
+  require_certification: false
+  verification_level: "STANDARD"
+  data_quality_threshold: 0.85
+
+advanced_geolocation:
+  resolution_meters: 10
+  temporal_periods: 5
+  alert_systems: ["GLAD", "RADD"]
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 5.0
+  ramsar_check: true
+  unesco_check: true
+
+advanced_supply_chain:
+  max_tier_depth: 4  # Plantation -> Processor -> Manufacturer -> Product
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED", "MASS_BALANCE"]

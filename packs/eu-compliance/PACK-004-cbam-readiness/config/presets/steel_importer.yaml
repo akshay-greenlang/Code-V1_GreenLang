@@ -1,0 +1,261 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Steel Importer Preset
+# =============================================================================
+# Optimized for importers of iron and steel products (CN 72xx, 73xx).
+# Enables BF-BOF and EAF calculation methods, high-volume processing,
+# actual emission data preferred, full indirect emissions tracking,
+# and complex precursor chain (pig iron through finished products).
+#
+# Typical use cases:
+#   - Steel trading companies importing from Turkey, China, India, Russia
+#   - Manufacturing companies sourcing steel semi-finished products
+#   - Construction firms importing structural steel
+#   - Automotive suppliers importing steel flat products
+# =============================================================================
+
+# Goods configuration - iron and steel focus
+goods:
+  enabled_categories:
+    - "iron_steel"
+  cn_codes_per_category:
+    iron_steel:
+      # Chapter 72 - Primary iron and steel
+      - "7201"        # Pig iron and spiegeleisen
+      - "7202 11"     # Ferro-manganese >2% C
+      - "7202 19"     # Other ferro-manganese
+      - "7202 21"     # Ferro-silicon >55% Si
+      - "7202 29"     # Other ferro-silicon
+      - "7202 30"     # Ferro-silico-manganese
+      - "7202 41"     # Ferro-chromium >4% C
+      - "7202 49"     # Other ferro-chromium
+      - "7202 50"     # Ferro-silico-chromium
+      - "7202 60"     # Ferro-nickel
+      - "7202 70"     # Ferro-molybdenum
+      - "7202 80"     # Ferro-tungsten
+      - "7202 91"     # Ferro-titanium
+      - "7202 92"     # Ferro-vanadium
+      - "7202 93"     # Ferro-niobium
+      - "7202 99"     # Other ferro-alloys
+      - "7203"        # DRI products
+      - "7205"        # Granules and powders
+      - "7206"        # Ingots or primary forms
+      - "7207"        # Semi-finished products
+      # Flat products
+      - "7208"        # Hot-rolled flat >=600mm
+      - "7209"        # Cold-rolled flat >=600mm
+      - "7210"        # Clad/plated/coated flat >=600mm
+      - "7211"        # Flat <600mm
+      - "7212"        # Clad/plated/coated flat <600mm
+      # Long products
+      - "7213"        # Hot-rolled bars and rods (coils)
+      - "7214"        # Forged/cold-formed bars
+      - "7215"        # Other bars and rods
+      - "7216"        # Angles, shapes, sections
+      - "7217"        # Wire
+      # Stainless and alloy
+      - "7218"        # Stainless semi-finished
+      - "7219"        # Stainless flat >=600mm
+      - "7220"        # Stainless flat <600mm
+      - "7221"        # Stainless bars (hot-rolled)
+      - "7222"        # Stainless bars (other)
+      - "7223"        # Stainless wire
+      - "7224"        # Other alloy semi-finished
+      - "7225"        # Other alloy flat >=600mm
+      - "7226"        # Other alloy flat <600mm
+      - "7227"        # Other alloy bars (hot-rolled)
+      - "7228"        # Other alloy bars (other)
+      - "7229"        # Other alloy wire
+      # Chapter 73 - Articles
+      - "7301"        # Sheet piling
+      - "7302"        # Railway track material
+      - "7303"        # Cast iron tubes/pipes
+      - "7304"        # Seamless tubes/pipes
+      - "7305"        # Welded tubes >406.4mm
+      - "7306"        # Other welded tubes
+      - "7307"        # Tube/pipe fittings
+      - "7308"        # Structures and parts
+      - "7309"        # Reservoirs/tanks >300L
+      - "7310"        # Tanks/casks <=300L
+      - "7311"        # Compressed gas containers
+      - "7312"        # Stranded wire/cables
+      - "7313"        # Barbed wire
+      - "7318"        # Screws/bolts/nuts
+      - "7326"        # Other articles
+  precursor_tracking:
+    iron_steel:
+      - "pig_iron"
+      - "direct_reduced_iron"
+      - "crude_steel"
+      - "ferro_alloys"
+
+# Emission calculation - prefer actual data, high granularity
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 25.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+  country_carbon_price_sources:
+    - "eu_ets"
+    - "uk_ets"
+    - "china_ets"
+    - "korea_ets"
+    - "carbon_tax_registry"
+
+# Steel-specific calculation parameters
+steel_calculation:
+  production_routes:
+    bf_bof:
+      enabled: true
+      description: "Blast Furnace - Basic Oxygen Furnace (integrated steelmaking)"
+      typical_emission_intensity: 1.85  # tCO2e/tonne crude steel
+      key_inputs:
+        - "iron_ore_sinter"
+        - "iron_ore_pellets"
+        - "coking_coal"
+        - "limestone_flux"
+        - "natural_gas"
+        - "electricity"
+      key_emission_sources:
+        - "coke_oven_combustion"
+        - "blast_furnace_reduction"
+        - "bof_oxidation"
+        - "lime_calcination"
+        - "auxiliary_fuel"
+    eaf:
+      enabled: true
+      description: "Electric Arc Furnace (scrap-based and DRI-based)"
+      typical_emission_intensity: 0.45  # tCO2e/tonne crude steel (scrap-based)
+      key_inputs:
+        - "scrap_steel"
+        - "direct_reduced_iron"
+        - "electricity"
+        - "natural_gas"
+        - "carbon_electrodes"
+        - "lime"
+      key_emission_sources:
+        - "electricity_consumption"
+        - "electrode_consumption"
+        - "natural_gas_combustion"
+        - "lime_calcination"
+    dri_eaf:
+      enabled: true
+      description: "Direct Reduced Iron - Electric Arc Furnace"
+      typical_emission_intensity: 1.10  # tCO2e/tonne crude steel
+      key_inputs:
+        - "iron_ore_pellets"
+        - "natural_gas"
+        - "hydrogen"
+        - "electricity"
+    smelting_reduction:
+      enabled: false
+      description: "COREX, FINEX, HISarna (emerging technologies)"
+      typical_emission_intensity: 1.70
+
+  product_categories:
+    flat_products:
+      description: "Hot-rolled, cold-rolled, coated flat products"
+      additional_processing_emissions: 0.15  # tCO2e/tonne above crude steel
+    long_products:
+      description: "Bars, rods, sections, wire, rails"
+      additional_processing_emissions: 0.10
+    tubes_pipes:
+      description: "Seamless and welded tubes and pipes"
+      additional_processing_emissions: 0.25
+    stainless:
+      description: "Stainless steel products (additional alloying emissions)"
+      additional_processing_emissions: 0.95
+    alloy_steel:
+      description: "Other alloy steel products"
+      additional_processing_emissions: 0.65
+
+# Certificate configuration - high volume, active management
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+  repurchase_enabled: true
+
+# Quarterly reporting
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 7
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "EN"
+  include_supporting_documents: true
+  archive_reports: true
+
+# Supplier configuration - multiple steel producers
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 70.0
+  max_installations_per_supplier: 20
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+  reminder_days_before_deadline: [30, 14, 7, 3, 1]
+
+# Steel importers typically above de minimis
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+
+# Full annual verification
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+  remote_verification_allowed: false
+
+# Pack-level settings
+reporting_year: 2026
+reporting_period: "definitive"
+transitional_mode: false
+demo_mode: false
+
+# Key source countries for steel imports into EU
+source_countries_focus:
+  - country: "TR"
+    name: "Turkey"
+    primary_routes: ["bf_bof", "eaf"]
+    typical_share_pct: 30
+  - country: "CN"
+    name: "China"
+    primary_routes: ["bf_bof"]
+    typical_share_pct: 15
+  - country: "IN"
+    name: "India"
+    primary_routes: ["bf_bof", "eaf"]
+    typical_share_pct: 12
+  - country: "RU"
+    name: "Russia"
+    primary_routes: ["bf_bof"]
+    typical_share_pct: 10
+  - country: "UA"
+    name: "Ukraine"
+    primary_routes: ["bf_bof"]
+    typical_share_pct: 8
+  - country: "KR"
+    name: "South Korea"
+    primary_routes: ["bf_bof", "eaf"]
+    typical_share_pct: 7
+  - country: "EG"
+    name: "Egypt"
+    primary_routes: ["eaf"]
+    typical_share_pct: 5

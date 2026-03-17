@@ -1,0 +1,220 @@
+# =============================================================================
+# PACK-012 CSRD Financial Service Pack - Insurance Undertaking Preset
+# =============================================================================
+# Configuration for Solvency II-regulated insurance and reinsurance
+# undertakings. Enables underwriting emissions, investment portfolio
+# alignment, ORSA climate integration, physical risk exposure for insured
+# assets, and Solvency II prudential sustainability reporting. Insurance
+# companies face unique requirements on both the liability side (underwriting
+# emissions) and asset side (investment portfolio alignment).
+#
+# Typical use cases:
+#   - Large composite insurers (life + non-life)
+#   - Property and casualty insurance specialists
+#   - Reinsurance companies with global underwriting portfolios
+#   - Insurance groups subject to EIOPA supervision
+# =============================================================================
+
+# --- Institution Details ---
+institution_type: "INSURANCE"
+institution_name: ""
+lei_code: ""
+reporting_currency: "EUR"
+reporting_period_start: null
+reporting_period_end: null
+consolidation_scope: "GROUP"
+
+# --- PCAF Financed Emissions (investment portfolio) ---
+pcaf:
+  enabled: true
+  enabled_asset_classes:
+    - "LISTED_EQUITY_CORPORATE_BONDS"
+    - "BUSINESS_LOANS_UNLISTED_EQUITY"
+    - "COMMERCIAL_REAL_ESTATE"
+    - "MORTGAGES"
+  include_scope_1: true
+  include_scope_2: true
+  include_scope_3: true
+  min_data_quality_score: 5
+  target_data_quality_score: 3
+  estimation_enabled: true
+  estimation_methodology: "SECTOR_AVERAGE"
+  emission_factor_source: "PCAF_DATABASE"
+  emission_factor_vintage_year: 2024
+  attribution_method: "OUTSTANDING_DIVIDED_BY_EVIC"
+  sector_aggregation_code: "NACE_REV2"
+  year_over_year_tracking: true
+  portfolio_carbon_footprint: true
+  waci_enabled: true
+  data_quality_improvement_plan: true
+
+# --- GAR/BTAR (limited for insurers - investment portfolio only) ---
+gar_btar:
+  gar_enabled: false
+  btar_enabled: false
+  gar_scopes:
+    - "TURNOVER"
+  exposure_categories:
+    - "NON_FINANCIAL_CORPORATES"
+  exclude_sovereign_central_bank: true
+  exclude_trading_book: true
+  flow_gar_enabled: false
+  stock_gar_enabled: false
+  btar_estimation_method: "SECTOR_PROXY"
+  btar_confidence_interval: false
+  nace_sector_mapping_enabled: true
+  pillar3_template_output: false
+
+# --- Insurance Configuration (enabled) ---
+insurance:
+  enabled: true
+  attribution_method: "PREMIUM_BASED"
+  enabled_lines:
+    - "COMMERCIAL_PROPERTY"
+    - "COMMERCIAL_CASUALTY"
+    - "PERSONAL_PROPERTY"
+    - "PERSONAL_AUTO"
+    - "SPECIALTY"
+    - "LIFE_HEALTH"
+    - "REINSURANCE"
+  reinsurance_adjustment: true
+  gross_net_reporting: true
+  orsa_climate_integration: true
+  solvency_ii_reporting: true
+  physical_risk_insured_assets: true
+  investment_portfolio_alignment: true
+
+# --- Climate Risk Scoring ---
+climate_risk:
+  enabled: true
+  enabled_scenarios:
+    - "NET_ZERO_2050"
+    - "BELOW_2C"
+    - "DELAYED_TRANSITION"
+    - "NDCS"
+    - "CURRENT_POLICIES"
+  physical_risk_enabled: true
+  transition_risk_enabled: true
+  physical_hazards:
+    - "FLOOD"
+    - "WILDFIRE"
+    - "STORM"
+    - "HEATWAVE"
+    - "SEA_LEVEL_RISE"
+    - "DROUGHT"
+  transition_channels:
+    - "POLICY_LEGAL"
+    - "TECHNOLOGY"
+    - "MARKET"
+    - "REPUTATION"
+  time_horizons_years: [5, 15, 30]
+  ecb_ssm_compatible: false
+  eba_exercise_compatible: false
+  expected_credit_loss_impact: false
+  sector_heatmap_enabled: true
+  geography_heatmap_enabled: true
+  pillar3_template_4_output: false
+
+# --- Pillar 3 (disabled for insurers) ---
+pillar3:
+  enabled: false
+  enabled_templates: []
+  large_institution: false
+  reporting_frequency: "ANNUAL"
+  xbrl_output: false
+  corep_finrep_cross_validation: false
+  qualitative_narrative_enabled: false
+
+# --- FS Double Materiality ---
+materiality:
+  enabled: true
+  esrs_topics:
+    - "E1"
+    - "E2"
+    - "E3"
+    - "E4"
+    - "E5"
+    - "S1"
+    - "S2"
+    - "S3"
+    - "S4"
+    - "G1"
+  impact_channels:
+    - "INVESTING"
+    - "UNDERWRITING"
+    - "ADVISORY"
+  financial_materiality_enabled: true
+  impact_materiality_enabled: true
+  stakeholder_engagement_required: true
+  materiality_threshold_financial: "MEDIUM"
+  materiality_threshold_impact: "MEDIUM"
+  weight_by_exposure_size: true
+  generate_iro1_documentation: true
+
+# --- Transition Plan ---
+transition_plan:
+  enabled: true
+  sbti_fi_aligned: true
+  sbti_method: "PORTFOLIO_COVERAGE"
+  target_years: [2025, 2030, 2035, 2040, 2050]
+  sector_targets_enabled: true
+  priority_sectors:
+    - "POWER_GENERATION"
+    - "OIL_GAS"
+    - "TRANSPORT"
+    - "REAL_ESTATE"
+  operational_emissions_target: true
+  financed_emissions_target: true
+  client_engagement_strategy: true
+  fossil_fuel_phasedown: true
+  capital_allocation_alignment: true
+  governance_integration: true
+  temperature_alignment_target: 1.5
+
+# --- SBTi FI ---
+sbti_fi:
+  enabled: true
+  commitment_status: "COMMITTED"
+  target_type: "NEAR_TERM"
+  portfolio_coverage_target_pct: 60.0
+  engagement_threshold_pct: 40.0
+  temperature_rating_method: true
+  sda_sectors_enabled: true
+
+# --- Data Quality ---
+data_quality:
+  pcaf_score_tracking: true
+  min_coverage_pct: 65.0
+  allow_sector_proxies: true
+  proxy_usage_cap_pct: 35.0
+  require_audited_emissions: false
+  data_quality_improvement_roadmap: true
+  stale_data_threshold_days: 365
+
+# --- Disclosure ---
+disclosure:
+  esrs_chapter_enabled: true
+  pillar3_package_enabled: false
+  pcaf_report_enabled: true
+  gar_btar_report_enabled: false
+  climate_risk_report_enabled: true
+  sbti_fi_report_enabled: true
+  dashboard_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  xbrl_tagging: false
+  multi_language_support: false
+  supported_languages: ["en"]
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true

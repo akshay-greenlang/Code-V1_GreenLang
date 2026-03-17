@@ -1,0 +1,136 @@
+# =============================================================================
+# PACK-005 CBAM Complete Pack - Automotive OEM Sector Preset
+# =============================================================================
+# Sector overlay for automotive original equipment manufacturers importing
+# steel and aluminium. Focus on supplier chain traceability, SBTi alignment,
+# CSRD E1 emission mapping, and just-in-time supply chain integration.
+#
+# Automotive OEMs are heavy importers of:
+#   - Hot-rolled coil (HRC) and cold-rolled coil (CRC) steel
+#   - Aluminium extrusions, sheets, and castings
+#   - Stainless steel for exhaust systems and components
+#   - High-strength low-alloy (HSLA) steel
+#
+# NACE codes: C29 (Manufacture of motor vehicles)
+# =============================================================================
+
+# Automotive-relevant goods categories
+goods:
+  enabled_categories:
+    - "iron_steel"
+    - "aluminium"
+  precursor_tracking:
+    iron_steel:
+      - "pig_iron"
+      - "direct_reduced_iron"
+      - "crude_steel"
+      - "ferro_alloys"
+    aluminium:
+      - "alumina"
+      - "unwrought_aluminium"
+
+# Emission calculation - stringent for OEM compliance
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 20.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+
+# Certificate management - budget-conscious for OEMs
+certificate:
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 55
+
+# Trading - budget paced for predictable costs
+trading:
+  buying_strategy: "budget_paced"
+  valuation_method: "weighted_average"
+  quarterly_holding_target_pct: 55.0
+  mark_to_market_frequency: "monthly"
+
+# Analytics - automotive-specific sensitivity
+analytics:
+  monte_carlo_iterations: 10000
+  benchmark_source: "worldsteel"
+  forecast_horizon_years: 5
+  sensitivity_variables:
+    - "ets_price"
+    - "import_volume"
+    - "emission_intensity"
+    - "scrap_ratio"
+    - "free_allocation_pct"
+    - "exchange_rate"
+    - "steel_hrc_price"
+    - "aluminium_lme_price"
+    - "vehicle_production_volume"
+
+# Customs - automotive supply chain focus
+customs:
+  anti_circumvention_rules:
+    - "origin_change"
+    - "cn_reclassification"
+    - "scrap_ratio"
+  downstream_monitoring: true
+  origin_verification_enabled: true
+
+# Cross-regulation - SBTi and CSRD critical for automotive
+cross_regulation:
+  csrd_enabled: true
+  cdp_enabled: true
+  sbti_enabled: true
+  taxonomy_enabled: true
+  ets_enabled: true
+  eudr_enabled: false
+  mapping_rules:
+    csrd: ["E1-1", "E1-2", "E1-3", "E1-4", "E1-5", "E1-6"]
+    cdp: ["C1.1", "C2.1", "C4.1", "C6.1", "C6.3", "C7.1"]
+    sbti: ["scope_1", "scope_2_location", "scope_2_market", "scope_3_cat1"]
+    taxonomy: ["ccm_1", "ccm_3"]
+
+# Precursor chain - deep for steel supply
+precursor:
+  max_chain_depth: 5
+  allocation_method: "mass"
+  scrap_classification_enabled: true
+  mass_balance_validation: true
+  mass_balance_tolerance_pct: 3.0
+  chain_completeness_threshold_pct: 85.0
+
+# Supplier management - tier 1 and tier 2
+supplier:
+  quality_threshold: 80.0
+  max_installations_per_supplier: 20
+  auto_fallback_to_defaults: true
+  data_retention_years: 10
+
+# Automotive-specific metadata
+sector_metadata:
+  nace_code: "C29"
+  sector_name: "Automotive OEM"
+  primary_materials:
+    - material: "hot_rolled_coil"
+      cn_codes: ["7208"]
+      typical_volume_tonnes_year: 50000
+      typical_sources: ["TR", "CN", "KR", "IN"]
+    - material: "cold_rolled_coil"
+      cn_codes: ["7209"]
+      typical_volume_tonnes_year: 30000
+      typical_sources: ["TR", "KR", "CN"]
+    - material: "aluminium_extrusions"
+      cn_codes: ["7604"]
+      typical_volume_tonnes_year: 10000
+      typical_sources: ["CN", "NO", "IS"]
+    - material: "stainless_flat"
+      cn_codes: ["7219", "7220"]
+      typical_volume_tonnes_year: 5000
+      typical_sources: ["CN", "IN", "KR"]
+    - material: "aluminium_sheets"
+      cn_codes: ["7606"]
+      typical_volume_tonnes_year: 8000
+      typical_sources: ["CN", "NO"]
+  key_compliance_drivers:
+    - "SBTi 1.5C target alignment"
+    - "CSRD E1 Scope 3 Cat 1 disclosure"
+    - "EU Taxonomy CCM substantial contribution"
+    - "CDP A-list supplier engagement"

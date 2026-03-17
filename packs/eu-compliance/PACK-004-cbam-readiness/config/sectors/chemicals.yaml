@@ -1,0 +1,247 @@
+# =============================================================================
+# PACK-004 CBAM Readiness Pack - Chemicals & Fertilizers Sector Preset
+# =============================================================================
+# NACE Codes: C20 (Manufacture of chemicals), C21 (Pharmaceuticals)
+#
+# Covers fertilizer and hydrogen imports with process emissions focus.
+# N2O and NH3 emissions are sector-specific concerns. Ammonia production
+# routes and abatement technologies significantly impact emission intensity.
+#
+# Key focus areas:
+#   - Nitrogen fertilizer value chain (ammonia -> nitric acid -> AN/urea)
+#   - N2O emissions from nitric acid production
+#   - Hydrogen production pathways (grey/blue/green)
+#   - Natural gas as both feedstock and fuel
+#   - Process-specific emission factors
+#   - Abatement technology verification
+# =============================================================================
+
+# Sector identification
+sector_specific:
+  nace_codes: ["C20", "C21"]
+  sector_name: "Chemicals & Fertilizers"
+  sector_group: "chemicals"
+
+  # Key emission sources for chemicals sector
+  primary_emission_sources:
+    - "natural_gas_feedstock"       # H2 production via SMR
+    - "process_co2"                 # From steam reforming
+    - "n2o_emissions"               # Nitric acid production
+    - "steam_generation"            # Process heat
+    - "electricity_consumption"     # Compressors, electrolysis
+    - "flaring"                     # Safety and process flaring
+
+  # Chemical processes tracked
+  process_types:
+    ammonia_synthesis:
+      description: "Haber-Bosch ammonia synthesis"
+      routes: ["smr", "pox", "coal_gasification", "green_electrolysis"]
+      key_ghgs: ["CO2"]
+    nitric_acid:
+      description: "Ostwald process nitric acid"
+      key_ghgs: ["CO2", "N2O"]
+      abatement_tracking: true
+    urea_synthesis:
+      description: "Ammonia + CO2 reaction"
+      key_ghgs: ["CO2"]
+      co2_balance_tracking: true
+    hydrogen_production:
+      description: "Hydrogen via various pathways"
+      routes: ["smr", "smr_ccs", "electrolysis", "pyrolysis"]
+      key_ghgs: ["CO2"]
+
+  # Emission factor databases for chemicals
+  emission_factor_databases:
+    - name: "fertilizers_europe"
+      description: "Fertilizers Europe BAT reference documents"
+      priority: 1
+    - name: "ipcc_chemical_industry"
+      description: "IPCC guidelines for chemical industry"
+      priority: 2
+    - name: "eu_bref_lvic"
+      description: "EU BAT Reference Document for LVIC (Large Volume Inorganic Chemicals)"
+      priority: 3
+    - name: "hydrogen_council"
+      description: "Hydrogen Council emission benchmarks"
+      priority: 4
+
+  # N2O abatement technology tracking
+  n2o_abatement:
+    technologies:
+      - name: "NSCR"
+        full_name: "Non-Selective Catalytic Reduction"
+        removal_efficiency_pct: 80
+        description: "Catalytic decomposition of N2O in process gas"
+      - name: "SCR"
+        full_name: "Selective Catalytic Reduction"
+        removal_efficiency_pct: 93
+        description: "Selective catalytic reduction using ammonia"
+      - name: "tertiary_catalytic"
+        full_name: "Tertiary Catalytic Abatement"
+        removal_efficiency_pct: 97
+        description: "Tail-gas N2O decomposition catalyst"
+      - name: "thermal_decomposition"
+        full_name: "Thermal N2O Decomposition"
+        removal_efficiency_pct: 90
+        description: "High-temperature N2O decomposition"
+    monitoring_required: true
+    measurement_methods:
+      - "continuous_emission_monitoring"
+      - "periodic_measurement"
+      - "mass_balance"
+
+# Goods categories - fertilizers + hydrogen
+goods:
+  enabled_categories:
+    - "fertilizers"
+    - "hydrogen"
+  precursor_tracking:
+    fertilizers:
+      - "ammonia"
+      - "nitric_acid"
+      - "urea"
+    hydrogen: []
+
+# Emission - process-specific tracking
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 30.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+
+# Process-specific emission benchmarks
+chemical_benchmarks:
+  ammonia:
+    eu_bat_lower: 1.60             # tCO2e/tonne NH3 (BAT lower)
+    eu_bat_upper: 1.90             # tCO2e/tonne NH3 (BAT upper)
+    eu_average: 2.10               # tCO2e/tonne NH3
+    global_average: 2.40           # tCO2e/tonne NH3
+    coal_based_average: 4.50       # tCO2e/tonne NH3 (China typical)
+    green_electrolysis: 0.30       # tCO2e/tonne NH3
+
+  nitric_acid:
+    with_tertiary_abatement: 0.05  # tCO2e N2O/tonne HNO3
+    with_scr: 0.13                 # tCO2e N2O/tonne HNO3
+    with_nscr: 0.40                # tCO2e N2O/tonne HNO3
+    no_abatement: 1.86             # tCO2e N2O/tonne HNO3
+    n2o_gwp_ar5: 265
+
+  urea:
+    eu_average: 1.60               # tCO2e/tonne urea
+    note: "Includes CO2 re-emission credit/debit"
+
+  hydrogen:
+    grey_smr: 10.0                 # tCO2e/tonne H2
+    blue_smr_ccs_90: 3.0           # tCO2e/tonne H2 (90% capture)
+    blue_smr_ccs_95: 1.5           # tCO2e/tonne H2 (95% capture)
+    green_electrolysis: 0.5        # tCO2e/tonne H2
+    turquoise_pyrolysis: 4.0       # tCO2e/tonne H2
+
+  # Conversion factors
+  stoichiometric_ratios:
+    ammonia_per_urea: 0.567        # tonnes NH3 per tonne urea
+    ammonia_per_an: 0.213          # tonnes NH3 per tonne AN
+    hno3_per_an: 0.787             # tonnes HNO3 per tonne AN
+    ammonia_per_dap: 0.226         # tonnes NH3 per tonne DAP
+
+# Certificate configuration
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  surrender_deadline_month: 5
+  surrender_deadline_day: 31
+
+# Supplier - process-level data needed
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 70.0
+  max_installations_per_supplier: 15
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+  # Chemistry-specific data requirements
+  additional_data_fields:
+    ammonia:
+      - "production_route"
+      - "feedstock_type"
+      - "energy_consumption_gj_per_tonne"
+      - "co2_capture_rate_pct"
+    nitric_acid:
+      - "abatement_technology"
+      - "n2o_emission_factor"
+      - "measurement_method"
+    hydrogen:
+      - "production_pathway"
+      - "electricity_source"
+      - "ccs_capture_rate_pct"
+
+# De minimis monitoring
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  alert_thresholds: [80.0, 90.0, 95.0, 100.0]
+  auto_exemption: false
+  sector_grouping: true
+
+# Verification - N2O measurement critical
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+  remote_verification_allowed: false
+  sampling_methodology: "risk_based"
+
+  # Chemistry-specific verification requirements
+  chemical_verification:
+    n2o_measurement_verification: true
+    abatement_efficiency_check: true
+    feedstock_mass_balance: true
+    hydrogen_pathway_verification: true
+
+# Source countries
+source_countries_focus:
+  - country: "RU"
+    name: "Russia"
+    products: ["ammonia", "urea", "an"]
+    typical_share_pct: 25
+  - country: "EG"
+    name: "Egypt"
+    products: ["ammonia", "urea"]
+    typical_share_pct: 12
+  - country: "TT"
+    name: "Trinidad and Tobago"
+    products: ["ammonia", "urea", "uan"]
+    typical_share_pct: 10
+  - country: "US"
+    name: "United States"
+    products: ["ammonia", "hydrogen"]
+    typical_share_pct: 8
+  - country: "CN"
+    name: "China"
+    products: ["urea", "ammonia"]
+    typical_share_pct: 7
+  - country: "MA"
+    name: "Morocco"
+    products: ["dap", "map"]
+    typical_share_pct: 6
+  - country: "SA"
+    name: "Saudi Arabia"
+    products: ["ammonia", "urea", "hydrogen"]
+    typical_share_pct: 5
+  - country: "QA"
+    name: "Qatar"
+    products: ["ammonia", "urea"]
+    typical_share_pct: 4

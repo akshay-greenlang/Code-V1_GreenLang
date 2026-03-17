@@ -1,0 +1,214 @@
+# =============================================================================
+# PACK-015 Double Materiality Pack - Multi-Sector Group Preset
+# =============================================================================
+# Configuration for diversified groups operating across multiple NACE sectors
+# (conglomerates, holding companies, multi-divisional groups). Supports
+# division-level DMA with group-level consolidation. Combines materiality
+# profiles from multiple sectors. Handles conflicting materiality outcomes
+# across divisions (a topic may be material for one division but not
+# another). Consolidated materiality matrix with division overlay. Enhanced
+# stakeholder engagement covering division-specific stakeholder groups.
+# 10-year data retention.
+#
+# Typical use cases:
+#   - Multi-divisional industrial conglomerates
+#   - Holding companies with subsidiaries in different sectors
+#   - Diversified groups with manufacturing, services, and retail divisions
+#   - Groups preparing consolidated sustainability statements
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+company_size: "LARGE_ENTERPRISE"
+sectors:
+  - "MANUFACTURING"
+  - "RETAIL"
+  - "FINANCIAL_SERVICES"
+listed_entity: true
+
+# --- Impact Materiality (group-level with division overlay) ---
+impact_materiality:
+  enabled: true
+  scoring_scale: 10
+  severity_dimensions:
+    - "scale"
+    - "scope"
+    - "irremediable_character"
+  severity_weighting: "EQUAL"
+  likelihood_enabled: true
+  likelihood_scale: 10
+  positive_impacts_enabled: true
+  value_chain_boundary: true
+  multi_scorer: true
+  scorer_aggregation: "weighted_mean"
+  evidence_based_scoring: true
+  sub_topic_granularity: true
+  sub_sub_topic_granularity: true
+
+# --- Financial Materiality (consolidated with scenario analysis) ---
+financial_materiality:
+  enabled: true
+  scoring_scale: 10
+  magnitude_type: "quantitative"
+  magnitude_currency: "EUR"
+  likelihood_enabled: true
+  time_horizon_analysis: true
+  time_horizons:
+    - "SHORT_TERM"
+    - "MEDIUM_TERM"
+    - "LONG_TERM"
+    - "VERY_LONG_TERM"
+  short_term_years: 1
+  medium_term_years: 5
+  long_term_years: 10
+  scenario_analysis: true
+  scenario_types:
+    - "orderly_transition"
+    - "disorderly_transition"
+    - "hot_house"
+  risk_opportunity_asymmetry: true
+  cost_of_capital_impact: true
+  multi_scorer: true
+  erp_data_integration: true
+
+# --- Stakeholder Engagement (multi-division coverage) ---
+stakeholder_engagement:
+  enabled: true
+  affected_stakeholders:
+    - "EMPLOYEES"
+    - "VALUE_CHAIN_WORKERS"
+    - "LOCAL_COMMUNITIES"
+    - "CONSUMERS"
+    - "INDIGENOUS_PEOPLES"
+    - "ECOSYSTEMS"
+  statement_users:
+    - "INVESTORS"
+    - "LENDERS"
+    - "CREDITORS"
+    - "ASSET_MANAGERS"
+    - "INSURERS"
+    - "RATING_AGENCIES"
+    - "REGULATORS"
+  engagement_methods:
+    - "surveys"
+    - "interviews"
+    - "workshops"
+    - "advisory_panels"
+    - "grievance_mechanisms"
+  stakeholder_weighting: true
+  weighting_scheme: "vulnerability_weighted"
+  sentiment_analysis: true
+  min_response_rate: 0.25
+  annual_refresh: true
+  grievance_mechanism_tracking: true
+
+# --- IRO Identification (multi-sector scan) ---
+iro_identification:
+  enabled: true
+  iro_types:
+    - "IMPACT"
+    - "RISK"
+    - "OPPORTUNITY"
+  directions:
+    - "POSITIVE"
+    - "NEGATIVE"
+  temporalities:
+    - "ACTUAL"
+    - "POTENTIAL"
+  value_chain_positions:
+    - "OWN_OPERATIONS"
+    - "UPSTREAM"
+    - "DOWNSTREAM"
+  esrs_topics_in_scope:
+    - "E1"
+    - "E2"
+    - "E3"
+    - "E4"
+    - "E5"
+    - "S1"
+    - "S2"
+    - "S3"
+    - "S4"
+    - "G1"
+  sector_profile_enabled: true
+  llm_assisted_identification: true
+  max_iros_per_topic: 25
+  iro_register_export: true
+  value_chain_depth: 4
+
+# --- Materiality Matrix ---
+materiality_matrix:
+  enabled: true
+  x_axis: "financial_materiality"
+  y_axis: "impact_materiality"
+  output_formats:
+    - "html"
+    - "pdf"
+    - "svg"
+    - "png"
+  interactive_drill_down: true
+  color_by_pillar: true
+  year_over_year_comparison: true
+  quadrant_labels: true
+  sensitivity_visualization: true
+  borderline_highlighting: true
+  topic_label_display: "full_name"
+
+# --- Threshold Scoring ---
+threshold:
+  enabled: true
+  methodology: "COMBINED"
+  impact_threshold: 5.0
+  financial_threshold: 5.0
+  percentile_cutoff: 0.60
+  sector_calibration: true
+  sensitivity_analysis: true
+  sensitivity_range_pct: 20.0
+  borderline_treatment: "flag_for_review"
+  borderline_margin_pct: 10.0
+  committee_validation: true
+  rationale_documentation: true
+
+# --- ESRS Mapping ---
+esrs_mapping:
+  enabled: true
+  include_mandatory_disclosures: true
+  sub_topic_mapping: true
+  datapoint_mapping: true
+  iro_2_table_generation: true
+  omission_rationale: true
+  xbrl_tagging: true
+  sector_standard_readiness: true
+  cross_reference_validation: true
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  iro_1_disclosure: true
+  iro_2_disclosure: true
+  sbm_3_disclosure: true
+  executive_summary: true
+  full_dma_report: true
+  audit_trail_report: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+    - "HTML"
+  multi_language: true
+  supported_languages: ["en", "de", "fr", "nl"]
+  review_workflow: true
+  watermark_draft: true
+  llm_narrative_generation: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  scoring_log: true
+  assumption_tracking: true
+  data_lineage: true
+  retention_years: 10
+  external_audit_export: true
+  version_control: true
+  change_log: true

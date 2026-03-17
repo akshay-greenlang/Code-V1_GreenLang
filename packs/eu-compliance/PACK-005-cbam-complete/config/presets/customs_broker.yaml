@@ -1,0 +1,198 @@
+# =============================================================================
+# PACK-005 CBAM Complete Pack - Customs Broker Preset
+# =============================================================================
+# Delegated compliance mode for customs brokers acting as authorized CBAM
+# declarants on behalf of multiple importers. Multi-client management with
+# per-client cost tracking, simplified per-client configurations, and
+# consolidated group-level reporting.
+#
+# Typical use cases:
+#   - Licensed customs brokers handling CBAM for multiple small/medium importers
+#   - Customs representatives with Article 18 authorization
+#   - Trade compliance firms offering CBAM-as-a-service
+#   - Freight forwarders adding CBAM compliance to their service portfolio
+# =============================================================================
+
+# Broker company details (customs representative)
+importer:
+  company_name: ""
+  eori_number: ""
+  authorized_declarant: ""
+  eu_member_state: null
+  cbam_registry_id: ""
+  contact_email: ""
+  contact_phone: ""
+  customs_office_code: ""
+
+# All categories enabled (broker handles diverse clients)
+goods:
+  enabled_categories:
+    - "cement"
+    - "iron_steel"
+    - "aluminium"
+    - "fertilizers"
+    - "electricity"
+    - "hydrogen"
+  precursor_tracking:
+    cement: ["clinker"]
+    iron_steel: ["pig_iron", "direct_reduced_iron", "crude_steel", "ferro_alloys"]
+    aluminium: ["alumina", "unwrought_aluminium"]
+    fertilizers: ["ammonia", "nitric_acid", "urea"]
+    electricity: []
+    hydrogen: []
+
+# Emission calculation - conservative defaults for multi-client
+emission:
+  calculation_method: "actual"
+  fallback_method: "country_default"
+  default_markup_percentage: 30.0
+  indirect_emissions_included: true
+  precursor_tracking_enabled: true
+  emission_factor_source: "eu_default"
+  emission_factor_vintage_year: 2024
+  carbon_price_deduction_enabled: true
+
+# Certificate management - per-client, manual price tracking
+certificate:
+  ets_price_source: "auction"
+  free_allocation_enabled: true
+  carbon_deduction_enabled: true
+  cost_scenario: "mid"
+  quarterly_holding_target_pct: 50
+  repurchase_enabled: true
+  repurchase_max_pct: 33.33
+
+# Certificate trading - budget-paced for cost control
+trading:
+  buying_strategy: "budget_paced"
+  price_alert_below_eur: 55.0
+  price_alert_above_eur: 130.0
+  repurchase_threshold_pct: 12.0
+  valuation_method: "fifo"
+  auto_purchase_enabled: false
+  quarterly_holding_target_pct: 50.0
+  mark_to_market_frequency: "monthly"
+
+# Entity group - delegated compliance mode (multi-client)
+entity_group:
+  entities: []
+  hierarchy_enabled: false
+  cost_allocation_method: "custom"
+  consolidation_currency: "EUR"
+  delegated_compliance_mode: true
+  financial_guarantee_eur: null
+  inter_entity_transfer_tracking: false
+  consolidated_declaration: false
+
+# Registry API - sandbox initially, move to production per client
+registry:
+  use_sandbox: true
+  auth_type: "mtls"
+  cert_path: ""
+  key_path: ""
+  polling_interval_seconds: 120
+  max_retries: 5
+  timeout_seconds: 30
+  rate_limit_requests_per_minute: 30
+
+# Analytics - simplified for broker use
+analytics:
+  monte_carlo_iterations: 5000
+  optimization_solver: "scipy_optimize"
+  benchmark_source: "eu_bat"
+  forecast_horizon_years: 3
+  confidence_level: 0.90
+  scenario_count: 3
+  price_volatility_annual_pct: 20.0
+
+# Customs automation - full, broker-optimized
+customs:
+  sad_format: "xml"
+  aeo_check_enabled: true
+  anti_circumvention_rules:
+    - "origin_change"
+    - "cn_reclassification"
+    - "scrap_ratio"
+  downstream_monitoring: false
+  cn_cache_ttl_hours: 12
+  origin_verification_enabled: true
+  preferential_origin_check: true
+  suspicious_pattern_alert_threshold: 5
+
+# Cross-regulation - limited (broker focuses on CBAM only)
+cross_regulation:
+  csrd_enabled: false
+  cdp_enabled: false
+  sbti_enabled: false
+  taxonomy_enabled: false
+  ets_enabled: true
+  eudr_enabled: false
+  sync_frequency_hours: 48
+  auto_populate_enabled: false
+
+# Audit management - client-level evidence
+audit:
+  retention_years: 10
+  data_room_enabled: true
+  auto_remediation_alerts: true
+  nca_response_deadline_days: 30
+  penalty_tracking: true
+  evidence_encryption: true
+  evidence_encryption_key_rotation_days: 90
+  data_room_provider: "internal"
+
+# Precursor chain - moderate depth
+precursor:
+  max_chain_depth: 3
+  allocation_method: "mass"
+  scrap_classification_enabled: true
+  mass_balance_validation: true
+  mass_balance_tolerance_pct: 5.0
+  precursor_chain_visualization: false
+  chain_completeness_threshold_pct: 70.0
+
+# Quarterly reporting - multi-client
+quarterly:
+  auto_schedule: true
+  submission_deadline_buffer_days: 14
+  amendment_window_days: 60
+  xml_validation_enabled: true
+  report_language: "EN"
+  include_supporting_documents: true
+  archive_reports: true
+
+# Supplier management - per-client suppliers
+supplier:
+  auto_request_frequency_months: 3
+  quality_threshold: 65.0
+  max_installations_per_supplier: 30
+  eori_validation_enabled: true
+  data_submission_format: "json"
+  accepted_formats: ["json", "xml", "csv", "excel"]
+  auto_fallback_to_defaults: true
+  supplier_portal_enabled: true
+  data_retention_years: 10
+
+# De minimis - important for small clients
+deminimis:
+  monitoring_enabled: true
+  threshold_tonnes: 50.0
+  threshold_value_eur: 150.0
+  alert_thresholds: [70.0, 80.0, 90.0, 95.0, 100.0]
+  auto_exemption: true
+  sector_grouping: true
+
+# Verification - annual standard
+verification:
+  frequency: "annual"
+  materiality_threshold_pct: 5.0
+  verifier_accreditation_required: true
+  evidence_retention_years: 10
+  site_visit_required: true
+
+# Pack-level
+reporting_year: 2026
+reporting_period: "definitive"
+demo_mode: false
+log_level: "INFO"
+provenance_enabled: true

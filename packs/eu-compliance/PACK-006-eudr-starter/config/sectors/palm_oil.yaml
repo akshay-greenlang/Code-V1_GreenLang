@@ -1,0 +1,158 @@
+# =============================================================================
+# PACK-006 EUDR Starter Pack - Palm Oil Sector Preset
+# =============================================================================
+# For companies primarily sourcing palm oil and palm-derived products.
+# Focus on RSPO/ISCC certification, Southeast Asian sourcing, plantation
+# mapping, peatland monitoring, and NDPE (No Deforestation, No Peat,
+# No Exploitation) policy compliance.
+#
+# Key CN codes: 1511 (palm oil), 1513 (palm kernel oil), 3823 (fatty acids)
+# Primary origins: Indonesia, Malaysia, Papua New Guinea
+# =============================================================================
+
+# Sector-specific configuration
+sector_specific:
+  sector_name: "Palm Oil"
+  sector_group: "agriculture_commodities"
+
+  # Primary and derived products
+  primary_products:
+    - "Crude palm oil (CPO)"
+    - "Refined, bleached, deodorized palm oil (RBD)"
+    - "Palm kernel oil (PKO)"
+    - "Palm kernel expeller (PKE)"
+    - "Palm olein"
+    - "Palm stearin"
+    - "Palm fatty acid distillate (PFAD)"
+
+  derived_products:
+    - "Biodiesel (FAME)"
+    - "Oleochemicals"
+    - "Soap"
+    - "Margarine"
+    - "Cooking oil"
+    - "Cosmetics ingredients"
+    - "Animal feed"
+
+  # Supply chain structure for palm oil
+  supply_chain_tiers:
+    - tier: 1
+      name: "Refiner/Crusher"
+      description: "Palm oil mills and refineries"
+    - tier: 2
+      name: "Mill"
+      description: "Fresh fruit bunch (FFB) processing mills"
+    - tier: 3
+      name: "Plantation/Estate"
+      description: "Large-scale plantations"
+    - tier: 4
+      name: "Smallholder"
+      description: "Independent smallholder farmers"
+
+  # Deforestation risk factors specific to palm oil
+  deforestation_risk_factors:
+    - "Peatland conversion"
+    - "Primary forest clearing"
+    - "Fire-based land clearing"
+    - "HCV (High Conservation Value) area encroachment"
+    - "HCS (High Carbon Stock) forest conversion"
+    - "Orangutan habitat destruction"
+    - "Riparian buffer zone violation"
+
+  # NDPE policy tracking
+  ndpe_commitments:
+    no_deforestation: true
+    no_peat: true
+    no_exploitation: true
+    free_prior_informed_consent: true
+
+  # Key certification details
+  rspo_supply_chain_models:
+    - "Identity Preserved (IP)"
+    - "Segregated (SG)"
+    - "Mass Balance (MB)"
+    - "Book & Claim (Credits)"
+
+  # Traceability requirements
+  traceability:
+    traceability_to_mill: true
+    traceability_to_plantation: true
+    gps_mill_coordinates: true
+    smallholder_mapping: true
+    fresh_fruit_bunch_tracking: true
+
+# Commodities - palm oil focused
+commodities:
+  - commodity_type: "oil_palm"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RSPO", "ISCC", "MSPO", "ISPO"]
+    high_risk_origins: ["IDN", "MYS", "PNG", "COL", "NGA", "THA", "GTM", "HND"]
+  - commodity_type: "wood"
+    enabled: false
+    priority: 7
+  - commodity_type: "soya"
+    enabled: false
+    priority: 6
+  - commodity_type: "cattle"
+    enabled: false
+    priority: 7
+  - commodity_type: "cocoa"
+    enabled: false
+    priority: 7
+  - commodity_type: "coffee"
+    enabled: false
+    priority: 7
+  - commodity_type: "rubber"
+    enabled: false
+    priority: 7
+
+# Supply chain - deep tracing for palm oil
+supply_chain:
+  max_tier_depth: 4
+  chain_of_custody_model: "SEGREGATED"
+  trace_level: "batch"
+  require_plot_linkage: true
+  mixed_shipment_handling: "split"
+
+# Geolocation - plantation and smallholder mapping
+geolocation:
+  coordinate_precision: 7
+  polygon_max_vertices: 20000
+  batch_size: 1000
+  overlap_detection_enabled: true
+  satellite_overlay_enabled: true
+
+# Cutoff date - enhanced satellite monitoring for peatland
+cutoff_date:
+  satellite_sources:
+    - "global_forest_watch"
+    - "copernicus"
+    - "glad_alerts"
+    - "planet_labs"
+    - "sentinel_2"
+  min_satellite_resolution_m: 10
+
+# Agent overrides for palm oil focus
+agent_overrides:
+  AGENT-EUDR-002:
+    config_overrides:
+      peatland_detection: true
+      fire_alert_monitoring: true
+      hcv_area_overlay: true
+
+  AGENT-EUDR-006:
+    config_overrides:
+      plantation_boundary_types: ["estate", "scheme_smallholder", "independent_smallholder"]
+      concession_map_integration: true
+
+  AGENT-EUDR-016:
+    config_overrides:
+      focus_countries: ["IDN", "MYS", "PNG"]
+      province_level_risk: true
+
+  AGENT-EUDR-017:
+    config_overrides:
+      rspo_membership_check: true
+      ndpe_compliance_check: true
+      mill_list_verification: true

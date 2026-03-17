@@ -1,0 +1,190 @@
+# =============================================================================
+# PACK-015 Double Materiality Pack - Mid-Market Preset
+# =============================================================================
+# Configuration for mid-market companies (250-3000 employees, non-listed or
+# newly in scope). All engines enabled with streamlined scoring (1-5 scale).
+# Single-scorer mode with optional multi-scorer. Stakeholder engagement
+# focused on key groups (employees, investors, customers). Topic-level
+# materiality assessment (without sub-sub-topic granularity). 7-year data
+# retention.
+#
+# Typical use cases:
+#   - Non-listed large undertakings (second wave CSRD from FY2025)
+#   - 250-3000 employees, >EUR 50M net turnover or >EUR 25M total assets
+#   - Moderate value chain complexity
+#   - First-time CSRD reporters seeking a pragmatic DMA approach
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+company_size: "MID_MARKET"
+sectors:
+  - "GENERAL"
+listed_entity: false
+
+# --- Impact Materiality (streamlined 1-5 scale) ---
+impact_materiality:
+  enabled: true
+  scoring_scale: 5
+  severity_dimensions:
+    - "scale"
+    - "scope"
+    - "irremediable_character"
+  severity_weighting: "EQUAL"
+  likelihood_enabled: true
+  likelihood_scale: 5
+  positive_impacts_enabled: true
+  value_chain_boundary: true
+  multi_scorer: false
+  scorer_aggregation: "mean"
+  evidence_based_scoring: true
+  sub_topic_granularity: true
+  sub_sub_topic_granularity: false
+
+# --- Financial Materiality (qualitative focus) ---
+financial_materiality:
+  enabled: true
+  scoring_scale: 5
+  magnitude_type: "qualitative"
+  magnitude_currency: "EUR"
+  likelihood_enabled: true
+  time_horizon_analysis: true
+  time_horizons:
+    - "SHORT_TERM"
+    - "MEDIUM_TERM"
+    - "LONG_TERM"
+  short_term_years: 1
+  medium_term_years: 5
+  long_term_years: 10
+  scenario_analysis: false
+  risk_opportunity_asymmetry: true
+  cost_of_capital_impact: false
+  multi_scorer: false
+  erp_data_integration: true
+
+# --- Stakeholder Engagement (focused) ---
+stakeholder_engagement:
+  enabled: true
+  affected_stakeholders:
+    - "EMPLOYEES"
+    - "VALUE_CHAIN_WORKERS"
+    - "LOCAL_COMMUNITIES"
+    - "CONSUMERS"
+  statement_users:
+    - "INVESTORS"
+    - "LENDERS"
+    - "RATING_AGENCIES"
+  engagement_methods:
+    - "surveys"
+    - "interviews"
+    - "workshops"
+  stakeholder_weighting: true
+  weighting_scheme: "proximity_based"
+  sentiment_analysis: false
+  min_response_rate: 0.20
+  annual_refresh: true
+
+# --- IRO Identification ---
+iro_identification:
+  enabled: true
+  iro_types:
+    - "IMPACT"
+    - "RISK"
+    - "OPPORTUNITY"
+  directions:
+    - "POSITIVE"
+    - "NEGATIVE"
+  temporalities:
+    - "ACTUAL"
+    - "POTENTIAL"
+  value_chain_positions:
+    - "OWN_OPERATIONS"
+    - "UPSTREAM"
+    - "DOWNSTREAM"
+  esrs_topics_in_scope:
+    - "E1"
+    - "E2"
+    - "E3"
+    - "E4"
+    - "E5"
+    - "S1"
+    - "S2"
+    - "S3"
+    - "S4"
+    - "G1"
+  sector_profile_enabled: true
+  llm_assisted_identification: true
+  max_iros_per_topic: 15
+  iro_register_export: true
+  value_chain_depth: 3
+
+# --- Materiality Matrix ---
+materiality_matrix:
+  enabled: true
+  x_axis: "financial_materiality"
+  y_axis: "impact_materiality"
+  output_formats:
+    - "html"
+    - "pdf"
+  interactive_drill_down: true
+  color_by_pillar: true
+  year_over_year_comparison: true
+  quadrant_labels: true
+  sensitivity_visualization: true
+  borderline_highlighting: true
+  topic_label_display: "short_name"
+
+# --- Threshold Scoring ---
+threshold:
+  enabled: true
+  methodology: "ABSOLUTE_CUTOFF"
+  impact_threshold: 3.0
+  financial_threshold: 3.0
+  percentile_cutoff: 0.60
+  sector_calibration: false
+  sensitivity_analysis: true
+  sensitivity_range_pct: 20.0
+  borderline_treatment: "include"
+  borderline_margin_pct: 10.0
+  committee_validation: false
+  rationale_documentation: true
+
+# --- ESRS Mapping ---
+esrs_mapping:
+  enabled: true
+  include_mandatory_disclosures: true
+  sub_topic_mapping: true
+  datapoint_mapping: false
+  iro_2_table_generation: true
+  omission_rationale: true
+  xbrl_tagging: true
+  cross_reference_validation: true
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  iro_1_disclosure: true
+  iro_2_disclosure: true
+  sbm_3_disclosure: true
+  executive_summary: true
+  full_dma_report: true
+  audit_trail_report: true
+  output_formats:
+    - "PDF"
+    - "XBRL"
+  review_workflow: true
+  watermark_draft: true
+  llm_narrative_generation: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  scoring_log: true
+  assumption_tracking: true
+  data_lineage: true
+  retention_years: 7
+  external_audit_export: true
+  version_control: true
+  change_log: true

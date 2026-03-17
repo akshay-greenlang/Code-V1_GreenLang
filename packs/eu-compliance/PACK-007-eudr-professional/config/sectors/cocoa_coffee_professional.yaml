@@ -1,0 +1,61 @@
+# =============================================================================
+# PACK-007 EUDR Professional Pack - Cocoa & Coffee Professional Sector
+# =============================================================================
+# Professional cocoa and coffee supply chain configuration with Rainforest
+# Alliance/UTZ/Fairtrade/4C verification, cooperative mapping, smallholder
+# aggregation, and West Africa / South America focus.
+# =============================================================================
+
+commodities:
+  - commodity_type: "cocoa"
+    enabled: true
+    priority: 1
+    certification_schemes: ["RAINFOREST_ALLIANCE", "UTZ", "FAIRTRADE", "ORGANIC"]
+    high_risk_origins: ["CIV", "GHA", "CMR", "NGA", "IDN", "SLE", "LBR"]
+    annual_volume_tonnes: 20000.0
+  - commodity_type: "coffee"
+    enabled: true
+    priority: 1
+    certification_schemes: ["FOUR_C", "RAINFOREST_ALLIANCE", "UTZ", "FAIRTRADE", "ORGANIC"]
+    high_risk_origins: ["BRA", "VNM", "COL", "IDN", "ETH", "HND", "UGA", "PER"]
+    annual_volume_tonnes: 15000.0
+
+geolocation:
+  coordinate_precision: 7
+  polygon_max_vertices: 5000  # Smaller plots (smallholders)
+  polygon_area_threshold_ha: 2.0
+  batch_size: 2000  # Many smallholders
+
+risk_assessment:
+  country_weight: 0.35
+  supplier_weight: 0.30  # Many smallholders
+  commodity_weight: 0.20
+  document_weight: 0.15
+
+compliance:
+  require_geolocation: true
+  require_certification: false  # Smallholders may lack certification
+  allow_self_declarations: true
+  verification_level: "STANDARD"
+  data_quality_threshold: 0.80
+
+advanced_geolocation:
+  resolution_meters: 10
+  temporal_periods: 5
+  alert_systems: ["GLAD", "RADD"]
+
+protected_areas:
+  wdpa_enabled: true
+  kba_enabled: true
+  indigenous_check: true
+  buffer_km: 5.0
+  ramsar_check: false
+  unesco_check: true
+
+advanced_supply_chain:
+  max_tier_depth: 4  # Farm -> Cooperative -> Trader -> Processor
+  chain_of_custody_models: ["IDENTITY_PRESERVED", "SEGREGATED", "MASS_BALANCE"]
+
+supplier_benchmark:
+  peer_group_min_size: 20  # Many smallholders
+  benchmark_frequency: "ANNUAL"  # Less frequent for smallholders

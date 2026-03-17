@@ -1,0 +1,189 @@
+# =============================================================================
+# PACK-012 CSRD Financial Service Pack - Demo Configuration
+# =============================================================================
+# Demonstration configuration with synthetic data for evaluation and testing.
+# Uses a fictional "GreenBank AG" credit institution to showcase all pack
+# features with reduced data volumes and mock data sources. Suitable for
+# proof-of-concept, sales demonstrations, and developer onboarding.
+#
+# IMPORTANT: This configuration uses synthetic data and should NOT be used
+# for production compliance reporting.
+# =============================================================================
+
+# --- Demo Settings ---
+demo_mode: true
+demo_entity_name: "GreenBank AG (Demo)"
+mock_portfolio_data: true
+mock_counterparty_data: true
+mock_emissions_data: true
+mock_taxonomy_data: true
+synthetic_portfolio_size: 500
+tutorial_mode_enabled: true
+skip_external_api_calls: true
+use_cached_emission_factors: true
+
+# --- Institution Details ---
+institution_type: "BANK"
+institution_name: "GreenBank AG (Demo)"
+lei_code: "DEMO123456789ABCDE00"
+reporting_currency: "EUR"
+reporting_period_start: "2025-01-01"
+reporting_period_end: "2025-12-31"
+consolidation_scope: "GROUP"
+
+# --- PCAF (simplified for demo) ---
+pcaf:
+  enabled: true
+  enabled_asset_classes:
+    - "LISTED_EQUITY_CORPORATE_BONDS"
+    - "BUSINESS_LOANS_UNLISTED_EQUITY"
+    - "COMMERCIAL_REAL_ESTATE"
+    - "MORTGAGES"
+  include_scope_1: true
+  include_scope_2: true
+  include_scope_3: false
+  min_data_quality_score: 5
+  target_data_quality_score: 3
+  estimation_enabled: true
+  estimation_methodology: "SECTOR_AVERAGE"
+  emission_factor_source: "PCAF_DATABASE"
+  emission_factor_vintage_year: 2024
+  attribution_method: "OUTSTANDING_DIVIDED_BY_EVIC"
+  sector_aggregation_code: "NACE_REV2"
+  year_over_year_tracking: false
+  portfolio_carbon_footprint: true
+  waci_enabled: true
+  data_quality_improvement_plan: false
+
+# --- GAR/BTAR (demo) ---
+gar_btar:
+  gar_enabled: true
+  btar_enabled: false
+  gar_scopes:
+    - "TURNOVER"
+    - "CAPEX"
+  exposure_categories:
+    - "NON_FINANCIAL_CORPORATES"
+    - "HOUSEHOLDS_MORTGAGES"
+  exclude_sovereign_central_bank: true
+  exclude_trading_book: true
+  flow_gar_enabled: false
+  stock_gar_enabled: true
+  nace_sector_mapping_enabled: true
+  pillar3_template_output: false
+
+# --- Insurance (disabled for demo bank) ---
+insurance:
+  enabled: false
+
+# --- Climate Risk (reduced scenarios for demo) ---
+climate_risk:
+  enabled: true
+  enabled_scenarios:
+    - "NET_ZERO_2050"
+    - "CURRENT_POLICIES"
+  physical_risk_enabled: true
+  transition_risk_enabled: true
+  physical_hazards:
+    - "FLOOD"
+    - "WILDFIRE"
+  transition_channels:
+    - "POLICY_LEGAL"
+    - "TECHNOLOGY"
+  time_horizons_years: [5, 30]
+  ecb_ssm_compatible: false
+  eba_exercise_compatible: false
+  expected_credit_loss_impact: false
+  sector_heatmap_enabled: true
+  geography_heatmap_enabled: false
+  pillar3_template_4_output: false
+
+# --- Pillar 3 (limited for demo) ---
+pillar3:
+  enabled: true
+  enabled_templates:
+    - "TEMPLATE_1"
+    - "TEMPLATE_2"
+    - "TEMPLATE_7"
+  large_institution: false
+  reporting_frequency: "ANNUAL"
+  xbrl_output: false
+  corep_finrep_cross_validation: false
+  qualitative_narrative_enabled: true
+
+# --- Materiality (demo) ---
+materiality:
+  enabled: true
+  esrs_topics:
+    - "E1"
+    - "S1"
+    - "G1"
+  impact_channels:
+    - "LENDING"
+    - "INVESTING"
+  financial_materiality_enabled: true
+  impact_materiality_enabled: true
+  stakeholder_engagement_required: false
+  materiality_threshold_financial: "HIGH"
+  materiality_threshold_impact: "HIGH"
+  weight_by_exposure_size: false
+  generate_iro1_documentation: true
+
+# --- Transition Plan (simplified demo) ---
+transition_plan:
+  enabled: true
+  sbti_fi_aligned: false
+  sbti_method: "TEMPERATURE_RATING"
+  target_years: [2030, 2050]
+  sector_targets_enabled: false
+  priority_sectors:
+    - "POWER_GENERATION"
+    - "REAL_ESTATE"
+  operational_emissions_target: true
+  financed_emissions_target: true
+  client_engagement_strategy: false
+  fossil_fuel_phasedown: false
+  capital_allocation_alignment: false
+  governance_integration: true
+  temperature_alignment_target: 2.0
+
+# --- SBTi FI (disabled for demo) ---
+sbti_fi:
+  enabled: false
+
+# --- Data Quality (relaxed for demo) ---
+data_quality:
+  pcaf_score_tracking: true
+  min_coverage_pct: 50.0
+  allow_sector_proxies: true
+  proxy_usage_cap_pct: 60.0
+  require_audited_emissions: false
+  data_quality_improvement_roadmap: false
+  stale_data_threshold_days: 730
+
+# --- Disclosure (dashboard only for demo) ---
+disclosure:
+  esrs_chapter_enabled: true
+  pillar3_package_enabled: false
+  pcaf_report_enabled: true
+  gar_btar_report_enabled: false
+  climate_risk_report_enabled: false
+  sbti_fi_report_enabled: false
+  dashboard_enabled: true
+  output_formats:
+    - "PDF"
+  xbrl_tagging: false
+  multi_language_support: false
+  supported_languages: ["en"]
+  review_workflow_enabled: false
+  watermark_draft: true
+
+# --- Audit Trail (minimal for demo) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 1
+  external_audit_export: false

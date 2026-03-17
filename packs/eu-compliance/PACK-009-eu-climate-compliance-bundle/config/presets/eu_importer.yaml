@@ -1,0 +1,256 @@
+# =============================================================================
+# PACK-009 Preset: EU Importer
+# =============================================================================
+# Deployment focused on EU importers of CBAM-covered goods and EUDR
+# commodities. CBAM and EUDR as primary regulations with CSRD and EU
+# Taxonomy as secondary supporting frameworks. Optimized for supply chain
+# data collection, embedded emissions calculation, due diligence statement
+# generation, and cross-border compliance management.
+#
+# Applicable to:
+#   - Importers of cement, steel, aluminium, fertilizers, electricity, hydrogen
+#   - Operators placing EUDR commodities (cattle, cocoa, coffee, oil palm,
+#     rubber, soya, wood) on the EU market
+#   - Trading companies with EU customs obligations
+#   - Companies with complex third-country supply chains
+#
+# Key Features:
+#   - CBAM at highest priority (quarterly reports, annual declarations)
+#   - EUDR at highest priority (due diligence, geolocation, risk assessment)
+#   - CSRD enabled at secondary priority (mandatory sustainability reporting)
+#   - EU Taxonomy at secondary priority (alignment for taxonomy-relevant imports)
+#   - Scoring weighted toward CBAM (0.35) and EUDR (0.35)
+#   - Supply chain data mapping as primary focus
+#   - Country-of-origin and supplier verification emphasis
+#   - Cross-regulation consistency on supply chain and emissions data
+# =============================================================================
+
+bundle_tier: "EU_IMPORTER"
+reporting_year: 2025
+
+# --- Regulation Configurations ---
+regulation_configs:
+  CSRD:
+    enabled: true
+    priority: 3
+    pack_id: "PACK-001-csrd-starter"
+    display_name: "Corporate Sustainability Reporting Directive"
+    regulation_reference: "Directive (EU) 2022/2464"
+    scoring_weight: 0.15
+    data_quality_threshold: 0.75
+    reporting_frequency: "ANNUAL"
+  CBAM:
+    enabled: true
+    priority: 1
+    pack_id: "PACK-004-cbam-readiness"
+    display_name: "Carbon Border Adjustment Mechanism"
+    regulation_reference: "Regulation (EU) 2023/956"
+    scoring_weight: 0.35
+    data_quality_threshold: 0.90
+    reporting_frequency: "QUARTERLY"
+  EUDR:
+    enabled: true
+    priority: 1
+    pack_id: "PACK-006-eudr-starter"
+    display_name: "EU Deforestation Regulation"
+    regulation_reference: "Regulation (EU) 2023/1115"
+    scoring_weight: 0.35
+    data_quality_threshold: 0.90
+    reporting_frequency: "PER_SHIPMENT"
+  TAXONOMY:
+    enabled: true
+    priority: 4
+    pack_id: "PACK-008-eu-taxonomy-alignment"
+    display_name: "EU Taxonomy Regulation"
+    regulation_reference: "Regulation (EU) 2020/852"
+    scoring_weight: 0.15
+    data_quality_threshold: 0.70
+    reporting_frequency: "ANNUAL"
+
+# --- Calendar Configuration ---
+calendar:
+  enabled: true
+  lead_time_days: 21
+  critical_lead_time_days: 5
+  notification_channels:
+    - "EMAIL"
+    - "IN_APP"
+  conflict_detection: true
+  auto_schedule_reviews: true
+  review_lead_time_days: 10
+  include_csrd_deadlines: true
+  include_cbam_deadlines: true
+  include_eudr_deadlines: true
+  include_taxonomy_deadlines: true
+  fiscal_year_end_month: 12
+  timezone: "Europe/Brussels"
+
+# --- Deduplication Configuration ---
+deduplication:
+  enabled: true
+  fuzzy_match_threshold: 0.88
+  hash_comparison: true
+  semantic_similarity: true
+  auto_merge: false
+  track_savings: true
+  dedup_categories:
+    - "GHG_EMISSIONS"
+    - "SUPPLY_CHAIN"
+    - "FINANCIAL_DATA"
+    - "BIODIVERSITY"
+  batch_size: 300
+  preserve_provenance: true
+
+# --- Consistency Configuration ---
+consistency:
+  enabled: true
+  numeric_tolerance_pct: 5.0
+  date_tolerance_days: 0
+  auto_reconcile: false
+  reconciliation_action: "FLAG_FOR_REVIEW"
+  check_ghg_emissions: true
+  check_financial_data: true
+  check_supply_chain: true
+  check_taxonomy_csrd: false
+  check_cbam_taxonomy: true
+  check_eudr_taxonomy: true
+
+# --- Gap Analysis Configuration ---
+gap_analysis:
+  enabled: true
+  severity_levels:
+    - "CRITICAL"
+    - "HIGH"
+    - "MEDIUM"
+    - "LOW"
+    - "INFO"
+  include_remediation_plans: true
+  include_effort_estimates: true
+  include_cost_estimates: false
+  cross_regulation_leverage: true
+  prioritize_shared_gaps: true
+  gap_refresh_frequency: "MONTHLY"
+  max_gaps_per_report: 80
+  include_dependency_chains: true
+
+# --- Evidence Configuration ---
+evidence:
+  enabled: true
+  evidence_types:
+    - "DOCUMENT"
+    - "CERTIFICATE"
+    - "MEASUREMENT"
+    - "CALCULATION"
+    - "ATTESTATION"
+    - "REPORT"
+  deduplication: true
+  hash_algorithm: "SHA-256"
+  retention_years: 7
+  lifecycle_tracking: true
+  auto_expire: true
+  require_verification: true
+  max_file_size_mb: 100
+  allowed_formats:
+    - "pdf"
+    - "xlsx"
+    - "xls"
+    - "csv"
+    - "docx"
+    - "doc"
+    - "png"
+    - "jpg"
+    - "jpeg"
+    - "tiff"
+    - "geojson"
+    - "json"
+    - "xml"
+    - "kml"
+    - "shp"
+  cross_reference_tracking: true
+
+# --- Reporting Configuration ---
+reporting:
+  enabled: true
+  default_format: "PDF"
+  generate_executive_summary: true
+  generate_dashboard: true
+  generate_gap_report: true
+  generate_calendar_report: true
+  generate_consistency_report: true
+  generate_dedup_report: true
+  generate_audit_trail: true
+  generate_data_map: true
+  include_trend_analysis: true
+  include_forecasting: false
+  language: "en"
+  timezone: "UTC"
+  xbrl_tagging: false
+  distribution_channels:
+    - "email"
+    - "in_app"
+
+# --- Scoring Configuration ---
+scoring:
+  enabled: true
+  composite_method: "WEIGHTED_AVERAGE"
+  regulation_weights:
+    CSRD: 0.15
+    CBAM: 0.35
+    EUDR: 0.35
+    TAXONOMY: 0.15
+  passing_score: 70.0
+  letter_grade_thresholds:
+    A: 90.0
+    B: 80.0
+    C: 70.0
+    D: 60.0
+    F: 0.0
+  include_trend: true
+  score_data_quality: true
+  score_evidence_completeness: true
+  score_timeliness: true
+
+# --- Data Mapper Configuration ---
+data_mapper:
+  enabled: true
+  active_categories:
+    - "GHG_EMISSIONS"
+    - "SUPPLY_CHAIN"
+    - "FINANCIAL_DATA"
+    - "BIODIVERSITY"
+    - "GOVERNANCE"
+  unit_conversion: true
+  currency_normalization: true
+  base_currency: "EUR"
+  temporal_alignment: true
+  field_mapping_validation: true
+  track_mapping_coverage: true
+
+# --- Health Check Configuration ---
+health_check:
+  enabled: true
+  check_interval_minutes: 15
+  check_pack_availability: true
+  check_agent_status: true
+  check_database_connectivity: true
+  check_api_health: true
+  check_configuration_validity: true
+  check_integration_status: true
+  alert_on_degradation: true
+  alert_channels:
+    - "EMAIL"
+    - "IN_APP"
+
+# --- Audit Trail Configuration ---
+audit_trail:
+  enabled: true
+  retention_years: 7
+  hash_algorithm: "SHA-256"
+  immutable_log: true
+  include_provenance_hash: true
+  cross_pack_lineage: true
+  export_formats:
+    - "JSON"
+    - "XML"
+    - "PDF"
+  user_attribution: true

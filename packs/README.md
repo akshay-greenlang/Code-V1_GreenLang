@@ -21,9 +21,10 @@ Each pack **references and orchestrates** components from the `greenlang/` agent
 | PACK-001 | CSRD Starter Pack | Starter | 66+ | 123 | **BUILT** |
 | PACK-002 | CSRD Professional Pack | Professional | 93+ | 313 | **BUILT** |
 | PACK-003 | CSRD Enterprise Pack | Enterprise | 135+ | 355 | **BUILT** |
-| PACK-004 | EUDR Compliance Pack | TBD | TBD | TBD | Planned |
-| PACK-004 | CBAM Reporting Pack | TBD | TBD | TBD | Planned |
-| PACK-005 | EU Taxonomy Pack | TBD | TBD | TBD | Planned |
+| PACK-004 | CBAM Readiness Pack | Standalone | 45+ | 268 | **BUILT** |
+| PACK-005 | CBAM Complete Pack | Complete | 45+ | 367 | **BUILT** |
+| PACK-006 | EUDR Compliance Pack | TBD | TBD | TBD | Planned |
+| PACK-007 | EU Taxonomy Pack | TBD | TBD | TBD | Planned |
 
 ### US Climate Disclosure Packs
 | Pack | Name | Status | Description |

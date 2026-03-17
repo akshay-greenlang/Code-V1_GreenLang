@@ -1,0 +1,394 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "description": "PACK-006 EUDR Starter Pack - Demo plot geolocations",
+    "version": "1.0.0",
+    "generated": "2026-03-14",
+    "crs": "EPSG:4326",
+    "plot_count": 20,
+    "countries_covered": ["BRA", "CIV", "COL", "GHA", "IDN", "MYS", "PER", "PRY", "VNM"],
+    "note": "All coordinates are synthetic and for demonstration purposes only"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-001",
+        "supplier_id": "DEMO-SUP-001",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "North Sumatra",
+        "area_ha": 350.0,
+        "production_date": "2024-06-15",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RSPO"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[99.050, 2.950], [99.070, 2.950], [99.070, 2.930], [99.050, 2.930], [99.050, 2.950]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-002",
+        "supplier_id": "DEMO-SUP-001",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "North Sumatra",
+        "area_ha": 280.0,
+        "production_date": "2024-07-20",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RSPO"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[99.100, 2.920], [99.115, 2.920], [99.115, 2.905], [99.100, 2.905], [99.100, 2.920]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-003",
+        "supplier_id": "DEMO-SUP-001",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "North Sumatra",
+        "area_ha": 200.0,
+        "production_date": "2024-08-10",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "ISCC"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[99.080, 2.880], [99.095, 2.880], [99.095, 2.868], [99.080, 2.868], [99.080, 2.880]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-004",
+        "supplier_id": "DEMO-SUP-001",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "North Sumatra",
+        "area_ha": 150.0,
+        "production_date": "2024-09-05",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RSPO"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[99.120, 2.940], [99.132, 2.940], [99.132, 2.930], [99.120, 2.930], [99.120, 2.940]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-005",
+        "supplier_id": "DEMO-SUP-001",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "North Sumatra",
+        "area_ha": 270.0,
+        "production_date": "2024-10-01",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RSPO"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[99.060, 2.960], [99.078, 2.960], [99.078, 2.945], [99.060, 2.945], [99.060, 2.960]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-006",
+        "supplier_id": "DEMO-SUP-002",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "Riau",
+        "area_ha": 45.0,
+        "production_date": "2024-05-20",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RSPO"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[101.450, 1.520], [101.456, 1.520], [101.456, 1.514], [101.450, 1.514], [101.450, 1.520]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-007",
+        "supplier_id": "DEMO-SUP-002",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "Riau",
+        "area_ha": 38.0,
+        "production_date": "2024-06-10",
+        "deforestation_free": false,
+        "cutoff_compliant": false,
+        "certification": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[101.470, 1.530], [101.475, 1.530], [101.475, 1.525], [101.470, 1.525], [101.470, 1.530]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-008",
+        "supplier_id": "DEMO-SUP-002",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "Riau",
+        "area_ha": 52.0,
+        "production_date": "2024-07-15",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[101.440, 1.510], [101.447, 1.510], [101.447, 1.504], [101.440, 1.504], [101.440, 1.510]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-009",
+        "supplier_id": "DEMO-SUP-002",
+        "commodity": "oil_palm",
+        "country": "IDN",
+        "region": "Riau",
+        "area_ha": 45.0,
+        "production_date": "2024-08-20",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RSPO"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[101.460, 1.540], [101.466, 1.540], [101.466, 1.534], [101.460, 1.534], [101.460, 1.540]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-010",
+        "supplier_id": "DEMO-SUP-003",
+        "commodity": "cocoa",
+        "country": "BRA",
+        "region": "Bahia",
+        "area_ha": 180.0,
+        "production_date": "2024-04-10",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RAINFOREST_ALLIANCE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-39.500, -14.800], [-39.485, -14.800], [-39.485, -14.812], [-39.500, -14.812], [-39.500, -14.800]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-011",
+        "supplier_id": "DEMO-SUP-003",
+        "commodity": "cocoa",
+        "country": "BRA",
+        "region": "Bahia",
+        "area_ha": 120.0,
+        "production_date": "2024-05-25",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RAINFOREST_ALLIANCE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-39.520, -14.790], [-39.510, -14.790], [-39.510, -14.800], [-39.520, -14.800], [-39.520, -14.790]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-012",
+        "supplier_id": "DEMO-SUP-003",
+        "commodity": "cocoa",
+        "country": "BRA",
+        "region": "Bahia",
+        "area_ha": 150.0,
+        "production_date": "2024-06-30",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-39.540, -14.820], [-39.525, -14.820], [-39.525, -14.832], [-39.540, -14.832], [-39.540, -14.820]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-013",
+        "supplier_id": "DEMO-SUP-004",
+        "commodity": "cocoa",
+        "country": "CIV",
+        "region": "Soubre",
+        "area_ha": 3.2,
+        "production_date": "2024-10-15",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "UTZ"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-6.600, 5.780]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-014",
+        "supplier_id": "DEMO-SUP-004",
+        "commodity": "cocoa",
+        "country": "CIV",
+        "region": "Soubre",
+        "area_ha": 2.8,
+        "production_date": "2024-11-01",
+        "deforestation_free": false,
+        "cutoff_compliant": false,
+        "certification": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-6.620, 5.760]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-015",
+        "supplier_id": "DEMO-SUP-005",
+        "commodity": "cocoa",
+        "country": "GHA",
+        "region": "Ashanti",
+        "area_ha": 180.0,
+        "production_date": "2024-09-20",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RAINFOREST_ALLIANCE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-1.620, 6.690], [-1.605, 6.690], [-1.605, 6.678], [-1.620, 6.678], [-1.620, 6.690]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-016",
+        "supplier_id": "DEMO-SUP-005",
+        "commodity": "cocoa",
+        "country": "GHA",
+        "region": "Ashanti",
+        "area_ha": 140.0,
+        "production_date": "2024-10-05",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-1.640, 6.700], [-1.628, 6.700], [-1.628, 6.690], [-1.640, 6.690], [-1.640, 6.700]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-017",
+        "supplier_id": "DEMO-SUP-006",
+        "commodity": "coffee",
+        "country": "VNM",
+        "region": "Dak Lak",
+        "area_ha": 550.0,
+        "production_date": "2024-11-15",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "FOUR_C"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[108.050, 12.680], [108.080, 12.680], [108.080, 12.655], [108.050, 12.655], [108.050, 12.680]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-018",
+        "supplier_id": "DEMO-SUP-007",
+        "commodity": "coffee",
+        "country": "COL",
+        "region": "Huila",
+        "area_ha": 180.0,
+        "production_date": "2024-03-10",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "FAIRTRADE"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-75.900, 2.050], [-75.885, 2.050], [-75.885, 2.038], [-75.900, 2.038], [-75.900, 2.050]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-019",
+        "supplier_id": "DEMO-SUP-008",
+        "commodity": "soya",
+        "country": "BRA",
+        "region": "Mato Grosso",
+        "area_ha": 5200.0,
+        "production_date": "2024-02-15",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "RTRS"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-54.200, -12.800], [-53.950, -12.800], [-53.950, -13.050], [-54.200, -13.050], [-54.200, -12.800]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "DEMO-PLOT-020",
+        "supplier_id": "DEMO-SUP-009",
+        "commodity": "soya",
+        "country": "PRY",
+        "region": "Alto Parana",
+        "area_ha": 3800.0,
+        "production_date": "2024-03-20",
+        "deforestation_free": true,
+        "cutoff_compliant": true,
+        "certification": "PROTERRA"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-54.800, -25.300], [-54.600, -25.300], [-54.600, -25.500], [-54.800, -25.500], [-54.800, -25.300]]]
+      }
+    }
+  ]
+}

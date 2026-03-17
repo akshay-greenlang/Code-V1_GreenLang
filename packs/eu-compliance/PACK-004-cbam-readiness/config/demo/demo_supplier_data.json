@@ -1,0 +1,478 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-03-14T00:00:00Z",
+  "data_source": "PACK-004 CBAM Demo Data",
+  "suppliers": [
+    {
+      "supplier_id": "SUPP-TR-001",
+      "company_name": "Anatolian Steel Works A.S.",
+      "legal_name": "Anatolian Celik Sanayi ve Ticaret Anonim Sirketi",
+      "country_code": "TR",
+      "country_name": "Turkey",
+      "city": "Iskenderun",
+      "region": "Hatay Province",
+      "address": "Organize Sanayi Bolgesi, Iskenderun 31200, Hatay, Turkey",
+      "contact_name": "Mehmet Yilmaz",
+      "contact_email": "cbam@anatoliansteel.com.tr",
+      "contact_phone": "+90 326 614 7890",
+      "website": "https://www.anatoliansteel.com.tr",
+      "registration_date": "2024-06-15",
+      "cbam_goods_categories": ["iron_steel"],
+      "annual_production_capacity_tonnes": 2500000,
+      "data_quality_score": 82.5,
+      "verification_status": "verified",
+      "last_verification_date": "2025-11-15",
+      "verifier_name": "TUV Rheinland Turkey",
+      "verifier_accreditation": "TURKAK",
+      "carbon_price_paid": {
+        "mechanism": "Turkey Carbon Tax (planned)",
+        "price_eur_per_tco2e": 0.0,
+        "effective_date": null,
+        "note": "Turkey has not yet implemented a carbon pricing mechanism"
+      },
+      "installations": [
+        {
+          "installation_id": "INST-TR-001-A",
+          "installation_name": "Iskenderun Integrated Steel Works",
+          "installation_type": "integrated_steelworks",
+          "production_route": "bf_bof",
+          "location": {
+            "city": "Iskenderun",
+            "region": "Hatay",
+            "latitude": 36.5867,
+            "longitude": 36.1742
+          },
+          "operational_since": 1995,
+          "annual_capacity_tonnes": 1800000,
+          "products": [
+            {
+              "product_type": "hot_rolled_coil",
+              "cn_codes": ["7208 51 00", "7208 39 00"],
+              "annual_volume_tonnes": 900000,
+              "eu_export_share_pct": 35
+            },
+            {
+              "product_type": "cold_rolled_coil",
+              "cn_codes": ["7209 17 00"],
+              "annual_volume_tonnes": 400000,
+              "eu_export_share_pct": 30
+            },
+            {
+              "product_type": "coated_flat",
+              "cn_codes": ["7210 49 00", "7210 61 00"],
+              "annual_volume_tonnes": 300000,
+              "eu_export_share_pct": 40
+            },
+            {
+              "product_type": "seamless_tubes",
+              "cn_codes": ["7304 31 00"],
+              "annual_volume_tonnes": 120000,
+              "eu_export_share_pct": 25
+            },
+            {
+              "product_type": "screws_bolts",
+              "cn_codes": ["7318 15 00"],
+              "annual_volume_tonnes": 50000,
+              "eu_export_share_pct": 20
+            },
+            {
+              "product_type": "other_articles",
+              "cn_codes": ["7326 90 00"],
+              "annual_volume_tonnes": 30000,
+              "eu_export_share_pct": 15
+            }
+          ],
+          "emission_data": {
+            "reporting_year": 2025,
+            "methodology": "CBAM Implementing Regulation (EU) 2023/1773",
+            "verification_status": "verified",
+            "direct_emissions": {
+              "total_tco2e": 3330000,
+              "breakdown": {
+                "blast_furnace_reduction": 1800000,
+                "bof_process": 450000,
+                "coke_oven": 630000,
+                "lime_calcination": 180000,
+                "auxiliary_fuel": 270000
+              }
+            },
+            "indirect_emissions": {
+              "total_tco2e": 252000,
+              "electricity_consumption_mwh": 525000,
+              "grid_emission_factor_tco2e_per_mwh": 0.48
+            },
+            "total_embedded_emissions_tco2e": 3582000,
+            "specific_embedded_emissions": {
+              "hot_rolled_coil_tco2e_per_tonne": 1.92,
+              "cold_rolled_coil_tco2e_per_tonne": 2.08,
+              "coated_flat_tco2e_per_tonne": 2.18,
+              "seamless_tubes_tco2e_per_tonne": 2.35,
+              "crude_steel_tco2e_per_tonne": 1.85
+            },
+            "data_quality": {
+              "completeness_pct": 95,
+              "accuracy_assessment": "high",
+              "measurement_method": "continuous_monitoring",
+              "last_calibration_date": "2025-09-01"
+            }
+          }
+        },
+        {
+          "installation_id": "INST-TR-001-B",
+          "installation_name": "Payas EAF Mill",
+          "installation_type": "electric_arc_furnace_mill",
+          "production_route": "eaf",
+          "location": {
+            "city": "Payas",
+            "region": "Hatay",
+            "latitude": 36.7576,
+            "longitude": 36.2200
+          },
+          "operational_since": 2008,
+          "annual_capacity_tonnes": 700000,
+          "products": [
+            {
+              "product_type": "rebar",
+              "cn_codes": ["7213 10 00", "7214 20 00"],
+              "annual_volume_tonnes": 450000,
+              "eu_export_share_pct": 40
+            },
+            {
+              "product_type": "sections",
+              "cn_codes": ["7216 33 00"],
+              "annual_volume_tonnes": 200000,
+              "eu_export_share_pct": 35
+            },
+            {
+              "product_type": "welded_tubes",
+              "cn_codes": ["7306 30 00"],
+              "annual_volume_tonnes": 50000,
+              "eu_export_share_pct": 30
+            }
+          ],
+          "emission_data": {
+            "reporting_year": 2025,
+            "methodology": "CBAM Implementing Regulation (EU) 2023/1773",
+            "verification_status": "verified",
+            "direct_emissions": {
+              "total_tco2e": 175000,
+              "breakdown": {
+                "electrode_consumption": 52500,
+                "natural_gas_combustion": 70000,
+                "lime_calcination": 35000,
+                "other_process": 17500
+              }
+            },
+            "indirect_emissions": {
+              "total_tco2e": 168000,
+              "electricity_consumption_mwh": 350000,
+              "grid_emission_factor_tco2e_per_mwh": 0.48
+            },
+            "total_embedded_emissions_tco2e": 343000,
+            "specific_embedded_emissions": {
+              "rebar_tco2e_per_tonne": 0.48,
+              "sections_tco2e_per_tonne": 0.50,
+              "welded_tubes_tco2e_per_tonne": 0.55,
+              "crude_steel_tco2e_per_tonne": 0.45
+            },
+            "data_quality": {
+              "completeness_pct": 90,
+              "accuracy_assessment": "high",
+              "measurement_method": "batch_measurement",
+              "last_calibration_date": "2025-08-15"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUPP-CN-001",
+      "company_name": "Shanghai Aluminium Corp",
+      "legal_name": "Shanghai Aluminium Industry Corporation Ltd.",
+      "country_code": "CN",
+      "country_name": "China",
+      "city": "Shanghai",
+      "region": "Shanghai Municipality",
+      "address": "888 Pudong Xinqu, Shanghai 200120, China",
+      "contact_name": "Li Wei",
+      "contact_email": "cbam@shanghaialu.cn",
+      "contact_phone": "+86 21 5888 9012",
+      "website": "https://www.shanghaialu.cn",
+      "registration_date": "2024-08-20",
+      "cbam_goods_categories": ["aluminium"],
+      "annual_production_capacity_tonnes": 500000,
+      "data_quality_score": 71.0,
+      "verification_status": "partially_verified",
+      "last_verification_date": "2025-09-30",
+      "verifier_name": "SGS China",
+      "verifier_accreditation": "CNAS",
+      "carbon_price_paid": {
+        "mechanism": "China National ETS",
+        "price_eur_per_tco2e": 8.50,
+        "effective_date": "2025-01-01",
+        "note": "China ETS covers power sector; aluminium smelter electricity purchases partially covered"
+      },
+      "installations": [
+        {
+          "installation_id": "INST-CN-001-A",
+          "installation_name": "Pudong Primary Aluminium Smelter",
+          "installation_type": "primary_smelter",
+          "production_route": "primary_smelting",
+          "location": {
+            "city": "Shanghai",
+            "region": "Pudong",
+            "latitude": 31.2304,
+            "longitude": 121.4737
+          },
+          "operational_since": 2005,
+          "annual_capacity_tonnes": 500000,
+          "anode_type": "prebaked",
+          "electrolysis_technology": "modern_prebaked",
+          "electricity_consumption_kwh_per_tonne": 13500,
+          "products": [
+            {
+              "product_type": "unwrought_primary",
+              "cn_codes": ["7601 10 00"],
+              "annual_volume_tonnes": 250000,
+              "eu_export_share_pct": 10
+            },
+            {
+              "product_type": "unwrought_alloy",
+              "cn_codes": ["7601 20 00"],
+              "annual_volume_tonnes": 150000,
+              "eu_export_share_pct": 12
+            },
+            {
+              "product_type": "plates_sheets",
+              "cn_codes": ["7606 12 00"],
+              "annual_volume_tonnes": 60000,
+              "eu_export_share_pct": 15
+            },
+            {
+              "product_type": "hollow_profiles",
+              "cn_codes": ["7604 21 00"],
+              "annual_volume_tonnes": 25000,
+              "eu_export_share_pct": 8
+            },
+            {
+              "product_type": "bars_rods",
+              "cn_codes": ["7604 29 00"],
+              "annual_volume_tonnes": 10000,
+              "eu_export_share_pct": 10
+            },
+            {
+              "product_type": "tubes_pipes",
+              "cn_codes": ["7608 20 00"],
+              "annual_volume_tonnes": 5000,
+              "eu_export_share_pct": 12
+            }
+          ],
+          "emission_data": {
+            "reporting_year": 2025,
+            "methodology": "CBAM Implementing Regulation (EU) 2023/1773",
+            "verification_status": "partially_verified",
+            "direct_emissions": {
+              "total_tco2e": 1500000,
+              "breakdown": {
+                "anode_consumption_co2": 750000,
+                "pfc_cf4": 225000,
+                "pfc_c2f6": 75000,
+                "alumina_calcination": 200000,
+                "casting_fuel": 150000,
+                "other": 100000
+              },
+              "pfc_details": {
+                "anode_effect_frequency_per_pot_day": 0.12,
+                "cf4_kg_per_tonne_al": 0.18,
+                "c2f6_kg_per_tonne_al": 0.025,
+                "cf4_gwp": 7390,
+                "c2f6_gwp": 12200
+              }
+            },
+            "indirect_emissions": {
+              "total_tco2e": 3915000,
+              "electricity_consumption_mwh": 6750000,
+              "grid_emission_factor_tco2e_per_mwh": 0.58,
+              "electricity_source": "state_grid_east_china"
+            },
+            "total_embedded_emissions_tco2e": 5415000,
+            "specific_embedded_emissions": {
+              "unwrought_primary_tco2e_per_tonne": 10.83,
+              "unwrought_alloy_tco2e_per_tonne": 11.20,
+              "plates_sheets_tco2e_per_tonne": 11.80,
+              "hollow_profiles_tco2e_per_tonne": 12.10,
+              "bars_rods_tco2e_per_tonne": 11.50,
+              "tubes_pipes_tco2e_per_tonne": 12.30
+            },
+            "data_quality": {
+              "completeness_pct": 85,
+              "accuracy_assessment": "medium",
+              "measurement_method": "periodic_measurement",
+              "last_calibration_date": "2025-06-01",
+              "issues": [
+                "PFC measurement based on slope method, not continuous monitoring",
+                "Electricity grid factor uses national average, not provincial"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "supplier_id": "SUPP-IN-001",
+      "company_name": "Rajasthan Cement Ltd",
+      "legal_name": "Rajasthan Cement Limited",
+      "country_code": "IN",
+      "country_name": "India",
+      "city": "Udaipur",
+      "region": "Rajasthan",
+      "address": "Cement Nagar, NH-8, Udaipur 313001, Rajasthan, India",
+      "contact_name": "Priya Sharma",
+      "contact_email": "exports@rajcement.co.in",
+      "contact_phone": "+91 294 245 6789",
+      "website": "https://www.rajcement.co.in",
+      "registration_date": "2024-10-05",
+      "cbam_goods_categories": ["cement"],
+      "annual_production_capacity_tonnes": 3000000,
+      "data_quality_score": 68.0,
+      "verification_status": "self_declared",
+      "last_verification_date": null,
+      "verifier_name": null,
+      "verifier_accreditation": null,
+      "carbon_price_paid": {
+        "mechanism": "India PAT Scheme (Perform, Achieve and Trade)",
+        "price_eur_per_tco2e": 2.50,
+        "effective_date": "2023-01-01",
+        "note": "India PAT scheme provides tradable energy savings certificates; carbon price equivalent is approximate"
+      },
+      "installations": [
+        {
+          "installation_id": "INST-IN-001-A",
+          "installation_name": "Udaipur Integrated Cement Plant",
+          "installation_type": "integrated_cement_plant",
+          "production_route": "clinker_kiln",
+          "location": {
+            "city": "Udaipur",
+            "region": "Rajasthan",
+            "latitude": 24.5854,
+            "longitude": 73.7125
+          },
+          "operational_since": 1998,
+          "annual_capacity_tonnes": 3000000,
+          "kiln_type": "dry_preheater_precalciner",
+          "kiln_capacity_tpd": 8500,
+          "products": [
+            {
+              "product_type": "clinker",
+              "cn_codes": ["2523 10 00"],
+              "annual_volume_tonnes": 2100000,
+              "eu_export_share_pct": 5,
+              "clinker_ratio": 1.0
+            },
+            {
+              "product_type": "portland_cement_opc",
+              "cn_codes": ["2523 29 00"],
+              "annual_volume_tonnes": 600000,
+              "eu_export_share_pct": 8,
+              "cement_type": "CEM_I",
+              "clinker_ratio": 0.95
+            },
+            {
+              "product_type": "white_portland_cement",
+              "cn_codes": ["2523 21 00"],
+              "annual_volume_tonnes": 80000,
+              "eu_export_share_pct": 10,
+              "cement_type": "CEM_I",
+              "clinker_ratio": 0.95
+            },
+            {
+              "product_type": "aluminous_cement",
+              "cn_codes": ["2523 30 00"],
+              "annual_volume_tonnes": 40000,
+              "eu_export_share_pct": 5,
+              "cement_type": "aluminous"
+            },
+            {
+              "product_type": "other_hydraulic_cement",
+              "cn_codes": ["2523 90 00"],
+              "annual_volume_tonnes": 180000,
+              "eu_export_share_pct": 4,
+              "cement_type": "CEM_II_A",
+              "clinker_ratio": 0.85
+            }
+          ],
+          "emission_data": {
+            "reporting_year": 2025,
+            "methodology": "CBAM Implementing Regulation (EU) 2023/1773",
+            "verification_status": "self_declared",
+            "direct_emissions": {
+              "total_tco2e": 2520000,
+              "breakdown": {
+                "calcination_process": 1575000,
+                "kiln_fuel_combustion": 819000,
+                "alternative_fuel": 63000,
+                "other_thermal": 63000
+              },
+              "calcination_details": {
+                "raw_meal_caco3_pct": 79.5,
+                "raw_meal_mgco3_pct": 1.2,
+                "calcination_ef_tco2_per_tonne_clinker": 0.53
+              },
+              "kiln_fuel_details": {
+                "primary_fuel": "coal",
+                "primary_fuel_share_pct": 60,
+                "secondary_fuel": "petroleum_coke",
+                "secondary_fuel_share_pct": 30,
+                "alternative_fuel_share_pct": 10,
+                "thermal_energy_gj_per_tonne_clinker": 3.15
+              }
+            },
+            "indirect_emissions": {
+              "total_tco2e": 453600,
+              "electricity_consumption_mwh": 630000,
+              "grid_emission_factor_tco2e_per_mwh": 0.72,
+              "electricity_source": "rajasthan_discom_grid"
+            },
+            "total_embedded_emissions_tco2e": 2973600,
+            "specific_embedded_emissions": {
+              "clinker_tco2e_per_tonne": 0.95,
+              "portland_cement_opc_tco2e_per_tonne": 0.92,
+              "white_portland_cement_tco2e_per_tonne": 0.98,
+              "aluminous_cement_tco2e_per_tonne": 0.75,
+              "other_hydraulic_cement_tco2e_per_tonne": 0.62
+            },
+            "data_quality": {
+              "completeness_pct": 78,
+              "accuracy_assessment": "medium",
+              "measurement_method": "periodic_measurement",
+              "last_calibration_date": "2025-04-15",
+              "issues": [
+                "No third-party verification completed yet",
+                "Grid emission factor uses national average, not state-level",
+                "Alternative fuel composition data incomplete",
+                "Captive power plant emissions not fully allocated"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_suppliers": 3,
+    "total_installations": 4,
+    "goods_categories_covered": ["iron_steel", "aluminium", "cement"],
+    "countries_represented": ["TR", "CN", "IN"],
+    "verification_summary": {
+      "verified": 1,
+      "partially_verified": 1,
+      "self_declared": 1
+    },
+    "average_data_quality_score": 73.8,
+    "data_quality_distribution": {
+      "high_80_plus": 1,
+      "medium_60_80": 2,
+      "low_below_60": 0
+    }
+  }
+}

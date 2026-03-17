@@ -1,0 +1,120 @@
+# =============================================================================
+# PACK-013 CSRD Manufacturing Pack - SME Manufacturer Preset
+# =============================================================================
+# Simplified configuration for small and medium-sized manufacturers.
+# Focuses on Scope 1+2 emissions with industry-average Scope 3 estimates.
+# Guided data entry with sector-specific templates reduces implementation
+# effort. Reduced engine set for faster time-to-value. Automatically
+# assesses CSRD Omnibus Directive threshold eligibility for potential
+# exemption from full CSRD reporting requirements.
+#
+# Typical use cases:
+#   - Small metal fabrication workshops (< 250 employees)
+#   - Medium-sized food producers
+#   - Regional packaging manufacturers
+#   - SME component suppliers for larger OEMs
+# =============================================================================
+
+# --- Company Details ---
+company_name: ""
+reporting_year: 2025
+manufacturing_tier: "LIGHT"
+sub_sectors:
+  - "MACHINERY"
+
+# --- Omnibus Threshold (CRITICAL for SMEs) ---
+omnibus_threshold:
+  enabled: true
+  listed_entity: false
+
+# --- Process Emissions (simplified) ---
+process_emissions:
+  enabled: true
+  sub_sector: "MACHINERY"
+  cbam_affected: false
+  cbam_status: "NOT_AFFECTED"
+  emission_sources:
+    - "combustion"
+  mass_balance_enabled: false
+  product_allocation_enabled: false
+  emission_factor_source: "NATIONAL"
+  year_over_year_tracking: true
+
+# --- Energy Intensity (simplified) ---
+energy_intensity:
+  enabled: true
+  production_unit: "unit"
+  energy_sources:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+  benchmark_reference: "PEER_AVERAGE"
+  iso50001_certified: false
+  enpi_tracking: false
+  significant_energy_use_threshold_pct: 10.0
+  renewable_energy_tracking: true
+  energy_cost_tracking: true
+
+# --- Product Carbon Footprint (disabled for SME) ---
+product_pcf:
+  enabled: false
+
+# --- Circular Economy (basic tracking) ---
+circular_economy:
+  enabled: false
+
+# --- Water & Pollution (disabled for SME) ---
+water_pollution:
+  enabled: false
+
+# --- BAT/BREF Compliance (disabled for SME) ---
+bat_compliance:
+  enabled: false
+
+# --- Supply Chain (industry averages only) ---
+supply_chain:
+  enabled: true
+  tier_depth: 1
+  priority_categories: [1, 3, 4, 5]
+  supplier_engagement_platform: "CUSTOM"
+  spend_based_screening: true
+  supplier_specific_enabled: false
+  hybrid_method: false
+  hotspot_analysis: false
+
+# --- Benchmark (simplified) ---
+benchmark:
+  enabled: true
+  peer_group: "NACE_SECTOR"
+  kpi_set:
+    - "carbon_intensity"
+    - "energy_intensity"
+  sbti_pathway: "WELL_BELOW_2C"
+  abatement_cost_curve: false
+  eu_ets_benchmark_comparison: false
+  bat_ael_benchmark_comparison: false
+  target_years: [2030, 2050]
+
+# --- Audit Trail (simplified) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 5
+  external_audit_export: false
+
+# --- Disclosure (minimal set) ---
+disclosure:
+  esrs_chapter_enabled: true
+  process_emissions_report_enabled: true
+  pcf_label_enabled: false
+  energy_report_enabled: true
+  circular_economy_report_enabled: false
+  bat_report_enabled: false
+  scorecard_enabled: true
+  decarbonization_roadmap_enabled: false
+  output_formats:
+    - "PDF"
+  review_workflow_enabled: false
+  watermark_draft: true
