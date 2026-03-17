@@ -1,0 +1,341 @@
+# =============================================================================
+# PACK-017 ESRS Full Coverage Pack - Manufacturing Preset
+# =============================================================================
+# Sector-specific configuration for industrial manufacturing companies
+# across NACE division C (Manufacturing). Covers heavy industry (steel,
+# cement, chemicals, petrochemicals, glass, ceramics) and light
+# manufacturing (automotive, electronics, textiles, food processing).
+#
+# Materiality profile:
+#   - E1 Climate: HIGHLY MATERIAL (Scope 1 combustion + process emissions)
+#   - E2 Pollution: MATERIAL (industrial discharges, air pollutants, REACH)
+#   - E3 Water: MATERIAL (industrial water use, cooling, process water)
+#   - E4 Biodiversity: MAY BE MATERIAL (land use, raw material sourcing)
+#   - E5 Circular Economy: HIGHLY MATERIAL (waste, recycled inputs, product design)
+#   - S1 Own Workforce: MATERIAL (large workforce, H&S critical)
+#   - S2 Value Chain Workers: MATERIAL (supply chain labour conditions)
+#   - S3 Affected Communities: MAY BE MATERIAL (plant site impacts)
+#   - S4 Consumers: CONTEXT-DEPENDENT (product safety if B2C)
+#   - G1 Business Conduct: MATERIAL (complex supply chains, anti-corruption)
+#
+# Key characteristics:
+#   - High Scope 1 (combustion + process emissions) and Scope 2 (electricity)
+#   - Scope 3 dominated by Cat 1 (purchased goods), Cat 4 (transport), Cat 11 (use)
+#   - Industrial water withdrawal and discharge volumes are significant
+#   - Waste generation and circularity metrics are critical KPIs
+#   - Occupational H&S is a top social priority (fatality/LTIR tracking)
+#   - Supply chain due diligence required for raw material sourcing
+# =============================================================================
+
+# --- Preset Metadata ---
+preset_name: "manufacturing"
+pack_id: "PACK-017"
+pack_name: "ESRS Full Coverage Pack"
+esrs_version: "ESRS Set 1 (2023)"
+sector: "MANUFACTURING"
+nace_codes: ["B", "C"]
+
+# --- ESRS Standard Materiality ---
+materiality:
+  e1_climate_change: HIGHLY_MATERIAL
+  e2_pollution: MATERIAL
+  e3_water_marine_resources: MATERIAL
+  e4_biodiversity_ecosystems: MAY_BE_MATERIAL
+  e5_resource_use_circular_economy: HIGHLY_MATERIAL
+  s1_own_workforce: MATERIAL
+  s2_workers_in_value_chain: MATERIAL
+  s3_affected_communities: MAY_BE_MATERIAL
+  s4_consumers_end_users: CONTEXT_DEPENDENT
+  g1_business_conduct: MATERIAL
+
+# --- E1 Climate Change ---
+e1_climate_change:
+  enabled: true
+  disclosure_requirements:
+    - "E1-1"   # Transition plan for climate change mitigation
+    - "E1-2"   # Policies related to climate change mitigation and adaptation
+    - "E1-3"   # Actions and resources related to climate change
+    - "E1-4"   # Targets related to climate change mitigation and adaptation
+    - "E1-5"   # Energy consumption and mix
+    - "E1-6"   # Gross Scopes 1, 2, 3 and total GHG emissions
+    - "E1-7"   # GHG removals and GHG mitigation projects (carbon credits)
+    - "E1-8"   # Internal carbon pricing
+    - "E1-9"   # Anticipated financial effects from climate-related risks
+  ghg:
+    consolidation_approach: "OPERATIONAL_CONTROL"
+    gwp_source: "IPCC_AR6"
+    emission_factors_source: "DEFRA_2025"
+    scopes_enabled: ["SCOPE_1", "SCOPE_2_LOCATION", "SCOPE_2_MARKET", "SCOPE_3"]
+    scope_3_categories: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
+    scope_3_default_method: "HYBRID"
+    kyoto_gas_disaggregation: true
+    biogenic_co2_separate: true
+    process_emissions_included: true
+    ghg_intensity_denominators:
+      - "net_revenue_eur_million"
+      - "tonnes_produced"
+  energy:
+    reporting_unit: "MWh"
+    fossil_fuel_types: ["NATURAL_GAS", "DIESEL", "COAL", "LPG", "FUEL_OIL"]
+    renewable_categories: ["SOLAR", "WIND", "HYDRO", "BIOMASS"]
+    self_generation_tracking: true
+    energy_intensity_denominators:
+      - "net_revenue_eur_million"
+      - "tonnes_produced"
+  transition_plan:
+    target_year: 2050
+    interim_target_years: [2030, 2035, 2040, 2045]
+    scenario_alignment: "1.5C"
+    decarbonization_levers:
+      - "energy_efficiency"
+      - "electrification"
+      - "renewable_energy"
+      - "fuel_switching"
+      - "process_changes"
+      - "carbon_capture"
+      - "circular_economy"
+      - "hydrogen"
+  carbon_pricing:
+    has_carbon_pricing: true
+    pricing_methods: ["SHADOW_PRICE", "REGULATORY"]
+    default_price_per_tco2e: "100.00"
+
+# --- E2 Pollution ---
+e2_pollution:
+  enabled: true
+  disclosure_requirements:
+    - "E2-1"   # Policies related to pollution
+    - "E2-2"   # Actions and resources related to pollution
+    - "E2-3"   # Targets related to pollution
+    - "E2-4"   # Pollution of air, water and soil
+    - "E2-5"   # Substances of concern and substances of very high concern
+    - "E2-6"   # Anticipated financial effects from pollution-related risks
+  pollutant_categories:
+    air: ["NOx", "SOx", "PM10", "PM2_5", "VOC", "CO", "NH3", "heavy_metals"]
+    water: ["COD", "BOD", "TSS", "heavy_metals", "nitrogen", "phosphorus"]
+    soil: ["heavy_metals", "hydrocarbons", "solvents"]
+  regulatory_frameworks: ["IED", "REACH", "E_PRTR", "SEVESO_III"]
+  substances_of_concern_tracking: true
+  svhc_tracking: true
+  microplastic_tracking: false
+  incident_reporting: true
+
+# --- E3 Water and Marine Resources ---
+e3_water_marine_resources:
+  enabled: true
+  disclosure_requirements:
+    - "E3-1"   # Policies related to water and marine resources
+    - "E3-2"   # Actions and resources related to water and marine resources
+    - "E3-3"   # Targets related to water and marine resources
+    - "E3-4"   # Water consumption
+    - "E3-5"   # Anticipated financial effects from water-related risks
+  water_metrics:
+    withdrawal_by_source: true
+    discharge_by_destination: true
+    consumption_calculation: true
+    recycled_water_tracking: true
+    water_stress_areas: true
+  reporting_unit: "megalitres"
+  wri_aqueduct_integration: true
+  industrial_water_types: ["COOLING", "PROCESS", "SANITARY", "FIRE_SUPPRESSION"]
+
+# --- E4 Biodiversity and Ecosystems ---
+e4_biodiversity_ecosystems:
+  enabled: true
+  disclosure_requirements:
+    - "E4-1"   # Transition plan on biodiversity and ecosystems
+    - "E4-2"   # Policies related to biodiversity and ecosystems
+    - "E4-3"   # Actions and resources related to biodiversity
+    - "E4-4"   # Targets related to biodiversity and ecosystems
+    - "E4-5"   # Impact metrics related to biodiversity change
+    - "E4-6"   # Anticipated financial effects from biodiversity-related risks
+  land_use_tracking: true
+  proximity_to_protected_areas: true
+  deforestation_free_supply_chain: true
+  tnfd_alignment: true
+  biodiversity_footprint_method: "MSA"
+
+# --- E5 Resource Use and Circular Economy ---
+e5_resource_use_circular_economy:
+  enabled: true
+  disclosure_requirements:
+    - "E5-1"   # Policies related to resource use and circular economy
+    - "E5-2"   # Actions and resources related to resource use
+    - "E5-3"   # Targets related to resource use and circular economy
+    - "E5-4"   # Resource inflows
+    - "E5-5"   # Resource outflows
+    - "E5-6"   # Anticipated financial effects from circular economy
+  waste_categories: ["HAZARDOUS", "NON_HAZARDOUS"]
+  waste_treatment_methods: ["RECYCLING", "INCINERATION", "LANDFILL", "RECOVERY", "COMPOSTING"]
+  circular_metrics:
+    recycled_input_rate: true
+    recyclability_rate: true
+    waste_diversion_rate: true
+    product_lifetime_extension: true
+  packaging_tracking: false
+  critical_raw_materials: true
+  reporting_unit: "tonnes"
+
+# --- S1 Own Workforce ---
+s1_own_workforce:
+  enabled: true
+  disclosure_requirements:
+    - "S1-1"   # Policies related to own workforce
+    - "S1-2"   # Processes for engaging with own workforce
+    - "S1-3"   # Processes to remediate negative impacts
+    - "S1-4"   # Taking action on material impacts
+    - "S1-5"   # Targets related to managing negative impacts
+    - "S1-6"   # Characteristics of the undertaking's employees
+    - "S1-7"   # Characteristics of non-employee workers
+    - "S1-8"   # Collective bargaining coverage and social dialogue
+    - "S1-9"   # Diversity metrics
+    - "S1-10"  # Adequate wages
+    - "S1-11"  # Social protection
+    - "S1-12"  # Persons with disabilities
+    - "S1-13"  # Training and skills development metrics
+    - "S1-14"  # Health and safety metrics
+    - "S1-15"  # Work-life balance metrics
+    - "S1-16"  # Remuneration metrics (pay gap, pay ratio)
+    - "S1-17"  # Incidents, complaints and severe human rights impacts
+  health_and_safety:
+    fatality_tracking: true
+    ltir_tracking: true
+    trir_tracking: true
+    near_miss_reporting: true
+    occupational_disease_tracking: true
+    safety_critical_roles: true
+    ohs_management_system: "ISO_45001"
+  training:
+    hours_per_employee: true
+    skills_development_programs: true
+    apprenticeship_tracking: true
+  collective_bargaining:
+    coverage_tracking: true
+    works_council_engagement: true
+  diversity:
+    gender_breakdown: true
+    age_breakdown: true
+    disability_tracking: true
+
+# --- S2 Workers in the Value Chain ---
+s2_workers_in_value_chain:
+  enabled: true
+  disclosure_requirements:
+    - "S2-1"   # Policies related to value chain workers
+    - "S2-2"   # Processes for engaging with value chain workers
+    - "S2-3"   # Processes to remediate negative impacts
+    - "S2-4"   # Taking action on material impacts
+    - "S2-5"   # Targets related to managing negative impacts
+  due_diligence:
+    supplier_code_of_conduct: true
+    audit_programme: true
+    corrective_action_tracking: true
+    tier_1_coverage_target_pct: 80
+    high_risk_supplier_monitoring: true
+  focus_areas:
+    - "forced_labour"
+    - "child_labour"
+    - "living_wage"
+    - "working_hours"
+    - "freedom_of_association"
+    - "occupational_health_and_safety"
+
+# --- S3 Affected Communities ---
+s3_affected_communities:
+  enabled: true
+  disclosure_requirements:
+    - "S3-1"   # Policies related to affected communities
+    - "S3-2"   # Processes for engaging with affected communities
+    - "S3-3"   # Processes to remediate negative impacts
+    - "S3-4"   # Taking action on material impacts
+    - "S3-5"   # Targets related to managing negative impacts
+  community_engagement:
+    stakeholder_mapping: true
+    grievance_mechanism: true
+    indigenous_peoples_consultation: false
+    fpic_process: false
+  impact_categories:
+    - "air_quality"
+    - "noise_pollution"
+    - "traffic_congestion"
+    - "local_employment"
+    - "land_use_change"
+
+# --- S4 Consumers and End-Users ---
+s4_consumers_end_users:
+  enabled: false
+  disclosure_requirements: []
+
+# --- G1 Business Conduct ---
+g1_business_conduct:
+  enabled: true
+  disclosure_requirements:
+    - "G1-1"   # Business conduct policies and corporate culture
+    - "G1-2"   # Management of relationships with suppliers
+    - "G1-3"   # Prevention and detection of corruption and bribery
+    - "G1-4"   # Confirmed incidents of corruption or bribery
+    - "G1-5"   # Political influence and lobbying activities
+    - "G1-6"   # Payment practices
+  anti_corruption:
+    policy_in_place: true
+    training_programme: true
+    whistleblower_mechanism: true
+    incident_tracking: true
+    high_risk_country_monitoring: true
+  supplier_management:
+    payment_terms_tracking: true
+    late_payment_monitoring: true
+    sme_payment_practices: true
+  political_engagement:
+    lobbying_disclosure: true
+    political_donations_policy: "PROHIBITED"
+
+# --- Cross-Cutting (ESRS 1 and ESRS 2) ---
+cross_cutting:
+  esrs_1_general_requirements:
+    double_materiality_assessment: true
+    value_chain_scope: "UPSTREAM_AND_DOWNSTREAM"
+    time_horizons:
+      short_term_years: 1
+      medium_term_years: 5
+      long_term_years: 10
+  esrs_2_general_disclosures:
+    disclosure_requirements:
+      - "ESRS2-BP1"   # General basis for preparation
+      - "ESRS2-BP2"   # Disclosures in relation to specific circumstances
+      - "ESRS2-GOV1"  # Role of administrative, management and supervisory bodies
+      - "ESRS2-GOV2"  # Information provided to and sustainability matters addressed
+      - "ESRS2-GOV3"  # Integration of sustainability performance in incentive schemes
+      - "ESRS2-GOV4"  # Statement on due diligence
+      - "ESRS2-GOV5"  # Risk management and internal controls
+      - "ESRS2-SBM1"  # Strategy, business model and value chain
+      - "ESRS2-SBM2"  # Interests and views of stakeholders
+      - "ESRS2-SBM3"  # Material impacts, risks and opportunities
+      - "ESRS2-IRO1"  # Processes to identify and assess material IROs
+      - "ESRS2-IRO2"  # Disclosure requirements covered by the sustainability statement
+    governance_body_oversight: true
+    incentive_scheme_integration: true
+    due_diligence_statement: true
+
+# --- Reporting ---
+reporting:
+  output_formats: ["PDF", "XBRL", "HTML"]
+  xbrl_taxonomy: "ESRS_XBRL_2024"
+  xbrl_tagging: true
+  sha256_provenance: true
+  multi_language: true
+  supported_languages: ["en", "de"]
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  year_over_year_comparison: true
+  data_quality_disclosure: true
+  assumption_disclosure: true
+  assurance_level: "LIMITED"
+  retention_years: 10
+
+# --- Performance ---
+performance:
+  max_processing_time_minutes: 120
+  max_memory_gb: 8

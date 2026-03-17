@@ -1,0 +1,284 @@
+# =============================================================================
+# PACK-017 ESRS Full Coverage Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for EuroSustain Industries AG, a fictional diversified
+# European manufacturing conglomerate headquartered in Frankfurt, Germany.
+# The company operates across industrial manufacturing (60%), energy services
+# (20%), and professional services (20%), employing 12,500 people across
+# 8 EU countries. EuroSustain is listed on the Frankfurt Stock Exchange and
+# is subject to CSRD from FY2025 (first wave). For demo purposes all 12
+# ESRS standards are treated as material.
+#
+# Company: EuroSustain Industries AG
+# Headquarters: Frankfurt am Main, Germany
+# Revenue: EUR 2.8 billion
+# Employees: 12,500 across 8 EU countries
+# Sectors: Manufacturing (60%), Energy Services (20%), Services (20%)
+# Reporting Year: 2025
+# Base Year: 2019
+# CSRD Wave: First wave (listed large undertaking)
+# SBTi Status: Committed, targets pending validation
+# =============================================================================
+
+# --- Company Details ---
+company:
+  name: "EuroSustain Industries AG"
+  legal_entity_identifier: "549300DEMO17ESRS00001"
+  headquarters: "Frankfurt am Main, Germany"
+  country: "DE"
+  sector: "MULTI_SECTOR"
+  nace_codes: ["C25", "C28", "D35", "M71"]
+  employees: 12500
+  revenue_eur: 2800000000
+  market_cap_eur: 4200000000
+  listed_exchange: "Frankfurt Stock Exchange (XETRA)"
+  eu_countries_of_operation: ["DE", "FR", "NL", "PL", "CZ", "ES", "IT", "AT"]
+  facilities_count: 18
+  reporting_period:
+    start: "2025-01-01"
+    end: "2025-12-31"
+  fiscal_year_end: "12-31"
+  base_year: 2019
+  currency: "EUR"
+  reporting_boundary: "group"
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  csrd_wave: "FIRST"
+
+# --- Selected Preset ---
+preset: "multi_sector"
+
+# --- Materiality Assessment Results ---
+materiality_results:
+  ESRS_2: MATERIAL
+  E1: MATERIAL
+  E2: MATERIAL
+  E3: MATERIAL
+  E4: MATERIAL
+  E5: MATERIAL
+  S1: MATERIAL
+  S2: MATERIAL
+  S3: MATERIAL
+  S4: MATERIAL
+  G1: MATERIAL
+
+# --- ESRS 2 General Disclosures: Governance ---
+governance:
+  board_members: 12
+  independent_directors_pct: 58.3
+  female_directors_pct: 41.7
+  sustainability_committee: true
+  sustainability_committee_members: 4
+  sustainability_expertise_on_board: 3
+  board_meetings_per_year: 8
+  sustainability_agenda_items_per_year: 14
+  remuneration_linked_to_sustainability_pct: 15
+  due_diligence_scope: "FULL_VALUE_CHAIN"
+  risk_management_integration: true
+
+# --- E1 Climate Change: Sample Data ---
+climate:
+  # GHG Inventory
+  ghg_base_year: 2019
+  scope_1_tco2e: 185400
+  scope_2_location_tco2e: 72300
+  scope_2_market_tco2e: 58100
+  scope_3_tco2e: 1245000
+  total_tco2e: 1488500
+  scope_3_breakdown:
+    cat_1_purchased_goods: 620000
+    cat_2_capital_goods: 45000
+    cat_3_fuel_energy: 38000
+    cat_4_upstream_transport: 125000
+    cat_5_waste: 18000
+    cat_6_business_travel: 12500
+    cat_7_employee_commuting: 28000
+    cat_9_downstream_transport: 85000
+    cat_11_use_of_sold_products: 210000
+    cat_12_end_of_life: 63500
+  # Energy
+  total_energy_mwh: 485000
+  renewable_energy_mwh: 142000
+  renewable_energy_pct: 29.3
+  fossil_fuel_mwh: 343000
+  # Targets
+  sbti_commitment: true
+  sbti_commitment_level: "1.5C"
+  near_term_target_year: 2030
+  near_term_reduction_pct: 42.0
+  long_term_target_year: 2050
+  long_term_reduction_pct: 90.0
+  # Carbon pricing
+  internal_carbon_price_eur: 100
+  eu_ets_coverage_pct: 65
+
+# --- E2 Pollution: Sample Data ---
+pollution:
+  facilities_with_ied_permits: 6
+  air_emissions:
+    nox_tonnes: 245.8
+    sox_tonnes: 89.3
+    pm10_tonnes: 34.2
+    pm25_tonnes: 12.7
+    voc_tonnes: 67.4
+  water_discharges:
+    cod_tonnes: 15.3
+    bod_tonnes: 8.2
+    nitrogen_tonnes: 3.1
+    phosphorus_tonnes: 0.8
+  substances_of_concern:
+    total_kg: 45000
+    svhc_count: 3
+    svhc_total_kg: 1200
+  incidents:
+    pollution_incidents: 2
+    regulatory_fines_eur: 0
+
+# --- E3 Water and Marine Resources: Sample Data ---
+water:
+  total_withdrawal_megalitres: 2850
+  withdrawal_by_source:
+    surface_water: 1200
+    groundwater: 850
+    third_party_municipal: 800
+  total_discharge_megalitres: 2100
+  total_consumption_megalitres: 750
+  withdrawal_in_water_stress_areas_megalitres: 420
+  recycled_water_megalitres: 380
+  recycling_rate_pct: 13.3
+  water_intensity_per_revenue: 1.02
+
+# --- E4 Biodiversity and Ecosystems: Sample Data ---
+biodiversity:
+  sites_near_protected_areas: 3
+  total_land_use_hectares: 245
+  sealed_land_hectares: 180
+  biodiversity_action_plans: 2
+  deforestation_free_commitment: true
+  no_net_loss_commitment: false
+  tnfd_aligned_disclosure: true
+
+# --- E5 Resource Use and Circular Economy: Sample Data ---
+circular_economy:
+  total_material_inflow_tonnes: 185000
+  recycled_content_pct: 18.5
+  renewable_material_pct: 12.3
+  total_waste_tonnes: 42000
+  hazardous_waste_tonnes: 3200
+  waste_by_treatment:
+    recycling_tonnes: 26250
+    incineration_with_recovery_tonnes: 6300
+    incineration_without_recovery_tonnes: 2100
+    landfill_tonnes: 6300
+    other_tonnes: 1050
+  recycling_rate_pct: 62.5
+  landfill_rate_pct: 15.0
+  circular_material_use_rate_pct: 16.8
+
+# --- S1 Own Workforce: Sample Data ---
+workforce:
+  total_employees: 12500
+  permanent_employees: 11200
+  temporary_employees: 1300
+  full_time: 11800
+  part_time: 700
+  non_employee_workers: 850
+  demographics:
+    female_pct: 38.5
+    female_management_pct: 28.0
+    under_30_pct: 22.0
+    between_30_50_pct: 55.0
+    over_50_pct: 23.0
+  collective_bargaining_coverage_pct: 72.0
+  adequate_wage_assessment: true
+  adequate_wage_coverage_pct: 100.0
+  training:
+    average_hours_per_employee: 24.5
+    training_investment_eur: 8750000
+  health_and_safety:
+    fatalities: 0
+    recordable_injuries: 45
+    ltifr_per_million_hours: 2.8
+    lost_days: 1230
+    near_misses: 312
+  remuneration:
+    gender_pay_gap_pct: 8.2
+    ceo_to_median_ratio: 42
+  incidents:
+    discrimination_cases: 3
+    human_rights_complaints: 1
+    whistleblower_cases_received: 7
+    whistleblower_cases_resolved: 6
+
+# --- S2 Workers in the Value Chain: Sample Data ---
+value_chain_workers:
+  total_tier_1_suppliers: 2800
+  tier_1_suppliers_assessed: 850
+  tier_2_suppliers_assessed: 220
+  high_risk_suppliers_identified: 45
+  high_risk_suppliers_with_action_plan: 38
+  supplier_audits_conducted: 124
+  critical_findings: 8
+  critical_findings_remediated: 6
+  grievance_cases_received: 12
+  grievance_cases_resolved: 9
+  supplier_code_of_conduct_coverage_pct: 95
+
+# --- S3 Affected Communities: Sample Data ---
+affected_communities:
+  communities_with_engagement: 14
+  stakeholder_consultations_held: 28
+  grievance_mechanism_available: true
+  grievance_cases_received: 5
+  grievance_cases_resolved: 4
+  community_investment_eur: 1200000
+  local_employment_programmes: 6
+
+# --- S4 Consumers and End-Users: Sample Data ---
+consumers:
+  total_complaints_received: 3450
+  complaints_resolved_pct: 94.2
+  product_recalls: 1
+  data_breaches: 0
+  product_safety_certifications: 28
+  customer_satisfaction_score: 78.5
+  responsible_marketing_training_pct: 88
+
+# --- G1 Business Conduct: Sample Data ---
+business_conduct:
+  anti_corruption:
+    training_coverage_pct: 92.5
+    confirmed_incidents: 0
+    ongoing_investigations: 1
+  political_engagement:
+    political_contributions_eur: 0
+    lobbying_expenditure_eur: 180000
+    trade_association_memberships: 12
+  payment_practices:
+    average_payment_days: 38
+    sme_average_payment_days: 32
+    late_payment_pct: 8.5
+    standard_payment_terms_days: 45
+  whistleblower:
+    channel_available: true
+    cases_reported: 7
+    cases_resolved: 6
+    cases_pending: 1
+
+# --- Reporting Configuration ---
+reporting:
+  output_formats: ["PDF", "XBRL", "HTML"]
+  xbrl_taxonomy: "ESRS_XBRL_2024"
+  xbrl_tagging: true
+  sha256_provenance: true
+  multi_language: true
+  supported_languages: ["en", "de"]
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  year_over_year_comparison: true
+  data_quality_disclosure: true
+  assumption_disclosure: true
+  assurance_level: "LIMITED"
+  assurance_provider: "Demo Audit GmbH"
+  retention_years: 10

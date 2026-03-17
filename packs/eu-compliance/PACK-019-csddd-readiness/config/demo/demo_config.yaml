@@ -1,0 +1,258 @@
+# =============================================================================
+# PACK-019 CSDDD Readiness Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for EuroManufacturing AG, a fictional large German
+# manufacturer of automotive components and electronic assemblies. Used for
+# pack demonstration, integration testing, and onboarding walkthroughs.
+#
+# Company: EuroManufacturing AG
+# Headquarters: Stuttgart, Germany
+# Revenue: EUR 2.8 billion
+# Employees: 12,500 (group-wide)
+# Sector: Manufacturing (automotive components)
+# Reporting Year: 2025
+# CSDDD Phase: Phase 1 (>5000 employees AND >EUR 1.5bn turnover)
+# Application Date: 26 July 2027
+# =============================================================================
+
+# --- PackConfig Fields (maps to pack_config.PackConfig) ---------------------
+pack_name: "PACK-019-csddd-readiness"
+version: "1.0.0"
+company_scope: "PHASE_1"
+sector: "MANUFACTURING"
+
+enabled_engines:
+  - scope_assessment
+  - impact_identification
+  - prevention_planning
+  - grievance_management
+  - climate_transition
+  - liability_assessment
+  - stakeholder_engagement
+  - remediation_tracking
+
+enabled_workflows:
+  - company_intake
+  - scope_determination
+  - value_chain_mapping
+  - impact_assessment
+  - prevention_measures
+  - grievance_setup
+  - climate_plan_review
+  - liability_screening
+  - stakeholder_consultation
+  - remediation_workflow
+  - periodic_monitoring
+  - annual_reporting
+
+# --- Scope Configuration ---------------------------------------------------
+scope_config:
+  phase_1_employee_threshold: 5000
+  phase_1_turnover_threshold: "1500000000"
+  phase_2_employee_threshold: 3000
+  phase_2_turnover_threshold: "900000000"
+  phase_3_employee_threshold: 1000
+  phase_3_turnover_threshold: "450000000"
+  include_non_eu: true
+  group_consolidation: true
+  headcount_method: "HEADCOUNT"
+
+# --- Impact Configuration --------------------------------------------------
+impact_config:
+  max_impacts: 200
+  value_chain_depth: 4
+  prioritisation_method: "SEVERITY_FIRST"
+  include_potential: true
+  include_actual: true
+  severity_weights:
+    scale: "0.40"
+    scope: "0.35"
+    irremediability: "0.25"
+
+# --- Prevention Configuration ----------------------------------------------
+prevention_config:
+  effectiveness_threshold: "60"
+  budget_warning_threshold: "85"
+  overdue_tolerance_days: 30
+  require_contractual_assurances: true
+  verification_required: true
+  cascading_requirements: true
+  corrective_action_plan_days: 90
+
+# --- Grievance Configuration -----------------------------------------------
+grievance_config:
+  channels:
+    - "HOTLINE"
+    - "EMAIL"
+    - "WEB_PORTAL"
+    - "TRADE_UNION_REP"
+  response_time_target_days: 14
+  resolution_target_days: 90
+  anonymous_allowed: true
+  languages: ["de", "en", "pl", "ro", "tr"]
+
+# --- Climate Configuration -------------------------------------------------
+climate_config:
+  sbti_15c_annual_reduction: "4.2"
+  sbti_2c_annual_reduction: "2.5"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+  scope_coverage: ["scope_1", "scope_2", "scope_3"]
+  base_year: 2019
+  paris_alignment_method: "SDA"
+  include_scope_3: true
+  financial_planning_required: true
+
+# --- Liability Configuration -----------------------------------------------
+liability_config:
+  limitation_period_default: 5
+  turnover_penalty_cap_pct: "5.0"
+  insurance_coverage_target: "75000000"
+  joint_liability_enabled: true
+  burden_of_proof: "COMPANY"
+  injunctive_relief_enabled: true
+
+# --- Stakeholder Configuration ----------------------------------------------
+stakeholder_config:
+  required_groups:
+    - "WORKERS"
+    - "TRADE_UNIONS"
+    - "COMMUNITIES"
+    - "NGOS"
+  min_engagement_frequency: 2
+  meaningfulness_threshold: "65"
+  free_prior_informed_consent: true
+
+# --- Reporting Configuration -----------------------------------------------
+reporting_config:
+  format: "PDF"
+  include_executive_summary: true
+  include_recommendations: true
+  max_report_pages: 150
+  annual_statement_required: true
+  csrd_cross_reference: true
+  reporting_language: "de"
+  data_retention_years: 7
+
+# --- Cache Configuration ---------------------------------------------------
+cache_config:
+  backend: "MEMORY"
+  ttl_seconds: 3600
+  max_entries: 5000
+  key_prefix: "csddd_demo"
+
+# --- Demo Company Profile ---------------------------------------------------
+demo_company:
+  legal_name: "EuroManufacturing AG"
+  trading_name: "EuroManufacturing"
+  lei: "529900DEMO00EUROMANUF"
+  headquarters: "Stuttgart, Germany"
+  incorporation_country: "DE"
+  industry_nace: "C29.3"
+  industry_description: "Manufacture of parts and accessories for motor vehicles"
+  revenue_eur: 2800000000
+  employee_count: 12500
+  fiscal_year_end: "2025-12-31"
+  subsidiaries:
+    - name: "EuroManufacturing Polska Sp. z o.o."
+      country: "PL"
+      employees: 2800
+      activity: "Electronic component assembly"
+    - name: "EuroManufacturing Romania S.R.L."
+      country: "RO"
+      employees: 1500
+      activity: "Metal stamping and machining"
+    - name: "EuroManufacturing Turkiye A.S."
+      country: "TR"
+      employees: 900
+      activity: "Plastic injection moulding"
+
+# --- Demo Supply Chain Tiers ------------------------------------------------
+demo_supply_chain:
+  tier_1_suppliers: 245
+  tier_2_suppliers: 1820
+  tier_3_suppliers_estimated: 8500
+  high_risk_suppliers: 67
+  countries_of_origin: 38
+  key_commodities:
+    - "Aluminium (recycled and primary)"
+    - "Steel (various grades)"
+    - "Copper (wire and strip)"
+    - "Rare earth elements (NdFeB magnets)"
+    - "Plastics (PA, PP, ABS)"
+    - "Electronic components (semiconductors, PCBs)"
+
+# --- Demo Identified Impacts ------------------------------------------------
+demo_impacts:
+  - impact_id: "DEMO-IMP-001"
+    type: "HUMAN_RIGHTS"
+    description: "Forced overtime in Tier 1 electronics assembly (Poland)"
+    severity: "HIGH"
+    status: "ACTUAL"
+    article: "ART_11"
+    measure_type: "MITIGATION"
+    expected_outcome: "Corrective action plan with 90-day timeline"
+
+  - impact_id: "DEMO-IMP-002"
+    type: "HUMAN_RIGHTS"
+    description: "Child labour risk in Tier 3 cobalt supply chain (DR Congo)"
+    severity: "CRITICAL"
+    status: "POTENTIAL"
+    article: "ART_8"
+    measure_type: "PREVENTION"
+    expected_outcome: "RMAP smelter audit and alternative sourcing assessment"
+
+  - impact_id: "DEMO-IMP-003"
+    type: "ENVIRONMENTAL"
+    description: "Hexavalent chromium discharge from Tier 2 plating supplier (Turkey)"
+    severity: "HIGH"
+    status: "ACTUAL"
+    article: "ART_11"
+    measure_type: "CESSATION"
+    expected_outcome: "Supplier remediation or relationship termination"
+
+  - impact_id: "DEMO-IMP-004"
+    type: "ENVIRONMENTAL"
+    description: "GHG emissions from energy-intensive casting processes"
+    severity: "MEDIUM"
+    status: "ACTUAL"
+    article: "ART_22"
+    measure_type: "MITIGATION"
+    expected_outcome: "Electric furnace transition per climate transition plan"
+
+  - impact_id: "DEMO-IMP-005"
+    type: "HUMAN_RIGHTS"
+    description: "Freedom of association restrictions at Tier 1 supplier (Turkey)"
+    severity: "MEDIUM"
+    status: "ACTUAL"
+    article: "ART_11"
+    measure_type: "MITIGATION"
+    expected_outcome: "Supplier capacity building and independent monitoring"
+
+# --- Demo Grievance Data ----------------------------------------------------
+demo_grievances:
+  - grievance_id: "DEMO-GRV-001"
+    channel: "HOTLINE"
+    language: "pl"
+    category: "Working conditions"
+    severity: "HIGH"
+    status: "UNDER_INVESTIGATION"
+    days_open: 12
+    description: "Complaint about excessive mandatory overtime at Krakow assembly plant"
+
+  - grievance_id: "DEMO-GRV-002"
+    channel: "WEB_PORTAL"
+    language: "en"
+    category: "Environmental"
+    severity: "MEDIUM"
+    status: "RESOLVED"
+    days_open: 45
+    description: "Community report of noise pollution from Stuttgart stamping facility"
+
+  - grievance_id: "DEMO-GRV-003"
+    channel: "TRADE_UNION_REP"
+    language: "de"
+    category: "Health and safety"
+    severity: "HIGH"
+    status: "ESCALATED"
+    days_open: 28
+    description: "Concerns about chemical exposure in surface treatment department"

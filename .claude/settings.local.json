@@ -535,7 +535,9 @@
       "WebFetch(domain:www.efrag.org)",
       "WebFetch(domain:knowledgehub.efrag.org)",
       "WebFetch(domain:www.crowell.com)",
-      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\eu-compliance\\\\PACK-016-esrs-e1-climate\\\\tests\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\eu-compliance\\\\PACK-016-esrs-e1-climate\\\\tests\")"
+      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\eu-compliance\\\\PACK-016-esrs-e1-climate\\\\tests\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\eu-compliance\\\\PACK-016-esrs-e1-climate\\\\tests\")",
+      "WebFetch(domain:www.usetappr.com)",
+      "WebFetch(domain:www.nortonrosefulbright.com)"
     ],
     "deny": [],
     "ask": []

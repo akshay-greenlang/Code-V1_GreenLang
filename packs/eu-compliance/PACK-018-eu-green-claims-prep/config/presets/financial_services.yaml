@@ -1,0 +1,80 @@
+# =============================================================================
+# PACK-018 EU Green Claims Prep Pack - Financial Services Preset
+# =============================================================================
+# Sector-specific configuration for asset managers, banks, insurance companies,
+# and investment firms. Financial entities make green claims about ESG funds,
+# green bonds, sustainable portfolios, and taxonomy-aligned products.
+# Lifecycle assessment engine is disabled (portfolio-level, not product-level).
+# 7 engines active. SFDR integration and offset validation are key.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+metadata:
+  name: "financial_services"
+  sector: "FINANCIAL_SERVICES"
+  description: >
+    Financial services preset. 7 engines enabled (lifecycle_assessment
+    disabled because claims relate to portfolio-level impacts, not physical
+    products). Corporate claims scope. ESG fund naming, green bond frameworks,
+    SFDR Article 8/9 integration, taxonomy alignment percentage, and
+    offset validation for carbon neutrality claims.
+
+# --- Enabled Engines --------------------------------------------------------
+enabled_engines:
+  - claim_substantiation
+  - evidence_chain
+  - label_certification
+  - greenwashing_detection
+  - comparative_claims
+  - trader_obligation
+  - green_claims_benchmark
+
+# --- Enabled Workflows ------------------------------------------------------
+enabled_workflows:
+  - claim_intake
+  - substantiation_assessment
+  - evidence_collection
+  - label_validation
+  - greenwashing_scan
+  - comparison_review
+  - disclosure_generation
+  - cab_submission
+  - periodic_review
+
+# --- Claim Scope ------------------------------------------------------------
+sector: "FINANCIAL_SERVICES"
+claim_scope: "CORPORATE"
+
+# --- Communication Channels -------------------------------------------------
+communication_channels:
+  - WEBSITE
+  - INVESTOR_RELATIONS
+  - PRESS_RELEASE
+  - ADVERTISING
+
+# --- Thresholds -------------------------------------------------------------
+thresholds:
+  greenwashing_risk_threshold: "40"
+  evidence_retention_years: 10
+  max_claims: 5000
+  max_evidence_items: 25000
+  eco_label_registry_refresh_days: 60
+
+# --- Special Settings -------------------------------------------------------
+special_settings:
+  pef_database: "ef_3.1"
+  sfdr_integration: true
+  sfdr_article_scope:
+    - "article_8"
+    - "article_9"
+  taxonomy_alignment_check: true
+  eu_green_bond_standard: true
+  esma_fund_naming_guidelines: true
+  offset_validation_strict: true
+  financed_emissions_tracking: true
+  portfolio_carbon_neutrality_check: true
+  cab_submission_format: "JSON"
+  reporting_language: "en"
+  require_primary_lca_data: false
+  third_party_verification: true
+  audit_trail_comprehensive: true

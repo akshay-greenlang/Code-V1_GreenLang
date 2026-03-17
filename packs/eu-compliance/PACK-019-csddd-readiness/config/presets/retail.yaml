@@ -1,0 +1,212 @@
+# =============================================================================
+# PACK-019 CSDDD Readiness Pack - Retail Preset
+# =============================================================================
+# Sector-specific configuration for retail and wholesale trade companies
+# (NACE division G). Apparel supply chains, food sourcing, and consumer
+# product safety are the dominant risk areas. Multi-tier supply chains
+# with thousands of suppliers require robust mapping and audit programmes.
+# High consumer-facing visibility means reputational risk amplifies
+# compliance urgency. EUDR cross-referencing for deforestation-free products.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+sector_type: "RETAIL"
+display_name: "Retail Sector"
+description: >
+  Retail sector preset for CSDDD readiness. Prioritises apparel/textile supply
+  chain labour risks (forced labour, living wage, fire safety), food sourcing
+  adverse impacts (child labour in cocoa/coffee, deforestation-linked soy/palm
+  oil), and consumer product safety. Multi-tier supply chain mapping with
+  thousands of direct suppliers. EUDR cross-referencing enabled for
+  deforestation-free product compliance.
+
+# --- Pack Config Fields -----------------------------------------------------
+sector: "RETAIL"
+company_scope: "PHASE_1"
+
+# --- Scope Defaults ---------------------------------------------------------
+scope_config:
+  phase_1_employee_threshold: 5000
+  phase_1_turnover_threshold: "1500000000"
+  phase_2_employee_threshold: 3000
+  phase_2_turnover_threshold: "900000000"
+  phase_3_employee_threshold: 1000
+  phase_3_turnover_threshold: "450000000"
+  include_non_eu: true
+  group_consolidation: true
+  headcount_method: "HEADCOUNT"
+
+# --- Priority Impacts -------------------------------------------------------
+priority_impacts:
+  human_rights:
+    - id: "HR-RTL-001"
+      name: "Forced labour in garment and textile supply chains"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C29, ILO C105"
+      typical_location: "Tier 1-3 apparel suppliers"
+
+    - id: "HR-RTL-002"
+      name: "Child labour in cocoa, coffee, and agricultural sourcing"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C138, ILO C182"
+      typical_location: "Upstream Tier 3-5 agricultural supply chains"
+
+    - id: "HR-RTL-003"
+      name: "Unsafe factory conditions (fire, building collapse)"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICESCR Art. 7"
+      typical_location: "Tier 1-2 manufacturing suppliers"
+
+    - id: "HR-RTL-004"
+      name: "Below-living-wage payments in supply chain"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICESCR Art. 7, ILO C100"
+      typical_location: "Tier 1-3 suppliers in low-wage countries"
+
+    - id: "HR-RTL-005"
+      name: "Excessive working hours and denial of rest periods"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part I - ICESCR Art. 7(d)"
+      typical_location: "Tier 1 suppliers during peak seasons"
+
+  environmental:
+    - id: "ENV-RTL-001"
+      name: "Deforestation from commodity sourcing (soy, palm oil, cocoa)"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part II - CBD, Paris Agreement"
+      typical_location: "Upstream Tier 3-5 agricultural supply chains"
+
+    - id: "ENV-RTL-002"
+      name: "Water pollution from textile dyeing and finishing"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Basel Convention"
+      typical_location: "Tier 1-2 textile processing suppliers"
+
+    - id: "ENV-RTL-003"
+      name: "Microplastic pollution from synthetic textiles"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part II - London Convention"
+      typical_location: "Product use phase and end-of-life"
+
+    - id: "ENV-RTL-004"
+      name: "Packaging waste and single-use plastics"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part II - Basel Convention"
+      typical_location: "Own operations and downstream"
+
+    - id: "ENV-RTL-005"
+      name: "GHG emissions from global logistics and cold chain"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Paris Agreement"
+      typical_location: "Own operations and logistics providers"
+
+# --- Priority Articles ------------------------------------------------------
+priority_articles:
+  - article: "ART_6"
+    relevance: "CRITICAL"
+    note: "Multi-tier supply chain mapping for thousands of suppliers"
+  - article: "ART_7"
+    relevance: "HIGH"
+    note: "Prioritise forced/child labour and deforestation impacts"
+  - article: "ART_8"
+    relevance: "CRITICAL"
+    note: "Prevention plans for labour exploitation in garment supply chains"
+  - article: "ART_9"
+    relevance: "CRITICAL"
+    note: "Contractual assurances with direct suppliers including social audits"
+  - article: "ART_10"
+    relevance: "HIGH"
+    note: "Third-party social audits of Tier 1 and selected Tier 2 suppliers"
+  - article: "ART_14"
+    relevance: "HIGH"
+    note: "Worker-accessible grievance mechanism in multiple languages"
+  - article: "ART_16"
+    relevance: "HIGH"
+    note: "Consumer-facing transparency on due diligence outcomes"
+
+# --- Grievance Channels -----------------------------------------------------
+grievance_config:
+  channels:
+    - "HOTLINE"
+    - "MOBILE_APP"
+    - "WEB_PORTAL"
+    - "EMAIL"
+    - "TRADE_UNION_REP"
+  response_time_target_days: 14
+  resolution_target_days: 90
+  anonymous_allowed: true
+  languages: ["en", "de", "fr", "es", "zh", "bn", "hi"]
+
+# --- Climate Targets -------------------------------------------------------
+climate_config:
+  sbti_15c_annual_reduction: "4.2"
+  sbti_2c_annual_reduction: "2.5"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+  scope_coverage: ["scope_1", "scope_2", "scope_3"]
+  base_year: 2019
+  paris_alignment_method: "SDA"
+  include_scope_3: true
+  decarbonisation_levers:
+    - "supply_chain_engagement"
+    - "sustainable_sourcing"
+    - "logistics_optimisation"
+    - "renewable_energy"
+    - "energy_efficiency"
+    - "circular_economy"
+
+# --- Stakeholder Groups -----------------------------------------------------
+stakeholder_config:
+  required_groups:
+    - "WORKERS"
+    - "TRADE_UNIONS"
+    - "COMMUNITIES"
+    - "NGOS"
+    - "CONSUMERS"
+  min_engagement_frequency: 2
+  meaningfulness_threshold: "60"
+  free_prior_informed_consent: true
+
+# --- Risk Countries ---------------------------------------------------------
+risk_countries:
+  - country: "Bangladesh"
+    risk_area: "Garment factory labour conditions, building safety"
+    severity: "CRITICAL"
+  - country: "China"
+    risk_area: "Forced labour in textile and electronics production"
+    severity: "CRITICAL"
+  - country: "Cote d'Ivoire"
+    risk_area: "Child labour in cocoa farming"
+    severity: "CRITICAL"
+  - country: "Ghana"
+    risk_area: "Child labour in cocoa supply chains"
+    severity: "HIGH"
+  - country: "India"
+    risk_area: "Child labour, bonded labour in garment sector"
+    severity: "HIGH"
+  - country: "Ethiopia"
+    risk_area: "Coffee supply chain labour exploitation"
+    severity: "HIGH"
+  - country: "Indonesia"
+    risk_area: "Palm oil deforestation and plantation labour"
+    severity: "HIGH"
+  - country: "Brazil"
+    risk_area: "Soy-linked deforestation, cattle ranching"
+    severity: "HIGH"
+
+# --- Impact Configuration ---------------------------------------------------
+impact_config:
+  max_impacts: 600
+  value_chain_depth: 5
+  prioritisation_method: "SEVERITY_FIRST"
+  include_potential: true
+  include_actual: true
+
+# --- Prevention Configuration -----------------------------------------------
+prevention_config:
+  effectiveness_threshold: "60"
+  budget_warning_threshold: "85"
+  overdue_tolerance_days: 30
+  require_contractual_assurances: true
+  verification_required: true
+  cascading_requirements: true
+  corrective_action_plan_days: 90

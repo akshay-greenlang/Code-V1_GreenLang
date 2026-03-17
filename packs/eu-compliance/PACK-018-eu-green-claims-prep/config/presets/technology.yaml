@@ -1,0 +1,95 @@
+# =============================================================================
+# PACK-018 EU Green Claims Prep Pack - Technology Preset
+# =============================================================================
+# Sector-specific configuration for cloud providers, SaaS companies, hardware
+# manufacturers, and IT services firms. Device and cloud service claims
+# dominate: carbon-neutral data centres, e-waste reduction, circular economy
+# for electronics. DPP for electronics is enabled. WEEE compliance links
+# with circular claims. Right-to-repair relevance.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+metadata:
+  name: "technology"
+  sector: "TECHNOLOGY"
+  description: >
+    Technology sector preset. All 8 engines enabled. Device-level and cloud
+    service claims. Digital Product Passport (DPP) for electronics enabled.
+    E-waste and WEEE Directive compliance integrated with circular economy
+    claims. Right-to-repair substantiation for product longevity claims.
+    Scope 2 (data centre electricity) is a key emission source.
+
+# --- Enabled Engines --------------------------------------------------------
+enabled_engines:
+  - claim_substantiation
+  - evidence_chain
+  - lifecycle_assessment
+  - label_certification
+  - greenwashing_detection
+  - comparative_claims
+  - trader_obligation
+  - green_claims_benchmark
+
+# --- Enabled Workflows ------------------------------------------------------
+enabled_workflows:
+  - claim_intake
+  - substantiation_assessment
+  - evidence_collection
+  - lifecycle_scoring
+  - label_validation
+  - greenwashing_scan
+  - comparison_review
+  - disclosure_generation
+  - cab_submission
+  - periodic_review
+
+# --- Claim Scope ------------------------------------------------------------
+sector: "TECHNOLOGY"
+claim_scope: "BOTH"
+
+# --- Communication Channels -------------------------------------------------
+communication_channels:
+  - WEBSITE
+  - ADVERTISING
+  - SOCIAL_MEDIA
+  - PRESS_RELEASE
+  - PACKAGING
+
+# --- Thresholds -------------------------------------------------------------
+thresholds:
+  greenwashing_risk_threshold: "50"
+  evidence_retention_years: 5
+  max_claims: 10000
+  max_evidence_items: 50000
+  eco_label_registry_refresh_days: 30
+
+# --- Special Settings -------------------------------------------------------
+special_settings:
+  pef_database: "ef_3.1"
+  dpp_bridge_enabled: true
+  dpp_product_categories:
+    - "batteries"
+    - "electronics"
+    - "ict_equipment"
+    - "servers"
+  ewaste_weee_compliance: true
+  weee_directive_ref: "2012/19/EU"
+  right_to_repair_claims: true
+  repair_score_methodology: true
+  carbon_neutral_cloud_scrutiny: true
+  cloud_carbon_footprint_tools:
+    - "ccf_open_source"
+    - "provider_dashboards"
+  scope_2_data_centre_emphasis: true
+  ppa_rec_substantiation: true
+  recognized_labels:
+    - "EU_ECOLABEL"
+    - "ENERGY_STAR"
+    - "BLUE_ANGEL"
+    - "EPEAT"
+    - "TCO_CERTIFIED"
+  cab_submission_format: "PDF"
+  reporting_language: "en"
+  require_primary_lca_data: false
+  third_party_verification: true
+  rapid_resubstantiation_cycle_months: 12

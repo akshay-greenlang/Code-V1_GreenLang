@@ -1,0 +1,90 @@
+# =============================================================================
+# PACK-018 EU Green Claims Prep Pack - Manufacturing Preset
+# =============================================================================
+# Sector-specific configuration for industrial manufacturing companies
+# (NACE division C). Product-level claims dominate: recyclable, biodegradable,
+# reduced emissions, sustainably sourced. Full PEF/PEFCR lifecycle assessment
+# is critical. DPP bridge is enabled for Digital Product Passport readiness.
+# Supply chain Scope 3 data emphasis for upstream material claims.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+metadata:
+  name: "manufacturing"
+  sector: "MANUFACTURING"
+  description: >
+    Manufacturing sector preset. All 8 engines enabled. Product-level claims
+    focus with full PEF and PEFCR lifecycle assessment. DPP bridge enabled
+    for Digital Product Passport integration. Supply chain Scope 3 data
+    emphasis for upstream material sourcing and packaging claims.
+
+# --- Enabled Engines --------------------------------------------------------
+enabled_engines:
+  - claim_substantiation
+  - evidence_chain
+  - lifecycle_assessment
+  - label_certification
+  - greenwashing_detection
+  - comparative_claims
+  - trader_obligation
+  - green_claims_benchmark
+
+# --- Enabled Workflows ------------------------------------------------------
+enabled_workflows:
+  - claim_intake
+  - substantiation_assessment
+  - evidence_collection
+  - lifecycle_scoring
+  - label_validation
+  - greenwashing_scan
+  - comparison_review
+  - disclosure_generation
+  - cab_submission
+  - periodic_review
+
+# --- Claim Scope ------------------------------------------------------------
+sector: "MANUFACTURING"
+claim_scope: "PRODUCT"
+
+# --- Communication Channels -------------------------------------------------
+communication_channels:
+  - PACKAGING
+  - WEBSITE
+  - ADVERTISING
+  - POINT_OF_SALE
+
+# --- Thresholds -------------------------------------------------------------
+thresholds:
+  greenwashing_risk_threshold: "45"
+  evidence_retention_years: 7
+  max_claims: 15000
+  max_evidence_items: 75000
+  eco_label_registry_refresh_days: 30
+
+# --- Special Settings -------------------------------------------------------
+special_settings:
+  pef_database: "ef_3.1"
+  pefcr_enabled: true
+  pefcr_categories:
+    - "metal_products"
+    - "plastics"
+    - "packaging"
+    - "textiles"
+    - "paints_and_coatings"
+  dpp_bridge_enabled: true
+  dpp_product_categories:
+    - "batteries"
+    - "electronics"
+    - "textiles"
+    - "construction_products"
+  supply_chain_scope3_emphasis: true
+  scope3_priority_categories:
+    - "cat_1_purchased_goods"
+    - "cat_4_upstream_transport"
+    - "cat_5_waste"
+    - "cat_12_end_of_life"
+  en_13432_packaging_check: true
+  cab_submission_format: "PDF"
+  reporting_language: "en"
+  require_primary_lca_data: true
+  third_party_verification: true

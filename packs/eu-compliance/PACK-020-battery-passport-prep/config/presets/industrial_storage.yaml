@@ -1,0 +1,198 @@
+# =============================================================================
+# PACK-020 Battery Passport Prep Pack - Industrial Storage Preset
+# =============================================================================
+# Configuration preset for industrial stationary energy storage batteries
+# (>2kWh) per EU Battery Regulation (EU) 2023/1542. Industrial batteries
+# require battery passport, carbon footprint declaration, recycled content
+# targets, supply chain due diligence, and end-of-life obligations.
+#
+# Industrial battery characteristics:
+#   - Capacity: typically 2-500+ kWh (BESS up to multi-MWh)
+#   - Chemistry: LFP (dominant for stationary), NMC, NCA, LTO
+#   - Cycle life: 4,000+ cycles to 60% SoH (high durability focus)
+#   - Calendar life: 15+ years for grid-scale applications
+#   - Round-trip efficiency: >85% required
+#   - Applications: grid storage, UPS, telecom backup, peak shaving
+#   - Full passport required per Art. 65
+# =============================================================================
+
+# --- Preset Metadata ---
+pack_name: "PACK-020 Battery Passport Prep Pack"
+version: "1.0.0"
+battery_category: "INDUSTRIAL"
+chemistry: "LFP"
+reporting_year: 2026
+manufacturing_country: "DE"
+
+# --- Carbon Footprint (Art. 7-9) ---
+carbon_footprint:
+  enabled: true
+  methodology: "EU_BATTERY_REG_DA"
+  functional_unit: "kgCO2e_per_kWh"
+  lifecycle_stages:
+    - "RAW_MATERIAL_EXTRACTION"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "END_OF_LIFE"
+  class_thresholds:
+    CLASS_A: null
+    CLASS_B: null
+    CLASS_C: null
+    CLASS_D: null
+    CLASS_E: null
+  max_threshold_per_kwh: null
+  gwp_source: "IPCC_AR6"
+  emission_factor_database: "ECOINVENT_3.10"
+  allocation_method: "PHYSICAL"
+  electricity_mix_source: "COUNTRY_SPECIFIC"
+  data_quality_rating_required: true
+  third_party_verification: true
+  declaration_per_batch: true
+
+# --- Recycled Content (Art. 8, 17) ---
+recycled_content:
+  enabled: true
+  targets_2031:
+    cobalt: 16.0
+    lithium: 6.0
+    nickel: 6.0
+    lead: 85.0
+  targets_2036:
+    cobalt: 26.0
+    lithium: 12.0
+    nickel: 15.0
+    lead: 85.0
+  verification_method: "MASS_BALANCE"
+  third_party_audit: true
+  tracking_granularity: "BATCH"
+
+# --- Performance and Durability (Art. 10, 14) ---
+performance:
+  enabled: true
+  soh_thresholds:
+    excellent: 95.0
+    good: 85.0
+    acceptable: 70.0
+    degraded: 50.0
+    end_of_life: 0.0
+  durability_ratings:
+    industrial_minimum_cycle_life: 4000
+    industrial_minimum_soh_at_eol: 60.0
+    industrial_calendar_life_years: 15
+    industrial_round_trip_efficiency_pct: 85.0
+  soh_data_access: true
+  soh_parameters:
+    - "remaining_capacity_ah"
+    - "remaining_capacity_pct"
+    - "remaining_power_capability_w"
+    - "remaining_power_capability_pct"
+    - "state_of_charge_pct"
+    - "state_of_energy_kwh"
+    - "cycle_count"
+    - "internal_resistance_mohm"
+    - "calendar_age_days"
+    - "temperature_history_summary"
+    - "expected_remaining_lifetime_cycles"
+    - "expected_remaining_lifetime_months"
+  test_standards:
+    - "IEC_62619"
+    - "IEC_62620"
+    - "UL_1973"
+  capacity_measurement_standard: "IEC_62619"
+
+# --- Supply Chain Due Diligence (Art. 22-26) ---
+supply_chain:
+  enabled: true
+  critical_materials:
+    - "LITHIUM"
+    - "NATURAL_GRAPHITE"
+  high_risk_countries:
+    - "CD"
+    - "CN"
+    - "MM"
+    - "CL"
+    - "ZW"
+    - "MZ"
+  due_diligence_framework: "OECD_MINERALS"
+  audit_requirements:
+    third_party_audit_required: true
+    audit_frequency_months: 12
+    audit_standard: "OECD_MINERALS_ANNEX_II"
+    conflict_minerals_screening: true
+    human_rights_assessment: true
+    environmental_impact_assessment: true
+    child_labour_zero_tolerance: true
+    forced_labour_zero_tolerance: true
+    tier_1_coverage_pct: 100
+    tier_2_coverage_pct: 80
+    tier_3_coverage_pct: 40
+    smelter_refiner_identification: true
+    mine_of_origin_traceability: true
+  grievance_mechanism: true
+  public_reporting: true
+  chain_of_custody_tracking: true
+
+# --- Labelling (Art. 13) ---
+labelling:
+  enabled: true
+  required_elements_by_category:
+    INDUSTRIAL:
+      - "CE_MARKING"
+      - "QR_CODE"
+      - "COLLECTION_SYMBOL"
+      - "CAPACITY_LABEL"
+      - "HAZARDOUS_SUBSTANCE"
+      - "BATTERY_CHEMISTRY"
+      - "CARBON_FOOTPRINT"
+      - "SEPARATE_COLLECTION"
+
+# --- End-of-Life (Art. 69-73) ---
+eol:
+  enabled: true
+  collection_targets:
+    industrial:
+      current: 100.0
+  recycling_targets:
+    lithium_ion:
+      "2025": 65.0
+      "2030": 70.0
+  recovery_targets:
+    copper:
+      "2027": 90.0
+      "2031": 95.0
+    lithium:
+      "2027": 50.0
+      "2031": 80.0
+  second_life_assessment: true
+  second_life_soh_threshold_pct: 60.0
+  take_back_obligation: true
+  recycler_certification_required: true
+
+# --- Conformity Assessment (Art. 27) ---
+conformity:
+  enabled: true
+  module_by_category:
+    INDUSTRIAL:
+      - "MODULE_B"
+      - "MODULE_C"
+      - "MODULE_D"
+      - "MODULE_E"
+      - "MODULE_H"
+  notified_body_required: true
+  quality_management_standard: "ISO_9001"
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  format: "PDF"
+  additional_formats:
+    - "JSON"
+    - "HTML"
+  include_qr: true
+  sha256_provenance: true
+  passport_api_format: "JSON_LD"
+  review_workflow: true
+  audit_trail_report: true
+  executive_summary: true
+  data_quality_disclosure: true
+  retention_years: 10

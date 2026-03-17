@@ -1,0 +1,269 @@
+# =============================================================================
+# PACK-020 Battery Passport Prep Pack - Cell Manufacturer Preset
+# =============================================================================
+# Configuration preset for battery cell manufacturing facilities. This
+# preset focuses on the obligations placed on the manufacturer entity
+# under the EU Battery Regulation: carbon footprint calculation at the
+# manufacturing stage (Art. 7), supply chain due diligence for raw
+# material sourcing (Art. 22-26), conformity assessment procedures
+# (Art. 27), and technical documentation requirements.
+#
+# Cell manufacturer characteristics:
+#   - Produces cells that are assembled into modules/packs by OEMs
+#   - Multiple chemistry lines possible (NMC, NCA, LFP, etc.)
+#   - Carbon footprint declaration responsibility (manufacturer obligation)
+#   - Full supply chain due diligence for all input raw materials
+#   - Quality management system (IATF 16949 for automotive supply chain)
+#   - Must provide data for downstream passport creation
+#   - Energy-intensive production (electricity is major CF contributor)
+# =============================================================================
+
+# --- Preset Metadata ---
+pack_name: "PACK-020 Battery Passport Prep Pack"
+version: "1.0.0"
+battery_category: "EV"
+chemistry: "NMC811"
+reporting_year: 2026
+manufacturing_country: "DE"
+
+# --- Carbon Footprint (Art. 7-9) - Core manufacturer obligation ---
+carbon_footprint:
+  enabled: true
+  methodology: "EU_BATTERY_REG_DA"
+  functional_unit: "kgCO2e_per_kWh"
+  lifecycle_stages:
+    - "RAW_MATERIAL_EXTRACTION"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "END_OF_LIFE"
+  class_thresholds:
+    CLASS_A: null
+    CLASS_B: null
+    CLASS_C: null
+    CLASS_D: null
+    CLASS_E: null
+  max_threshold_per_kwh: null
+  gwp_source: "IPCC_AR6"
+  emission_factor_database: "ECOINVENT_3.10"
+  secondary_data_sources:
+    - "ECOINVENT_3.10"
+    - "GaBi_2024"
+    - "GREET_2024"
+  allocation_method: "PHYSICAL"
+  electricity_mix_source: "SUPPLIER_SPECIFIC"
+  data_quality_rating_required: true
+  third_party_verification: true
+  declaration_per_batch: true
+
+# --- Recycled Content (Art. 8, 17) ---
+recycled_content:
+  enabled: true
+  targets_2031:
+    cobalt: 16.0
+    lithium: 6.0
+    nickel: 6.0
+    lead: 85.0
+  targets_2036:
+    cobalt: 26.0
+    lithium: 12.0
+    nickel: 15.0
+    lead: 85.0
+  documentation_required_from: "2028-08-18"
+  verification_method: "MASS_BALANCE"
+  third_party_audit: true
+  tracking_granularity: "BATCH"
+  pre_consumer_included: true
+  post_consumer_included: true
+
+# --- Performance and Durability (Art. 10) ---
+performance:
+  enabled: true
+  soh_thresholds:
+    excellent: 95.0
+    good: 85.0
+    acceptable: 70.0
+    degraded: 50.0
+    end_of_life: 0.0
+  durability_ratings:
+    ev_minimum_cycle_life: 1500
+    ev_minimum_soh_at_eol: 70.0
+    ev_calendar_life_years: 8
+    ev_warranty_capacity_retention_pct: 70.0
+    industrial_minimum_cycle_life: 4000
+    industrial_minimum_soh_at_eol: 60.0
+    industrial_calendar_life_years: 15
+    industrial_round_trip_efficiency_pct: 85.0
+  soh_data_access: true
+  soh_parameters:
+    - "remaining_capacity_ah"
+    - "remaining_capacity_pct"
+    - "remaining_power_capability_w"
+    - "remaining_power_capability_pct"
+    - "cycle_count"
+    - "internal_resistance_mohm"
+    - "calendar_age_days"
+    - "temperature_history_summary"
+  test_standards:
+    - "IEC_62660_1"
+    - "IEC_62660_2"
+    - "IEC_62619"
+    - "ISO_12405_4"
+    - "UNECE_GTR_22"
+  capacity_measurement_standard: "IEC_62660_1"
+
+# --- Supply Chain Due Diligence (Art. 22-26) - Full scope for manufacturer ---
+supply_chain:
+  enabled: true
+  critical_materials:
+    - "COBALT"
+    - "LITHIUM"
+    - "NICKEL"
+    - "NATURAL_GRAPHITE"
+    - "MANGANESE"
+  high_risk_countries:
+    - "CD"
+    - "CN"
+    - "MM"
+    - "PH"
+    - "ID"
+    - "RU"
+    - "ZM"
+    - "CL"
+    - "AR"
+    - "ZW"
+    - "MZ"
+    - "MG"
+  due_diligence_framework: "OECD_MINERALS"
+  audit_requirements:
+    third_party_audit_required: true
+    audit_frequency_months: 12
+    audit_standard: "OECD_MINERALS_ANNEX_II"
+    conflict_minerals_screening: true
+    human_rights_assessment: true
+    environmental_impact_assessment: true
+    child_labour_zero_tolerance: true
+    forced_labour_zero_tolerance: true
+    tier_1_coverage_pct: 100
+    tier_2_coverage_pct: 90
+    tier_3_coverage_pct: 60
+    smelter_refiner_identification: true
+    mine_of_origin_traceability: true
+  grievance_mechanism: true
+  public_reporting: true
+  chain_of_custody_tracking: true
+  responsible_sourcing_certifications:
+    - "IRMA"
+    - "RMI_RMAP"
+    - "ASI"
+    - "TSM"
+    - "ICMM"
+  risk_assessment_frequency_months: 6
+
+# --- Labelling (Art. 13) ---
+labelling:
+  enabled: true
+  required_elements_by_category:
+    EV:
+      - "CE_MARKING"
+      - "QR_CODE"
+      - "COLLECTION_SYMBOL"
+      - "CAPACITY_LABEL"
+      - "HAZARDOUS_SUBSTANCE"
+      - "BATTERY_CHEMISTRY"
+      - "CARBON_FOOTPRINT"
+      - "SEPARATE_COLLECTION"
+    INDUSTRIAL:
+      - "CE_MARKING"
+      - "QR_CODE"
+      - "COLLECTION_SYMBOL"
+      - "CAPACITY_LABEL"
+      - "HAZARDOUS_SUBSTANCE"
+      - "BATTERY_CHEMISTRY"
+      - "CARBON_FOOTPRINT"
+      - "SEPARATE_COLLECTION"
+
+# --- End-of-Life (Art. 69-73) ---
+eol:
+  enabled: true
+  collection_targets:
+    ev:
+      current: 100.0
+    industrial:
+      current: 100.0
+  recycling_targets:
+    lithium_ion:
+      "2025": 65.0
+      "2030": 70.0
+  recovery_targets:
+    cobalt:
+      "2027": 90.0
+      "2031": 95.0
+    copper:
+      "2027": 90.0
+      "2031": 95.0
+    lithium:
+      "2027": 50.0
+      "2031": 80.0
+    nickel:
+      "2027": 90.0
+      "2031": 95.0
+  second_life_assessment: true
+  second_life_soh_threshold_pct: 70.0
+  take_back_obligation: true
+  recycler_certification_required: true
+
+# --- Conformity Assessment (Art. 27) - Full quality assurance ---
+conformity:
+  enabled: true
+  module_by_category:
+    EV:
+      - "MODULE_B"
+      - "MODULE_C"
+      - "MODULE_D"
+      - "MODULE_E"
+      - "MODULE_H"
+    INDUSTRIAL:
+      - "MODULE_B"
+      - "MODULE_C"
+      - "MODULE_D"
+      - "MODULE_E"
+      - "MODULE_H"
+  documentation_requirements:
+    technical_file: true
+    eu_declaration_of_conformity: true
+    test_reports: true
+    risk_assessment: true
+    design_drawings: true
+    bill_of_materials: true
+    manufacturing_process_description: true
+    quality_management_system: true
+    notified_body_certificate: true
+    retention_period_years: 10
+  notified_body_required: true
+  quality_management_standard: "IATF_16949"
+  eu_doc_languages:
+    - "en"
+    - "de"
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  format: "PDF"
+  additional_formats:
+    - "JSON"
+    - "HTML"
+    - "EXCEL"
+  include_qr: true
+  sha256_provenance: true
+  passport_api_format: "JSON_LD"
+  passport_schema_version: "1.0.0"
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  multi_language: true
+  supported_languages:
+    - "en"
+    - "de"
+  executive_summary: true
+  data_quality_disclosure: true
+  retention_years: 10

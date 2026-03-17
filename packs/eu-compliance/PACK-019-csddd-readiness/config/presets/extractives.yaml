@@ -1,0 +1,222 @@
+# =============================================================================
+# PACK-019 CSDDD Readiness Pack - Extractives Preset
+# =============================================================================
+# Sector-specific configuration for mining, oil & gas, and quarrying companies
+# (NACE division B). Indigenous rights, environmental degradation, and conflict
+# minerals are the dominant risk areas. Requires deepest value chain mapping
+# (Tier 5+) and highest stakeholder engagement frequency due to direct
+# community impact. OECD Minerals Guidance and Voluntary Principles apply.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+sector_type: "EXTRACTIVES"
+display_name: "Extractives Sector (Mining, Oil & Gas)"
+description: >
+  Extractives sector preset for CSDDD readiness. Prioritises indigenous peoples'
+  rights (FPIC), environmental degradation (land, water, biodiversity), conflict
+  minerals (3TG + cobalt), and community displacement. Deep value chain mapping
+  required. All 8 engines enabled with enhanced stakeholder engagement and
+  remediation tracking. Integrates OECD Minerals Guidance and Voluntary
+  Principles on Security and Human Rights.
+
+# --- Pack Config Fields -----------------------------------------------------
+sector: "EXTRACTIVES"
+company_scope: "PHASE_1"
+
+# --- Scope Defaults ---------------------------------------------------------
+scope_config:
+  phase_1_employee_threshold: 5000
+  phase_1_turnover_threshold: "1500000000"
+  phase_2_employee_threshold: 3000
+  phase_2_turnover_threshold: "900000000"
+  phase_3_employee_threshold: 1000
+  phase_3_turnover_threshold: "450000000"
+  include_non_eu: true
+  group_consolidation: true
+  headcount_method: "HEADCOUNT"
+
+# --- Priority Impacts -------------------------------------------------------
+priority_impacts:
+  human_rights:
+    - id: "HR-EXT-001"
+      name: "Forced displacement of indigenous communities"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - UNDRIP, ILO C169"
+      typical_location: "Own operations and JV sites"
+
+    - id: "HR-EXT-002"
+      name: "Violation of free prior and informed consent (FPIC)"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - UNDRIP Art. 10, 19, 32"
+      typical_location: "Own operations, expansion projects"
+
+    - id: "HR-EXT-003"
+      name: "Artisanal mining child labour"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C138, ILO C182"
+      typical_location: "Upstream Tier 2-5 (artisanal supply chains)"
+
+    - id: "HR-EXT-004"
+      name: "Security force abuses at mine sites"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICCPR Art. 6, 7"
+      typical_location: "Own operations in conflict-affected areas"
+
+    - id: "HR-EXT-005"
+      name: "Health impacts on surrounding communities"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICESCR Art. 12"
+      typical_location: "Own operations and nearby communities"
+
+  environmental:
+    - id: "ENV-EXT-001"
+      name: "Large-scale land degradation and habitat destruction"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part II - CBD, Nagoya Protocol"
+      typical_location: "Own operations (open-pit and underground)"
+
+    - id: "ENV-EXT-002"
+      name: "Water contamination from tailings and acid mine drainage"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part II - Basel Convention"
+      typical_location: "Own operations and legacy sites"
+
+    - id: "ENV-EXT-003"
+      name: "Mercury and cyanide pollution from gold processing"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part II - Minamata Convention"
+      typical_location: "Own operations and artisanal supply chain"
+
+    - id: "ENV-EXT-004"
+      name: "GHG emissions from fossil fuel extraction and flaring"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Paris Agreement, UNFCCC"
+      typical_location: "Own operations"
+
+    - id: "ENV-EXT-005"
+      name: "Deforestation for mine site expansion"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - CBD, Paris Agreement"
+      typical_location: "Own operations, expansion projects"
+
+# --- Priority Articles ------------------------------------------------------
+priority_articles:
+  - article: "ART_6"
+    relevance: "CRITICAL"
+    note: "Deep mapping of artisanal supply chains and JV operations required"
+  - article: "ART_7"
+    relevance: "CRITICAL"
+    note: "Prioritise based on irremediability - extractive impacts often irreversible"
+  - article: "ART_8"
+    relevance: "CRITICAL"
+    note: "Prevention of displacement, water contamination, and habitat destruction"
+  - article: "ART_12"
+    relevance: "CRITICAL"
+    note: "Remediation for community health impacts and land degradation"
+  - article: "ART_13"
+    relevance: "CRITICAL"
+    note: "Meaningful engagement with indigenous peoples and affected communities"
+  - article: "ART_14"
+    relevance: "HIGH"
+    note: "Grievance mechanism accessible to remote and indigenous communities"
+  - article: "ART_22"
+    relevance: "HIGH"
+    note: "Transition plan for fossil fuel phase-down and mine rehabilitation"
+  - article: "ART_26"
+    relevance: "HIGH"
+    note: "Civil liability exposure for environmental contamination and health impacts"
+
+# --- Grievance Channels -----------------------------------------------------
+grievance_config:
+  channels:
+    - "HOTLINE"
+    - "IN_PERSON"
+    - "MOBILE_APP"
+    - "WEB_PORTAL"
+    - "TRADE_UNION_REP"
+    - "EMAIL"
+  response_time_target_days: 14
+  resolution_target_days: 90
+  anonymous_allowed: true
+  languages: ["en", "fr", "pt", "es", "sw"]
+
+# --- Climate Targets -------------------------------------------------------
+climate_config:
+  sbti_15c_annual_reduction: "4.2"
+  sbti_2c_annual_reduction: "2.5"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+  scope_coverage: ["scope_1", "scope_2", "scope_3"]
+  base_year: 2019
+  paris_alignment_method: "SDA"
+  include_scope_3: true
+  decarbonisation_levers:
+    - "methane_capture"
+    - "flaring_reduction"
+    - "electrification"
+    - "renewable_energy"
+    - "energy_efficiency"
+    - "mine_rehabilitation"
+
+# --- Stakeholder Groups -----------------------------------------------------
+stakeholder_config:
+  required_groups:
+    - "WORKERS"
+    - "TRADE_UNIONS"
+    - "COMMUNITIES"
+    - "INDIGENOUS_PEOPLES"
+    - "NGOS"
+    - "REGULATORS"
+  min_engagement_frequency: 4
+  meaningfulness_threshold: "70"
+  free_prior_informed_consent: true
+
+# --- Risk Countries ---------------------------------------------------------
+risk_countries:
+  - country: "DR Congo"
+    risk_area: "Conflict minerals (3TG), artisanal child labour"
+    severity: "CRITICAL"
+  - country: "Colombia"
+    risk_area: "Conflict-related mining, community displacement"
+    severity: "CRITICAL"
+  - country: "Myanmar"
+    risk_area: "Jade and gemstone mining, armed conflict"
+    severity: "CRITICAL"
+  - country: "Papua New Guinea"
+    risk_area: "Indigenous land rights, tailings disposal"
+    severity: "HIGH"
+  - country: "Peru"
+    risk_area: "Mercury use, community water contamination"
+    severity: "HIGH"
+  - country: "South Africa"
+    risk_area: "Silicosis, labour conditions in deep mines"
+    severity: "HIGH"
+  - country: "Indonesia"
+    risk_area: "Deforestation for mining, nickel smelting pollution"
+    severity: "HIGH"
+  - country: "Zimbabwe"
+    risk_area: "Artisanal mining human rights, diamond sector"
+    severity: "HIGH"
+  - country: "Chile"
+    risk_area: "Lithium brine extraction, water stress"
+    severity: "MEDIUM"
+  - country: "Australia"
+    risk_area: "Indigenous heritage site destruction"
+    severity: "MEDIUM"
+
+# --- Impact Configuration ---------------------------------------------------
+impact_config:
+  max_impacts: 750
+  value_chain_depth: 6
+  prioritisation_method: "SEVERITY_FIRST"
+  include_potential: true
+  include_actual: true
+
+# --- Prevention Configuration -----------------------------------------------
+prevention_config:
+  effectiveness_threshold: "70"
+  budget_warning_threshold: "80"
+  overdue_tolerance_days: 21
+  require_contractual_assurances: true
+  verification_required: true
+  cascading_requirements: true
+  corrective_action_plan_days: 60

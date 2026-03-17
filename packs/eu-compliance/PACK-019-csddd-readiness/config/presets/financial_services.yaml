@@ -1,0 +1,206 @@
+# =============================================================================
+# PACK-019 CSDDD Readiness Pack - Financial Services Preset
+# =============================================================================
+# Sector-specific configuration for banks, asset managers, insurance companies,
+# and investment firms (NACE division K). Financed impacts via lending and
+# investment portfolios dominate. Portfolio screening, ESG integration, and
+# exclusion policies are key due diligence mechanisms. CSDDD applies to
+# financial services only for upstream activities (not downstream lending/
+# investment decisions per Recital 21), but voluntary best practice includes
+# downstream screening. SFDR, EU Taxonomy, and CSRD alignment required.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+sector_type: "FINANCIAL_SERVICES"
+display_name: "Financial Services Sector"
+description: >
+  Financial services preset for CSDDD readiness. Focuses on financed adverse
+  impacts through lending, underwriting, and investment portfolios. CSDDD
+  applies to upstream activities (own operations and procurement); downstream
+  financial products are covered via voluntary best practice and SFDR/Taxonomy
+  alignment. Prioritises portfolio screening for human rights risks, ESG
+  integration in credit decisions, and exclusion policies for high-risk sectors.
+
+# --- Pack Config Fields -----------------------------------------------------
+sector: "FINANCIAL_SERVICES"
+company_scope: "PHASE_1"
+
+# --- Scope Defaults ---------------------------------------------------------
+scope_config:
+  phase_1_employee_threshold: 5000
+  phase_1_turnover_threshold: "1500000000"
+  phase_2_employee_threshold: 3000
+  phase_2_turnover_threshold: "900000000"
+  phase_3_employee_threshold: 1000
+  phase_3_turnover_threshold: "450000000"
+  include_non_eu: true
+  group_consolidation: true
+  headcount_method: "FTE"
+
+# --- Priority Impacts -------------------------------------------------------
+priority_impacts:
+  human_rights:
+    - id: "HR-FIN-001"
+      name: "Financing projects causing community displacement"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ICCPR Art. 1, ICESCR Art. 11"
+      typical_location: "Financed project sites globally"
+
+    - id: "HR-FIN-002"
+      name: "Financing entities using forced labour"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C29, ILO C105"
+      typical_location: "Portfolio companies in high-risk sectors"
+
+    - id: "HR-FIN-003"
+      name: "Inadequate data privacy in digital banking operations"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICCPR Art. 17"
+      typical_location: "Own operations (digital services)"
+
+    - id: "HR-FIN-004"
+      name: "Financial exclusion of vulnerable populations"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part I - ICESCR Art. 2 (non-discrimination)"
+      typical_location: "Own operations (retail banking)"
+
+    - id: "HR-FIN-005"
+      name: "Predatory lending practices in developing markets"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICESCR Art. 11"
+      typical_location: "Own operations and subsidiaries"
+
+  environmental:
+    - id: "ENV-FIN-001"
+      name: "Financed GHG emissions (portfolio carbon footprint)"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part II - Paris Agreement"
+      typical_location: "Lending and investment portfolios"
+
+    - id: "ENV-FIN-002"
+      name: "Financing deforestation-linked activities"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - CBD, Paris Agreement"
+      typical_location: "Agricultural and commodity finance"
+
+    - id: "ENV-FIN-003"
+      name: "Insurance underwriting of fossil fuel expansion"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Paris Agreement"
+      typical_location: "Insurance portfolios"
+
+    - id: "ENV-FIN-004"
+      name: "Financing projects in biodiversity-sensitive areas"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part II - CBD, Nagoya Protocol"
+      typical_location: "Project finance deals"
+
+    - id: "ENV-FIN-005"
+      name: "Financing water-intensive operations in stressed regions"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part II - CBD"
+      typical_location: "Corporate lending portfolio"
+
+# --- Priority Articles ------------------------------------------------------
+priority_articles:
+  - article: "ART_5"
+    relevance: "HIGH"
+    note: "Due diligence policy covering own operations and procurement"
+  - article: "ART_6"
+    relevance: "HIGH"
+    note: "Identify adverse impacts in own operations and upstream procurement"
+  - article: "ART_8"
+    relevance: "HIGH"
+    note: "Prevention measures in procurement and vendor management"
+  - article: "ART_13"
+    relevance: "MEDIUM"
+    note: "Stakeholder engagement with affected communities via portfolio companies"
+  - article: "ART_14"
+    relevance: "HIGH"
+    note: "Grievance mechanism for own employees and procurement chain"
+  - article: "ART_16"
+    relevance: "HIGH"
+    note: "Annual reporting aligned with CSRD sustainability statement"
+  - article: "ART_22"
+    relevance: "CRITICAL"
+    note: "Climate transition plan for financed emissions and own operations"
+
+# --- Grievance Channels -----------------------------------------------------
+grievance_config:
+  channels:
+    - "EMAIL"
+    - "WEB_PORTAL"
+    - "HOTLINE"
+    - "POSTAL"
+  response_time_target_days: 21
+  resolution_target_days: 90
+  anonymous_allowed: true
+  languages: ["en", "de", "fr", "nl"]
+
+# --- Climate Targets -------------------------------------------------------
+climate_config:
+  sbti_15c_annual_reduction: "4.2"
+  sbti_2c_annual_reduction: "2.5"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+  scope_coverage: ["scope_1", "scope_2", "scope_3"]
+  base_year: 2019
+  paris_alignment_method: "SDA"
+  include_scope_3: true
+  decarbonisation_levers:
+    - "portfolio_decarbonisation"
+    - "green_finance_growth"
+    - "exclusion_policies"
+    - "energy_efficiency"
+    - "renewable_energy"
+    - "engagement_with_portfolio_companies"
+
+# --- Stakeholder Groups -----------------------------------------------------
+stakeholder_config:
+  required_groups:
+    - "WORKERS"
+    - "TRADE_UNIONS"
+    - "INVESTORS"
+    - "REGULATORS"
+    - "NGOS"
+  min_engagement_frequency: 2
+  meaningfulness_threshold: "60"
+  free_prior_informed_consent: false
+
+# --- Risk Countries ---------------------------------------------------------
+risk_countries:
+  - country: "Global (portfolio exposure)"
+    risk_area: "Financed emissions across all geographies"
+    severity: "HIGH"
+  - country: "Brazil"
+    risk_area: "Agricultural commodity finance linked to deforestation"
+    severity: "HIGH"
+  - country: "Indonesia"
+    risk_area: "Palm oil and mining finance"
+    severity: "HIGH"
+  - country: "Saudi Arabia"
+    risk_area: "Fossil fuel project finance"
+    severity: "MEDIUM"
+  - country: "India"
+    risk_area: "Coal power and labour-intensive manufacturing finance"
+    severity: "MEDIUM"
+  - country: "Nigeria"
+    risk_area: "Oil & gas project finance, community displacement"
+    severity: "HIGH"
+
+# --- Impact Configuration ---------------------------------------------------
+impact_config:
+  max_impacts: 300
+  value_chain_depth: 2
+  prioritisation_method: "SEVERITY_FIRST"
+  include_potential: true
+  include_actual: true
+
+# --- Prevention Configuration -----------------------------------------------
+prevention_config:
+  effectiveness_threshold: "60"
+  budget_warning_threshold: "85"
+  overdue_tolerance_days: 30
+  require_contractual_assurances: true
+  verification_required: true
+  cascading_requirements: false
+  corrective_action_plan_days: 90

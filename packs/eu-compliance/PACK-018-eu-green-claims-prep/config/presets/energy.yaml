@@ -1,0 +1,91 @@
+# =============================================================================
+# PACK-018 EU Green Claims Prep Pack - Energy Preset
+# =============================================================================
+# Sector-specific configuration for utilities, renewable energy generators,
+# energy retailers, and grid operators. Carbon-related claims dominate:
+# renewable energy supply, carbon neutrality, green tariffs, grid
+# decarbonisation, and transition plans. All 8 engines enabled.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+metadata:
+  name: "energy"
+  sector: "ENERGY"
+  description: >
+    Energy sector preset. All 8 engines enabled. Carbon-related and renewable
+    energy claims are the primary focus. Guarantees of Origin (GO) and
+    Renewable Energy Certificates (REC) substantiation. Transition plan
+    validation for net-zero commitments. Grid decarbonisation factor
+    tracking (location-based vs. market-based methodology).
+
+# --- Enabled Engines --------------------------------------------------------
+enabled_engines:
+  - claim_substantiation
+  - evidence_chain
+  - lifecycle_assessment
+  - label_certification
+  - greenwashing_detection
+  - comparative_claims
+  - trader_obligation
+  - green_claims_benchmark
+
+# --- Enabled Workflows ------------------------------------------------------
+enabled_workflows:
+  - claim_intake
+  - substantiation_assessment
+  - evidence_collection
+  - lifecycle_scoring
+  - label_validation
+  - greenwashing_scan
+  - comparison_review
+  - disclosure_generation
+  - cab_submission
+  - periodic_review
+
+# --- Claim Scope ------------------------------------------------------------
+sector: "ENERGY"
+claim_scope: "BOTH"
+
+# --- Communication Channels -------------------------------------------------
+communication_channels:
+  - WEBSITE
+  - ADVERTISING
+  - INVESTOR_RELATIONS
+  - PRESS_RELEASE
+
+# --- Thresholds -------------------------------------------------------------
+thresholds:
+  greenwashing_risk_threshold: "45"
+  evidence_retention_years: 7
+  max_claims: 10000
+  max_evidence_items: 50000
+  eco_label_registry_refresh_days: 30
+
+# --- Special Settings -------------------------------------------------------
+special_settings:
+  pef_database: "ef_3.1"
+  renewable_energy_claims_focus: true
+  go_rec_substantiation: true
+  go_registry_sources:
+    - "AIB_EECS"
+    - "OFGEM_REGO"
+    - "GREXEL"
+  carbon_neutrality_claims_scrutiny: true
+  offset_claim_restriction_strict: true
+  transition_plan_validation: true
+  transition_plan_requirements:
+    - "time_bound_targets"
+    - "measurable_milestones"
+    - "independent_monitoring"
+    - "decarbonisation_pathway"
+  grid_decarbonisation_tracking: true
+  emission_factor_methodology:
+    - "location_based"
+    - "market_based"
+    - "residual_mix"
+  additionality_check: true
+  scope_2_dual_reporting: true
+  cab_submission_format: "PDF"
+  reporting_language: "en"
+  require_primary_lca_data: true
+  third_party_verification: true

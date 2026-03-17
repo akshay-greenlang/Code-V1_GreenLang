@@ -1,0 +1,389 @@
+# =============================================================================
+# PACK-017 ESRS Full Coverage Pack - Retail Preset
+# =============================================================================
+# Sector-specific configuration for retail and consumer goods companies
+# including food retail, fashion, general merchandise, e-commerce, and
+# fast-moving consumer goods. NACE division G (Wholesale and Retail Trade).
+#
+# Materiality profile:
+#   - E1 Climate: MATERIAL (Scope 3 dominant via purchased goods, transport)
+#   - E2 Pollution: MAY BE MATERIAL (packaging chemicals, product chemicals)
+#   - E3 Water: MAY BE MATERIAL (supply chain water use, cotton, agriculture)
+#   - E4 Biodiversity: MAY BE MATERIAL (sourcing from agriculture/forestry)
+#   - E5 Circular Economy: HIGHLY MATERIAL (packaging waste, product lifecycle)
+#   - S1 Own Workforce: MATERIAL (large diverse workforce, many part-time)
+#   - S2 Value Chain Workers: HIGHLY MATERIAL (global supply chain labour)
+#   - S3 Affected Communities: MAY BE MATERIAL (sourcing community impacts)
+#   - S4 Consumers: MATERIAL (product safety, marketing claims, data privacy)
+#   - G1 Business Conduct: MATERIAL (supplier management, anti-corruption)
+#
+# Key characteristics:
+#   - Scope 3 Category 1 (purchased goods) is 70-90% of total footprint
+#   - Packaging waste and single-use plastic are major circular economy topics
+#   - Supply chain labour conditions are a top materiality issue
+#   - Store energy use (refrigeration, lighting, HVAC) drives Scope 1+2
+#   - Consumer-facing claims (green, organic, fair trade) need substantiation
+#   - Food waste (for food retail) is a significant impact area
+# =============================================================================
+
+# --- Preset Metadata ---
+preset_name: "retail"
+pack_id: "PACK-017"
+pack_name: "ESRS Full Coverage Pack"
+esrs_version: "ESRS Set 1 (2023)"
+sector: "RETAIL"
+nace_codes: ["G"]
+
+# --- ESRS Standard Materiality ---
+materiality:
+  e1_climate_change: MATERIAL
+  e2_pollution: MAY_BE_MATERIAL
+  e3_water_marine_resources: MAY_BE_MATERIAL
+  e4_biodiversity_ecosystems: MAY_BE_MATERIAL
+  e5_resource_use_circular_economy: HIGHLY_MATERIAL
+  s1_own_workforce: MATERIAL
+  s2_workers_in_value_chain: HIGHLY_MATERIAL
+  s3_affected_communities: MAY_BE_MATERIAL
+  s4_consumers_end_users: MATERIAL
+  g1_business_conduct: MATERIAL
+
+# --- E1 Climate Change ---
+e1_climate_change:
+  enabled: true
+  disclosure_requirements:
+    - "E1-1"   # Transition plan for climate change mitigation
+    - "E1-2"   # Policies related to climate change mitigation and adaptation
+    - "E1-3"   # Actions and resources related to climate change
+    - "E1-4"   # Targets related to climate change mitigation and adaptation
+    - "E1-5"   # Energy consumption and mix
+    - "E1-6"   # Gross Scopes 1, 2, 3 and total GHG emissions
+    - "E1-7"   # GHG removals and GHG mitigation projects (carbon credits)
+    - "E1-8"   # Internal carbon pricing
+    - "E1-9"   # Anticipated financial effects from climate-related risks
+  ghg:
+    consolidation_approach: "OPERATIONAL_CONTROL"
+    gwp_source: "IPCC_AR6"
+    emission_factors_source: "DEFRA_2025"
+    scopes_enabled: ["SCOPE_1", "SCOPE_2_LOCATION", "SCOPE_2_MARKET", "SCOPE_3"]
+    scope_3_categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12]
+    scope_3_default_method: "HYBRID"
+    kyoto_gas_disaggregation: true
+    biogenic_co2_separate: true
+    refrigerant_tracking: true
+    ghg_intensity_denominators:
+      - "net_revenue_eur_million"
+      - "sqm_selling_area"
+      - "number_of_stores"
+  energy:
+    reporting_unit: "MWh"
+    fossil_fuel_types: ["NATURAL_GAS", "DIESEL", "LPG"]
+    renewable_categories: ["SOLAR", "WIND"]
+    self_generation_tracking: true
+    energy_intensity_denominators:
+      - "sqm_selling_area"
+      - "net_revenue_eur_million"
+    store_energy:
+      refrigeration_tracking: true
+      lighting_efficiency: true
+      hvac_tracking: true
+  transition_plan:
+    target_year: 2050
+    interim_target_years: [2030, 2035, 2040]
+    scenario_alignment: "1.5C"
+    decarbonization_levers:
+      - "store_energy_efficiency"
+      - "refrigerant_transition"
+      - "renewable_procurement"
+      - "fleet_electrification"
+      - "supplier_engagement"
+      - "sustainable_sourcing"
+      - "logistics_optimization"
+  carbon_pricing:
+    has_carbon_pricing: false
+
+# --- E2 Pollution ---
+e2_pollution:
+  enabled: true
+  disclosure_requirements:
+    - "E2-1"   # Policies related to pollution
+    - "E2-2"   # Actions and resources related to pollution
+    - "E2-3"   # Targets related to pollution
+    - "E2-4"   # Pollution of air, water and soil
+    - "E2-5"   # Substances of concern and substances of very high concern
+    - "E2-6"   # Anticipated financial effects from pollution-related risks
+  pollutant_categories:
+    air: ["refrigerant_leaks"]
+    water: []
+    soil: []
+  substances_of_concern_tracking: true
+  svhc_tracking: true
+  microplastic_tracking: true
+  product_chemical_safety: true
+
+# --- E3 Water and Marine Resources ---
+e3_water_marine_resources:
+  enabled: true
+  disclosure_requirements:
+    - "E3-1"   # Policies related to water and marine resources
+    - "E3-2"   # Actions and resources related to water and marine resources
+    - "E3-3"   # Targets related to water and marine resources
+    - "E3-4"   # Water consumption
+    - "E3-5"   # Anticipated financial effects from water-related risks
+  water_metrics:
+    withdrawal_by_source: true
+    consumption_calculation: true
+    water_stress_areas: true
+    supply_chain_water_footprint: true
+  reporting_unit: "megalitres"
+  wri_aqueduct_integration: true
+  focus_areas:
+    - "cotton_water_footprint"
+    - "agricultural_supply_chain_water"
+    - "store_water_consumption"
+
+# --- E4 Biodiversity and Ecosystems ---
+e4_biodiversity_ecosystems:
+  enabled: true
+  disclosure_requirements:
+    - "E4-1"   # Transition plan on biodiversity and ecosystems
+    - "E4-2"   # Policies related to biodiversity and ecosystems
+    - "E4-3"   # Actions and resources related to biodiversity
+    - "E4-4"   # Targets related to biodiversity and ecosystems
+    - "E4-5"   # Impact metrics related to biodiversity change
+    - "E4-6"   # Anticipated financial effects from biodiversity-related risks
+  land_use_tracking: false
+  proximity_to_protected_areas: false
+  deforestation_free_supply_chain: true
+  tnfd_alignment: true
+  commodity_risk_assessment:
+    palm_oil: true
+    soy: true
+    cocoa: true
+    coffee: true
+    timber: true
+    cattle: true
+
+# --- E5 Resource Use and Circular Economy ---
+e5_resource_use_circular_economy:
+  enabled: true
+  disclosure_requirements:
+    - "E5-1"   # Policies related to resource use and circular economy
+    - "E5-2"   # Actions and resources related to resource use
+    - "E5-3"   # Targets related to resource use and circular economy
+    - "E5-4"   # Resource inflows
+    - "E5-5"   # Resource outflows
+    - "E5-6"   # Anticipated financial effects from circular economy
+  waste_categories: ["HAZARDOUS", "NON_HAZARDOUS", "FOOD_WASTE"]
+  waste_treatment_methods: ["RECYCLING", "COMPOSTING", "ANAEROBIC_DIGESTION", "INCINERATION", "LANDFILL"]
+  circular_metrics:
+    recycled_input_rate: true
+    recyclability_rate: true
+    waste_diversion_rate: true
+    product_lifetime_extension: true
+  packaging:
+    total_packaging_weight: true
+    recycled_content_pct: true
+    recyclability_pct: true
+    single_use_plastic_reduction: true
+    eu_ppwr_compliance: true
+  food_waste:
+    measurement_enabled: true
+    donation_tracking: true
+    prevention_targets: true
+  reporting_unit: "tonnes"
+
+# --- S1 Own Workforce ---
+s1_own_workforce:
+  enabled: true
+  disclosure_requirements:
+    - "S1-1"   # Policies related to own workforce
+    - "S1-2"   # Processes for engaging with own workforce
+    - "S1-3"   # Processes to remediate negative impacts
+    - "S1-4"   # Taking action on material impacts
+    - "S1-5"   # Targets related to managing negative impacts
+    - "S1-6"   # Characteristics of the undertaking's employees
+    - "S1-7"   # Characteristics of non-employee workers
+    - "S1-8"   # Collective bargaining coverage and social dialogue
+    - "S1-9"   # Diversity metrics
+    - "S1-10"  # Adequate wages
+    - "S1-11"  # Social protection
+    - "S1-12"  # Persons with disabilities
+    - "S1-13"  # Training and skills development metrics
+    - "S1-14"  # Health and safety metrics
+    - "S1-15"  # Work-life balance metrics
+    - "S1-16"  # Remuneration metrics (pay gap, pay ratio)
+    - "S1-17"  # Incidents, complaints and severe human rights impacts
+  health_and_safety:
+    fatality_tracking: true
+    ltir_tracking: true
+    trir_tracking: true
+    near_miss_reporting: true
+    occupational_disease_tracking: false
+  training:
+    hours_per_employee: true
+    skills_development_programs: true
+  collective_bargaining:
+    coverage_tracking: true
+    works_council_engagement: true
+  diversity:
+    gender_breakdown: true
+    age_breakdown: true
+    disability_tracking: true
+  workforce_characteristics:
+    part_time_tracking: true
+    seasonal_worker_tracking: true
+    turnover_rate_tracking: true
+    living_wage_assessment: true
+
+# --- S2 Workers in the Value Chain ---
+s2_workers_in_value_chain:
+  enabled: true
+  disclosure_requirements:
+    - "S2-1"   # Policies related to value chain workers
+    - "S2-2"   # Processes for engaging with value chain workers
+    - "S2-3"   # Processes to remediate negative impacts
+    - "S2-4"   # Taking action on material impacts
+    - "S2-5"   # Targets related to managing negative impacts
+  due_diligence:
+    supplier_code_of_conduct: true
+    audit_programme: true
+    corrective_action_tracking: true
+    tier_1_coverage_target_pct: 90
+    tier_2_risk_assessment: true
+    high_risk_supplier_monitoring: true
+  focus_areas:
+    - "forced_labour"
+    - "child_labour"
+    - "living_wage"
+    - "working_hours"
+    - "freedom_of_association"
+    - "building_and_fire_safety"
+    - "gender_based_violence"
+    - "homeworker_conditions"
+  certifications_tracked:
+    - "SA8000"
+    - "BSCI"
+    - "SMETA"
+    - "WRAP"
+    - "FAIR_TRADE"
+
+# --- S3 Affected Communities ---
+s3_affected_communities:
+  enabled: true
+  disclosure_requirements:
+    - "S3-1"   # Policies related to affected communities
+    - "S3-2"   # Processes for engaging with affected communities
+    - "S3-3"   # Processes to remediate negative impacts
+    - "S3-4"   # Taking action on material impacts
+    - "S3-5"   # Targets related to managing negative impacts
+  community_engagement:
+    stakeholder_mapping: true
+    grievance_mechanism: true
+  impact_categories:
+    - "sourcing_community_livelihoods"
+    - "smallholder_farmer_support"
+    - "local_employment"
+    - "community_investment"
+
+# --- S4 Consumers and End-Users ---
+s4_consumers_end_users:
+  enabled: true
+  disclosure_requirements:
+    - "S4-1"   # Policies related to consumers and end-users
+    - "S4-2"   # Processes for engaging with consumers and end-users
+    - "S4-3"   # Processes to remediate negative impacts
+    - "S4-4"   # Taking action on material impacts
+    - "S4-5"   # Targets related to managing negative impacts
+  consumer_protection:
+    product_safety_tracking: true
+    recall_management: true
+    complaint_handling: true
+  marketing_claims:
+    greenwashing_prevention: true
+    sustainability_label_verification: true
+    advertising_standards_compliance: true
+  data_privacy:
+    gdpr_compliance: true
+    data_breach_tracking: true
+    loyalty_programme_data: true
+  focus_areas:
+    - "product_safety"
+    - "responsible_marketing"
+    - "accessibility"
+    - "nutritional_information"
+    - "allergen_management"
+
+# --- G1 Business Conduct ---
+g1_business_conduct:
+  enabled: true
+  disclosure_requirements:
+    - "G1-1"   # Business conduct policies and corporate culture
+    - "G1-2"   # Management of relationships with suppliers
+    - "G1-3"   # Prevention and detection of corruption and bribery
+    - "G1-4"   # Confirmed incidents of corruption or bribery
+    - "G1-5"   # Political influence and lobbying activities
+    - "G1-6"   # Payment practices
+  anti_corruption:
+    policy_in_place: true
+    training_programme: true
+    whistleblower_mechanism: true
+    incident_tracking: true
+    high_risk_country_monitoring: true
+  supplier_management:
+    payment_terms_tracking: true
+    late_payment_monitoring: true
+    sme_payment_practices: true
+    supplier_payment_days_target: 30
+  political_engagement:
+    lobbying_disclosure: true
+    political_donations_policy: "PROHIBITED"
+
+# --- Cross-Cutting (ESRS 1 and ESRS 2) ---
+cross_cutting:
+  esrs_1_general_requirements:
+    double_materiality_assessment: true
+    value_chain_scope: "UPSTREAM_AND_DOWNSTREAM"
+    time_horizons:
+      short_term_years: 1
+      medium_term_years: 5
+      long_term_years: 10
+  esrs_2_general_disclosures:
+    disclosure_requirements:
+      - "ESRS2-BP1"   # General basis for preparation
+      - "ESRS2-BP2"   # Disclosures in relation to specific circumstances
+      - "ESRS2-GOV1"  # Role of administrative, management and supervisory bodies
+      - "ESRS2-GOV2"  # Information provided to and sustainability matters addressed
+      - "ESRS2-GOV3"  # Integration of sustainability performance in incentive schemes
+      - "ESRS2-GOV4"  # Statement on due diligence
+      - "ESRS2-GOV5"  # Risk management and internal controls
+      - "ESRS2-SBM1"  # Strategy, business model and value chain
+      - "ESRS2-SBM2"  # Interests and views of stakeholders
+      - "ESRS2-SBM3"  # Material impacts, risks and opportunities
+      - "ESRS2-IRO1"  # Processes to identify and assess material IROs
+      - "ESRS2-IRO2"  # Disclosure requirements covered by the sustainability statement
+    governance_body_oversight: true
+    incentive_scheme_integration: true
+    due_diligence_statement: true
+
+# --- Reporting ---
+reporting:
+  output_formats: ["PDF", "XBRL", "HTML"]
+  xbrl_taxonomy: "ESRS_XBRL_2024"
+  xbrl_tagging: true
+  sha256_provenance: true
+  multi_language: true
+  supported_languages: ["en", "de", "fr"]
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  year_over_year_comparison: true
+  data_quality_disclosure: true
+  assumption_disclosure: true
+  assurance_level: "LIMITED"
+  retention_years: 10
+
+# --- Performance ---
+performance:
+  max_processing_time_minutes: 120
+  max_memory_gb: 8

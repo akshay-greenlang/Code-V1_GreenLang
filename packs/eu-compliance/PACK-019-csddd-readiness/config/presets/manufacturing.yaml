@@ -1,0 +1,212 @@
+# =============================================================================
+# PACK-019 CSDDD Readiness Pack - Manufacturing Preset
+# =============================================================================
+# Sector-specific configuration for industrial manufacturing companies
+# (NACE division C). Supply chain labour risks, process pollution, and raw
+# material sourcing dominate the adverse impact landscape. Deep value chain
+# mapping (5+ tiers) required for extractive raw material supply chains.
+# Full OECD six-step due diligence with contractual cascading.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+sector_type: "MANUFACTURING"
+display_name: "Manufacturing Sector"
+description: >
+  Manufacturing sector preset for CSDDD readiness. Prioritises supply chain
+  labour risks (forced labour, child labour, working conditions), process
+  pollution (air, water, soil), and raw material sourcing (conflict minerals,
+  deforestation-linked commodities). All 8 engines and 12 workflows enabled.
+  Deep value chain mapping to Tier 3+ for high-risk raw material supply chains.
+
+# --- Pack Config Fields -----------------------------------------------------
+sector: "MANUFACTURING"
+company_scope: "PHASE_1"
+
+# --- Scope Defaults ---------------------------------------------------------
+scope_config:
+  phase_1_employee_threshold: 5000
+  phase_1_turnover_threshold: "1500000000"
+  phase_2_employee_threshold: 3000
+  phase_2_turnover_threshold: "900000000"
+  phase_3_employee_threshold: 1000
+  phase_3_turnover_threshold: "450000000"
+  include_non_eu: true
+  group_consolidation: true
+  headcount_method: "HEADCOUNT"
+
+# --- Priority Impacts -------------------------------------------------------
+# Top 5 human rights adverse impacts for manufacturing
+priority_impacts:
+  human_rights:
+    - id: "HR-MFG-001"
+      name: "Forced labour in raw material extraction"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C29, ILO C105"
+      typical_location: "Upstream Tier 3-5 suppliers"
+
+    - id: "HR-MFG-002"
+      name: "Child labour in component manufacturing"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C138, ILO C182"
+      typical_location: "Upstream Tier 2-3 suppliers"
+
+    - id: "HR-MFG-003"
+      name: "Unsafe working conditions in factories"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICESCR Art. 7"
+      typical_location: "Upstream Tier 1-2 suppliers"
+
+    - id: "HR-MFG-004"
+      name: "Suppression of trade union rights"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ILO C87, ILO C98"
+      typical_location: "Own operations and Tier 1 suppliers"
+
+    - id: "HR-MFG-005"
+      name: "Wage theft and below-minimum-wage payments"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part I - ILO C100, ICESCR Art. 7"
+      typical_location: "Tier 1-2 suppliers"
+
+  # Top 5 environmental adverse impacts for manufacturing
+  environmental:
+    - id: "ENV-MFG-001"
+      name: "Industrial water pollution from process discharge"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Basel Convention"
+      typical_location: "Own operations and Tier 1 suppliers"
+
+    - id: "ENV-MFG-002"
+      name: "Hazardous waste mismanagement"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Basel Convention, Stockholm Convention"
+      typical_location: "Own operations"
+
+    - id: "ENV-MFG-003"
+      name: "GHG emissions from energy-intensive processes"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Paris Agreement"
+      typical_location: "Own operations and Tier 1 suppliers"
+
+    - id: "ENV-MFG-004"
+      name: "Deforestation from raw material sourcing"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part II - CBD, Paris Agreement"
+      typical_location: "Upstream Tier 3-5 suppliers"
+
+    - id: "ENV-MFG-005"
+      name: "Biodiversity loss from mining and extraction"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - CBD, Nagoya Protocol"
+      typical_location: "Upstream Tier 3-5 suppliers"
+
+# --- Priority Articles ------------------------------------------------------
+priority_articles:
+  - article: "ART_5"
+    relevance: "HIGH"
+    note: "Due diligence policy must cover supply chain labour and environmental risks"
+  - article: "ART_6"
+    relevance: "CRITICAL"
+    note: "Deep value chain mapping required for complex manufacturing supply chains"
+  - article: "ART_8"
+    relevance: "CRITICAL"
+    note: "Prevention plans for forced/child labour and pollution in supply chain"
+  - article: "ART_9"
+    relevance: "HIGH"
+    note: "Contractual assurances with direct suppliers including cascading clauses"
+  - article: "ART_10"
+    relevance: "HIGH"
+    note: "Third-party audits of Tier 1-2 suppliers for labour and environmental compliance"
+  - article: "ART_14"
+    relevance: "HIGH"
+    note: "Grievance mechanism accessible to supply chain workers in local languages"
+  - article: "ART_22"
+    relevance: "HIGH"
+    note: "Climate transition plan for energy-intensive manufacturing processes"
+
+# --- Grievance Channels -----------------------------------------------------
+grievance_config:
+  channels:
+    - "HOTLINE"
+    - "EMAIL"
+    - "WEB_PORTAL"
+    - "TRADE_UNION_REP"
+    - "MOBILE_APP"
+  response_time_target_days: 14
+  resolution_target_days: 90
+  anonymous_allowed: true
+  languages: ["en", "de", "zh", "vi", "bn"]
+
+# --- Climate Targets -------------------------------------------------------
+climate_config:
+  sbti_15c_annual_reduction: "4.2"
+  sbti_2c_annual_reduction: "2.5"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+  scope_coverage: ["scope_1", "scope_2", "scope_3"]
+  base_year: 2019
+  paris_alignment_method: "SDA"
+  include_scope_3: true
+  decarbonisation_levers:
+    - "energy_efficiency"
+    - "renewable_energy"
+    - "electrification"
+    - "process_innovation"
+    - "supply_chain_engagement"
+    - "circular_economy"
+    - "waste_heat_recovery"
+
+# --- Stakeholder Groups -----------------------------------------------------
+stakeholder_config:
+  required_groups:
+    - "WORKERS"
+    - "TRADE_UNIONS"
+    - "COMMUNITIES"
+    - "NGOS"
+  min_engagement_frequency: 2
+  meaningfulness_threshold: "65"
+  free_prior_informed_consent: true
+
+# --- Risk Countries ---------------------------------------------------------
+risk_countries:
+  - country: "Bangladesh"
+    risk_area: "Garment factory labour conditions"
+    severity: "HIGH"
+  - country: "China"
+    risk_area: "Forced labour in certain provinces"
+    severity: "CRITICAL"
+  - country: "India"
+    risk_area: "Child labour in informal manufacturing"
+    severity: "HIGH"
+  - country: "Vietnam"
+    risk_area: "Freedom of association restrictions"
+    severity: "MEDIUM"
+  - country: "Turkey"
+    risk_area: "Refugee labour exploitation"
+    severity: "HIGH"
+  - country: "Myanmar"
+    risk_area: "Armed conflict and forced labour"
+    severity: "CRITICAL"
+  - country: "DR Congo"
+    risk_area: "Conflict minerals (3TG) extraction"
+    severity: "CRITICAL"
+  - country: "Brazil"
+    risk_area: "Deforestation in raw material sourcing"
+    severity: "HIGH"
+
+# --- Impact Configuration ---------------------------------------------------
+impact_config:
+  max_impacts: 500
+  value_chain_depth: 5
+  prioritisation_method: "SEVERITY_FIRST"
+  include_potential: true
+  include_actual: true
+
+# --- Prevention Configuration -----------------------------------------------
+prevention_config:
+  effectiveness_threshold: "65"
+  budget_warning_threshold: "85"
+  overdue_tolerance_days: 30
+  require_contractual_assurances: true
+  verification_required: true
+  cascading_requirements: true
+  corrective_action_plan_days: 90

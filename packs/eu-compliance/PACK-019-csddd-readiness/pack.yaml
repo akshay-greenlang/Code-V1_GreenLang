@@ -1,0 +1,2450 @@
+# =============================================================================
+# PACK-019: CSDDD Readiness Pack
+# GreenLang EU Compliance Pack for Corporate Sustainability Due Diligence
+# Directive (EU) 2024/1760 Readiness Assessment and Implementation
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for assessing readiness and implementing compliance with
+# the Corporate Sustainability Due Diligence Directive (CSDDD), adopted as
+# Directive (EU) 2024/1760 on 13 June 2024. The CSDDD requires in-scope
+# companies to conduct human rights and environmental due diligence across
+# their operations, subsidiaries, and chains of activities (upstream and
+# downstream business partners). It codifies the OECD Due Diligence Guidance
+# for Responsible Business Conduct (2018) six-step framework into binding EU
+# law, requiring companies to identify, prevent, mitigate, and account for
+# adverse impacts on human rights and the environment.
+#
+# The directive applies in a phased manner:
+#   - 26 July 2027: Companies with >5,000 employees AND >EUR 1,500M net
+#     worldwide turnover (and ultimate parent companies meeting these thresholds)
+#   - 26 July 2028: Companies with >3,000 employees AND >EUR 900M net
+#     worldwide turnover
+#   - 26 July 2029: Companies with >1,000 employees AND >EUR 450M net
+#     worldwide turnover (full scope)
+#   - Non-EU companies: Same thresholds based on EU-generated net turnover
+#
+# Key CSDDD Obligations (Articles covered):
+#   - Art. 5: Due diligence policy integration into all policies and systems
+#   - Art. 6: Identification and assessment of actual and potential adverse
+#     impacts on human rights (Annex Part I) and environment (Annex Part II)
+#   - Art. 7: Prevention and mitigation of potential adverse impacts
+#   - Art. 8: Bringing actual adverse impacts to an end
+#   - Art. 9: Meaningful engagement with affected stakeholders
+#   - Art. 10: Grievance mechanism (complaints procedure)
+#   - Art. 11: Monitoring the effectiveness of due diligence measures
+#   - Art. 12: Public communication and reporting
+#   - Art. 13: Meaningful engagement as cross-cutting obligation
+#   - Art. 14: Contractual cascading of due diligence requirements
+#   - Art. 22: Climate transition plan (aligned with Paris Agreement 1.5C)
+#   - Art. 29: Civil liability for failure to comply with due diligence
+#
+# OECD Six-Step Framework Implementation:
+#   Step 1: Embed RBC into policies and management systems (Art. 5)
+#   Step 2: Identify and assess adverse impacts (Art. 6)
+#   Step 3: Cease, prevent, or mitigate adverse impacts (Art. 7, 8)
+#   Step 4: Track implementation and results (Art. 11)
+#   Step 5: Communicate (Art. 12)
+#   Step 6: Provide for or cooperate in remediation (Art. 8, 10)
+#
+# Adverse Impact Categories (Annex):
+#   Part I - Human Rights (12 categories):
+#     1. Right to life, liberty, and security
+#     2. Prohibition of torture, cruel, inhuman treatment
+#     3. Prohibition of forced labour and trafficking
+#     4. Freedom of association and collective bargaining
+#     5. Right to just and favourable working conditions
+#     6. Prohibition of child labour
+#     7. Right to adequate housing
+#     8. Right to adequate food
+#     9. Right to water and sanitation
+#     10. Right to the highest attainable standard of health
+#     11. Right to education
+#     12. Rights of indigenous peoples (FPIC)
+#
+#   Part II - Environmental (9 categories):
+#     1. Prohibition of activities causing environmental degradation (soil,
+#        water, air, biodiversity)
+#     2. Prohibition of activities causing deforestation (linked to EUDR)
+#     3. Prohibition of hazardous waste export (Basel Convention)
+#     4. Prohibition of activities causing adverse impacts on protected areas
+#     5. Prohibition of activities adversely affecting access to clean water
+#     6. Prohibition of mercury and mercury compounds use (Minamata)
+#     7. Prohibition of persistent organic pollutants (Stockholm Convention)
+#     8. Prohibition of hazardous chemicals and pesticides (Rotterdam)
+#     9. Prohibition of ozone-depleting substances (Montreal/Vienna/Kigali)
+#
+# Key Capabilities:
+#   - Scope threshold assessment (employee count, turnover, EU vs non-EU)
+#   - Due diligence policy gap analysis against OECD framework
+#   - Adverse impact identification and assessment (21 categories)
+#   - Value chain mapping with risk prioritisation
+#   - Prevention and mitigation action planning with effectiveness tracking
+#   - Stakeholder engagement management with meaningful engagement criteria
+#   - Grievance mechanism assessment and case management
+#   - Due diligence monitoring and KPI tracking
+#   - Climate transition plan assessment (Art. 22 / Paris 1.5C alignment)
+#   - Civil liability risk assessment (Art. 29)
+#   - Contractual cascading compliance tracking (Art. 14)
+#   - Cross-regulation consistency (CSRD/ESRS, EUDR, EU Taxonomy)
+#   - SHA-256 provenance tracking for all assessment outputs
+#   - Zero-hallucination compliance scoring using deterministic rules
+#
+# Regulatory References:
+#   - CSDDD: Directive (EU) 2024/1760
+#   - OECD Due Diligence Guidance for RBC (2018)
+#   - UN Guiding Principles on Business and Human Rights (2011)
+#   - ILO Declaration on Fundamental Principles and Rights at Work
+#   - International Bill of Human Rights (UDHR, ICCPR, ICESCR)
+#   - Paris Agreement (2015) - Art. 22 climate transition plan
+#   - CSRD: Directive (EU) 2022/2464 (Art. 12 reporting alignment)
+#   - EUDR: Regulation (EU) 2023/1115 (deforestation-free supply chains)
+#   - EU Taxonomy: Regulation (EU) 2020/852 (DNSH criteria)
+#   - Basel Convention on Hazardous Waste (1989)
+#   - Minamata Convention on Mercury (2013)
+#   - Stockholm Convention on Persistent Organic Pollutants (2001)
+#   - Rotterdam Convention on Hazardous Chemicals (1998)
+#   - Montreal Protocol on Ozone-Depleting Substances (1987)
+#   - Vienna Convention for the Protection of the Ozone Layer (1985)
+#   - Kigali Amendment to the Montreal Protocol (2016)
+#   - ILO Conventions: C29, C87, C98, C100, C105, C111, C138, C182
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-17)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-019-csddd-readiness
+  version: "1.0.0"
+  display_name: "CSDDD Readiness Pack"
+  description: >-
+    End-to-end readiness assessment and implementation support for the Corporate
+    Sustainability Due Diligence Directive (EU) 2024/1760. Includes 8 engines
+    for due diligence policy assessment, adverse impact identification, value
+    chain risk mapping, prevention and mitigation planning, stakeholder
+    engagement, grievance mechanism management, monitoring and effectiveness
+    tracking, and climate transition plan assessment. Implements the OECD
+    Six-Step Due Diligence Framework with 21 adverse impact categories (12
+    human rights from Annex Part I, 9 environmental from Annex Part II).
+    Bundles all 30 MRV agents for climate transition plan substantiation,
+    20 data intake and quality agents for supply chain data collection, 10
+    foundation agents for orchestration and provenance, and 40 EUDR agents
+    for deforestation-free supply chain integration. Supports manufacturing,
+    extractives, financial services, retail and consumer goods, technology,
+    and SME sectors with tailored presets. Enforces the zero-hallucination
+    principle for all compliance scoring and risk rating calculations.
+  category: eu-compliance
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-17"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/csddd-readiness"
+  changelog_url: "https://docs.greenlang.io/packs/csddd-readiness/changelog"
+
+  tags:
+    - csddd
+    - due-diligence
+    - human-rights
+    - environmental
+    - value-chain
+    - oecd-framework
+    - adverse-impacts
+    - stakeholder-engagement
+    - grievance-mechanism
+    - climate-transition
+    - paris-agreement
+    - civil-liability
+    - supply-chain
+    - forced-labour
+    - child-labour
+    - deforestation
+    - hazardous-waste
+    - remediation
+    - contractual-cascading
+    - risk-prioritisation
+    - prevention-mitigation
+    - monitoring-effectiveness
+    - art-5
+    - art-6
+    - art-7
+    - art-8
+    - art-9
+    - art-10
+    - art-11
+    - art-12
+    - art-22
+    - art-29
+    - eu-compliance
+    - provenance
+    - zero-hallucination
+    - sha256
+    - csrd-alignment
+    - eudr-alignment
+    - rbc
+    - ungp
+
+  regulation:
+    primary:
+      name: "Corporate Sustainability Due Diligence Directive"
+      reference: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        The CSDDD requires in-scope companies to integrate due diligence into
+        their policies and management systems, identify and assess actual and
+        potential adverse impacts on human rights and the environment in their
+        own operations, subsidiaries, and chains of activities (upstream and
+        downstream business partners), take appropriate measures to prevent
+        and mitigate potential adverse impacts and bring actual adverse impacts
+        to an end, establish and maintain a grievance mechanism, monitor the
+        effectiveness of their due diligence measures, and publicly communicate
+        on their due diligence. The directive also requires companies to adopt
+        and put into effect a climate transition plan compatible with the Paris
+        Agreement 1.5C target. Non-compliance triggers civil liability under
+        Article 29 and administrative supervision with fines up to 5% of
+        worldwide net turnover under Articles 24-25.
+    secondary:
+      - name: "OECD Due Diligence Guidance for Responsible Business Conduct"
+        reference: "OECD (2018)"
+        effective_date: "2018-05-30"
+      - name: "UN Guiding Principles on Business and Human Rights"
+        reference: "UN A/HRC/17/31 (2011)"
+        effective_date: "2011-06-16"
+      - name: "ILO Declaration on Fundamental Principles and Rights at Work"
+        reference: "ILO (1998, amended 2022)"
+        effective_date: "1998-06-18"
+      - name: "Corporate Sustainability Reporting Directive"
+        reference: "(EU) 2022/2464"
+        effective_date: "2024-01-01"
+      - name: "EU Deforestation Regulation"
+        reference: "(EU) 2023/1115"
+        effective_date: "2024-12-30"
+      - name: "EU Taxonomy Regulation"
+        reference: "(EU) 2020/852"
+        effective_date: "2020-07-12"
+      - name: "Paris Agreement"
+        reference: "UNFCCC Paris Agreement (2015)"
+        effective_date: "2016-11-04"
+      - name: "Basel Convention on Hazardous Waste"
+        reference: "Basel Convention (1989)"
+        effective_date: "1992-05-05"
+      - name: "Minamata Convention on Mercury"
+        reference: "Minamata Convention (2013)"
+        effective_date: "2017-08-16"
+      - name: "Stockholm Convention on Persistent Organic Pollutants"
+        reference: "Stockholm Convention (2001)"
+        effective_date: "2004-05-17"
+
+  compliance_references:
+    - id: "CSDDD_ART5"
+      name: "Article 5 - Due Diligence Policy"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to integrate due diligence into all relevant
+        policies and risk management systems. The due diligence policy must
+        describe the company's approach to due diligence, including the
+        long-term approach; a code of conduct describing rules and principles
+        to be followed by the company's employees and subsidiaries; and a
+        description of the processes put in place to implement due diligence,
+        including the measures taken to verify compliance with the code of
+        conduct and to extend its application to established business
+        relationships. The policy must be updated at least every 24 months
+        or whenever there is a significant change in the risk profile.
+
+    - id: "CSDDD_ART6"
+      name: "Article 6 - Identifying and Assessing Adverse Impacts"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to take appropriate measures to identify and assess
+        actual and potential adverse human rights impacts and adverse
+        environmental impacts arising from their own operations or those of
+        their subsidiaries, and from their chain of activities, in particular
+        from established business relationships. Identification must cover
+        all 12 human rights categories (Annex Part I) and 9 environmental
+        categories (Annex Part II). The assessment must consider severity
+        (scale, scope, irremediability) and likelihood. Companies must map
+        their chain of activities, identify and assess which areas pose
+        the greatest risk of adverse impacts, and prioritise the most
+        severe and likely risks for action.
+
+    - id: "CSDDD_ART7"
+      name: "Article 7 - Prevention and Mitigation of Potential Adverse Impacts"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to take appropriate measures to prevent, or where
+        prevention is not possible or not immediately possible, adequately
+        mitigate potential adverse impacts that have been, or should have
+        been, identified pursuant to Article 6. Measures include developing
+        and implementing a prevention action plan with reasonable and clearly
+        defined timelines, seeking contractual assurances from direct
+        business partners (cascading), making necessary investments
+        (financial or into processes), providing targeted support to SME
+        business partners, and collaborating with other entities including
+        through industry initiatives. If prevention or adequate mitigation
+        is not possible, the company must refrain from entering into new
+        or extending existing relations with the partner, or temporarily
+        suspend or terminate the business relationship as a last resort.
+
+    - id: "CSDDD_ART8"
+      name: "Article 8 - Bringing Actual Adverse Impacts to an End"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to take appropriate measures to bring actual
+        adverse impacts to an end and, where this is not immediately
+        possible, to minimise their extent. Measures include neutralisation
+        of the adverse impact or minimisation of its extent, a corrective
+        action plan with reasonable timelines, seeking contractual
+        assurances from direct business partners, making necessary
+        investments, and providing targeted support. Where adverse impacts
+        cannot be brought to an end or minimised, the company must refrain
+        from entering new relations or extending existing ones, and must
+        temporarily suspend or terminate the relationship if there is a
+        reasonable expectation that the measures will not succeed. The
+        company must also provide for remediation of adverse impacts.
+
+    - id: "CSDDD_ART9"
+      name: "Article 9 - Meaningful Engagement with Stakeholders"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to carry out meaningful engagement with
+        stakeholders (affected persons, trade unions, civil society
+        organisations, national human rights institutions) when identifying
+        adverse impacts (Art. 6), developing prevention and corrective
+        action plans (Art. 7, 8), deciding on termination of business
+        relationships (Art. 7, 8), and adopting remediation measures
+        (Art. 8). Meaningful engagement requires providing relevant and
+        timely information, consulting in good faith, taking views into
+        account in decision-making, providing feedback on how views were
+        considered, and ensuring accessibility. Engagement must respect
+        the rights of indigenous peoples to free, prior and informed
+        consent (FPIC) where applicable.
+
+    - id: "CSDDD_ART10"
+      name: "Article 10 - Grievance Mechanism"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to provide the possibility for persons and
+        organisations to submit complaints where they have legitimate
+        concerns regarding actual or potential adverse impacts. The
+        grievance mechanism must be accessible, predictable, equitable,
+        transparent, rights-compatible, and a source of continuous
+        learning. It must allow complaints to be submitted by persons
+        affected or having reasonable grounds to believe they might be
+        affected, trade unions, civil society organisations, and national
+        human rights institutions. The company must not require
+        complainants to waive their right to judicial remedies. Companies
+        must handle complaints in a timely manner, inform complainants
+        of the outcome, and take appropriate follow-up action. Companies
+        may participate in collaborative grievance mechanisms.
+
+    - id: "CSDDD_ART11"
+      name: "Article 11 - Monitoring"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to carry out periodic assessments of their own
+        operations and measures, those of their subsidiaries, and where
+        related to the chain of activities, those of their established
+        business relationships, to monitor the implementation and
+        effectiveness of the identification, prevention, mitigation,
+        bringing to an end, and minimisation of adverse impacts. The
+        assessments must be based on qualitative and quantitative
+        indicators and must be carried out at least every 12 months
+        and whenever there are reasonable grounds to believe that
+        significant new risks have arisen. Monitoring results must
+        feed back into the due diligence policy and action plans.
+
+    - id: "CSDDD_ART12"
+      name: "Article 12 - Communication"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to report on matters covered by the directive.
+        Companies subject to CSRD shall be deemed to have complied with
+        Art. 12 by reporting in accordance with ESRS (in particular ESRS 2
+        GOV-4 on due diligence, S1-S4 on social topics, E1-E5 on
+        environmental topics, and G1 on business conduct). Companies not
+        subject to CSRD must publish an annual statement on their website
+        covering due diligence policies, identified adverse impacts and
+        actions taken, and the outcome of monitoring. The statement must
+        be published within 12 months of the end of the financial year.
+
+    - id: "CSDDD_ART13"
+      name: "Article 13 - Meaningful Engagement (Cross-Cutting)"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Cross-cutting provision reinforcing meaningful engagement
+        requirements throughout all due diligence steps. Engagement must
+        be proportionate to the severity and likelihood of the adverse
+        impact, the characteristics of the business relationship and the
+        undertaking's leverage, and the nature and context of the operation.
+        Where engagement with all affected stakeholders is not feasible,
+        the company must engage with credible representative organisations.
+
+    - id: "CSDDD_ART14"
+      name: "Article 14 - Contractual Cascading"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to seek contractual assurances from direct
+        business partners that they will comply with the company's code
+        of conduct and, as necessary, a prevention action plan. The
+        contractual assurances must be accompanied by appropriate measures
+        to verify compliance. Companies must cascade these requirements
+        through the chain of activities by requiring direct partners to
+        obtain equivalent contractual assurances from their own partners.
+        Contractual cascading is a key mechanism for extending due
+        diligence obligations through multi-tier supply chains.
+
+    - id: "CSDDD_ART22"
+      name: "Article 22 - Climate Transition Plan"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Requires companies to adopt and put into effect a transition plan
+        for climate change mitigation which aims to ensure, through best
+        efforts, that the business model and strategy of the company are
+        compatible with the transition to a sustainable economy and with
+        the limiting of global warming to 1.5C in line with the Paris
+        Agreement. The transition plan must contain time-bound targets
+        related to climate change for 2030 and in five-year steps up to
+        2050, a description of identified decarbonisation levers and key
+        actions planned, an explanation of the investment and funding
+        supporting the implementation, and a description of the role of
+        the administrative, management and supervisory bodies. Companies
+        subject to CSRD reporting under ESRS E1 transition plan
+        disclosures shall be deemed to comply with this article.
+
+    - id: "CSDDD_ART29"
+      name: "Article 29 - Civil Liability"
+      regulation: "Directive (EU) 2024/1760"
+      effective_date: "2027-07-26"
+      description: >-
+        Establishes civil liability for companies that fail to comply with
+        their due diligence obligations under Articles 7 and 8, where
+        such failure results in damage to a natural or legal person. The
+        company is liable for damage caused by its failure to prevent,
+        mitigate, bring to an end, or minimise adverse impacts. The
+        burden of proof is on the claimant, but the company must provide
+        access to evidence in its control. Limitation period is at least
+        5 years. Overriding mandatory provisions of forum state apply.
+        Companies cannot contractually exclude or limit their liability.
+
+    - id: "OECD_DD"
+      name: "OECD Due Diligence Guidance for Responsible Business Conduct"
+      regulation: "OECD (2018)"
+      effective_date: "2018-05-30"
+      description: >-
+        The foundational framework for responsible business conduct due
+        diligence, codified into binding EU law through the CSDDD. The
+        six-step process provides: (1) Embed RBC into policies and
+        management systems; (2) Identify and assess actual and potential
+        adverse impacts; (3) Cease, prevent, or mitigate adverse impacts;
+        (4) Track implementation and results; (5) Communicate how impacts
+        are addressed; (6) Provide for or cooperate in remediation when
+        appropriate. The CSDDD maps directly to these six steps, making
+        the OECD framework the operational methodology for CSDDD compliance.
+
+    - id: "UNGP"
+      name: "UN Guiding Principles on Business and Human Rights"
+      regulation: "UN A/HRC/17/31 (2011)"
+      effective_date: "2011-06-16"
+      description: >-
+        Authoritative global standard on preventing and addressing adverse
+        human rights impacts linked to business activity. Three pillars:
+        (1) State duty to protect human rights; (2) Corporate responsibility
+        to respect human rights; (3) Access to remedy. The UNGPs define
+        the concept of human rights due diligence that the CSDDD codifies
+        into binding law, including the concepts of severity (scale, scope,
+        irremediability), salience, and leverage. The CSDDD's approach to
+        identifying and addressing adverse impacts is rooted in UNGP
+        methodology.
+
+  scope_thresholds:
+    phase_1:
+      effective_date: "2027-07-26"
+      eu_companies:
+        employees: 5000
+        turnover_eur: 1500000000
+      non_eu_companies:
+        eu_turnover_eur: 1500000000
+      description: >-
+        First phase: companies with more than 5,000 employees AND more
+        than EUR 1,500 million net worldwide turnover. Non-EU companies
+        with more than EUR 1,500 million net turnover generated in the EU.
+
+    phase_2:
+      effective_date: "2028-07-26"
+      eu_companies:
+        employees: 3000
+        turnover_eur: 900000000
+      non_eu_companies:
+        eu_turnover_eur: 900000000
+      description: >-
+        Second phase: companies with more than 3,000 employees AND more
+        than EUR 900 million net worldwide turnover. Non-EU companies
+        with more than EUR 900 million net turnover generated in the EU.
+
+    phase_3:
+      effective_date: "2029-07-26"
+      eu_companies:
+        employees: 1000
+        turnover_eur: 450000000
+      non_eu_companies:
+        eu_turnover_eur: 450000000
+      description: >-
+        Third phase (full scope): companies with more than 1,000 employees
+        AND more than EUR 450 million net worldwide turnover. Non-EU
+        companies with more than EUR 450 million net turnover generated
+        in the EU.
+
+  adverse_impact_categories:
+    human_rights:
+      source: "Annex Part I"
+      total_categories: 12
+      categories:
+        - id: HR-1
+          name: "Right to life, liberty and security of person"
+          instruments: ["UDHR Art. 3", "ICCPR Art. 6, 9"]
+        - id: HR-2
+          name: "Prohibition of torture, cruel, inhuman or degrading treatment"
+          instruments: ["UDHR Art. 5", "ICCPR Art. 7"]
+        - id: HR-3
+          name: "Prohibition of forced labour, slavery and trafficking"
+          instruments: ["ILO C29", "ILO C105", "ICCPR Art. 8"]
+        - id: HR-4
+          name: "Freedom of association and collective bargaining"
+          instruments: ["ILO C87", "ILO C98", "ICCPR Art. 22"]
+        - id: HR-5
+          name: "Right to just and favourable conditions of work"
+          instruments: ["ICESCR Art. 7", "ILO C100", "ILO C111"]
+        - id: HR-6
+          name: "Prohibition of child labour"
+          instruments: ["ILO C138", "ILO C182", "CRC Art. 32"]
+        - id: HR-7
+          name: "Right to adequate housing"
+          instruments: ["ICESCR Art. 11"]
+        - id: HR-8
+          name: "Right to adequate food"
+          instruments: ["ICESCR Art. 11"]
+        - id: HR-9
+          name: "Right to water and sanitation"
+          instruments: ["ICESCR Art. 11, 12", "UN GA 64/292"]
+        - id: HR-10
+          name: "Right to the highest attainable standard of health"
+          instruments: ["ICESCR Art. 12"]
+        - id: HR-11
+          name: "Right to education"
+          instruments: ["ICESCR Art. 13, 14"]
+        - id: HR-12
+          name: "Rights of indigenous peoples including FPIC"
+          instruments: ["UNDRIP", "ILO C169"]
+
+    environmental:
+      source: "Annex Part II"
+      total_categories: 9
+      categories:
+        - id: ENV-1
+          name: "Prohibition of environmental degradation (soil, water, air, biodiversity)"
+          instruments: ["CBD", "UNFCCC"]
+        - id: ENV-2
+          name: "Prohibition of deforestation"
+          instruments: ["EUDR (EU) 2023/1115"]
+        - id: ENV-3
+          name: "Prohibition of hazardous waste export"
+          instruments: ["Basel Convention"]
+        - id: ENV-4
+          name: "Prohibition of adverse impacts on protected areas"
+          instruments: ["CBD", "Ramsar Convention"]
+        - id: ENV-5
+          name: "Prohibition of activities adversely affecting access to clean water"
+          instruments: ["UN GA 64/292"]
+        - id: ENV-6
+          name: "Prohibition of mercury and mercury compounds use"
+          instruments: ["Minamata Convention"]
+        - id: ENV-7
+          name: "Prohibition of persistent organic pollutants"
+          instruments: ["Stockholm Convention"]
+        - id: ENV-8
+          name: "Prohibition of hazardous chemicals and pesticides"
+          instruments: ["Rotterdam Convention"]
+        - id: ENV-9
+          name: "Prohibition of ozone-depleting substances"
+          instruments: ["Montreal Protocol", "Vienna Convention", "Kigali Amendment"]
+
+  articles_covered: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 22, 29]
+  oecd_framework: "OECD Due Diligence Guidance for Responsible Business Conduct (2018)"
+  total_adverse_impact_categories: 21
+  total_engines: 8
+  total_workflows: 8
+  total_templates: 8
+  total_integrations: 10
+  total_presets: 6
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 CSDDD engines)
+  # ===========================================================================
+  engines:
+    - id: due_diligence_policy
+      name: "Due Diligence Policy Engine"
+      file: engines/due_diligence_policy_engine.py
+      class: DueDiligencePolicyEngine
+      oecd_step: 1
+      articles: [5, 17, 18, 19, 20]
+      description: >-
+        Implements Article 5 due diligence policy integration assessment.
+        Evaluates the company's existing policies against CSDDD requirements:
+        whether the due diligence policy describes the company's approach
+        (including long-term approach), whether it includes a code of conduct
+        with rules and principles for employees and subsidiaries, and whether
+        it describes the processes for implementing due diligence including
+        measures to verify compliance. Performs gap analysis against the OECD
+        Six-Step Framework Step 1 (Embed RBC into policies and management
+        systems). Assesses policy coverage across all 21 adverse impact
+        categories (12 HR, 9 ENV). Evaluates policy update frequency (must
+        be at least every 24 months). Checks integration with risk management
+        systems, compliance functions, and governance structures. Generates
+        policy maturity scorecard with per-article compliance status
+        (compliant, partially compliant, non-compliant, not applicable).
+        Also covers Articles 17-20 on supervisory authority requirements
+        for company registration and oversight.
+        Zero-hallucination: policy gap scoring uses deterministic checklist
+        evaluation against Article 5 requirements; no LLM in scoring path.
+      inputs:
+        - company_profile
+        - existing_policies
+        - code_of_conduct
+        - risk_management_framework
+        - governance_structure
+        - dd_process_documentation
+      outputs:
+        - scope_assessment
+        - policy_gap_analysis
+        - article_5_status
+        - policy_maturity_scorecard
+        - remediation_recommendations
+        - provenance_hashes
+      processing_time_estimate_minutes: 20
+      memory_estimate_mb: 512
+      required: true
+
+    - id: adverse_impact_identification
+      name: "Adverse Impact Identification Engine"
+      file: engines/adverse_impact_identification_engine.py
+      class: AdverseImpactIdentificationEngine
+      oecd_step: 2
+      articles: [6]
+      description: >-
+        Implements Article 6 identification and assessment of actual and
+        potential adverse impacts on human rights and the environment. Maps
+        the company's chain of activities (own operations, subsidiaries,
+        upstream business partners, downstream business partners) and
+        identifies where adverse impacts from Annex Part I (12 human rights
+        categories) and Annex Part II (9 environmental categories) are most
+        likely to occur. Uses a risk-based prioritisation methodology
+        assessing severity (scale x scope x irremediability per UNGP
+        framework) and likelihood (probability x frequency) for each
+        identified adverse impact. Generates an adverse impact register
+        with categorisation by impact type, affected stakeholder group,
+        geography, business relationship tier, and severity-likelihood
+        matrix. Supports industry-specific risk profiles (manufacturing,
+        extractives, agriculture, technology, financial services) with
+        pre-loaded sector risk indicators. Tracks both actual impacts
+        (already occurring) and potential impacts (risk of occurrence).
+        Zero-hallucination: severity and likelihood scoring uses
+        deterministic formulas per UNGP severity criteria; risk
+        prioritisation uses weighted scoring matrix with configurable
+        weights per sector.
+      inputs:
+        - company_profile
+        - value_chain_mapping
+        - supplier_data
+        - sector_risk_indicators
+        - country_risk_data
+        - commodity_risk_data
+        - historical_incidents
+        - stakeholder_reports
+        - ngo_reports
+        - media_screening
+      outputs:
+        - adverse_impact_register
+        - severity_likelihood_matrix
+        - risk_prioritisation_ranking
+        - value_chain_risk_heatmap
+        - article_6_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 45
+      memory_estimate_mb: 1024
+      required: true
+
+    - id: prevention_mitigation
+      name: "Prevention and Mitigation Engine"
+      file: engines/prevention_mitigation_engine.py
+      class: PreventionMitigationEngine
+      oecd_step: 3
+      articles: [7, 8, 14]
+      description: >-
+        Implements Articles 7 (prevention and mitigation of potential adverse
+        impacts) and 8 (bringing actual adverse impacts to an end). For
+        potential impacts (Art. 7): evaluates whether the company has
+        developed a prevention action plan with reasonable timelines,
+        sought contractual assurances from direct business partners (Art. 14
+        contractual cascading), made necessary investments, provided
+        targeted support to SME partners, and collaborated through industry
+        initiatives. For actual impacts (Art. 8): assesses corrective action
+        plans, neutralisation or minimisation measures, remediation
+        provisions, and whether business relationship termination has been
+        properly considered as a last resort. Tracks contractual cascading
+        compliance (Art. 14) including: contract clause coverage across
+        direct suppliers, verification measures, and multi-tier cascading
+        requirements (direct partners cascading to their partners). Manages
+        the escalation ladder: engagement, capacity building, contractual
+        assurance, temporary suspension, termination. Generates prevention
+        action plan templates and corrective action plan templates per
+        adverse impact category.
+        Zero-hallucination: action plan effectiveness scoring uses
+        deterministic rubric against Article 7/8 checklist criteria;
+        escalation ladder follows prescribed regulatory sequence.
+      inputs:
+        - adverse_impact_register
+        - existing_action_plans
+        - supplier_contracts
+        - contractual_assurances
+        - investment_plans
+        - industry_initiative_memberships
+        - business_relationship_data
+        - remediation_records
+      outputs:
+        - prevention_action_plans
+        - corrective_action_plans
+        - contractual_cascading_status
+        - escalation_status_register
+        - article_7_status
+        - article_8_status
+        - article_14_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 35
+      memory_estimate_mb: 768
+      required: true
+
+    - id: stakeholder_engagement
+      name: "Stakeholder Engagement Engine"
+      file: engines/stakeholder_engagement_engine.py
+      class: StakeholderEngagementEngine
+      oecd_step: 3
+      articles: [9, 13]
+      description: >-
+        Implements Articles 9 and 13 on meaningful engagement with
+        stakeholders throughout the due diligence process. Assesses
+        whether stakeholder engagement meets the CSDDD criteria for
+        meaningful engagement: relevant and timely information provided
+        to stakeholders, consultation conducted in good faith, stakeholder
+        views taken into account in decision-making, feedback provided on
+        how views were considered, and engagement is accessible (including
+        language, format, and channel). Identifies relevant stakeholder
+        groups per adverse impact category: affected persons and their
+        representatives, trade unions, civil society organisations (CSOs),
+        national human rights institutions (NHRIs), and indigenous peoples
+        requiring free, prior and informed consent (FPIC). Tracks
+        engagement activities with records of consultations, stakeholder
+        feedback received, and how feedback was incorporated into
+        decisions. Evaluates engagement quality against UNGPs effectiveness
+        criteria for non-judicial grievance mechanisms. Supports engagement
+        planning with stakeholder mapping and prioritisation per impact
+        severity.
+        Zero-hallucination: engagement quality scoring uses deterministic
+        criteria checklist per Article 9/13 requirements; no LLM in
+        scoring path.
+      inputs:
+        - stakeholder_mapping
+        - engagement_records
+        - consultation_logs
+        - fpic_documentation
+        - stakeholder_feedback
+        - trade_union_agreements
+        - cso_engagement_records
+        - nhri_correspondence
+      outputs:
+        - stakeholder_engagement_assessment
+        - meaningful_engagement_scorecard
+        - engagement_gap_analysis
+        - fpic_compliance_status
+        - article_9_status
+        - article_13_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 25
+      memory_estimate_mb: 640
+      required: true
+
+    - id: grievance_mechanism
+      name: "Grievance Mechanism Engine"
+      file: engines/grievance_mechanism_engine.py
+      class: GrievanceMechanismEngine
+      oecd_step: 6
+      articles: [10]
+      description: >-
+        Implements Article 10 grievance mechanism requirements. Assesses
+        whether the company's complaints procedure meets CSDDD criteria:
+        accessible (known to affected parties, multiple submission channels,
+        no undue barriers), predictable (clear procedure with timeframes),
+        equitable (fair access to information and advice), transparent
+        (information on procedure and outcomes), rights-compatible (does
+        not require waiver of judicial remedies), and a source of
+        continuous learning (used to improve due diligence). Evaluates
+        eligibility of complainants (affected persons, trade unions, CSOs,
+        NHRIs) and checks that complaint handling is timely with proper
+        follow-up action. Supports grievance case management with intake,
+        assessment, investigation, resolution, and closure stages.
+        Tracks case metrics: number of complaints received, average
+        resolution time, resolution outcomes (resolved, unresolved,
+        escalated, referred to judicial remedy), and complaint
+        categorisation by adverse impact type and stakeholder group.
+        Benchmarks against UNGP Effectiveness Criteria for operational-
+        level grievance mechanisms. Supports participation in collaborative
+        grievance mechanisms (industry-level or multi-stakeholder).
+        Zero-hallucination: mechanism compliance scoring uses deterministic
+        checklist against Article 10 criteria and UNGP Effectiveness
+        Criteria; case metrics are arithmetic.
+      inputs:
+        - grievance_mechanism_documentation
+        - complaint_records
+        - case_management_data
+        - resolution_outcomes
+        - complainant_feedback
+        - collaborative_mechanism_memberships
+        - judicial_referral_records
+      outputs:
+        - grievance_mechanism_assessment
+        - mechanism_compliance_scorecard
+        - case_metrics_dashboard
+        - accessibility_gap_analysis
+        - article_10_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 20
+      memory_estimate_mb: 512
+      required: true
+
+    - id: monitoring_effectiveness
+      name: "Monitoring and Effectiveness Engine"
+      file: engines/monitoring_effectiveness_engine.py
+      class: MonitoringEffectivenessEngine
+      oecd_step: 4
+      articles: [11]
+      description: >-
+        Implements Article 11 monitoring requirements. Assesses whether
+        the company carries out periodic assessments of its own operations,
+        subsidiaries, and chain of activities to monitor the implementation
+        and effectiveness of due diligence measures. Evaluates whether
+        monitoring is based on qualitative and quantitative indicators,
+        carried out at least every 12 months, and triggered by significant
+        new risk events. Defines and tracks Key Performance Indicators
+        (KPIs) across all OECD steps: policy integration KPIs (code of
+        conduct coverage, training completion rate), impact identification
+        KPIs (adverse impacts identified, risk assessments completed),
+        prevention/mitigation KPIs (action plans implemented, contractual
+        coverage rate), stakeholder engagement KPIs (engagement activities
+        conducted, feedback incorporation rate), grievance mechanism KPIs
+        (complaints handled, resolution rate, response time), and
+        communication KPIs (reporting completeness, stakeholder
+        accessibility). Generates trend analysis showing improvement
+        or deterioration across monitoring cycles. Evaluates feedback
+        loops from monitoring results to policy updates and action plan
+        revisions. Tracks implementation rates for corrective actions
+        identified through monitoring.
+        Zero-hallucination: all KPI calculations are deterministic
+        arithmetic; effectiveness scores use weighted KPI aggregation
+        with configurable weights per sector.
+      inputs:
+        - monitoring_plan
+        - kpi_data
+        - prior_monitoring_results
+        - corrective_action_tracking
+        - audit_reports
+        - site_visit_records
+        - third_party_assessments
+        - incident_reports
+      outputs:
+        - monitoring_assessment_report
+        - kpi_dashboard
+        - effectiveness_scorecard
+        - trend_analysis
+        - feedback_loop_assessment
+        - article_11_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 30
+      memory_estimate_mb: 768
+      required: true
+
+    - id: climate_transition
+      name: "Climate Transition Plan Engine"
+      file: engines/climate_transition_engine.py
+      class: ClimateTransitionEngine
+      oecd_step: 1
+      articles: [22]
+      description: >-
+        Implements Article 22 climate transition plan requirements.
+        Assesses whether the company has adopted and is putting into effect
+        a transition plan for climate change mitigation compatible with the
+        Paris Agreement 1.5C target. Evaluates: time-bound targets for
+        2030 and in five-year steps up to 2050; identified decarbonisation
+        levers and key actions planned; explanation of investment and
+        funding supporting implementation; description of governance
+        oversight (role of administrative, management, and supervisory
+        bodies); and alignment with science-based pathways. Cross-
+        references with ESRS E1 transition plan disclosures (E1-1) for
+        companies subject to CSRD, as CSRD compliance constitutes deemed
+        compliance with Art. 22. For non-CSRD companies, generates
+        standalone Art. 22 assessment. Integrates with MRV agents for
+        emissions data to validate baseline and target emissions.
+        Evaluates locked-in emissions from existing assets, CapEx
+        alignment with transition targets, and credibility of
+        decarbonisation levers against sector-specific pathways (SBTi
+        SDA or ACA). Generates a climate transition readiness scorecard
+        with compliance status per Art. 22 requirement.
+        Zero-hallucination: all emissions calculations and target
+        trajectory modelling use deterministic formulas routed through
+        MRV agents; transition plan credibility scoring uses weighted
+        checklist against Art. 22 requirements.
+      inputs:
+        - company_profile
+        - climate_transition_plan
+        - ghg_emissions_data
+        - energy_consumption_data
+        - capex_plans
+        - decarbonisation_actions
+        - sbti_target_data
+        - csrd_e1_disclosures
+      outputs:
+        - climate_transition_assessment
+        - art_22_compliance_scorecard
+        - decarbonisation_pathway_analysis
+        - locked_in_emissions_projection
+        - capex_alignment_analysis
+        - article_22_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 30
+      memory_estimate_mb: 768
+      required: true
+
+    - id: civil_liability_risk
+      name: "Civil Liability Risk Engine"
+      file: engines/civil_liability_risk_engine.py
+      class: CivilLiabilityRiskEngine
+      oecd_step: 6
+      articles: [29]
+      description: >-
+        Implements Article 29 civil liability risk assessment. Evaluates
+        the company's exposure to civil liability claims arising from
+        failure to comply with due diligence obligations under Articles 7
+        and 8. Assesses: the adequacy of prevention measures (Art. 7) and
+        corrective measures (Art. 8) for each identified adverse impact;
+        the quality and completeness of the evidence trail documenting
+        due diligence efforts; the strength of contractual cascading
+        and verification measures; the availability and quality of
+        remediation offered to affected parties; and the overall due
+        diligence compliance maturity. Generates a civil liability risk
+        matrix mapping each adverse impact category to: (a) likelihood of
+        a claim (based on severity, affected population, NGO attention,
+        media coverage), (b) potential financial exposure (damages,
+        legal costs, reputational impact), and (c) quality of defence
+        documentation (evidence of due diligence efforts). Calculates
+        an aggregate civil liability risk score per adverse impact
+        category and overall. Identifies high-risk areas requiring
+        priority remediation. Tracks limitation periods (minimum 5 years
+        per Art. 29) and jurisdiction-specific liability regimes across
+        EU member states. Evaluates insurance coverage adequacy for
+        CSDDD liability exposure.
+        Zero-hallucination: liability risk scoring uses deterministic
+        weighted matrix with configurable severity and likelihood
+        inputs; financial exposure estimation uses lookup tables with
+        sector-specific multipliers.
+      inputs:
+        - adverse_impact_register
+        - prevention_action_plans
+        - corrective_action_plans
+        - remediation_records
+        - evidence_trail
+        - contractual_assurances
+        - insurance_coverage_data
+        - legal_proceedings_history
+        - jurisdiction_data
+      outputs:
+        - civil_liability_risk_matrix
+        - risk_score_per_category
+        - aggregate_risk_score
+        - defence_documentation_gaps
+        - priority_remediation_areas
+        - insurance_adequacy_assessment
+        - article_29_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 25
+      memory_estimate_mb: 640
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 CSDDD workflows)
+  # ===========================================================================
+  workflows:
+    - id: due_diligence_assessment
+      name: "Due Diligence Assessment Workflow"
+      file: workflows/due_diligence_assessment_workflow.py
+      class: DueDiligenceAssessmentWorkflow
+      description: >-
+        5-phase master workflow implementing the full OECD Six-Step Due
+        Diligence Framework: Phase 1 - Scope and Policy Assessment (determine
+        whether the company is in scope using Art. 2 threshold criteria,
+        assess existing due diligence policies against Art. 5 requirements,
+        evaluate code of conduct and management system integration) ->
+        Phase 2 - Adverse Impact Identification (map chain of activities,
+        identify actual and potential adverse impacts across all 21
+        categories, assess severity and likelihood per UNGP criteria,
+        generate prioritised risk register) -> Phase 3 - Prevention and
+        Mitigation Planning (develop prevention action plans for potential
+        impacts per Art. 7, corrective action plans for actual impacts per
+        Art. 8, assess contractual cascading coverage per Art. 14, evaluate
+        escalation ladder status) -> Phase 4 - Engagement and Grievance
+        Assessment (assess meaningful stakeholder engagement per Art. 9/13,
+        evaluate grievance mechanism per Art. 10 criteria, review engagement
+        records and complaint handling quality) -> Phase 5 - Monitoring and
+        Reporting (assess monitoring effectiveness per Art. 11 with KPIs,
+        evaluate communication compliance per Art. 12, cross-reference with
+        CSRD disclosures if applicable).
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 5
+
+    - id: value_chain_mapping
+      name: "Value Chain Mapping Workflow"
+      file: workflows/value_chain_mapping_workflow.py
+      class: ValueChainMappingWorkflow
+      description: >-
+        4-phase workflow for mapping the company's chain of activities
+        for due diligence purposes: Phase 1 - Direct Partner Identification
+        (catalogue all direct upstream suppliers and direct downstream
+        business partners, including contract manufacturers, logistics
+        providers, distributors, and franchisees) -> Phase 2 - Multi-Tier
+        Mapping (extend mapping beyond direct partners to key indirect
+        tiers where high-risk commodities or geographies are involved,
+        identify critical nodes and chokepoints in the supply chain) ->
+        Phase 3 - Risk Overlay (overlay country-level human rights risk
+        indices, environmental risk indicators, commodity-specific risk
+        profiles, and sector risk assessments onto the value chain map) ->
+        Phase 4 - Prioritisation (apply severity-likelihood matrix to
+        rank value chain segments by due diligence priority, identify
+        hotspots requiring immediate attention, generate prioritised
+        value chain risk heatmap).
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: adverse_impact_assessment
+      name: "Adverse Impact Assessment Workflow"
+      file: workflows/adverse_impact_assessment_workflow.py
+      class: AdverseImpactAssessmentWorkflow
+      description: >-
+        5-phase workflow for systematic identification and assessment of
+        adverse impacts per Article 6: Phase 1 - Sector Risk Profiling
+        (load sector-specific risk indicators for all 21 adverse impact
+        categories, configure industry-specific risk weightings based on
+        OECD sector guidance, identify salient human rights issues per
+        sector) -> Phase 2 - Own Operations Assessment (assess adverse
+        impact risks in the company's own operations and subsidiaries,
+        review internal incident reports, audit findings, worker
+        complaints, and environmental monitoring data) -> Phase 3 -
+        Upstream Assessment (assess adverse impact risks in upstream
+        supply chain, review supplier audit results, questionnaire
+        responses, certification status, and country-commodity risk
+        combinations) -> Phase 4 - Downstream Assessment (assess adverse
+        impact risks in downstream chain of activities, review product
+        use impacts, distribution partner practices, and end-of-life
+        impacts) -> Phase 5 - Consolidation (consolidate all identified
+        impacts into a single register, apply severity-likelihood
+        scoring, prioritise for prevention and mitigation action).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: prevention_action_planning
+      name: "Prevention Action Planning Workflow"
+      file: workflows/prevention_action_planning_workflow.py
+      class: PreventionActionPlanningWorkflow
+      description: >-
+        4-phase workflow for developing and tracking prevention and
+        corrective action plans per Articles 7 and 8: Phase 1 - Impact
+        Triage (categorise identified adverse impacts by status: potential
+        requiring prevention (Art. 7) vs. actual requiring cessation
+        (Art. 8), assess leverage and influence over business partners
+        involved, determine appropriate response level on the escalation
+        ladder) -> Phase 2 - Action Plan Development (develop prevention
+        action plans for potential impacts with reasonable timelines and
+        defined KPIs, develop corrective action plans for actual impacts
+        with neutralisation or minimisation measures, define contractual
+        cascading clauses per Art. 14) -> Phase 3 - Implementation
+        Tracking (track implementation progress against action plan
+        timelines, monitor contractual assurance compliance, track
+        investment deployment, measure KPI progress) -> Phase 4 -
+        Effectiveness Review (assess whether prevention measures are
+        effectively reducing risk of impact occurrence, assess whether
+        corrective measures are successfully bringing actual impacts to
+        an end, evaluate whether escalation to suspension or termination
+        is warranted for non-responsive business partners).
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: stakeholder_engagement_management
+      name: "Stakeholder Engagement Management Workflow"
+      file: workflows/stakeholder_engagement_workflow.py
+      class: StakeholderEngagementWorkflow
+      description: >-
+        4-phase workflow for managing meaningful stakeholder engagement
+        per Articles 9 and 13: Phase 1 - Stakeholder Mapping (identify
+        all relevant stakeholder groups per adverse impact: affected
+        persons and their representatives, trade unions, CSOs, NHRIs,
+        indigenous peoples; assess accessibility requirements per
+        language, format, and channel; identify stakeholders requiring
+        FPIC) -> Phase 2 - Engagement Planning (design engagement
+        activities appropriate to each stakeholder group and impact
+        type, schedule consultations, prepare information materials,
+        establish feedback mechanisms) -> Phase 3 - Engagement
+        Execution and Documentation (conduct consultations and
+        engagement activities, document stakeholder views received,
+        record how views were considered in decision-making, provide
+        feedback to stakeholders on outcomes) -> Phase 4 - Engagement
+        Quality Assessment (evaluate engagement against meaningful
+        engagement criteria: timeliness, good faith, accessibility,
+        incorporation of views, feedback provision; generate engagement
+        quality scorecard).
+      schedule: "semi-annual"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: grievance_management
+      name: "Grievance Management Workflow"
+      file: workflows/grievance_management_workflow.py
+      class: GrievanceManagementWorkflow
+      description: >-
+        4-phase workflow for grievance mechanism management per Article 10:
+        Phase 1 - Mechanism Assessment (evaluate existing grievance
+        mechanism against Art. 10 criteria: accessible, predictable,
+        equitable, transparent, rights-compatible, source of continuous
+        learning; identify gaps and generate remediation plan) -> Phase 2 -
+        Complaint Intake and Triage (receive complaints through multiple
+        channels, classify by adverse impact category and severity,
+        assign to investigation team, acknowledge receipt within
+        prescribed timeline) -> Phase 3 - Investigation and Resolution
+        (investigate complaint, engage with complainant and relevant
+        business partners, determine appropriate resolution, implement
+        remediation measures, document outcome) -> Phase 4 - Case
+        Closure and Learning (close resolved cases with documented
+        outcomes, solicit complainant satisfaction feedback, extract
+        lessons learned for due diligence improvement, update risk
+        register based on complaint patterns).
+      schedule: "continuous"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: climate_transition_assessment
+      name: "Climate Transition Plan Assessment Workflow"
+      file: workflows/climate_transition_workflow.py
+      class: ClimateTransitionWorkflow
+      description: >-
+        4-phase workflow for Article 22 climate transition plan assessment:
+        Phase 1 - Baseline Assessment (collect current GHG emissions
+        inventory via MRV agents, determine baseline year emissions,
+        assess energy consumption and mix, identify emission reduction
+        trajectory required for 1.5C alignment) -> Phase 2 - Transition
+        Plan Evaluation (evaluate the company's adopted transition plan
+        against Art. 22 requirements: time-bound targets for 2030 and
+        five-year steps to 2050, decarbonisation levers identified, key
+        actions planned with timelines, investment and funding plans,
+        governance oversight description) -> Phase 3 - Credibility
+        Assessment (assess alignment of transition plan with science-based
+        pathways: SBTi near-term and long-term targets, sector-specific
+        decarbonisation pathways, locked-in emissions from existing
+        assets, CapEx alignment with decarbonisation) -> Phase 4 -
+        CSRD Cross-Reference (for CSRD-reporting companies, cross-
+        reference Art. 22 compliance with ESRS E1-1 transition plan
+        disclosures to confirm deemed compliance; for non-CSRD companies,
+        generate standalone Art. 22 assessment report).
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: readiness_reporting
+      name: "CSDDD Readiness Reporting Workflow"
+      file: workflows/readiness_reporting_workflow.py
+      class: ReadinessReportingWorkflow
+      description: >-
+        5-phase workflow for generating the comprehensive CSDDD readiness
+        report: Phase 1 - Data Aggregation (collect outputs from all
+        8 engines: policy assessment, impact identification, prevention/
+        mitigation, stakeholder engagement, grievance mechanism, monitoring,
+        climate transition, civil liability) -> Phase 2 - Cross-Article
+        Consistency Validation (validate consistency across articles:
+        impacts identified in Art. 6 are addressed in Art. 7/8, engagement
+        in Art. 9 covers all material impacts, grievance mechanism in
+        Art. 10 is accessible to all affected stakeholder groups, monitoring
+        in Art. 11 covers all active action plans) -> Phase 3 - Readiness
+        Scoring (calculate overall CSDDD readiness score as weighted
+        aggregate of per-article compliance scores, generate traffic-light
+        status per article, identify critical gaps requiring immediate
+        action) -> Phase 4 - Cross-Regulation Alignment (validate
+        consistency with CSRD/ESRS disclosures: ESRS 2 GOV-4 due diligence
+        statement, S1-S4 social topics, E1-E5 environmental topics; EUDR
+        deforestation-free supply chain requirements; EU Taxonomy DNSH
+        criteria) -> Phase 5 - Report Generation (produce comprehensive
+        readiness report with executive summary, per-article assessment,
+        gap analysis, remediation roadmap, timeline alignment with phased
+        application dates, and provenance audit trail).
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 5
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 CSDDD templates)
+  # ===========================================================================
+  templates:
+    - id: dd_readiness_report
+      display_name: "CSDDD Readiness Report"
+      description: >-
+        Comprehensive CSDDD readiness assessment report covering all
+        12 directive articles (Art. 5-14, 22, 29). Includes executive
+        summary with overall readiness score and traffic-light status
+        per article, scope assessment (in-scope determination with
+        threshold analysis), per-article compliance assessment with
+        gap identification, OECD Six-Step alignment status, adverse
+        impact register summary with severity-likelihood heatmap,
+        action plan coverage analysis, stakeholder engagement quality
+        scorecard, grievance mechanism compliance assessment, monitoring
+        effectiveness dashboard, climate transition plan credibility
+        score, civil liability risk overview, cross-regulation
+        consistency findings (CSRD, EUDR, Taxonomy), phased application
+        timeline with readiness milestones, and remediation roadmap
+        with effort estimates and cost projections. Suitable for
+        board-level reporting and compliance committee review.
+      format: "pdf"
+      template_file: "templates/dd_readiness_report.jinja2"
+      enabled: true
+
+    - id: adverse_impact_register
+      display_name: "Adverse Impact Register Report"
+      description: >-
+        Detailed register of all identified actual and potential adverse
+        impacts across all 21 categories (12 human rights, 9 environmental).
+        Each impact entry includes: category and sub-category, description,
+        affected stakeholder group, geographic location, value chain tier,
+        severity assessment (scale, scope, irremediability), likelihood
+        assessment (probability, frequency), overall risk score, current
+        status (identified, under prevention, under mitigation, resolved),
+        assigned owner, and linked action plans. Includes severity-
+        likelihood matrix visualisation, category distribution analysis,
+        geographic distribution heatmap, and year-over-year trend
+        comparison. With SHA-256 provenance hashes for each assessment.
+      format: "pdf"
+      template_file: "templates/adverse_impact_register.jinja2"
+      enabled: true
+
+    - id: value_chain_risk_report
+      display_name: "Value Chain Risk Mapping Report"
+      description: >-
+        Value chain mapping and risk analysis report showing the company's
+        complete chain of activities with risk overlay. Includes: direct
+        partner inventory (upstream suppliers, downstream business partners),
+        multi-tier mapping for high-risk segments, country-level risk
+        indices (governance, human rights, environmental performance),
+        commodity-specific risk profiles, sector risk indicators, and
+        prioritised risk heatmap by value chain tier. Identifies hotspots
+        requiring immediate due diligence attention and recommends
+        proportionate due diligence depth per value chain segment.
+        Includes contractual cascading coverage analysis showing
+        percentage of direct partners with CSDDD-compliant contractual
+        assurances per Art. 14.
+      format: "pdf"
+      template_file: "templates/value_chain_risk_report.jinja2"
+      enabled: true
+
+    - id: action_plan_report
+      display_name: "Prevention and Corrective Action Plan Report"
+      description: >-
+        Consolidated report of all prevention action plans (Art. 7) and
+        corrective action plans (Art. 8). Each plan includes: linked
+        adverse impact(s), objective, defined actions with responsible
+        parties, timeline with milestones, KPIs for effectiveness
+        measurement, resource allocation, contractual cascading
+        requirements, current implementation status, and effectiveness
+        assessment. Includes plan-level progress dashboard with
+        traffic-light indicators, escalation ladder status per
+        business partner (engagement, capacity building, contractual
+        assurance, suspension, termination), and overall action plan
+        coverage analysis. Suitable for management oversight and
+        supervisory authority inspection.
+      format: "pdf"
+      template_file: "templates/action_plan_report.jinja2"
+      enabled: true
+
+    - id: stakeholder_engagement_report
+      display_name: "Stakeholder Engagement Report"
+      description: >-
+        Report documenting all stakeholder engagement activities per
+        Articles 9 and 13. Includes: stakeholder mapping (identified
+        groups, accessibility assessment, FPIC requirements), engagement
+        plan summary, consultation log (dates, participants, topics,
+        stakeholder views received), documentation of how views were
+        considered in decisions, feedback provided to stakeholders,
+        engagement quality scorecard per meaningful engagement criteria,
+        FPIC compliance status for indigenous peoples, and gap analysis
+        identifying stakeholder groups not yet adequately engaged.
+        Suitable for compliance documentation and supervisory review.
+      format: "pdf"
+      template_file: "templates/stakeholder_engagement_report.jinja2"
+      enabled: true
+
+    - id: grievance_mechanism_report
+      display_name: "Grievance Mechanism Report"
+      description: >-
+        Grievance mechanism assessment and case management report.
+        Part 1 - Mechanism Assessment: compliance scorecard against
+        Article 10 criteria (accessible, predictable, equitable,
+        transparent, rights-compatible, source of continuous learning),
+        channel inventory, accessibility analysis, gap remediation plan.
+        Part 2 - Case Metrics Dashboard: complaints received by category
+        and channel, average intake-to-resolution time, resolution
+        outcomes (resolved, escalated, referred), complainant
+        satisfaction rate, lessons learned summary. Part 3 - Individual
+        Case Register (anonymised): case ID, category, status, timeline,
+        resolution, follow-up actions. With year-over-year trend analysis
+        and benchmarking against UNGP Effectiveness Criteria.
+      format: "pdf"
+      template_file: "templates/grievance_mechanism_report.jinja2"
+      enabled: true
+
+    - id: monitoring_dashboard
+      display_name: "Monitoring and Effectiveness Dashboard"
+      description: >-
+        Monitoring effectiveness dashboard implementing Article 11
+        requirements. Includes: KPI dashboard covering all OECD steps
+        (policy integration, impact identification, prevention/mitigation,
+        engagement, grievance, communication), trend analysis across
+        monitoring cycles, effectiveness scores per action plan, feedback
+        loop assessment (monitoring results incorporated into policy
+        updates), corrective action implementation rates, site visit
+        and audit findings summary, third-party assessment results,
+        and monitoring frequency compliance check (at least every 12
+        months). Traffic-light indicators and quarter-over-quarter
+        trend arrows for executive reporting.
+      format: "html"
+      template_file: "templates/monitoring_dashboard.jinja2"
+      enabled: true
+
+    - id: climate_transition_report
+      display_name: "Climate Transition Plan Report"
+      description: >-
+        Article 22 climate transition plan assessment report. Includes:
+        GHG emissions baseline (Scope 1, 2, 3 via MRV agents),
+        transition plan evaluation against Art. 22 requirements (time-
+        bound targets for 2030 and five-year steps to 2050, identified
+        decarbonisation levers, investment and funding plans, governance
+        oversight), science-based pathway alignment (SBTi near-term and
+        long-term, sector-specific pathways), locked-in emissions
+        projection, CapEx alignment analysis, CSRD E1-1 cross-reference
+        (for deemed compliance), and climate transition readiness
+        scorecard. With provenance hashes for all emissions calculations.
+        Suitable for board approval and supervisory authority review.
+      format: "pdf"
+      template_file: "templates/climate_transition_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "CSDDD Pack Orchestrator"
+      file: integrations/pack_orchestrator.py
+      class: CSDDDOrchestrator
+      type: orchestrator
+      description: >-
+        12-phase master pipeline: Health Check -> Configuration and Preset
+        Loading -> Scope Threshold Assessment (Art. 2: employee count,
+        turnover, EU vs non-EU, phased application date) -> Due Diligence
+        Policy Assessment (Art. 5) -> Value Chain Mapping and Risk Overlay
+        -> Adverse Impact Identification and Assessment (Art. 6) ->
+        Prevention and Mitigation Planning (Art. 7, 8, 14) -> Stakeholder
+        Engagement Assessment (Art. 9, 13) -> Grievance Mechanism
+        Assessment (Art. 10) -> Monitoring Effectiveness Assessment
+        (Art. 11) -> Climate Transition Plan Assessment (Art. 22) ->
+        Civil Liability Risk Assessment and Readiness Report Generation
+        (Art. 29, 12). Orchestrates all CSDDD phases with dependency
+        management (impact identification must complete before prevention
+        planning), parallel execution where possible (stakeholder
+        engagement and grievance assessment can run concurrently), and
+        cross-regulation consistency validation (CSRD, EUDR, Taxonomy).
+      required: true
+      methods:
+        - initialize_pack
+        - assess_scope
+        - orchestrate_due_diligence
+        - aggregate_results
+        - generate_readiness_scorecard
+        - export_reports
+
+    - id: csrd_pack_bridge
+      name: "CSRD Pack Bridge"
+      file: integrations/csrd_pack_bridge.py
+      class: CSRDPackBridge
+      type: bridge
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs (Starter/Professional/
+        Enterprise) for alignment between CSDDD due diligence and CSRD
+        sustainability reporting. Validates that ESRS 2 GOV-4 (due
+        diligence statement) is consistent with Art. 5 policies, that
+        S1-S4 social disclosures are consistent with Art. 6 human rights
+        impact identification, that E1-E5 environmental disclosures are
+        consistent with Art. 6 environmental impact identification, and
+        that Art. 22 climate transition plan is consistent with ESRS E1-1
+        transition plan disclosure. Companies reporting under CSRD/ESRS
+        are deemed to comply with Art. 12 (communication) and Art. 22
+        (climate transition plan). Flags inconsistencies between CSDDD
+        due diligence outputs and CSRD disclosures.
+      required: true
+      methods:
+        - query_csrd_data
+        - validate_gov4_alignment
+        - validate_social_alignment
+        - validate_environmental_alignment
+        - validate_art22_deemed_compliance
+        - flag_inconsistencies
+
+    - id: eudr_pack_bridge
+      name: "EUDR Pack Bridge"
+      file: integrations/eudr_pack_bridge.py
+      class: EUDRPackBridge
+      type: bridge
+      description: >-
+        Connects to PACK-006/007 EUDR Packs (Starter/Professional) and
+        AGENT-EUDR-001 through 040 for deforestation-free supply chain
+        data. CSDDD Annex Part II category ENV-2 (prohibition of
+        deforestation) directly references the EUDR. This bridge ensures
+        that deforestation due diligence under the CSDDD leverages
+        existing EUDR due diligence data: geolocation data, deforestation
+        risk assessments, satellite monitoring results, commodity
+        traceability records, and supplier due diligence statements.
+        Prevents duplication of effort by routing ENV-2 assessments
+        through EUDR agents where the company is already EUDR-compliant.
+        Also bridges EUDR stakeholder engagement and grievance mechanism
+        data for consistency with CSDDD Art. 9 and 10.
+      required: false
+      methods:
+        - query_eudr_due_diligence
+        - import_deforestation_risk_data
+        - import_geolocation_data
+        - validate_env2_compliance
+        - bridge_stakeholder_engagement
+        - bridge_grievance_data
+
+    - id: mrv_bridge
+      name: "MRV Data Bridge"
+      file: integrations/mrv_bridge.py
+      class: MRVDataBridge
+      type: bridge
+      description: >-
+        Routes data from all 30 AGENT-MRV agents for Article 22 climate
+        transition plan assessment. Provides Scope 1, 2, and 3 emissions
+        data for baseline establishment, target trajectory validation,
+        and transition plan credibility assessment. MRV agent outputs
+        include emissions by source category, energy consumption and mix,
+        and intensity metrics. Provenance hashes from MRV calculations
+        are incorporated into CSDDD provenance chain. Also supports
+        environmental adverse impact assessment (Art. 6 Annex Part II)
+        by providing emissions data for environmental degradation impact
+        quantification.
+      required: true
+      methods:
+        - query_ghg_emissions
+        - query_energy_data
+        - validate_mrv_provenance
+        - route_to_art22_engine
+        - route_to_env_impact_engine
+
+    - id: data_bridge
+      name: "Data Quality Bridge"
+      file: integrations/data_bridge.py
+      class: DataQualityBridge
+      type: bridge
+      description: >-
+        Connects to AGENT-DATA agents for CSDDD-related data intake.
+        Routes supplier questionnaire responses through AGENT-DATA-008
+        (Supplier Questionnaire Processor) for value chain risk data
+        collection. Normalises supply chain data spreadsheets through
+        AGENT-DATA-002 (Excel/CSV Normalizer). Extracts evidence from
+        audit reports and policy documents through AGENT-DATA-001 (PDF
+        Extractor). Connects to ERP for supplier master data and spend
+        analysis through AGENT-DATA-003 (ERP Connector). Categorises
+        procurement spend by risk category through AGENT-DATA-009 (Spend
+        Data Categorizer). Profiles data quality across all CSDDD inputs
+        through AGENT-DATA-010 (Data Quality Profiler). Ensures all data
+        entering the CSDDD assessment pipeline passes quality checks.
+      required: true
+      methods:
+        - orchestrate_data_collection
+        - process_supplier_questionnaires
+        - extract_audit_reports
+        - categorise_spend_by_risk
+        - validate_data_quality
+        - track_data_lineage
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      file: integrations/taxonomy_bridge.py
+      class: TaxonomyBridge
+      type: bridge
+      description: >-
+        Connects to GL-Taxonomy-APP for alignment between CSDDD
+        environmental due diligence and EU Taxonomy DNSH (Do No
+        Significant Harm) criteria. Taxonomy DNSH assessment provides
+        evidence for CSDDD Annex Part II environmental adverse impact
+        categories: pollution prevention (ENV-1), biodiversity protection
+        (ENV-4), water protection (ENV-5), and hazardous substances
+        (ENV-6, 7, 8, 9). Validates that companies claiming taxonomy-
+        aligned activities have also addressed environmental adverse
+        impacts in their CSDDD due diligence. Routes taxonomy technical
+        screening criteria data for environmental impact assessment.
+      required: false
+      methods:
+        - query_taxonomy_alignment
+        - import_dnsh_assessment
+        - validate_env_consistency
+        - route_screening_criteria
+
+    - id: green_claims_bridge
+      name: "Green Claims Pack Bridge"
+      file: integrations/green_claims_bridge.py
+      class: GreenClaimsBridge
+      type: bridge
+      description: >-
+        Connects to PACK-018 (EU Green Claims Prep Pack) for consistency
+        between environmental claims and CSDDD environmental due diligence.
+        Environmental claims about the company's supply chain (deforestation-
+        free, conflict-free minerals, sustainable sourcing) must be
+        consistent with CSDDD due diligence findings. If CSDDD due
+        diligence identifies actual environmental adverse impacts in the
+        supply chain, this bridge flags potential greenwashing risk for
+        claims asserting environmental sustainability in that same supply
+        chain. Also validates that Art. 22 climate transition plan claims
+        are consistent with substantiated environmental claims.
+      required: false
+      methods:
+        - query_green_claims
+        - validate_supply_chain_claims
+        - flag_greenwashing_risk
+        - validate_art22_claims_consistency
+
+    - id: health_check
+      name: "CSDDD Health Check"
+      file: integrations/health_check.py
+      class: CSDDDHealthCheck
+      type: health_check
+      description: >-
+        14-category system verification covering all 8 engines, agent
+        dependencies (30 MRV, 20 DATA, 10 FOUND, selected EUDR agents),
+        database connectivity, country risk index freshness (Freedom
+        House, ITUC Global Rights Index, Environmental Performance Index),
+        commodity risk database currency, ILO convention ratification
+        data, adverse impact category taxonomy completeness, UNGP
+        severity criteria configuration, OECD sector guidance availability,
+        CSRD/ESRS bridge connectivity, EUDR bridge connectivity, MRV
+        agent health, emission factor database currency, and deployment
+        readiness status.
+      required: false
+      methods:
+        - check_engines
+        - check_agents
+        - check_database
+        - check_risk_databases
+        - check_bridges
+        - report_health_status
+
+    - id: setup_wizard
+      name: "CSDDD Setup Wizard"
+      file: integrations/setup_wizard.py
+      class: CSDDDSetupWizard
+      type: setup_wizard
+      description: >-
+        8-step guided configuration wizard: Step 1 - Company Profile
+        (entity type, headcount, turnover, EU vs non-EU, ultimate parent)
+        -> Step 2 - Scope Assessment (determine in-scope status per Art. 2,
+        identify applicable phased application date) -> Step 3 - Sector
+        Selection (manufacturing, extractives, financial services, retail,
+        technology, SME; loads sector-specific risk indicators) -> Step 4 -
+        Value Chain Configuration (register major supplier tiers, high-risk
+        commodities, high-risk geographies, downstream partners) -> Step 5 -
+        Existing Due Diligence Inventory (document existing policies,
+        certifications, industry memberships, prior assessments) -> Step 6 -
+        Data Source Configuration (ERP, HRIS, supplier management system,
+        audit management system) -> Step 7 - Cross-Regulation Configuration
+        (CSRD reporting status, EUDR compliance status, taxonomy reporting
+        status) -> Step 8 - Reporting Preferences (language, format,
+        frequency, distribution list).
+      required: false
+      methods:
+        - collect_company_profile
+        - assess_scope
+        - select_sector
+        - configure_value_chain
+        - inventory_existing_dd
+        - configure_data_sources
+        - configure_cross_regulation
+        - finalize_configuration
+
+    - id: supervisory_authority_bridge
+      name: "Supervisory Authority Bridge"
+      file: integrations/supervisory_authority_bridge.py
+      class: SupervisoryAuthorityBridge
+      type: bridge
+      description: >-
+        Integration bridge for supervisory authority interaction per
+        Articles 17-25. Manages company registration with designated
+        supervisory authority (Art. 17), tracks supervisory authority
+        requests for information (Art. 19), monitors administrative
+        sanction regimes across EU member states (Art. 24-25: fines up
+        to 5% of net worldwide turnover, naming and shaming, interim
+        measures, compliance orders), and generates supervisory authority
+        reporting packages. Tracks member state transposition status
+        and jurisdiction-specific enforcement approaches. Supports
+        submission of due diligence documentation in response to
+        supervisory authority investigations.
+      required: false
+      methods:
+        - register_with_authority
+        - respond_to_information_requests
+        - track_sanctions_regime
+        - generate_authority_reporting
+        - monitor_transposition_status
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (6 presets)
+  # ===========================================================================
+  presets:
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for manufacturing companies (NACE C). High-risk
+        adverse impact categories: forced labour and child labour in
+        raw material supply chains (HR-3, HR-6), occupational health
+        and safety (HR-5, HR-10), freedom of association in supplier
+        factories (HR-4), environmental degradation from industrial
+        processes (ENV-1), hazardous waste from manufacturing (ENV-3),
+        and pollution from chemicals and persistent organic pollutants
+        (ENV-7, ENV-8). Pre-loaded with manufacturing sector risk
+        indicators from OECD Guidance for Responsible Supply Chains
+        in the Garment and Footwear Sector, and OECD Due Diligence
+        Guidance for Minerals from Conflict-Affected Areas. Supplier
+        audit integration prioritised. Multi-tier supply chain mapping
+        critical for raw material sourcing.
+      sector: "MANUFACTURING"
+      enabled_engines:
+        - due_diligence_policy
+        - adverse_impact_identification
+        - prevention_mitigation
+        - stakeholder_engagement
+        - grievance_mechanism
+        - monitoring_effectiveness
+        - climate_transition
+        - civil_liability_risk
+      risk_profile:
+        high_risk_categories: [HR-3, HR-4, HR-5, HR-6, HR-10, ENV-1, ENV-3, ENV-7, ENV-8]
+        moderate_risk_categories: [HR-1, HR-2, HR-7, HR-8, HR-9, ENV-2, ENV-4, ENV-5]
+        low_risk_categories: [HR-11, HR-12, ENV-6, ENV-9]
+      file: "config/presets/manufacturing.yaml"
+
+    - id: extractives
+      name: "Extractives and Mining Preset"
+      description: >-
+        Configuration for extractive industries (NACE B: mining, oil
+        and gas, quarrying). Highest-risk sector for CSDDD adverse
+        impacts. Critical categories: right to life and security (HR-1)
+        in conflict-affected areas, forced labour in artisanal mining
+        (HR-3), child labour in cobalt, mica, gold supply chains (HR-6),
+        indigenous peoples' rights and FPIC (HR-12), community
+        displacement and land rights (HR-7), environmental degradation
+        and biodiversity loss (ENV-1, ENV-4), water contamination (ENV-5),
+        mercury use in artisanal gold mining (ENV-6), and deforestation
+        for mining access (ENV-2). Pre-loaded with OECD Due Diligence
+        Guidance for Responsible Supply Chains of Minerals from
+        Conflict-Affected and High-Risk Areas, and Voluntary Principles
+        on Security and Human Rights. FPIC assessment critical. Multi-
+        tier supply chain mapping essential for conflict minerals.
+      sector: "EXTRACTIVES"
+      enabled_engines:
+        - due_diligence_policy
+        - adverse_impact_identification
+        - prevention_mitigation
+        - stakeholder_engagement
+        - grievance_mechanism
+        - monitoring_effectiveness
+        - climate_transition
+        - civil_liability_risk
+      risk_profile:
+        high_risk_categories: [HR-1, HR-2, HR-3, HR-6, HR-7, HR-9, HR-12, ENV-1, ENV-2, ENV-4, ENV-5, ENV-6]
+        moderate_risk_categories: [HR-4, HR-5, HR-8, HR-10, ENV-3, ENV-7, ENV-8, ENV-9]
+        low_risk_categories: [HR-11]
+      file: "config/presets/extractives.yaml"
+
+    - id: financial_services
+      name: "Financial Services Preset"
+      description: >-
+        Configuration for financial institutions (NACE K: banks,
+        insurers, asset managers, investment funds). CSDDD applies to
+        financial institutions through their chain of activities
+        including lending, investment, and insurance underwriting
+        portfolios. Key adverse impact categories: financed adverse
+        impacts from lending/investment portfolios (all categories
+        via portfolio screening), forced labour in financed supply
+        chains (HR-3), environmental degradation in financed projects
+        (ENV-1), deforestation-linked financing (ENV-2), and climate
+        transition plan for financed emissions (Art. 22). Pre-loaded
+        with OECD Due Diligence for Responsible Corporate Lending and
+        Securities Underwriting guidance, Equator Principles framework,
+        and UNEP FI Principles for Responsible Banking. Portfolio-level
+        adverse impact screening using PCAF-style attribution. Client
+        engagement and contractual cascading through lending covenants
+        and investment agreements.
+      sector: "FINANCIAL_SERVICES"
+      enabled_engines:
+        - due_diligence_policy
+        - adverse_impact_identification
+        - prevention_mitigation
+        - stakeholder_engagement
+        - grievance_mechanism
+        - monitoring_effectiveness
+        - climate_transition
+        - civil_liability_risk
+      risk_profile:
+        high_risk_categories: [HR-3, HR-6, ENV-1, ENV-2]
+        moderate_risk_categories: [HR-1, HR-2, HR-4, HR-5, HR-7, HR-8, HR-9, HR-10, HR-12, ENV-3, ENV-4, ENV-5, ENV-6, ENV-7, ENV-8, ENV-9]
+        low_risk_categories: [HR-11]
+      file: "config/presets/financial_services.yaml"
+
+    - id: retail_consumer
+      name: "Retail and Consumer Goods Preset"
+      description: >-
+        Configuration for retail and consumer goods companies (NACE G,
+        C10-C12). Key adverse impact categories: forced labour and
+        child labour in agricultural and garment supply chains (HR-3,
+        HR-6), working conditions in supplier factories (HR-5), freedom
+        of association in production countries (HR-4), deforestation
+        in commodity supply chains (palm oil, soy, cocoa, coffee,
+        rubber) (ENV-2), environmental degradation from agriculture
+        (ENV-1), pesticide use (ENV-8), and consumer health and safety
+        (HR-10). Pre-loaded with OECD Guidance for Responsible Supply
+        Chains in the Garment and Footwear Sector, OECD-FAO Guidance
+        for Responsible Agricultural Supply Chains, and Amfori BSCI
+        audit framework integration. Private label supply chain
+        mapping critical. High consumer visibility increases civil
+        liability risk.
+      sector: "RETAIL_CONSUMER"
+      enabled_engines:
+        - due_diligence_policy
+        - adverse_impact_identification
+        - prevention_mitigation
+        - stakeholder_engagement
+        - grievance_mechanism
+        - monitoring_effectiveness
+        - climate_transition
+        - civil_liability_risk
+      risk_profile:
+        high_risk_categories: [HR-3, HR-4, HR-5, HR-6, HR-10, ENV-1, ENV-2, ENV-8]
+        moderate_risk_categories: [HR-1, HR-2, HR-7, HR-8, HR-9, ENV-3, ENV-4, ENV-5, ENV-7]
+        low_risk_categories: [HR-11, HR-12, ENV-6, ENV-9]
+      file: "config/presets/retail_consumer.yaml"
+
+    - id: technology
+      name: "Technology Preset"
+      description: >-
+        Configuration for technology companies (NACE J, C26). Key adverse
+        impact categories: forced labour and child labour in electronics
+        supply chains - cobalt, tin, tantalum, tungsten, lithium (HR-3,
+        HR-6), conflict minerals sourcing (HR-1, HR-2), working conditions
+        in assembly factories (HR-5), freedom of association in
+        manufacturing countries (HR-4), e-waste and hazardous substances
+        (ENV-3, ENV-7), data centre energy consumption and climate impact
+        (Art. 22), rare earth mineral extraction impacts on communities
+        and environment (HR-7, HR-12, ENV-1, ENV-4). Pre-loaded with
+        Responsible Minerals Initiative (RMI) framework, Responsible
+        Business Alliance (RBA) Code of Conduct integration, and OECD
+        Minerals guidance for 3TG+cobalt. Deep-tier supply chain mapping
+        critical for minerals traceability.
+      sector: "TECHNOLOGY"
+      enabled_engines:
+        - due_diligence_policy
+        - adverse_impact_identification
+        - prevention_mitigation
+        - stakeholder_engagement
+        - grievance_mechanism
+        - monitoring_effectiveness
+        - climate_transition
+        - civil_liability_risk
+      risk_profile:
+        high_risk_categories: [HR-1, HR-3, HR-4, HR-5, HR-6, ENV-1, ENV-3, ENV-7]
+        moderate_risk_categories: [HR-2, HR-7, HR-10, HR-12, ENV-2, ENV-4, ENV-5, ENV-8]
+        low_risk_categories: [HR-8, HR-9, HR-11, ENV-6, ENV-9]
+      file: "config/presets/technology.yaml"
+
+    - id: sme
+      name: "SME Preset"
+      description: >-
+        Simplified configuration for small and medium-sized enterprises
+        that are indirectly in scope through contractual cascading from
+        large companies (Art. 14). While SMEs are not directly subject
+        to CSDDD obligations, they may receive contractual due diligence
+        requirements from their large company customers. This preset
+        provides a proportionate approach to CSDDD readiness: simplified
+        policy assessment, focused adverse impact identification on the
+        most salient issues per sector, streamlined action plan
+        templates, and basic grievance mechanism setup. Reduced engine
+        configuration for faster implementation and lower cost. Includes
+        SME-specific guidance on responding to due diligence questionnaires
+        from large company customers. 3-year data retention. Financial
+        support and capacity building tracking from large company partners.
+      sector: "SME"
+      enabled_engines:
+        - due_diligence_policy
+        - adverse_impact_identification
+        - prevention_mitigation
+        - grievance_mechanism
+        - monitoring_effectiveness
+      risk_profile:
+        high_risk_categories: []
+        moderate_risk_categories: []
+        low_risk_categories: []
+        note: "Risk profile determined by sector and customer requirements"
+      file: "config/presets/sme.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - Required for Article 22 climate transition plan assessment
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Baseline Scope 1 emissions from stationary sources for Art. 22 transition plan"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Scope 1 emissions from refrigerants for Art. 22 and ENV-9 ODS assessment"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Scope 1 emissions from fleet for Art. 22 transport decarbonisation"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Scope 1 process emissions for Art. 22 industrial transition planning"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Scope 1 fugitive emissions for Art. 22 and ENV-1 environmental degradation"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Land use emissions for Art. 22 and ENV-2 deforestation assessment"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Waste treatment emissions for Art. 22 and ENV-3 hazardous waste"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Agricultural emissions for Art. 22 and ENV-1 environmental degradation"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Location-based Scope 2 for Art. 22 transition plan baseline"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Market-based Scope 2 for Art. 22 renewable energy procurement tracking"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Steam and heat purchase emissions for Art. 22"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Cooling purchase emissions for Art. 22"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Scope 2 dual reporting reconciliation for Art. 22 consistency"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Scope 3 Cat 1 emissions for Art. 22 supply chain decarbonisation targets"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Scope 3 Cat 2 emissions for Art. 22 sustainable capex planning"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Scope 3 Cat 3 upstream energy emissions for Art. 22"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Scope 3 Cat 4 inbound logistics for Art. 22 and value chain mapping"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Scope 3 Cat 5 waste emissions for Art. 22 and ENV-3 waste assessment"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Scope 3 Cat 6 business travel emissions for Art. 22"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Scope 3 Cat 7 commuting emissions for Art. 22"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Scope 3 Cat 8 leased assets emissions for Art. 22"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Scope 3 Cat 9 downstream logistics for Art. 22 and value chain mapping"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Scope 3 Cat 10 downstream processing for Art. 22"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Scope 3 Cat 11 product use phase for Art. 22 and downstream impact assessment"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Scope 3 Cat 12 end-of-life for Art. 22 and ENV-3 hazardous waste"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Scope 3 Cat 13 downstream leased assets for Art. 22"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Scope 3 Cat 14 franchise emissions for Art. 22"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Scope 3 Cat 15 financed emissions for Art. 22 and financial sector due diligence"
+      path: "greenlang/agents/mrv/investments/"
+      required: false
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps value chain activities to Scope 3 categories for Art. 22"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage for Art. 22 emissions and due diligence provenance"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts evidence from audit reports, supplier certifications, and policy documents"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises supplier lists, risk assessment data, and due diligence questionnaire responses"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to ERP for supplier master data, spend data, and contract data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for country risk indices, commodity risk data, and ILO databases"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability data for ENV-2 deforestation and commodity geolocation"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for supplier site locations and community proximity analysis"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite imagery for ENV-2 deforestation monitoring in supply chain"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier due diligence questionnaires for adverse impact assessment"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Climate hazard data for physical risk assessment supporting Art. 22"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorises procurement spend by human rights and environmental risk category"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across due diligence inputs for evidence reliability"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate supplier entries, impact records, and complaint cases"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing risk assessment data using proxy indicators and peer data"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous risk scores and KPI values for due diligence review"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in monitoring KPI time series for trend analysis"
+    required: false
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles due diligence data across audit reports, questionnaires, and external indices"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of country risk indices, commodity risk data, and audit results"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for risk assessment and due diligence data formats"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from source evidence through due diligence assessment pipeline"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces CSDDD, OECD, and UNGP validation rules on due diligence data"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates due diligence workflow phases using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates CSDDD data schemas and adverse impact taxonomy"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises units (tCO2e, EUR, headcount, hours) and reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in risk scoring, severity assessment, and threshold application"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links due diligence findings to source evidence with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for due diligence data and confidential findings"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and due diligence capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all risk assessments and compliance scores are reproducible with SHA-256"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for due diligence outputs and compliance scoring"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors due diligence pipeline health and engine performance"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Agents (EUDR agents for deforestation due diligence)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: AGENT-EUDR-021
+    name: "DD Orchestrator Agent"
+    description: "EUDR due diligence orchestration for ENV-2 deforestation adverse impact assessment"
+    required: false
+  - id: AGENT-EUDR-030
+    name: "Stakeholder Engagement Agent"
+    description: "EUDR stakeholder engagement for cross-regulation consistency with CSDDD Art. 9"
+    required: false
+  - id: AGENT-EUDR-031
+    name: "Grievance Mechanism Agent"
+    description: "EUDR grievance mechanism for cross-regulation consistency with CSDDD Art. 10"
+    required: false
+  - id: AGENT-EUDR-016
+    name: "Country Risk Assessment Agent"
+    description: "Country-level deforestation risk for ENV-2 geographic risk overlay"
+    required: false
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 64
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    bridged_agents: 4
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+  packs:
+    required:
+      - pack_id: PACK-001
+        name: "CSRD Starter Pack"
+        version: ">=1.0.0"
+        reason: "Art. 12 reporting alignment and Art. 22 deemed compliance via ESRS E1-1"
+
+    optional:
+      - pack_id: PACK-004
+        name: "CBAM Readiness Pack"
+        version: ">=1.0.0"
+        reason: "Supply chain environmental data for value chain risk mapping"
+      - pack_id: PACK-006
+        name: "EUDR Starter Pack"
+        version: ">=1.0.0"
+        reason: "ENV-2 deforestation due diligence and EUDR compliance data"
+      - pack_id: PACK-008
+        name: "EU Taxonomy Alignment Pack"
+        version: ">=1.0.0"
+        reason: "DNSH criteria for environmental adverse impact assessment"
+      - pack_id: PACK-016
+        name: "ESRS E1 Climate Pack"
+        version: ">=1.0.0"
+        reason: "Art. 22 climate transition plan via ESRS E1-1 deemed compliance"
+      - pack_id: PACK-017
+        name: "ESRS Full Coverage Pack"
+        version: ">=1.0.0"
+        reason: "Full ESRS coverage for Art. 12 deemed compliance"
+      - pack_id: PACK-018
+        name: "EU Green Claims Prep Pack"
+        version: ">=1.0.0"
+        reason: "Cross-validation of environmental claims against due diligence findings"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  scope_assessment:
+    max_entities: 500
+    assessment_per_entity_ms: 50
+    target_duration_minutes: 5
+  adverse_impact_identification:
+    max_suppliers: 50000
+    max_adverse_impacts: 10000
+    risk_scoring_per_impact_ms: 10
+    target_duration_minutes: 30
+  prevention_mitigation:
+    max_action_plans: 5000
+    plan_assessment_per_item_ms: 20
+    target_duration_minutes: 15
+  stakeholder_engagement:
+    max_engagement_records: 10000
+    engagement_assessment_per_item_ms: 15
+    target_duration_minutes: 10
+  grievance_mechanism:
+    max_cases: 5000
+    case_processing_per_item_ms: 25
+    target_duration_minutes: 10
+  monitoring:
+    max_kpis: 500
+    kpi_calculation_per_item_ms: 5
+    target_duration_minutes: 5
+  climate_transition:
+    max_decarbonisation_levers: 100
+    target_duration_minutes: 15
+  civil_liability:
+    max_risk_items: 1000
+    risk_assessment_per_item_ms: 30
+    target_duration_minutes: 10
+  full_assessment:
+    max_company_profiles: 1000
+    target_duration_minutes: 120
+    parallel_execution_enabled: true
+  cache_hit_ratio_target: 0.65
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with due-diligence-level and impact-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - csddd_manager
+    - due_diligence_officer
+    - compliance_analyst
+    - human_rights_specialist
+    - environmental_specialist
+    - supply_chain_manager
+    - stakeholder_engagement_lead
+    - grievance_officer
+    - legal_counsel
+    - external_auditor
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+    - "cryptography>=41.0"
+    - "networkx>=3.1"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  framework: pytest
+  config: tests/conftest.py
+  test_files: 16
+  target_tests: 700
+  target_pass_rate: 100
+  unit_tests: tests/unit/
+  integration_tests: tests/integration/
+  end_to_end_tests: tests/e2e/
+  min_test_coverage_pct: 85
+  load_testing_enabled: true
+  max_load_test_throughput_assessments_per_hour: 50
+
+# -----------------------------------------------------------------------------
+# Quality Gates
+# -----------------------------------------------------------------------------
+quality_gates:
+  min_article_coverage_pct: 100
+  min_impact_category_coverage_pct: 100
+  provenance_required: true
+  cross_article_consistency_checks: true
+  oecd_step_completeness_required: true
+  audit_trail_required: true
+  zero_hallucination_enforcement: true
+  csrd_alignment_check: true
+  eudr_alignment_check: false
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_country_risk_database
+    - verify_commodity_risk_database
+    - verify_ilo_convention_data
+    - verify_mrv_agent_availability
+    - verify_data_agent_availability
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+    new:
+      - "V083-PACK019-001"  # Company profile and scope assessment tables
+      - "V083-PACK019-002"  # Due diligence policy and code of conduct tables
+      - "V083-PACK019-003"  # Adverse impact register and severity scoring tables
+      - "V083-PACK019-004"  # Value chain mapping and risk overlay tables
+      - "V083-PACK019-005"  # Prevention and corrective action plan tables
+      - "V083-PACK019-006"  # Stakeholder engagement and FPIC tracking tables
+      - "V083-PACK019-007"  # Grievance mechanism and case management tables
+      - "V083-PACK019-008"  # Monitoring KPIs and effectiveness scoring tables
+      - "V083-PACK019-009"  # Climate transition plan assessment tables
+      - "V083-PACK019-010"  # Civil liability risk matrix and scoring tables
+      - "V083-PACK019-011"  # Contractual cascading and compliance tracking tables
+      - "V083-PACK019-012"  # Cross-regulation alignment and readiness report tables
+
+  post_install:
+    - seed_adverse_impact_categories
+    - seed_hr_instrument_references
+    - seed_env_convention_references
+    - seed_country_risk_indices
+    - seed_commodity_risk_profiles
+    - seed_sector_risk_indicators
+    - seed_ilo_convention_ratifications
+    - seed_oecd_step_checklist_criteria
+    - seed_ungp_severity_criteria
+    - seed_escalation_ladder_stages
+    - seed_default_presets
+    - run_health_checks
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+documentation:
+  user_guide: docs/user_guide.md
+  technical_reference: docs/technical_reference.md
+  api_documentation: docs/api.md
+  oecd_framework_guide: docs/oecd_framework.md
+  adverse_impact_taxonomy: docs/adverse_impact_taxonomy.md
+  troubleshooting_guide: docs/troubleshooting.md
+  faq: docs/faq.md
+  release_notes: docs/release_notes.md
+
+# -----------------------------------------------------------------------------
+# Support
+# -----------------------------------------------------------------------------
+support:
+  email: support@greenlang.io
+  slack_channel: "#pack-019-support"
+  documentation_url: "https://docs.greenlang.io/packs/csddd-readiness"
+  issues_url: "https://github.com/greenlang/packs/issues"
+  enterprise_support_sla_hours: 4

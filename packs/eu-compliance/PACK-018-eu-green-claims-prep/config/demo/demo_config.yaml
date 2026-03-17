@@ -1,0 +1,197 @@
+# =============================================================================
+# PACK-018 EU Green Claims Prep Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for EcoProducts GmbH, a fictional mid-sized German
+# manufacturer of household cleaning products and packaging. Used for pack
+# demonstration, integration testing, and onboarding walkthroughs.
+#
+# Company: EcoProducts GmbH
+# Headquarters: Munich, Germany
+# Revenue: EUR 45 million
+# Employees: 180 (MEDIUM per EU Rec. 2003/361/EC)
+# Sector: Manufacturing (household cleaning products)
+# Reporting Year: 2025
+# =============================================================================
+
+# --- PackConfig Fields (maps to pack_config.PackConfig) ---------------------
+pack_name: "PACK-018-eu-green-claims-prep"
+version: "1.0.0"
+sector: "MANUFACTURING"
+claim_scope: "PRODUCT"
+reporting_language: "de"
+pef_database: "ef_3.1"
+cab_submission_format: "PDF"
+evidence_retention_years: 7
+eco_label_registry_refresh_days: 30
+max_claims: 500
+max_evidence_items: 2500
+greenwashing_risk_threshold: "45"
+
+enabled_engines:
+  - claim_substantiation
+  - evidence_chain
+  - lifecycle_assessment
+  - label_certification
+  - greenwashing_detection
+  - comparative_claims
+  - trader_obligation
+  - green_claims_benchmark
+
+enabled_workflows:
+  - claim_intake
+  - substantiation_assessment
+  - evidence_collection
+  - lifecycle_scoring
+  - label_validation
+  - greenwashing_scan
+  - comparison_review
+  - disclosure_generation
+
+communication_channels:
+  - PACKAGING
+  - WEBSITE
+  - POINT_OF_SALE
+
+# --- Sample Data Paths ------------------------------------------------------
+sample_data_paths:
+  claim_inventory: "demo/data/claims_inventory.csv"
+  evidence_store: "demo/data/evidence/"
+  pef_characterisation_factors: "demo/data/ef_3.1_factors.json"
+  eco_label_registry: "demo/data/eco_label_registry.json"
+  lca_results: "demo/data/lca_results/"
+  output_reports: "demo/output/"
+
+# --- Test Claim Inventory ----------------------------------------------------
+test_claims:
+  - claim_id: "DEMO-CLAIM-001"
+    claim_text: "Eco-friendly all-purpose cleaner"
+    claim_type: "ECO_FRIENDLY"
+    product: "EcoClean All-Purpose Spray 750ml"
+    channel: "PACKAGING"
+    risk_level: "HIGH"
+    expected_result: "FAIL"
+    reason: "Vague term prohibited under ECGT Art. 6a without substantiation"
+
+  - claim_id: "DEMO-CLAIM-002"
+    claim_text: "100% recyclable packaging"
+    claim_type: "RECYCLABLE"
+    product: "EcoClean Refill Pouch 1L"
+    channel: "PACKAGING"
+    risk_level: "MEDIUM"
+    expected_result: "CONDITIONAL_PASS"
+    reason: "Must specify recycling stream and collection infrastructure"
+
+  - claim_id: "DEMO-CLAIM-003"
+    claim_text: "Carbon neutral last-mile delivery"
+    claim_type: "CARBON_NEUTRAL"
+    product: "EcoProducts Delivery Service"
+    channel: "WEBSITE"
+    risk_level: "CRITICAL"
+    expected_result: "FAIL"
+    reason: "Carbon neutrality via offsetting is prohibited under ECGT"
+
+  - claim_id: "DEMO-CLAIM-004"
+    claim_text: "Made with 85% post-consumer recycled plastic"
+    claim_type: "RECYCLED_CONTENT"
+    product: "EcoClean Trigger Bottle 500ml"
+    channel: "PACKAGING"
+    risk_level: "LOW"
+    expected_result: "PASS"
+    reason: "Specific, measurable, verifiable with supplier certificates"
+
+# --- Demo Eco-Labels ---------------------------------------------------------
+demo_eco_labels:
+  - label_id: "LABEL-001"
+    name: "EU Ecolabel"
+    scheme_type: "TYPE_I_ECOLABEL"
+    issuing_body: "European Commission"
+    iso_standard: "ISO 14024"
+    governance_compliant: true
+    product_category: "All-purpose cleaners (2017/1217)"
+    valid_until: "2028-01-10"
+
+  - label_id: "LABEL-002"
+    name: "Blue Angel (Der Blaue Engel)"
+    scheme_type: "TYPE_I_ECOLABEL"
+    issuing_body: "RAL gGmbH / German Federal Environment Agency"
+    iso_standard: "ISO 14024"
+    governance_compliant: true
+    product_category: "Cleaning agents (DE-UZ 194)"
+    valid_until: "2027-03-31"
+
+  - label_id: "LABEL-003"
+    name: "Cradle to Cradle Certified"
+    scheme_type: "INDUSTRY_LABEL"
+    issuing_body: "Cradle to Cradle Products Innovation Institute"
+    iso_standard: null
+    governance_compliant: true
+    product_category: "Material health and circularity"
+    valid_until: "2026-12-31"
+
+# --- Sample PEF Data --------------------------------------------------------
+sample_pef_data:
+  method_version: "EF 3.1"
+  functional_unit: "1 litre of ready-to-use all-purpose cleaner"
+  system_boundary: "cradle-to-grave"
+  impact_results:
+    climate_change_kg_co2e: 0.42
+    ozone_depletion_kg_cfc11e: 2.1e-8
+    acidification_mol_h_plus_e: 0.0031
+    eutrophication_freshwater_kg_pe: 0.00012
+    water_use_m3_world_e: 0.085
+    resource_use_fossils_mj: 6.8
+    land_use_pt: 12.4
+  data_quality_rating: 2.1
+  phases_covered:
+    - "RAW_MATERIALS"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "USE"
+    - "END_OF_LIFE"
+
+# --- Example Evidence Items --------------------------------------------------
+example_evidence:
+  - evidence_id: "EV-DEMO-001"
+    type: "LCA_STUDY"
+    title: "LCA of EcoClean All-Purpose Spray per ISO 14040"
+    provider: "TUV Rheinland"
+    issue_date: "2024-06-15"
+    expiry_date: "2027-06-15"
+    linked_claims: ["DEMO-CLAIM-001", "DEMO-CLAIM-004"]
+    file_path: "demo/data/evidence/lca_ecoclean_spray.pdf"
+
+  - evidence_id: "EV-DEMO-002"
+    type: "CERTIFICATION"
+    title: "EU Ecolabel Certificate - All-Purpose Cleaners"
+    provider: "RAL gGmbH"
+    issue_date: "2024-01-10"
+    expiry_date: "2028-01-10"
+    linked_claims: ["DEMO-CLAIM-001"]
+    file_path: "demo/data/evidence/eu_ecolabel_cert.pdf"
+
+  - evidence_id: "EV-DEMO-003"
+    type: "LABORATORY_TEST"
+    title: "Recyclability Assessment - Refill Pouch Material"
+    provider: "Fraunhofer IVV"
+    issue_date: "2024-09-01"
+    expiry_date: "2027-09-01"
+    linked_claims: ["DEMO-CLAIM-002"]
+    file_path: "demo/data/evidence/recyclability_pouch.pdf"
+
+  - evidence_id: "EV-DEMO-004"
+    type: "THIRD_PARTY_AUDIT"
+    title: "Carbon Footprint Verification - Delivery Operations"
+    provider: "SGS Germany GmbH"
+    issue_date: "2025-02-20"
+    expiry_date: "2026-02-20"
+    linked_claims: ["DEMO-CLAIM-003"]
+    file_path: "demo/data/evidence/carbon_audit_delivery.pdf"
+
+  - evidence_id: "EV-DEMO-005"
+    type: "SUPPLIER_DECLARATION"
+    title: "Post-Consumer Recycled Content Certificate"
+    provider: "Plastics Recycler AG"
+    issue_date: "2025-01-15"
+    expiry_date: "2026-01-15"
+    linked_claims: ["DEMO-CLAIM-004"]
+    file_path: "demo/data/evidence/pcr_content_cert.pdf"

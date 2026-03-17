@@ -1,0 +1,326 @@
+# =============================================================================
+# PACK-017 ESRS Full Coverage Pack - Financial Services Preset
+# =============================================================================
+# Sector-specific configuration for financial services companies including
+# banks, insurance companies, asset managers, and investment firms. NACE
+# division K (Financial and Insurance Activities).
+#
+# Materiality profile:
+#   - E1 Climate: MATERIAL (financed emissions dominate, limited own operations)
+#   - E2 Pollution: NOT MATERIAL (office-based operations)
+#   - E3 Water: NOT MATERIAL (minimal water use)
+#   - E4 Biodiversity: MAY BE MATERIAL (financed biodiversity impacts)
+#   - E5 Circular Economy: NOT MATERIAL (services sector)
+#   - S1 Own Workforce: HIGHLY MATERIAL (large office workforce, pay equity)
+#   - S2 Value Chain Workers: NOT MATERIAL (limited physical supply chain)
+#   - S3 Affected Communities: MAY BE MATERIAL (lending decisions, financial inclusion)
+#   - S4 Consumers: MATERIAL (consumer protection, data privacy, responsible lending)
+#   - G1 Business Conduct: HIGHLY MATERIAL (anti-corruption, AML, market conduct)
+#
+# Key characteristics:
+#   - Financed/insured emissions (PCAF methodology) are the primary E1 metric
+#   - Own operational emissions (Scope 1+2) are modest (office buildings)
+#   - S1 emphasis on remuneration, gender pay gap, diversity in senior roles
+#   - S4 emphasis on responsible lending, product governance, data protection
+#   - G1 emphasis on anti-money laundering, anti-corruption, whistleblowing
+#   - EU Taxonomy alignment for banking book and insurance portfolio
+# =============================================================================
+
+# --- Preset Metadata ---
+preset_name: "financial_services"
+pack_id: "PACK-017"
+pack_name: "ESRS Full Coverage Pack"
+esrs_version: "ESRS Set 1 (2023)"
+sector: "FINANCIAL_SERVICES"
+nace_codes: ["K"]
+
+# --- ESRS Standard Materiality ---
+materiality:
+  e1_climate_change: MATERIAL
+  e2_pollution: NOT_MATERIAL
+  e3_water_marine_resources: NOT_MATERIAL
+  e4_biodiversity_ecosystems: MAY_BE_MATERIAL
+  e5_resource_use_circular_economy: NOT_MATERIAL
+  s1_own_workforce: HIGHLY_MATERIAL
+  s2_workers_in_value_chain: NOT_MATERIAL
+  s3_affected_communities: MAY_BE_MATERIAL
+  s4_consumers_end_users: MATERIAL
+  g1_business_conduct: HIGHLY_MATERIAL
+
+# --- E1 Climate Change ---
+e1_climate_change:
+  enabled: true
+  disclosure_requirements:
+    - "E1-1"   # Transition plan for climate change mitigation
+    - "E1-2"   # Policies related to climate change mitigation and adaptation
+    - "E1-3"   # Actions and resources related to climate change
+    - "E1-4"   # Targets related to climate change mitigation and adaptation
+    - "E1-5"   # Energy consumption and mix
+    - "E1-6"   # Gross Scopes 1, 2, 3 and total GHG emissions
+    - "E1-7"   # GHG removals and GHG mitigation projects (carbon credits)
+    - "E1-8"   # Internal carbon pricing
+    - "E1-9"   # Anticipated financial effects from climate-related risks
+  ghg:
+    consolidation_approach: "OPERATIONAL_CONTROL"
+    gwp_source: "IPCC_AR6"
+    emission_factors_source: "DEFRA_2025"
+    scopes_enabled: ["SCOPE_1", "SCOPE_2_LOCATION", "SCOPE_2_MARKET", "SCOPE_3"]
+    scope_3_categories: [1, 3, 5, 6, 7, 15]
+    scope_3_default_method: "SPEND_BASED"
+    financed_emissions:
+      enabled: true
+      methodology: "PCAF"
+      pcaf_version: "2.1"
+      asset_classes:
+        - "LISTED_EQUITY"
+        - "CORPORATE_BONDS"
+        - "BUSINESS_LOANS"
+        - "PROJECT_FINANCE"
+        - "COMMERCIAL_REAL_ESTATE"
+        - "MORTGAGES"
+      data_quality_score_target: 3
+      attribution_factor: "OUTSTANDING_AMOUNT"
+    kyoto_gas_disaggregation: false
+    biogenic_co2_separate: false
+    ghg_intensity_denominators:
+      - "net_revenue_eur_million"
+      - "fte_employees"
+      - "total_assets_eur_billion"
+  energy:
+    reporting_unit: "MWh"
+    fossil_fuel_types: ["NATURAL_GAS"]
+    renewable_categories: ["SOLAR", "WIND"]
+    self_generation_tracking: false
+    energy_intensity_denominators:
+      - "fte_employees"
+      - "office_sqm"
+  transition_plan:
+    target_year: 2050
+    interim_target_years: [2030, 2040]
+    scenario_alignment: "1.5C"
+    decarbonization_levers:
+      - "portfolio_decarbonization"
+      - "green_finance_scaling"
+      - "engagement_with_investees"
+      - "office_energy_efficiency"
+      - "renewable_procurement"
+      - "exclusion_policies"
+  carbon_pricing:
+    has_carbon_pricing: true
+    pricing_methods: ["SHADOW_PRICE"]
+    default_price_per_tco2e: "80.00"
+
+# --- E2 Pollution ---
+e2_pollution:
+  enabled: false
+  disclosure_requirements: []
+
+# --- E3 Water and Marine Resources ---
+e3_water_marine_resources:
+  enabled: false
+  disclosure_requirements: []
+
+# --- E4 Biodiversity and Ecosystems ---
+e4_biodiversity_ecosystems:
+  enabled: true
+  disclosure_requirements:
+    - "E4-1"   # Transition plan on biodiversity and ecosystems
+    - "E4-2"   # Policies related to biodiversity and ecosystems
+    - "E4-3"   # Actions and resources related to biodiversity
+    - "E4-4"   # Targets related to biodiversity and ecosystems
+    - "E4-5"   # Impact metrics related to biodiversity change
+    - "E4-6"   # Anticipated financial effects from biodiversity-related risks
+  financed_biodiversity_impact:
+    enabled: true
+    deforestation_free_portfolio: true
+    sector_exclusion_screening: true
+  tnfd_alignment: true
+  land_use_tracking: false
+  proximity_to_protected_areas: false
+
+# --- E5 Resource Use and Circular Economy ---
+e5_resource_use_circular_economy:
+  enabled: false
+  disclosure_requirements: []
+
+# --- S1 Own Workforce ---
+s1_own_workforce:
+  enabled: true
+  disclosure_requirements:
+    - "S1-1"   # Policies related to own workforce
+    - "S1-2"   # Processes for engaging with own workforce
+    - "S1-3"   # Processes to remediate negative impacts
+    - "S1-4"   # Taking action on material impacts
+    - "S1-5"   # Targets related to managing negative impacts
+    - "S1-6"   # Characteristics of the undertaking's employees
+    - "S1-7"   # Characteristics of non-employee workers
+    - "S1-8"   # Collective bargaining coverage and social dialogue
+    - "S1-9"   # Diversity metrics
+    - "S1-10"  # Adequate wages
+    - "S1-11"  # Social protection
+    - "S1-12"  # Persons with disabilities
+    - "S1-13"  # Training and skills development metrics
+    - "S1-14"  # Health and safety metrics
+    - "S1-15"  # Work-life balance metrics
+    - "S1-16"  # Remuneration metrics (pay gap, pay ratio)
+    - "S1-17"  # Incidents, complaints and severe human rights impacts
+  health_and_safety:
+    fatality_tracking: true
+    ltir_tracking: true
+    trir_tracking: true
+    near_miss_reporting: false
+    occupational_disease_tracking: false
+    safety_critical_roles: false
+  training:
+    hours_per_employee: true
+    skills_development_programs: true
+    apprenticeship_tracking: false
+  collective_bargaining:
+    coverage_tracking: true
+    works_council_engagement: true
+  diversity:
+    gender_breakdown: true
+    age_breakdown: true
+    disability_tracking: true
+  remuneration:
+    gender_pay_gap: true
+    ceo_median_pay_ratio: true
+    variable_compensation_disclosure: true
+    board_remuneration_disclosure: true
+  focus_areas:
+    - "gender_pay_equity"
+    - "diversity_in_senior_management"
+    - "mental_health_wellbeing"
+    - "flexible_working"
+    - "employee_engagement"
+
+# --- S2 Workers in the Value Chain ---
+s2_workers_in_value_chain:
+  enabled: false
+  disclosure_requirements: []
+
+# --- S3 Affected Communities ---
+s3_affected_communities:
+  enabled: true
+  disclosure_requirements:
+    - "S3-1"   # Policies related to affected communities
+    - "S3-2"   # Processes for engaging with affected communities
+    - "S3-3"   # Processes to remediate negative impacts
+    - "S3-4"   # Taking action on material impacts
+    - "S3-5"   # Targets related to managing negative impacts
+  community_engagement:
+    stakeholder_mapping: true
+    grievance_mechanism: true
+  impact_categories:
+    - "financial_inclusion"
+    - "responsible_lending"
+    - "community_investment"
+    - "branch_closures"
+
+# --- S4 Consumers and End-Users ---
+s4_consumers_end_users:
+  enabled: true
+  disclosure_requirements:
+    - "S4-1"   # Policies related to consumers and end-users
+    - "S4-2"   # Processes for engaging with consumers and end-users
+    - "S4-3"   # Processes to remediate negative impacts
+    - "S4-4"   # Taking action on material impacts
+    - "S4-5"   # Targets related to managing negative impacts
+  consumer_protection:
+    product_governance: true
+    responsible_lending: true
+    fair_treatment_of_customers: true
+    complaint_handling: true
+    complaint_resolution_tracking: true
+  data_privacy:
+    gdpr_compliance: true
+    data_breach_tracking: true
+    consent_management: true
+    data_subject_rights: true
+  focus_areas:
+    - "consumer_data_protection"
+    - "transparent_fee_structures"
+    - "vulnerable_customer_support"
+    - "digital_accessibility"
+    - "responsible_marketing"
+
+# --- G1 Business Conduct ---
+g1_business_conduct:
+  enabled: true
+  disclosure_requirements:
+    - "G1-1"   # Business conduct policies and corporate culture
+    - "G1-2"   # Management of relationships with suppliers
+    - "G1-3"   # Prevention and detection of corruption and bribery
+    - "G1-4"   # Confirmed incidents of corruption or bribery
+    - "G1-5"   # Political influence and lobbying activities
+    - "G1-6"   # Payment practices
+  anti_corruption:
+    policy_in_place: true
+    training_programme: true
+    whistleblower_mechanism: true
+    incident_tracking: true
+    high_risk_country_monitoring: true
+    aml_programme: true
+    kyc_enhanced_due_diligence: true
+    sanctions_screening: true
+  supplier_management:
+    payment_terms_tracking: true
+    late_payment_monitoring: true
+    sme_payment_practices: true
+  political_engagement:
+    lobbying_disclosure: true
+    political_donations_policy: "PROHIBITED"
+    industry_association_memberships: true
+    regulatory_engagement_tracking: true
+  focus_areas:
+    - "anti_money_laundering"
+    - "anti_bribery_and_corruption"
+    - "market_conduct"
+    - "conflicts_of_interest"
+    - "tax_transparency"
+    - "regulatory_compliance"
+
+# --- Cross-Cutting (ESRS 1 and ESRS 2) ---
+cross_cutting:
+  esrs_1_general_requirements:
+    double_materiality_assessment: true
+    value_chain_scope: "UPSTREAM_AND_DOWNSTREAM"
+    time_horizons:
+      short_term_years: 1
+      medium_term_years: 5
+      long_term_years: 10
+  esrs_2_general_disclosures:
+    disclosure_requirements:
+      - "ESRS2-BP1"   # General basis for preparation
+      - "ESRS2-BP2"   # Disclosures in relation to specific circumstances
+      - "ESRS2-GOV1"  # Role of administrative, management and supervisory bodies
+      - "ESRS2-GOV2"  # Information provided to and sustainability matters addressed
+      - "ESRS2-GOV3"  # Integration of sustainability performance in incentive schemes
+      - "ESRS2-GOV4"  # Statement on due diligence
+      - "ESRS2-GOV5"  # Risk management and internal controls
+      - "ESRS2-SBM1"  # Strategy, business model and value chain
+      - "ESRS2-SBM2"  # Interests and views of stakeholders
+      - "ESRS2-SBM3"  # Material impacts, risks and opportunities
+      - "ESRS2-IRO1"  # Processes to identify and assess material IROs
+      - "ESRS2-IRO2"  # Disclosure requirements covered by the sustainability statement
+    governance_body_oversight: true
+    incentive_scheme_integration: true
+    due_diligence_statement: true
+
+# --- Reporting ---
+reporting:
+  output_formats: ["PDF", "XBRL", "HTML"]
+  xbrl_taxonomy: "ESRS_XBRL_2024"
+  xbrl_tagging: true
+  sha256_provenance: true
+  multi_language: true
+  supported_languages: ["en", "de", "fr"]
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  year_over_year_comparison: true
+  data_quality_disclosure: true
+  assumption_disclosure: true
+  assurance_level: "LIMITED"
+  retention_years: 10

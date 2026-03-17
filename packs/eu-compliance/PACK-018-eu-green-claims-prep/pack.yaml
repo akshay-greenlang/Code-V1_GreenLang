@@ -1,0 +1,1542 @@
+# =============================================================================
+# PACK-018: EU Green Claims Prep Pack
+# GreenLang EU Compliance Pack for Green Claims Directive Substantiation
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for environmental claim assessment, substantiation, and
+# verification-readiness per the EU Green Claims Directive (COM(2023)166 /
+# 2023/0085/COD) and the Empowering Consumers Directive (EU) 2024/825. The
+# Green Claims Directive will require all explicit environmental claims made
+# by traders operating in the EU to be substantiated using a lifecycle-based
+# methodology, independently verified by accredited conformity assessment
+# bodies, and communicated in a manner that is clear, unambiguous, and not
+# misleading.
+#
+# This pack integrates with the Product Environmental Footprint (PEF)
+# methodology, the Ecodesign for Sustainable Products Regulation (ESPR) for
+# Digital Product Passports, the EU Taxonomy Regulation for taxonomy-aligned
+# activity claims, the CSRD/ESRS framework for corporate-level environmental
+# disclosures, and the Unfair Commercial Practices Directive (UCPD) for
+# consumer protection enforcement.
+#
+# Key Capabilities:
+#   - Claim inventory and classification (Article 3 explicit claims)
+#   - Lifecycle-based substantiation per PEF/PEFCR/OEFSR methodology
+#   - Evidence chain management with SHA-256 provenance hashing
+#   - Eco-label and environmental labelling scheme compliance (Article 10)
+#   - Comparative claim validation against ISO 14025 and PEF benchmarks
+#   - Greenwashing detection using TerraChoice Seven Sins framework
+#   - Trader obligation tracking (Article 3-8 compliance checklist)
+#   - Green claims benchmarking against sector peers and best practices
+#   - Conformity assessment body (CAB) submission readiness
+#   - Cross-regulation consistency (CSRD, Taxonomy, ESPR, CBAM)
+#
+# Regulatory References:
+#   - Green Claims Directive: COM(2023)166 / 2023/0085/COD
+#   - Empowering Consumers Directive: (EU) 2024/825
+#   - Unfair Commercial Practices Directive: 2005/29/EC (as amended)
+#   - PEF Recommendation: 2013/179/EU & update 2021/2279
+#   - ESPR: Regulation (EU) 2024/1781
+#   - CSRD: Directive (EU) 2022/2464
+#   - EU Taxonomy: Regulation (EU) 2020/852
+#   - ISO 14021: Self-declared environmental claims (Type II)
+#   - ISO 14024: Environmental labelling (Type I)
+#   - ISO 14025: Environmental declarations (Type III / EPD)
+#   - ISO 14067: Carbon footprint of products
+#   - EN 13432: Packaging - compostability requirements
+#
+# Claim Types Supported:
+#   - Carbon claims: carbon neutral, net-zero, climate positive, low-carbon
+#   - Circularity claims: recyclable, recycled content, biodegradable, compostable
+#   - Resource claims: zero waste, reduced water use, energy efficient
+#   - Nature claims: deforestation-free, biodiversity positive, ocean-friendly
+#   - Aggregate claims: eco-friendly, sustainable, green, environmentally friendly
+#   - Comparative claims: X% less carbon than competitor, best-in-class
+#   - Offset-based claims: carbon offset, climate contribution, insetting
+#   - Future-oriented claims: will be net-zero by 2030, transition plan
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-17)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-018-eu-green-claims-prep
+  version: "1.0.0"
+  display_name: "EU Green Claims Prep Pack"
+  description: >-
+    End-to-end assessment, substantiation, and verification-readiness for
+    environmental claims per EU Green Claims Directive (2023/0085/COD) and
+    Empowering Consumers Directive (EU) 2024/825. Includes 8 engines for claim
+    substantiation, evidence chain management, lifecycle assessment integration,
+    eco-label compliance, comparative claim validation, greenwashing detection,
+    trader obligation tracking, and green claims benchmarking. Bundles all 30
+    MRV agents for emissions-based claim substantiation, 20 data intake/quality
+    agents, 10 foundation agents, and 4 bridged agents for green claims, product
+    carbon footprint, LCA, and circular economy. Supports manufacturing, retail,
+    financial services, energy, technology, and SME sectors with tailored presets
+    and conformity assessment submission templates. Enforces the zero-hallucination
+    principle for all numeric claim substantiation calculations.
+  category: eu-compliance
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-17"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/eu-green-claims-prep"
+  changelog_url: "https://docs.greenlang.io/packs/eu-green-claims-prep/changelog"
+
+  tags:
+    - green-claims
+    - greenwashing
+    - environmental-claims
+    - eu-directive
+    - substantiation
+    - pef
+    - lca
+    - eco-labels
+    - consumer-protection
+    - ecgt
+    - ucpd
+    - article-3
+    - article-10
+    - verification
+    - conformity-assessment
+    - seven-sins
+    - terraChoice
+    - iso-14021
+    - iso-14024
+    - iso-14025
+    - iso-14067
+    - en-13432
+    - carbon-neutral
+    - net-zero
+    - recyclable
+    - biodegradable
+    - compostable
+    - zero-waste
+    - evidence-chain
+    - audit-trail
+    - sha256
+
+  regulation:
+    primary:
+      name: "EU Green Claims Directive"
+      reference: "COM(2023)166"
+      effective_date: "2026-03-27"
+      description: >-
+        The EU Green Claims Directive (2023/0085/COD) establishes requirements
+        for substantiation and communication of explicit environmental claims
+        and environmental labelling schemes. Traders making voluntary
+        environmental claims about products or the trader itself must
+        substantiate those claims using a lifecycle-based assessment relying on
+        widely recognized scientific evidence, must identify relevant
+        environmental impacts, and must demonstrate that the claim is not
+        equivalent to requirements imposed by law. Claims must be verified ex
+        ante by an accredited third-party conformity assessment body before
+        being used in commercial communications. The directive aims to eliminate
+        greenwashing by setting common EU-level standards for green claim
+        reliability and comparability.
+    secondary:
+      - name: "Empowering Consumers Directive"
+        reference: "(EU) 2024/825"
+        effective_date: "2026-03-27"
+      - name: "Unfair Commercial Practices Directive"
+        reference: "2005/29/EC"
+        effective_date: "2005-06-12"
+      - name: "PEF Recommendation"
+        reference: "2021/2279"
+        effective_date: "2021-12-16"
+      - name: "Ecodesign for Sustainable Products Regulation"
+        reference: "(EU) 2024/1781"
+        effective_date: "2024-07-18"
+      - name: "Corporate Sustainability Reporting Directive"
+        reference: "(EU) 2022/2464"
+        effective_date: "2024-01-01"
+      - name: "EU Taxonomy Regulation"
+        reference: "(EU) 2020/852"
+        effective_date: "2020-07-12"
+
+  compliance_references:
+    - id: "GCD"
+      name: "EU Green Claims Directive"
+      regulation: "COM(2023)166 / 2023/0085/COD"
+      effective_date: "2026-03-27"
+      description: >-
+        Core directive requiring substantiation of all explicit environmental
+        claims using lifecycle-based scientific evidence (Article 3), independent
+        verification by accredited conformity assessment bodies (Article 10),
+        and communication that is specific, accurate, and unambiguous (Article
+        5). Bans generic environmental claims unless backed by recognised
+        environmental excellence performance. Covers product-level and
+        corporate-level claims, comparative claims, and offset-based claims.
+
+    - id: "ECGT"
+      name: "Empowering Consumers for the Green Transition"
+      regulation: "Directive (EU) 2024/825"
+      effective_date: "2026-03-27"
+      description: >-
+        Amends the Unfair Commercial Practices Directive (UCPD) and Consumer
+        Rights Directive to ban misleading environmental claims, prohibit
+        sustainability labels not based on third-party verified certification
+        schemes, and ban generic environmental claims (eco-friendly, green,
+        natural, etc.) in commercial communications unless the trader can
+        demonstrate recognised environmental excellence. Adds greenwashing
+        practices to the UCPD blacklist of unfair commercial practices.
+
+    - id: "UCPD"
+      name: "Unfair Commercial Practices Directive"
+      regulation: "Directive 2005/29/EC (as amended)"
+      effective_date: "2005-06-12"
+      description: >-
+        Framework directive prohibiting unfair, misleading, and aggressive
+        commercial practices. As amended by ECGT, now explicitly covers
+        misleading environmental claims, false sustainability labels, and
+        unsubstantiated carbon neutrality claims as blacklisted unfair
+        practices. Provides the enforcement backbone for green claims
+        compliance across all EU member states.
+
+    - id: "PEF"
+      name: "Product Environmental Footprint"
+      regulation: "Commission Recommendation 2013/179/EU & 2021/2279"
+      effective_date: "2021-12-16"
+      description: >-
+        EU methodology for measuring the environmental performance of
+        products over their lifecycle. PEF Category Rules (PEFCRs) define
+        product-group-specific calculation rules. PEF is the reference
+        methodology for substantiating product-level environmental claims
+        under the Green Claims Directive. Covers 16 environmental impact
+        categories including climate change, ozone depletion, ecotoxicity,
+        water use, and resource depletion.
+
+    - id: "ESPR"
+      name: "Ecodesign for Sustainable Products Regulation"
+      regulation: "Regulation (EU) 2024/1781"
+      effective_date: "2024-07-18"
+      description: >-
+        Establishes ecodesign requirements for sustainable products including
+        Digital Product Passports (DPP). Environmental claims about products
+        covered by ESPR delegated acts must be consistent with DPP data.
+        DPP provides a standardised data carrier for environmental performance
+        information that can underpin green claims substantiation.
+
+    - id: "CSRD"
+      name: "Corporate Sustainability Reporting Directive"
+      regulation: "Directive (EU) 2022/2464"
+      effective_date: "2024-01-01"
+      description: >-
+        CSRD mandates sustainability reporting under ESRS. Corporate-level
+        environmental claims (net-zero commitments, science-based targets,
+        emission reduction claims) must be consistent with CSRD disclosures.
+        ESRS E1 climate data provides the quantitative basis for
+        corporate-level carbon claims.
+
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      regulation: "Regulation (EU) 2020/852"
+      effective_date: "2020-07-12"
+      description: >-
+        Classification system for environmentally sustainable economic
+        activities. Claims about taxonomy-aligned activities or green
+        revenue shares must be consistent with taxonomy reporting. The
+        Green Claims Directive requires that claims based on taxonomy
+        alignment cite the specific technical screening criteria met.
+
+    - id: "ISO_14021"
+      name: "ISO 14021 Self-Declared Environmental Claims"
+      regulation: "ISO 14021:2016"
+      effective_date: "2016-03-15"
+      description: >-
+        International standard for Type II self-declared environmental claims.
+        Provides requirements for claims such as recyclable, compostable,
+        degradable, reduced energy consumption, reduced water use, and
+        recycled content. Claims must be verifiable, not misleading, and
+        based on a methodology that is reproducible.
+
+    - id: "ISO_14024"
+      name: "ISO 14024 Environmental Labelling (Type I)"
+      regulation: "ISO 14024:2018"
+      effective_date: "2018-03-15"
+      description: >-
+        International standard for Type I environmental labelling programmes
+        (multi-criteria third-party certified labels such as EU Ecolabel,
+        Blue Angel, Nordic Swan). Under the Green Claims Directive, only
+        labels based on certification schemes meeting Article 10 criteria
+        may be displayed.
+
+    - id: "ISO_14025"
+      name: "ISO 14025 Environmental Declarations (Type III)"
+      regulation: "ISO 14025:2006"
+      effective_date: "2006-07-01"
+      description: >-
+        International standard for Type III Environmental Product
+        Declarations (EPDs) based on lifecycle assessment. EPDs provide
+        quantified environmental data that can substantiate comparative
+        claims. Programme operators must follow ISO 14025 rules for
+        product category rules (PCRs) and verification.
+
+    - id: "ISO_14067"
+      name: "ISO 14067 Carbon Footprint of Products"
+      regulation: "ISO 14067:2018"
+      effective_date: "2018-08-20"
+      description: >-
+        International standard for quantifying the carbon footprint of
+        products. Provides the methodological basis for carbon-related
+        product claims (carbon neutral, low-carbon, reduced carbon
+        footprint). Must be applied consistently with PEF climate change
+        impact category for EU Green Claims compliance.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 green claims engines)
+  # ===========================================================================
+  engines:
+    - id: claim_substantiation
+      name: "Claim Substantiation Engine"
+      description: >-
+        Core engine for substantiating explicit environmental claims per
+        Article 3 of the Green Claims Directive. Performs claim inventory
+        scanning across all commercial communications (product packaging,
+        marketing materials, websites, advertising, point-of-sale displays).
+        Classifies each claim by type (carbon, circularity, resource, nature,
+        aggregate, comparative, offset-based, future-oriented) and maps to
+        applicable substantiation requirements. Evaluates whether the claim
+        is based on widely recognised scientific evidence, uses a lifecycle-
+        based assessment, identifies all significant environmental impacts,
+        demonstrates that the claim is not equivalent to requirements imposed
+        by existing law, and provides information on whether the product or
+        trader performs significantly better than common practice. Generates
+        a structured substantiation dossier per claim with gap analysis.
+        Zero-hallucination: all substantiation scoring uses deterministic
+        rule evaluation against Article 3 checklist criteria; no LLM in
+        compliance scoring path.
+      required: true
+
+    - id: evidence_chain
+      name: "Evidence Chain Engine"
+      description: >-
+        Manages the complete evidence chain for claim substantiation with
+        cryptographic provenance tracking. Each piece of evidence (lab
+        reports, LCA studies, emission factor sources, certification
+        certificates, third-party audit reports, supplier declarations)
+        is registered with a SHA-256 hash, timestamp, and source
+        attribution. Supports evidence classification by type (primary
+        data, secondary data, proxy data, expert judgement) and quality
+        scoring per PEF Data Quality Rating (DQR) methodology. Maintains
+        a directed acyclic graph (DAG) linking claims to supporting evidence
+        with version control and chain-of-custody tracking. Generates
+        evidence sufficiency assessments per claim and identifies gaps
+        requiring additional data collection. Tracks evidence expiry dates
+        and triggers refresh alerts for time-sensitive data (emission
+        factors, grid mix, certification validity).
+        Zero-hallucination: evidence registration and hash computation
+        are deterministic; quality scoring uses PEF DQR formulas.
+      required: true
+
+    - id: lifecycle_assessment
+      name: "Lifecycle Assessment Engine"
+      description: >-
+        Integrates Product Environmental Footprint (PEF) and Organisation
+        Environmental Footprint (OEF) methodologies for lifecycle-based
+        claim substantiation. Supports all 16 PEF impact categories:
+        climate change (incl. biogenic, land use), ozone depletion,
+        human toxicity (cancer/non-cancer), particulate matter,
+        ionising radiation, photochemical ozone formation, acidification,
+        eutrophication (freshwater/marine/terrestrial), ecotoxicity
+        (freshwater), land use, water use, resource use (minerals/metals,
+        fossils). Evaluates claims against PEF Category Rules (PEFCRs)
+        where available. Calculates single score and normalised/weighted
+        results per PEF methodology. Identifies impact shifting (where
+        improvement in one category causes deterioration in another) which
+        Article 3(1)(d) requires to be disclosed. Integrates with ecoinvent
+        3.10 and EF 3.1 background databases.
+        Zero-hallucination: all LCA calculations use deterministic
+        characterisation factors from ILCD/EF method; no LLM in
+        calculation path.
+      required: true
+
+    - id: label_compliance
+      name: "Label Compliance Engine"
+      description: >-
+        Assesses compliance of environmental labels and labelling schemes
+        per Article 10 of the Green Claims Directive and ECGT amendments.
+        Evaluates whether eco-labels displayed on products or in marketing
+        are based on a certification scheme that meets directive criteria:
+        third-party verified, transparent criteria, independent governance,
+        open access, and scientific basis. Maintains a database of
+        recognised EU and national eco-label schemes (EU Ecolabel, Blue
+        Angel, Nordic Swan, NF Environnement, PEFC, FSC, Fairtrade, Oeko-Tex,
+        GOTS, Cradle to Cradle, Energy Star, TCO Certified, EPEAT). Flags
+        self-created labels, industry-only schemes, and labels without
+        independent verification. Validates label usage context (correct
+        product scope, valid certificate, proper visual display). Checks
+        compliance with the prohibition on new national/regional public
+        labelling schemes under Article 10(3).
+        Zero-hallucination: label recognition uses database lookups against
+        approved scheme registry; compliance checks are rule-based.
+      required: true
+
+    - id: comparative_claims
+      name: "Comparative Claims Engine"
+      description: >-
+        Validates comparative environmental claims per Article 4 of the
+        Green Claims Directive. Comparative claims (e.g. "30% less CO2
+        than product X", "most sustainable in category", "best-in-class
+        efficiency") must use equivalent methods and data, compare like-
+        for-like products fulfilling the same function, use the same
+        lifecycle stages and impact categories, and use up-to-date data.
+        Validates that the comparison baseline is identified, the scope
+        boundary is consistent, the functional unit is equivalent, data
+        vintage is comparable (within 3 years), and the improvement is
+        statistically significant. Supports PEF benchmark comparisons
+        where PEFCRs define product category benchmarks. Evaluates
+        whether cherry-picking of favourable categories has occurred.
+        Generates a comparative claim validation report per ISO 14025
+        comparability requirements.
+        Zero-hallucination: comparison calculations are arithmetic;
+        significance testing uses scipy statistical functions.
+      required: true
+
+    - id: greenwashing_detection
+      name: "Greenwashing Detection Engine"
+      description: >-
+        Detects potential greenwashing across all environmental claims
+        using the TerraChoice Seven Sins of Greenwashing framework
+        enriched with EU Green Claims Directive criteria. Evaluates
+        each claim against: (1) Sin of Hidden Trade-off - claim
+        highlights one attribute while ignoring significant impacts;
+        (2) Sin of No Proof - claim cannot be substantiated by
+        accessible evidence; (3) Sin of Vagueness - claim is too
+        broad or poorly defined (eco-friendly, green, natural);
+        (4) Sin of Irrelevance - claim is truthful but unhelpful
+        (CFC-free when CFCs are banned); (5) Sin of Lesser of Two
+        Evils - claim is true within category but distracts from
+        greater impacts; (6) Sin of Fibbing - claim is false;
+        (7) Sin of Worshipping False Labels - claim uses fake
+        certification marks. Additionally evaluates UCPD blacklisted
+        practices: displaying sustainability labels not based on
+        verified certification, making generic environmental claims
+        without demonstrated excellence, and claiming carbon neutrality
+        based solely on offsetting. Generates a greenwashing risk score
+        (0-100) per claim with remediation recommendations.
+        Zero-hallucination: scoring rubric is rule-based with
+        deterministic weights per sin category; no LLM in scoring.
+      required: true
+
+    - id: trader_obligation
+      name: "Trader Obligation Engine"
+      description: >-
+        Tracks compliance with all trader obligations under Articles 3-8
+        of the Green Claims Directive. Maintains a structured compliance
+        checklist covering: (Art 3) substantiation requirements with
+        lifecycle assessment, scientific evidence, and environmental
+        impact identification; (Art 4) comparative claim additional
+        requirements; (Art 5) communication requirements including
+        specificity, clarity, and accessibility of substantiation
+        information; (Art 6) environmental labelling scheme requirements;
+        (Art 7) conformity assessment body verification requirement
+        (ex ante verification before claim publication); (Art 8)
+        record-keeping obligations (5-year retention of substantiation
+        studies). Generates a trader obligation compliance scorecard
+        with per-article status (compliant, partially compliant,
+        non-compliant, not applicable) and remediation timeline.
+        Monitors regulatory transposition deadlines across EU member
+        states. Tracks claim-level status through the verification
+        lifecycle (draft, substantiated, submitted for verification,
+        verified, published, expired, withdrawn).
+        Zero-hallucination: obligation checklist is deterministic
+        rule matching against directive articles.
+      required: true
+
+    - id: green_claims_benchmark
+      name: "Green Claims Benchmark Engine"
+      description: >-
+        Benchmarks environmental claim quality and substantiation maturity
+        against sector peers, best practices, and regulatory expectations.
+        KPI set includes: claim substantiation rate (% of claims fully
+        substantiated), evidence chain completeness score, PEF data quality
+        rating average, greenwashing risk score distribution, label
+        compliance rate, comparative claim validity rate, conformity
+        assessment readiness score, and claim withdrawal/correction rate.
+        Supports peer grouping by NACE code, company size, geography,
+        and claim volume. Generates gap analysis against Article 3
+        requirements, identifies high-risk claims requiring priority
+        remediation, and tracks improvement trends over time. Provides
+        sector-level greenwashing risk heat maps and claim type
+        distribution analysis. Integrates with CSRD disclosure data
+        for corporate-level claim consistency validation.
+        Zero-hallucination: benchmark values from published PEF
+        benchmarks and regulatory guidance; gap calculations are
+        deterministic.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 green claims workflows)
+  # ===========================================================================
+  workflows:
+    - id: claim_assessment
+      name: "Claim Assessment Workflow"
+      description: >-
+        5-phase workflow: Claim Inventory Scan (crawl product packaging,
+        marketing materials, website, advertising, point-of-sale for all
+        explicit environmental claims) -> Claim Classification (categorise
+        by type: carbon, circularity, resource, nature, aggregate,
+        comparative, offset-based, future-oriented) -> Article 3 Gap
+        Analysis (evaluate each claim against substantiation requirements)
+        -> Greenwashing Risk Screening (TerraChoice Seven Sins + UCPD
+        blacklist assessment) -> Priority Ranking (risk-weighted
+        remediation prioritisation based on claim visibility, regulatory
+        exposure, and greenwashing risk score). Generates a complete
+        claim registry with status and recommended actions.
+      schedule: "quarterly"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: evidence_collection
+      name: "Evidence Collection Workflow"
+      description: >-
+        4-phase workflow: Evidence Gap Identification (per claim, identify
+        missing substantiation evidence based on Article 3 checklist) ->
+        Data Collection Orchestration (trigger MRV agents for emissions
+        data, LCA engines for lifecycle data, supplier questionnaires
+        for value chain data) -> Evidence Quality Assessment (score each
+        evidence item per PEF Data Quality Rating covering technological
+        representativeness, geographical representativeness, temporal
+        representativeness, and completeness) -> Evidence Chain Assembly
+        (register all evidence with SHA-256 hashes, link to claims via
+        DAG, generate evidence sufficiency report). Supports automated
+        evidence refresh for expiring data sources.
+      schedule: "monthly"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: lifecycle_verification
+      name: "Lifecycle Verification Workflow"
+      description: >-
+        4-phase workflow: Scope Definition (define system boundary, functional
+        unit, and relevant impact categories per PEFCR or default PEF
+        rules) -> Lifecycle Inventory (collect activity data and link to
+        background databases: ecoinvent 3.10 / EF 3.1) -> Impact Assessment
+        (calculate 16 PEF impact categories, normalise, and weight) ->
+        Interpretation (identify significant impact categories, evaluate
+        impact shifting per Article 3(1)(d), generate PEF profile per
+        product/organisation). Generates a PEF-compliant study report
+        suitable for conformity assessment body review.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: label_audit
+      name: "Label Audit Workflow"
+      description: >-
+        4-phase workflow: Label Inventory (catalogue all eco-labels and
+        environmental marks displayed on products, packaging, and marketing)
+        -> Scheme Validation (verify each label against Article 10 criteria:
+        third-party verified, transparent, independent, open, scientific) ->
+        Certificate Verification (validate underlying certificates are
+        current, correctly scoped, and properly attributed) -> Compliance
+        Report (generate per-label compliance assessment with non-compliant
+        label remediation plan including timeline for removal or replacement
+        with compliant alternatives). Flags self-created labels and labels
+        from non-compliant schemes.
+      schedule: "semi-annual"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: greenwashing_screening
+      name: "Greenwashing Screening Workflow"
+      description: >-
+        4-phase workflow: Claim Universe Extraction (extract all
+        environmental claims from across channels: website, packaging,
+        advertising, social media, investor communications, press
+        releases) -> Seven Sins Analysis (evaluate each claim against
+        TerraChoice framework plus ECGT/UCPD blacklisted practices) ->
+        Risk Scoring (assign greenwashing risk score 0-100 per claim with
+        breakdown by sin category, visibility weighting, and regulatory
+        exposure factor) -> Action Plan Generation (generate prioritised
+        remediation plan: withdraw high-risk claims, substantiate medium-
+        risk claims, monitor low-risk claims). Supports continuous
+        monitoring mode for new claim detection.
+      schedule: "quarterly"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: compliance_gap
+      name: "Compliance Gap Workflow"
+      description: >-
+        4-phase workflow: Regulatory Requirement Mapping (map all applicable
+        Green Claims Directive articles, ECGT requirements, and UCPD
+        obligations to current practices) -> Current State Assessment
+        (evaluate existing claim management processes, substantiation
+        capabilities, evidence management, and verification readiness) ->
+        Gap Analysis (identify specific gaps per article with severity
+        rating: critical, major, minor) -> Remediation Roadmap (generate
+        phased remediation plan with effort estimates, resource
+        requirements, timeline, and cost projections per gap). Includes
+        cross-regulation consistency check against CSRD disclosures,
+        EU Taxonomy reporting, and ESPR DPP data.
+      schedule: "semi-annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: remediation_planning
+      name: "Remediation Planning Workflow"
+      description: >-
+        4-phase workflow: Claim Triage (categorise non-compliant claims
+        by action type: withdraw, reword, substantiate, replace with
+        compliant alternative) -> Resource Planning (estimate data
+        collection effort, LCA study scope, evidence gap closure
+        timeline, and conformity assessment preparation) -> Timeline
+        Generation (create per-claim remediation timeline aligned
+        with regulatory transposition deadlines per member state) ->
+        Progress Tracking (monitor remediation execution against plan,
+        escalate overdue items, track claim status transitions through
+        lifecycle: non-compliant -> remediation-in-progress ->
+        substantiated -> verification-submitted -> verified).
+      schedule: "monthly"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: regulatory_submission
+      name: "Regulatory Submission Workflow"
+      description: >-
+        4-phase workflow: Submission Package Assembly (compile
+        substantiation dossier, PEF study, evidence chain, and
+        label compliance documentation per conformity assessment body
+        requirements) -> Internal Review (automated quality checks:
+        completeness, consistency, evidence hash verification, data
+        freshness validation) -> CAB Pre-Submission Check (validate
+        package against known CAB acceptance criteria and common
+        rejection reasons) -> Submission Tracking (track submission
+        status, manage CAB feedback, coordinate response to queries,
+        and log verification outcome). Generates audit-ready
+        submission packages with full provenance trail.
+      schedule: "on-demand"
+      estimated_duration_minutes: 60
+      phases: 4
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 green claims templates)
+  # ===========================================================================
+  templates:
+    - id: claim_assessment_report
+      display_name: "Claim Assessment Report"
+      description: >-
+        Comprehensive claim inventory and assessment report listing all
+        explicit environmental claims identified across commercial
+        communications, classified by claim type, mapped to applicable
+        Green Claims Directive articles, and scored for substantiation
+        completeness and greenwashing risk. Includes per-claim status
+        (substantiated, partially substantiated, unsubstantiated),
+        priority ranking, and recommended actions. Suitable for
+        management review and compliance committee reporting.
+      format: "pdf"
+      template_file: "templates/claim_assessment_report.jinja2"
+      enabled: true
+
+    - id: evidence_dossier_report
+      display_name: "Evidence Dossier Report"
+      description: >-
+        Structured evidence dossier per claim or claim group. Contains
+        all supporting evidence items with SHA-256 hashes, source
+        attribution, data quality ratings (PEF DQR scores), temporal
+        validity, and chain-of-custody documentation. Includes evidence
+        DAG visualisation showing claim-to-evidence linkages. Designed
+        for conformity assessment body review and regulatory audit
+        submission. Includes evidence gap summary and data collection
+        plan for missing items.
+      format: "pdf"
+      template_file: "templates/evidence_dossier_report.jinja2"
+      enabled: true
+
+    - id: lifecycle_summary_report
+      display_name: "Lifecycle Summary Report"
+      description: >-
+        PEF-compliant lifecycle assessment summary report covering
+        system boundary definition, functional unit, data sources,
+        impact assessment results across 16 categories, normalised
+        and weighted scores, contribution analysis, sensitivity
+        analysis, and data quality assessment. Includes impact
+        shifting analysis per Article 3(1)(d) requirements. Formatted
+        per PEF reporting requirements for conformity assessment
+        body review.
+      format: "pdf"
+      template_file: "templates/lifecycle_summary_report.jinja2"
+      enabled: true
+
+    - id: label_compliance_report
+      display_name: "Label Compliance Report"
+      description: >-
+        Eco-label and environmental labelling scheme compliance report
+        listing all labels in use, their compliance status against
+        Article 10 criteria, certificate validity, and proper usage
+        assessment. Flags non-compliant labels with remediation
+        recommendations (remove, replace, obtain proper certification).
+        Includes label scheme comparison matrix and recommended
+        compliant alternatives.
+      format: "pdf"
+      template_file: "templates/label_compliance_report.jinja2"
+      enabled: true
+
+    - id: greenwashing_risk_report
+      display_name: "Greenwashing Risk Report"
+      description: >-
+        Greenwashing risk assessment report with per-claim scoring
+        across TerraChoice Seven Sins categories and UCPD blacklisted
+        practices. Includes risk heat map by claim type and
+        communication channel, trend analysis over time, high-risk
+        claim spotlight with specific remediation actions, and
+        peer comparison of greenwashing risk profile. Suitable for
+        board-level risk reporting and compliance committee review.
+      format: "pdf"
+      template_file: "templates/greenwashing_risk_report.jinja2"
+      enabled: true
+
+    - id: compliance_gap_report
+      display_name: "Compliance Gap Report"
+      description: >-
+        Green Claims Directive compliance gap analysis report covering
+        all applicable articles (3-8, 10) with per-article compliance
+        status, identified gaps with severity ratings, cross-regulation
+        consistency findings (CSRD, Taxonomy, ESPR), and phased
+        remediation roadmap with effort estimates and timeline. Includes
+        regulatory transposition deadline tracker per member state and
+        cost-benefit analysis for remediation investments.
+      format: "pdf"
+      template_file: "templates/compliance_gap_report.jinja2"
+      enabled: true
+
+    - id: green_claims_scorecard
+      display_name: "Green Claims Scorecard"
+      description: >-
+        Executive-level scorecard combining all green claims KPIs:
+        claim substantiation rate, evidence chain completeness,
+        greenwashing risk distribution, label compliance rate,
+        comparative claim validity, Article 3 compliance score,
+        conformity assessment readiness, and remediation progress.
+        Includes traffic light indicators, trend arrows,
+        peer benchmarking, and quarter-over-quarter comparison.
+        Suitable for C-suite and board sustainability committee.
+      format: "html"
+      template_file: "templates/green_claims_scorecard.jinja2"
+      enabled: true
+
+    - id: regulatory_submission_report
+      display_name: "Regulatory Submission Report"
+      description: >-
+        Conformity assessment body submission package containing
+        the complete substantiation dossier, PEF study summary,
+        evidence chain with provenance hashes, label compliance
+        documentation, trader obligation checklist, and declaration
+        of conformity. Formatted per expected CAB requirements with
+        structured sections for each Green Claims Directive article.
+        Includes digital signature fields and version control
+        metadata for audit trail.
+      format: "pdf"
+      template_file: "templates/regulatory_submission_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration -> Claim
+        Inventory Scan -> Claim Classification & Screening -> Evidence
+        Collection & Quality Assessment -> Lifecycle Assessment -> Label
+        Audit -> Greenwashing Detection -> Compliance Gap Analysis ->
+        Submission Package Assembly. Orchestrates all green claims
+        compliance phases with parallel execution where possible (claim
+        screening and evidence collection can run concurrently) and
+        dependency management between engines (lifecycle assessment must
+        complete before comparative claims validation).
+      required: true
+
+    - id: csrd_pack_bridge
+      name: "CSRD Pack Bridge"
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs (Starter/Professional/
+        Enterprise) for consistency between corporate-level environmental
+        disclosures and environmental claims. Validates that carbon
+        reduction claims are consistent with ESRS E1 reported emissions
+        trajectories, that net-zero claims align with disclosed transition
+        plans, and that circular economy claims are consistent with ESRS E5
+        disclosures. Flags inconsistencies between public claims and
+        mandatory CSRD disclosures.
+      required: true
+
+    - id: mrv_claims_bridge
+      name: "MRV Claims Bridge"
+      description: >-
+        Routes data from all 30 AGENT-MRV agents for emissions-based
+        claim substantiation. Provides verified Scope 1, 2, and 3
+        emissions data to substantiate carbon-related claims (carbon
+        neutral, net-zero, reduced emissions, low-carbon). Maps MRV
+        calculation results to claim evidence items with provenance
+        hashes. Validates year-over-year reduction claims against
+        audited MRV time series. Ensures emission factor sources used
+        in MRV calculations are consistent with PEF requirements.
+      required: true
+
+    - id: data_claims_bridge
+      name: "Data Claims Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for claim-related data intake.
+        Routes product LCA data through AGENT-DATA-002 (Excel/CSV
+        Normalizer), supplier environmental declarations through
+        AGENT-DATA-008 (Supplier Questionnaire Processor), emission
+        factor databases through AGENT-DATA-004 (API Gateway), and
+        evidence documents through AGENT-DATA-001 (PDF Extractor).
+        Ensures all data entering the claim substantiation pipeline
+        passes through data quality profiling and validation.
+      required: true
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      description: >-
+        Connects to GL-Taxonomy-APP for validation of taxonomy-related
+        environmental claims. Validates that claims about taxonomy-
+        aligned activities cite correct technical screening criteria,
+        that green revenue share claims match taxonomy KPI disclosures,
+        and that Do No Significant Harm (DNSH) compliance is demonstrated
+        for all claimed taxonomy-aligned activities. Prevents misleading
+        taxonomy-related claims.
+      required: true
+
+    - id: pef_bridge
+      name: "PEF Bridge"
+      description: >-
+        Integration bridge for Product Environmental Footprint databases
+        and methodology resources. Connects to ecoinvent 3.10 and EF 3.1
+        background databases for lifecycle inventory data. Accesses PEF
+        Category Rules (PEFCRs) and Organisation Environmental Footprint
+        Sector Rules (OEFSRs) where available. Routes characterisation
+        factors from ILCD/EF impact assessment method. Provides PEF
+        benchmark data for comparative claims validation. Supports
+        data quality rating per PEF DQR methodology.
+      required: true
+
+    - id: dpp_bridge
+      name: "DPP Bridge"
+      description: >-
+        Integration bridge for Digital Product Passport data per ESPR.
+        Connects to DPP data carriers for product-level environmental
+        performance data. Validates consistency between green claims
+        and DPP-disclosed data (recycled content, carbon footprint,
+        durability, repairability). Ensures claims about ESPR-regulated
+        products are consistent with mandatory DPP disclosures.
+        Supports product-level claim substantiation using DPP as
+        primary evidence source.
+      required: false
+
+    - id: ecgt_bridge
+      name: "ECGT Bridge"
+      description: >-
+        Integration bridge for Empowering Consumers for the Green
+        Transition compliance. Connects to UCPD blacklisted practices
+        database for automated screening. Monitors ECGT transposition
+        status across EU member states for jurisdiction-specific
+        enforcement timelines. Routes ECGT-specific claim prohibitions
+        (generic claims ban, offset-only carbon neutrality ban,
+        non-certified label ban) into the greenwashing detection
+        engine. Provides ECGT compliance overlay for all claim types.
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        18-category system verification covering all 8 engines, 64 agent
+        dependencies, database connectivity, PEF background database
+        currency (ecoinvent version, EF method version), PEFCR
+        availability, eco-label scheme registry freshness, UCPD blacklist
+        updates, emission factor database currency, evidence hash
+        integrity, CAB registry availability, ISO standard references,
+        CSRD data consistency endpoints, taxonomy alignment data, and
+        deployment readiness status.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        7-step guided configuration wizard: Sector Selection
+        (manufacturing/retail/financial/energy/technology/SME) ->
+        Claim Scope Definition (product-level, corporate-level, or
+        both) -> Communication Channel Registration (packaging,
+        website, advertising, social media, investor relations) ->
+        Eco-Label Inventory (register all labels currently in use) ->
+        PEF Database Configuration (ecoinvent/EF licence, PEFCR
+        selection) -> Evidence Repository Setup (document store,
+        hash configuration) -> CAB Selection & Reporting Preferences.
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (6 presets)
+  # ===========================================================================
+  presets:
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for manufacturing companies making environmental
+        claims about produced goods. Product-level claims dominate
+        (carbon footprint, recycled content, recyclability, energy
+        efficiency). PEF methodology fully enabled with PEFCR
+        integration for applicable product categories. DPP bridge
+        enabled for ESPR-regulated products. Comparative claims
+        engine fully active for product-vs-product benchmarking.
+        Supply chain Scope 3 data critical for cradle-to-gate claims.
+      sector: "MANUFACTURING"
+      enabled_engines:
+        - claim_substantiation
+        - evidence_chain
+        - lifecycle_assessment
+        - label_compliance
+        - comparative_claims
+        - greenwashing_detection
+        - trader_obligation
+        - green_claims_benchmark
+      file: "config/presets/manufacturing.yaml"
+
+    - id: retail
+      name: "Retail Preset"
+      description: >-
+        Configuration for retail companies making environmental claims
+        about private-label products and corporate sustainability.
+        High volume of product-level claims on packaging and marketing.
+        ECGT compliance critical for point-of-sale and advertising
+        claims. Label compliance engine prioritised (many eco-labels
+        on retail products). Integration with PACK-014 CSRD Retail
+        Pack for consistency with CSRD disclosures. Food and textile
+        product claims require specific PEFCR application.
+      sector: "RETAIL"
+      enabled_engines:
+        - claim_substantiation
+        - evidence_chain
+        - lifecycle_assessment
+        - label_compliance
+        - comparative_claims
+        - greenwashing_detection
+        - trader_obligation
+        - green_claims_benchmark
+      file: "config/presets/retail.yaml"
+
+    - id: financial_services
+      name: "Financial Services Preset"
+      description: >-
+        Configuration for financial institutions making environmental
+        claims about ESG funds, green bonds, sustainable finance
+        products, and corporate net-zero commitments. Corporate-level
+        claims dominate (net-zero, carbon neutral, ESG integration).
+        Offset-based claim validation critical. Integration with SFDR
+        Article 8/9 disclosures and EU Taxonomy green asset ratio.
+        CSRD corporate emission data provides substantiation basis.
+        Comparative claims on fund ESG performance require SFDR-
+        consistent methodology.
+      sector: "FINANCIAL_SERVICES"
+      enabled_engines:
+        - claim_substantiation
+        - evidence_chain
+        - label_compliance
+        - comparative_claims
+        - greenwashing_detection
+        - trader_obligation
+        - green_claims_benchmark
+      file: "config/presets/financial_services.yaml"
+
+    - id: energy
+      name: "Energy Preset"
+      description: >-
+        Configuration for energy companies making environmental claims
+        about renewable energy, green tariffs, carbon intensity, and
+        transition plans. Carbon-related claims dominate (renewable
+        energy percentage, avoided emissions, grid decarbonisation
+        contribution). Lifecycle assessment fully enabled for energy
+        product comparisons. Offset-based and future-oriented claims
+        (net-zero by 2040) require robust transition plan evidence.
+        Comparative claims on energy mix and carbon intensity require
+        consistent system boundaries.
+      sector: "ENERGY"
+      enabled_engines:
+        - claim_substantiation
+        - evidence_chain
+        - lifecycle_assessment
+        - label_compliance
+        - comparative_claims
+        - greenwashing_detection
+        - trader_obligation
+        - green_claims_benchmark
+      file: "config/presets/energy.yaml"
+
+    - id: technology
+      name: "Technology Preset"
+      description: >-
+        Configuration for technology companies making environmental
+        claims about data centres, cloud services, devices, and
+        software. Claims about carbon-neutral cloud, renewable-powered
+        operations, device recyclability, and circular design models.
+        Use-phase energy consumption critical for device claims
+        (Cat 11). DPP integration for electronics. E-waste and
+        WEEE take-back programme claims require evidence of actual
+        collection and recycling rates. Right-to-repair claims
+        require ESPR compliance evidence.
+      sector: "TECHNOLOGY"
+      enabled_engines:
+        - claim_substantiation
+        - evidence_chain
+        - lifecycle_assessment
+        - label_compliance
+        - comparative_claims
+        - greenwashing_detection
+        - trader_obligation
+        - green_claims_benchmark
+      file: "config/presets/technology.yaml"
+
+    - id: sme
+      name: "SME Preset"
+      description: >-
+        Simplified configuration for small and medium-sized enterprises.
+        Focuses on the most common SME claim types (recycled content,
+        recyclable, locally sourced, reduced packaging). Simplified
+        evidence requirements using SME-proportionate approach per
+        Green Claims Directive provisions. Lifecycle assessment uses
+        screening LCA methodology with secondary data where primary
+        data is unavailable. Reduced engine set for faster
+        implementation and lower cost. 3-year data retention.
+      sector: "SME"
+      enabled_engines:
+        - claim_substantiation
+        - evidence_chain
+        - greenwashing_detection
+        - trader_obligation
+        - green_claims_benchmark
+      file: "config/presets/sme.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for emissions-based claim substantiation
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Substantiates Scope 1 emission reduction claims from stationary sources"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Substantiates refrigerant-related emission reduction and phase-down claims"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Substantiates fleet decarbonisation and low-carbon transport claims"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Substantiates process emission reduction claims from industrial operations"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Substantiates fugitive emission reduction and leak detection claims"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Substantiates land use change and deforestation-free claims"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Substantiates zero-waste and waste reduction claims"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Substantiates sustainable agriculture and low-carbon food claims"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Substantiates renewable energy and grid decarbonisation claims"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Substantiates 100% renewable and green tariff claims via market instruments"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Substantiates district heating decarbonisation and efficiency claims"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Substantiates low-carbon cooling and efficiency claims"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Ensures consistency between location-based and market-based Scope 2 claims"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Substantiates supply chain carbon footprint and sustainable sourcing claims"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Substantiates sustainable infrastructure and green capex claims"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Substantiates upstream energy decarbonisation claims"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Substantiates low-carbon logistics and green supply chain claims"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Substantiates waste diversion, recycling rate, and zero-waste claims"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Substantiates business travel emission reduction claims"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Substantiates green commuting and mobility programme claims"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Substantiates leased asset efficiency and green lease claims"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Substantiates last-mile delivery and green logistics claims"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Substantiates downstream processing efficiency claims"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Substantiates product energy efficiency and low-carbon use claims"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Substantiates recyclability, biodegradability, and compostability claims"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Substantiates green building and sustainable lease portfolio claims"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Substantiates franchise network sustainability and green franchise claims"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Substantiates green investment, ESG fund, and financed emissions claims"
+      path: "greenlang/agents/mrv/investments/"
+      required: true
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps Scope 3 emissions to claim substantiation requirements across all 15 categories"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage and audit trails for all emission-based claim evidence"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts evidence from LCA reports, certification certificates, audit reports"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises claim inventories, PEF data sheets, and evidence registries"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to ERP for product data, spend data, and supplier master data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes connections to PEF databases, eco-label registries, and emission factor APIs"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Provides deforestation-free evidence for nature-related claims"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for supply chain origin and production location claims"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite imagery evidence for deforestation-free and nature-positive claims"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier environmental declarations and third-party certifications"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Climate hazard data for climate resilience and adaptation claims"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorises procurement spend for supply chain emission claim substantiation"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across evidence items for PEF DQR assessment"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate claims, evidence items, and certification records"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing evidence data points using PEF proxy data hierarchy"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous claim substantiation values and evidence quality outliers"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in emission time series used for reduction claims"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles evidence data across LCA databases, certifications, and MRV outputs"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of PEF databases, emission factors, and certification validity"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for PEF, PEFCR, and Green Claims Directive formats"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from source evidence through claim substantiation pipeline"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces Green Claims Directive, ECGT, PEF, and ISO 14021 validation rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates claim assessment and substantiation pipeline execution"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates claim substantiation data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises units (tCO2e, kWh, kg, m2, EUR) and PEF reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in LCA calculations and emission factor selections"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links claims to source evidence with SHA-256 provenance for audit trail"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for claim management and evidence review"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and claim processing capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all claim substantiation calculations are reproducible with SHA-256"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for claim substantiation outputs"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors claim processing pipeline health and performance"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Agents (4 agents for green claims, PCF, LCA, and circular economy)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: gl_008_green_claims
+    name: "Green Claims Agent"
+    description: >-
+      Core GreenLang green claims assessment agent providing claim
+      classification, substantiation scoring, and ECGT compliance
+      checking capabilities. Supplies the foundational claim type
+      taxonomy and substantiation rule engine used by the pack engines.
+    required: true
+  - id: gl_009_pcf
+    name: "Product Carbon Footprint Agent"
+    description: >-
+      GreenLang product carbon footprint calculation agent per ISO 14067
+      and PEF climate change impact category. Provides cradle-to-gate and
+      cradle-to-grave carbon footprint calculations that substantiate
+      carbon neutral, low-carbon, and reduced carbon footprint claims.
+    required: true
+  - id: gl_077_lca
+    name: "Lifecycle Assessment Agent"
+    description: >-
+      GreenLang lifecycle assessment agent implementing PEF methodology
+      across all 16 impact categories. Provides the lifecycle-based
+      scientific evidence required by Article 3 of the Green Claims
+      Directive for product and organisation-level claim substantiation.
+    required: true
+  - id: gl_078_circular_economy
+    name: "Circular Economy Agent"
+    description: >-
+      GreenLang circular economy agent providing recyclability assessment,
+      recycled content verification, biodegradability evaluation, and
+      Material Circularity Indicator (MCI) calculation. Substantiates
+      circularity-related claims (recyclable, recycled content,
+      biodegradable, compostable, zero-waste) per ISO 14021 and EN 13432.
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 64
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    bridged_agents: 4
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  claim_assessment:
+    max_claims: 10000
+    claim_classification_per_item_ms: 25
+    substantiation_scoring_per_claim_ms: 100
+    target_duration_minutes: 30
+  evidence_chain:
+    max_evidence_items: 50000
+    hash_computation_per_item_ms: 5
+    dag_assembly_per_claim_ms: 50
+    target_duration_minutes: 15
+  lifecycle_assessment:
+    max_products_assessed: 500
+    pef_calculation_per_product_minutes: 5
+    target_duration_minutes: 120
+  label_compliance:
+    max_labels_audited: 1000
+    label_validation_per_item_ms: 30
+    target_duration_minutes: 10
+  greenwashing_detection:
+    max_claims_screened: 10000
+    seven_sins_scoring_per_claim_ms: 50
+    target_duration_minutes: 15
+  comparative_claims:
+    max_comparisons: 500
+    comparison_validation_per_pair_ms: 200
+    target_duration_minutes: 10
+  cache_hit_ratio_target: 0.65
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with claim-level and evidence-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - green_claims_manager
+    - sustainability_officer
+    - compliance_analyst
+    - marketing_compliance_lead
+    - product_manager
+    - lca_specialist
+    - external_auditor
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "lxml>=4.9"
+    - "xmlschema>=3.0"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_pef_database_access
+    - verify_emission_factor_database
+    - verify_eco_label_registry
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+    new:
+      - "V083-PACK018-001"  # Claim inventory and classification tables
+      - "V083-PACK018-002"  # Evidence chain and provenance hash tables
+      - "V083-PACK018-003"  # PEF lifecycle assessment result tables
+      - "V083-PACK018-004"  # Eco-label registry and compliance tables
+      - "V083-PACK018-005"  # Greenwashing risk scoring tables
+      - "V083-PACK018-006"  # Trader obligation checklist tables
+      - "V083-PACK018-007"  # Comparative claim validation tables
+      - "V083-PACK018-008"  # Benchmark and scorecard tables
+
+  post_install:
+    - seed_pef_impact_categories
+    - seed_pefcr_catalogue
+    - seed_eco_label_scheme_registry
+    - seed_ucpd_blacklisted_practices
+    - seed_terrachoice_seven_sins_rubric
+    - seed_article3_checklist_criteria
+    - seed_iso_14021_claim_types
+    - seed_emission_factor_sources
+    - seed_default_presets
+    - run_health_checks

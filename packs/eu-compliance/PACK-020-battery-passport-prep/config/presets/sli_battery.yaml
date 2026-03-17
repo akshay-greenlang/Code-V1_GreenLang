@@ -1,0 +1,175 @@
+# =============================================================================
+# PACK-020 Battery Passport Prep Pack - SLI Battery Preset
+# =============================================================================
+# Configuration preset for starting, lighting, and ignition (SLI) batteries
+# per EU Battery Regulation (EU) 2023/1542. SLI batteries are automotive
+# starter batteries (12V/24V lead-acid) used in ICE vehicles, hybrids, and
+# as auxiliary batteries in EVs. No passport or carbon footprint declaration
+# required, but performance, recycled content (lead 85%), labelling, and
+# end-of-life obligations apply.
+#
+# SLI battery characteristics:
+#   - Chemistry: LEAD_ACID (flooded, AGM, EFB, gel)
+#   - Voltage: 12V (passenger), 24V (commercial)
+#   - Capacity: 40-120 Ah (passenger), 120-230 Ah (commercial)
+#   - Weight: 10-30 kg
+#   - No passport required
+#   - No carbon footprint declaration required
+#   - Recycled content: 85% lead (already high due to market maturity)
+#   - Collection: 100% take-back obligation
+#   - High recycling efficiency: 75% (2025), 80% (2030)
+# =============================================================================
+
+# --- Preset Metadata ---
+pack_name: "PACK-020 Battery Passport Prep Pack"
+version: "1.0.0"
+battery_category: "SLI"
+chemistry: "LEAD_ACID"
+reporting_year: 2026
+manufacturing_country: "DE"
+
+# --- Carbon Footprint (Not Required for SLI) ---
+carbon_footprint:
+  enabled: false
+  methodology: "EU_BATTERY_REG_DA"
+  functional_unit: "kgCO2e_per_kWh"
+  lifecycle_stages: []
+  data_quality_rating_required: false
+  third_party_verification: false
+
+# --- Recycled Content (Art. 17 - 85% lead target applies) ---
+recycled_content:
+  enabled: true
+  targets_2031:
+    cobalt: 16.0
+    lithium: 6.0
+    nickel: 6.0
+    lead: 85.0
+  targets_2036:
+    cobalt: 26.0
+    lithium: 12.0
+    nickel: 15.0
+    lead: 85.0
+  documentation_required_from: "2028-08-18"
+  verification_method: "MASS_BALANCE"
+  third_party_audit: true
+  tracking_granularity: "MODEL"
+  pre_consumer_included: true
+  post_consumer_included: true
+
+# --- Performance and Durability (Art. 10) ---
+performance:
+  enabled: true
+  soh_thresholds:
+    excellent: 95.0
+    good: 85.0
+    acceptable: 70.0
+    degraded: 50.0
+    end_of_life: 0.0
+  durability_ratings:
+    sli_cold_cranking_performance_retention_pct: 80.0
+    sli_charge_acceptance: true
+    sli_endurance_cycles: true
+    sli_water_loss_rate: true
+  soh_data_access: false
+  soh_parameters: []
+  test_standards:
+    - "EN_50342_1"
+    - "EN_50342_2"
+    - "EN_50342_6"
+    - "IEC_60095_1"
+  capacity_measurement_standard: "EN_50342_1"
+  temperature_range_c:
+    min_operating: -30.0
+    max_operating: 60.0
+    min_charging: -20.0
+    max_charging: 50.0
+    reference: 25.0
+
+# --- Supply Chain Due Diligence (Not required for SLI) ---
+supply_chain:
+  enabled: false
+  critical_materials: []
+  high_risk_countries: []
+  due_diligence_framework: "OECD_MINERALS"
+  audit_requirements:
+    third_party_audit_required: false
+    audit_frequency_months: 24
+  grievance_mechanism: false
+  public_reporting: false
+  chain_of_custody_tracking: false
+
+# --- Labelling (Art. 13) ---
+labelling:
+  enabled: true
+  required_elements_by_category:
+    SLI:
+      - "CE_MARKING"
+      - "COLLECTION_SYMBOL"
+      - "CAPACITY_LABEL"
+      - "HAZARDOUS_SUBSTANCE"
+      - "BATTERY_CHEMISTRY"
+      - "SEPARATE_COLLECTION"
+  hazardous_substance_thresholds:
+    cadmium_ppm: 20.0
+    lead_ppm: 40.0
+    mercury_ppm: 5.0
+
+# --- End-of-Life (Art. 69-73) ---
+eol:
+  enabled: true
+  collection_targets:
+    sli:
+      current: 100.0
+  recycling_targets:
+    lead_acid:
+      "2025": 75.0
+      "2030": 80.0
+  recovery_targets:
+    lead:
+      "2027": 90.0
+      "2031": 95.0
+  second_life_assessment: false
+  second_life_soh_threshold_pct: 0.0
+  waste_shipment_tracking: true
+  producer_responsibility: true
+  take_back_obligation: true
+  recycler_certification_required: true
+
+# --- Conformity Assessment (Art. 27) ---
+conformity:
+  enabled: true
+  module_by_category:
+    SLI:
+      - "MODULE_A"
+      - "MODULE_B"
+      - "MODULE_C"
+  documentation_requirements:
+    technical_file: true
+    eu_declaration_of_conformity: true
+    test_reports: true
+    risk_assessment: true
+    design_drawings: true
+    bill_of_materials: true
+    manufacturing_process_description: true
+    quality_management_system: true
+    notified_body_certificate: false
+    retention_period_years: 10
+  notified_body_required: false
+  quality_management_standard: "ISO_9001"
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  format: "PDF"
+  additional_formats:
+    - "EXCEL"
+  include_qr: false
+  sha256_provenance: true
+  passport_api_format: "JSON"
+  review_workflow: true
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  data_quality_disclosure: true
+  retention_years: 10

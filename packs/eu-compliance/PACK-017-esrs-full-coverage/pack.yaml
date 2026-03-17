@@ -1,0 +1,1563 @@
+# =============================================================================
+# PACK-017: ESRS Full Coverage Pack
+# GreenLang EU Compliance Pack for complete ESRS compliance across all 12
+# European Sustainability Reporting Standards (ESRS 2, E1-E5, S1-S4, G1)
+# =============================================================================
+# This pack provides comprehensive, production-ready coverage of all European
+# Sustainability Reporting Standards (ESRS) adopted under the Corporate
+# Sustainability Reporting Directive (CSRD). It orchestrates 11 distinct
+# topical engines covering 82 disclosure requirements and 1,093 XBRL-tagged
+# datapoints across environmental, social, and governance dimensions.
+#
+# ESRS Structure Covered:
+#   - ESRS 1: General Requirements (embedded in orchestrator logic)
+#   - ESRS 2: General Disclosures (10 DRs: GOV-1 to GOV-5, SBM-1 to SBM-3, IRO-1 to IRO-2)
+#   - E1: Climate Change (11 DRs via PACK-016 bridge)
+#   - E2: Pollution (6 DRs: E2-1 to E2-6)
+#   - E3: Water and Marine Resources (5 DRs: E3-1 to E3-5)
+#   - E4: Biodiversity and Ecosystems (6 DRs: E4-1 to E4-6)
+#   - E5: Resource Use and Circular Economy (6 DRs: E5-1 to E5-6)
+#   - S1: Own Workforce (17 DRs: S1-1 to S1-17)
+#   - S2: Workers in the Value Chain (5 DRs: S2-1 to S2-5)
+#   - S3: Affected Communities (5 DRs: S3-1 to S3-5)
+#   - S4: Consumers and End-users (5 DRs: S4-1 to S4-5)
+#   - G1: Business Conduct (6 DRs: G1-1 to G1-6)
+#
+# The pack implements the complete ESRS disclosure lifecycle:
+#   1. Materiality-driven disclosure scoping via PACK-015 (Double Materiality)
+#   2. Data collection orchestration across ERP, HRIS, supply chain systems
+#   3. Multi-framework calculation engines (GHG, pollution, water, biodiversity,
+#      labor, governance metrics)
+#   4. Cross-standard consistency validation (e.g., E1 energy data vs E5 material
+#      consumption)
+#   5. XBRL tagging to EFRAG ESRS taxonomy (1,093 datapoints)
+#   6. Audit trail with SHA-256 provenance for all quantitative disclosures
+#   7. Gap analysis and readiness scoring per standard
+#   8. Annual sustainability statement generation (combined ESRS report)
+#
+# Key Capabilities:
+#   - 82 disclosure requirements across 11 topical standards
+#   - 1,093 XBRL-tagged datapoints mapped to EFRAG taxonomy
+#   - Zero-hallucination: all quantitative metrics use deterministic formulas
+#   - Provenance tracking with SHA-256 hashes for audit compliance
+#   - Cross-standard validation (e.g., S1 workforce data consistency with E1
+#     employee commuting emissions)
+#   - Dynamic disclosure scoping based on double materiality outcomes
+#   - Pre-configured presets for manufacturing, financial services, energy,
+#     retail, technology, and multi-sector enterprises
+#   - Integration bridges to PACK-015 (DMA), PACK-016 (E1), GL-CSRD-APP,
+#     MRV agents, data agents, and taxonomy alignment
+#   - XBRL validation against EFRAG ESRS taxonomy schema
+#   - Coverage scorecard (percentage of DRs completed per standard)
+#   - Gap analysis with remediation roadmap
+#   - Parallel execution of independent engines (6 concurrent max)
+#   - Performance optimized for enterprise-scale data (8GB memory, 120min max)
+#
+# Regulatory References:
+#   - EU Directive 2022/2464 (Corporate Sustainability Reporting Directive)
+#   - EU Delegated Regulation 2023/2772 (ESRS Set 1)
+#   - ESRS 1 General Requirements (all chapters)
+#   - ESRS 2 General Disclosures (all paragraphs)
+#   - ESRS E1 Climate Change (all paragraphs AR E1-1 through AR E1-81)
+#   - ESRS E2 Pollution (all paragraphs AR E2-1 through AR E2-50)
+#   - ESRS E3 Water and Marine Resources (all paragraphs AR E3-1 through AR E3-41)
+#   - ESRS E4 Biodiversity and Ecosystems (all paragraphs AR E4-1 through AR E4-55)
+#   - ESRS E5 Resource Use and Circular Economy (all paragraphs AR E5-1 through AR E5-49)
+#   - ESRS S1 Own Workforce (all paragraphs AR S1-1 through AR S1-158)
+#   - ESRS S2 Workers in the Value Chain (all paragraphs AR S2-1 through AR S2-44)
+#   - ESRS S3 Affected Communities (all paragraphs AR S3-1 through AR S3-43)
+#   - ESRS S4 Consumers and End-users (all paragraphs AR S4-1 through AR S4-40)
+#   - ESRS G1 Business Conduct (all paragraphs AR G1-1 through AR G1-51)
+#   - EFRAG XBRL Taxonomy for ESRS (2024 edition)
+#   - GHG Protocol Corporate Standard (for E1 emissions)
+#   - OECD Guidelines for Multinational Enterprises (for G1 conduct)
+#   - UN Guiding Principles on Business and Human Rights (for S1-S4)
+#   - ILO Core Conventions (for S1-S2 labor rights)
+#   - ISO 14001 Environmental Management (for E2-E5 environmental topics)
+#   - TCFD Recommendations (for E1 climate risk disclosure)
+#
+# Sector Coverage:
+#   - All NACE macro-sectors (A through U)
+#   - Sector-specific disclosure requirements (financial services, energy,
+#     manufacturing, retail, technology)
+#   - Pre-configured presets with sector-specific materiality templates
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-17)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-017-esrs-full-coverage
+  version: "1.0.0"
+  display_name: "ESRS Full Coverage Pack"
+  description: >-
+    Complete ESRS compliance across all 12 European Sustainability Reporting
+    Standards (ESRS 2, E1-E5, S1-S4, G1). This pack orchestrates 11 engines
+    covering 82 disclosure requirements and 1,093 XBRL-tagged datapoints.
+    Provides materiality-driven disclosure scoping, multi-framework data
+    collection, cross-standard consistency validation, XBRL tagging to EFRAG
+    taxonomy, SHA-256 provenance for quantitative metrics, gap analysis, and
+    annual sustainability statement generation. Integrates with PACK-015
+    (Double Materiality), PACK-016 (E1 Climate), GL-CSRD-APP, MRV agents,
+    data agents, and taxonomy alignment. Pre-configured presets for
+    manufacturing, financial services, energy, retail, technology, and
+    multi-sector enterprises. Zero-hallucination approach for all quantitative
+    calculations. Enterprise-grade performance (8GB memory, 120min max,
+    6 concurrent engines).
+  category: eu-compliance
+  tier: enterprise
+  author: GreenLang Platform Team
+  license: Commercial
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-17"
+  support_tier: enterprise-premium
+  documentation_url: "https://docs.greenlang.io/packs/esrs-full-coverage"
+  changelog_url: "https://docs.greenlang.io/packs/esrs-full-coverage/changelog"
+
+  tags:
+    - esrs-full
+    - esrs-2
+    - esrs-e2
+    - esrs-e3
+    - esrs-e4
+    - esrs-e5
+    - esrs-s1
+    - esrs-s2
+    - esrs-s3
+    - esrs-s4
+    - esrs-g1
+    - csrd
+    - sustainability-reporting
+    - esg
+    - environmental-social-governance
+    - pollution
+    - water
+    - marine-resources
+    - biodiversity
+    - ecosystems
+    - circular-economy
+    - resource-use
+    - workforce
+    - labor-rights
+    - value-chain
+    - communities
+    - consumers
+    - business-conduct
+    - governance
+    - xbrl
+    - efrag-taxonomy
+    - provenance
+    - zero-hallucination
+    - materiality
+    - eu-compliance
+    - double-materiality
+    - cross-standard-validation
+    - gap-analysis
+    - coverage-scorecard
+
+  regulation:
+    primary:
+      name: "European Sustainability Reporting Standards - Full Set 1"
+      reference: "(EU) 2023/2772 - ESRS Set 1"
+      effective_date: "2024-01-01"
+      description: >-
+        ESRS Set 1 comprises 12 standards: ESRS 1 (General Requirements),
+        ESRS 2 (General Disclosures), and 10 topical standards covering
+        environmental (E1-E5), social (S1-S4), and governance (G1) dimensions.
+        All undertakings subject to CSRD must report on ESRS 2 and conduct
+        double materiality assessments per ESRS 1. Topical standards (E1-E5,
+        S1-S4, G1) are subject to materiality: if a topic is assessed as not
+        material, the undertaking may omit the topical disclosures but must
+        explain the outcome of the materiality assessment. ESRS requires
+        disclosure of policies, actions, targets, and metrics for material
+        sustainability matters, with forward-looking information on strategy,
+        business model, and value chain impacts.
+    secondary:
+      - name: "Corporate Sustainability Reporting Directive"
+        reference: "(EU) 2022/2464"
+        effective_date: "2024-01-01"
+      - name: "ESRS 1 General Requirements"
+        reference: "(EU) 2023/2772 - ESRS 1"
+        effective_date: "2024-01-01"
+      - name: "ESRS 2 General Disclosures"
+        reference: "(EU) 2023/2772 - ESRS 2"
+        effective_date: "2024-01-01"
+      - name: "EFRAG XBRL Taxonomy for ESRS"
+        reference: "EFRAG ESRS XBRL Taxonomy 2024"
+        effective_date: "2024-01-01"
+      - name: "EU Taxonomy Regulation"
+        reference: "(EU) 2020/852"
+        effective_date: "2022-01-01"
+
+  standards_covered:
+    - id: ESRS_1
+      name: "General Requirements"
+      status: embedded
+      description: "Embedded in orchestrator (materiality logic, disclosure principles)"
+    - id: ESRS_2
+      name: "General Disclosures"
+      disclosure_requirements: 10
+      datapoints: 127
+      status: implemented
+      engine: esrs2_general_disclosures
+    - id: E1
+      name: "Climate Change"
+      disclosure_requirements: 11
+      datapoints: 312
+      status: bridged
+      bridge: PACK-016
+    - id: E2
+      name: "Pollution"
+      disclosure_requirements: 6
+      datapoints: 98
+      status: implemented
+      engine: e2_pollution
+    - id: E3
+      name: "Water and Marine Resources"
+      disclosure_requirements: 5
+      datapoints: 74
+      status: implemented
+      engine: e3_water_marine
+    - id: E4
+      name: "Biodiversity and Ecosystems"
+      disclosure_requirements: 6
+      datapoints: 103
+      status: implemented
+      engine: e4_biodiversity
+    - id: E5
+      name: "Resource Use and Circular Economy"
+      disclosure_requirements: 6
+      datapoints: 89
+      status: implemented
+      engine: e5_circular_economy
+    - id: S1
+      name: "Own Workforce"
+      disclosure_requirements: 17
+      datapoints: 156
+      status: implemented
+      engine: s1_own_workforce
+    - id: S2
+      name: "Workers in the Value Chain"
+      disclosure_requirements: 5
+      datapoints: 48
+      status: implemented
+      engine: s2_value_chain_workers
+    - id: S3
+      name: "Affected Communities"
+      disclosure_requirements: 5
+      datapoints: 46
+      status: implemented
+      engine: s3_affected_communities
+    - id: S4
+      name: "Consumers and End-users"
+      disclosure_requirements: 5
+      datapoints: 40
+      status: implemented
+      engine: s4_consumers
+    - id: G1
+      name: "Business Conduct"
+      disclosure_requirements: 6
+      datapoints: 89
+      status: implemented
+      engine: g1_business_conduct
+
+  total_disclosure_requirements: 82
+  total_datapoints: 1093
+  total_engines: 11
+
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
+dependencies:
+  required:
+    - pack_id: PACK-015
+      name: "Double Materiality Assessment Pack"
+      version: ">=1.0.0"
+      reason: "Materiality determination required per ESRS 1 for topical standard scoping"
+    - pack_id: PACK-016
+      name: "ESRS E1 Climate Pack"
+      version: ">=1.0.0"
+      reason: "E1 Climate Change disclosures (11 DRs, 312 datapoints)"
+
+  optional:
+    - pack_id: PACK-008
+      name: "EU Taxonomy Alignment Pack"
+      version: ">=1.0.0"
+      reason: "Cross-reference for E1 climate mitigation/adaptation alignment"
+    - pack_id: PACK-010
+      name: "SFDR Article 8 Pack"
+      version: ">=1.0.0"
+      reason: "Principal adverse impacts (PAI) overlap with ESRS metrics"
+
+  agents:
+    - AGENT-FOUND-001  # Orchestrator (DAG execution)
+    - AGENT-FOUND-002  # Schema Compiler (ESRS schema validation)
+    - AGENT-FOUND-003  # Unit Normalizer (metric conversions)
+    - AGENT-FOUND-005  # Citations Agent (regulatory references)
+    - AGENT-FOUND-008  # Reproducibility Agent (provenance tracking)
+    - AGENT-DATA-001   # PDF Extractor (policy documents)
+    - AGENT-DATA-002   # Excel/CSV Normalizer (data intake)
+    - AGENT-DATA-003   # ERP Connector (financial/operational data)
+    - AGENT-DATA-008   # Supplier Questionnaire Processor (value chain data)
+    - AGENT-DATA-010   # Data Quality Profiler (data validation)
+    - AGENT-DATA-019   # Validation Rule Engine (ESRS validation rules)
+    - AGENT-MRV-001-030 # All MRV agents (for E1 via PACK-016 bridge)
+
+# -----------------------------------------------------------------------------
+# Engines
+# -----------------------------------------------------------------------------
+engines:
+  - id: esrs2_general_disclosures
+    name: "ESRS 2 General Disclosures Engine"
+    file: engines/esrs2_general_disclosures_engine.py
+    class: GeneralDisclosuresEngine
+    standard: ESRS_2
+    description: >-
+      Implements all 10 ESRS 2 disclosure requirements covering governance
+      (GOV-1 to GOV-5), strategy and business model (SBM-1 to SBM-3), and
+      impact/risk/opportunity management (IRO-1 to IRO-2). Produces 127
+      datapoints including board composition, sustainability governance
+      structures, business model description, value chain analysis, and
+      materiality assessment process documentation.
+    disclosure_requirements:
+      - id: GOV-1
+        name: "The role of the administrative, management and supervisory bodies"
+        datapoints: 12
+        xbrl_prefix: "esrs:GOV1"
+      - id: GOV-2
+        name: "Information provided to and sustainability matters addressed by the undertaking's administrative, management and supervisory bodies"
+        datapoints: 8
+        xbrl_prefix: "esrs:GOV2"
+      - id: GOV-3
+        name: "Integration of sustainability-related performance in incentive schemes"
+        datapoints: 10
+        xbrl_prefix: "esrs:GOV3"
+      - id: GOV-4
+        name: "Statement on due diligence"
+        datapoints: 5
+        xbrl_prefix: "esrs:GOV4"
+      - id: GOV-5
+        name: "Risk management and internal controls over sustainability reporting"
+        datapoints: 7
+        xbrl_prefix: "esrs:GOV5"
+      - id: SBM-1
+        name: "Strategy, business model and value chain"
+        datapoints: 28
+        xbrl_prefix: "esrs:SBM1"
+      - id: SBM-2
+        name: "Interests and views of stakeholders"
+        datapoints: 15
+        xbrl_prefix: "esrs:SBM2"
+      - id: SBM-3
+        name: "Material impacts, risks and opportunities and their interaction with strategy and business model"
+        datapoints: 22
+        xbrl_prefix: "esrs:SBM3"
+      - id: IRO-1
+        name: "Description of the processes to identify and assess material impacts, risks and opportunities"
+        datapoints: 10
+        xbrl_prefix: "esrs:IRO1"
+      - id: IRO-2
+        name: "Disclosure Requirements in ESRS covered by the undertaking's sustainability statement"
+        datapoints: 10
+        xbrl_prefix: "esrs:IRO2"
+    inputs:
+      - governance_structure_data
+      - board_composition_data
+      - incentive_scheme_data
+      - due_diligence_policy_docs
+      - risk_management_framework
+      - business_model_description
+      - value_chain_mapping
+      - stakeholder_engagement_records
+      - materiality_assessment_results
+    outputs:
+      - esrs2_governance_report
+      - esrs2_strategy_business_model_report
+      - esrs2_iro_report
+      - xbrl_tagged_esrs2_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 15
+    memory_estimate_mb: 512
+
+  - id: e2_pollution
+    name: "ESRS E2 Pollution Engine"
+    file: engines/e2_pollution_engine.py
+    class: PollutionEngine
+    standard: E2
+    description: >-
+      Implements all 6 ESRS E2 disclosure requirements covering pollution to
+      air, water, and soil. Produces 98 datapoints including emissions of air
+      pollutants (PM, NOx, SOx, VOCs), discharges to water, soil contamination,
+      substances of concern, and microplastics. Covers policies (E2-1), actions
+      (E2-2), targets (E2-3), pollution metrics (E2-4), substances of concern
+      (E2-5), and anticipated financial effects (E2-6).
+    disclosure_requirements:
+      - id: E2-1
+        name: "Policies related to pollution"
+        datapoints: 8
+        xbrl_prefix: "esrs:E21"
+      - id: E2-2
+        name: "Actions and resources related to pollution"
+        datapoints: 12
+        xbrl_prefix: "esrs:E22"
+      - id: E2-3
+        name: "Targets related to pollution"
+        datapoints: 15
+        xbrl_prefix: "esrs:E23"
+      - id: E2-4
+        name: "Pollution of air, water and soil"
+        datapoints: 32
+        xbrl_prefix: "esrs:E24"
+      - id: E2-5
+        name: "Substances of concern and substances of very high concern"
+        datapoints: 18
+        xbrl_prefix: "esrs:E25"
+      - id: E2-6
+        name: "Anticipated financial effects from pollution-related impacts and risks"
+        datapoints: 13
+        xbrl_prefix: "esrs:E26"
+    inputs:
+      - air_emissions_data           # PM2.5, PM10, NOx, SOx, VOCs, NH3
+      - water_discharge_data         # BOD, COD, TSS, nutrients, heavy metals
+      - soil_contamination_data      # contaminated sites, remediation status
+      - substances_of_concern_list   # REACH, RoHS, PFAS, microplastics
+      - pollution_incidents_log      # spills, exceedances, violations
+      - pollution_policies           # policy documents
+      - pollution_actions_capex      # CapEx/OpEx for pollution reduction
+      - pollution_targets            # reduction targets
+    outputs:
+      - e2_pollution_report
+      - air_emissions_inventory
+      - water_discharge_inventory
+      - substances_of_concern_register
+      - xbrl_tagged_e2_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 20
+    memory_estimate_mb: 768
+
+  - id: e3_water_marine
+    name: "ESRS E3 Water and Marine Resources Engine"
+    file: engines/e3_water_marine_engine.py
+    class: WaterMarineEngine
+    standard: E3
+    description: >-
+      Implements all 5 ESRS E3 disclosure requirements covering water
+      consumption, water withdrawals, water discharges, and marine resources.
+      Produces 74 datapoints including water consumption in water-stressed
+      areas, water intensity, water recycling, ocean/marine impacts, and
+      anticipated financial effects. Covers policies (E3-1), actions (E3-2),
+      targets (E3-3), water metrics (E3-4), and financial effects (E3-5).
+    disclosure_requirements:
+      - id: E3-1
+        name: "Policies related to water and marine resources"
+        datapoints: 8
+        xbrl_prefix: "esrs:E31"
+      - id: E3-2
+        name: "Actions and resources related to water and marine resources"
+        datapoints: 10
+        xbrl_prefix: "esrs:E32"
+      - id: E3-3
+        name: "Targets related to water and marine resources"
+        datapoints: 12
+        xbrl_prefix: "esrs:E33"
+      - id: E3-4
+        name: "Water consumption"
+        datapoints: 28
+        xbrl_prefix: "esrs:E34"
+      - id: E3-5
+        name: "Anticipated financial effects from water and marine resources-related impacts and risks"
+        datapoints: 16
+        xbrl_prefix: "esrs:E35"
+    inputs:
+      - water_withdrawal_data        # by source (surface, ground, municipal, seawater)
+      - water_consumption_data       # net consumption after discharge/recycling
+      - water_discharge_data         # by destination and quality
+      - water_stress_assessment      # WRI Aqueduct, WWF Water Risk Filter
+      - water_recycling_data         # recycled/reused water volumes
+      - marine_impacts_data          # ocean pollution, marine biodiversity
+      - water_policies               # policy documents
+      - water_actions_capex          # CapEx/OpEx for water efficiency
+      - water_targets                # water reduction targets
+    outputs:
+      - e3_water_marine_report
+      - water_consumption_inventory
+      - water_stress_analysis
+      - marine_impacts_assessment
+      - xbrl_tagged_e3_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 18
+    memory_estimate_mb: 640
+
+  - id: e4_biodiversity
+    name: "ESRS E4 Biodiversity and Ecosystems Engine"
+    file: engines/e4_biodiversity_engine.py
+    class: BiodiversityEngine
+    standard: E4
+    description: >-
+      Implements all 6 ESRS E4 disclosure requirements covering biodiversity
+      impacts, pressures on biodiversity (land use change, pollution, invasive
+      species, resource exploitation, climate change), and ecosystem services.
+      Produces 103 datapoints including sites in/near biodiversity-sensitive
+      areas, land use change impacts, threatened species, ecosystem condition,
+      and anticipated financial effects. Covers policies (E4-1), actions (E4-2),
+      targets (E4-3), biodiversity metrics (E4-4), ecosystem impacts (E4-5),
+      and financial effects (E4-6).
+    disclosure_requirements:
+      - id: E4-1
+        name: "Policies related to biodiversity and ecosystems"
+        datapoints: 10
+        xbrl_prefix: "esrs:E41"
+      - id: E4-2
+        name: "Actions and resources related to biodiversity and ecosystems"
+        datapoints: 14
+        xbrl_prefix: "esrs:E42"
+      - id: E4-3
+        name: "Targets related to biodiversity and ecosystems"
+        datapoints: 16
+        xbrl_prefix: "esrs:E43"
+      - id: E4-4
+        name: "Impact metrics related to biodiversity and ecosystems change"
+        datapoints: 22
+        xbrl_prefix: "esrs:E44"
+      - id: E4-5
+        name: "Ecosystem extent and condition"
+        datapoints: 18
+        xbrl_prefix: "esrs:E45"
+      - id: E4-6
+        name: "Anticipated financial effects from biodiversity and ecosystem-related impacts and risks"
+        datapoints: 23
+        xbrl_prefix: "esrs:E46"
+    inputs:
+      - site_location_data           # coordinates, proximity to protected areas
+      - biodiversity_assessment      # IBAT, Integrated Biodiversity Assessment Tool
+      - land_use_change_data         # ha converted, habitat types affected
+      - species_data                 # IUCN Red List, threatened species present
+      - ecosystem_services_data      # provisioning, regulating, cultural services
+      - biodiversity_policies        # policy documents
+      - biodiversity_actions_capex   # CapEx/OpEx for biodiversity restoration
+      - biodiversity_targets         # no net loss, net positive targets
+    outputs:
+      - e4_biodiversity_report
+      - biodiversity_impact_assessment
+      - ecosystem_services_valuation
+      - land_use_change_analysis
+      - xbrl_tagged_e4_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 25
+    memory_estimate_mb: 896
+
+  - id: e5_circular_economy
+    name: "ESRS E5 Resource Use and Circular Economy Engine"
+    file: engines/e5_circular_economy_engine.py
+    class: CircularEconomyEngine
+    standard: E5
+    description: >-
+      Implements all 6 ESRS E5 disclosure requirements covering resource inflows
+      (materials, water, energy), resource outflows (products, by-products,
+      waste), and circular economy strategies (reuse, repair, refurbishment,
+      remanufacturing, recycling). Produces 89 datapoints including material
+      consumption, circular material use rate, waste generation, waste
+      diverted from disposal, and anticipated financial effects. Covers
+      policies (E5-1), actions (E5-2), targets (E5-3), resource inflows (E5-4),
+      resource outflows (E5-5), and financial effects (E5-6).
+    disclosure_requirements:
+      - id: E5-1
+        name: "Policies related to resource use and circular economy"
+        datapoints: 9
+        xbrl_prefix: "esrs:E51"
+      - id: E5-2
+        name: "Actions and resources related to resource use and circular economy"
+        datapoints: 13
+        xbrl_prefix: "esrs:E52"
+      - id: E5-3
+        name: "Targets related to resource use and circular economy"
+        datapoints: 14
+        xbrl_prefix: "esrs:E53"
+      - id: E5-4
+        name: "Resource inflows"
+        datapoints: 20
+        xbrl_prefix: "esrs:E54"
+      - id: E5-5
+        name: "Resource outflows"
+        datapoints: 18
+        xbrl_prefix: "esrs:E55"
+      - id: E5-6
+        name: "Anticipated financial effects from resource use and circular economy-related impacts and risks"
+        datapoints: 15
+        xbrl_prefix: "esrs:E56"
+    inputs:
+      - material_consumption_data    # tonnes by material type (metals, plastics, etc.)
+      - recycled_content_data        # percentage recycled input materials
+      - product_design_data          # design for circularity metrics
+      - waste_generation_data        # by waste type and disposal method
+      - waste_diverted_data          # recycling, composting, energy recovery
+      - circular_economy_policies    # policy documents
+      - circular_economy_actions     # CapEx/OpEx for circular initiatives
+      - circular_economy_targets     # circular material use rate targets
+    outputs:
+      - e5_circular_economy_report
+      - material_flow_analysis
+      - circular_material_use_rate
+      - waste_generation_inventory
+      - xbrl_tagged_e5_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 22
+    memory_estimate_mb: 768
+
+  - id: s1_own_workforce
+    name: "ESRS S1 Own Workforce Engine"
+    file: engines/s1_own_workforce_engine.py
+    class: OwnWorkforceEngine
+    standard: S1
+    description: >-
+      Implements all 17 ESRS S1 disclosure requirements covering own workforce
+      policies, actions, targets, and metrics across working conditions,
+      equal treatment, social dialogue, health and safety, work-life balance,
+      training, and fair compensation. Produces 156 datapoints including
+      workforce composition, pay gaps, training hours, injury rates, collective
+      bargaining coverage, and work-related incidents. This is the most
+      comprehensive social standard with 17 DRs spanning S1-1 to S1-17.
+    disclosure_requirements:
+      - id: S1-1
+        name: "Policies related to own workforce"
+        datapoints: 12
+        xbrl_prefix: "esrs:S11"
+      - id: S1-2
+        name: "Processes for engaging with own workers and workers' representatives about impacts"
+        datapoints: 8
+        xbrl_prefix: "esrs:S12"
+      - id: S1-3
+        name: "Processes to remediate negative impacts and channels for own workers to raise concerns"
+        datapoints: 7
+        xbrl_prefix: "esrs:S13"
+      - id: S1-4
+        name: "Taking action on material impacts on own workforce, and approaches to managing material risks and pursuing material opportunities related to own workforce, and effectiveness of those actions"
+        datapoints: 10
+        xbrl_prefix: "esrs:S14"
+      - id: S1-5
+        name: "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities"
+        datapoints: 9
+        xbrl_prefix: "esrs:S15"
+      - id: S1-6
+        name: "Characteristics of the undertaking's employees"
+        datapoints: 15
+        xbrl_prefix: "esrs:S16"
+      - id: S1-7
+        name: "Characteristics of non-employee workers in the undertaking's own workforce"
+        datapoints: 8
+        xbrl_prefix: "esrs:S17"
+      - id: S1-8
+        name: "Collective bargaining coverage and social dialogue"
+        datapoints: 7
+        xbrl_prefix: "esrs:S18"
+      - id: S1-9
+        name: "Diversity metrics"
+        datapoints: 12
+        xbrl_prefix: "esrs:S19"
+      - id: S1-10
+        name: "Adequate wages"
+        datapoints: 6
+        xbrl_prefix: "esrs:S110"
+      - id: S1-11
+        name: "Social protection"
+        datapoints: 5
+        xbrl_prefix: "esrs:S111"
+      - id: S1-12
+        name: "Persons with disabilities"
+        datapoints: 4
+        xbrl_prefix: "esrs:S112"
+      - id: S1-13
+        name: "Training and skills development metrics"
+        datapoints: 10
+        xbrl_prefix: "esrs:S113"
+      - id: S1-14
+        name: "Health and safety metrics"
+        datapoints: 18
+        xbrl_prefix: "esrs:S114"
+      - id: S1-15
+        name: "Work-life balance metrics"
+        datapoints: 8
+        xbrl_prefix: "esrs:S115"
+      - id: S1-16
+        name: "Remuneration metrics (pay gap and total remuneration)"
+        datapoints: 12
+        xbrl_prefix: "esrs:S116"
+      - id: S1-17
+        name: "Incidents, complaints and severe human rights impacts"
+        datapoints: 5
+        xbrl_prefix: "esrs:S117"
+    inputs:
+      - hris_employee_data           # headcount, demographics, tenure
+      - contractor_data              # non-employee workers
+      - collective_bargaining_data   # union membership, coverage
+      - diversity_data               # gender, age, disability, ethnicity
+      - compensation_data            # wages, pay gaps, benefits
+      - health_safety_data           # incidents, injuries, fatalities
+      - training_data                # hours, participation, programs
+      - work_life_balance_data       # parental leave, flexible work
+      - grievance_data               # complaints, incidents
+      - workforce_policies           # policy documents
+    outputs:
+      - s1_own_workforce_report
+      - workforce_composition_analysis
+      - pay_gap_analysis
+      - health_safety_dashboard
+      - training_metrics_summary
+      - xbrl_tagged_s1_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 30
+    memory_estimate_mb: 1024
+
+  - id: s2_value_chain_workers
+    name: "ESRS S2 Workers in the Value Chain Engine"
+    file: engines/s2_value_chain_workers_engine.py
+    class: ValueChainWorkersEngine
+    standard: S2
+    description: >-
+      Implements all 5 ESRS S2 disclosure requirements covering workers in the
+      value chain (suppliers, contractors, business partners). Produces 48
+      datapoints including value chain worker policies, engagement processes,
+      material impacts (forced labor, child labor, discrimination), and
+      incidents in the value chain. Covers policies (S2-1), engagement (S2-2),
+      remediation (S2-3), actions (S2-4), and targets (S2-5).
+    disclosure_requirements:
+      - id: S2-1
+        name: "Policies related to value chain workers"
+        datapoints: 10
+        xbrl_prefix: "esrs:S21"
+      - id: S2-2
+        name: "Processes for engaging with value chain workers about impacts"
+        datapoints: 8
+        xbrl_prefix: "esrs:S22"
+      - id: S2-3
+        name: "Processes to remediate negative impacts and channels for value chain workers to raise concerns"
+        datapoints: 7
+        xbrl_prefix: "esrs:S23"
+      - id: S2-4
+        name: "Taking action on material impacts on value chain workers, and approaches to managing material risks and pursuing material opportunities related to value chain workers, and effectiveness of those actions"
+        datapoints: 12
+        xbrl_prefix: "esrs:S24"
+      - id: S2-5
+        name: "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities"
+        datapoints: 11
+        xbrl_prefix: "esrs:S25"
+    inputs:
+      - supplier_list                # value chain partners
+      - supplier_audits              # social audits, corrective actions
+      - supplier_questionnaires      # via AGENT-DATA-008
+      - value_chain_incidents        # labor violations, grievances
+      - value_chain_policies         # supplier code of conduct
+      - value_chain_actions          # capacity building, assessments
+      - value_chain_targets          # 100% audited suppliers, etc.
+    outputs:
+      - s2_value_chain_workers_report
+      - supplier_social_audit_summary
+      - value_chain_incidents_log
+      - xbrl_tagged_s2_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 20
+    memory_estimate_mb: 640
+
+  - id: s3_affected_communities
+    name: "ESRS S3 Affected Communities Engine"
+    file: engines/s3_affected_communities_engine.py
+    class: AffectedCommunitiesEngine
+    standard: S3
+    description: >-
+      Implements all 5 ESRS S3 disclosure requirements covering communities
+      affected by the undertaking's operations (local communities, indigenous
+      peoples). Produces 46 datapoints including community engagement
+      processes, material impacts (resettlement, land rights, access to
+      resources), and community investment. Covers policies (S3-1), engagement
+      (S3-2), remediation (S3-3), actions (S3-4), and targets (S3-5).
+    disclosure_requirements:
+      - id: S3-1
+        name: "Policies related to affected communities"
+        datapoints: 9
+        xbrl_prefix: "esrs:S31"
+      - id: S3-2
+        name: "Processes for engaging with affected communities about impacts"
+        datapoints: 8
+        xbrl_prefix: "esrs:S32"
+      - id: S3-3
+        name: "Processes to remediate negative impacts and channels for affected communities to raise concerns"
+        datapoints: 7
+        xbrl_prefix: "esrs:S33"
+      - id: S3-4
+        name: "Taking action on material impacts on affected communities, and approaches to managing material risks and pursuing material opportunities related to affected communities, and effectiveness of those actions"
+        datapoints: 12
+        xbrl_prefix: "esrs:S34"
+      - id: S3-5
+        name: "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities"
+        datapoints: 10
+        xbrl_prefix: "esrs:S35"
+    inputs:
+      - community_mapping            # affected communities by site
+      - community_engagement_records # meetings, consultations
+      - community_grievances         # complaints, disputes
+      - land_rights_data             # resettlement, indigenous lands
+      - community_investment_data    # social programs, CSR spend
+      - community_policies           # policy documents
+      - community_actions            # impact assessments, mitigation
+      - community_targets            # grievance resolution, investment targets
+    outputs:
+      - s3_affected_communities_report
+      - community_engagement_summary
+      - grievance_resolution_log
+      - xbrl_tagged_s3_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 18
+    memory_estimate_mb: 576
+
+  - id: s4_consumers
+    name: "ESRS S4 Consumers and End-users Engine"
+    file: engines/s4_consumers_engine.py
+    class: ConsumersEngine
+    standard: S4
+    description: >-
+      Implements all 5 ESRS S4 disclosure requirements covering consumers and
+      end-users of the undertaking's products and services. Produces 40
+      datapoints including consumer policies, engagement processes, material
+      impacts (product safety, data privacy, marketing practices), and
+      consumer incidents. Covers policies (S4-1), engagement (S4-2),
+      remediation (S4-3), actions (S4-4), and targets (S4-5).
+    disclosure_requirements:
+      - id: S4-1
+        name: "Policies related to consumers and end-users"
+        datapoints: 8
+        xbrl_prefix: "esrs:S41"
+      - id: S4-2
+        name: "Processes for engaging with consumers and end-users about impacts"
+        datapoints: 7
+        xbrl_prefix: "esrs:S42"
+      - id: S4-3
+        name: "Processes to remediate negative impacts and channels for consumers and end-users to raise concerns"
+        datapoints: 6
+        xbrl_prefix: "esrs:S43"
+      - id: S4-4
+        name: "Taking action on material impacts on consumers and end-users, and approaches to managing material risks and pursuing material opportunities related to consumers and end-users, and effectiveness of those actions"
+        datapoints: 10
+        xbrl_prefix: "esrs:S44"
+      - id: S4-5
+        name: "Targets related to managing material negative impacts, advancing positive impacts, and managing material risks and opportunities"
+        datapoints: 9
+        xbrl_prefix: "esrs:S45"
+    inputs:
+      - consumer_policies            # product safety, data privacy, marketing
+      - consumer_engagement_data     # surveys, feedback, complaints
+      - product_safety_data          # recalls, safety incidents
+      - data_privacy_breaches        # GDPR breaches, data incidents
+      - consumer_complaints          # complaints log, resolution
+      - consumer_actions             # product design, testing, labeling
+      - consumer_targets             # zero recalls, complaint resolution time
+    outputs:
+      - s4_consumers_report
+      - product_safety_summary
+      - consumer_complaints_analysis
+      - xbrl_tagged_s4_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 15
+    memory_estimate_mb: 512
+
+  - id: g1_business_conduct
+    name: "ESRS G1 Business Conduct Engine"
+    file: engines/g1_business_conduct_engine.py
+    class: BusinessConductEngine
+    standard: G1
+    description: >-
+      Implements all 6 ESRS G1 disclosure requirements covering business
+      conduct, corporate culture, anti-corruption, anti-bribery, political
+      influence, and payment practices. Produces 89 datapoints including
+      policies on business conduct, anti-corruption/bribery programs, political
+      contributions, lobbying activities, supplier payment terms, and incidents
+      of corruption or bribery. Covers policies (G1-1), management (G1-2),
+      prevention/detection (G1-3), corruption incidents (G1-4), political
+      influence (G1-5), and payment practices (G1-6).
+    disclosure_requirements:
+      - id: G1-1
+        name: "Business conduct policies and corporate culture"
+        datapoints: 18
+        xbrl_prefix: "esrs:G11"
+      - id: G1-2
+        name: "Management of relationships with suppliers"
+        datapoints: 12
+        xbrl_prefix: "esrs:G12"
+      - id: G1-3
+        name: "Prevention and detection of corruption and bribery"
+        datapoints: 16
+        xbrl_prefix: "esrs:G13"
+      - id: G1-4
+        name: "Confirmed incidents of corruption or bribery"
+        datapoints: 8
+        xbrl_prefix: "esrs:G14"
+      - id: G1-5
+        name: "Political influence and lobbying activities"
+        datapoints: 20
+        xbrl_prefix: "esrs:G15"
+      - id: G1-6
+        name: "Payment practices"
+        datapoints: 15
+        xbrl_prefix: "esrs:G16"
+    inputs:
+      - code_of_conduct              # policy documents
+      - ethics_training_data         # training completion, hours
+      - whistleblower_data           # hotline reports, investigations
+      - corruption_incidents         # confirmed cases, sanctions
+      - political_contributions      # donations, lobbying spend
+      - lobbying_activities          # lobbying register entries
+      - supplier_payment_data        # average payment terms, late payments
+      - supplier_relationship_data   # supplier diversity, local sourcing
+    outputs:
+      - g1_business_conduct_report
+      - anti_corruption_program_summary
+      - political_influence_disclosure
+      - payment_practices_analysis
+      - xbrl_tagged_g1_data
+      - provenance_hashes
+    processing_time_estimate_minutes: 20
+    memory_estimate_mb: 640
+
+  - id: esrs_coverage_orchestrator
+    name: "ESRS Coverage Orchestrator"
+    file: engines/esrs_coverage_orchestrator_engine.py
+    class: ESRSCoverageOrchestrator
+    standard: CROSS_CUTTING
+    description: >-
+      Cross-standard orchestration engine that manages the full ESRS disclosure
+      lifecycle. Performs materiality-driven disclosure scoping (via PACK-015
+      bridge), coordinates parallel execution of topical engines (E2-E5, S1-S4,
+      G1) and ESRS 2 engine, validates cross-standard consistency (e.g., S1
+      workforce data vs E1 Scope 3 Cat 7 emissions), generates coverage
+      scorecard (percentage completion per standard), identifies disclosure
+      gaps, and produces consolidated ESRS annual report with full XBRL tagging.
+      Implements ESRS 1 principles including proportionality (phase-in
+      provisions), value chain scoping, and time horizons.
+    functions:
+      - materiality_scoping          # query PACK-015 DMA results, scope topical standards
+      - engine_orchestration         # parallel execution of 11 engines
+      - cross_standard_validation    # consistency checks (S1 vs E1 Cat 7, etc.)
+      - coverage_calculation         # % DRs completed, % datapoints filled
+      - gap_analysis                 # missing DRs, low-quality data
+      - xbrl_consolidation           # merge all engine XBRL outputs
+      - report_generation            # annual sustainability statement
+      - provenance_aggregation       # aggregate SHA-256 hashes
+    inputs:
+      - materiality_assessment_results  # from PACK-015
+      - all_engine_outputs              # from ESRS 2, E2-E5, S1-S4, G1, E1 bridge
+      - reporting_boundary_data         # consolidation scope
+      - prior_year_data                 # for YoY comparisons
+    outputs:
+      - esrs_coverage_scorecard
+      - esrs_gap_analysis
+      - esrs_annual_sustainability_statement
+      - xbrl_instance_document
+      - consolidated_provenance_hashes
+    processing_time_estimate_minutes: 25
+    memory_estimate_mb: 1536
+
+# -----------------------------------------------------------------------------
+# Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - id: esrs2_general
+    name: "ESRS 2 General Disclosures Workflow"
+    file: workflows/esrs2_general_workflow.py
+    description: "Orchestrates collection and compilation of ESRS 2 data across governance, strategy, and IRO."
+    phases:
+      - governance_data_collection   # GOV-1 to GOV-5
+      - strategy_business_model      # SBM-1 to SBM-3
+      - iro_process_documentation    # IRO-1 to IRO-2
+      - esrs2_validation
+      - esrs2_report_generation
+    estimated_duration_minutes: 30
+
+  - id: esrs2_governance
+    name: "ESRS 2 Governance Sub-Workflow"
+    file: workflows/esrs2_governance_workflow.py
+    description: "Focused sub-workflow for GOV-1 to GOV-5 disclosures."
+    phases:
+      - board_composition_extraction
+      - sustainability_governance_mapping
+      - incentive_scheme_analysis
+      - due_diligence_policy_extraction
+      - risk_control_framework_mapping
+    estimated_duration_minutes: 15
+
+  - id: e2_pollution
+    name: "ESRS E2 Pollution Workflow"
+    file: workflows/e2_pollution_workflow.py
+    description: "Orchestrates collection and calculation of pollution metrics (air, water, soil)."
+    phases:
+      - air_emissions_data_collection
+      - water_discharge_data_collection
+      - soil_contamination_assessment
+      - substances_of_concern_identification
+      - pollution_metrics_calculation
+      - e2_report_generation
+    estimated_duration_minutes: 40
+
+  - id: e3_water
+    name: "ESRS E3 Water and Marine Resources Workflow"
+    file: workflows/e3_water_workflow.py
+    description: "Orchestrates collection and calculation of water consumption and marine impacts."
+    phases:
+      - water_data_collection
+      - water_stress_assessment
+      - water_consumption_calculation
+      - marine_impacts_assessment
+      - e3_report_generation
+    estimated_duration_minutes: 35
+
+  - id: e4_biodiversity
+    name: "ESRS E4 Biodiversity and Ecosystems Workflow"
+    file: workflows/e4_biodiversity_workflow.py
+    description: "Orchestrates biodiversity impact assessment and ecosystem services valuation."
+    phases:
+      - site_biodiversity_screening
+      - land_use_change_analysis
+      - species_impact_assessment
+      - ecosystem_services_identification
+      - e4_report_generation
+    estimated_duration_minutes: 50
+
+  - id: e5_circular_economy
+    name: "ESRS E5 Resource Use and Circular Economy Workflow"
+    file: workflows/e5_circular_economy_workflow.py
+    description: "Orchestrates material flow analysis and circular economy metrics calculation."
+    phases:
+      - material_consumption_data_collection
+      - waste_generation_data_collection
+      - circular_material_use_calculation
+      - waste_diversion_calculation
+      - e5_report_generation
+    estimated_duration_minutes: 40
+
+  - id: s1_workforce
+    name: "ESRS S1 Own Workforce Workflow"
+    file: workflows/s1_workforce_workflow.py
+    description: "Orchestrates collection and calculation of own workforce metrics (most comprehensive social workflow)."
+    phases:
+      - hris_data_extraction
+      - workforce_composition_analysis
+      - pay_gap_calculation
+      - health_safety_metrics_calculation
+      - training_metrics_calculation
+      - collective_bargaining_analysis
+      - s1_report_generation
+    estimated_duration_minutes: 60
+
+  - id: s2_value_chain
+    name: "ESRS S2 Workers in the Value Chain Workflow"
+    file: workflows/s2_value_chain_workflow.py
+    description: "Orchestrates supplier social audit data collection and value chain worker impact assessment."
+    phases:
+      - supplier_data_collection
+      - supplier_audit_analysis
+      - value_chain_incident_review
+      - s2_report_generation
+    estimated_duration_minutes: 35
+
+  - id: s3_communities
+    name: "ESRS S3 Affected Communities Workflow"
+    file: workflows/s3_communities_workflow.py
+    description: "Orchestrates community engagement data collection and impact assessment."
+    phases:
+      - community_mapping
+      - community_engagement_analysis
+      - grievance_analysis
+      - community_investment_tracking
+      - s3_report_generation
+    estimated_duration_minutes: 30
+
+  - id: s4_consumers
+    name: "ESRS S4 Consumers and End-users Workflow"
+    file: workflows/s4_consumers_workflow.py
+    description: "Orchestrates consumer data collection and product safety/data privacy assessment."
+    phases:
+      - consumer_policy_extraction
+      - product_safety_incident_analysis
+      - data_privacy_breach_analysis
+      - consumer_complaint_analysis
+      - s4_report_generation
+    estimated_duration_minutes: 25
+
+  - id: g1_governance
+    name: "ESRS G1 Business Conduct Workflow"
+    file: workflows/g1_governance_workflow.py
+    description: "Orchestrates business conduct data collection including anti-corruption, political influence, and payment practices."
+    phases:
+      - ethics_policy_extraction
+      - corruption_incident_analysis
+      - political_contribution_tracking
+      - lobbying_activity_disclosure
+      - supplier_payment_analysis
+      - g1_report_generation
+    estimated_duration_minutes: 35
+
+  - id: full_esrs_coverage
+    name: "Full ESRS Coverage Workflow (Orchestrator)"
+    file: workflows/full_esrs_workflow.py
+    description: "Master workflow that orchestrates all 12 ESRS workflows in parallel (where materiality determined)."
+    phases:
+      - materiality_assessment_query      # query PACK-015 results
+      - disclosure_scoping                # determine which topical standards apply
+      - parallel_engine_execution         # run ESRS 2, E2-E5, S1-S4, G1 engines in parallel
+      - e1_bridge_execution               # query PACK-016 for E1 data
+      - cross_standard_validation         # consistency checks
+      - coverage_scorecard_generation     # % completion per standard
+      - gap_analysis_generation           # missing DRs, data quality issues
+      - xbrl_consolidation                # merge all XBRL outputs
+      - annual_sustainability_statement   # generate final report
+    estimated_duration_minutes: 120
+
+# -----------------------------------------------------------------------------
+# Templates
+# -----------------------------------------------------------------------------
+templates:
+  - id: esrs2_general_report
+    name: "ESRS 2 General Disclosures Report Template"
+    file: templates/esrs2_general_report.py
+    description: "Report template for ESRS 2 covering governance, strategy, business model, and IRO."
+    sections:
+      - governance                   # GOV-1 to GOV-5
+      - strategy_business_model      # SBM-1 to SBM-3
+      - iro                          # IRO-1 to IRO-2
+    formats: [PDF, HTML, XBRL]
+
+  - id: e2_pollution_report
+    name: "ESRS E2 Pollution Report Template"
+    file: templates/e2_pollution_report.py
+    description: "Report template for ESRS E2 covering air, water, soil pollution."
+    sections:
+      - policies_actions_targets     # E2-1, E2-2, E2-3
+      - air_emissions                # E2-4 (air)
+      - water_discharges             # E2-4 (water)
+      - soil_contamination           # E2-4 (soil)
+      - substances_of_concern        # E2-5
+      - financial_effects            # E2-6
+    formats: [PDF, HTML, XBRL]
+
+  - id: e3_water_report
+    name: "ESRS E3 Water and Marine Resources Report Template"
+    file: templates/e3_water_report.py
+    description: "Report template for ESRS E3 covering water consumption and marine impacts."
+    sections:
+      - policies_actions_targets     # E3-1, E3-2, E3-3
+      - water_consumption            # E3-4
+      - water_stress_analysis        # E3-4
+      - marine_impacts               # E3-4
+      - financial_effects            # E3-5
+    formats: [PDF, HTML, XBRL]
+
+  - id: e4_biodiversity_report
+    name: "ESRS E4 Biodiversity and Ecosystems Report Template"
+    file: templates/e4_biodiversity_report.py
+    description: "Report template for ESRS E4 covering biodiversity impacts and ecosystem services."
+    sections:
+      - policies_actions_targets     # E4-1, E4-2, E4-3
+      - biodiversity_impacts         # E4-4
+      - ecosystem_condition          # E4-5
+      - financial_effects            # E4-6
+    formats: [PDF, HTML, XBRL]
+
+  - id: e5_circular_economy_report
+    name: "ESRS E5 Resource Use and Circular Economy Report Template"
+    file: templates/e5_circular_economy_report.py
+    description: "Report template for ESRS E5 covering resource inflows/outflows and circular economy."
+    sections:
+      - policies_actions_targets     # E5-1, E5-2, E5-3
+      - resource_inflows             # E5-4
+      - resource_outflows            # E5-5
+      - financial_effects            # E5-6
+    formats: [PDF, HTML, XBRL]
+
+  - id: s1_workforce_report
+    name: "ESRS S1 Own Workforce Report Template"
+    file: templates/s1_workforce_report.py
+    description: "Report template for ESRS S1 covering all 17 own workforce disclosures."
+    sections:
+      - policies_engagement_remediation  # S1-1, S1-2, S1-3
+      - actions_targets                  # S1-4, S1-5
+      - workforce_characteristics        # S1-6, S1-7
+      - collective_bargaining            # S1-8
+      - diversity                        # S1-9
+      - wages_social_protection          # S1-10, S1-11
+      - disabilities                     # S1-12
+      - training                         # S1-13
+      - health_safety                    # S1-14
+      - work_life_balance                # S1-15
+      - remuneration                     # S1-16
+      - incidents                        # S1-17
+    formats: [PDF, HTML, XBRL]
+
+  - id: s2_value_chain_report
+    name: "ESRS S2 Workers in the Value Chain Report Template"
+    file: templates/s2_value_chain_report.py
+    description: "Report template for ESRS S2 covering value chain workers."
+    sections:
+      - policies_engagement_remediation  # S2-1, S2-2, S2-3
+      - actions_targets                  # S2-4, S2-5
+    formats: [PDF, HTML, XBRL]
+
+  - id: s3_communities_report
+    name: "ESRS S3 Affected Communities Report Template"
+    file: templates/s3_communities_report.py
+    description: "Report template for ESRS S3 covering affected communities."
+    sections:
+      - policies_engagement_remediation  # S3-1, S3-2, S3-3
+      - actions_targets                  # S3-4, S3-5
+    formats: [PDF, HTML, XBRL]
+
+  - id: s4_consumers_report
+    name: "ESRS S4 Consumers and End-users Report Template"
+    file: templates/s4_consumers_report.py
+    description: "Report template for ESRS S4 covering consumers and end-users."
+    sections:
+      - policies_engagement_remediation  # S4-1, S4-2, S4-3
+      - actions_targets                  # S4-4, S4-5
+    formats: [PDF, HTML, XBRL]
+
+  - id: g1_governance_report
+    name: "ESRS G1 Business Conduct Report Template"
+    file: templates/g1_governance_report.py
+    description: "Report template for ESRS G1 covering business conduct."
+    sections:
+      - business_conduct_policies    # G1-1
+      - supplier_relationships       # G1-2
+      - anti_corruption_bribery      # G1-3
+      - corruption_incidents         # G1-4
+      - political_influence          # G1-5
+      - payment_practices            # G1-6
+    formats: [PDF, HTML, XBRL]
+
+  - id: esrs_scorecard_report
+    name: "ESRS Coverage Scorecard Report Template"
+    file: templates/esrs_scorecard_report.py
+    description: "Cross-standard coverage scorecard showing percentage completion per standard."
+    sections:
+      - executive_summary
+      - coverage_by_standard         # % DRs completed per ESRS 2, E1-E5, S1-S4, G1
+      - datapoint_fill_rates         # % datapoints filled per standard
+      - materiality_summary          # which standards assessed as material
+      - gap_analysis                 # missing DRs, low-quality data
+      - remediation_roadmap          # recommended next steps
+    formats: [PDF, HTML, Excel]
+
+  - id: esrs_annual_report
+    name: "ESRS Annual Sustainability Statement Template"
+    file: templates/esrs_annual_report.py
+    description: "Consolidated annual sustainability statement covering all material ESRS disclosures."
+    sections:
+      - executive_summary
+      - esrs_2_general_disclosures
+      - e1_climate_change            # via PACK-016 bridge
+      - e2_pollution                 # if material
+      - e3_water_marine              # if material
+      - e4_biodiversity              # if material
+      - e5_circular_economy          # if material
+      - s1_own_workforce             # if material
+      - s2_value_chain_workers       # if material
+      - s3_affected_communities      # if material
+      - s4_consumers                 # if material
+      - g1_business_conduct          # if material
+      - appendices                   # XBRL taxonomy mapping, provenance hashes
+    formats: [PDF, HTML, XBRL]
+
+# -----------------------------------------------------------------------------
+# Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - id: pack_orchestrator
+    name: "Pack Orchestrator"
+    file: integrations/pack_orchestrator.py
+    description: "Main orchestration logic for PACK-017. Coordinates all engines, workflows, and integrations."
+    methods:
+      - initialize_pack
+      - query_dependencies           # check PACK-015, PACK-016 availability
+      - orchestrate_execution        # run full_esrs_coverage workflow
+      - aggregate_results
+      - generate_scorecard
+      - export_xbrl
+
+  - id: e1_pack_bridge
+    name: "PACK-016 E1 Climate Bridge"
+    file: integrations/e1_pack_bridge.py
+    description: "Integration bridge to PACK-016 ESRS E1 Climate Pack. Queries PACK-016 for E1 disclosures and incorporates into full ESRS report."
+    target: PACK-016
+    methods:
+      - query_e1_data                # fetch E1 report from PACK-016
+      - extract_e1_xbrl              # extract XBRL datapoints
+      - validate_e1_completeness     # check 11 E1 DRs present
+      - merge_e1_into_esrs_report    # include E1 in annual report
+
+  - id: dma_pack_bridge
+    name: "PACK-015 Double Materiality Assessment Bridge"
+    file: integrations/dma_pack_bridge.py
+    description: "Integration bridge to PACK-015 Double Materiality Assessment Pack. Queries DMA results to scope topical standard disclosures."
+    target: PACK-015
+    methods:
+      - query_materiality_results    # fetch DMA outcomes
+      - extract_material_topics      # which E/S/G topics material?
+      - scope_disclosure_requirements # determine which DRs required
+      - document_omitted_topics      # explain omissions per ESRS 1
+
+  - id: csrd_app_bridge
+    name: "GL-CSRD-APP Integration Bridge"
+    file: integrations/csrd_app_bridge.py
+    description: "Integration bridge to GL-CSRD-APP. Exports PACK-017 results to CSRD application for regulatory filing."
+    target: GL-CSRD-APP
+    methods:
+      - export_to_csrd_app           # send ESRS data to CSRD app
+      - map_to_csrd_schema           # align with CSRD app data model
+      - validate_csrd_format         # validate against CSRD requirements
+      - trigger_xbrl_generation      # trigger XBRL instance document creation
+
+  - id: mrv_agent_bridge
+    name: "AGENT-MRV Integration Bridge"
+    file: integrations/mrv_agent_bridge.py
+    description: "Integration bridge to AGENT-MRV-001-030 for E1 emissions data (via PACK-016 bridge) and other environmental metrics."
+    target: AGENT-MRV
+    methods:
+      - query_ghg_emissions          # Scope 1/2/3 from MRV agents
+      - query_energy_consumption     # energy data for E1-5
+      - validate_mrv_provenance      # check SHA-256 hashes
+
+  - id: data_agent_bridge
+    name: "AGENT-DATA Integration Bridge"
+    file: integrations/data_agent_bridge.py
+    description: "Integration bridge to AGENT-DATA-001-020 for data intake, quality, and lineage tracking."
+    target: AGENT-DATA
+    methods:
+      - orchestrate_data_collection  # trigger PDF, Excel, ERP connectors
+      - validate_data_quality        # run data quality profiler
+      - track_data_lineage           # provenance via AGENT-DATA-018
+
+  - id: taxonomy_bridge
+    name: "GL-Taxonomy-APP Integration Bridge"
+    file: integrations/taxonomy_bridge.py
+    description: "Integration bridge to GL-Taxonomy-APP for EU Taxonomy alignment (cross-reference with E1 climate mitigation/adaptation)."
+    target: GL-Taxonomy-APP
+    methods:
+      - query_taxonomy_alignment     # fetch taxonomy-eligible/aligned activities
+      - cross_reference_e1           # compare E1 climate actions with taxonomy
+      - document_taxonomy_overlap    # explain alignment in ESRS reports
+
+  - id: xbrl_tagging_bridge
+    name: "XBRL Tagging Integration"
+    file: integrations/xbrl_tagging_bridge.py
+    description: "XBRL tagging engine for mapping PACK-017 outputs to EFRAG ESRS XBRL taxonomy (1,093 datapoints)."
+    methods:
+      - load_efrag_taxonomy          # load EFRAG ESRS XBRL schema
+      - map_datapoints_to_taxonomy   # map 1,093 datapoints to XBRL concepts
+      - validate_xbrl_instance       # validate against taxonomy schema
+      - export_xbrl_instance         # generate .xbrl file
+
+  - id: health_check
+    name: "Pack Health Check"
+    file: integrations/health_check.py
+    description: "Health check integration for monitoring PACK-017 status."
+    methods:
+      - check_dependencies           # verify PACK-015, PACK-016 available
+      - check_agents                 # verify all required agents running
+      - check_database               # verify DB connectivity
+      - check_engines                # verify all 11 engines initialized
+      - report_health_status
+
+  - id: setup_wizard
+    name: "Pack Setup Wizard"
+    file: integrations/setup_wizard.py
+    description: "Interactive setup wizard for configuring PACK-017 for first-time deployment."
+    methods:
+      - detect_environment           # manufacturing, financial, etc.
+      - recommend_preset             # suggest preset based on sector
+      - configure_materiality_scope  # select material topics
+      - configure_data_sources       # ERP, HRIS, etc.
+      - test_integrations            # test PACK-015/016, agents
+      - finalize_configuration
+
+# -----------------------------------------------------------------------------
+# Presets
+# -----------------------------------------------------------------------------
+presets:
+  - id: manufacturing
+    name: "Manufacturing Sector Preset"
+    description: "Pre-configured for manufacturing enterprises (NACE C). High materiality likelihood for E1, E2, E5, S1, G1."
+    materiality_defaults:
+      E1: true
+      E2: true
+      E3: moderate
+      E4: moderate
+      E5: true
+      S1: true
+      S2: true
+      S3: moderate
+      S4: moderate
+      G1: true
+    data_sources:
+      - ERP_SAP
+      - MES_systems
+      - HRIS_Workday
+      - Environmental_monitoring_systems
+
+  - id: financial_services
+    name: "Financial Services Sector Preset"
+    description: "Pre-configured for banks, insurance, asset management (NACE K). High materiality for E1 (financed emissions), S1, G1."
+    materiality_defaults:
+      E1: true
+      E2: low
+      E3: low
+      E4: low
+      E5: low
+      S1: true
+      S2: moderate
+      S3: moderate
+      S4: true
+      G1: true
+    data_sources:
+      - ERP_Oracle_Financials
+      - HRIS_SAP_SuccessFactors
+      - Portfolio_management_systems
+      - Customer_relationship_systems
+
+  - id: energy
+    name: "Energy Sector Preset"
+    description: "Pre-configured for oil & gas, power generation, renewables (NACE D, B). High materiality for E1-E5, S3, G1."
+    materiality_defaults:
+      E1: true
+      E2: true
+      E3: true
+      E4: true
+      E5: true
+      S1: true
+      S2: true
+      S3: true
+      S4: moderate
+      G1: true
+    data_sources:
+      - ERP_SAP_S4HANA
+      - Asset_management_systems
+      - Environmental_monitoring_systems
+      - HRIS_Workday
+
+  - id: retail
+    name: "Retail Sector Preset"
+    description: "Pre-configured for retail and consumer goods (NACE G). High materiality for E1, E5, S1, S2, S4."
+    materiality_defaults:
+      E1: true
+      E2: moderate
+      E3: moderate
+      E4: low
+      E5: true
+      S1: true
+      S2: true
+      S3: low
+      S4: true
+      G1: true
+    data_sources:
+      - ERP_Microsoft_Dynamics
+      - HRIS_ADP
+      - Supply_chain_management_systems
+      - Customer_feedback_systems
+
+  - id: technology
+    name: "Technology Sector Preset"
+    description: "Pre-configured for software, hardware, semiconductors (NACE J, C26). Moderate materiality for E1, E5, S1, high for G1."
+    materiality_defaults:
+      E1: moderate
+      E2: low
+      E3: low
+      E4: low
+      E5: moderate
+      S1: true
+      S2: true
+      S3: low
+      S4: true
+      G1: true
+    data_sources:
+      - ERP_NetSuite
+      - HRIS_BambooHR
+      - Cloud_infrastructure_monitoring
+      - Product_lifecycle_management
+
+  - id: multi_sector
+    name: "Multi-Sector Conglomerate Preset"
+    description: "Pre-configured for diversified conglomerates operating across multiple NACE sectors. All topics potentially material."
+    materiality_defaults:
+      E1: true
+      E2: true
+      E3: true
+      E4: true
+      E5: true
+      S1: true
+      S2: true
+      S3: true
+      S4: true
+      G1: true
+    data_sources:
+      - ERP_SAP_S4HANA
+      - HRIS_Workday
+      - Multiple_subsidiary_systems
+      - Consolidation_systems
+
+# -----------------------------------------------------------------------------
+# Performance
+# -----------------------------------------------------------------------------
+performance:
+  max_processing_time_minutes: 120
+  max_memory_gb: 8
+  parallel_execution: true
+  max_concurrent_engines: 6
+  caching_enabled: true
+  cache_ttl_hours: 24
+  async_execution: true
+  batch_processing: true
+  batch_size: 1000
+
+# -----------------------------------------------------------------------------
+# Quality Gates
+# -----------------------------------------------------------------------------
+quality_gates:
+  min_coverage_pct: 95
+  min_datapoint_fill_pct: 80
+  provenance_required: true
+  xbrl_validation: true
+  cross_standard_consistency_checks: true
+  materiality_justification_required: true
+  audit_trail_required: true
+  zero_hallucination_enforcement: true
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  unit_tests: tests/unit/
+  integration_tests: tests/integration/
+  end_to_end_tests: tests/e2e/
+  min_test_coverage_pct: 85
+  load_testing_enabled: true
+  max_load_test_throughput_reports_per_hour: 50
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+documentation:
+  user_guide: docs/user_guide.md
+  technical_reference: docs/technical_reference.md
+  api_documentation: docs/api.md
+  xbrl_mapping_guide: docs/xbrl_mapping.md
+  troubleshooting_guide: docs/troubleshooting.md
+  faq: docs/faq.md
+  release_notes: docs/release_notes.md
+
+# -----------------------------------------------------------------------------
+# Support
+# -----------------------------------------------------------------------------
+support:
+  email: support@greenlang.io
+  slack_channel: "#pack-017-support"
+  documentation_url: "https://docs.greenlang.io/packs/esrs-full-coverage"
+  issues_url: "https://github.com/greenlang/packs/issues"
+  enterprise_support_sla_hours: 4

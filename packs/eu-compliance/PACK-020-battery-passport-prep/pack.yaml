@@ -1,0 +1,2571 @@
+# =============================================================================
+# PACK-020: Battery Passport Prep Pack
+# GreenLang EU Compliance Pack for EU Battery Regulation (EU) 2023/1542
+# =============================================================================
+# This pack provides a comprehensive, production-ready battery passport
+# readiness and compliance platform for the EU Battery Regulation, Regulation
+# (EU) 2023/1542, which establishes sustainability, safety, labelling, and
+# information requirements for batteries placed on the EU market, including
+# the groundbreaking Digital Product Passport (Battery Passport) requirement.
+#
+# The EU Battery Regulation replaces the Batteries Directive 2006/66/EC and
+# introduces a lifecycle approach to battery sustainability covering:
+#   - Carbon footprint declaration and performance classification (Art 7)
+#   - Recycled content documentation and minimum targets (Art 8)
+#   - Battery passport / Digital Product Passport (Art 77-78, Annex XIII)
+#   - Performance and durability information (Art 10, Annex IV)
+#   - Supply chain due diligence for critical raw materials (Art 48)
+#   - Labelling and marking requirements (Art 13-14)
+#   - End-of-life management, collection, and recycling (Art 56-71)
+#   - Conformity assessment and CE marking (Art 17-22)
+#
+# Battery Categories Covered:
+#   - EV (Electric Vehicle) - traction batteries for BEV/PHEV
+#   - Industrial - stationary storage >2kWh, UPS, data centre backup
+#   - LMT (Light Means of Transport) - e-bike, e-scooter batteries
+#   - Portable - consumer electronics, AA/AAA, button cells
+#   - SLI (Starting, Lighting, Ignition) - automotive starter batteries
+#
+# Passport-Required Categories (from 18 February 2027):
+#   - EV batteries
+#   - Industrial batteries >2kWh
+#   - LMT batteries
+#
+# Battery Passport Data Requirements (Annex XIII):
+#   A. General Battery Information (manufacturer, model, batch/serial, weight)
+#   B. Carbon Footprint Information (total CO2e, lifecycle breakdown, class)
+#   C. Supply Chain Due Diligence (cobalt, lithium, nickel, natural graphite)
+#   D. Material Composition (chemistry, critical raw materials, hazardous)
+#   E. Performance & Durability (capacity, voltage, power, SoH, SoC, cycles)
+#   F. End-of-Life Information (collection, recycling, dismantling, safety)
+#
+# Key Capabilities:
+#   - Battery carbon footprint declaration per Art 7 and Annex II
+#   - Carbon footprint performance class assignment (Class A to E)
+#   - Carbon footprint maximum threshold compliance checking
+#   - Recycled content calculation for cobalt, lithium, nickel, lead per Art 8
+#   - Recycled content target tracking (2028 documentation, 2031/2036 minimums)
+#   - Complete battery passport data compilation per Annex XIII
+#   - QR code and data carrier generation per Art 77(3)
+#   - Battery performance metric validation per Annex IV (SoH, SoC, capacity)
+#   - Supply chain due diligence for critical raw materials per Art 48
+#   - OECD Due Diligence Guidance alignment for mineral supply chains
+#   - Labelling and marking validation (CE, QR, collection symbol, hazardous)
+#   - End-of-life collection rate and recycling efficiency tracking
+#   - Material recovery rate calculation per Art 71
+#   - Conformity assessment preparation per Modules A-H
+#   - GBA Battery Passport standard alignment
+#   - Catena-X / Battery Pass data exchange interoperability
+#   - ESPR Digital Product Passport framework integration
+#   - SHA-256 provenance tracking for all quantitative data
+#   - Zero-hallucination: all calculations use deterministic formulas
+#   - Pre-configured presets for EV, industrial, LMT, portable, SLI, cell mfg
+#   - Cross-regulation consistency (CSRD, CSDDD, EUDR, EU Taxonomy)
+#
+# Regulatory References:
+#   - EU Battery Regulation: Regulation (EU) 2023/1542
+#   - ESPR: Regulation (EU) 2024/1781 (Digital Product Passport framework)
+#   - GBA Battery Passport: Global Battery Alliance passport standard
+#   - Catena-X / Battery Pass: Automotive data exchange standards
+#   - ISO 14040/14044: Life Cycle Assessment standards
+#   - IEC 62660: Lithium-ion battery testing
+#   - UN 38.3: Transport safety testing for lithium batteries
+#   - OECD Due Diligence Guidance: Mineral supply chains (3rd ed., 2016)
+#   - PEFCR for Rechargeable Batteries: Product Environmental Footprint
+#   - EU Taxonomy Regulation: (EU) 2020/852 (DNSH for battery manufacturing)
+#   - CSRD: Directive (EU) 2022/2464 (ESRS E1/E2/E5 disclosures)
+#   - CSDDD: Directive (EU) 2024/1760 (supply chain due diligence)
+#   - REACH: Regulation (EC) 1907/2006 (hazardous substances)
+#   - RoHS: Directive 2011/65/EU (restricted substances in electronics)
+#   - WEEE: Directive 2012/19/EU (waste electrical and electronic equipment)
+#   - Basel Convention: Transboundary movement of hazardous wastes
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-17)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-020-battery-passport-prep
+  version: "1.0.0"
+  display_name: "Battery Passport Prep Pack"
+  description: >-
+    Comprehensive battery passport readiness platform for EU Battery Regulation
+    (EU) 2023/1542. Includes 8 engines for carbon footprint declaration,
+    recycled content tracking, battery passport compilation, performance and
+    durability validation, supply chain due diligence, labelling compliance,
+    end-of-life management, and conformity assessment preparation. Covers all
+    5 battery categories (EV, industrial, LMT, portable, SLI) with passport
+    compilation for EV, industrial >2kWh, and LMT batteries per Articles 77-78
+    and Annex XIII. Implements carbon footprint lifecycle assessment per Art 7
+    and PEFCR methodology, recycled content target tracking per Art 8 (cobalt,
+    lithium, nickel, lead), supply chain due diligence per Art 48 aligned with
+    OECD Mineral Supply Chain Guidance, and full Annex IV performance metrics
+    (SoH, SoC, capacity, voltage, cycle life, efficiency). Integrates with
+    GBA Battery Passport standard, Catena-X / Battery Pass data exchange, and
+    ESPR Digital Product Passport framework. Bundles 30 MRV agents for carbon
+    footprint LCA, 14 data agents for BOM and test data intake, and 10
+    foundation agents for orchestration and provenance. Pre-configured presets
+    for EV battery, industrial storage, LMT, portable, SLI, and cell
+    manufacturer sectors. Enforces zero-hallucination principle for all
+    quantitative calculations with SHA-256 provenance hashing.
+  category: eu-compliance
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-17"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/battery-passport-prep"
+  changelog_url: "https://docs.greenlang.io/packs/battery-passport-prep/changelog"
+
+  tags:
+    - battery-passport
+    - battery-regulation
+    - eu-2023-1542
+    - digital-product-passport
+    - dpp
+    - carbon-footprint
+    - recycled-content
+    - ev-battery
+    - industrial-battery
+    - lmt-battery
+    - portable-battery
+    - sli-battery
+    - lithium-ion
+    - cobalt
+    - lithium
+    - nickel
+    - natural-graphite
+    - lead
+    - critical-raw-materials
+    - supply-chain-due-diligence
+    - oecd-mineral-guidance
+    - performance-durability
+    - state-of-health
+    - state-of-charge
+    - cycle-life
+    - labelling
+    - ce-marking
+    - qr-code
+    - end-of-life
+    - collection-rate
+    - recycling-efficiency
+    - material-recovery
+    - conformity-assessment
+    - pefcr
+    - lca
+    - gba-passport
+    - catena-x
+    - battery-pass
+    - espr
+    - eu-taxonomy
+    - dnsh
+    - eu-compliance
+    - provenance
+    - zero-hallucination
+    - sha256
+
+  regulation:
+    primary:
+      name: "EU Battery Regulation"
+      reference: "Regulation (EU) 2023/1542"
+      adopted_date: "2023-07-12"
+      published_date: "2023-07-28"
+      entry_into_force: "2023-08-17"
+      description: >-
+        Regulation (EU) 2023/1542 concerning batteries and waste batteries,
+        amending Directive 2008/98/EC and Regulation (EU) 2019/1020 and
+        repealing Directive 2006/66/EC. Establishes requirements for the
+        sustainability, performance, safety, collection, recycling and second
+        life of batteries, as well as sustainability information for end-users
+        and economic operators. Introduces the battery passport (Digital
+        Product Passport) for EV, industrial >2kWh, and LMT batteries,
+        carbon footprint declaration requirements for EV and industrial
+        batteries, recycled content targets for cobalt, lithium, nickel,
+        and lead, supply chain due diligence for critical raw materials,
+        and end-of-life collection and recycling targets. Applies to all
+        batteries placed on the EU market regardless of origin.
+    secondary:
+      - name: "Ecodesign for Sustainable Products Regulation"
+        reference: "(EU) 2024/1781"
+        effective_date: "2024-07-18"
+      - name: "PEFCR for Rechargeable Batteries"
+        reference: "EU PEF Pilot - Batteries Category"
+        effective_date: "2018-04-25"
+      - name: "OECD Due Diligence Guidance for Responsible Supply Chains of Minerals"
+        reference: "OECD (2016, 3rd edition)"
+        effective_date: "2016-04-05"
+      - name: "Corporate Sustainability Reporting Directive"
+        reference: "(EU) 2022/2464"
+        effective_date: "2024-01-01"
+      - name: "Corporate Sustainability Due Diligence Directive"
+        reference: "(EU) 2024/1760"
+        effective_date: "2027-07-26"
+      - name: "EU Taxonomy Regulation"
+        reference: "(EU) 2020/852"
+        effective_date: "2020-07-12"
+      - name: "EU Deforestation Regulation"
+        reference: "(EU) 2023/1115"
+        effective_date: "2024-12-30"
+      - name: "REACH Regulation"
+        reference: "(EC) 1907/2006"
+        effective_date: "2007-06-01"
+      - name: "GBA Battery Passport Framework"
+        reference: "Global Battery Alliance (2023)"
+        effective_date: "2023-01-01"
+      - name: "Catena-X Battery Pass Standard"
+        reference: "Catena-X / Battery Pass Consortium"
+        effective_date: "2023-06-01"
+
+  compliance_references:
+    - id: "BATT_ART7"
+      name: "Article 7 - Carbon Footprint of Batteries"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2025-02-18"
+      description: >-
+        Requires EV and industrial batteries >2kWh to carry a carbon footprint
+        declaration calculated per the lifecycle methodology in Annex II.
+        Phase 1 (18 Feb 2025): carbon footprint declaration mandatory. Phase 2
+        (18 Aug 2026): carbon footprint performance class labels (A-E). Phase 3
+        (18 Feb 2028): maximum carbon footprint threshold. The carbon footprint
+        shall cover the entire lifecycle: raw material extraction and
+        pre-processing, manufacturing, distribution, and end-of-life (recycling).
+        Use phase is excluded. The declaration must reference the calculation
+        methodology and express results in kg CO2e per kWh of battery capacity.
+
+    - id: "BATT_ART8"
+      name: "Article 8 - Recycled Content"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2028-08-18"
+      description: >-
+        Requires documentation and eventual minimum recycled content levels
+        for cobalt, lithium, nickel, and lead in industrial, EV, LMT, and SLI
+        batteries. Phase 1 (18 Aug 2028): documentation of recycled content
+        percentage per material. Phase 2 (18 Aug 2031): minimum recycled
+        content targets (cobalt 16%, lithium 6%, nickel 6%, lead 85%). Phase 3
+        (18 Aug 2036): increased targets (cobalt 26%, lithium 12%, nickel 15%,
+        lead 85%). Recycled content is calculated using mass balance approach
+        for the total mass of each material in the active battery material.
+
+    - id: "BATT_ART77_78"
+      name: "Articles 77-78 - Battery Passport"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2027-02-18"
+      description: >-
+        Requires EV, industrial >2kWh, and LMT batteries to carry a battery
+        passport accessible via a data carrier (QR code) affixed to the
+        battery. The battery passport must contain the data specified in
+        Annex XIII covering: general battery information, carbon footprint,
+        supply chain due diligence, material composition, performance and
+        durability, and end-of-life information. The data carrier must be
+        scannable and provide access to the passport data through an
+        electronic exchange system. The passport must be interoperable with
+        the ESPR Digital Product Passport framework. Each battery model must
+        have a unique passport identifier. Battery passports must be kept
+        accessible for at least 10 years after the battery is placed on
+        the market.
+
+    - id: "BATT_ART10"
+      name: "Article 10 - Performance and Durability"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2025-08-18"
+      description: >-
+        Requires batteries to be accompanied by performance and durability
+        information as specified in Annex IV. For EV batteries: rated capacity,
+        capacity fade, power, power fade, internal resistance, internal
+        resistance increase, energy round-trip efficiency, cycle life, and
+        calendar life. For portable batteries: minimum average duration when
+        used in specific applications. For LMT batteries: rated capacity,
+        expected battery lifetime in cycles, and C-rate capability. All
+        performance parameters must be measured using harmonised testing
+        methods (delegated acts).
+
+    - id: "BATT_ART48"
+      name: "Article 48 - Supply Chain Due Diligence"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2025-08-18"
+      description: >-
+        Requires economic operators placing batteries on the EU market to
+        establish and implement supply chain due diligence policies for
+        raw materials (cobalt, lithium, nickel, natural graphite). The due
+        diligence must be aligned with the OECD Due Diligence Guidance for
+        Responsible Supply Chains of Minerals from Conflict-Affected and
+        High-Risk Areas (3rd edition, 2016). Requirements include: adopting
+        and communicating a supply chain policy, establishing a management
+        structure, identifying and assessing risks, designing and
+        implementing a risk management strategy, carrying out independent
+        third-party audits, and annual reporting on due diligence. Covers
+        risks related to human rights, environmental degradation, conflict
+        financing, and corruption in mineral supply chains.
+
+    - id: "BATT_ART13_14"
+      name: "Articles 13-14 - Labelling and Marking"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2024-08-18"
+      description: >-
+        Requires batteries to bear specific labels and markings before
+        placement on the EU market. Required elements include: CE marking,
+        separate collection symbol (crossed-out wheeled bin), QR code
+        linking to battery passport (for passport-required categories),
+        capacity label, hazardous substance labels (for mercury >0.0005%,
+        cadmium >0.002%, lead >0.004%), battery chemistry marking, and
+        carbon footprint label (for categories requiring Art 7 declaration).
+        Labels must be visible, legible, and indelible. The QR code must
+        comply with ISO/IEC 18004 and provide direct access to battery
+        passport information.
+
+    - id: "BATT_ART56_71"
+      name: "Articles 56-71 - End-of-Life Management"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2025-08-18"
+      description: >-
+        Establishes requirements for battery waste management including
+        collection, treatment, and recycling. Collection rate targets for
+        portable batteries: 63% by 31 Dec 2027, 73% by 31 Dec 2030. LMT
+        battery collection: 51% by 31 Dec 2028, 61% by 31 Dec 2031.
+        Recycling efficiency: 65% lithium-based, 70% lead-acid, 80%
+        nickel-cadmium by 31 Dec 2025. Material recovery: lithium 50% by
+        31 Dec 2027, 80% by 31 Dec 2031; cobalt, copper, lead, nickel
+        90% by 31 Dec 2027, 95% by 31 Dec 2031. Producers must register
+        in each member state and finance collection, treatment, and
+        recycling through extended producer responsibility schemes.
+
+    - id: "BATT_ART17_22"
+      name: "Articles 17-22 - Conformity Assessment"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2024-08-18"
+      description: >-
+        Establishes conformity assessment procedures for verifying that
+        batteries meet regulation requirements before placement on the
+        EU market. Conformity assessment modules include: Module A
+        (internal production control), Module B (EU-type examination),
+        Module C (conformity to type based on internal production control),
+        Module D (conformity to type based on quality assurance of
+        production process), Module E (conformity to type based on product
+        quality assurance), Module G (conformity based on unit verification),
+        and Module H (conformity based on full quality assurance). The
+        manufacturer must draw up an EU declaration of conformity and
+        affix the CE marking. Technical documentation must be kept for
+        10 years. Notified bodies carry out conformity assessment for
+        modules requiring third-party involvement.
+
+    - id: "BATT_ANNEX_II"
+      name: "Annex II - Carbon Footprint Calculation Methodology"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2025-02-18"
+      description: >-
+        Specifies the methodology for calculating the carbon footprint of
+        batteries across the lifecycle. Lifecycle stages: raw material
+        extraction and pre-processing, manufacturing (cell and pack),
+        distribution, and end-of-life (collection, dismantling, recycling).
+        Use phase is excluded. Functional unit: 1 kWh of total energy
+        provided over the battery service life. System boundary includes
+        upstream supply chain emissions. Data requirements: primary data
+        for manufacturing, secondary data permitted for upstream and
+        end-of-life where primary data unavailable. Emission factors must
+        be sourced from recognised databases. Results expressed in kg
+        CO2e per kWh.
+
+    - id: "BATT_ANNEX_IV"
+      name: "Annex IV - Performance and Durability Parameters"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2025-08-18"
+      description: >-
+        Specifies the performance and durability parameters for different
+        battery categories. EV batteries: rated capacity (Ah), capacity
+        fade (% loss over cycles), voltage (nominal, min, max), power
+        capability (W), power fade (%), internal resistance (initial and
+        increase), round-trip energy efficiency (%), cycle life (number
+        of full charge-discharge cycles at 80% rated capacity), calendar
+        life expectancy (years). LMT batteries: rated capacity, C-rate,
+        expected lifetime in cycles. All portable batteries: minimum
+        average duration under specified test conditions. Temperature
+        operating range and storage conditions for all categories.
+
+    - id: "BATT_ANNEX_XIII"
+      name: "Annex XIII - Battery Passport Data Requirements"
+      regulation: "Regulation (EU) 2023/1542"
+      effective_date: "2027-02-18"
+      description: >-
+        Specifies the data elements for the battery passport (Digital
+        Product Passport). Categories: (A) General battery information -
+        manufacturer ID, plant location, model, batch/serial number,
+        placement date, weight, dimensions, category, chemistry; (B)
+        Carbon footprint - total CO2e, per-kWh value, performance class,
+        lifecycle stage breakdown, methodology reference; (C) Supply
+        chain due diligence - report reference, third-party verification,
+        sourcing information for cobalt, lithium, nickel, natural graphite;
+        (D) Material composition - battery chemistry details, critical raw
+        materials, hazardous substances, recycled content percentages;
+        (E) Performance and durability - all Annex IV parameters plus
+        current State of Health (SoH) and State of Charge (SoC); (F)
+        End-of-life - collection instructions, dismantling information,
+        safety handling, waste prevention guidance.
+
+    - id: "GBA"
+      name: "GBA Battery Passport Framework"
+      regulation: "Global Battery Alliance (2023)"
+      effective_date: "2023-01-01"
+      description: >-
+        Industry-led framework for battery passports developed by the
+        Global Battery Alliance. Defines data fields, governance rules,
+        and interoperability requirements for battery passports. The GBA
+        passport standard covers ESG performance scoring, material
+        provenance, carbon footprint, recycled content, and circular
+        economy indicators. PACK-020 aligns with GBA data fields to
+        enable dual compliance with EU regulatory and industry standards.
+
+    - id: "CATENA_X"
+      name: "Catena-X / Battery Pass Standard"
+      regulation: "Catena-X / Battery Pass Consortium"
+      effective_date: "2023-06-01"
+      description: >-
+        Automotive industry data exchange standard for battery passports
+        developed through the Battery Pass consortium within Catena-X.
+        Defines standardised data models, APIs, and data sharing
+        protocols for battery lifecycle data exchange between OEMs,
+        cell manufacturers, recyclers, and regulatory authorities. PACK-020
+        supports Catena-X compatible data export for integration into
+        automotive supply chain ecosystems.
+
+    - id: "OECD_MINERALS"
+      name: "OECD Due Diligence Guidance for Mineral Supply Chains"
+      regulation: "OECD (2016, 3rd edition)"
+      effective_date: "2016-04-05"
+      description: >-
+        International standard for responsible mineral sourcing due
+        diligence, referenced in Art 48 of the Battery Regulation.
+        Five-step framework: (1) Establish strong company management
+        systems; (2) Identify and assess risks in the supply chain;
+        (3) Design and implement a strategy to respond to identified
+        risks; (4) Carry out independent third-party audit of supply
+        chain due diligence; (5) Report annually on supply chain due
+        diligence. Covers risks related to conflict-affected and
+        high-risk areas, human rights abuses, child labour, forced
+        labour, and environmental degradation in mineral extraction.
+
+  application_dates:
+    - requirement: "General requirements (labelling, hazardous substances)"
+      date: "2024-08-18"
+      article: "Art 6, 13-14"
+      categories: [EV, INDUSTRIAL, LMT, PORTABLE, SLI]
+    - requirement: "Carbon footprint declaration (EV & industrial >2kWh)"
+      date: "2025-02-18"
+      article: "Art 7(1)"
+      categories: [EV, INDUSTRIAL]
+    - requirement: "Performance & durability labels"
+      date: "2025-08-18"
+      article: "Art 10"
+      categories: [EV, INDUSTRIAL, LMT, PORTABLE, SLI]
+    - requirement: "Supply chain due diligence"
+      date: "2025-08-18"
+      article: "Art 48"
+      categories: [EV, INDUSTRIAL, LMT, PORTABLE, SLI]
+    - requirement: "Carbon footprint performance class"
+      date: "2026-08-18"
+      article: "Art 7(2)"
+      categories: [EV, INDUSTRIAL]
+    - requirement: "Battery passport mandatory"
+      date: "2027-02-18"
+      article: "Art 77"
+      categories: [EV, INDUSTRIAL, LMT]
+    - requirement: "Portable collection rate 63%"
+      date: "2027-12-31"
+      article: "Art 59"
+      categories: [PORTABLE]
+    - requirement: "Material recovery lithium 50%"
+      date: "2027-12-31"
+      article: "Art 71"
+      categories: [EV, INDUSTRIAL, LMT, PORTABLE, SLI]
+    - requirement: "Carbon footprint maximum threshold"
+      date: "2028-02-18"
+      article: "Art 7(3)"
+      categories: [EV, INDUSTRIAL]
+    - requirement: "Recycled content documentation"
+      date: "2028-08-18"
+      article: "Art 8(1)"
+      categories: [EV, INDUSTRIAL, LMT, SLI]
+    - requirement: "LMT collection rate 51%"
+      date: "2028-12-31"
+      article: "Art 59"
+      categories: [LMT]
+    - requirement: "Portable collection rate 73%"
+      date: "2030-12-31"
+      article: "Art 59"
+      categories: [PORTABLE]
+    - requirement: "Recycled content minimum targets (Co 16%, Li 6%, Ni 6%, Pb 85%)"
+      date: "2031-08-18"
+      article: "Art 8(4)"
+      categories: [EV, INDUSTRIAL, LMT, SLI]
+    - requirement: "LMT collection rate 61%"
+      date: "2031-12-31"
+      article: "Art 59"
+      categories: [LMT]
+    - requirement: "Material recovery lithium 80%"
+      date: "2031-12-31"
+      article: "Art 71"
+      categories: [EV, INDUSTRIAL, LMT, PORTABLE, SLI]
+    - requirement: "Recycled content increased targets (Co 26%, Li 12%, Ni 15%, Pb 85%)"
+      date: "2036-08-18"
+      article: "Art 8(4)"
+      categories: [EV, INDUSTRIAL, LMT, SLI]
+
+  battery_categories:
+    - id: EV
+      name: "Electric Vehicle Battery"
+      definition: "Battery for traction in hybrid or electric vehicles"
+      examples: ["BEV traction pack", "PHEV traction pack"]
+      passport_required: true
+      carbon_footprint_required: true
+      recycled_content_required: true
+      due_diligence_required: true
+    - id: INDUSTRIAL
+      name: "Industrial Battery"
+      definition: "Battery >2kWh not EV/LMT/SLI/portable"
+      examples: ["Stationary storage", "UPS", "Data centre backup", "Grid-scale storage"]
+      passport_required: true
+      carbon_footprint_required: true
+      recycled_content_required: true
+      due_diligence_required: true
+    - id: LMT
+      name: "Light Means of Transport Battery"
+      definition: "Sealed battery <=25 kg for e-bikes/scooters"
+      examples: ["E-bike battery", "E-scooter battery", "Electric wheelchair battery"]
+      passport_required: true
+      carbon_footprint_required: false
+      recycled_content_required: true
+      due_diligence_required: true
+    - id: PORTABLE
+      name: "Portable Battery"
+      definition: "Sealed battery <=5 kg, not industrial/EV/SLI/LMT"
+      examples: ["AA/AAA", "Laptop battery", "Phone battery", "Power tool battery"]
+      passport_required: false
+      carbon_footprint_required: false
+      recycled_content_required: false
+      due_diligence_required: true
+    - id: SLI
+      name: "Starting, Lighting and Ignition Battery"
+      definition: "Battery for vehicle SLI functions"
+      examples: ["Car starter battery", "Motorcycle battery", "Truck starter battery"]
+      passport_required: false
+      carbon_footprint_required: false
+      recycled_content_required: true
+      due_diligence_required: true
+
+  battery_chemistries:
+    - NMC       # Nickel Manganese Cobalt (NMC111, NMC532, NMC622, NMC811)
+    - NCA       # Nickel Cobalt Aluminium
+    - LFP       # Lithium Iron Phosphate
+    - NMC811    # High-nickel NMC variant
+    - NMC622    # Mid-nickel NMC variant
+    - NMC532    # Low-nickel NMC variant
+    - LMO       # Lithium Manganese Oxide
+    - LTO       # Lithium Titanate Oxide
+    - LEAD_ACID # Lead-acid (flooded, AGM, gel)
+    - NIMH      # Nickel-Metal Hydride
+    - ALKALINE  # Alkaline primary cells
+    - ZINC_AIR  # Zinc-air primary/rechargeable
+    - SOLID_STATE  # Solid-state lithium
+    - SODIUM_ION   # Sodium-ion
+
+  recycled_content_targets:
+    cobalt:
+      phase_1_date: "2028-08-18"
+      phase_1_target: "document_actual"
+      phase_2_date: "2031-08-18"
+      phase_2_target_pct: 16
+      phase_3_date: "2036-08-18"
+      phase_3_target_pct: 26
+    lithium:
+      phase_1_date: "2028-08-18"
+      phase_1_target: "document_actual"
+      phase_2_date: "2031-08-18"
+      phase_2_target_pct: 6
+      phase_3_date: "2036-08-18"
+      phase_3_target_pct: 12
+    nickel:
+      phase_1_date: "2028-08-18"
+      phase_1_target: "document_actual"
+      phase_2_date: "2031-08-18"
+      phase_2_target_pct: 6
+      phase_3_date: "2036-08-18"
+      phase_3_target_pct: 15
+    lead:
+      phase_1_date: "2028-08-18"
+      phase_1_target: "document_actual"
+      phase_2_date: "2031-08-18"
+      phase_2_target_pct: 85
+      phase_3_date: "2036-08-18"
+      phase_3_target_pct: 85
+
+  carbon_footprint_performance_classes:
+    class_a:
+      label: "A"
+      description: "Best performing - bottom 20th percentile CO2e/kWh"
+      percentile_max: 20
+    class_b:
+      label: "B"
+      description: "Above average - 21st to 40th percentile"
+      percentile_min: 21
+      percentile_max: 40
+    class_c:
+      label: "C"
+      description: "Average - 41st to 60th percentile"
+      percentile_min: 41
+      percentile_max: 60
+    class_d:
+      label: "D"
+      description: "Below average - 61st to 80th percentile"
+      percentile_min: 61
+      percentile_max: 80
+    class_e:
+      label: "E"
+      description: "Worst performing - above 80th percentile"
+      percentile_min: 81
+
+  articles_covered: [6, 7, 8, 10, 13, 14, 17, 18, 19, 20, 21, 22, 48, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 77, 78]
+  total_engines: 8
+  total_workflows: 8
+  total_templates: 8
+  total_integrations: 10
+  total_presets: 6
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 battery engines)
+  # ===========================================================================
+  engines:
+    - id: carbon_footprint
+      name: "Carbon Footprint Engine"
+      file: engines/carbon_footprint_engine.py
+      class: CarbonFootprintEngine
+      articles: [7]
+      annexes: [II]
+      description: >-
+        Implements Article 7 carbon footprint declaration for EV and industrial
+        batteries >2kWh. Calculates the battery carbon footprint across the
+        full lifecycle per Annex II methodology: raw material extraction and
+        pre-processing (mining, refining of cathode/anode materials, cell
+        component production), manufacturing (electrode preparation, cell
+        assembly, formation cycling, battery pack assembly including BMS and
+        cooling system), distribution (transport from factory to market), and
+        end-of-life (collection, dismantling, recycling, disposal). Use phase
+        is excluded per Art 7 scope. Functional unit: 1 kWh of total energy
+        provided over the battery service life. Calculates total CO2e (kg),
+        per-kWh CO2e, lifecycle stage percentage breakdown, and assigns the
+        carbon footprint performance class (A through E) based on market
+        percentile distribution. Validates against maximum carbon footprint
+        thresholds (applicable from Feb 2028). Supports PEFCR for rechargeable
+        batteries methodology. Integrates with MRV agents for upstream Scope 3
+        emissions data (raw materials, transportation, end-of-life). Generates
+        the EU carbon footprint declaration document. Supports chemistry-
+        specific emission factor databases (NMC, NCA, LFP, LMO, lead-acid).
+        Zero-hallucination: all carbon footprint calculations use deterministic
+        LCA formulas with emission factors from recognised databases (ecoinvent,
+        GREET, IEA); no LLM in calculation path.
+      inputs:
+        - battery_profile                # category, chemistry, capacity, weight
+        - bill_of_materials              # raw materials, quantities, suppliers
+        - manufacturing_energy_data      # electricity, heat, gas consumption
+        - manufacturing_process_data     # yield rates, scrap rates, formation energy
+        - transport_data                 # distances, modes, vehicle types
+        - end_of_life_scenario           # recycling process, recovery rates
+        - emission_factor_database       # ecoinvent, GREET, IEA grid factors
+        - market_percentile_data         # for performance class assignment
+      outputs:
+        - carbon_footprint_declaration
+        - total_co2e_kg
+        - per_kwh_co2e
+        - lifecycle_stage_breakdown
+        - performance_class
+        - threshold_compliance_status
+        - methodology_reference
+        - provenance_hashes
+      processing_time_estimate_minutes: 25
+      memory_estimate_mb: 768
+      required: true
+
+    - id: recycled_content
+      name: "Recycled Content Engine"
+      file: engines/recycled_content_engine.py
+      class: RecycledContentEngine
+      articles: [8]
+      description: >-
+        Implements Article 8 recycled content tracking and calculation for
+        cobalt, lithium, nickel, and lead in industrial, EV, LMT, and SLI
+        batteries. Calculates the percentage of recycled material in the
+        active battery material using mass balance approach. Tracks recycled
+        content per material against regulatory targets: Phase 1 (Aug 2028)
+        documentation of actual recycled content; Phase 2 (Aug 2031) minimum
+        targets (cobalt 16%, lithium 6%, nickel 6%, lead 85%); Phase 3
+        (Aug 2036) increased targets (cobalt 26%, lithium 12%, nickel 15%,
+        lead 85%). Validates material provenance through supply chain
+        documentation including certificates of analysis, recycled material
+        certificates, and mass balance calculations. Supports pre-consumer
+        and post-consumer recycled content classification. Calculates
+        recovery-adjusted recycled content accounting for material losses
+        in recycling processes. Generates recycled content documentation
+        for regulatory submission and battery passport data field population.
+        Zero-hallucination: recycled content percentages are calculated using
+        deterministic mass balance formulas; target comparison uses arithmetic
+        threshold checks.
+      inputs:
+        - battery_profile
+        - bill_of_materials
+        - material_sourcing_data         # supplier, origin, recycled vs virgin
+        - recycled_material_certificates # chain of custody documentation
+        - mass_balance_records           # input/output mass tracking
+        - recovery_rate_data             # recycling process recovery rates
+        - target_year_selection          # 2028, 2031, or 2036 targets
+      outputs:
+        - recycled_content_report
+        - cobalt_recycled_pct
+        - lithium_recycled_pct
+        - nickel_recycled_pct
+        - lead_recycled_pct
+        - target_compliance_status
+        - mass_balance_documentation
+        - provenance_hashes
+      processing_time_estimate_minutes: 15
+      memory_estimate_mb: 512
+      required: true
+
+    - id: battery_passport
+      name: "Battery Passport Engine"
+      file: engines/battery_passport_engine.py
+      class: BatteryPassportEngine
+      articles: [77, 78]
+      annexes: [XIII]
+      description: >-
+        Implements Articles 77-78 battery passport (Digital Product Passport)
+        compilation for EV, industrial >2kWh, and LMT batteries. Compiles
+        all data fields specified in Annex XIII across six categories:
+        (A) General battery information - manufacturer identification,
+        manufacturing plant, model, batch/serial number, date of placing on
+        market, weight, dimensions, category, chemistry; (B) Carbon footprint
+        - total CO2e, per-kWh CO2e, performance class, lifecycle stage
+        breakdown, methodology reference (sourced from carbon_footprint
+        engine); (C) Supply chain due diligence - due diligence report
+        reference, third-party verification, risk mitigation policies,
+        sourcing information for cobalt, lithium, nickel, natural graphite
+        (sourced from supply_chain_dd engine); (D) Material composition -
+        battery chemistry details (cathode, anode, electrolyte), critical
+        raw materials content, hazardous substances (mercury, cadmium, lead),
+        recycled content percentages (sourced from recycled_content engine);
+        (E) Performance and durability - all Annex IV parameters plus
+        current State of Health (SoH) and State of Charge (SoC) (sourced
+        from performance_durability engine); (F) End-of-life information -
+        collection instructions, dismantling guidance, safety handling,
+        waste prevention role for end-users (sourced from end_of_life
+        engine). Validates data completeness against Annex XIII checklist.
+        Generates QR code payload per Art 77(3) conforming to ISO/IEC 18004.
+        Assigns unique passport identifier per battery model. Supports data
+        export in GBA Battery Passport and Catena-X / Battery Pass formats.
+        Ensures interoperability with ESPR Digital Product Passport framework.
+        Zero-hallucination: passport compilation is deterministic data
+        assembly and validation; no LLM in data population path.
+      inputs:
+        - battery_profile
+        - carbon_footprint_data          # from carbon_footprint engine
+        - recycled_content_data          # from recycled_content engine
+        - performance_durability_data    # from performance_durability engine
+        - supply_chain_dd_data           # from supply_chain_dd engine
+        - end_of_life_data               # from end_of_life engine
+        - material_composition_data      # chemistry, critical materials, hazardous
+        - manufacturer_data              # company name, address, registration
+        - manufacturing_plant_data       # plant location, production line
+      outputs:
+        - battery_passport_document
+        - annex_xiii_data_payload
+        - qr_code_payload
+        - unique_passport_id
+        - data_completeness_score
+        - gba_format_export
+        - catena_x_format_export
+        - provenance_hashes
+      processing_time_estimate_minutes: 20
+      memory_estimate_mb: 640
+      required: true
+
+    - id: performance_durability
+      name: "Performance and Durability Engine"
+      file: engines/performance_durability_engine.py
+      class: PerformanceDurabilityEngine
+      articles: [10]
+      annexes: [IV]
+      description: >-
+        Implements Article 10 and Annex IV performance and durability
+        parameter calculation and validation. For EV batteries: rated
+        capacity (Ah), capacity fade (percentage loss at defined cycle
+        count), voltage (nominal, minimum, maximum), original and
+        remaining power capability (W), power fade (%), internal resistance
+        (initial in milliohms), internal resistance increase (%), round-trip
+        energy efficiency (%), expected cycle life (number of full cycles
+        at 80% rated capacity retention), and expected calendar life (years).
+        For LMT batteries: rated capacity, C-rate capability, and expected
+        lifetime in cycles. For portable batteries: minimum average duration
+        under specified test conditions. Calculates current State of Health
+        (SoH) as percentage of original rated capacity and State of Charge
+        (SoC) at reporting date. Validates test data against IEC 62660
+        testing standards for lithium-ion batteries. Performs threshold
+        validation against delegated act minimum performance requirements.
+        Tracks performance degradation trends over time for batteries with
+        multiple data points. Generates Annex IV compliant performance
+        data sheet. Supports temperature range specification (operating
+        and storage conditions).
+        Zero-hallucination: all performance metric calculations use
+        deterministic formulas from IEC 62660; SoH/SoC calculations are
+        arithmetic ratios; no LLM in calculation path.
+      inputs:
+        - battery_profile
+        - test_data_rated_capacity       # initial capacity test results
+        - test_data_voltage              # voltage measurements
+        - test_data_power                # power capability measurements
+        - test_data_resistance           # internal resistance measurements
+        - test_data_efficiency           # round-trip efficiency measurements
+        - test_data_cycle_life           # accelerated cycle life data
+        - test_data_calendar_life        # calendar aging data
+        - temperature_range_data         # operating and storage temperatures
+        - current_soh_data               # current state of health
+        - current_soc_data               # current state of charge
+      outputs:
+        - performance_report
+        - rated_capacity_ah
+        - capacity_fade_pct
+        - voltage_metrics
+        - power_metrics
+        - internal_resistance_metrics
+        - efficiency_pct
+        - cycle_life_estimate
+        - calendar_life_estimate
+        - soh_pct
+        - soc_pct
+        - temperature_range
+        - annex_iv_data_sheet
+        - threshold_validation_status
+        - provenance_hashes
+      processing_time_estimate_minutes: 20
+      memory_estimate_mb: 640
+      required: true
+
+    - id: supply_chain_dd
+      name: "Supply Chain Due Diligence Engine"
+      file: engines/supply_chain_dd_engine.py
+      class: SupplyChainDDEngine
+      articles: [48]
+      description: >-
+        Implements Article 48 supply chain due diligence for critical raw
+        materials in battery production: cobalt, lithium, nickel, and natural
+        graphite. Aligns with the OECD Due Diligence Guidance for Responsible
+        Supply Chains of Minerals from Conflict-Affected and High-Risk Areas
+        (3rd edition, 2016). Evaluates compliance across the OECD five-step
+        framework: (Step 1) company management systems - supply chain policy,
+        internal management structure, supplier engagement, grievance
+        mechanism; (Step 2) risk identification and assessment - mapping
+        supply chain to mine/refiner level, country risk assessment (CAHRAs),
+        commodity risk assessment, due diligence questionnaires; (Step 3)
+        risk management strategy - risk mitigation plans, corrective action
+        plans, measurable improvement targets, suspension/disengagement
+        criteria; (Step 4) independent third-party audit - audit coverage,
+        audit standard (RMI RMAP, IRMA, ASI), findings tracking, corrective
+        actions; (Step 5) annual reporting - due diligence report publication,
+        supply chain mapping disclosure, risk assessment disclosure, audit
+        results summary. Generates per-material risk assessment with risk
+        levels (very high, high, medium, low, negligible) based on country
+        risk (CAHRA list, Governance indicators), commodity risk, and supplier
+        compliance data. Tracks supplier due diligence questionnaire
+        completion and audit status.
+        Zero-hallucination: risk scoring uses deterministic weighted matrix
+        with country risk indices from recognised sources (OECD, World Bank);
+        compliance scoring uses checklist evaluation against OECD five steps.
+      inputs:
+        - battery_profile
+        - supplier_registry               # tier 1 and tier 2+ suppliers
+        - supplier_questionnaire_data      # due diligence questionnaires
+        - mine_refiner_mapping             # supply chain mapping to origin
+        - country_risk_data                # CAHRA list, governance indicators
+        - commodity_risk_data              # cobalt, lithium, nickel, graphite
+        - audit_reports                    # RMI RMAP, IRMA, ASI audit results
+        - corrective_action_tracking       # audit findings remediation
+        - supply_chain_policy              # company due diligence policy
+        - grievance_mechanism_data         # supply chain grievance records
+      outputs:
+        - due_diligence_report
+        - per_material_risk_assessment
+        - oecd_step_compliance_scorecard
+        - supplier_risk_heatmap
+        - audit_coverage_summary
+        - corrective_action_status
+        - annual_reporting_package
+        - provenance_hashes
+      processing_time_estimate_minutes: 30
+      memory_estimate_mb: 768
+      required: true
+
+    - id: labelling_compliance
+      name: "Labelling Compliance Engine"
+      file: engines/labelling_compliance_engine.py
+      class: LabellingComplianceEngine
+      articles: [13, 14]
+      description: >-
+        Implements Articles 13 and 14 labelling and marking requirements
+        for all battery categories. Validates presence and compliance of
+        required label elements: CE marking (per Art 17-22 conformity
+        assessment), separate collection symbol (crossed-out wheeled bin
+        per Annex VI), QR code linking to battery passport (for passport-
+        required categories per Art 77), capacity label (rated capacity
+        in Ah and energy in Wh), hazardous substance markings (mercury
+        >0.0005%, cadmium >0.002%, lead >0.004% by weight, with Cd, Pb,
+        Hg chemical symbols and concentration values), battery chemistry
+        marking (chemical composition identification), carbon footprint
+        label (for EV and industrial batteries per Art 7), and battery
+        category identification. Validates label visibility, legibility,
+        and indelibility requirements. Checks QR code compliance with
+        ISO/IEC 18004 standard. Validates that label information matches
+        battery passport data (consistency check). Generates per-element
+        compliance status (compliant, non-compliant, not applicable) with
+        specific non-compliance descriptions and corrective action
+        recommendations. Supports multi-language label requirements for
+        cross-border EU market placement.
+        Zero-hallucination: labelling compliance checks use deterministic
+        rule matching against Articles 13-14 requirements; threshold
+        checks for hazardous substances are arithmetic comparisons.
+      inputs:
+        - battery_profile
+        - label_inventory                  # current labels on battery/packaging
+        - hazardous_substance_data         # mercury, cadmium, lead content
+        - qr_code_data                     # existing QR code content
+        - passport_data                    # battery passport data for consistency
+        - conformity_assessment_status     # CE marking eligibility
+        - target_markets                   # EU member states, language requirements
+      outputs:
+        - labelling_compliance_report
+        - per_element_compliance_status
+        - ce_marking_eligibility
+        - qr_code_compliance
+        - hazardous_substance_labelling
+        - corrective_action_list
+        - label_template_recommendations
+        - provenance_hashes
+      processing_time_estimate_minutes: 10
+      memory_estimate_mb: 384
+      required: true
+
+    - id: end_of_life
+      name: "End-of-Life Engine"
+      file: engines/end_of_life_engine.py
+      class: EndOfLifeEngine
+      articles: [56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]
+      description: >-
+        Implements Articles 56-71 end-of-life management requirements
+        including collection, treatment, recycling, and material recovery.
+        Calculates collection rates against regulatory targets: portable
+        batteries 63% by Dec 2027 and 73% by Dec 2030; LMT batteries 51%
+        by Dec 2028 and 61% by Dec 2031. Calculates recycling efficiency
+        against targets: 65% for lithium-based, 70% for lead-acid, 80%
+        for nickel-cadmium by Dec 2025. Calculates material recovery rates
+        against targets: lithium 50% by Dec 2027 and 80% by Dec 2031;
+        cobalt, copper, lead, nickel 90% by Dec 2027 and 95% by Dec 2031.
+        Tracks extended producer responsibility (EPR) scheme registration
+        across EU member states. Monitors collection point availability
+        and take-back programme effectiveness. Evaluates second-life
+        potential for EV and industrial batteries (repurposing assessment).
+        Generates dismantling and disassembly information for recyclers.
+        Tracks waste battery shipment compliance (Basel Convention).
+        Calculates end-of-life carbon credits for carbon footprint
+        lifecycle assessment (closed-loop recycling credit methodology).
+        Zero-hallucination: collection rates, recycling efficiency, and
+        material recovery rates are arithmetic calculations; target
+        comparison uses threshold checks; no LLM in calculation path.
+      inputs:
+        - battery_profile
+        - collection_data                  # volumes collected by category/geography
+        - batteries_placed_on_market       # denominator for collection rate
+        - recycling_process_data           # process type, efficiency, throughput
+        - material_recovery_data           # recovered mass per material
+        - epr_registration_data            # registration status per member state
+        - collection_point_data            # collection infrastructure
+        - second_life_assessment           # repurposing potential
+        - dismantling_information          # disassembly instructions
+        - waste_shipment_records           # transboundary movement
+      outputs:
+        - end_of_life_report
+        - collection_rate_by_category
+        - recycling_efficiency_by_chemistry
+        - material_recovery_rates
+        - target_compliance_status
+        - epr_registration_status
+        - second_life_potential_score
+        - dismantling_data_sheet
+        - end_of_life_carbon_credit
+        - provenance_hashes
+      processing_time_estimate_minutes: 20
+      memory_estimate_mb: 640
+      required: true
+
+    - id: conformity_assessment
+      name: "Conformity Assessment Engine"
+      file: engines/conformity_assessment_engine.py
+      class: ConformityAssessmentEngine
+      articles: [17, 18, 19, 20, 21, 22]
+      description: >-
+        Implements Articles 17-22 conformity assessment preparation for
+        batteries placed on the EU market. Determines the applicable
+        conformity assessment module(s) based on battery category and
+        regulatory requirements: Module A (internal production control -
+        manufacturer self-assessment), Module B (EU-type examination by
+        notified body), Module C (conformity to type based on internal
+        production control), Module D (quality assurance of production
+        process verified by notified body), Module E (product quality
+        assurance verified by notified body), Module G (unit verification
+        by notified body), Module H (full quality assurance verified by
+        notified body). Assesses readiness for each required module by
+        evaluating technical documentation completeness (Art 17), EU
+        declaration of conformity readiness (Art 18), CE marking
+        compliance (Art 19), notified body engagement status (Art 20-21),
+        and quality management system maturity (for Modules D, E, H).
+        Generates a conformity assessment checklist per module with
+        compliance status and gap identification. Validates that
+        technical documentation covers all essential requirements:
+        general battery description, design and manufacturing drawings,
+        applied harmonised standards list, test reports, carbon footprint
+        declaration, recycled content documentation, performance data,
+        and supply chain due diligence report. Tracks notified body
+        certificate validity and renewal dates.
+        Zero-hallucination: conformity assessment readiness scoring uses
+        deterministic checklist evaluation against Articles 17-22
+        requirements per module; no LLM in scoring path.
+      inputs:
+        - battery_profile
+        - technical_documentation          # design, manufacturing, test reports
+        - quality_management_system        # QMS documentation, ISO 9001 status
+        - harmonised_standards_applied     # EN standards used
+        - test_reports                     # performance, safety, environmental
+        - carbon_footprint_declaration     # from carbon_footprint engine
+        - recycled_content_documentation   # from recycled_content engine
+        - due_diligence_report             # from supply_chain_dd engine
+        - notified_body_engagement         # NB selection, contract, certificates
+        - eu_declaration_of_conformity     # existing DoC if any
+        - ce_marking_status                # current CE marking
+      outputs:
+        - conformity_assessment_report
+        - applicable_modules
+        - module_readiness_scorecard
+        - technical_documentation_gaps
+        - declaration_of_conformity_draft
+        - ce_marking_eligibility
+        - notified_body_requirements
+        - quality_system_assessment
+        - provenance_hashes
+      processing_time_estimate_minutes: 20
+      memory_estimate_mb: 512
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 battery workflows)
+  # ===========================================================================
+  workflows:
+    - id: carbon_footprint_assessment
+      name: "Carbon Footprint Assessment Workflow"
+      file: workflows/carbon_footprint_workflow.py
+      class: CarbonFootprintWorkflow
+      description: >-
+        4-phase workflow for battery carbon footprint assessment per Art 7.
+        Phase 1 (Data Collection): Gather bill of materials, manufacturing
+        energy consumption, transport logistics, end-of-life recycling
+        scenario, and emission factor selections from recognised databases.
+        Phase 2 (LCA Calculation): Execute lifecycle assessment across all
+        stages (raw material extraction, manufacturing, distribution,
+        end-of-life) using PEFCR methodology with chemistry-specific
+        emission factors. Phase 3 (Performance Class): Assign carbon
+        footprint performance class (A through E) based on market
+        percentile distribution data. Phase 4 (Declaration Generation):
+        Generate the EU carbon footprint declaration document with
+        lifecycle stage breakdown, methodology reference, and provenance
+        hashes. Routes MRV agent data for upstream Scope 3 emissions.
+      phases:
+        - data_collection
+        - lca_calculation
+        - performance_class_assignment
+        - declaration_generation
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      required: true
+
+    - id: recycled_content_tracking
+      name: "Recycled Content Tracking Workflow"
+      file: workflows/recycled_content_workflow.py
+      class: RecycledContentWorkflow
+      description: >-
+        4-phase workflow for recycled content tracking per Art 8.
+        Phase 1 (Material Inventory): Catalogue all active battery
+        materials with supplier information, material origin
+        (virgin vs recycled), and quantities per material (cobalt,
+        lithium, nickel, lead). Phase 2 (Content Calculation): Calculate
+        recycled content percentage per material using mass balance
+        approach, accounting for recycling process recovery rates.
+        Phase 3 (Target Comparison): Compare calculated recycled
+        content against applicable targets (2028 documentation,
+        2031 minimum, 2036 increased) and flag non-compliance.
+        Phase 4 (Documentation): Generate recycled content
+        documentation package including mass balance records,
+        recycled material certificates, and regulatory submission
+        forms. Integrates supplier questionnaire data via AGENT-DATA-008.
+      phases:
+        - material_inventory
+        - content_calculation
+        - target_comparison
+        - documentation_generation
+      schedule: "semi-annual"
+      estimated_duration_minutes: 40
+      required: true
+
+    - id: passport_compilation
+      name: "Passport Compilation Workflow"
+      file: workflows/passport_compilation_workflow.py
+      class: PassportCompilationWorkflow
+      description: >-
+        5-phase workflow for battery passport compilation per Art 77-78.
+        Phase 1 (Data Gathering): Collect all Annex XIII data fields
+        from upstream engines (carbon footprint, recycled content,
+        performance durability, supply chain due diligence, end of life)
+        and manufacturer master data. Phase 2 (Validation): Validate
+        data completeness against Annex XIII checklist, verify
+        cross-field consistency, and check data freshness. Phase 3
+        (Passport Assembly): Assemble all validated data fields into
+        the battery passport document structure with unique passport
+        identifier assignment. Phase 4 (QR Generation): Generate QR
+        code payload per ISO/IEC 18004 containing passport access URL
+        and essential data. Phase 5 (Registry Submission): Prepare
+        data package for submission to the battery passport registry,
+        generate GBA and Catena-X compatible export formats.
+      phases:
+        - data_gathering
+        - data_validation
+        - passport_assembly
+        - qr_code_generation
+        - registry_submission
+      schedule: "per-battery-model"
+      estimated_duration_minutes: 45
+      required: true
+
+    - id: performance_testing
+      name: "Performance Testing Workflow"
+      file: workflows/performance_testing_workflow.py
+      class: PerformanceTestingWorkflow
+      description: >-
+        4-phase workflow for battery performance and durability assessment
+        per Art 10 and Annex IV. Phase 1 (Test Data Collection): Ingest
+        battery test data from laboratory information management systems
+        (LIMS), test benches, and manufacturer test reports covering
+        capacity, voltage, power, resistance, efficiency, and lifecycle
+        tests per IEC 62660. Phase 2 (Metric Calculation): Calculate all
+        Annex IV performance parameters including rated capacity, capacity
+        fade, power capability, power fade, internal resistance increase,
+        round-trip efficiency, cycle life projection, calendar life
+        estimate, SoH, and SoC. Phase 3 (Threshold Validation): Validate
+        calculated metrics against delegated act minimum performance
+        requirements and flag non-compliance. Phase 4 (Report Generation):
+        Generate Annex IV compliant performance data sheet and
+        performance trend analysis report.
+      phases:
+        - test_data_collection
+        - metric_calculation
+        - threshold_validation
+        - report_generation
+      schedule: "per-battery-model"
+      estimated_duration_minutes: 35
+      required: true
+
+    - id: due_diligence_assessment
+      name: "Due Diligence Assessment Workflow"
+      file: workflows/due_diligence_workflow.py
+      class: DueDiligenceAssessmentWorkflow
+      description: >-
+        4-phase workflow for supply chain due diligence per Art 48.
+        Phase 1 (Supplier Mapping): Map the battery raw material supply
+        chain from cell manufacturer through refiners to mine/smelter
+        level for cobalt, lithium, nickel, and natural graphite. Identify
+        country of origin, processing facilities, and intermediaries.
+        Phase 2 (Risk Assessment): Assess risks per OECD five-step
+        framework using country risk data (CAHRA lists, governance
+        indicators), commodity risk profiles, supplier due diligence
+        questionnaire responses, and incident/allegation screening.
+        Phase 3 (Mitigation Planning): Develop risk mitigation action
+        plans for identified risks with timelines, responsible parties,
+        and measurable improvement targets. Phase 4 (Audit Verification):
+        Track third-party audit coverage (RMI RMAP, IRMA, ASI), manage
+        audit findings, and monitor corrective action implementation.
+        Generate annual due diligence report per OECD Step 5.
+      phases:
+        - supplier_mapping
+        - risk_assessment
+        - mitigation_planning
+        - audit_verification
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      required: true
+
+    - id: labelling_verification
+      name: "Labelling Verification Workflow"
+      file: workflows/labelling_verification_workflow.py
+      class: LabellingVerificationWorkflow
+      description: >-
+        4-phase workflow for labelling compliance per Art 13-14.
+        Phase 1 (Requirement Mapping): Determine all applicable label
+        elements for the battery category (CE marking, collection symbol,
+        QR code, capacity, hazardous substances, chemistry, carbon
+        footprint). Phase 2 (Label Review): Audit current battery and
+        packaging labels against requirements, documenting presence,
+        visibility, legibility, and indelibility of each element.
+        Phase 3 (Compliance Check): Evaluate each label element against
+        regulatory requirements and flag non-compliant items with
+        specific deficiency descriptions. Phase 4 (Corrective Actions):
+        Generate corrective action plan for non-compliant labels with
+        label design recommendations, printing specifications, and
+        placement guidelines.
+      phases:
+        - requirement_mapping
+        - label_review
+        - compliance_check
+        - corrective_actions
+      schedule: "per-product-launch"
+      estimated_duration_minutes: 20
+      required: true
+
+    - id: end_of_life_planning
+      name: "End-of-Life Planning Workflow"
+      file: workflows/end_of_life_workflow.py
+      class: EndOfLifePlanningWorkflow
+      description: >-
+        4-phase workflow for end-of-life management per Art 56-71.
+        Phase 1 (Collection Assessment): Evaluate current collection
+        infrastructure, collection rates by battery category and
+        geography, and EPR scheme registration status across EU
+        member states. Phase 2 (Recycling Targets): Calculate current
+        recycling efficiency and compare against targets (65%
+        lithium-based, 70% lead-acid, 80% nickel-cadmium). Phase 3
+        (Recovery Calculation): Calculate material recovery rates for
+        lithium, cobalt, copper, lead, and nickel against targets
+        (lithium 50%/80%, others 90%/95%). Phase 4 (Compliance
+        Reporting): Generate end-of-life compliance report including
+        collection rate trends, recycling efficiency metrics, material
+        recovery tracking, second-life assessment, and EPR scheme
+        status across all markets.
+      phases:
+        - collection_assessment
+        - recycling_target_evaluation
+        - recovery_calculation
+        - compliance_reporting
+      schedule: "annual"
+      estimated_duration_minutes: 40
+      required: true
+
+    - id: regulatory_submission
+      name: "Regulatory Submission Workflow"
+      file: workflows/regulatory_submission_workflow.py
+      class: RegulatorySubmissionWorkflow
+      description: >-
+        4-phase workflow for conformity assessment and regulatory
+        submission per Art 17-22. Phase 1 (Documentation Assembly):
+        Compile complete technical documentation package including
+        battery description, design drawings, applied standards,
+        test reports, carbon footprint declaration, recycled content
+        documentation, performance data, and due diligence report.
+        Phase 2 (Conformity Check): Evaluate technical documentation
+        against applicable conformity assessment module requirements
+        (A through H), identify gaps, and validate completeness.
+        Phase 3 (Submission Package): Generate the EU declaration
+        of conformity, prepare notified body submission package
+        (for modules requiring third-party involvement), and verify
+        CE marking eligibility. Phase 4 (Registry Upload): Prepare
+        battery passport registry submission, generate conformity
+        assessment certificates, and activate battery passport in
+        the electronic exchange system.
+      phases:
+        - documentation_assembly
+        - conformity_check
+        - submission_package
+        - registry_upload
+      schedule: "per-product-launch"
+      estimated_duration_minutes: 60
+      required: true
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 battery templates)
+  # ===========================================================================
+  templates:
+    - id: carbon_footprint_declaration
+      display_name: "Carbon Footprint Declaration Template"
+      file: templates/carbon_footprint_declaration.py
+      class: CarbonFootprintDeclarationTemplate
+      description: >-
+        Article 7 carbon footprint declaration document with complete
+        lifecycle breakdown (raw material extraction, manufacturing,
+        distribution, end-of-life), total CO2e (kg), per-kWh CO2e,
+        carbon footprint performance class (A-E), methodology reference,
+        emission factor sources, and system boundary description. Includes
+        lifecycle stage contribution chart, comparison against market
+        distribution and maximum threshold, and hotspot analysis
+        identifying primary carbon footprint contributors. Formatted
+        for regulatory submission and battery passport data population.
+      format: "pdf"
+      template_file: "templates/carbon_footprint_declaration.jinja2"
+      sections:
+        - executive_summary
+        - methodology_and_scope
+        - lifecycle_stage_breakdown
+        - performance_class_assignment
+        - threshold_compliance
+        - hotspot_analysis
+        - data_quality_assessment
+        - provenance_trail
+      formats: [PDF, HTML, JSON]
+      enabled: true
+
+    - id: recycled_content_report
+      display_name: "Recycled Content Report Template"
+      file: templates/recycled_content_report.py
+      class: RecycledContentReportTemplate
+      description: >-
+        Article 8 recycled content documentation report showing per-material
+        recycled content percentages (cobalt, lithium, nickel, lead),
+        mass balance calculations, target compliance status against
+        applicable thresholds (2028, 2031, 2036), and material sourcing
+        chain documentation. Includes trend charts showing recycled
+        content improvement over time, gap-to-target analysis, and
+        supply chain actions required to meet future targets.
+      format: "pdf"
+      template_file: "templates/recycled_content_report.jinja2"
+      sections:
+        - executive_summary
+        - per_material_recycled_content
+        - mass_balance_methodology
+        - target_compliance_status
+        - trend_analysis
+        - gap_to_target_analysis
+        - supply_chain_actions
+        - provenance_trail
+      formats: [PDF, HTML, JSON]
+      enabled: true
+
+    - id: battery_passport_report
+      display_name: "Battery Passport Report Template"
+      file: templates/battery_passport_report.py
+      class: BatteryPassportReportTemplate
+      description: >-
+        Complete battery passport data compilation per Annex XIII covering
+        all six data categories: (A) general battery information, (B) carbon
+        footprint, (C) supply chain due diligence, (D) material composition,
+        (E) performance and durability, and (F) end-of-life information.
+        Includes data completeness scorecard, QR code representation,
+        unique passport identifier, and data export formats (GBA, Catena-X).
+        Formatted for regulatory registry submission and public access
+        via electronic exchange system.
+      format: "pdf"
+      template_file: "templates/battery_passport_report.jinja2"
+      sections:
+        - general_battery_information       # Annex XIII Section A
+        - carbon_footprint_information      # Annex XIII Section B
+        - supply_chain_due_diligence        # Annex XIII Section C
+        - material_composition              # Annex XIII Section D
+        - performance_and_durability        # Annex XIII Section E
+        - end_of_life_information           # Annex XIII Section F
+        - data_completeness_scorecard
+        - qr_code_and_data_carrier
+      formats: [PDF, HTML, JSON, GBA, CATENA_X]
+      enabled: true
+
+    - id: performance_report
+      display_name: "Performance Report Template"
+      file: templates/performance_report.py
+      class: PerformanceReportTemplate
+      description: >-
+        Battery performance and durability data report per Annex IV
+        covering all required parameters by battery category. EV batteries:
+        rated capacity, capacity fade, voltage range, power capability,
+        power fade, internal resistance, resistance increase, round-trip
+        efficiency, cycle life, calendar life. LMT batteries: capacity,
+        C-rate, expected lifetime. All batteries: State of Health (SoH),
+        State of Charge (SoC), temperature range. Includes performance
+        trend charts, degradation projections, threshold compliance
+        status, and test methodology references.
+      format: "pdf"
+      template_file: "templates/performance_report.jinja2"
+      sections:
+        - executive_summary
+        - capacity_and_voltage
+        - power_and_resistance
+        - efficiency_and_lifecycle
+        - state_of_health_and_charge
+        - temperature_specifications
+        - threshold_compliance
+        - degradation_trends
+        - test_methodology
+      formats: [PDF, HTML, JSON]
+      enabled: true
+
+    - id: due_diligence_report
+      display_name: "Due Diligence Report Template"
+      file: templates/due_diligence_report.py
+      class: DueDiligenceReportTemplate
+      description: >-
+        Article 48 supply chain due diligence report per OECD Mineral
+        Supply Chain Guidance five-step framework. Covers company
+        management systems, supply chain risk identification and
+        assessment (per material: cobalt, lithium, nickel, natural
+        graphite), risk management strategy, third-party audit
+        coverage and findings, and annual reporting. Includes supplier
+        risk heatmap by geography and material, OECD step compliance
+        scorecard, corrective action status tracking, and continuous
+        improvement plan.
+      format: "pdf"
+      template_file: "templates/due_diligence_report.jinja2"
+      sections:
+        - executive_summary
+        - company_management_systems       # OECD Step 1
+        - risk_identification_assessment   # OECD Step 2
+        - risk_management_strategy         # OECD Step 3
+        - third_party_audit                # OECD Step 4
+        - annual_reporting                 # OECD Step 5
+        - supplier_risk_heatmap
+        - corrective_action_tracking
+      formats: [PDF, HTML, JSON]
+      enabled: true
+
+    - id: labelling_compliance_report
+      display_name: "Labelling Compliance Report Template"
+      file: templates/labelling_compliance_report.py
+      class: LabellingComplianceReportTemplate
+      description: >-
+        Articles 13-14 labelling requirement compliance report showing
+        per-element compliance status for all required labels and markings:
+        CE marking, collection symbol, QR code, capacity label, hazardous
+        substance markings, chemistry marking, carbon footprint label.
+        Includes visual label layout examples, non-compliance descriptions,
+        corrective action recommendations with design specifications, and
+        multi-market label requirements for cross-border placement.
+      format: "pdf"
+      template_file: "templates/labelling_compliance_report.jinja2"
+      sections:
+        - executive_summary
+        - label_element_inventory
+        - per_element_compliance_status
+        - non_compliance_findings
+        - corrective_actions
+        - label_design_recommendations
+        - multi_market_requirements
+      formats: [PDF, HTML, JSON]
+      enabled: true
+
+    - id: end_of_life_report
+      display_name: "End-of-Life Report Template"
+      file: templates/end_of_life_report.py
+      class: EndOfLifeReportTemplate
+      description: >-
+        Articles 56-71 end-of-life management report covering collection
+        rates by battery category, recycling efficiency by chemistry,
+        material recovery rates per material, EPR scheme registration
+        status, second-life potential assessment, and dismantling
+        information. Includes target compliance tracking with trend
+        charts, gap-to-target analysis, collection infrastructure
+        coverage map, and cost-per-tonne recovery economics.
+      format: "pdf"
+      template_file: "templates/end_of_life_report.jinja2"
+      sections:
+        - executive_summary
+        - collection_rates
+        - recycling_efficiency
+        - material_recovery_rates
+        - epr_scheme_status
+        - second_life_assessment
+        - dismantling_information
+        - target_compliance_trends
+      formats: [PDF, HTML, JSON]
+      enabled: true
+
+    - id: battery_regulation_scorecard
+      display_name: "Battery Regulation Scorecard Template"
+      file: templates/battery_regulation_scorecard.py
+      class: BatteryRegulationScorecardTemplate
+      description: >-
+        Executive dashboard providing an article-by-article compliance
+        status overview across the entire EU Battery Regulation. Traffic
+        light indicators for each major article area: Art 7 carbon
+        footprint, Art 8 recycled content, Art 10 performance, Art 13-14
+        labelling, Art 17-22 conformity assessment, Art 48 due diligence,
+        Art 56-71 end-of-life, Art 77-78 battery passport. Includes
+        overall compliance score, readiness timeline against regulatory
+        milestones, gap analysis summary, and priority action items.
+        Trend comparison across assessment periods.
+      format: "html"
+      template_file: "templates/battery_regulation_scorecard.jinja2"
+      sections:
+        - overall_compliance_score
+        - article_by_article_status
+        - readiness_timeline
+        - gap_analysis_summary
+        - priority_action_items
+        - trend_comparison
+        - upcoming_deadlines
+      formats: [PDF, HTML, Excel]
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (10 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      file: integrations/pack_orchestrator.py
+      class: BatteryPassportOrchestrator
+      description: >-
+        Master pipeline orchestrating all battery passport assessment
+        phases. 10-phase execution: Health Check -> Configuration Loading
+        -> Carbon Footprint Assessment -> Recycled Content Tracking ->
+        Performance and Durability Validation -> Supply Chain Due
+        Diligence -> Labelling Compliance Check -> End-of-Life Assessment
+        -> Conformity Assessment Preparation -> Battery Passport
+        Compilation. Manages engine dependencies (passport compilation
+        depends on all other engines completing first), parallel execution
+        where possible (carbon footprint and recycled content can run
+        concurrently with performance testing), and error propagation
+        with partial completion support. Tracks overall pipeline progress
+        and generates execution summary with timing metrics.
+      methods:
+        - initialize_pack
+        - load_configuration
+        - orchestrate_execution
+        - manage_engine_dependencies
+        - aggregate_results
+        - generate_scorecard
+        - export_passport
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Bridge"
+      file: integrations/mrv_bridge.py
+      class: MRVBridge
+      description: >-
+        Routes emission data from MRV agents into the carbon footprint
+        engine for battery lifecycle assessment. Maps MRV Scope 1 agents
+        (AGENT-MRV-001 stationary combustion, AGENT-MRV-003 mobile
+        combustion, AGENT-MRV-004 process emissions) for manufacturing
+        facility emissions. Maps MRV Scope 2 agents (AGENT-MRV-009
+        location-based, AGENT-MRV-010 market-based) for manufacturing
+        electricity consumption. Maps MRV Scope 3 Cat 1 (AGENT-MRV-014
+        purchased goods) for raw material upstream emissions. Maps
+        MRV Scope 3 Cat 4 (AGENT-MRV-017 upstream transportation) for
+        distribution emissions. Maps MRV Scope 3 Cat 12 (AGENT-MRV-025
+        end-of-life treatment) for recycling process emissions.
+        Validates provenance hashes from MRV agents and propagates
+        to carbon footprint declaration.
+      methods:
+        - query_scope1_manufacturing
+        - query_scope2_electricity
+        - query_scope3_upstream_materials
+        - query_scope3_transportation
+        - query_scope3_end_of_life
+        - validate_mrv_provenance
+        - map_to_lifecycle_stages
+      required: true
+
+    - id: csrd_pack_bridge
+      name: "CSRD Pack Bridge"
+      file: integrations/csrd_pack_bridge.py
+      class: CSRDPackBridge
+      description: >-
+        Connects to PACK-001/002/003 CSRD Packs and PACK-017 ESRS Full
+        Coverage Pack for consistency between corporate-level ESRS
+        disclosures and battery regulation data. Maps ESRS E1 climate
+        data (GHG emissions, energy consumption) to validate consistency
+        with battery carbon footprint calculations. Maps ESRS E2
+        pollution data (hazardous substances) for battery material
+        composition alignment. Maps ESRS E5 circular economy data
+        (recycled content, waste management) for recycled content and
+        end-of-life consistency. Validates that battery-specific data
+        is a subset of and consistent with corporate-level CSRD
+        disclosures.
+      methods:
+        - query_esrs_e1_data
+        - query_esrs_e2_data
+        - query_esrs_e5_data
+        - validate_csrd_consistency
+        - map_to_battery_regulation
+      required: false
+
+    - id: supply_chain_bridge
+      name: "Supply Chain Bridge"
+      file: integrations/supply_chain_bridge.py
+      class: SupplyChainBridge
+      description: >-
+        Links AGENT-DATA and AGENT-EUDR supply chain agents for mineral
+        sourcing due diligence. Routes supplier questionnaire data from
+        AGENT-DATA-008 (Supplier Questionnaire Processor) for due
+        diligence risk assessment. Routes spend data from AGENT-DATA-009
+        (Spend Data Categorizer) for material cost tracking and supplier
+        identification. Connects to AGENT-EUDR agents for supply chain
+        traceability (lot-level tracking from mine to battery). Supports
+        supplier data enrichment with external risk intelligence sources.
+      methods:
+        - query_supplier_questionnaires
+        - query_spend_data
+        - query_eudr_traceability
+        - enrich_supplier_risk_data
+        - track_material_provenance
+      required: true
+
+    - id: eudr_bridge
+      name: "EUDR Bridge"
+      file: integrations/eudr_bridge.py
+      class: EUDRBridge
+      description: >-
+        Connects to AGENT-EUDR agents for deforestation-free supply
+        chain verification relevant to battery raw materials. While
+        the EUDR primarily covers agricultural commodities, certain
+        battery supply chains (particularly natural graphite and
+        biomass-derived carbon materials) may intersect with
+        deforestation risk areas. Routes EUDR due diligence
+        methodology for geographical risk assessment overlay on
+        battery mineral supply chains. Provides country-of-origin
+        risk data for supply chain due diligence engine.
+      methods:
+        - query_deforestation_risk
+        - query_country_risk_overlay
+        - validate_geographical_risk
+        - generate_risk_summary
+      required: false
+
+    - id: taxonomy_bridge
+      name: "Taxonomy Bridge"
+      file: integrations/taxonomy_bridge.py
+      class: TaxonomyBridge
+      description: >-
+        Connects to GL-Taxonomy-APP for EU Taxonomy Do No Significant
+        Harm (DNSH) criteria validation for battery manufacturing
+        activities. Validates that battery manufacturing meets
+        taxonomy technical screening criteria for climate change
+        mitigation (battery storage for renewable energy integration)
+        and circular economy (recycled content, design for
+        recyclability). Maps taxonomy-eligible battery manufacturing
+        activities to the corporate taxonomy KPI disclosures. Checks
+        DNSH compliance across all six environmental objectives for
+        battery-related economic activities.
+      methods:
+        - query_taxonomy_eligibility
+        - validate_dnsh_criteria
+        - map_battery_activities
+        - generate_taxonomy_alignment
+      required: false
+
+    - id: csddd_bridge
+      name: "CSDDD Bridge"
+      file: integrations/csddd_bridge.py
+      class: CSDDDBridge
+      description: >-
+        Connects to PACK-019 CSDDD Readiness Pack for linking battery
+        supply chain due diligence (Art 48) with corporate-level
+        CSDDD due diligence obligations (Directive (EU) 2024/1760).
+        Maps OECD mineral supply chain due diligence steps to CSDDD
+        due diligence framework. Validates that battery supply chain
+        due diligence efforts are consistent with and contribute to
+        broader corporate human rights and environmental due diligence
+        obligations. Ensures battery supply chain risk assessments
+        feed into the corporate adverse impact register.
+      methods:
+        - query_csddd_due_diligence
+        - map_oecd_to_csddd_framework
+        - validate_consistency
+        - propagate_risk_assessments
+      required: false
+
+    - id: data_bridge
+      name: "Data Bridge"
+      file: integrations/data_bridge.py
+      class: DataBridge
+      description: >-
+        Routes AGENT-DATA agents for battery-specific data intake.
+        AGENT-DATA-001 (PDF Extractor) for test reports, certificates
+        of analysis, and audit reports. AGENT-DATA-002 (Excel/CSV
+        Normalizer) for bill of materials, test data files, and
+        production records. AGENT-DATA-003 (ERP Connector) for
+        manufacturing production data, inventory, and procurement.
+        AGENT-DATA-008 (Supplier Questionnaire Processor) for due
+        diligence questionnaire data. AGENT-DATA-009 (Spend Data
+        Categorizer) for material spend categorisation. AGENT-DATA-010
+        (Data Quality Profiler) for incoming data quality validation.
+        AGENT-DATA-019 (Validation Rule Engine) for battery-specific
+        validation rules. Ensures all data entering the battery
+        compliance pipeline passes through quality profiling.
+      methods:
+        - orchestrate_data_collection
+        - route_pdf_extraction
+        - route_excel_normalization
+        - route_erp_data
+        - route_supplier_questionnaires
+        - validate_data_quality
+        - track_data_lineage
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      file: integrations/health_check.py
+      class: BatteryPassportHealthCheck
+      description: >-
+        System verification across all engines, integrations, and
+        dependencies. 14-category health check: 8 engine status
+        checks (carbon footprint, recycled content, passport,
+        performance, due diligence, labelling, end-of-life,
+        conformity), database connectivity, MRV agent availability,
+        data agent availability, emission factor database currency,
+        passport registry connectivity, and deployment readiness.
+        Reports overall system health with per-component status
+        (healthy, degraded, unavailable) and recommended actions.
+      methods:
+        - check_engines
+        - check_database
+        - check_agents
+        - check_emission_factors
+        - check_passport_registry
+        - check_data_quality
+        - report_health_status
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      file: integrations/setup_wizard.py
+      class: BatteryPassportSetupWizard
+      description: >-
+        7-step guided configuration wizard for battery passport
+        deployment. Step 1 (Battery Category): Select battery
+        categories in scope (EV, industrial, LMT, portable, SLI).
+        Step 2 (Chemistry Selection): Configure battery chemistries
+        (NMC, NCA, LFP, lead-acid, etc.) and chemistry-specific
+        emission factors. Step 3 (Supply Chain Setup): Register
+        tier 1 and tier 2 suppliers for due diligence. Step 4
+        (Data Source Configuration): Connect ERP, LIMS, test
+        bench systems, and document repositories. Step 5 (Target
+        Configuration): Set applicable recycled content targets,
+        collection rate targets, and material recovery targets
+        based on timeline. Step 6 (Integration Testing): Test
+        all bridges (MRV, CSRD, supply chain, data agents).
+        Step 7 (Preset Selection): Select or customise sector
+        preset and finalize configuration.
+      methods:
+        - select_battery_categories
+        - configure_chemistries
+        - register_supply_chain
+        - configure_data_sources
+        - set_compliance_targets
+        - test_integrations
+        - finalize_configuration
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (6 presets)
+  # ===========================================================================
+  presets:
+    - id: ev_battery
+      name: "EV Battery Preset"
+      description: >-
+        Configuration for electric vehicle traction battery manufacturers
+        and OEMs. Full regulatory scope: carbon footprint declaration
+        (Art 7 all phases), recycled content (Art 8), battery passport
+        (Art 77-78), performance and durability (Art 10 with full Annex IV
+        EV parameters), supply chain due diligence (Art 48), labelling
+        (Art 13-14 including carbon footprint label), end-of-life (Art 56-71
+        with second-life assessment), and conformity assessment (Art 17-22).
+        All 8 engines enabled. Highest data requirements. Chemistry focus:
+        NMC, NCA, LFP, solid-state. Catena-X data exchange enabled.
+      sector: "EV_BATTERY"
+      battery_categories: [EV]
+      passport_required: true
+      carbon_footprint_required: true
+      recycled_content_required: true
+      enabled_engines:
+        - carbon_footprint
+        - recycled_content
+        - battery_passport
+        - performance_durability
+        - supply_chain_dd
+        - labelling_compliance
+        - end_of_life
+        - conformity_assessment
+      enabled_integrations:
+        - pack_orchestrator
+        - mrv_bridge
+        - csrd_pack_bridge
+        - supply_chain_bridge
+        - taxonomy_bridge
+        - csddd_bridge
+        - data_bridge
+        - health_check
+        - setup_wizard
+      file: "config/presets/ev_battery.yaml"
+
+    - id: industrial_storage
+      name: "Industrial Storage Preset"
+      description: >-
+        Configuration for stationary energy storage, UPS, data centre
+        backup, and grid-scale storage batteries >2kWh. Full passport
+        and carbon footprint scope. Performance focus on cycle life,
+        calendar life, and round-trip efficiency. Supply chain due
+        diligence for all critical raw materials. Chemistry focus:
+        LFP, NMC, lead-acid, sodium-ion. Extended calendar life
+        testing (10-20 year projections).
+      sector: "INDUSTRIAL_STORAGE"
+      battery_categories: [INDUSTRIAL]
+      passport_required: true
+      carbon_footprint_required: true
+      recycled_content_required: true
+      enabled_engines:
+        - carbon_footprint
+        - recycled_content
+        - battery_passport
+        - performance_durability
+        - supply_chain_dd
+        - labelling_compliance
+        - end_of_life
+        - conformity_assessment
+      enabled_integrations:
+        - pack_orchestrator
+        - mrv_bridge
+        - supply_chain_bridge
+        - data_bridge
+        - health_check
+        - setup_wizard
+      file: "config/presets/industrial_storage.yaml"
+
+    - id: lmt_battery
+      name: "LMT Battery Preset"
+      description: >-
+        Configuration for light means of transport batteries: e-bikes,
+        e-scooters, electric wheelchairs. Passport required but no carbon
+        footprint declaration. Performance focus on rated capacity, C-rate,
+        and expected lifetime in cycles. Recycled content tracking for
+        2028+ targets. Supply chain due diligence for critical raw
+        materials. Chemistry focus: NMC, LFP, NCA. Collection rate
+        tracking (51% by Dec 2028, 61% by Dec 2031).
+      sector: "LMT_BATTERY"
+      battery_categories: [LMT]
+      passport_required: true
+      carbon_footprint_required: false
+      recycled_content_required: true
+      enabled_engines:
+        - recycled_content
+        - battery_passport
+        - performance_durability
+        - supply_chain_dd
+        - labelling_compliance
+        - end_of_life
+        - conformity_assessment
+      enabled_integrations:
+        - pack_orchestrator
+        - supply_chain_bridge
+        - data_bridge
+        - health_check
+        - setup_wizard
+      file: "config/presets/lmt_battery.yaml"
+
+    - id: portable_battery
+      name: "Portable Battery Preset"
+      description: >-
+        Configuration for portable batteries: consumer electronics,
+        AA/AAA, button cells, power tool batteries. No passport or
+        carbon footprint required. Focus on labelling compliance
+        (collection symbol, capacity, hazardous substances), end-of-life
+        collection rates (63% by Dec 2027, 73% by Dec 2030), supply
+        chain due diligence, and performance (minimum average duration).
+        Simplified engine set. Chemistry focus: alkaline, lithium-ion,
+        NiMH, zinc-air.
+      sector: "PORTABLE_BATTERY"
+      battery_categories: [PORTABLE]
+      passport_required: false
+      carbon_footprint_required: false
+      recycled_content_required: false
+      enabled_engines:
+        - performance_durability
+        - supply_chain_dd
+        - labelling_compliance
+        - end_of_life
+        - conformity_assessment
+      enabled_integrations:
+        - pack_orchestrator
+        - supply_chain_bridge
+        - data_bridge
+        - health_check
+        - setup_wizard
+      file: "config/presets/portable_battery.yaml"
+
+    - id: sli_battery
+      name: "SLI Battery Preset"
+      description: >-
+        Configuration for starting, lighting, and ignition batteries:
+        car starters, motorcycle batteries, truck starter batteries.
+        No passport or carbon footprint required. Recycled content
+        required (especially lead at 85% target). Focus on performance
+        (cranking amps, reserve capacity), labelling (lead content
+        marking critical), end-of-life (lead-acid recycling targets),
+        and supply chain due diligence. Chemistry focus: lead-acid
+        (flooded, AGM, gel). High recycled content baseline (lead-acid
+        recycling is well-established at ~99% collection in EU).
+      sector: "SLI_BATTERY"
+      battery_categories: [SLI]
+      passport_required: false
+      carbon_footprint_required: false
+      recycled_content_required: true
+      enabled_engines:
+        - recycled_content
+        - performance_durability
+        - supply_chain_dd
+        - labelling_compliance
+        - end_of_life
+        - conformity_assessment
+      enabled_integrations:
+        - pack_orchestrator
+        - supply_chain_bridge
+        - data_bridge
+        - health_check
+        - setup_wizard
+      file: "config/presets/sli_battery.yaml"
+
+    - id: cell_manufacturer
+      name: "Cell Manufacturer Preset"
+      description: >-
+        Configuration for battery cell production companies supplying
+        cells to pack assemblers and OEMs. Focus on carbon footprint
+        (manufacturing-stage emissions dominate), supply chain due
+        diligence (direct material sourcing), and recycled content
+        (input material tracking). Performance data provided per
+        cell specification rather than pack level. Does not generate
+        battery passport (pack assembler responsibility) but provides
+        data inputs for downstream passport compilation. Chemistry
+        coverage: NMC (all variants), NCA, LFP, LMO, LTO, solid-state.
+        Manufacturing energy intensity tracking critical for carbon
+        footprint. Gigafactory-scale batch processing supported.
+      sector: "CELL_MANUFACTURER"
+      battery_categories: [EV, INDUSTRIAL, LMT]
+      passport_required: false
+      carbon_footprint_required: true
+      recycled_content_required: true
+      enabled_engines:
+        - carbon_footprint
+        - recycled_content
+        - performance_durability
+        - supply_chain_dd
+        - labelling_compliance
+        - conformity_assessment
+      enabled_integrations:
+        - pack_orchestrator
+        - mrv_bridge
+        - supply_chain_bridge
+        - data_bridge
+        - health_check
+        - setup_wizard
+      file: "config/presets/cell_manufacturer.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - 30 agents for carbon footprint lifecycle assessment
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Manufacturing facility stationary combustion emissions (boilers, furnaces)"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "On-site mobile equipment and internal logistics emissions"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Battery manufacturing process emissions (formation, drying)"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Fugitive emissions from electrolyte handling and NMP recovery"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Manufacturing waste treatment emissions (scrap, reject cells)"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Manufacturing electricity consumption - location-based grid factors"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Manufacturing electricity consumption - market-based (PPA, REC, tariff)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "District heating and steam purchases for manufacturing"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: false
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Upstream raw material emissions (cathode, anode, electrolyte, separator)"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Manufacturing equipment embodied emissions"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Upstream energy supply chain emissions"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Raw material and component inbound logistics emissions"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Manufacturing waste disposal and treatment emissions"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Battery distribution and outbound logistics emissions"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment Agent (Cat 12)"
+      description: "Battery end-of-life collection, dismantling, and recycling emissions"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - 14 agents for BOM, test data, and supply chain intake
+# ---------------------------------------------------------------------------
+agents_data:
+  intake:
+    - id: AGENT-DATA-001
+      name: "PDF & Invoice Extractor"
+      description: "Extract data from battery test reports, certificates of analysis, audit reports"
+      path: "greenlang/agents/data/pdf_invoice_extractor/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-002
+      name: "Excel/CSV Normalizer"
+      description: "Normalize bill of materials, test data files, production records"
+      path: "greenlang/agents/data/excel_csv_normalizer/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-003
+      name: "ERP/Finance Connector"
+      description: "Production data, inventory, procurement from manufacturing ERP"
+      path: "greenlang/agents/data/erp_finance_connector/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-004
+      name: "API Gateway Agent"
+      description: "External API connections for emission factors, grid factors, risk data"
+      path: "greenlang/agents/data/api_gateway/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-008
+      name: "Supplier Questionnaire Processor"
+      description: "Process due diligence questionnaires from battery material suppliers"
+      path: "greenlang/agents/data/supplier_questionnaire/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-009
+      name: "Spend Data Categorizer"
+      description: "Categorize battery material procurement spend by material type"
+      path: "greenlang/agents/data/spend_data_categorizer/"
+      required: true
+      version: "1.0.0"
+
+  quality:
+    - id: AGENT-DATA-010
+      name: "Data Quality Profiler"
+      description: "Profile and validate battery test data, BOM data, supply chain data"
+      path: "greenlang/agents/data/data_quality_profiler/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-011
+      name: "Duplicate Detection Agent"
+      description: "Detect duplicate battery records, test records, supplier entries"
+      path: "greenlang/agents/data/duplicate_detection/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-DATA-013
+      name: "Outlier Detection Agent"
+      description: "Detect anomalous battery test data and performance outliers"
+      path: "greenlang/agents/data/outlier_detection/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-014
+      name: "Time Series Gap Filler"
+      description: "Fill gaps in battery performance monitoring time series data"
+      path: "greenlang/agents/data/time_series_gap_filler/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-DATA-015
+      name: "Cross-Source Reconciliation"
+      description: "Reconcile battery data across ERP, LIMS, test bench sources"
+      path: "greenlang/agents/data/cross_source_reconciliation/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-DATA-018
+      name: "Data Lineage Tracker"
+      description: "Track provenance of battery data from source to passport"
+      path: "greenlang/agents/data/data_lineage_tracker/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-019
+      name: "Validation Rule Engine"
+      description: "Battery-specific validation rules (capacity ranges, voltage limits)"
+      path: "greenlang/agents/data/validation_rule_engine/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-DATA-020
+      name: "Climate Hazard Connector"
+      description: "Climate hazard data for supply chain risk assessment"
+      path: "greenlang/agents/data/climate_hazard_connector/"
+      required: false
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - 10 agents for orchestration and provenance
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator"
+    description: "DAG-based pipeline orchestration for battery passport workflows"
+    path: "greenlang/agents/foundation/orchestrator/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Validate battery passport data against Annex XIII schema"
+    path: "greenlang/agents/foundation/schema_compiler/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalize battery units (Ah, Wh, kWh, V, W, C-rate, mOhm)"
+    path: "greenlang/agents/foundation/unit_normalizer/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Track assumptions in carbon footprint LCA and performance projections"
+    path: "greenlang/agents/foundation/assumptions_registry/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Manage regulatory citations (EU Battery Regulation articles, IEC standards)"
+    path: "greenlang/agents/foundation/citations_evidence/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforce RBAC for battery passport data access (roles, permissions)"
+    path: "greenlang/agents/foundation/access_policy_guard/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Register and discover all battery pack agents and engines"
+    path: "greenlang/agents/foundation/agent_registry/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensure reproducibility of carbon footprint calculations and passport data"
+    path: "greenlang/agents/foundation/reproducibility/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Quality assurance testing for battery passport data and engine outputs"
+    path: "greenlang/agents/foundation/qa_test_harness/"
+    required: true
+    version: "1.0.0"
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitor battery passport pipeline performance and health"
+    path: "greenlang/agents/foundation/observability_telemetry/"
+    required: true
+    version: "1.0.0"
+
+# =============================================================================
+# Pack Configuration
+# =============================================================================
+pack_config:
+  default_battery_category: "EV"
+  default_chemistry: "NMC811"
+  default_target_year: 2031
+  carbon_footprint_functional_unit: "kWh"
+  carbon_footprint_result_unit: "kg_CO2e_per_kWh"
+  recycled_content_method: "mass_balance"
+  passport_retention_years: 10
+  technical_documentation_retention_years: 10
+  qr_code_standard: "ISO/IEC 18004"
+  data_carrier_format: "QR_CODE"
+  passport_interoperability:
+    - ESPR_DPP
+    - GBA_BATTERY_PASSPORT
+    - CATENA_X_BATTERY_PASS
+  emission_factor_databases:
+    - ecoinvent_3_10
+    - GREET_2024
+    - IEA_grid_factors_2024
+  testing_standards:
+    - IEC_62660
+    - UN_38_3
+    - IEC_61960
+    - IEC_62619
+  conformity_modules:
+    - MODULE_A
+    - MODULE_B
+    - MODULE_C
+    - MODULE_D
+    - MODULE_E
+    - MODULE_G
+    - MODULE_H
+  provenance_algorithm: "SHA-256"
+  zero_hallucination: true
+  lca_methodology: "PEFCR_batteries"
+
+demo_config:
+  enabled: true
+  demo_battery:
+    category: "EV"
+    chemistry: "NMC811"
+    manufacturer: "GreenLang Demo Battery Co."
+    model: "GL-EV-100"
+    capacity_ah: 100
+    voltage_nominal: 400
+    energy_kwh: 40
+    weight_kg: 300
+    production_date: "2026-01-15"
+  demo_carbon_footprint:
+    total_co2e_kg: 2400
+    per_kwh_co2e: 60
+    raw_material_pct: 45
+    manufacturing_pct: 35
+    distribution_pct: 10
+    end_of_life_pct: 10
+    performance_class: "B"
+  demo_recycled_content:
+    cobalt_pct: 18
+    lithium_pct: 8
+    nickel_pct: 7
+    lead_pct: 0
+  demo_performance:
+    rated_capacity_ah: 100
+    voltage_nominal: 400
+    voltage_min: 300
+    voltage_max: 450
+    power_capability_w: 150000
+    internal_resistance_mohm: 25
+    efficiency_pct: 95
+    cycle_life: 2000
+    calendar_life_years: 15
+    soh_pct: 100
+    soc_pct: 80
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  carbon_footprint:
+    max_batteries_assessed: 10000
+    lca_calculation_per_battery_ms: 500
+    performance_class_assignment_ms: 50
+    target_duration_minutes: 30
+  recycled_content:
+    max_material_lots: 100000
+    content_calculation_per_lot_ms: 10
+    target_comparison_ms: 5
+    target_duration_minutes: 15
+  battery_passport:
+    max_passports_generated: 50000
+    passport_compilation_per_unit_ms: 200
+    qr_code_generation_per_unit_ms: 25
+    target_duration_minutes: 30
+  performance_durability:
+    max_test_records: 500000
+    metric_calculation_per_record_ms: 15
+    soh_calculation_ms: 10
+    target_duration_minutes: 20
+  supply_chain_dd:
+    max_suppliers_assessed: 5000
+    risk_scoring_per_supplier_ms: 100
+    target_duration_minutes: 30
+  labelling_compliance:
+    max_products_audited: 10000
+    label_check_per_product_ms: 20
+    target_duration_minutes: 10
+  end_of_life:
+    max_collection_records: 100000
+    recovery_calculation_per_batch_ms: 25
+    target_duration_minutes: 15
+  conformity_assessment:
+    max_products_assessed: 5000
+    module_check_per_product_ms: 50
+    target_duration_minutes: 15
+  cache_hit_ratio_target: 0.65
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with battery-level and passport-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL          # supply chain DD, proprietary BOM
+    - RESTRICTED            # performance test data, carbon footprint details
+    - INTERNAL              # labelling data, end-of-life metrics
+    - PUBLIC                # battery passport public data fields
+  required_roles:
+    - battery_manager
+    - passport_administrator
+    - carbon_footprint_analyst
+    - recycled_content_specialist
+    - due_diligence_officer
+    - quality_engineer
+    - labelling_specialist
+    - compliance_officer
+    - external_auditor
+    - admin
+  passport_access_control:
+    public_fields:
+      - general_battery_information
+      - carbon_footprint_performance_class
+      - recycled_content_summary
+      - end_of_life_instructions
+    restricted_fields:
+      - detailed_carbon_footprint_breakdown
+      - supply_chain_dd_report
+      - material_composition_details
+      - performance_test_raw_data
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  framework: pytest
+  config_file: tests/conftest.py
+  namespace: "pack020_test"
+  test_structure:
+    - file: tests/test_carbon_footprint_engine.py
+      description: "Carbon footprint engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_recycled_content_engine.py
+      description: "Recycled content engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_battery_passport_engine.py
+      description: "Battery passport compilation engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_performance_durability_engine.py
+      description: "Performance and durability engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_supply_chain_dd_engine.py
+      description: "Supply chain due diligence engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_labelling_compliance_engine.py
+      description: "Labelling compliance engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_end_of_life_engine.py
+      description: "End-of-life engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_conformity_assessment_engine.py
+      description: "Conformity assessment engine unit tests"
+      estimated_tests: 50
+    - file: tests/test_templates.py
+      description: "All 8 template unit tests"
+      estimated_tests: 45
+    - file: tests/test_workflows.py
+      description: "All 8 workflow unit tests"
+      estimated_tests: 40
+    - file: tests/test_integrations.py
+      description: "All 10 integration unit tests"
+      estimated_tests: 35
+    - file: tests/test_config.py
+      description: "PackConfig and preset unit tests"
+      estimated_tests: 30
+    - file: tests/test_manifest.py
+      description: "pack.yaml manifest validation tests"
+      estimated_tests: 25
+    - file: tests/test_demo.py
+      description: "Demo configuration tests"
+      estimated_tests: 15
+    - file: tests/test_agent_integration.py
+      description: "Agent bridge integration tests"
+      estimated_tests: 30
+    - file: tests/test_e2e.py
+      description: "End-to-end pipeline tests"
+      estimated_tests: 20
+  targets:
+    total_tests_min: 700
+    pass_rate_pct: 100
+    coverage_pct: 85
+  load_testing_enabled: true
+  max_load_test_throughput_passports_per_hour: 5000
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "qrcode>=7.4"
+    - "pillow>=10.0"
+    - "lxml>=4.9"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_mrv_agent_availability
+    - verify_data_agent_availability
+
+  database_migrations:
+    inherited:
+      - "V001-V006"       # Core tables
+      - "V007-V008"       # Feature flags, agent factory
+      - "V009-V010"       # Auth, RBAC
+      - "V019-V020"       # Observability
+      - "V021-V030"       # Foundation agents
+      - "V031-V050"       # Data agents
+      - "V051-V081"       # MRV agents
+    new:
+      - "V083-PACK020-001"  # Battery profile and category tables
+      - "V083-PACK020-002"  # Carbon footprint declaration and LCA tables
+      - "V083-PACK020-003"  # Recycled content tracking and mass balance tables
+      - "V083-PACK020-004"  # Battery passport data and registry tables
+      - "V083-PACK020-005"  # Performance and durability metric tables
+      - "V083-PACK020-006"  # Supply chain due diligence and risk tables
+      - "V083-PACK020-007"  # Labelling compliance and label element tables
+      - "V083-PACK020-008"  # End-of-life collection and recovery tables
+      - "V083-PACK020-009"  # Conformity assessment and module tables
+      - "V083-PACK020-010"  # QR code payload and passport registry tables
+
+  post_install:
+    - seed_battery_categories
+    - seed_battery_chemistries
+    - seed_emission_factors_battery
+    - seed_recycled_content_targets
+    - seed_collection_rate_targets
+    - seed_material_recovery_targets
+    - seed_performance_thresholds
+    - seed_label_element_requirements
+    - seed_conformity_modules
+    - seed_country_risk_data
+    - seed_oecd_framework_checklist
+    - seed_annex_xiii_data_fields
+    - seed_default_presets
+    - run_health_checks
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+documentation:
+  user_guide: docs/user_guide.md
+  technical_reference: docs/technical_reference.md
+  api_documentation: docs/api.md
+  carbon_footprint_methodology: docs/carbon_footprint_methodology.md
+  recycled_content_guide: docs/recycled_content_guide.md
+  passport_compilation_guide: docs/passport_compilation_guide.md
+  due_diligence_guide: docs/due_diligence_guide.md
+  troubleshooting_guide: docs/troubleshooting.md
+  faq: docs/faq.md
+  release_notes: docs/release_notes.md
+
+# -----------------------------------------------------------------------------
+# Support
+# -----------------------------------------------------------------------------
+support:
+  email: support@greenlang.io
+  slack_channel: "#pack-020-support"
+  documentation_url: "https://docs.greenlang.io/packs/battery-passport-prep"
+  issues_url: "https://github.com/greenlang/packs/issues"
+  enterprise_support_sla_hours: 4

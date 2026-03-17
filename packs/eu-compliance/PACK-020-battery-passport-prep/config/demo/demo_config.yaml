@@ -1,0 +1,208 @@
+# =============================================================================
+# PACK-020 Battery Passport Prep Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for a fictional EV battery "EB-75-NMC811" manufactured
+# by EuroBattery GmbH at their Salzgitter, Germany gigafactory. The battery
+# is a 75 kWh NMC811 pack for a mid-size BEV sedan. This demo illustrates
+# full passport creation with carbon footprint declaration, recycled content
+# documentation, SoH parameter tracking, supply chain due diligence summary,
+# labelling compliance, and end-of-life obligation tracking.
+#
+# Battery: EB-75-NMC811
+# Manufacturer: EuroBattery GmbH
+# Plant: Salzgitter Gigafactory, Lower Saxony, Germany
+# Category: EV Traction Battery
+# Chemistry: NMC811 (Lithium Nickel Manganese Cobalt Oxide 8:1:1)
+# Capacity: 75 kWh (201 Ah at 373V nominal)
+# Weight: 485 kg
+# Application: Mid-size BEV sedan (C-segment)
+# Production Batch: 2026-Q1-SZ-00471
+# =============================================================================
+
+# --- Battery Identity ---
+battery:
+  unique_identifier: "EUBAT-DE-SZ-2026Q1-EB75NMC811-00471"
+  model: "EB-75-NMC811"
+  manufacturer: "EuroBattery GmbH"
+  manufacturing_plant: "Salzgitter Gigafactory"
+  manufacturing_country: "DE"
+  production_batch: "2026-Q1-SZ-00471"
+  production_date: "2026-01-15"
+  category: "EV"
+  chemistry: "NMC811"
+  rated_capacity_kwh: 75.0
+  rated_capacity_ah: 201.0
+  nominal_voltage_v: 373.0
+  max_voltage_v: 408.0
+  min_voltage_v: 280.0
+  weight_kg: 485.0
+  dimensions_mm:
+    length: 2100
+    width: 1420
+    height: 150
+  cells_count: 288
+  modules_count: 24
+  application: "BEV sedan, C-segment"
+  intended_market: "EU"
+
+# --- Selected Preset ---
+preset: "ev_battery"
+
+# --- Carbon Footprint (Art. 7) Sample Data ---
+carbon_footprint:
+  total_kgco2e_per_kwh: 61.3
+  lifecycle_breakdown:
+    raw_material_extraction_kgco2e_per_kwh: 32.8
+    manufacturing_kgco2e_per_kwh: 19.4
+    distribution_kgco2e_per_kwh: 1.7
+    end_of_life_kgco2e_per_kwh: 7.4
+  performance_class: "CLASS_B"
+  methodology: "EU_BATTERY_REG_DA"
+  emission_factor_database: "ECOINVENT_3.10"
+  electricity_source: "SUPPLIER_SPECIFIC"
+  manufacturing_electricity_mix:
+    renewable_pct: 72.0
+    grid_pct: 28.0
+    grid_country: "DE"
+  data_quality_rating: 1.8
+  third_party_verifier: "TUV SUD Product Service GmbH"
+  verification_date: "2026-02-28"
+  verification_certificate: "TUV-BAT-CF-2026-0471"
+
+# --- Recycled Content (Art. 17) Sample Data ---
+recycled_content:
+  cobalt_pct: 18.2
+  lithium_pct: 8.5
+  nickel_pct: 7.1
+  lead_pct: 0.0
+  natural_graphite_pct: 4.3
+  verification_method: "MASS_BALANCE"
+  auditor: "SGS SA"
+  audit_date: "2025-12-15"
+  audit_certificate: "SGS-RC-2025-EU-8821"
+  phase_1_2031_compliant: true
+  phase_2_2036_status: "ON_TRACK"
+
+# --- Performance and Durability (Art. 10, 14) Sample Data ---
+performance:
+  initial_rated_capacity_ah: 201.0
+  initial_rated_capacity_kwh: 75.0
+  initial_power_capability_kw: 220.0
+  initial_internal_resistance_mohm: 38.5
+  expected_cycle_life: 2200
+  expected_calendar_life_years: 10
+  warranty_years: 8
+  warranty_km: 160000
+  warranty_capacity_retention_pct: 70.0
+  test_standard: "IEC_62660_1"
+  operating_temperature_range_c:
+    min: -20.0
+    max: 45.0
+  charging_temperature_range_c:
+    min: 0.0
+    max: 45.0
+  fast_charge_capability: "150kW DC CCS2"
+  round_trip_efficiency_pct: 94.2
+  self_discharge_rate_pct_per_month: 1.5
+
+# --- Supply Chain Due Diligence (Art. 22-26) Sample Data ---
+supply_chain:
+  due_diligence_report_date: "2026-01-31"
+  framework: "OECD_MINERALS"
+  materials:
+    cobalt:
+      source_countries: ["CD", "AU"]
+      refiner: "Umicore SA"
+      refiner_country: "BE"
+      certification: "RMI_RMAP"
+      rmap_audit_date: "2025-09-20"
+      artisanal_mining_pct: 0.0
+      risk_level: "MEDIUM"
+    lithium:
+      source_countries: ["CL", "AU"]
+      refiner: "Albemarle Corporation"
+      refiner_country: "US"
+      certification: "IRMA"
+      risk_level: "LOW"
+    nickel:
+      source_countries: ["ID", "FI"]
+      refiner: "Nornickel"
+      refiner_country: "FI"
+      certification: "TSM"
+      risk_level: "LOW"
+    natural_graphite:
+      source_countries: ["MZ", "NO"]
+      refiner: "SGL Carbon SE"
+      refiner_country: "DE"
+      certification: "IRMA"
+      risk_level: "LOW"
+    manganese:
+      source_countries: ["ZA", "GA"]
+      refiner: "Eramet SA"
+      refiner_country: "FR"
+      certification: "ICMM"
+      risk_level: "LOW"
+  tier_1_suppliers_assessed: 12
+  tier_2_suppliers_assessed: 38
+  grievance_cases_received: 0
+  grievance_cases_resolved: 0
+  human_rights_incidents: 0
+  corrective_actions_open: 1
+  corrective_actions_closed: 4
+
+# --- Labelling (Art. 13) Compliance Status ---
+labelling:
+  ce_marking: true
+  qr_code: true
+  qr_code_url: "https://passport.battery-reg.eu/EUBAT-DE-SZ-2026Q1-EB75NMC811-00471"
+  collection_symbol: true
+  capacity_label: true
+  capacity_label_value: "75 kWh / 201 Ah"
+  hazardous_substance_marking: true
+  hazardous_substances_present: false
+  battery_chemistry_label: true
+  battery_chemistry_label_value: "Li-ion NMC811"
+  carbon_footprint_class_label: true
+  carbon_footprint_class_value: "CLASS_B"
+  separate_collection_info: true
+  all_elements_compliant: true
+
+# --- End-of-Life Obligations ---
+eol:
+  take_back_registered: true
+  producer_responsibility_organization: "EuroBattery EPR DE GmbH"
+  designated_recycler: "Li-Cycle Holdings Corp."
+  recycler_country: "DE"
+  recycler_permit: "DE-NI-BAT-REC-2025-004"
+  second_life_eligible: true
+  recycling_efficiency_target_pct: 70.0
+  material_recovery_commitments:
+    cobalt_recovery_pct: 95.0
+    lithium_recovery_pct: 80.0
+    nickel_recovery_pct: 95.0
+    copper_recovery_pct: 95.0
+
+# --- Conformity Assessment ---
+conformity:
+  selected_module: "MODULE_H"
+  notified_body: "TUV Rheinland AG"
+  notified_body_number: "0035"
+  certificate_number: "TUV-BR-NB-0035-BAT-2026-0189"
+  certificate_date: "2025-12-20"
+  certificate_valid_until: "2030-12-20"
+  quality_management_system: "IATF_16949"
+  qms_certificate: "IATF-16949-EUBAT-SZ-2025"
+  eu_declaration_of_conformity_date: "2026-01-10"
+  technical_file_complete: true
+
+# --- Reporting Configuration ---
+reporting:
+  output_formats: ["PDF", "JSON", "HTML"]
+  passport_api_format: "JSON_LD"
+  sha256_provenance: true
+  review_workflow: true
+  audit_trail_report: true
+  executive_summary: true
+  data_quality_disclosure: true
+  retention_years: 10
+  assurance_provider: "Demo Assurance GmbH"

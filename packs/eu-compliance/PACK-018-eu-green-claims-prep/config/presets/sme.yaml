@@ -1,0 +1,81 @@
+# =============================================================================
+# PACK-018 EU Green Claims Prep Pack - SME Preset
+# =============================================================================
+# Simplified configuration for Small and Medium Enterprises. Per ECGD
+# Art. 3(5), microenterprises (< 10 employees) are exempt from most
+# substantiation requirements. Small enterprises may use simplified
+# substantiation. This preset activates only 5 of 8 engines, uses
+# screening LCA instead of full lifecycle assessment, and relies on
+# secondary (database) data rather than primary measurements.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+metadata:
+  name: "sme"
+  sector: "OTHER"
+  description: >
+    SME simplified preset. 5 engines enabled (claim_substantiation,
+    evidence_chain, greenwashing_detection, trader_obligation,
+    green_claims_benchmark). Lifecycle assessment, label certification,
+    and comparative claims engines are disabled to reduce complexity and
+    cost. Screening LCA with secondary data is used where lifecycle
+    context is needed within the substantiation engine.
+
+# --- Enabled Engines --------------------------------------------------------
+enabled_engines:
+  - claim_substantiation
+  - evidence_chain
+  - greenwashing_detection
+  - trader_obligation
+  - green_claims_benchmark
+
+# --- Enabled Workflows ------------------------------------------------------
+enabled_workflows:
+  - claim_intake
+  - substantiation_assessment
+  - evidence_collection
+  - greenwashing_scan
+  - disclosure_generation
+  - periodic_review
+
+# --- Claim Scope ------------------------------------------------------------
+sector: "OTHER"
+claim_scope: "PRODUCT"
+
+# --- Communication Channels -------------------------------------------------
+communication_channels:
+  - WEBSITE
+  - PACKAGING
+  - POINT_OF_SALE
+
+# --- Thresholds -------------------------------------------------------------
+thresholds:
+  greenwashing_risk_threshold: "55"
+  evidence_retention_years: 3
+  max_claims: 500
+  max_evidence_items: 2500
+  eco_label_registry_refresh_days: 90
+
+# --- Special Settings -------------------------------------------------------
+special_settings:
+  pef_database: "ef_3.1"
+  sme_simplified_mode: true
+  sme_exemptions_enabled: true
+  microenterprise_exemption: true
+  screening_lca_only: true
+  secondary_data_allowed: true
+  primary_data_required: false
+  simplified_substantiation: true
+  simplified_evidence_requirements:
+    - "CERTIFICATION"
+    - "SUPPLIER_DECLARATION"
+    - "INTERNAL_AUDIT"
+  reduced_impact_categories:
+    - "climate_change"
+    - "resource_use_fossils"
+    - "water_use"
+  verification_level: "SELF_DECLARED"
+  cab_submission_format: "PDF"
+  reporting_language: "en"
+  third_party_verification: false
+  template_set: "minimal"

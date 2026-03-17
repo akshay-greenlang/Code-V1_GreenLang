@@ -1,0 +1,226 @@
+# =============================================================================
+# PACK-020 Battery Passport Prep Pack - EV Traction Battery Preset
+# =============================================================================
+# Configuration preset for electric vehicle (EV) traction batteries per
+# EU Battery Regulation (EU) 2023/1542. EV batteries are subject to the
+# full scope of requirements: battery passport (Art. 65), carbon footprint
+# declaration (Art. 7-9), recycled content targets (Art. 8/17), performance
+# and durability (Art. 10), SoH data access (Art. 14), labelling (Art. 13),
+# supply chain due diligence (Art. 22-26), conformity assessment (Art. 27),
+# and end-of-life collection/recycling (Art. 69-73).
+#
+# EV battery characteristics:
+#   - Capacity: typically 40-120 kWh (passenger), up to 800 kWh (commercial)
+#   - Chemistry: NMC811, NMC622, NCA, LFP (most common for EV)
+#   - Weight: 300-700 kg (passenger car packs)
+#   - Voltage: 350-800V system voltage
+#   - Cycle life: minimum 1,500 cycles to 70% SoH
+#   - Calendar life: minimum 8 years warranty
+#   - All regulatory articles apply; full passport mandatory
+# =============================================================================
+
+# --- Preset Metadata ---
+pack_name: "PACK-020 Battery Passport Prep Pack"
+version: "1.0.0"
+battery_category: "EV"
+chemistry: "NMC811"
+reporting_year: 2026
+manufacturing_country: "DE"
+
+# --- Carbon Footprint (Art. 7-9) ---
+carbon_footprint:
+  enabled: true
+  methodology: "EU_BATTERY_REG_DA"
+  functional_unit: "kgCO2e_per_kWh"
+  lifecycle_stages:
+    - "RAW_MATERIAL_EXTRACTION"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "END_OF_LIFE"
+  class_thresholds:
+    CLASS_A: null
+    CLASS_B: null
+    CLASS_C: null
+    CLASS_D: null
+    CLASS_E: null
+  max_threshold_per_kwh: null
+  gwp_source: "IPCC_AR6"
+  emission_factor_database: "ECOINVENT_3.10"
+  secondary_data_sources:
+    - "ECOINVENT_3.10"
+    - "GaBi_2024"
+    - "GREET_2024"
+  allocation_method: "PHYSICAL"
+  electricity_mix_source: "COUNTRY_SPECIFIC"
+  data_quality_rating_required: true
+  third_party_verification: true
+  declaration_per_batch: true
+
+# --- Recycled Content (Art. 8, 17, Annex XII) ---
+recycled_content:
+  enabled: true
+  targets_2031:
+    cobalt: 16.0
+    lithium: 6.0
+    nickel: 6.0
+    lead: 85.0
+  targets_2036:
+    cobalt: 26.0
+    lithium: 12.0
+    nickel: 15.0
+    lead: 85.0
+  documentation_required_from: "2028-08-18"
+  verification_method: "MASS_BALANCE"
+  third_party_audit: true
+  tracking_granularity: "BATCH"
+  pre_consumer_included: true
+  post_consumer_included: true
+
+# --- Performance and Durability (Art. 10, 14) ---
+performance:
+  enabled: true
+  soh_thresholds:
+    excellent: 95.0
+    good: 85.0
+    acceptable: 70.0
+    degraded: 50.0
+    end_of_life: 0.0
+  durability_ratings:
+    ev_minimum_cycle_life: 1500
+    ev_minimum_soh_at_eol: 70.0
+    ev_calendar_life_years: 8
+    ev_warranty_capacity_retention_pct: 70.0
+  soh_data_access: true
+  soh_parameters:
+    - "remaining_capacity_ah"
+    - "remaining_capacity_pct"
+    - "remaining_power_capability_w"
+    - "remaining_power_capability_pct"
+    - "state_of_charge_pct"
+    - "state_of_energy_kwh"
+    - "cycle_count"
+    - "internal_resistance_mohm"
+    - "calendar_age_days"
+    - "temperature_history_summary"
+    - "fast_charge_events_count"
+    - "deep_discharge_events_count"
+    - "expected_remaining_lifetime_cycles"
+    - "expected_remaining_lifetime_months"
+  test_standards:
+    - "IEC_62660_1"
+    - "IEC_62660_2"
+    - "ISO_12405_4"
+    - "UNECE_GTR_22"
+  capacity_measurement_standard: "IEC_62660_1"
+
+# --- Supply Chain Due Diligence (Art. 22-26) ---
+supply_chain:
+  enabled: true
+  critical_materials:
+    - "COBALT"
+    - "LITHIUM"
+    - "NICKEL"
+    - "NATURAL_GRAPHITE"
+    - "MANGANESE"
+  high_risk_countries:
+    - "CD"
+    - "CN"
+    - "MM"
+    - "PH"
+    - "ID"
+    - "RU"
+    - "ZM"
+    - "CL"
+    - "ZW"
+    - "MZ"
+    - "MG"
+  due_diligence_framework: "OECD_MINERALS"
+  audit_requirements:
+    third_party_audit_required: true
+    audit_frequency_months: 12
+    audit_standard: "OECD_MINERALS_ANNEX_II"
+    conflict_minerals_screening: true
+    human_rights_assessment: true
+    environmental_impact_assessment: true
+    child_labour_zero_tolerance: true
+    forced_labour_zero_tolerance: true
+    tier_1_coverage_pct: 100
+    tier_2_coverage_pct: 80
+    tier_3_coverage_pct: 50
+    smelter_refiner_identification: true
+    mine_of_origin_traceability: true
+  grievance_mechanism: true
+  public_reporting: true
+  chain_of_custody_tracking: true
+
+# --- Labelling (Art. 13) ---
+labelling:
+  enabled: true
+  required_elements_by_category:
+    EV:
+      - "CE_MARKING"
+      - "QR_CODE"
+      - "COLLECTION_SYMBOL"
+      - "CAPACITY_LABEL"
+      - "HAZARDOUS_SUBSTANCE"
+      - "BATTERY_CHEMISTRY"
+      - "CARBON_FOOTPRINT"
+      - "SEPARATE_COLLECTION"
+
+# --- End-of-Life (Art. 69-73) ---
+eol:
+  enabled: true
+  collection_targets:
+    ev:
+      current: 100.0
+  recycling_targets:
+    lithium_ion:
+      "2025": 65.0
+      "2030": 70.0
+  recovery_targets:
+    cobalt:
+      "2027": 90.0
+      "2031": 95.0
+    copper:
+      "2027": 90.0
+      "2031": 95.0
+    lithium:
+      "2027": 50.0
+      "2031": 80.0
+    nickel:
+      "2027": 90.0
+      "2031": 95.0
+  second_life_assessment: true
+  second_life_soh_threshold_pct: 70.0
+  take_back_obligation: true
+  recycler_certification_required: true
+
+# --- Conformity Assessment (Art. 27) ---
+conformity:
+  enabled: true
+  module_by_category:
+    EV:
+      - "MODULE_B"
+      - "MODULE_C"
+      - "MODULE_D"
+      - "MODULE_E"
+      - "MODULE_H"
+  notified_body_required: true
+  quality_management_standard: "IATF_16949"
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  format: "PDF"
+  additional_formats:
+    - "JSON"
+    - "HTML"
+  include_qr: true
+  sha256_provenance: true
+  passport_api_format: "JSON_LD"
+  passport_schema_version: "1.0.0"
+  review_workflow: true
+  audit_trail_report: true
+  executive_summary: true
+  data_quality_disclosure: true
+  retention_years: 10

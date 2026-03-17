@@ -1,0 +1,212 @@
+# =============================================================================
+# PACK-019 CSDDD Readiness Pack - Technology Preset
+# =============================================================================
+# Sector-specific configuration for technology and electronics companies
+# (NACE division C26, J62, J63). Mineral supply chains (cobalt, lithium,
+# tantalum, tin, tungsten, gold), data privacy impacts, and labour conditions
+# in electronics manufacturing are the dominant risk areas. Conflict minerals
+# due diligence (EU Regulation 2017/821) cross-referencing. Data centre
+# energy consumption and e-waste are key environmental considerations.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+sector_type: "TECHNOLOGY"
+display_name: "Technology Sector"
+description: >
+  Technology sector preset for CSDDD readiness. Prioritises conflict mineral
+  supply chains (3TG + cobalt + lithium), labour conditions in electronics
+  assembly (excessive overtime, health hazards), and data privacy impacts.
+  Data centre energy consumption and e-waste management are key environmental
+  considerations. Cross-references EU Conflict Minerals Regulation (2017/821)
+  and RoHS/WEEE directives.
+
+# --- Pack Config Fields -----------------------------------------------------
+sector: "TECHNOLOGY"
+company_scope: "PHASE_1"
+
+# --- Scope Defaults ---------------------------------------------------------
+scope_config:
+  phase_1_employee_threshold: 5000
+  phase_1_turnover_threshold: "1500000000"
+  phase_2_employee_threshold: 3000
+  phase_2_turnover_threshold: "900000000"
+  phase_3_employee_threshold: 1000
+  phase_3_turnover_threshold: "450000000"
+  include_non_eu: true
+  group_consolidation: true
+  headcount_method: "FTE"
+
+# --- Priority Impacts -------------------------------------------------------
+priority_impacts:
+  human_rights:
+    - id: "HR-TECH-001"
+      name: "Conflict mineral sourcing (3TG) from armed conflict zones"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C29, ICCPR Art. 6, 8"
+      typical_location: "Upstream Tier 3-5 mineral supply chains"
+
+    - id: "HR-TECH-002"
+      name: "Child and forced labour in cobalt mining"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C138, ILO C182, ILO C29"
+      typical_location: "Upstream Tier 3-5 (artisanal mining)"
+
+    - id: "HR-TECH-003"
+      name: "Excessive overtime and health hazards in electronics assembly"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICESCR Art. 7"
+      typical_location: "Tier 1-2 contract manufacturers"
+
+    - id: "HR-TECH-004"
+      name: "Data privacy violations affecting individuals"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICCPR Art. 17"
+      typical_location: "Own operations (digital products/services)"
+
+    - id: "HR-TECH-005"
+      name: "Worker surveillance and freedom of expression restrictions"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part I - ICCPR Art. 17, 19"
+      typical_location: "Own operations and Tier 1 suppliers"
+
+  environmental:
+    - id: "ENV-TECH-001"
+      name: "E-waste contamination and improper disposal"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Basel Convention, Stockholm Convention"
+      typical_location: "Downstream (end-of-life products)"
+
+    - id: "ENV-TECH-002"
+      name: "Data centre energy consumption and GHG emissions"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Paris Agreement"
+      typical_location: "Own operations (data centres)"
+
+    - id: "ENV-TECH-003"
+      name: "Water consumption by semiconductor fabrication"
+      severity: "MEDIUM"
+      annex_reference: "Annex Part II - CBD"
+      typical_location: "Tier 1-2 semiconductor suppliers"
+
+    - id: "ENV-TECH-004"
+      name: "Toxic chemicals in manufacturing (PFAS, solvents)"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Stockholm Convention, Rotterdam Convention"
+      typical_location: "Tier 1-2 component manufacturers"
+
+    - id: "ENV-TECH-005"
+      name: "Lithium extraction water depletion and brine pollution"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - CBD, Basel Convention"
+      typical_location: "Upstream Tier 3-5 battery material supply chains"
+
+# --- Priority Articles ------------------------------------------------------
+priority_articles:
+  - article: "ART_5"
+    relevance: "HIGH"
+    note: "Due diligence policy covering mineral supply chains and data operations"
+  - article: "ART_6"
+    relevance: "CRITICAL"
+    note: "Deep mapping of mineral supply chains (conflict minerals, cobalt, lithium)"
+  - article: "ART_8"
+    relevance: "CRITICAL"
+    note: "Prevention of forced/child labour in mining and assembly supply chains"
+  - article: "ART_9"
+    relevance: "HIGH"
+    note: "Contractual assurances with contract manufacturers and smelters"
+  - article: "ART_10"
+    relevance: "HIGH"
+    note: "Smelter audits via RMAP/LBMA and factory audits via RBA"
+  - article: "ART_14"
+    relevance: "HIGH"
+    note: "Grievance mechanism for workers in assembly facilities"
+  - article: "ART_22"
+    relevance: "HIGH"
+    note: "Transition plan covering data centre energy and Scope 3 supply chain"
+
+# --- Grievance Channels -----------------------------------------------------
+grievance_config:
+  channels:
+    - "WEB_PORTAL"
+    - "EMAIL"
+    - "HOTLINE"
+    - "MOBILE_APP"
+    - "TRADE_UNION_REP"
+  response_time_target_days: 14
+  resolution_target_days: 90
+  anonymous_allowed: true
+  languages: ["en", "zh", "ko", "ja", "de"]
+
+# --- Climate Targets -------------------------------------------------------
+climate_config:
+  sbti_15c_annual_reduction: "4.2"
+  sbti_2c_annual_reduction: "2.5"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+  scope_coverage: ["scope_1", "scope_2", "scope_3"]
+  base_year: 2019
+  paris_alignment_method: "ACA"
+  include_scope_3: true
+  decarbonisation_levers:
+    - "renewable_energy"
+    - "data_centre_efficiency"
+    - "supply_chain_engagement"
+    - "circular_economy"
+    - "product_energy_efficiency"
+    - "green_cloud_computing"
+
+# --- Stakeholder Groups -----------------------------------------------------
+stakeholder_config:
+  required_groups:
+    - "WORKERS"
+    - "TRADE_UNIONS"
+    - "COMMUNITIES"
+    - "NGOS"
+    - "CONSUMERS"
+  min_engagement_frequency: 2
+  meaningfulness_threshold: "60"
+  free_prior_informed_consent: true
+
+# --- Risk Countries ---------------------------------------------------------
+risk_countries:
+  - country: "DR Congo"
+    risk_area: "Cobalt artisanal mining, conflict minerals (3TG)"
+    severity: "CRITICAL"
+  - country: "China"
+    risk_area: "Electronics assembly labour conditions, rare earth processing"
+    severity: "HIGH"
+  - country: "Indonesia"
+    risk_area: "Nickel mining and smelting for batteries"
+    severity: "HIGH"
+  - country: "Chile"
+    risk_area: "Lithium brine extraction, water stress in Atacama"
+    severity: "MEDIUM"
+  - country: "Argentina"
+    risk_area: "Lithium extraction, indigenous community impacts"
+    severity: "MEDIUM"
+  - country: "Vietnam"
+    risk_area: "Electronics assembly, freedom of association"
+    severity: "MEDIUM"
+  - country: "Philippines"
+    risk_area: "Small-scale gold mining, electronics recycling"
+    severity: "MEDIUM"
+  - country: "Ghana"
+    risk_area: "Informal e-waste processing (Agbogbloshie)"
+    severity: "HIGH"
+
+# --- Impact Configuration ---------------------------------------------------
+impact_config:
+  max_impacts: 400
+  value_chain_depth: 5
+  prioritisation_method: "SEVERITY_FIRST"
+  include_potential: true
+  include_actual: true
+
+# --- Prevention Configuration -----------------------------------------------
+prevention_config:
+  effectiveness_threshold: "65"
+  budget_warning_threshold: "85"
+  overdue_tolerance_days: 30
+  require_contractual_assurances: true
+  verification_required: true
+  cascading_requirements: true
+  corrective_action_plan_days: 90

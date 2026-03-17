@@ -1,0 +1,220 @@
+# =============================================================================
+# PACK-019 CSDDD Readiness Pack - Agriculture Preset
+# =============================================================================
+# Sector-specific configuration for agricultural companies, food processors,
+# and agribusinesses (NACE division A). Land rights, deforestation, labour
+# exploitation, and water stress are the dominant risk areas. Direct
+# connection to EUDR for deforestation-free commodities (soy, palm oil,
+# cocoa, coffee, rubber, cattle, wood). Seasonal worker exploitation and
+# smallholder engagement are critical stakeholder issues.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+sector_type: "AGRICULTURE"
+display_name: "Agriculture Sector"
+description: >
+  Agriculture sector preset for CSDDD readiness. Prioritises land rights
+  (land grabbing, indigenous displacement), deforestation from commodity
+  production, labour exploitation (seasonal workers, forced labour, child
+  labour), and water stress from irrigation. EUDR cross-referencing enabled
+  for deforestation-free commodity compliance. Smallholder engagement and
+  fair pricing are key stakeholder considerations.
+
+# --- Pack Config Fields -----------------------------------------------------
+sector: "AGRICULTURE"
+company_scope: "PHASE_1"
+
+# --- Scope Defaults ---------------------------------------------------------
+scope_config:
+  phase_1_employee_threshold: 5000
+  phase_1_turnover_threshold: "1500000000"
+  phase_2_employee_threshold: 3000
+  phase_2_turnover_threshold: "900000000"
+  phase_3_employee_threshold: 1000
+  phase_3_turnover_threshold: "450000000"
+  include_non_eu: true
+  group_consolidation: true
+  headcount_method: "HEADCOUNT"
+
+# --- Priority Impacts -------------------------------------------------------
+priority_impacts:
+  human_rights:
+    - id: "HR-AGR-001"
+      name: "Land grabbing and displacement of smallholders"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ICESCR Art. 11, UNDRIP"
+      typical_location: "Own operations and upstream sourcing regions"
+
+    - id: "HR-AGR-002"
+      name: "Child labour in crop harvesting and processing"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C138, ILO C182"
+      typical_location: "Upstream Tier 2-5 (smallholder farms)"
+
+    - id: "HR-AGR-003"
+      name: "Forced labour and debt bondage of seasonal workers"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - ILO C29, ILO C105"
+      typical_location: "Tier 1-3 plantation and farm operations"
+
+    - id: "HR-AGR-004"
+      name: "Pesticide exposure and occupational health hazards"
+      severity: "HIGH"
+      annex_reference: "Annex Part I - ICESCR Art. 7, Art. 12"
+      typical_location: "Own operations and Tier 1-2 suppliers"
+
+    - id: "HR-AGR-005"
+      name: "Indigenous peoples' land rights violations"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part I - UNDRIP Art. 10, 26, 32"
+      typical_location: "Upstream sourcing in tropical regions"
+
+  environmental:
+    - id: "ENV-AGR-001"
+      name: "Deforestation from agricultural expansion"
+      severity: "CRITICAL"
+      annex_reference: "Annex Part II - CBD, Paris Agreement"
+      typical_location: "Upstream sourcing (tropical forests)"
+
+    - id: "ENV-AGR-002"
+      name: "Water depletion from irrigation in stressed basins"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - CBD"
+      typical_location: "Own operations and Tier 1 farms"
+
+    - id: "ENV-AGR-003"
+      name: "Soil degradation and erosion from intensive farming"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - CBD"
+      typical_location: "Own operations and Tier 1 suppliers"
+
+    - id: "ENV-AGR-004"
+      name: "Pesticide contamination of water and soil (POPs)"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Stockholm Convention, Rotterdam Convention"
+      typical_location: "Own operations and upstream supply chain"
+
+    - id: "ENV-AGR-005"
+      name: "Methane and N2O emissions from livestock and fertiliser"
+      severity: "HIGH"
+      annex_reference: "Annex Part II - Paris Agreement, UNFCCC"
+      typical_location: "Own operations and Tier 1 suppliers"
+
+# --- Priority Articles ------------------------------------------------------
+priority_articles:
+  - article: "ART_6"
+    relevance: "CRITICAL"
+    note: "Deep supply chain mapping for agricultural commodity origins"
+  - article: "ART_7"
+    relevance: "HIGH"
+    note: "Prioritise deforestation and forced/child labour impacts"
+  - article: "ART_8"
+    relevance: "CRITICAL"
+    note: "Prevention plans for deforestation, land grabbing, and labour exploitation"
+  - article: "ART_12"
+    relevance: "HIGH"
+    note: "Remediation for land displacement and environmental contamination"
+  - article: "ART_13"
+    relevance: "CRITICAL"
+    note: "Engagement with smallholder farmers, indigenous peoples, local communities"
+  - article: "ART_14"
+    relevance: "HIGH"
+    note: "Grievance mechanism accessible in rural areas and local languages"
+  - article: "ART_22"
+    relevance: "HIGH"
+    note: "Transition plan covering agricultural emissions and land use change"
+
+# --- Grievance Channels -----------------------------------------------------
+grievance_config:
+  channels:
+    - "HOTLINE"
+    - "MOBILE_APP"
+    - "IN_PERSON"
+    - "TRADE_UNION_REP"
+    - "EMAIL"
+  response_time_target_days: 21
+  resolution_target_days: 120
+  anonymous_allowed: true
+  languages: ["en", "fr", "pt", "es", "id", "sw"]
+
+# --- Climate Targets -------------------------------------------------------
+climate_config:
+  sbti_15c_annual_reduction: "4.2"
+  sbti_2c_annual_reduction: "2.5"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+  scope_coverage: ["scope_1", "scope_2", "scope_3"]
+  base_year: 2019
+  paris_alignment_method: "SDA"
+  include_scope_3: true
+  decarbonisation_levers:
+    - "deforestation_free_sourcing"
+    - "regenerative_agriculture"
+    - "reduced_fertiliser_use"
+    - "methane_reduction"
+    - "renewable_energy"
+    - "agroforestry"
+    - "supply_chain_engagement"
+
+# --- Stakeholder Groups -----------------------------------------------------
+stakeholder_config:
+  required_groups:
+    - "WORKERS"
+    - "TRADE_UNIONS"
+    - "COMMUNITIES"
+    - "INDIGENOUS_PEOPLES"
+    - "NGOS"
+    - "CONSUMERS"
+  min_engagement_frequency: 3
+  meaningfulness_threshold: "65"
+  free_prior_informed_consent: true
+
+# --- Risk Countries ---------------------------------------------------------
+risk_countries:
+  - country: "Brazil"
+    risk_area: "Soy and cattle deforestation, forced labour on ranches"
+    severity: "CRITICAL"
+  - country: "Indonesia"
+    risk_area: "Palm oil deforestation, peatland destruction, labour"
+    severity: "CRITICAL"
+  - country: "Cote d'Ivoire"
+    risk_area: "Cocoa child labour and deforestation"
+    severity: "CRITICAL"
+  - country: "Ghana"
+    risk_area: "Cocoa child labour"
+    severity: "HIGH"
+  - country: "Malaysia"
+    risk_area: "Palm oil plantation forced labour"
+    severity: "HIGH"
+  - country: "Colombia"
+    risk_area: "Coffee and banana labour exploitation"
+    severity: "HIGH"
+  - country: "India"
+    risk_area: "Tea and cotton forced/child labour, water stress"
+    severity: "HIGH"
+  - country: "Paraguay"
+    risk_area: "Soy deforestation, indigenous displacement"
+    severity: "HIGH"
+  - country: "Cameroon"
+    risk_area: "Cocoa deforestation, land grabbing"
+    severity: "MEDIUM"
+  - country: "Thailand"
+    risk_area: "Seafood forced labour, migrant worker exploitation"
+    severity: "HIGH"
+
+# --- Impact Configuration ---------------------------------------------------
+impact_config:
+  max_impacts: 600
+  value_chain_depth: 5
+  prioritisation_method: "SEVERITY_FIRST"
+  include_potential: true
+  include_actual: true
+
+# --- Prevention Configuration -----------------------------------------------
+prevention_config:
+  effectiveness_threshold: "60"
+  budget_warning_threshold: "85"
+  overdue_tolerance_days: 30
+  require_contractual_assurances: true
+  verification_required: true
+  cascading_requirements: true
+  corrective_action_plan_days: 90

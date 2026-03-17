@@ -1,0 +1,96 @@
+# =============================================================================
+# PACK-018 EU Green Claims Prep Pack - Retail Preset
+# =============================================================================
+# Sector-specific configuration for retail and consumer-facing companies.
+# Retail is the front line of ECGT enforcement: high-volume product claims,
+# point-of-sale labelling, and consumer-directed marketing. Label compliance
+# is critical. Food/textile PEFCR categories are emphasised.
+# =============================================================================
+
+# --- Metadata ---------------------------------------------------------------
+metadata:
+  name: "retail"
+  sector: "RETAIL"
+  description: >
+    Retail sector preset. All 8 engines enabled. High-volume product claims
+    with ECGT compliance priority. Label governance is emphasised because
+    retail entities communicate directly to consumers. Food and textile
+    PEFCR categories included for own-brand product substantiation.
+
+# --- Enabled Engines --------------------------------------------------------
+enabled_engines:
+  - claim_substantiation
+  - evidence_chain
+  - lifecycle_assessment
+  - label_certification
+  - greenwashing_detection
+  - comparative_claims
+  - trader_obligation
+  - green_claims_benchmark
+
+# --- Enabled Workflows ------------------------------------------------------
+enabled_workflows:
+  - claim_intake
+  - substantiation_assessment
+  - evidence_collection
+  - lifecycle_scoring
+  - label_validation
+  - greenwashing_scan
+  - comparison_review
+  - disclosure_generation
+  - cab_submission
+  - periodic_review
+
+# --- Claim Scope ------------------------------------------------------------
+sector: "RETAIL"
+claim_scope: "PRODUCT"
+
+# --- Communication Channels -------------------------------------------------
+communication_channels:
+  - PACKAGING
+  - WEBSITE
+  - ADVERTISING
+  - SOCIAL_MEDIA
+  - POINT_OF_SALE
+
+# --- Thresholds -------------------------------------------------------------
+thresholds:
+  greenwashing_risk_threshold: "40"
+  evidence_retention_years: 5
+  max_claims: 50000
+  max_evidence_items: 100000
+  eco_label_registry_refresh_days: 14
+
+# --- Special Settings -------------------------------------------------------
+special_settings:
+  pef_database: "ef_3.1"
+  pefcr_enabled: true
+  pefcr_categories:
+    - "food_and_drink"
+    - "dairy"
+    - "beer"
+    - "wine"
+    - "pet_food"
+    - "t_shirts"
+    - "footwear"
+    - "detergents"
+  ecgt_compliance_priority: true
+  ecgt_blacklist_check: true
+  vague_term_detection_strict: true
+  label_governance_emphasis: true
+  recognized_labels:
+    - "EU_ECOLABEL"
+    - "BLUE_ANGEL"
+    - "NORDIC_SWAN"
+    - "FAIRTRADE"
+    - "GOTS"
+    - "OEKO_TEX"
+    - "FSC"
+    - "PEFC"
+    - "ENERGY_STAR"
+    - "CRADLE_TO_CRADLE"
+  cab_submission_format: "PDF"
+  reporting_language: "en"
+  require_primary_lca_data: false
+  third_party_verification: true
+  high_volume_batch_mode: true

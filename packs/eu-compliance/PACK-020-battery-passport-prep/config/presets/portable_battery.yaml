@@ -1,0 +1,166 @@
+# =============================================================================
+# PACK-020 Battery Passport Prep Pack - Portable Battery Preset
+# =============================================================================
+# Configuration preset for portable batteries (consumer electronics) per
+# EU Battery Regulation (EU) 2023/1542. Portable batteries are subject to
+# a reduced set of requirements compared to EV/industrial/LMT: no battery
+# passport, no carbon footprint declaration, no SoH data access. Primary
+# obligations are labelling (Art. 13), performance/durability (Art. 10),
+# removability (Art. 11), collection targets, and recycling.
+#
+# Portable battery characteristics:
+#   - Weight: <=5 kg, sealed, non-industrial
+#   - Chemistry: ALKALINE (primary), NIMH, NMC (rechargeable Li-ion)
+#   - Applications: smartphones, laptops, power tools, toys, wearables
+#   - No passport required
+#   - No carbon footprint declaration required
+#   - No supply chain due diligence required (not mandatory)
+#   - Labelling is the primary compliance focus
+#   - Collection targets: 45% (2023), 63% (2027), 73% (2030)
+# =============================================================================
+
+# --- Preset Metadata ---
+pack_name: "PACK-020 Battery Passport Prep Pack"
+version: "1.0.0"
+battery_category: "PORTABLE"
+chemistry: "ALKALINE"
+reporting_year: 2026
+manufacturing_country: "CN"
+
+# --- Carbon Footprint (Not Required for Portable) ---
+carbon_footprint:
+  enabled: false
+  methodology: "EU_BATTERY_REG_DA"
+  functional_unit: "kgCO2e_per_kWh"
+  lifecycle_stages: []
+  data_quality_rating_required: false
+  third_party_verification: false
+
+# --- Recycled Content (Art. 17 - documentation only, no targets for alkaline) ---
+recycled_content:
+  enabled: false
+  targets_2031:
+    cobalt: 16.0
+    lithium: 6.0
+    nickel: 6.0
+    lead: 85.0
+  targets_2036:
+    cobalt: 26.0
+    lithium: 12.0
+    nickel: 15.0
+    lead: 85.0
+  verification_method: "MASS_BALANCE"
+  third_party_audit: false
+  tracking_granularity: "MODEL"
+
+# --- Performance and Durability (Art. 10, 11) ---
+performance:
+  enabled: true
+  soh_thresholds:
+    excellent: 95.0
+    good: 85.0
+    acceptable: 70.0
+    degraded: 50.0
+    end_of_life: 0.0
+  durability_ratings:
+    portable_rated_capacity_deviation_pct: 5.0
+    portable_minimum_average_duration: true
+    portable_endurance_in_cycles: true
+    portable_removability_required: true
+    portable_replaceability_required: true
+  soh_data_access: false
+  soh_parameters: []
+  test_standards:
+    - "IEC_61960"
+    - "IEC_62133_1"
+    - "IEC_62133_2"
+  capacity_measurement_standard: "IEC_61960"
+
+# --- Supply Chain Due Diligence (Not required for Portable) ---
+supply_chain:
+  enabled: false
+  critical_materials: []
+  high_risk_countries: []
+  due_diligence_framework: "OECD_MINERALS"
+  audit_requirements:
+    third_party_audit_required: false
+    audit_frequency_months: 24
+  grievance_mechanism: false
+  public_reporting: false
+  chain_of_custody_tracking: false
+
+# --- Labelling (Art. 13) - Primary compliance focus for portable ---
+labelling:
+  enabled: true
+  required_elements_by_category:
+    PORTABLE:
+      - "CE_MARKING"
+      - "COLLECTION_SYMBOL"
+      - "CAPACITY_LABEL"
+      - "HAZARDOUS_SUBSTANCE"
+      - "SEPARATE_COLLECTION"
+  qr_code_spec:
+    version: "QR_CODE_V2"
+    error_correction: "M"
+    min_size_mm: 10
+    must_link_to_passport: false
+    must_link_to_declaration_of_conformity: true
+  hazardous_substance_thresholds:
+    cadmium_ppm: 20.0
+    lead_ppm: 40.0
+    mercury_ppm: 5.0
+
+# --- End-of-Life (Art. 69-73) ---
+eol:
+  enabled: true
+  collection_targets:
+    portable:
+      "2023": 45.0
+      "2027": 63.0
+      "2030": 73.0
+  recycling_targets:
+    other:
+      current: 50.0
+  recovery_targets: {}
+  second_life_assessment: false
+  second_life_soh_threshold_pct: 0.0
+  waste_shipment_tracking: true
+  producer_responsibility: true
+  take_back_obligation: false
+  recycler_certification_required: true
+
+# --- Conformity Assessment (Art. 27) ---
+conformity:
+  enabled: true
+  module_by_category:
+    PORTABLE:
+      - "MODULE_A"
+  documentation_requirements:
+    technical_file: true
+    eu_declaration_of_conformity: true
+    test_reports: true
+    risk_assessment: true
+    design_drawings: true
+    bill_of_materials: true
+    manufacturing_process_description: true
+    quality_management_system: false
+    notified_body_certificate: false
+    retention_period_years: 10
+  notified_body_required: false
+  quality_management_standard: "ISO_9001"
+
+# --- Reporting ---
+reporting:
+  enabled: true
+  format: "PDF"
+  additional_formats:
+    - "EXCEL"
+  include_qr: false
+  sha256_provenance: true
+  passport_api_format: "JSON"
+  review_workflow: false
+  watermark_draft: true
+  audit_trail_report: true
+  executive_summary: true
+  data_quality_disclosure: false
+  retention_years: 10
