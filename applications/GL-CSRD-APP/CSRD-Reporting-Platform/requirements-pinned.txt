@@ -203,7 +203,7 @@ typer==0.9.0
 
 # Configuration
 python-dotenv==1.2.1
-dynaconf==3.2.4
+dynaconf==3.2.13
 
 # File utilities
 pathlib2==2.3.7.post1
