@@ -1,0 +1,637 @@
+# PACK-030: Net Zero Reporting Pack
+# Multi-framework climate disclosure automation with 7 frameworks,
+# 6 output formats, AI-assisted narrative generation, and ISAE 3410 assurance packaging
+# Supports SBTi, CDP, TCFD, GRI, ISSB, SEC, CSRD reporting from a single data aggregation
+
+pack_id: "PACK-030"
+pack_name: "Net Zero Reporting Pack"
+version: "1.0.0"
+tier: "Professional"
+category: "Net Zero"
+description: >-
+  Comprehensive multi-framework climate disclosure automation platform that
+  aggregates data from prerequisite packs (PACK-021/022/028/029) and GreenLang
+  applications (GL-SBTi-APP, GL-CDP-APP, GL-TCFD-APP, GL-GHG-APP) to generate
+  compliant reports for 7 frameworks (SBTi, CDP, TCFD, GRI, ISSB, SEC, CSRD).
+  Features AI-assisted narrative generation with citation management, cross-framework
+  consistency validation, multi-format output rendering (PDF, HTML, Excel, JSON,
+  XBRL, iXBRL), automated ISAE 3410 assurance evidence packaging, and interactive
+  executive dashboards with stakeholder-specific views. All outputs include
+  SHA-256 cryptographic provenance for audit trail integrity.
+
+# Target audience
+target_audience:
+  company_types:
+    - "Organizations reporting to 3+ climate disclosure frameworks"
+    - "CSRD-subject EU companies requiring ESRS E1 digital taxonomy"
+    - "SEC filers requiring XBRL/iXBRL climate disclosure tagging"
+    - "CDP respondents targeting A-list scoring"
+    - "Companies with SBTi-validated targets requiring annual progress disclosure"
+    - "TCFD-aligned organizations producing investor-grade reports"
+    - "GRI reporters preparing 305 emissions disclosures"
+    - "ISSB/IFRS S2 early adopters preparing climate disclosures"
+    - "Multinational corporations managing multi-jurisdiction reporting"
+  maturity_level: "Advanced"
+  use_cases:
+    - "Multi-framework report generation from single data aggregation"
+    - "SBTi annual progress report automation"
+    - "CDP Climate Change questionnaire (C0-C12) generation"
+    - "TCFD 4-pillar disclosure report creation"
+    - "GRI 305-1 through 305-7 emissions disclosure"
+    - "ISSB IFRS S2 climate disclosure with XBRL tagging"
+    - "SEC 10-K climate disclosure with iXBRL rendering"
+    - "CSRD ESRS E1 digital taxonomy report"
+    - "AI-assisted narrative drafting with citation management"
+    - "Cross-framework consistency validation"
+    - "Multi-language report generation (EN, DE, FR, ES)"
+    - "XBRL/iXBRL taxonomy tagging and validation"
+    - "ISAE 3410 assurance evidence bundle packaging"
+    - "Interactive executive dashboard with framework coverage heatmap"
+    - "Stakeholder-specific views (investor, regulator, customer, employee)"
+    - "Deadline tracking and notification across 7 frameworks"
+    - "Data lineage tracing from source system to report metric"
+
+# Pack components
+components:
+  engines:
+    count: 10
+    list:
+      - id: data_aggregation_engine
+        name: "Data Aggregation Engine"
+        file: "engines/data_aggregation_engine.py"
+        lines: 1800
+        description: >-
+          Multi-source data collection and reconciliation from PACK-021/022/028/029
+          and GL applications with gap detection, completeness scoring, and lineage tracking
+        inputs:
+          - pack_ids
+          - app_endpoints
+          - organization_id
+          - reporting_period
+        outputs:
+          - aggregated_dataset
+          - reconciliation_report
+          - lineage_graph
+          - completeness_score
+
+      - id: narrative_generation_engine
+        name: "Narrative Generation Engine"
+        file: "engines/narrative_generation_engine.py"
+        lines: 2000
+        description: >-
+          AI-assisted narrative drafting with citation management, multi-language
+          support (EN/DE/FR/ES), cross-framework consistency validation, and quality scoring
+        inputs:
+          - section_type
+          - framework
+          - language
+          - source_data
+        outputs:
+          - narrative_text
+          - citations
+          - consistency_score
+          - quality_score
+
+      - id: framework_mapping_engine
+        name: "Framework Mapping Engine"
+        file: "engines/framework_mapping_engine.py"
+        lines: 1500
+        description: >-
+          Bidirectional metric and structure mapping between 7 frameworks with
+          confidence scoring and conflict detection
+        inputs:
+          - source_framework
+          - target_framework
+          - metric_name
+        outputs:
+          - mapped_metric
+          - mapping_confidence
+          - conflicts
+
+      - id: xbrl_tagging_engine
+        name: "XBRL Tagging Engine"
+        file: "engines/xbrl_tagging_engine.py"
+        lines: 1600
+        description: >-
+          XBRL/iXBRL tag generation and validation for SEC and CSRD digital
+          taxonomy compliance
+        inputs:
+          - metrics
+          - taxonomy_version
+          - framework
+        outputs:
+          - xbrl_document
+          - ixbrl_html
+          - validation_report
+
+      - id: dashboard_generation_engine
+        name: "Dashboard Generation Engine"
+        file: "engines/dashboard_generation_engine.py"
+        lines: 1700
+        description: >-
+          Interactive HTML5 dashboard generation with charts, drill-down,
+          framework coverage heatmap, and stakeholder-specific views
+        inputs:
+          - aggregated_data
+          - stakeholder_type
+          - branding_config
+        outputs:
+          - html_dashboard
+          - interactive_charts
+          - framework_heatmap
+
+      - id: assurance_packaging_engine
+        name: "Assurance Packaging Engine"
+        file: "engines/assurance_packaging_engine.py"
+        lines: 1400
+        description: >-
+          ISAE 3410 assurance evidence bundle packaging with SHA-256 provenance
+          collection, lineage diagrams, methodology docs, and control matrices
+        inputs:
+          - report_id
+          - framework
+          - audit_scope
+        outputs:
+          - evidence_bundle_zip
+          - provenance_hashes
+          - control_matrix
+
+      - id: report_compilation_engine
+        name: "Report Compilation Engine"
+        file: "engines/report_compilation_engine.py"
+        lines: 2200
+        description: >-
+          Final report assembly from sections with branding, table of contents,
+          cross-references, and multi-format preparation
+        inputs:
+          - report_sections
+          - branding_config
+          - framework_template
+        outputs:
+          - compiled_report
+          - table_of_contents
+          - cross_reference_index
+
+      - id: validation_engine
+        name: "Validation Engine"
+        file: "engines/validation_engine.py"
+        lines: 1300
+        description: >-
+          Report validation against framework JSON schemas with completeness
+          checks, consistency validation, and quality scoring
+        inputs:
+          - report_data
+          - framework
+          - schema_version
+        outputs:
+          - validation_report
+          - errors
+          - warnings
+          - quality_score
+
+      - id: translation_engine
+        name: "Translation Engine"
+        file: "engines/translation_engine.py"
+        lines: 1100
+        description: >-
+          Multi-language narrative translation with climate-specific terminology
+          glossary, citation preservation, and quality validation
+        inputs:
+          - source_text
+          - source_language
+          - target_language
+        outputs:
+          - translated_text
+          - quality_score
+          - preserved_citations
+
+      - id: format_rendering_engine
+        name: "Format Rendering Engine"
+        file: "engines/format_rendering_engine.py"
+        lines: 1900
+        description: >-
+          Multi-format report rendering supporting PDF (WeasyPrint), HTML5,
+          Excel (openpyxl), JSON API, XBRL, and iXBRL output
+        inputs:
+          - compiled_report
+          - format_type
+          - branding
+        outputs:
+          - rendered_file
+          - file_metadata
+
+  workflows:
+    count: 8
+    list:
+      - id: sbti_progress_workflow
+        name: "SBTi Progress Report Workflow"
+        file: "workflows/sbti_progress_workflow.py"
+        lines: 1400
+        phases: 8
+        description: "Generate SBTi annual progress disclosure"
+        phase_sequence:
+          - "AggregateTargets: Pull target data from GL-SBTi-APP"
+          - "AggregateEmissions: Pull emissions from PACK-021/029"
+          - "CalculateProgress: Calculate progress vs. target"
+          - "GenerateVariance: Generate variance explanation"
+          - "CompileReport: Compile SBTi report template"
+          - "ValidateSchema: Validate against SBTi schema"
+          - "RenderFormats: Render PDF + JSON"
+          - "PackageSubmission: Package for submission"
+
+      - id: cdp_questionnaire_workflow
+        name: "CDP Questionnaire Workflow"
+        file: "workflows/cdp_questionnaire_workflow.py"
+        lines: 1600
+        phases: 8
+        description: "Generate CDP Climate Change questionnaire responses (C0-C12)"
+        phase_sequence:
+          - "AggregateEmissions: Aggregate emissions data (C6, C7)"
+          - "PullTargets: Pull target data for C4"
+          - "PullGovernance: Pull governance data for C1"
+          - "PullRisks: Pull risk data for C2-C3"
+          - "PullOpportunities: Pull opportunity data for C2-C3"
+          - "GenerateNarratives: Generate narratives for text responses"
+          - "ValidateCompleteness: Validate completeness (% of required questions)"
+          - "ExportExcel: Export to Excel template"
+
+      - id: tcfd_disclosure_workflow
+        name: "TCFD Disclosure Workflow"
+        file: "workflows/tcfd_disclosure_workflow.py"
+        lines: 1500
+        phases: 8
+        description: "Generate TCFD 4-pillar disclosure report"
+        phase_sequence:
+          - "Governance: Board oversight, management roles"
+          - "Strategy: Climate risks, opportunities, resilience"
+          - "RiskManagement: Identification, assessment, integration"
+          - "MetricsTargets: Scope 1/2/3, targets, progress"
+          - "CompileReport: Compile into executive report"
+          - "AddScenarios: Add scenario analysis from GL-TCFD-APP"
+          - "RenderPDF: Render PDF with charts"
+          - "GenerateEvidence: Generate assurance evidence"
+
+      - id: gri_305_workflow
+        name: "GRI 305 Disclosure Workflow"
+        file: "workflows/gri_305_workflow.py"
+        lines: 1200
+        phases: 8
+        description: "Generate GRI 305-1 through 305-7 emissions disclosures"
+        phase_sequence:
+          - "Scope1: 305-1 Direct (Scope 1) emissions"
+          - "Scope2: 305-2 Indirect (Scope 2) emissions"
+          - "Scope3: 305-3 Other indirect (Scope 3) emissions"
+          - "Intensity: 305-4 GHG emissions intensity"
+          - "Reductions: 305-5 Reduction of GHG emissions"
+          - "ODS: 305-6 Emissions of ozone-depleting substances"
+          - "AirEmissions: 305-7 NOx, SOx, and other air emissions"
+          - "ContentIndex: Generate GRI Content Index table"
+
+      - id: issb_ifrs_s2_workflow
+        name: "ISSB IFRS S2 Workflow"
+        file: "workflows/issb_ifrs_s2_workflow.py"
+        lines: 1300
+        phases: 7
+        description: "Generate ISSB IFRS S2 climate disclosure"
+        phase_sequence:
+          - "Governance: Board oversight aligned with S2 para 6"
+          - "Strategy: Climate risks/opportunities aligned with S2 para 10"
+          - "RiskManagement: Climate risk processes aligned with S2 para 25"
+          - "MetricsTargets: Scope 1/2/3 + industry metrics (SASB)"
+          - "XBRLTagging: Add XBRL tagging for digital reporting"
+          - "Validation: Validate against IFRS S2 requirements"
+          - "RenderOutput: Render PDF + XBRL"
+
+      - id: sec_climate_workflow
+        name: "SEC Climate Disclosure Workflow"
+        file: "workflows/sec_climate_workflow.py"
+        lines: 1400
+        phases: 8
+        description: "Generate SEC 10-K climate disclosure section"
+        phase_sequence:
+          - "Item1: Climate risks in business description"
+          - "Item1A: Climate risks in risk factors"
+          - "Item7: Climate impacts in MD&A"
+          - "RegSK: Regulation S-K Item 1502-1506 Scope 1/2 emissions"
+          - "XBRLTagging: Apply XBRL/iXBRL tagging"
+          - "ValidateSEC: Validate against SEC schema"
+          - "Attestation: Generate attestation report template"
+          - "Package10K: Package for 10-K filing"
+
+      - id: csrd_esrs_e1_workflow
+        name: "CSRD ESRS E1 Workflow"
+        file: "workflows/csrd_esrs_e1_workflow.py"
+        lines: 1500
+        phases: 12
+        description: "Generate CSRD ESRS E1 Climate Change disclosure"
+        phase_sequence:
+          - "E1_1: Transition plan for climate change mitigation"
+          - "E1_2: Policies related to climate change"
+          - "E1_3: Actions and resources for climate policies"
+          - "E1_4: GHG emission reduction targets"
+          - "E1_5: Energy consumption and mix"
+          - "E1_6: Gross Scopes 1/2/3 emissions"
+          - "E1_7: GHG removals and carbon credits"
+          - "E1_8: Internal carbon pricing"
+          - "E1_9: Anticipated financial effects"
+          - "DigitalTaxonomy: Apply CSRD digital taxonomy tagging"
+          - "ValidateESRS: Validate against ESRS E1 requirements"
+          - "RenderDigital: Render digital report"
+
+      - id: multi_framework_workflow
+        name: "Multi-Framework Full Report Workflow"
+        file: "workflows/multi_framework_workflow.py"
+        lines: 1800
+        phases: 7
+        description: "Generate all 7 framework reports in single execution"
+        phase_sequence:
+          - "AggregateOnce: Aggregate data once from all sources"
+          - "SharedNarratives: Generate shared narratives with framework adaptations"
+          - "ParallelExecution: Execute 7 framework workflows in parallel"
+          - "ConsistencyValidation: Validate cross-framework consistency"
+          - "ExecutiveDashboard: Generate executive dashboard"
+          - "MasterEvidence: Create master evidence bundle"
+          - "PackageDeliverable: Package all reports into deliverable"
+
+  templates:
+    count: 15
+    list:
+      - id: sbti_progress_template
+        name: "SBTi Progress Report Template"
+        file: "templates/sbti_progress_template.py"
+        lines: 600
+        formats: ["pdf", "json"]
+      - id: cdp_governance_template
+        name: "CDP C0-C2 Governance Template"
+        file: "templates/cdp_governance_template.py"
+        lines: 500
+        formats: ["xlsx", "json"]
+      - id: cdp_emissions_template
+        name: "CDP C4-C7 Emissions Template"
+        file: "templates/cdp_emissions_template.py"
+        lines: 700
+        formats: ["xlsx", "json"]
+      - id: tcfd_governance_template
+        name: "TCFD Governance Pillar Template"
+        file: "templates/tcfd_governance_template.py"
+        lines: 400
+        formats: ["pdf", "html"]
+      - id: tcfd_strategy_template
+        name: "TCFD Strategy Pillar Template"
+        file: "templates/tcfd_strategy_template.py"
+        lines: 600
+        formats: ["pdf", "html"]
+      - id: tcfd_risk_template
+        name: "TCFD Risk Management Template"
+        file: "templates/tcfd_risk_template.py"
+        lines: 500
+        formats: ["pdf", "html"]
+      - id: tcfd_metrics_template
+        name: "TCFD Metrics & Targets Template"
+        file: "templates/tcfd_metrics_template.py"
+        lines: 550
+        formats: ["pdf", "html"]
+      - id: gri_305_template
+        name: "GRI 305 Disclosure Template"
+        file: "templates/gri_305_template.py"
+        lines: 700
+        formats: ["pdf", "html", "json"]
+      - id: issb_s2_template
+        name: "ISSB IFRS S2 Template"
+        file: "templates/issb_s2_template.py"
+        lines: 650
+        formats: ["pdf", "xbrl"]
+      - id: sec_climate_template
+        name: "SEC Climate Disclosure Template"
+        file: "templates/sec_climate_template.py"
+        lines: 600
+        formats: ["pdf", "xbrl", "ixbrl"]
+      - id: csrd_e1_template
+        name: "CSRD ESRS E1 Template"
+        file: "templates/csrd_e1_template.py"
+        lines: 800
+        formats: ["pdf", "digital_taxonomy"]
+      - id: investor_dashboard_template
+        name: "Investor Dashboard Template"
+        file: "templates/investor_dashboard_template.py"
+        lines: 500
+        formats: ["html", "pdf"]
+      - id: regulator_dashboard_template
+        name: "Regulator Dashboard Template"
+        file: "templates/regulator_dashboard_template.py"
+        lines: 450
+        formats: ["html", "pdf"]
+      - id: customer_carbon_template
+        name: "Customer Carbon Report Template"
+        file: "templates/customer_carbon_template.py"
+        lines: 400
+        formats: ["pdf", "html"]
+      - id: assurance_evidence_template
+        name: "Assurance Evidence Bundle Template"
+        file: "templates/assurance_evidence_template.py"
+        lines: 550
+        formats: ["pdf", "zip"]
+
+  integrations:
+    count: 12
+    list:
+      - id: pack021_integration
+        name: "PACK-021 Net Zero Starter Integration"
+        file: "integrations/pack021_integration.py"
+        lines: 700
+        description: "Pull baseline emissions, inventory data"
+      - id: pack022_integration
+        name: "PACK-022 Net Zero Acceleration Integration"
+        file: "integrations/pack022_integration.py"
+        lines: 700
+        description: "Pull reduction initiatives, MACC curves"
+      - id: pack028_integration
+        name: "PACK-028 Sector Pathway Integration"
+        file: "integrations/pack028_integration.py"
+        lines: 700
+        description: "Pull sector pathways, convergence data"
+      - id: pack029_integration
+        name: "PACK-029 Interim Targets Integration"
+        file: "integrations/pack029_integration.py"
+        lines: 700
+        description: "Pull interim targets, progress monitoring, variance analysis"
+      - id: gl_sbti_app_integration
+        name: "GL-SBTi-APP Integration"
+        file: "integrations/gl_sbti_app_integration.py"
+        lines: 800
+        description: "Pull SBTi target data, validation results"
+      - id: gl_cdp_app_integration
+        name: "GL-CDP-APP Integration"
+        file: "integrations/gl_cdp_app_integration.py"
+        lines: 800
+        description: "Pull historical CDP responses, scores"
+      - id: gl_tcfd_app_integration
+        name: "GL-TCFD-APP Integration"
+        file: "integrations/gl_tcfd_app_integration.py"
+        lines: 750
+        description: "Pull scenario analysis, risk assessments"
+      - id: gl_ghg_app_integration
+        name: "GL-GHG-APP Integration"
+        file: "integrations/gl_ghg_app_integration.py"
+        lines: 750
+        description: "Pull GHG inventory, emission factors"
+      - id: xbrl_taxonomy_integration
+        name: "XBRL Taxonomy Integration"
+        file: "integrations/xbrl_taxonomy_integration.py"
+        lines: 600
+        description: "Fetch and cache XBRL taxonomies"
+      - id: translation_integration
+        name: "Translation Service Integration"
+        file: "integrations/translation_integration.py"
+        lines: 500
+        description: "Multi-language narrative translation"
+      - id: orchestrator_integration
+        name: "Orchestrator Integration"
+        file: "integrations/orchestrator_integration.py"
+        lines: 400
+        description: "Register with GreenLang Orchestrator"
+      - id: health_check_integration
+        name: "Health Check Integration"
+        file: "integrations/health_check_integration.py"
+        lines: 300
+        description: "Health monitoring for all integrations"
+
+  presets:
+    count: 8
+    list:
+      - id: csrd_focus
+        name: "CSRD ESRS E1 Focus"
+        file: "config/presets/csrd_focus.yaml"
+      - id: cdp_alist
+        name: "CDP A-List Target"
+        file: "config/presets/cdp_alist.yaml"
+      - id: tcfd_investor
+        name: "TCFD Investor-Grade Disclosure"
+        file: "config/presets/tcfd_investor.yaml"
+      - id: sbti_validation
+        name: "SBTi Validation Ready"
+        file: "config/presets/sbti_validation.yaml"
+      - id: sec_10k
+        name: "SEC 10-K Climate Disclosure"
+        file: "config/presets/sec_10k.yaml"
+      - id: multi_framework
+        name: "Multi-Framework Comprehensive"
+        file: "config/presets/multi_framework.yaml"
+      - id: investor_relations
+        name: "Investor Relations Package"
+        file: "config/presets/investor_relations.yaml"
+      - id: assurance_ready
+        name: "Assurance-Ready Package"
+        file: "config/presets/assurance_ready.yaml"
+
+# Dependencies
+platform_dependencies:
+  infrastructure:
+    - INFRA-001  # Kubernetes/EKS
+    - INFRA-002  # PostgreSQL + TimescaleDB
+    - INFRA-003  # Redis
+    - INFRA-004  # S3/Object Storage
+    - INFRA-006  # API Gateway (Kong)
+    - INFRA-010  # Agent Factory
+
+  security:
+    - SEC-001    # JWT Authentication
+    - SEC-002    # RBAC Authorization
+    - SEC-003    # Encryption at Rest
+    - SEC-004    # TLS 1.3
+    - SEC-005    # Centralized Audit Logging
+    - SEC-006    # Secrets Management (Vault)
+
+  observability:
+    - OBS-001    # Prometheus Metrics
+    - OBS-002    # Grafana Dashboards
+    - OBS-003    # OpenTelemetry Tracing
+    - OBS-004    # Alerting & Notifications
+
+  applications:
+    - GL-SBTi-APP   # SBTi target management
+    - GL-CDP-APP    # CDP questionnaire management
+    - GL-TCFD-APP   # TCFD scenario analysis
+    - GL-GHG-APP    # GHG inventory management
+
+  pack_dependencies:
+    - pack_id: "PACK-021"
+      name: "Net Zero Starter Pack"
+      relationship: "required"
+      description: "Provides baseline emissions and inventory data"
+    - pack_id: "PACK-022"
+      name: "Net Zero Acceleration Pack"
+      relationship: "required"
+      description: "Provides reduction initiatives and MACC curves"
+    - pack_id: "PACK-028"
+      name: "Sector Pathway Pack"
+      relationship: "required"
+      description: "Provides sector pathways and convergence data"
+    - pack_id: "PACK-029"
+      name: "Interim Targets Pack"
+      relationship: "required"
+      description: "Provides interim targets, progress monitoring, variance analysis"
+
+# Database
+database:
+  migrations:
+    start: "V211"
+    end: "V225"
+    count: 15
+  tables: 15
+  views: 5
+  indexes: "350+"
+  rls_policies: 30
+
+# Testing
+testing:
+  files: 17
+  tests: "2020+"
+  coverage: "90%+"
+  pass_rate: "100%"
+
+# Technical specifications
+technical_specs:
+  language: "Python 3.11+"
+  framework: "FastAPI 0.110+"
+  async: true
+  database: "PostgreSQL 16+ with TimescaleDB"
+  caching: "Redis 7+"
+  pdf_engine: "WeasyPrint 60+"
+  xbrl_engine: "Custom XBRL/iXBRL generator"
+  deployment: "Kubernetes 1.28+"
+  supported_languages: ["en", "de", "fr", "es"]
+  output_formats: ["PDF", "HTML", "Excel", "JSON", "XBRL", "iXBRL"]
+
+# Release
+release:
+  status: "Production Ready"
+  release_date: "2026-03-20"
+
+# Metadata
+metadata:
+  author: "GreenLang Platform Team"
+  maintainer: "net-zero-team@greenlang.io"
+  license: "Proprietary (Professional License Required)"
+  homepage: "https://greenlang.io/packs/net-zero-reporting"
+  documentation: "https://docs.greenlang.io/packs/030"
+  keywords:
+    - net-zero-reporting
+    - multi-framework
+    - climate-disclosure
+    - sbti-progress
+    - cdp-questionnaire
+    - tcfd-disclosure
+    - gri-305
+    - issb-ifrs-s2
+    - sec-climate
+    - csrd-esrs-e1
+    - xbrl-tagging
+    - ixbrl
+    - narrative-generation
+    - assurance-packaging
+    - isae-3410
+    - data-aggregation
+    - framework-mapping
+    - dashboard
+    - multi-language

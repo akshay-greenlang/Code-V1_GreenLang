@@ -1,0 +1,1572 @@
+# =============================================================================
+# PACK-034: ISO 50001 Energy Management System Pack
+# GreenLang Energy Efficiency Pack for ISO 50001:2018 EnMS Implementation
+# =============================================================================
+# This pack provides comprehensive tooling for implementing, operating, and
+# maintaining an ISO 50001:2018-compliant Energy Management System (EnMS).
+# It covers the full Plan-Do-Check-Act (PDCA) cycle from initial energy
+# review and SEU identification through energy baseline development,
+# EnPI tracking, CUSUM monitoring, compliance gap assessment, action plan
+# management, and continual improvement reporting.
+#
+# The pack implements ISO 50001:2018 requirements across all clauses (4-10),
+# with particular depth in the energy planning clauses (6.3 Energy Review,
+# 6.4 EnPIs, 6.5 Energy Baseline, 6.6 Data Collection Planning) and
+# performance evaluation clauses (9.1 Monitoring/Measurement, 9.2 Internal
+# Audit, 9.3 Management Review). Supporting standards ISO 50006 (energy
+# baselines and EnPIs) and ISO 50015 (measurement and verification) are
+# fully integrated.
+#
+# Key Capabilities:
+#   - Significant Energy Use (SEU) identification via Pareto analysis of
+#     energy consumption data across 15 end-use categories
+#   - Energy baseline development with simple mean, single-variable, and
+#     multi-variable regression models per ISO 50006
+#   - Energy Performance Indicator (EnPI) calculation: absolute, intensity,
+#     regression-based, statistical, and CUSUM types per ISO 50006
+#   - CUSUM analysis with tabular and V-mask methods for detecting shifts
+#     in energy performance over time
+#   - Degree-day weather normalisation with variable-base optimisation
+#     for heating and cooling energy
+#   - ISO 50001 compliance gap assessment against all clauses (4.1-10.2)
+#     with automatic nonconformity tracking and closure monitoring
+#   - Energy monitoring plan generation per Clause 6.6 with meter hierarchy
+#     management and data quality profiling
+#   - Action plan management with financial analysis (NPV, IRR, payback),
+#     M&V planning per IPMVP, and implementation tracking
+#   - Management review report generation per Clause 9.3 input requirements
+#   - Continual improvement tracking and certification readiness assessment
+#
+# Zero-Hallucination Approach:
+#   All energy calculations use deterministic formulas: regression from
+#   scipy/statsmodels, degree-days from temperature data, CUSUM from
+#   arithmetic accumulation, EnPIs from metered data ratios. No LLM is
+#   used in any calculation path. LLM usage is limited to narrative
+#   generation (gap analysis descriptions, management review summaries)
+#   and document classification (categorising energy invoices and policies).
+#
+# Regulatory References:
+#   - ISO 50001:2018 (Energy Management Systems - Requirements)
+#   - ISO 50006:2014 (Measuring energy performance using baselines and EnPIs)
+#   - ISO 50015:2014 (Measurement and verification of energy performance)
+#   - EU EED: Directive (EU) 2023/1791 (Energy Efficiency Directive - recast)
+#   - IPMVP: International Performance Measurement and Verification Protocol
+#   - ASHRAE Guideline 14 (Measurement of Energy, Demand, and Water Savings)
+#   - EN 16247-1:2022 (Energy Audits - General Requirements)
+#
+# Facility Types Supported:
+#   - Manufacturing (discrete, batch, process, continuous)
+#   - Commercial office (single-tenant, multi-tenant, campus)
+#   - Data centre (enterprise, colocation, edge)
+#   - Healthcare (hospitals, clinics, care homes)
+#   - Retail (chain stores, supermarkets, shopping centres)
+#   - Logistics (warehouses, distribution centres, cold chain)
+#   - Food processing (dairy, meat, beverage, bakery, frozen)
+#   - SME multi-site (2-5 sites, portfolio management)
+#   - Education (schools, universities, campuses)
+#   - Hotel (full-service, limited-service, resort)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-21)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-034-iso50001-enms
+  version: "1.0.0"
+  display_name: "ISO 50001 Energy Management System Pack"
+  description: >-
+    GreenLang deployment pack for implementing, operating, and maintaining
+    an ISO 50001:2018-compliant Energy Management System (EnMS). Includes
+    10 engines for Significant Energy Use (SEU) identification via Pareto
+    analysis, energy baseline development with single- and multi-variable
+    regression per ISO 50006, Energy Performance Indicator (EnPI) tracking
+    (absolute, intensity, regression-based, statistical, CUSUM), CUSUM
+    analysis with tabular and V-mask methods, degree-day weather normalisation
+    with variable-base optimisation, ISO 50001 compliance gap assessment
+    against all clauses (4.1-10.2), energy monitoring plan generation per
+    Clause 6.6, action plan management with financial analysis (NPV, IRR,
+    payback) and IPMVP M&V planning, management review report generation
+    per Clause 9.3, and continual improvement tracking with certification
+    readiness assessment. Supports manufacturing, commercial office, data
+    centre, healthcare, retail, logistics, food processing, SME multi-site,
+    education, and hotel facilities with tailored presets. Integrates with
+    PACK-031 (Industrial Energy Audit), PACK-032 (Building Energy Assessment),
+    and PACK-033 (Quick Wins Identifier) for complete energy management
+    coverage.
+  category: energy-efficiency
+  tier: enterprise
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-21"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/iso50001-enms"
+  changelog_url: "https://docs.greenlang.io/packs/iso50001-enms/changelog"
+
+  tags:
+    - iso-50001
+    - energy-management-system
+    - enms
+    - energy-performance
+    - enpi
+    - energy-baseline
+    - significant-energy-use
+    - seu
+    - cusum
+    - degree-day
+    - iso-50006
+    - iso-50015
+    - ipmvp
+    - compliance
+    - gap-analysis
+    - certification
+    - management-review
+    - internal-audit
+    - action-plan
+    - continual-improvement
+    - manufacturing
+    - commercial-office
+    - data-center
+    - healthcare
+    - retail
+    - logistics
+    - food-processing
+    - sme
+    - education
+    - hotel
+
+  regulation:
+    primary:
+      name: "ISO 50001:2018 Energy Management Systems"
+      reference: "ISO 50001:2018"
+      effective_date: "2018-08-21"
+      description: >-
+        ISO 50001:2018 specifies requirements for establishing, implementing,
+        maintaining and improving an energy management system (EnMS). The
+        intended outcome is to enable an organisation to follow a systematic
+        approach in achieving continual improvement of energy performance,
+        including energy efficiency, energy use, and energy consumption.
+        This pack implements all requirements across Clauses 4-10 with
+        particular depth in energy planning (Clause 6), operational control
+        (Clause 8), and performance evaluation (Clause 9).
+    secondary:
+      - name: "ISO 50006:2014 Measuring energy performance"
+        reference: "ISO 50006:2014"
+        effective_date: "2014-12-15"
+      - name: "ISO 50015:2014 M&V of energy performance"
+        reference: "ISO 50015:2014"
+        effective_date: "2014-12-15"
+      - name: "EU Energy Efficiency Directive (EED)"
+        reference: "Directive (EU) 2023/1791"
+        effective_date: "2023-10-10"
+      - name: "IPMVP Core Concepts"
+        reference: "IPMVP 2022"
+        effective_date: "2022-01-01"
+      - name: "ASHRAE Guideline 14 - Measurement of Energy Savings"
+        reference: "ASHRAE 14-2014"
+        effective_date: "2014-01-01"
+      - name: "EN 16247-1:2022 Energy Audits - General Requirements"
+        reference: "EN 16247-1:2022"
+        effective_date: "2022-07-01"
+
+  compliance_references:
+    - id: "ISO_50001"
+      name: "ISO 50001:2018 Energy Management Systems"
+      regulation: "ISO 50001:2018"
+      effective_date: "2018-08-21"
+      description: >-
+        This pack implements all ISO 50001:2018 requirements across
+        Clauses 4 (Context), 5 (Leadership), 6 (Planning), 7 (Support),
+        8 (Operation), 9 (Performance Evaluation), and 10 (Improvement).
+        It provides automated SEU identification (6.3), EnPI and baseline
+        management (6.4/6.5), data collection planning (6.6), monitoring
+        and measurement (9.1), internal audit support (9.2), and management
+        review inputs (9.3). Nonconformity tracking (10.1) and continual
+        improvement evidence (10.2) are fully automated.
+
+    - id: "ISO_50006"
+      name: "ISO 50006:2014 Measuring energy performance"
+      regulation: "ISO 50006:2014"
+      effective_date: "2014-12-15"
+      description: >-
+        ISO 50006 provides practical guidance on measuring energy
+        performance using energy baselines (EnBs) and energy performance
+        indicators (EnPIs). This pack implements the full ISO 50006
+        methodology including relevant variable identification, baseline
+        model selection (simple mean, single-variable, multi-variable
+        regression), statistical validity testing (R-squared, CV(RMSE),
+        t-test, F-test), baseline normalisation, and EnPI types (absolute,
+        intensity, regression-based, statistical, CUSUM).
+
+    - id: "ISO_50015"
+      name: "ISO 50015:2014 M&V of energy performance"
+      regulation: "ISO 50015:2014"
+      effective_date: "2014-12-15"
+      description: >-
+        ISO 50015 provides guidance on measurement and verification of
+        energy performance of organisations. This pack uses ISO 50015
+        methods for verifying savings from action plan items, determining
+        uncertainty in energy performance improvement, and reporting
+        verified savings to management and certification bodies.
+
+    - id: "EU_EED"
+      name: "EU Energy Efficiency Directive (recast)"
+      regulation: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        The recast EED recognises ISO 50001 certification as an
+        alternative to mandatory energy audits for large enterprises
+        (Article 8). This pack supports organisations achieving and
+        maintaining ISO 50001 certification to satisfy EED requirements.
+        The EED's energy efficiency first principle aligns with ISO
+        50001's continual improvement requirement.
+
+    - id: "IPMVP"
+      name: "International Performance Measurement and Verification Protocol"
+      regulation: "IPMVP Core Concepts 2022"
+      effective_date: "2022-01-01"
+      description: >-
+        IPMVP provides the M&V framework used by this pack for verifying
+        energy savings from action plan items. Options A through D are
+        supported, with automated M&V plan generation, baseline
+        development, and savings calculation with uncertainty bounds.
+
+    - id: "ASHRAE_14"
+      name: "ASHRAE Guideline 14 - Measurement of Energy Savings"
+      regulation: "ASHRAE 14-2014"
+      effective_date: "2014-01-01"
+      description: >-
+        ASHRAE Guideline 14 provides the statistical methods used for
+        baseline model validation (CV(RMSE), NMBE, R-squared thresholds)
+        and savings uncertainty quantification. The pack uses ASHRAE 14
+        criteria for monthly and daily data model acceptance.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 EnMS engines)
+  # ===========================================================================
+  engines:
+    - id: seu_identifier
+      name: "SEU Identification Engine"
+      description: >-
+        Identifies Significant Energy Uses (SEUs) per ISO 50001 Clause 6.3.
+        Performs Pareto analysis of energy consumption data across up to 15
+        end-use categories (HVAC, lighting, process heat, compressed air,
+        motors/drives, refrigeration, IT equipment, water heating, steam,
+        cooling, transport, building envelope, cooking/kitchen, laundry,
+        pool/spa). Applies configurable cumulative threshold (default 80%)
+        and individual threshold (default 5%) to classify SEUs. Identifies
+        relevant variables (production volume, weather, occupancy, shift
+        hours) affecting each SEU. Maps personnel whose work affects SEUs
+        for competence and awareness requirements. Generates SEU register
+        with consumption breakdown, trend analysis, and improvement
+        opportunity assessment.
+        Zero-hallucination: Pareto from sorted consumption data, thresholds
+        from arithmetic comparison, no LLM in classification path.
+      class: "SEUIdentifierEngine"
+      file: "engines/seu_identifier.py"
+      input_model: "SEUIdentifierInput"
+      output_model: "SEUIdentifierOutput"
+      required: true
+
+    - id: baseline_builder
+      name: "Energy Baseline Builder Engine"
+      description: >-
+        Develops energy baselines per ISO 50006 methodology. Supports three
+        model types: simple mean (no relevant variables), single-variable
+        linear regression (e.g., energy vs HDD or production), and multi-
+        variable regression (e.g., energy vs HDD + CDD + production).
+        AUTO mode tests all model types and selects best fit based on
+        statistical criteria: R-squared >= 0.75, CV(RMSE) <= 25% (monthly),
+        coefficient t-test significance, and F-test model significance.
+        Performs outlier detection (IQR or z-score), residual analysis,
+        and confidence interval calculation. Supports baseline adjustment
+        for non-routine events and static factor changes per ISO 50006.
+        Generates baseline documentation with model equation, statistical
+        summary, normalisation factors, and assumption register.
+        Zero-hallucination: regression from scipy/statsmodels, statistics
+        from numpy, outlier detection from IQR/z-score formulas, no LLM.
+      class: "BaselineBuilderEngine"
+      file: "engines/baseline_builder.py"
+      input_model: "BaselineBuilderInput"
+      output_model: "BaselineBuilderOutput"
+      required: true
+
+    - id: enpi_calculator
+      name: "EnPI Calculator Engine"
+      description: >-
+        Calculates Energy Performance Indicators per ISO 50006. Supports
+        five EnPI types: ABSOLUTE (total kWh consumption), INTENSITY
+        (kWh per normalisation factor such as m2, production unit, bed-day,
+        guest-night, PUE), REGRESSION_BASED (actual vs baseline-predicted
+        comparison showing improvement or degradation), STATISTICAL
+        (statistical process control on EnPI values), and CUSUM
+        (cumulative sum of differences between actual and predicted).
+        Tracks EnPIs at facility level and per-SEU level. Calculates
+        rolling averages over configurable periods (3-36 months).
+        Generates EnPI trend charts, target tracking, and benchmarking
+        comparisons against sector averages.
+        Zero-hallucination: intensity from division, regression from
+        baseline model, CUSUM from arithmetic accumulation, no LLM.
+      class: "EnPICalculatorEngine"
+      file: "engines/enpi_calculator.py"
+      input_model: "EnPICalculatorInput"
+      output_model: "EnPICalculatorOutput"
+      required: true
+
+    - id: cusum_analyzer
+      name: "CUSUM Analysis Engine"
+      description: >-
+        Performs Cumulative Sum (CUSUM) analysis for energy performance
+        monitoring. Calculates the running cumulative difference between
+        actual energy consumption and baseline-predicted consumption.
+        Supports tabular CUSUM with configurable alert threshold (sigma
+        multiplier) and V-mask overlay for visual shift detection. A
+        downward CUSUM trend indicates sustained energy savings; an upward
+        trend indicates performance degradation requiring investigation.
+        Supports seasonal adjustment via degree-day normalisation or
+        monthly seasonal factors. Generates CUSUM charts with trend lines,
+        alert markers, and annotated events (baseline changes, equipment
+        modifications, operational changes).
+        Zero-hallucination: CUSUM from arithmetic accumulation of
+        residuals, alerts from sigma threshold comparison, no LLM.
+      class: "CUSUMAnalyzerEngine"
+      file: "engines/cusum_analyzer.py"
+      input_model: "CUSUMAnalyzerInput"
+      output_model: "CUSUMAnalyzerOutput"
+      required: true
+
+    - id: degree_day_normalizer
+      name: "Degree-Day Normalisation Engine"
+      description: >-
+        Performs weather normalisation of energy consumption using
+        heating degree-days (HDD) and cooling degree-days (CDD).
+        Supports variable-base methodology with automatic optimisation
+        of base temperatures to maximise regression R-squared. Calculates
+        HDD and CDD from daily mean temperature data using configurable
+        base temperatures (default: 15.5C heating, 18.3C cooling).
+        Supports three normalisation bases: TMY3 (Typical Meteorological
+        Year), long-term 20-year average, and reporting period actual.
+        Enables fair comparison of energy performance across periods with
+        different weather conditions. Generates weather-normalised
+        consumption values and degree-day regression plots.
+        Zero-hallucination: degree-days from temperature arithmetic,
+        regression from scipy, base temp optimisation from grid search,
+        no LLM.
+      class: "DegreeDayNormalizerEngine"
+      file: "engines/degree_day_normalizer.py"
+      input_model: "DegreeDayNormalizerInput"
+      output_model: "DegreeDayNormalizerOutput"
+      required: true
+
+    - id: compliance_assessor
+      name: "ISO 50001 Compliance Assessment Engine"
+      description: >-
+        Assesses compliance against all ISO 50001:2018 clauses (4.1 through
+        10.2). Generates gap analysis report mapping current EnMS status
+        to each clause requirement with status classification: CONFORMING,
+        NON_CONFORMING, OPPORTUNITY_FOR_IMPROVEMENT, NOT_ASSESSED, or
+        NOT_APPLICABLE. Tracks nonconformities with root cause, corrective
+        action, responsible person, target date, and closure status.
+        Monitors nonconformity closure against configurable timeline
+        (default 90 days). Generates surveillance audit preparation
+        reminders. Supports internal audit planning with audit schedule,
+        scope, criteria, and auditor assignment. Tracks applicable legal
+        and other requirements per Clause 4.2.
+        Zero-hallucination: gap status from checklist comparison against
+        clause requirements, dates from calendar arithmetic, no LLM in
+        compliance determination.
+      class: "ComplianceAssessorEngine"
+      file: "engines/compliance_assessor.py"
+      input_model: "ComplianceAssessorInput"
+      output_model: "ComplianceAssessorOutput"
+      required: true
+
+    - id: monitoring_planner
+      name: "Energy Monitoring Plan Engine"
+      description: >-
+        Generates and manages the energy data collection plan per ISO 50001
+        Clause 6.6. Defines what data to collect (energy consumption,
+        relevant variables, static factors), how to collect it (meters,
+        invoices, BMS, manual readings), collection frequency (hourly to
+        annual), and responsible personnel. Manages meter hierarchy for
+        sub-meter disaggregation with reconciliation checks between main
+        meters and sub-meter totals. Defines data quality criteria per
+        measurement point. Generates monitoring plan documentation with
+        meter schedules, calibration requirements, and data flow diagrams.
+        Tracks data completeness against quality thresholds and raises
+        alerts for missing or anomalous readings.
+        Zero-hallucination: data quality from completeness percentages,
+        reconciliation from arithmetic comparison, no LLM.
+      class: "MonitoringPlannerEngine"
+      file: "engines/monitoring_planner.py"
+      input_model: "MonitoringPlannerInput"
+      output_model: "MonitoringPlannerOutput"
+      required: true
+
+    - id: action_plan_manager
+      name: "Action Plan Management Engine"
+      description: >-
+        Manages energy action plans per ISO 50001 Clause 6.2. Tracks
+        action items from identification through evaluation, approval,
+        implementation, and verification. Performs financial analysis for
+        each action: simple payback, net present value (NPV), internal
+        rate of return (IRR), savings-to-investment ratio (SIR), and
+        lifecycle cost with energy price escalation. Supports M&V plan
+        generation per IPMVP Options A-D for savings verification.
+        Calculates carbon reduction (tCO2e) per action using Scope 1
+        and Scope 2 emission factors. Generates action plan documentation
+        with responsibilities, timelines, resources, and expected energy
+        performance improvement. Tracks progress with Gantt charts and
+        budget vs actual comparison.
+        Zero-hallucination: financial calculations from standard DCF
+        formulas, savings from metered data, no LLM.
+      class: "ActionPlanManagerEngine"
+      file: "engines/action_plan_manager.py"
+      input_model: "ActionPlanManagerInput"
+      output_model: "ActionPlanManagerOutput"
+      required: true
+
+    - id: management_review
+      name: "Management Review Engine"
+      description: >-
+        Generates management review reports per ISO 50001 Clause 9.3.
+        Compiles all required inputs: status of actions from previous
+        reviews, changes in external/internal issues, energy performance
+        and EnPI trends, results of compliance evaluation, audit results,
+        nonconformity and corrective action status, EnMS improvement
+        forecast, and energy policy suitability. Presents energy
+        performance summary with traffic-light status indicators, EnPI
+        trend charts, CUSUM analysis, target achievement tracking, and
+        action plan progress. Generates management review minutes template
+        with decisions, actions, and follow-up items. Tracks review
+        outputs: changes to energy policy, EnPIs, objectives, targets,
+        and resource allocation.
+        Zero-hallucination: status aggregation from database queries,
+        trend charts from plotly, no LLM in performance calculations.
+      class: "ManagementReviewEngine"
+      file: "engines/management_review.py"
+      input_model: "ManagementReviewInput"
+      output_model: "ManagementReviewOutput"
+      required: true
+
+    - id: continual_improvement
+      name: "Continual Improvement Tracker Engine"
+      description: >-
+        Tracks and reports on continual improvement of energy performance
+        per ISO 50001 Clause 10.2. Calculates year-over-year EnPI
+        improvement trends with statistical significance testing.
+        Compares performance against targets and SBTi reduction pathways.
+        Generates certification readiness assessment with clause-by-clause
+        compliance score and identified gaps. Tracks improvement projects
+        through the PDCA cycle. Calculates cumulative energy savings and
+        carbon reductions since EnMS implementation. Generates continual
+        improvement evidence reports suitable for surveillance audits
+        and recertification assessments.
+        Zero-hallucination: improvement from EnPI trend regression,
+        target comparison from arithmetic, certification scoring from
+        clause checklist, no LLM.
+      class: "ContinualImprovementEngine"
+      file: "engines/continual_improvement.py"
+      input_model: "ContinualImprovementInput"
+      output_model: "ContinualImprovementOutput"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 EnMS workflows)
+  # ===========================================================================
+  workflows:
+    - id: initial_energy_review
+      name: "Initial Energy Review Workflow"
+      description: >-
+        5-phase workflow for initial ISO 50001 energy review per Clause 6.3:
+        Phase 1 - Data Collection (gather 12-24 months of energy consumption
+        data, production data, weather data, equipment inventory) ->
+        Phase 2 - Energy Analysis (analyse energy use by source, end use,
+        time period; calculate EUI benchmarks) -> Phase 3 - SEU Identification
+        (Pareto analysis, relevant variable mapping, personnel identification)
+        -> Phase 4 - Baseline Development (regression modelling, statistical
+        validation, normalisation) -> Phase 5 - EnPI Establishment (define
+        EnPIs per SEU and facility, set targets, generate energy review
+        report).
+      schedule: "on_demand"
+      estimated_duration_minutes: 480
+      phases: 5
+
+    - id: enpi_monitoring
+      name: "EnPI Monitoring Workflow"
+      description: >-
+        3-phase workflow for ongoing EnPI monitoring: Phase 1 - Data
+        Validation (check data completeness and quality against thresholds,
+        flag missing or anomalous readings, reconcile meter hierarchy) ->
+        Phase 2 - EnPI Calculation (calculate all configured EnPI types,
+        update rolling averages, compare against baseline and targets,
+        run CUSUM analysis) -> Phase 3 - Reporting (generate EnPI dashboard
+        with trend charts, CUSUM plots, alert summaries, and target
+        tracking).
+      schedule: "monthly"
+      estimated_duration_minutes: 60
+      phases: 3
+
+    - id: compliance_audit
+      name: "Compliance Audit Workflow"
+      description: >-
+        4-phase workflow for ISO 50001 compliance assessment: Phase 1 -
+        Scope Review (confirm EnMS scope and boundary, review interested
+        parties, update context) -> Phase 2 - Clause Assessment (assess
+        each ISO 50001 clause for conformity, identify nonconformities
+        and opportunities for improvement) -> Phase 3 - Corrective Action
+        (generate corrective action requests, assign responsibilities,
+        set closure deadlines) -> Phase 4 - Report (generate gap analysis
+        report, compliance dashboard, and audit findings summary).
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: management_review_workflow
+      name: "Management Review Workflow"
+      description: >-
+        3-phase workflow for management review per Clause 9.3: Phase 1 -
+        Input Compilation (gather all required inputs: energy performance,
+        EnPI trends, audit results, NC status, compliance evaluation,
+        policy review, resource needs) -> Phase 2 - Report Generation
+        (compile management review report with executive summary, energy
+        performance charts, action status, and improvement forecast) ->
+        Phase 3 - Decision Tracking (record management decisions, update
+        policy/targets if changed, allocate resources, set follow-up
+        actions).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 3
+
+    - id: action_plan_tracking
+      name: "Action Plan Tracking Workflow"
+      description: >-
+        3-phase workflow for action plan progress tracking: Phase 1 -
+        Status Update (collect implementation status for each action,
+        update completion percentage, record actual costs, flag overdue
+        items) -> Phase 2 - Financial Update (recalculate expected
+        savings based on implementation status, update budget tracking,
+        re-forecast payback periods) -> Phase 3 - Progress Report
+        (generate action plan dashboard with Gantt chart, budget tracking,
+        savings forecast, and risk register).
+      schedule: "monthly"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: savings_verification
+      name: "Savings Verification Workflow"
+      description: >-
+        4-phase workflow for verifying energy savings from implemented
+        actions per ISO 50015: Phase 1 - M&V Plan Review (confirm M&V
+        option per action, define measurement boundary, document baseline)
+        -> Phase 2 - Data Collection (collect pre and post energy data,
+        relevant variable data for adjustment) -> Phase 3 - Savings
+        Calculation (calculate adjusted baseline, determine actual savings,
+        quantify uncertainty per ASHRAE 14) -> Phase 4 - Verification
+        Report (generate savings verification report with actual vs
+        estimated comparison, uncertainty bounds, and persistence
+        assessment).
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 4
+
+    - id: surveillance_preparation
+      name: "Surveillance Audit Preparation Workflow"
+      description: >-
+        4-phase workflow for preparing for ISO 50001 surveillance audits:
+        Phase 1 - NC Review (ensure all nonconformities from previous
+        audits are closed with evidence) -> Phase 2 - Documentation
+        Review (verify all EnMS documents are current: policy, scope,
+        energy review, EnPIs, baselines, action plans, monitoring plan)
+        -> Phase 3 - Performance Evidence (compile energy performance
+        improvement evidence: EnPI trends, CUSUM charts, savings
+        verification reports, management review minutes) -> Phase 4 -
+        Readiness Report (generate surveillance readiness scorecard
+        with clause-by-clause status and identified risks).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: full_pdca_cycle
+      name: "Full PDCA Cycle Workflow"
+      description: >-
+        8-phase workflow for complete Plan-Do-Check-Act cycle: Phase 1 -
+        Context and Scope (review context, interested parties, scope) ->
+        Phase 2 - Energy Review (SEU identification, baseline, EnPIs) ->
+        Phase 3 - Planning (objectives, targets, action plans) ->
+        Phase 4 - Support (competence, awareness, communication, docs) ->
+        Phase 5 - Operation (operational controls, procurement, design) ->
+        Phase 6 - Monitoring (data collection, EnPI calculation, CUSUM) ->
+        Phase 7 - Evaluation (internal audit, compliance, management
+        review) -> Phase 8 - Improvement (corrective actions, continual
+        improvement evidence, certification readiness).
+      schedule: "annual"
+      estimated_duration_minutes: 960
+      phases: 8
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 EnMS templates)
+  # ===========================================================================
+  templates:
+    - id: energy_review_report
+      display_name: "Energy Review Report"
+      description: >-
+        Comprehensive energy review report per ISO 50001 Clause 6.3 with
+        energy consumption analysis by source and end use, SEU register,
+        relevant variable mapping, energy balance (Sankey diagram), and
+        improvement opportunity assessment.
+      format: "html"
+      template_file: "templates/energy_review_report.jinja2"
+      enabled: true
+
+    - id: enpi_dashboard
+      display_name: "EnPI Performance Dashboard"
+      description: >-
+        Energy Performance Indicator dashboard with trend charts for all
+        configured EnPIs, target tracking with traffic-light indicators,
+        rolling averages, benchmark comparisons, and improvement
+        percentage calculations.
+      format: "html"
+      template_file: "templates/enpi_dashboard.jinja2"
+      enabled: true
+
+    - id: cusum_analysis_report
+      display_name: "CUSUM Analysis Report"
+      description: >-
+        CUSUM chart report with cumulative savings/losses trend, alert
+        markers, annotated events (baseline changes, operational changes),
+        and statistical summary of performance shift detection.
+      format: "html"
+      template_file: "templates/cusum_analysis_report.jinja2"
+      enabled: true
+
+    - id: baseline_documentation
+      display_name: "Energy Baseline Documentation"
+      description: >-
+        ISO 50006-compliant baseline documentation with model equation,
+        regression statistics (R-squared, CV(RMSE), p-values), residual
+        plots, normalisation factors, outlier treatment, and assumption
+        register.
+      format: "html"
+      template_file: "templates/baseline_documentation.jinja2"
+      enabled: true
+
+    - id: gap_analysis_report
+      display_name: "ISO 50001 Gap Analysis Report"
+      description: >-
+        Clause-by-clause gap analysis report mapping current EnMS status
+        against ISO 50001:2018 requirements. Shows conformity status,
+        nonconformities, opportunities for improvement, and recommended
+        actions for each clause.
+      format: "html"
+      template_file: "templates/gap_analysis_report.jinja2"
+      enabled: true
+
+    - id: management_review_report
+      display_name: "Management Review Report"
+      description: >-
+        Management review report template per ISO 50001 Clause 9.3 with
+        all required inputs compiled: energy performance summary, EnPI
+        trends, audit results, NC status, compliance evaluation, policy
+        review, resource needs, and improvement forecast.
+      format: "html"
+      template_file: "templates/management_review_report.jinja2"
+      enabled: true
+
+    - id: action_plan_report
+      display_name: "Action Plan Report"
+      description: >-
+        Energy action plan report with financial analysis summary (NPV,
+        payback, carbon reduction per action), implementation timeline
+        (Gantt chart), budget tracking, M&V plan references, and status
+        dashboard.
+      format: "html"
+      template_file: "templates/action_plan_report.jinja2"
+      enabled: true
+
+    - id: monitoring_plan_document
+      display_name: "Energy Monitoring Plan"
+      description: >-
+        Energy data collection plan document per ISO 50001 Clause 6.6 with
+        meter inventory, measurement schedule, data quality criteria,
+        responsible personnel, calibration requirements, and data flow
+        diagrams.
+      format: "html"
+      template_file: "templates/monitoring_plan_document.jinja2"
+      enabled: true
+
+    - id: savings_verification_report
+      display_name: "Savings Verification Report"
+      description: >-
+        ISO 50015-compliant savings verification report with M&V option,
+        baseline model, actual vs predicted comparison, savings with
+        uncertainty bounds, persistence assessment, and lessons learned.
+      format: "html"
+      template_file: "templates/savings_verification_report.jinja2"
+      enabled: true
+
+    - id: certification_readiness
+      display_name: "Certification Readiness Scorecard"
+      description: >-
+        Certification readiness assessment with clause-by-clause
+        compliance score, identified gaps requiring closure, document
+        completeness checklist, and recommended timeline for
+        certification audit.
+      format: "html"
+      template_file: "templates/certification_readiness.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration and Preset
+        Loading -> Data Acquisition (energy data, production data, weather
+        data, meter hierarchy) -> SEU Identification (Pareto, relevant
+        variables) -> Baseline Development (regression, validation) ->
+        EnPI Calculation (all types, per-SEU) -> CUSUM Analysis (cumulative
+        tracking) -> Compliance Assessment (gap analysis) -> Action Plan
+        Evaluation (financial analysis, M&V) -> Report Generation
+        (management review, dashboards, documentation).
+      file: "integrations/pack_orchestrator.py"
+      required: true
+
+    - id: meter_data_bridge
+      name: "Meter Data Integration Bridge"
+      description: >-
+        Connects to smart metering infrastructure for automated energy
+        data collection. Supports half-hourly and 15-minute interval data.
+        Manages meter hierarchy with main meter and sub-meter relationships.
+        Validates meter readings against expected ranges and flags anomalies.
+        Supports BACnet/IP, Modbus, OPC-UA, and pulse counter protocols.
+      file: "integrations/meter_data_bridge.py"
+      required: true
+
+    - id: weather_bridge
+      name: "Weather Data Integration Bridge"
+      description: >-
+        Retrieves weather data for degree-day calculations. Connects to
+        weather station APIs for daily mean temperature. Calculates HDD
+        and CDD with configurable base temperatures. Provides TMY3 and
+        long-term average normalisation data. Supports automatic nearest-
+        station selection based on facility coordinates.
+      file: "integrations/weather_bridge.py"
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Routes data from AGENT-MRV agents for carbon calculations in
+        action plan evaluation. Uses AGENT-MRV-001 (stationary combustion),
+        AGENT-MRV-009/010 (Scope 2 electricity), and AGENT-MRV-013
+        (dual reporting) for emission factor lookups and carbon reduction
+        quantification per action item.
+      file: "integrations/mrv_bridge.py"
+      required: true
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for data intake. Routes utility
+        invoices through AGENT-DATA-001 (PDF extraction), meter data
+        through AGENT-DATA-002 (Excel/CSV normalisation), production
+        data through AGENT-DATA-003 (ERP connector), and applies data
+        quality profiling through AGENT-DATA-010.
+      file: "integrations/data_bridge.py"
+      required: true
+
+    - id: pack031_bridge
+      name: "PACK-031 Industrial Energy Audit Bridge"
+      description: >-
+        Bridges to PACK-031 for detailed energy audit data. Imports
+        energy audit results, equipment inventories, and measurement
+        data to support SEU identification and baseline development.
+        Converts audit findings into EnMS action plan items.
+      file: "integrations/pack031_bridge.py"
+      required: false
+
+    - id: pack032_bridge
+      name: "PACK-032 Building Energy Assessment Bridge"
+      description: >-
+        Bridges to PACK-032 for building energy assessment data. Imports
+        DEC/EPC ratings, building fabric data, and HVAC system
+        characteristics to support baseline development and EnPI
+        benchmarking for commercial and public buildings.
+      file: "integrations/pack032_bridge.py"
+      required: false
+
+    - id: pack033_bridge
+      name: "PACK-033 Quick Wins Identifier Bridge"
+      description: >-
+        Bridges to PACK-033 for quick wins identified during energy
+        review. Imports prioritised measure lists into EnMS action plan
+        with financial analysis, implementation timeline, and M&V
+        requirements. Maps quick wins to SEU improvement opportunities.
+      file: "integrations/pack033_bridge.py"
+      required: false
+
+    - id: certification_body_bridge
+      name: "Certification Body Integration Bridge"
+      description: >-
+        Prepares documentation packages for certification body
+        submissions. Generates audit evidence packages with EnMS
+        documentation, energy performance data, compliance records,
+        and improvement evidence in standardised formats.
+      file: "integrations/certification_body_bridge.py"
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        15-category system verification covering all 10 engines, baseline
+        model validity, EnPI calculation integrity, compliance assessment
+        currency, monitoring plan completeness, database connectivity,
+        agent dependency status, preset validation, template integrity,
+        and deployment readiness.
+      file: "integrations/health_check.py"
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration wizard: Facility Type Selection
+        (manufacturing / commercial_office / data_center / healthcare /
+        retail / logistics / food_processing / sme_multi_site) -> EnMS
+        Maturity Assessment (planning / implementing / operational /
+        certified / recertifying) -> Scope and Boundary Definition ->
+        Energy Data Import (utility bills, meter data, production data) ->
+        SEU Category Selection -> Baseline Period Confirmation -> EnPI
+        and Target Configuration -> Reporting Preferences.
+      file: "integrations/setup_wizard.py"
+      required: false
+
+    - id: alert_bridge
+      name: "Alert and Notification Bridge"
+      description: >-
+        Multi-channel notification and alert management for EnMS events.
+        Alerts on: EnPI threshold breaches, CUSUM alerts, data quality
+        issues, nonconformity closure deadlines, surveillance audit
+        reminders, management review scheduling, and action plan overdue
+        items. Supports email, Slack, Teams, and webhook channels.
+      file: "integrations/alert_bridge.py"
+      required: false
+
+  # ===========================================================================
+  # Presets - Facility-type specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: manufacturing_facility
+      name: "Manufacturing Facility Preset"
+      description: >-
+        Heavy manufacturing with process heat, compressed air, motors,
+        and production-normalised EnPIs. Focus on SEU-driven energy
+        management with production as primary relevant variable.
+      facility_type: "MANUFACTURING"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - degree_day_normalizer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/manufacturing_facility.yaml"
+
+    - id: commercial_office
+      name: "Commercial Office Preset"
+      description: >-
+        HVAC-dominated commercial office with weather-normalised baseline,
+        area-based and occupancy-based intensity EnPIs, and HDD/CDD as
+        primary relevant variables.
+      facility_type: "COMMERCIAL_OFFICE"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - degree_day_normalizer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/commercial_office.yaml"
+
+    - id: data_center
+      name: "Data Center Preset"
+      description: >-
+        Cooling-dominated data centre with PUE focus, IT load normalisation,
+        hourly monitoring granularity, and strict statistical criteria for
+        baseline model acceptance.
+      facility_type: "DATA_CENTER"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - degree_day_normalizer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/data_center.yaml"
+
+    - id: healthcare_facility
+      name: "Healthcare Facility Preset"
+      description: >-
+        24/7 healthcare facility with bed-day normalised EnPIs, patient
+        safety constraints, and extended data retention for long analysis
+        periods.
+      facility_type: "HEALTHCARE"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - degree_day_normalizer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/healthcare_facility.yaml"
+
+    - id: retail_chain
+      name: "Retail Chain Preset"
+      description: >-
+        Multi-site retail chain with store-level EnPIs, sales-area
+        normalisation, and centralised energy team coordination across
+        portfolio.
+      facility_type: "RETAIL"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - degree_day_normalizer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/retail_chain.yaml"
+
+    - id: logistics_warehouse
+      name: "Logistics Warehouse Preset"
+      description: >-
+        Logistics warehouse with throughput-normalised EnPIs, shift
+        pattern baseline adjustments, and focus on lighting and dock
+        operations as primary SEUs.
+      facility_type: "LOGISTICS"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - degree_day_normalizer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/logistics_warehouse.yaml"
+
+    - id: food_processing
+      name: "Food Processing Preset"
+      description: >-
+        Food processing plant with multi-variable baseline (production +
+        weather), seasonal product mix adjustment, and daily monitoring
+        granularity for process control.
+      facility_type: "FOOD_PROCESSING"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - degree_day_normalizer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/food_processing.yaml"
+
+    - id: sme_multi_site
+      name: "SME Multi-Site Preset"
+      description: >-
+        Simplified EnMS for small-medium enterprises with 2-5 sites.
+        Budget-conscious implementation with utility-bill-only data
+        collection, simple baselines, and quarterly reporting.
+      facility_type: "SME_MULTI_SITE"
+      enabled_engines:
+        - seu_identifier
+        - baseline_builder
+        - enpi_calculator
+        - cusum_analyzer
+        - compliance_assessor
+        - monitoring_planner
+        - action_plan_manager
+        - management_review
+        - continual_improvement
+      file: "config/presets/sme_multi_site.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - Energy-related MRV agents for carbon calculations
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from heating systems (boilers, furnaces)"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts energy data from utility bills and vendor invoices"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises meter data exports and equipment inventories"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to finance systems for energy cost and production data"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for weather and emission factors"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across meter data and billing data"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption readings"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills gaps in energy time series data for baseline analysis"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from meters through to EnPI reports"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Validates energy data against ISO 50001 quality requirements"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution for EnMS pipeline"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates EnMS data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises energy units (kWh, MJ, GJ, m2) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in baseline models and EnPI calculations"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links calculations to source evidence for audit trail"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-site EnMS operations"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors pipeline health and engine performance"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Pack Dependencies
+# ---------------------------------------------------------------------------
+agents_packs:
+  - id: PACK-031
+    name: "Industrial Energy Audit Pack"
+    description: "Detailed energy audit data for SEU analysis and baseline development"
+    required: false
+    version: "1.0.0"
+  - id: PACK-032
+    name: "Building Energy Assessment Pack"
+    description: "Building assessment data for commercial facility baseline and EnPIs"
+    required: false
+    version: "1.0.0"
+  - id: PACK-033
+    name: "Quick Wins Identifier Pack"
+    description: "Quick wins as action plan items for EnMS continual improvement"
+    required: false
+    version: "1.0.0"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 27
+  breakdown:
+    mrv_agents: 4
+    data_agents: 9
+    foundation_agents: 8
+    pack_dependencies: 3
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: pack034_iso50001_enms
+  migrations:
+    - id: "V256__pack034_enms_001"
+      description: "Core EnMS schema, facility profiles, scope definitions, and energy policy"
+    - id: "V257__pack034_enms_002"
+      description: "SEU register, energy use categories, relevant variables, and personnel"
+    - id: "V258__pack034_enms_003"
+      description: "Energy baseline tables (models, regression stats, adjustments, history)"
+    - id: "V259__pack034_enms_004"
+      description: "EnPI tables (definitions, values, targets, benchmarks, rolling averages)"
+    - id: "V260__pack034_enms_005"
+      description: "CUSUM analysis tables (cumulative sums, alerts, events, charts)"
+    - id: "V261__pack034_enms_006"
+      description: "Degree-day tables (HDD, CDD, base temps, weather stations, TMY data)"
+    - id: "V262__pack034_enms_007"
+      description: "Compliance tables (clause assessments, NCs, corrective actions, audits)"
+    - id: "V263__pack034_enms_008"
+      description: "Monitoring plan tables (meters, hierarchy, schedules, data quality)"
+    - id: "V264__pack034_enms_009"
+      description: "Action plan tables (items, financial analysis, M&V plans, status)"
+    - id: "V265__pack034_enms_010"
+      description: "Views, indexes, RLS policies, management review, seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  seu_identification:
+    max_energy_uses: 200
+    pareto_calculation_ms: 100
+    relevant_variable_analysis_ms: 500
+    target_duration_minutes: 5
+  baseline_development:
+    regression_per_model_ms: 500
+    model_comparison_ms: 200
+    outlier_detection_ms: 100
+    target_duration_minutes: 10
+  enpi_calculation:
+    enpi_per_indicator_ms: 50
+    rolling_average_ms: 100
+    benchmark_lookup_ms: 50
+    target_duration_minutes: 3
+  cusum_analysis:
+    cusum_per_period_ms: 20
+    chart_generation_ms: 500
+    target_duration_minutes: 2
+  degree_day:
+    hdd_cdd_per_month_ms: 30
+    base_temp_optimisation_ms: 2000
+    normalisation_per_period_ms: 50
+    target_duration_minutes: 3
+  compliance_assessment:
+    clause_assessment_ms: 100
+    gap_report_generation_ms: 1000
+    target_duration_minutes: 5
+  management_review:
+    input_compilation_ms: 2000
+    report_generation_ms: 3000
+    target_duration_minutes: 5
+  cache_hit_ratio_target: 0.80
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+  required_roles:
+    - energy_manager
+    - enms_coordinator
+    - facility_manager
+    - sustainability_officer
+    - internal_auditor
+    - top_management
+    - engineer
+    - viewer
+    - admin
+  audit_events:
+    - "enms.energy_review.started"
+    - "enms.energy_review.completed"
+    - "enms.seu.identified"
+    - "enms.seu.updated"
+    - "enms.baseline.created"
+    - "enms.baseline.adjusted"
+    - "enms.enpi.calculated"
+    - "enms.enpi.target_breached"
+    - "enms.cusum.alert_triggered"
+    - "enms.compliance.assessed"
+    - "enms.compliance.nc_raised"
+    - "enms.compliance.nc_closed"
+    - "enms.action_plan.created"
+    - "enms.action_plan.completed"
+    - "enms.action_plan.verified"
+    - "enms.management_review.completed"
+    - "enms.report.generated"
+    - "enms.report.exported"
+    - "enms.config.modified"
+    - "enms.preset.loaded"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_energy_data.json"
+    - "tests/fixtures/sample_production_data.json"
+    - "tests/fixtures/sample_weather_data.json"
+    - "tests/fixtures/sample_meter_hierarchy.json"
+    - "tests/fixtures/sample_baseline_models.json"
+
+# -----------------------------------------------------------------------------
+# Compliance
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "ISO_50001"
+      name: "ISO 50001:2018"
+      coverage: "Full clause coverage (4.1 through 10.2)"
+    - id: "ISO_50006"
+      name: "ISO 50006:2014"
+      coverage: "Energy baselines and EnPI methodology"
+    - id: "ISO_50015"
+      name: "ISO 50015:2014"
+      coverage: "M&V of energy performance for action plans"
+    - id: "EU_EED"
+      name: "EU Energy Efficiency Directive"
+      coverage: "Article 8 alternative compliance via ISO 50001 certification"
+    - id: "IPMVP"
+      name: "IPMVP Core Concepts"
+      coverage: "M&V Options A-D for savings verification"
+    - id: "ASHRAE_14"
+      name: "ASHRAE Guideline 14"
+      coverage: "Statistical criteria for baseline model validation"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "statsmodels>=0.14"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 100
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 10
+    recommended_connections: 30
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_emission_factor_database
+    - verify_weather_data_access
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+    new:
+      - "V256__pack034_enms_001"
+      - "V257__pack034_enms_002"
+      - "V258__pack034_enms_003"
+      - "V259__pack034_enms_004"
+      - "V260__pack034_enms_005"
+      - "V261__pack034_enms_006"
+      - "V262__pack034_enms_007"
+      - "V263__pack034_enms_008"
+      - "V264__pack034_enms_009"
+      - "V265__pack034_enms_010"
+
+  post_install:
+    - seed_iso50001_clauses
+    - seed_emission_factors
+    - seed_weather_stations
+    - seed_sector_benchmarks
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: SEUIdentifierEngine
+    file: engines/seu_identifier.py
+    description: "Pareto-based SEU identification with relevant variable mapping"
+  - name: BaselineBuilderEngine
+    file: engines/baseline_builder.py
+    description: "ISO 50006 baseline development with regression modelling"
+  - name: EnPICalculatorEngine
+    file: engines/enpi_calculator.py
+    description: "Multi-type EnPI calculation with target tracking and benchmarking"
+  - name: CUSUMAnalyzerEngine
+    file: engines/cusum_analyzer.py
+    description: "CUSUM performance monitoring with tabular and V-mask methods"
+  - name: DegreeDayNormalizerEngine
+    file: engines/degree_day_normalizer.py
+    description: "Variable-base degree-day weather normalisation with HDD/CDD"
+  - name: ComplianceAssessorEngine
+    file: engines/compliance_assessor.py
+    description: "ISO 50001 clause-by-clause gap analysis and NC tracking"
+  - name: MonitoringPlannerEngine
+    file: engines/monitoring_planner.py
+    description: "Energy data collection plan with meter hierarchy management"
+  - name: ActionPlanManagerEngine
+    file: engines/action_plan_manager.py
+    description: "Action plan management with NPV/IRR analysis and IPMVP M&V"
+  - name: ManagementReviewEngine
+    file: engines/management_review.py
+    description: "ISO 50001 Clause 9.3 management review report generation"
+  - name: ContinualImprovementEngine
+    file: engines/continual_improvement.py
+    description: "Continual improvement tracking and certification readiness"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: InitialEnergyReviewWorkflow
+    file: workflows/initial_energy_review.py
+    description: "5-phase energy review with SEU identification and baseline development"
+  - name: EnPIMonitoringWorkflow
+    file: workflows/enpi_monitoring.py
+    description: "3-phase monthly EnPI monitoring with data validation and CUSUM"
+  - name: ComplianceAuditWorkflow
+    file: workflows/compliance_audit.py
+    description: "4-phase compliance assessment with gap analysis and NC management"
+  - name: ManagementReviewWorkflow
+    file: workflows/management_review_workflow.py
+    description: "3-phase management review with input compilation and decision tracking"
+  - name: ActionPlanTrackingWorkflow
+    file: workflows/action_plan_tracking.py
+    description: "3-phase action plan progress tracking with financial update"
+  - name: SavingsVerificationWorkflow
+    file: workflows/savings_verification.py
+    description: "4-phase ISO 50015 savings verification with uncertainty analysis"
+  - name: SurveillancePreparationWorkflow
+    file: workflows/surveillance_preparation.py
+    description: "4-phase surveillance audit preparation with readiness scorecard"
+  - name: FullPDCACycleWorkflow
+    file: workflows/full_pdca_cycle.py
+    description: "8-phase end-to-end Plan-Do-Check-Act cycle"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: EnergyReviewReportTemplate
+    file: templates/energy_review_report.py
+    description: "Energy review report with SEU register and energy balance"
+  - name: EnPIDashboardTemplate
+    file: templates/enpi_dashboard.py
+    description: "EnPI performance dashboard with trend charts"
+  - name: CUSUMAnalysisReportTemplate
+    file: templates/cusum_analysis_report.py
+    description: "CUSUM analysis report with cumulative charts and alerts"
+  - name: BaselineDocumentationTemplate
+    file: templates/baseline_documentation.py
+    description: "ISO 50006 baseline documentation with regression statistics"
+  - name: GapAnalysisReportTemplate
+    file: templates/gap_analysis_report.py
+    description: "ISO 50001 gap analysis report with clause-by-clause status"
+  - name: ManagementReviewReportTemplate
+    file: templates/management_review_report.py
+    description: "Management review report per Clause 9.3"
+  - name: ActionPlanReportTemplate
+    file: templates/action_plan_report.py
+    description: "Action plan report with financial analysis and Gantt chart"
+  - name: MonitoringPlanDocumentTemplate
+    file: templates/monitoring_plan_document.py
+    description: "Energy monitoring plan document per Clause 6.6"
+  - name: SavingsVerificationReportTemplate
+    file: templates/savings_verification_report.py
+    description: "ISO 50015 savings verification report"
+  - name: CertificationReadinessTemplate
+    file: templates/certification_readiness.py
+    description: "Certification readiness scorecard with clause compliance"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: EnMSOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "10-phase pipeline with PDCA cycle orchestration and provenance"
+  - name: MRVEnMSBridge
+    file: integrations/mrv_bridge.py
+    description: "Routes EnMS carbon data to MRV agents for emission calculations"
+  - name: DataEnMSBridge
+    file: integrations/data_bridge.py
+    description: "Routes data intake to DATA agents for energy and production data"
+  - name: MeterDataBridge
+    file: integrations/meter_data_bridge.py
+    description: "Smart metering integration with hierarchy and reconciliation"
+  - name: WeatherBridge
+    file: integrations/weather_bridge.py
+    description: "Weather data retrieval for degree-day calculations"
+  - name: Pack031Bridge
+    file: integrations/pack031_bridge.py
+    description: "Imports energy audit results from PACK-031 into EnMS"
+  - name: Pack032Bridge
+    file: integrations/pack032_bridge.py
+    description: "Imports building assessment data from PACK-032 into EnMS"
+  - name: Pack033Bridge
+    file: integrations/pack033_bridge.py
+    description: "Imports quick wins from PACK-033 into EnMS action plan"
+  - name: CertificationBodyBridge
+    file: integrations/certification_body_bridge.py
+    description: "Certification body evidence package preparation"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "15-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided EnMS configuration wizard"
+  - name: AlertBridge
+    file: integrations/alert_bridge.py
+    description: "Multi-channel notification for EnMS events and alerts"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: manufacturing_facility
+    file: config/presets/manufacturing_facility.yaml
+    description: "Heavy manufacturing with production-normalised EnPIs"
+  - name: commercial_office
+    file: config/presets/commercial_office.yaml
+    description: "HVAC-dominated offices with weather-normalised baselines"
+  - name: data_center
+    file: config/presets/data_center.yaml
+    description: "Data centres with PUE focus and IT load normalisation"
+  - name: healthcare_facility
+    file: config/presets/healthcare_facility.yaml
+    description: "24/7 healthcare with bed-day normalised EnPIs"
+  - name: retail_chain
+    file: config/presets/retail_chain.yaml
+    description: "Multi-site retail with store-level EnPIs"
+  - name: logistics_warehouse
+    file: config/presets/logistics_warehouse.yaml
+    description: "Logistics with throughput-normalised EnPIs"
+  - name: food_processing
+    file: config/presets/food_processing.yaml
+    description: "Food processing with multi-variable baselines"
+  - name: sme_multi_site
+    file: config/presets/sme_multi_site.yaml
+    description: "Simplified SME EnMS across 2-5 sites"

@@ -1,0 +1,198 @@
+# =============================================================================
+# PACK-035 Energy Benchmark Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for Greenfield House, a fictional medium-sized
+# multi-tenant commercial office building in Frankfurt, Germany.
+# This configuration demonstrates all engines with realistic energy data
+# for a 12-month benchmarking period.
+#
+# Building: Greenfield House
+# Owner: Greenfield Immobilien GmbH
+# Location: Frankfurt am Main, Germany (50.11 N, 8.68 E)
+# Built: 2005, last refurbished 2018
+# Floors: 8 above ground, 2 basement (parking)
+# GIA: 12,500 m2 (office 9,500 m2, retail ground floor 1,800 m2, common 1,200 m2)
+# Occupants: ~650 typical (80% occupancy)
+# Operating Hours: 60 hours/week (Mon-Fri 07:00-19:00, Sat partial)
+# Energy Carriers: Electricity (grid) + Natural Gas (heating/DHW)
+# Annual Energy: Electricity 1,125 MWh + Gas 875 MWh = 2,000 MWh total
+# Site EUI: 160 kWh/m2/yr (good practice for German office)
+# Climate Zone: ASHRAE 5A (Koppen Cfb)
+# Weather Station: Frankfurt Airport (EDDF / 106370)
+# Reporting Year: 2025
+# =============================================================================
+
+# --- Facility Details ---
+facility_id: "DEMO-FFM-001"
+facility_name: "Greenfield House"
+building_type: "OFFICE"
+climate_zone: "ASHRAE_5A"
+country_code: "DE"
+currency: "EUR"
+
+# --- Building Characteristics ---
+floor_area_m2: 12500.0
+floor_area_type: "GIA"
+year_built: 2005
+year_last_refurbished: 2018
+number_of_floors: 8
+operating_hours_per_week: 60.0
+occupancy_pct: 80.0
+number_of_occupants: 650
+latitude: 50.11
+longitude: 8.68
+reporting_year: 2025
+
+# --- Energy Costs ---
+electricity_cost_per_kwh: 0.32
+gas_cost_per_kwh: 0.09
+
+# --- EUI Configuration ---
+eui:
+  accounting_boundary: "site"
+  floor_area_type: "GIA"
+  include_renewables: true
+  renewable_offset_method: "net_metered"
+  rolling_months: 12
+  include_plug_loads: true
+  include_process_loads: false
+  include_exterior_loads: true
+  data_frequency: "MONTHLY"
+  minimum_data_coverage_pct: 95.0
+  energy_carriers:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+
+# --- Weather Normalisation ---
+weather:
+  enabled: true
+  normalisation_method: "CHANGE_POINT"
+  base_temp_heating_c: 15.5
+  base_temp_cooling_c: 18.0
+  min_r_squared: 0.75
+  max_cv_rmse: 0.25
+  weather_source: "noaa_isd"
+  weather_station_id: "106370"
+  tmy_source: "meteonorm_tmy"
+  degree_day_method: "mean_temperature"
+  min_months_regression: 12
+
+# --- Peer Comparison ---
+peer_comparison:
+  enabled: true
+  benchmark_sources:
+    - "ENERGY_STAR"
+    - "CIBSE_TM46"
+    - "DIN_V_18599"
+  peer_group_criteria:
+    - "building_type"
+    - "climate_zone"
+    - "floor_area_band"
+  min_peer_count: 10
+  include_energy_star_score: true
+  percentile_display: [10, 25, 50, 75, 90]
+  include_quartile_analysis: true
+  include_best_practice_target: true
+  normalise_for_hours: true
+
+# --- Portfolio (disabled for single-building demo) ---
+portfolio:
+  enabled: false
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: true
+  disaggregation_method: "end_use_split"
+  end_use_categories:
+    - "heating"
+    - "cooling"
+    - "ventilation"
+    - "lighting"
+    - "dhw"
+    - "plug_loads"
+    - "other"
+  min_gap_threshold_pct: 5.0
+  link_to_measures: true
+  include_savings_potential: true
+  target_source: "peer_top_quartile"
+  include_payback_period: true
+
+# --- Rating ---
+rating:
+  enabled: true
+  rating_systems:
+    - "EPC_EU"
+    - "ENERGY_STAR"
+    - "CRREM"
+  epc_methodology: "operational"
+  epc_country_annex: "DE"
+  crrem_pathway_year: 2050
+  crrem_scenario: "1.5C"
+  include_regulatory_compliance: true
+  mees_threshold_grade: "E"
+
+# --- Trend Analysis ---
+trend:
+  enabled: true
+  rolling_window_months: 12
+  cusum_enabled: true
+  cusum_threshold_kwh_m2: 8.0
+  spc_enabled: true
+  spc_sigma: 2.0
+  yoy_comparison: true
+  seasonality_detection: true
+  alert_enabled: true
+  alert_channels:
+    - "EMAIL"
+  alert_threshold_pct: 10.0
+  alert_recipients:
+    - "energy.manager@greenfield-demo.example"
+
+# --- Report ---
+report:
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "JSON"
+  include_methodology: true
+  include_provenance: true
+  include_data_quality_notes: true
+  include_recommendations: true
+  include_executive_summary: true
+  include_charts: true
+  language: "de"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_ttl_seconds: 3600
+  max_facilities: 1
+  parallel_processing: false
+  max_parallel_workers: 1
+  memory_ceiling_mb: 1024
+  batch_size: 500
+  calculation_timeout_seconds: 120
+  weather_data_cache_enabled: true
+  lazy_loading: true
+
+# --- Security ---
+security:
+  roles:
+    - "energy_manager"
+    - "facility_manager"
+    - "viewer"
+    - "admin"
+  data_classification: "INTERNAL"
+  audit_logging: true
+  pii_redaction: true
+  encryption_at_rest: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true

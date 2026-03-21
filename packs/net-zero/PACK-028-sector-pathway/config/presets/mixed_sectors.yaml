@@ -1,0 +1,175 @@
+# =============================================================================
+# PACK-028 Sector Pathway Pack - Mixed Sectors Preset
+# =============================================================================
+# Configuration for multi-sector conglomerates operating across SDA-eligible
+# and non-SDA sectors. Uses sector-weighted composite intensity with ACA
+# fallback for non-SDA divisions. Supports parallel SDA pathways for
+# eligible divisions and consolidated pathway reporting.
+#
+# Typical use cases:
+#   - Industrial conglomerates (steel + chemicals + power)
+#   - Diversified energy companies (power + oil & gas + renewables)
+#   - Multi-modal transport groups (aviation + shipping + road)
+#   - Real estate + construction groups
+#   - Holding companies with manufacturing + services divisions
+#   - Private equity portfolios with mixed industrial assets
+#
+# Key sector characteristics:
+#   - Sector-weighted composite intensity metric (tCO2e/M EUR revenue)
+#   - Multiple SDA pathways for eligible divisions
+#   - ACA pathway for non-SDA divisions
+#   - Consolidated vs. divisional pathway reporting
+#   - Cross-sector synergies (shared CCS infrastructure, green hydrogen)
+#   - Portfolio-level optimization opportunities
+#   - Intercompany elimination for shared services emissions
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+primary_sector: "MIXED"
+secondary_sectors:
+  - "STEEL"
+  - "CHEMICALS"
+  - "POWER"
+  - "BUILDINGS_COMMERCIAL"
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+
+# --- SBTi SDA ---
+sbti_sda:
+  sbti_sda_enabled: false
+  sbti_sector_category: "STEEL"
+  sbti_pathway: "CELSIUS_1_5"
+  sbti_target_year: 2030
+  sbti_net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  sbti_submission_planned: true
+  flag_pathway_enabled: false
+
+# --- IEA NZE ---
+iea_nze:
+  iea_nze_enabled: true
+  iea_scenario: "NZE"
+  iea_region: "Global"
+  iea_milestone_tracking: true
+  iea_technology_outlook: true
+
+# --- IPCC AR6 ---
+ipcc:
+  ipcc_pathway: "C1"
+  ipcc_overshoot: "limited"
+  ipcc_gwp_metric: "GWP100"
+
+# --- Intensity ---
+intensity:
+  baseline_intensity: 0.0
+  baseline_year: 2019
+  intensity_metric: "tCO2e/M EUR revenue"
+  intensity_boundary: "scope_1_2_3"
+  production_unit: "M EUR revenue"
+  production_forecast_enabled: true
+  production_growth_rate_pct: 2.0
+
+# --- Convergence ---
+convergence:
+  convergence_model: "linear"
+  convergence_rate: 0.05
+  catch_up_period: 10
+  inflection_year: null
+  step_years: null
+  step_reductions_pct: null
+
+# --- Technology Roadmap ---
+technology:
+  technology_roadmap_enabled: true
+  trl_threshold: 7
+  capex_phasing: "linear"
+  planning_horizon_years: 15
+  critical_materials_risk: true
+  dependency_analysis: true
+  iea_milestone_mapping: true
+  max_parallel_transitions: 10
+  s_curve_adoption: true
+
+# --- MACC ---
+macc:
+  macc_enabled: true
+  carbon_price_floor: 60.0
+  carbon_price_ceiling: 250.0
+  abatement_potential_target: 0.80
+  lever_interaction_modeling: true
+  implementation_sequencing: true
+  discount_rate_pct: 8.0
+  max_levers: 80
+  include_negative_cost: true
+
+# --- Benchmarking ---
+benchmark:
+  benchmark_peer_enabled: true
+  benchmark_leader_enabled: true
+  benchmark_iea_enabled: true
+  peer_selection: "auto"
+  leader_percentile: 15
+  peer_group_size: 20
+  sbti_validated_only: false
+  regulatory_benchmarks:
+    - "EU_ETS"
+    - "SBTi_SDA"
+    - "IEA_NZE"
+  benchmark_dimensions:
+    - "intensity_rank"
+    - "reduction_rate"
+    - "sector_composition"
+    - "sda_coverage"
+    - "cross_sector_synergies"
+    - "target_ambition"
+    - "pathway_gap"
+
+# --- Scenarios ---
+scenarios:
+  scenarios_enabled:
+    - "NZE"
+    - "WB2C"
+    - "2C"
+    - "APS"
+    - "STEPS"
+  scenario_sensitivity: true
+  carbon_price_sensitivity: true
+  technology_sensitivity: true
+  monte_carlo_runs: 2000
+  confidence_interval_pct: 90.0
+  risk_return_analysis: true
+  optimal_pathway_recommendation: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "ESRS"
+    - "GRI"
+    - "SASB"
+  reporting_frequency: "quarterly"
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 10
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 8
+  timeout_seconds: 600
+  batch_size: 2000
+  memory_limit_mb: 8192

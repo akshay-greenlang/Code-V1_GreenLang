@@ -1,0 +1,354 @@
+# =============================================================================
+# PACK-027 Enterprise Net Zero Pack - Agriculture & Food Preset
+# =============================================================================
+# Sector-specific configuration for large agriculture, food processing, and
+# agri-food enterprises. Scope 1 is high (45%) from on-farm emissions --
+# enteric fermentation, manure management, soil N2O, and agricultural machinery.
+# FLAG targets are mandatory for organizations with >20% land use emissions.
+# Supply chain (S3 Cat 1) includes raw agricultural commodity procurement.
+# This preset combines all 11 FLAG commodity categories with full MRV-006
+# (land use) and MRV-008 (agricultural emissions) agent activation.
+#
+# Sector: Agriculture, Food Processing, Agri-food, Animal Husbandry
+# Consolidation: Operational control (farm and processing operations)
+# Data quality: Level 2 target (+/-5%, improving toward Level 1)
+# SBTi pathway: MIXED (ACA + FLAG mandatory)
+# Key S3 categories: Cat 1 (agricultural inputs, 30-40%), Cat 3 (fuel WTT),
+#                     Cat 4 (upstream transport), Cat 10 (processing of sold)
+#
+# Target organizations:
+#   - Cargill, ADM, Bunge, Louis Dreyfus (commodity traders)
+#   - JBS, Tyson, BRF (animal protein)
+#   - Fonterra, Danone (dairy)
+#   - Syngenta, Corteva, BASF Agricultural Solutions (agri inputs)
+#   - Wilmar, Olam (palm oil, tropical commodities)
+#   - Yara, CF Industries (fertilizers)
+#
+# Key decarbonization levers:
+#   - Regenerative agriculture practices (soil carbon sequestration)
+#   - Enteric fermentation reduction (feed additives, 3-NOP/Bovaer)
+#   - Manure management improvement (biogas capture, composting)
+#   - Nitrogen fertilizer optimization (precision application, inhibitors)
+#   - Deforestation-free supply chains (zero deforestation by 2025)
+#   - Rice paddy water management (AWD - alternate wetting and drying)
+#   - Renewable energy on farm (solar, biogas, wind)
+#   - Precision agriculture (variable rate application, drones, sensors)
+#
+# Regulatory exposure:
+#   - EUDR (deforestation-free products regulation)
+#   - CAP eco-schemes (EU Common Agricultural Policy)
+#   - CSRD/ESRS E1 + E4 (biodiversity) + E5 (circular economy)
+#   - SBTi FLAG Guidance V1.1 (mandatory if >20% land use emissions)
+#   - National methane reduction commitments (Global Methane Pledge)
+#   - CDP Climate Change + CDP Forests
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "AGRICULTURE"
+  region: "GLOBAL"
+  headquarters_country: "US"
+  operating_countries: []
+  entity_count: 40
+  facility_count: 200
+  fiscal_year_end: "12-31"
+  erp_system: "SAP_S4HANA"
+  is_large_accelerated_filer: false
+  csrd_in_scope: true
+
+# --- Multi-Entity Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  entity_count: 40
+  include_joint_ventures: true
+  include_associates: false
+  intercompany_elimination: true
+  base_year_recalculation_threshold_pct: 5.0
+  mid_year_acquisition_prorata: true
+  reporting_currency: "USD"
+  alignment_with_financial_reporting: true
+
+# --- Data Quality (Level 2 target, improving toward Level 1) ---
+data_quality:
+  target_tier: "LEVEL_2"
+  minimum_tier: "LEVEL_4"
+  accuracy_target_pct: 5.0
+  data_completeness_target_pct: 90.0
+  emission_factor_sources:
+    - "IPCC_AR6"
+    - "EPA_2024"
+    - "DEFRA_2024"
+    - "FAO_2024"
+    - "ecoinvent_3.10"
+  require_supplier_specific_data: true
+  supplier_specific_threshold_count: 30
+  allow_spend_based_fallback: true
+  data_improvement_plan_enabled: true
+  dq_monitoring_frequency: "MONTHLY"
+
+# --- Scope Configuration (Farm S1 + supply chain S3, FLAG agents) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_agents:
+    - "MRV-001"  # Stationary combustion (processing, grain drying)
+    - "MRV-002"  # Refrigerants (cold storage)
+    - "MRV-003"  # Mobile combustion (farm machinery, fleet)
+    - "MRV-005"  # Fugitive emissions (biogas, fermentation)
+    - "MRV-006"  # Land use emissions (cropland, pasture, conversion)
+    - "MRV-007"  # Waste treatment (processing waste)
+    - "MRV-008"  # Agricultural emissions (enteric, manure, soil N2O, rice)
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope2_agents:
+    - "MRV-009"
+    - "MRV-010"
+    - "MRV-011"
+    - "MRV-012"
+    - "MRV-013"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  scope3_priority_categories: [1, 3, 4, 10]
+  scope3_default_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "supplier_specific"
+    cat_2: "spend_based"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_5: "activity_based"
+    cat_6: "activity_based"
+    cat_7: "hybrid"
+    cat_8: "average_data"
+    cat_9: "activity_based"
+    cat_10: "activity_based"
+    cat_11: "average_data"
+    cat_12: "average_data"
+    cat_13: "average_data"
+    cat_14: "spend_based"
+    cat_15: "spend_based"
+    default: "hybrid"
+  scope3_materiality_threshold_pct: 1.0
+  scope3_total_exclusion_max_pct: 5.0
+  gases_included: ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
+
+# --- SBTi Target (MIXED: ACA + FLAG mandatory) ---
+target:
+  sbti_pathway: "MIXED"
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_scope1_2_reduction_pct: 42.0
+  near_term_scope3_reduction_pct: 25.0
+  long_term_reduction_pct: 90.0
+  scope1_2_coverage_pct: 95.0
+  scope3_near_term_coverage_pct: 67.0
+  scope3_long_term_coverage_pct: 90.0
+  sda_sectors: []
+  flag_enabled: true
+  flag_commodities:
+    - "CATTLE"
+    - "DAIRY"
+    - "SOY"
+    - "PALM_OIL"
+    - "RICE"
+    - "WHEAT"
+    - "COCOA"
+    - "COFFEE"
+    - "RUBBER"
+    - "TIMBER"
+    - "COTTON"
+  sbti_submission_planned: true
+  sbti_committed: true
+  sbti_target_validated: false
+  five_year_review_schedule: true
+
+# --- Scenario Modeling (Agriculture-specific transitions) ---
+scenarios:
+  enabled: true
+  scenarios:
+    - "AGGRESSIVE_1_5C"
+    - "MODERATE_2C"
+    - "CONSERVATIVE_BAU"
+  monte_carlo_runs: 10000
+  confidence_intervals: [10, 25, 50, 75, 90]
+  sensitivity_method: "sobol"
+  technology_focus:
+    - "regenerative_agriculture"
+    - "precision_farming"
+    - "feed_additives"
+    - "biogas_capture"
+    - "renewable_energy"
+    - "nitrogen_optimization"
+  stranded_asset_analysis: false
+  custom_scenario_enabled: true
+
+# --- Carbon Pricing ---
+carbon_pricing:
+  enabled: true
+  approach: "SHADOW_PRICE"
+  price_usd_per_tco2e: 60.0
+  price_escalation_pct_per_year: 5.0
+  price_scenario: "MEDIUM"
+  apply_to_capex: true
+  apply_to_bu_allocation: true
+  cbam_enabled: false
+  ets_enabled: false
+  carbon_adjusted_financials: true
+
+# --- Scope 4 Avoided Emissions ---
+scope4:
+  enabled: false
+  methodology: "WBCSD"
+  product_categories: []
+  baseline_scenario: "market_average"
+  include_rebound_effects: true
+  attribution_methodology: "proportional"
+
+# --- Supply Chain (Farm suppliers, input providers, processors) ---
+supply_chain:
+  enabled: true
+  tier_depth: 4
+  tier1_critical_count: 30
+  tier2_strategic_count: 150
+  tier3_managed_count: 800
+  cdp_supply_chain_integration: true
+  ecovadis_integration: false
+  wbcsd_pact_integration: true
+  engagement_program_enabled: true
+  sbti_cascade_target: true
+  commodity_tracking:
+    - "palm_oil"
+    - "soy"
+    - "cocoa"
+    - "coffee"
+    - "cotton"
+    - "rubber"
+    - "timber"
+    - "cattle"
+    - "dairy"
+    - "rice"
+
+# --- External Assurance ---
+assurance:
+  level: "LIMITED"
+  standard: "ISAE_3410"
+  scope_of_assurance:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  workpaper_generation: true
+  sample_selection_automated: true
+  management_assertion_template: true
+  target_auditor_hours: 100
+  reasonable_assurance_timeline_year: 2028
+
+# --- Financial Integration ---
+financial_integration:
+  enabled: true
+  carbon_adjusted_pnl: true
+  carbon_balance_sheet: true
+  ebitda_carbon_intensity: true
+  product_level_footprint: true
+  eu_taxonomy_alignment: true
+  esrs_e1_8_disclosure: true
+  esrs_e1_9_disclosure: true
+  green_bond_screening: false
+  stranded_asset_assessment: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+    - "HTML"
+    - "JSON"
+    - "MARKDOWN"
+  templates:
+    - "ghg_inventory_report"
+    - "sbti_target_submission"
+    - "cdp_climate_response"
+    - "tcfd_report"
+    - "executive_dashboard"
+    - "supply_chain_heatmap"
+    - "scenario_comparison"
+    - "assurance_statement"
+    - "board_climate_report"
+    - "regulatory_filings"
+  regulatory_frameworks:
+    - "GHG_PROTOCOL"
+    - "SBTI"
+    - "CDP"
+    - "TCFD_ISSB"
+    - "CSRD_ESRS"
+    - "ISO_14064"
+    - "EU_TAXONOMY"
+  language: "en"
+  secondary_languages: ["pt", "es"]
+  review_workflow_enabled: true
+  watermark_draft: true
+  board_reporting_frequency: "QUARTERLY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 7200
+  max_concurrent_calcs: 16
+  timeout_seconds: 300
+  batch_size: 5000
+  memory_limit_mb: 16384
+  monte_carlo_parallelism: 8
+  entity_parallel_processing: true
+  lightweight_mode: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  immutable_log: true
+
+# --- Scorecard (Agriculture/Food KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "COMPREHENSIVE"
+  dimensions:
+    - "governance_oversight"
+    - "baseline_completeness"
+    - "target_ambition"
+    - "scope3_coverage"
+    - "data_quality"
+    - "reduction_progress"
+    - "supply_chain_engagement"
+    - "scenario_resilience"
+    - "assurance_readiness"
+    - "regulatory_compliance"
+    - "financial_integration"
+    - "stakeholder_communication"
+  benchmark_enabled: true
+  peer_group: "SECTOR_AND_SCALE"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_tonne_product"
+    - "flag_target_progress"
+    - "deforestation_free_sourcing_pct"
+    - "methane_intensity_livestock"
+    - "nitrogen_use_efficiency"
+    - "regenerative_agriculture_adoption_pct"
+    - "yoy_reduction_rate"
+    - "sbti_criteria_compliance"
+    - "supplier_engagement_rate"
+    - "assurance_coverage_pct"
+    - "carbon_price_coverage"
+  target_years: [2025, 2027, 2030, 2035, 2040, 2045, 2050]
+  tpi_alignment_check: true

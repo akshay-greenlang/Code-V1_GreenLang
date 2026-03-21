@@ -1,0 +1,226 @@
+# =============================================================================
+# PACK-030 Net Zero Reporting Pack - SBTi Validation Ready Preset
+# =============================================================================
+# Configuration optimized for preparing SBTi target validation submission
+# and annual progress disclosure. Prioritizes SBTi compliance checks,
+# evidence bundle generation for target validation, and progress reporting
+# aligned with the SBTi Corporate Net-Zero Standard v1.0.
+#
+# SBTi Annual Progress Reporting Requirements:
+#   - Target description: Near-term and long-term targets with base year
+#   - Progress table: Year-by-year emissions vs target pathway
+#   - Variance explanation: Analysis of deviations from expected trajectory
+#   - Scope coverage: Scope 1+2 (>=95%) and Scope 3 (>=67%) coverage
+#   - Methodology: GHG Protocol or ISO 14064 compliant
+#   - Governance: Board or C-suite oversight confirmation
+#   - Public disclosure: Via CDP or equivalent public channel
+#
+# SBTi Validation Criteria (21 criteria):
+#   - C1-C4: Boundary and scope coverage
+#   - C5-C7: Near-term target ambition and timeframe
+#   - C8-C10: Long-term target ambition and Scope 3
+#   - C11-C12: Base year and recalculation policy
+#   - C13-C16: Methodology, bioenergy, offsets, renewable energy
+#   - C17-C21: Progress reporting, governance, public commitment
+#
+# Typical use cases:
+#   - Organizations preparing SBTi near-term target submission
+#   - Companies preparing SBTi net-zero target submission
+#   - Annual SBTi progress disclosure preparation
+#   - Re-validation after structural changes (M&A, divestiture)
+#   - Financial institutions with SBTi portfolio alignment commitments
+#
+# Key characteristics:
+#   - SBTi as primary framework with CDP and TCFD secondary
+#   - Full 21-criteria validation checks enabled
+#   - Evidence bundle for SBTi target validation submission
+#   - PDF + JSON output for submission and API integration
+#   - Progress tracking against near-term and long-term targets
+#   - PACK-029 integration for interim target progress data
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+reporting_year: 2025
+baseline_year: 2019
+fiscal_year_end_month: 12
+
+# --- Framework Configuration ---
+frameworks:
+  frameworks_enabled:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+  primary_framework: "SBTi"
+  secondary_frameworks:
+    - "CDP"
+    - "TCFD"
+  framework_outputs:
+    - format: "PDF"
+      template: "sbti_progress_report"
+      enabled: true
+    - format: "JSON"
+      template: "sbti_submission_format"
+      enabled: true
+    - format: "Excel"
+      template: "sbti_data_tables"
+      enabled: true
+
+# --- Output Settings ---
+output_formats:
+  - "PDF"
+  - "JSON"
+  - "Excel"
+  - "HTML"
+languages:
+  - "en"
+
+# --- Branding ---
+branding:
+  style: "corporate"
+  logo_path: null
+  primary_color: "#1E3A8A"
+  secondary_color: "#3B82F6"
+  font_family: "Arial, Helvetica, sans-serif"
+  include_charts: true
+  include_toc: true
+  include_page_numbers: true
+  include_headers_footers: true
+  custom_css: null
+
+# --- Data Aggregation ---
+data_aggregation:
+  pack_021_requirement: "required"
+  pack_022_requirement: "required"
+  pack_028_requirement: "recommended"
+  pack_029_requirement: "required"
+  gl_sbti_app_requirement: "required"
+  gl_cdp_app_requirement: "recommended"
+  gl_tcfd_app_requirement: "optional"
+  gl_ghg_app_requirement: "required"
+  auto_reconciliation: true
+  reconciliation_tolerance_pct: 0.5
+  gap_detection_enabled: true
+  lineage_tracking_enabled: true
+  lineage_diagram_format: "svg"
+  completeness_scoring: true
+  parallel_fetching: true
+  fetch_timeout_seconds: 30
+  retry_count: 3
+  circuit_breaker_threshold: 5
+
+# --- Narrative Generation ---
+narrative:
+  narrative_quality: "high"
+  citation_management_enabled: true
+  citation_format: "footnote"
+  hyperlinked_citations: true
+  consistency_validation_enabled: true
+  consistency_target_pct: 95.0
+  harmonization_suggestions: true
+  human_review_required: true
+  review_workflow_enabled: true
+  max_narrative_length_words: 5000
+
+# --- Translation ---
+translation:
+  languages:
+    - "en"
+  primary_language: "en"
+  translation_service: "native"
+  climate_glossary_enabled: true
+  preserve_citations: true
+  quality_validation_enabled: false
+  quality_target_pct: 98.0
+
+# --- XBRL/iXBRL ---
+xbrl:
+  xbrl_enabled: false
+  sec_taxonomy_version: "2024"
+  csrd_taxonomy_version: "2024"
+  issb_taxonomy_version: "2024"
+  taxonomy_validation_enabled: false
+  ixbrl_enabled: false
+  taxonomy_cache_enabled: false
+  taxonomy_cache_ttl_hours: 168
+  auto_tag_detection: false
+
+# --- Assurance ---
+assurance:
+  assurance_level: "limited"
+  include_evidence_bundle: true
+  include_provenance: true
+  include_lineage_diagrams: true
+  include_methodology_docs: true
+  include_control_matrix: true
+  include_assumption_register: true
+  include_change_log: true
+  evidence_bundle_format: "zip"
+  isae_3410_compliance: true
+  isae_3000_compliance: false
+
+# --- Dashboard ---
+dashboard:
+  executive_dashboard_enabled: true
+  framework_dashboards_enabled: true
+  stakeholder_views_enabled: true
+  default_stakeholder_view: "board"
+  framework_coverage_heatmap: true
+  deadline_countdown: true
+  drill_down_enabled: true
+  interactive_charts: true
+  responsive_design: true
+  export_to_pdf: true
+  auto_refresh_interval_seconds: 0
+
+# --- Validation ---
+validation:
+  schema_validation_enabled: true
+  completeness_validation_enabled: true
+  consistency_validation_enabled: true
+  consistency_strictness: "strict"
+  quality_scoring_enabled: true
+  minimum_quality_score: 90.0
+  metric_reconciliation: true
+  metric_tolerance_pct: 0.1
+  narrative_spell_check: true
+  narrative_grammar_check: true
+  block_publish_on_critical: true
+
+# --- Notifications ---
+notifications:
+  email_notifications_enabled: true
+  slack_notifications_enabled: false
+  teams_notifications_enabled: false
+  webhook_notifications_enabled: false
+  notification_recipients: []
+  slack_channel: null
+  webhook_url: null
+  deadline_reminders:
+    - 90
+    - 60
+    - 30
+    - 14
+    - 7
+  notify_on_generation: true
+  notify_on_validation_failure: true
+  notify_on_approval: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  cache_hit_ratio_target: 95.0
+  max_concurrent_reports: 6
+  report_generation_timeout_seconds: 10
+  api_response_timeout_ms: 200
+  pdf_render_timeout_seconds: 5
+  parallel_framework_execution: true
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

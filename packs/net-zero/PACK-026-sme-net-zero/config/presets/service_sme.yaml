@@ -1,0 +1,214 @@
+# =============================================================================
+# PACK-026 SME Net Zero Pack - Service SME Preset
+# =============================================================================
+# Sector-specific configuration for service-sector SMEs including technology,
+# consulting, professional services, IT agencies, and similar knowledge-based
+# businesses. Emissions profile is S3-dominant (85%): Category 1 (purchased
+# services/goods), Category 6 (business travel), Category 7 (employee
+# commuting). Scope 1+2 is relatively small (5% S1, 10% S2 typically).
+#
+# Sector: Technology, consulting, professional services
+# Data tier: SILVER (basic activity data)
+# Scope focus: S2 (electricity) + S3 (Cat 1, 6, 7 dominant)
+# Emissions profile: 15% S1+2, 85% S3
+# Quick wins: Renewable PPA, remote work, supplier engagement
+# Certification: B Corp Climate Collective
+#
+# Key actions:
+#   - Office energy efficiency (LED, smart thermostats)
+#   - Business travel reduction (virtual meetings, rail over air)
+#   - Remote/hybrid work policies (reduce commuting)
+#   - Renewable electricity procurement (PPA or green tariff)
+#   - Purchased services optimization (sustainable procurement)
+#   - Cloud/data center efficiency
+#
+# Typical use cases:
+#   - IT consulting and software development firms
+#   - Management consulting and advisory firms
+#   - Legal and accounting practices
+#   - Design and creative agencies
+#   - Marketing and PR firms
+#   - Recruitment and staffing agencies
+#   - SaaS companies and tech startups
+#   - Engineering and architecture firms
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sme_size: "SMALL"
+  sector: "SERVICES"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  accounting_software: "XERO"
+  number_of_sites: 2
+  has_fleet: false
+  has_production_facility: false
+
+# --- Data Quality (SILVER: Basic activity data) ---
+data_quality:
+  tier: "SILVER"
+  allow_industry_averages: true
+  allow_spend_based_estimation: true
+  require_utility_bills: true
+  require_supplier_data: false
+  data_completeness_target_pct: 65.0
+  emission_factor_source: "DEFRA_2024"
+  data_improvement_plan: true
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  base_year_recalculation_threshold_pct: 10.0
+  include_all_sites: true
+
+# --- Scope Configuration (S3-dominant: Cat 1, 6, 7) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_estimation_method: "activity_based"
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 6, 7]
+  scope3_method: "SPEND_BASED"
+  scope3_category_methods:
+    cat_1: "spend_based"
+    cat_6: "activity_based"
+    cat_7: "spend_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 5.0
+  scope3_optional: false
+
+# --- Target Setting (42% by 2030 - SBTi SME minimum) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_reduction_pct: 42.0
+  long_term_reduction_pct: 90.0
+  annual_linear_reduction_pct: 4.2
+  sbti_sme_route: true
+  sbti_submission_planned: false
+  sme_climate_hub_commitment: true
+
+# --- Reduction Actions (Office + travel + procurement focus) ---
+reduction:
+  max_actions: 7
+  planning_horizon_years: 3
+  budget_range_min_eur: 3000.0
+  budget_range_max_eur: 15000.0
+  include_quick_wins: true
+  quick_win_max_count: 5
+  include_renewable_procurement: true
+  include_energy_efficiency: true
+  include_supplier_engagement: true
+  include_fleet_electrification: false
+  include_process_optimization: false
+  include_behavioral_change: true
+  include_macc_analysis: false
+  carbon_price_eur_per_tco2e: 50.0
+  discount_rate_pct: 6.0
+  scenario_count: 2
+
+# --- Grant Preferences (Energy efficiency, innovation programs) ---
+grant:
+  enabled: true
+  preferred_categories:
+    - "ENERGY_EFFICIENCY"
+    - "INNOVATION"
+    - "NATIONAL_PROGRAM"
+    - "LOCAL_PROGRAM"
+  max_application_complexity: "MEDIUM"
+  region_focus: "NATIONAL"
+  sector_specific: true
+  include_tax_incentives: true
+  include_green_loans: true
+  budget_match_required: false
+
+# --- Certification (B Corp Climate Collective) ---
+certification:
+  primary_pathway: "SME_CLIMATE_HUB"
+  secondary_pathway: "B_CORP"
+  auto_recommend: true
+  readiness_assessment: true
+  max_certification_budget_eur: 3000.0
+  max_time_months: 6
+
+# --- Reporting (PDF + Excel, all 3 templates) ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+  templates:
+    - "net_zero_summary"
+    - "action_plan"
+    - "annual_progress"
+  include_cdp_mapping: false
+  include_sbti_mapping: true
+  include_sme_climate_hub_mapping: true
+  language: "en"
+  review_workflow_enabled: false
+  watermark_draft: true
+  include_grant_recommendations: true
+  include_certification_roadmap: true
+
+# --- Performance (Standard: 1GB, <20 sec) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 1800
+  max_concurrent_calcs: 2
+  timeout_seconds: 20
+  batch_size: 250
+  memory_limit_mb: 1024
+  lightweight_mode: true
+
+# --- Audit Trail (3-year, standard) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 3
+  external_audit_export: false
+
+# --- Verification (Third-party light) ---
+verification:
+  level: "THIRD_PARTY_LIGHT"
+  frequency: "ANNUAL"
+  scope_of_verification:
+    - "scope_1"
+    - "scope_2"
+  include_scope3_in_verification: false
+
+# --- Scorecard (Quick assessment, service-relevant KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "QUICK"
+  dimensions:
+    - "baseline_completeness"
+    - "target_ambition"
+    - "reduction_progress"
+    - "data_quality"
+    - "certification_readiness"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+    - "data_quality_score"
+    - "business_travel_intensity"
+  target_years: [2025, 2028, 2030, 2050]

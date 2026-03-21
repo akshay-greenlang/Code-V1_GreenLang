@@ -1,0 +1,336 @@
+# =============================================================================
+# PACK-027 Enterprise Net Zero Pack - Energy & Utilities Preset
+# =============================================================================
+# Sector-specific configuration for power generators, oil & gas companies,
+# and utility providers. Very high Scope 1 (55%) from fossil fuel combustion
+# and process emissions. SDA pathway is mandatory for the power generation
+# sector. Stranded asset risk analysis is critical for fossil fuel reserves
+# and generation assets. Scope 4 avoided emissions are material for renewable
+# energy providers displacing fossil fuel generation.
+#
+# Sector: Power Generation, Oil & Gas, Utilities, Renewable Energy
+# Consolidation: Operational control (common for utility operations)
+# Data quality: Level 1 target (+/-3% accuracy)
+# SBTi pathway: SDA (mandatory for power generation)
+# Key S3 categories: Cat 1 (fuel procurement), Cat 3 (fuel & energy WTT),
+#                     Cat 9 (downstream transport), Cat 10 (processing),
+#                     Cat 11 (use of sold energy products)
+#
+# Target organizations:
+#   - Shell, TotalEnergies, BP, Equinor, Eni
+#   - Enel, Iberdrola, NextEra Energy, Duke Energy, EDF
+#   - National Grid, Centrica, Orsted, RWE
+#   - Large renewables: Vestas, Siemens Gamesa, First Solar
+#
+# Key decarbonization levers:
+#   - Renewable energy transition (wind, solar, battery storage)
+#   - Gas-to-zero strategy (phase out unabated fossil fuel generation)
+#   - Grid decarbonization planning
+#   - Stranded asset management (write-down of fossil assets)
+#   - Green hydrogen production and storage
+#   - Nuclear new build / SMR deployment
+#   - Carbon capture and storage for remaining fossil
+#   - Methane leak detection and repair (LDAR)
+#
+# Regulatory exposure:
+#   - EU ETS (largest covered sector globally)
+#   - UK ETS, California Cap-and-Trade
+#   - CSRD/ESRS E1, TCFD/ISSB mandatory scenario analysis
+#   - SEC Climate Rule (material Scope 1 disclosure)
+#   - Methane emissions regulations (EPA, EU Methane Regulation)
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "ENERGY_UTILITIES"
+  region: "GLOBAL"
+  headquarters_country: "NL"
+  operating_countries: []
+  entity_count: 100
+  facility_count: 500
+  fiscal_year_end: "12-31"
+  erp_system: "SAP_S4HANA"
+  is_large_accelerated_filer: true
+  csrd_in_scope: true
+
+# --- Multi-Entity Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  entity_count: 100
+  include_joint_ventures: true
+  include_associates: true
+  intercompany_elimination: true
+  base_year_recalculation_threshold_pct: 5.0
+  mid_year_acquisition_prorata: true
+  reporting_currency: "EUR"
+  alignment_with_financial_reporting: true
+
+# --- Data Quality (Level 1 target, continuous metering) ---
+data_quality:
+  target_tier: "LEVEL_1"
+  minimum_tier: "LEVEL_3"
+  accuracy_target_pct: 2.0
+  data_completeness_target_pct: 98.0
+  emission_factor_sources:
+    - "IPCC_AR6"
+    - "DEFRA_2024"
+    - "EPA_2024"
+    - "IEA_2024"
+    - "ecoinvent_3.10"
+  require_supplier_specific_data: true
+  supplier_specific_threshold_count: 30
+  allow_spend_based_fallback: true
+  data_improvement_plan_enabled: true
+  dq_monitoring_frequency: "WEEKLY"
+
+# --- Scope Configuration (Very high S1, all 15 S3 categories) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_agents:
+    - "MRV-001"  # Stationary combustion (power plants, boilers)
+    - "MRV-002"  # Refrigerants (cooling systems)
+    - "MRV-003"  # Mobile combustion (fleet)
+    - "MRV-004"  # Process emissions (refining, processing)
+    - "MRV-005"  # Fugitive emissions (methane leaks, gas distribution)
+    - "MRV-006"  # Land use (pipeline corridors, well sites)
+    - "MRV-007"  # Waste treatment
+    - "MRV-008"  # Agricultural (if applicable)
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope2_agents:
+    - "MRV-009"
+    - "MRV-010"
+    - "MRV-011"
+    - "MRV-012"
+    - "MRV-013"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  scope3_priority_categories: [1, 3, 9, 10, 11]
+  scope3_default_method: "ACTIVITY_BASED"
+  scope3_category_methods:
+    cat_1: "supplier_specific"
+    cat_2: "average_data"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_5: "activity_based"
+    cat_6: "activity_based"
+    cat_7: "hybrid"
+    cat_8: "average_data"
+    cat_9: "activity_based"
+    cat_10: "activity_based"
+    cat_11: "activity_based"
+    cat_12: "average_data"
+    cat_13: "average_data"
+    cat_14: "activity_based"
+    cat_15: "spend_based"
+    default: "activity_based"
+  scope3_materiality_threshold_pct: 1.0
+  scope3_total_exclusion_max_pct: 3.0
+  gases_included: ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
+
+# --- SBTi Target (SDA mandatory for power, FLAG if upstream land use) ---
+target:
+  sbti_pathway: "SDA"
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_scope1_2_reduction_pct: 42.0
+  near_term_scope3_reduction_pct: 25.0
+  long_term_reduction_pct: 95.0
+  scope1_2_coverage_pct: 95.0
+  scope3_near_term_coverage_pct: 67.0
+  scope3_long_term_coverage_pct: 90.0
+  sda_sectors:
+    - "POWER_GENERATION"
+  flag_enabled: true
+  flag_commodities: []
+  sbti_submission_planned: true
+  sbti_committed: true
+  sbti_target_validated: false
+  five_year_review_schedule: true
+
+# --- Scenario Modeling (Transition + stranded asset focus) ---
+scenarios:
+  enabled: true
+  scenarios:
+    - "AGGRESSIVE_1_5C"
+    - "MODERATE_2C"
+    - "CONSERVATIVE_BAU"
+  monte_carlo_runs: 10000
+  confidence_intervals: [10, 25, 50, 75, 90]
+  sensitivity_method: "sobol"
+  technology_focus:
+    - "renewables"
+    - "battery_storage"
+    - "hydrogen"
+    - "nuclear"
+    - "grid_decarbonization"
+    - "ccs"
+  stranded_asset_analysis: true
+  custom_scenario_enabled: true
+
+# --- Carbon Pricing (ETS compliance + shadow price) ---
+carbon_pricing:
+  enabled: true
+  approach: "HYBRID"
+  price_usd_per_tco2e: 80.0
+  price_escalation_pct_per_year: 6.0
+  price_scenario: "MEDIUM"
+  apply_to_capex: true
+  apply_to_bu_allocation: true
+  cbam_enabled: false
+  ets_enabled: true
+  carbon_adjusted_financials: true
+
+# --- Scope 4 Avoided Emissions (Renewables displacing fossil) ---
+scope4:
+  enabled: true
+  methodology: "WBCSD"
+  product_categories:
+    - "renewable_electricity_generation"
+    - "energy_efficiency_services"
+    - "grid_balancing_services"
+  baseline_scenario: "market_average"
+  include_rebound_effects: true
+  attribution_methodology: "proportional"
+
+# --- Supply Chain (Fuel suppliers, equipment OEMs) ---
+supply_chain:
+  enabled: true
+  tier_depth: 3
+  tier1_critical_count: 30
+  tier2_strategic_count: 150
+  tier3_managed_count: 800
+  cdp_supply_chain_integration: true
+  ecovadis_integration: false
+  wbcsd_pact_integration: true
+  engagement_program_enabled: true
+  sbti_cascade_target: true
+  commodity_tracking: []
+
+# --- External Assurance (Reasonable for S1, limited for S3) ---
+assurance:
+  level: "LIMITED"
+  standard: "ISAE_3410"
+  scope_of_assurance:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  workpaper_generation: true
+  sample_selection_automated: true
+  management_assertion_template: true
+  target_auditor_hours: 120
+  reasonable_assurance_timeline_year: 2027
+
+# --- Financial Integration (ETS, stranded assets, transition) ---
+financial_integration:
+  enabled: true
+  carbon_adjusted_pnl: true
+  carbon_balance_sheet: true
+  ebitda_carbon_intensity: true
+  product_level_footprint: true
+  eu_taxonomy_alignment: true
+  esrs_e1_8_disclosure: true
+  esrs_e1_9_disclosure: true
+  green_bond_screening: true
+  stranded_asset_assessment: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+    - "HTML"
+    - "JSON"
+    - "MARKDOWN"
+  templates:
+    - "ghg_inventory_report"
+    - "sbti_target_submission"
+    - "cdp_climate_response"
+    - "tcfd_report"
+    - "executive_dashboard"
+    - "supply_chain_heatmap"
+    - "scenario_comparison"
+    - "assurance_statement"
+    - "board_climate_report"
+    - "regulatory_filings"
+  regulatory_frameworks:
+    - "GHG_PROTOCOL"
+    - "SBTI"
+    - "CDP"
+    - "TCFD_ISSB"
+    - "CSRD_ESRS"
+    - "ISO_14064"
+    - "EU_TAXONOMY"
+    - "SEC_CLIMATE"
+  language: "en"
+  secondary_languages: ["nl", "fr", "de"]
+  review_workflow_enabled: true
+  watermark_draft: true
+  board_reporting_frequency: "QUARTERLY"
+
+# --- Performance (High: 32GB for large generation fleet modeling) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 24
+  timeout_seconds: 600
+  batch_size: 10000
+  memory_limit_mb: 32768
+  monte_carlo_parallelism: 12
+  entity_parallel_processing: true
+  lightweight_mode: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  immutable_log: true
+
+# --- Scorecard (Energy sector KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "COMPREHENSIVE"
+  dimensions:
+    - "governance_oversight"
+    - "baseline_completeness"
+    - "target_ambition"
+    - "scope3_coverage"
+    - "data_quality"
+    - "reduction_progress"
+    - "supply_chain_engagement"
+    - "scenario_resilience"
+    - "assurance_readiness"
+    - "regulatory_compliance"
+    - "financial_integration"
+    - "stakeholder_communication"
+  benchmark_enabled: true
+  peer_group: "SECTOR_AND_SCALE"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_mwh"
+    - "renewable_generation_pct"
+    - "fossil_fuel_phase_out_progress"
+    - "methane_intensity"
+    - "stranded_asset_exposure"
+    - "yoy_reduction_rate"
+    - "sbti_criteria_compliance"
+    - "ets_compliance_position"
+    - "scope4_avoided_emissions"
+    - "assurance_coverage_pct"
+    - "carbon_price_coverage"
+  target_years: [2025, 2027, 2030, 2035, 2040, 2045, 2050]
+  tpi_alignment_check: true

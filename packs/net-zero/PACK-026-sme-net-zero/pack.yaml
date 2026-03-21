@@ -1,0 +1,686 @@
+# =============================================================================
+# PACK-026: SME Net Zero Pack
+# GreenLang SME-Optimized Net Zero Solution for Small and Medium Enterprises
+# =============================================================================
+# This pack provides a simplified, cost-effective net zero solution specifically
+# designed for SMEs (<250 employees) with limited resources, budgets, and
+# technical expertise. It implements 8 engines optimized for minimal data
+# requirements (Bronze/Silver/Gold tiers), 6 streamlined workflows (express
+# onboarding in <15 minutes), 8 SME-friendly templates (1-2 pages, visual focus),
+# and 13 integrations including accounting software connectors (Xero, QuickBooks,
+# Sage), grant database matching, and certification pathway support.
+#
+# Key SME Features:
+#   - Three-tier data approach (Bronze: ±40%, Silver: ±15%, Gold: ±5% accuracy)
+#   - Spend-based Scope 3 using DEFRA/EPA EEIO factors
+#   - Quick wins database (50+ actions with ROI < 3 years)
+#   - Grant finder (50+ UK/EU/US programs, automatic matching)
+#   - Accounting software integration (auto-import spend data)
+#   - Simplified targets (1.5°C pathway, 50% by 2030, pre-set)
+#   - Certification pathways (SME Climate Hub, B Corp, ISO 14001, Carbon Trust)
+#   - Peer benchmarking (compare to similar-sized SMEs)
+#
+# SME Market Sizing:
+#   - 99% of businesses globally are SMEs
+#   - Collectively responsible for 50%+ of global emissions
+#   - Limited resources: <3 FTE for sustainability, <€20K annual budget
+#   - Time constraints: <2 hours for baseline, <30 min for quarterly review
+#   - Data challenges: Often missing activity data, need estimation methods
+#
+# Regulatory and Framework References:
+#   - GHG Protocol Corporate Standard (simplified for SMEs)
+#   - SBTi SME Pathway (launched 2023)
+#   - SME Climate Hub (UN-backed net zero commitment platform)
+#   - B Corp Climate Collective
+#   - ISO 14001 Environmental Management System
+#   - Carbon Trust Standard
+#   - DEFRA/EPA EEIO Emission Factors
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-18)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-026-sme-net-zero
+  version: "1.0.0"
+  display_name: "SME Net Zero Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack optimized for Small and Medium
+    Enterprises (SMEs) with <250 employees. Provides simplified net zero
+    solutions with minimal data requirements (Bronze/Silver/Gold tiers),
+    cost-effective actions (quick wins database with <3yr payback), grant
+    finder (50+ UK/EU/US programs), accounting software integration (Xero,
+    QuickBooks, Sage auto-import), and streamlined certification pathways
+    (SME Climate Hub, B Corp, ISO 14001, Carbon Trust). Includes 8 engines,
+    6 workflows optimized for speed (<15 min express onboarding), 8 SME-friendly
+    templates (1-2 pages), 13 integrations, and 6 presets (micro/small/medium
+    businesses across service/manufacturing/retail sectors). Targets 90%+
+    accuracy with minimal effort, <€5,000 implementation cost for micro
+    businesses, and >50% grant application success rate.
+  category: net-zero
+  tier: sme-optimized
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-18"
+  support_tier: standard
+  documentation_url: "https://docs.greenlang.io/packs/sme-net-zero"
+  changelog_url: "https://docs.greenlang.io/packs/sme-net-zero/changelog"
+
+  tags:
+    - sme
+    - net-zero
+    - simplified
+    - quick-wins
+    - grant-finder
+    - accounting-integration
+    - xero
+    - quickbooks
+    - sage
+    - sme-climate-hub
+    - b-corp
+    - iso-14001
+    - carbon-trust
+    - spend-based
+    - eeio
+    - bronze-silver-gold
+    - peer-benchmarking
+    - certification
+    - micro-business
+    - small-business
+    - medium-business
+    - cost-effective
+    - roi-focused
+    - minimal-data
+    - quick-setup
+
+# -----------------------------------------------------------------------------
+# Primary Regulatory Framework
+# -----------------------------------------------------------------------------
+primary_framework:
+  standard: SME Climate Hub
+  version: "2023"
+  issuing_body: UNFCCC Climate Champions
+  effective_date: "2021-01-01"
+  description: >-
+    UN-backed global initiative enabling SMEs to pledge net zero by 2050,
+    with simplified requirements compared to SBTi corporate route. Requires
+    baseline, interim 2030 target, and annual progress reporting. Over 10,000
+    SMEs committed globally as of 2023.
+
+# -----------------------------------------------------------------------------
+# Components
+# -----------------------------------------------------------------------------
+components:
+  engines:
+    count: 8
+    description: >-
+      SME-optimized calculation engines with minimal data requirements.
+      All engines support three data quality tiers (Bronze: industry averages
+      15min/±40%, Silver: basic activity data 1hr/±15%, Gold: detailed bills
+      2-3hr/±5%). Focus on practical actions with <3 year payback and grant
+      funding opportunities.
+
+    items:
+      - id: sme_baseline_engine
+        name: SME Baseline Calculator
+        description: >-
+          Simplified GHG baseline using three-tier approach. Bronze tier uses
+          industry averages by NACE code + company size (15 minutes, ±40%
+          accuracy). Silver tier uses basic activity data from utility bills
+          and spend (1 hour, ±15% accuracy). Gold tier uses detailed bills
+          and employee questionnaires (2-3 hours, ±5% accuracy). Spend-based
+          Scope 3 using DEFRA/EPA EEIO factors. No process emissions or
+          advanced fugitive calculations (98% of SMEs don't need these).
+        performance_target: "<2 seconds for Bronze, <10 seconds for Silver, <30 seconds for Gold"
+
+      - id: simplified_target_engine
+        name: Simplified Target Calculator
+        description: >-
+          Pre-configured 1.5°C pathway with ACA methodology only (no SDA
+          sector-specific pathways). Hard-coded targets: 50% reduction by 2030,
+          90% by 2050. Scope coverage: 95% S1+2, 67% S3 (simplified to
+          categories 1, 6, 7 only). No pathway selection dialog - auto-generates
+          compliant targets based on baseline.
+        performance_target: "<5 seconds for target generation"
+
+      - id: quick_wins_engine
+        name: Quick Wins Identifier
+        description: >-
+          Identifies high-impact, low-cost actions from database of 50+ SME
+          quick wins. Each action includes: emissions reduction (tCO2e/%), cost,
+          annual savings, payback period, difficulty level (1-5), sector
+          applicability, prerequisites, grant eligibility. Ranking algorithm:
+          (CO2 reduction / cost) × urgency_factor. Filters by sector, size,
+          budget. Outputs top 5-10 actions with implementation timeline.
+        performance_target: "<10 seconds for ranking 50+ actions"
+
+      - id: scope3_estimator_engine
+        name: Scope 3 Estimator (Spend-Based)
+        description: >-
+          Spend-based Scope 3 calculation using DEFRA/EPA EEIO factors.
+          Simplified to 3 primary categories: Cat 1 (Purchased Goods), Cat 6
+          (Business Travel), Cat 7 (Employee Commuting). Optional: Cat 2
+          (Capital Goods), Cat 3 (Fuel & Energy), Cat 4 (Upstream Transport).
+          Integrates with accounting software (Xero/QuickBooks/Sage) to
+          auto-import spend by GL code. Provides data quality score.
+        performance_target: "<15 seconds for 3-category estimate"
+
+      - id: action_prioritization_engine
+        name: Action Prioritization (MACC Lite)
+        description: >-
+          Simplified Marginal Abatement Cost Curve (MACC) analysis. Ranks up
+          to 10 actions by: NPV (5-year horizon), IRR (target >15%), payback
+          period (target <3 years), emissions reduction (tCO2e), ease of
+          implementation (1-5 scale). Cost-benefit analysis with ±20%
+          sensitivity. No Monte Carlo scenarios. Outputs phased roadmap
+          (Year 1/2/3).
+        performance_target: "<20 seconds for 10-action ranking"
+
+      - id: cost_benefit_engine
+        name: Cost-Benefit Analyzer
+        description: >-
+          Financial metrics for each action: upfront CAPEX, annual OPEX
+          savings, carbon savings, NPV (5-10 year, 5-10% discount rate), IRR,
+          simple and discounted payback period. Adjusts for grants/incentives
+          (reduces net cost). Risk scenarios (conservative/optimistic ±20%).
+          Generates cost-benefit tables and charts.
+        performance_target: "<10 seconds per action"
+
+      - id: grant_finder_engine
+        name: Grant & Incentive Finder
+        description: >-
+          Matches SME profile to 50+ available grants/subsidies/tax incentives.
+          Database includes UK (ITRPF, ESOS, Green Finance Institute, Salix),
+          EU (Cohesion Fund, Just Transition, LIFE Programme), US (DOE, EPA,
+          state programs). Matching by: industry code (NACE/NAICS), company
+          size (micro/small/medium), emissions profile (S1/S2/S3 breakdown),
+          location (country, region, postcode), project type (energy efficiency,
+          renewable, EV fleet). Eligibility scoring (0-100). Outputs top 3-5
+          grants with deadlines and requirements.
+        performance_target: "<15 seconds for database query + ranking"
+
+      - id: certification_readiness_engine
+        name: Certification Readiness Assessor
+        description: >-
+          Assesses readiness for SME certifications: SME Climate Hub (easiest),
+          B Corp Climate Collective, ISO 14001, Carbon Trust Standard, Climate
+          Active (Australia), CDP Supply Chain. Five dimensions: baseline data
+          quality, target ambition, action plan completeness, governance
+          structure, disclosure/reporting. Gap analysis with remediation plan.
+          Readiness score (0-100), recommended pathway, timeline to certification.
+        performance_target: "<10 seconds for assessment"
+
+  workflows:
+    count: 6
+    description: >-
+      Streamlined workflows optimized for SME time and resource constraints.
+      Express onboarding completes in <15 minutes, quarterly reviews in <30
+      minutes. All workflows designed for part-time sustainability managers
+      with minimal technical expertise.
+
+    items:
+      - id: express_onboarding_workflow
+        name: Express Onboarding (15 minutes)
+        phases: 4
+        description: >-
+          4-phase rapid setup: (1) Organization profile (5 min), (2) Bronze
+          baseline using industry averages (5 min), (3) Auto-generate 1.5°C
+          targets (instant), (4) Identify top 5 quick wins (5 min). Total time:
+          15-20 minutes. Uses sme_baseline_engine (Bronze mode),
+          simplified_target_engine, quick_wins_engine.
+
+      - id: standard_setup_workflow
+        name: Standard Setup (1-2 hours)
+        phases: 6
+        description: >-
+          6-phase comprehensive setup: (1) Organization profile, (2) Guided
+          data collection (electricity bills, fuel, travel spend), (3) Silver
+          baseline (±15% accuracy), (4) Target validation, (5) Action
+          prioritization (MACC lite, top 10 actions), (6) Grant matching.
+          Total time: 1-2 hours. Uses all 8 engines.
+
+      - id: grant_application_workflow
+        name: Grant Application Assistant
+        phases: 5
+        description: >-
+          5-phase grant application support: (1) Grant search by sector/size/
+          location, (2) Eligibility check, (3) Data preparation (baseline,
+          targets, project description), (4) Generate pre-filled application
+          templates, (5) Export to PDF for manual submission. Uses
+          grant_finder_engine, certification_readiness_engine.
+
+      - id: quarterly_review_workflow
+        name: Quarterly Progress Review
+        phases: 3
+        description: >-
+          3-phase rapid progress tracking: (1) Update energy/travel/procurement
+          spend (5-10 min), (2) Calculate progress vs. target pathway, (3)
+          Generate dashboard + board brief. Total time: 15-30 minutes. Uses
+          sme_baseline_engine, cost_benefit_engine.
+
+      - id: quick_wins_implementation_workflow
+        name: Quick Wins Implementation
+        phases: 5
+        description: >-
+          5-phase action implementation: (1) Select 3-5 quick wins, (2)
+          Research vendors/suppliers, (3) Detailed cost-benefit for selected
+          actions, (4) Implementation timeline + project plan, (5) Post-
+          implementation verification (savings achieved?). Uses
+          quick_wins_engine, action_prioritization_engine, cost_benefit_engine.
+
+      - id: certification_pathway_workflow
+        name: Certification Pathway
+        phases: 6
+        description: >-
+          6-phase certification journey: (1) Select certification (SME Climate
+          Hub, B Corp, ISO 14001, Carbon Trust), (2) Readiness assessment, (3)
+          Gap closure (data quality, governance, targets), (4) Prepare
+          submission documents, (5) Submit to certification body, (6) Await
+          verification result. Uses certification_readiness_engine,
+          simplified_target_engine.
+
+  templates:
+    count: 8
+    description: >-
+      SME-friendly report templates (1-2 pages, visual focus, mobile-optimized).
+      All templates support Markdown, HTML, JSON, and Excel outputs. Emphasis
+      on actionable insights and clear next steps for busy SME managers.
+
+    items:
+      - id: sme_baseline_report
+        formats: ["markdown", "html", "json", "excel"]
+        description: >-
+          1-2 page visual dashboard with executive summary, scope breakdown
+          (bar charts), industry peer comparison (percentile), data quality
+          score, top 3 emission sources, simple next steps.
+
+      - id: sme_quick_wins_report
+        formats: ["markdown", "html", "json", "excel"]
+        description: >-
+          Top 5-10 quick wins ranked by ROI. Each action shows emissions
+          reduction, cost, savings, payback, difficulty. Includes 6-24 month
+          timeline (Gantt chart) and 5-year total ROI.
+
+      - id: sme_grant_report
+        formats: ["markdown", "html", "json", "excel"]
+        description: >-
+          Matched grants summary (top 3-5) with funding range, eligibility
+          score, deadline, requirements checklist, supporting docs needed,
+          application timeline. Pre-filled data fields.
+
+      - id: sme_board_brief
+        formats: ["markdown", "html", "json"]
+        description: >-
+          1-page executive summary for board/leadership: current emissions,
+          targets, top 3 quick wins with ROI, grant opportunities, investment
+          required, risk/opportunity summary, recommended decision.
+
+      - id: sme_roadmap_report
+        formats: ["markdown", "html", "json", "excel"]
+        description: >-
+          3-year decarbonization roadmap with annual actions, emissions
+          trajectory, investment + savings, milestones + KPIs, MACC curve,
+          budget allocation table.
+
+      - id: sme_progress_dashboard
+        formats: ["markdown", "html", "json"]
+        description: >-
+          Annual KPI tracking dashboard with year-over-year comparison,
+          progress bars (2030/2050 targets), scope trends (3 years), quick
+          wins status, grants received, cost savings realized, next quarter
+          actions.
+
+      - id: sme_certification_submission
+        formats: ["markdown", "html", "json", "excel"]
+        description: >-
+          Certification-specific formats (SME Climate Hub, B Corp, ISO 14001,
+          Carbon Trust) with pre-filled fields, supporting evidence links,
+          submission checklist.
+
+      - id: sme_accounting_guide
+        formats: ["markdown", "html", "json"]
+        description: >-
+          Step-by-step accounting software setup (Xero/QuickBooks/Sage) with
+          GL code mapping, spend categorization, carbon cost allocation, tax
+          deduction guidance.
+
+  integrations:
+    count: 13
+    description: >-
+      SME-focused integrations emphasizing automation and cost-effectiveness.
+      Includes accounting software connectors (Xero, QuickBooks, Sage), grant
+      database sync, certification body APIs, and peer benchmarking network.
+
+    items:
+      - id: pack_orchestrator
+        description: 6-phase DAG pipeline for SME workflows
+
+      - id: mrv_bridge
+        description: >-
+          Simplified MRV agent integration (subset of 30 agents). Only
+          activated: stationary combustion, mobile, electricity, natural gas,
+          business travel, employee commuting. Spend-based Scope 3.
+
+      - id: data_bridge
+        description: >-
+          Integration with DATA agents for spend categorization, auto-mapping,
+          data quality profiling, missing value handling with industry defaults.
+
+      - id: xero_connector
+        description: >-
+          Xero API integration (OAuth2) with chart of accounts retrieval,
+          transaction export by GL code, spend categorization mapping,
+          monthly/annual aggregation, rate limiting (5 req/sec).
+
+      - id: quickbooks_connector
+        description: >-
+          QuickBooks Online API integration (OAuth2) with chart of accounts,
+          P&L report export, spend category mapping, monthly/annual aggregation,
+          rate limiting.
+
+      - id: sage_connector
+        description: >-
+          Sage Business Cloud API integration with nominal ledger export, spend
+          categorization, multi-currency support, rate limiting.
+
+      - id: grant_database_bridge
+        description: >-
+          Integration with UK/EU/US public grant databases (BEIS, Green Finance
+          Institute, Horizon Europe, LIFE, Cohesion Fund, DOE, EPA). Scheduled
+          monthly sync. Grant matching algorithm, deadline tracking.
+
+      - id: sme_climate_hub_bridge
+        description: >-
+          UN SME Climate Hub API integration for commitment submission, annual
+          progress reporting, verification status retrieval, badge/certification
+          download.
+
+      - id: certification_body_bridge
+        description: >-
+          Multi-certification integration (B Corp API, Carbon Trust, ISO 14001,
+          Climate Active). Submission status tracking, document upload.
+
+      - id: peer_network_bridge
+        description: >-
+          Anonymous peer benchmarking with aggregated industry stats by sector
+          + size + geography. Privacy-preserving, percentile ranking.
+
+      - id: renewable_ppa_marketplace
+        description: >-
+          Integration with renewable PPA aggregators (Arcano, Enel, NextEnergy)
+          to query available contracts by location/consumption/duration,
+          estimate cost savings.
+
+      - id: setup_wizard
+        description: >-
+          Interactive 5-step configuration wizard: organization profile, data
+          tier selection, accounting software connection, grant preferences,
+          certification pathway.
+
+      - id: health_check
+        description: >-
+          System health monitoring: database connectivity, agent availability
+          (SME subset), accounting API status, grant database currency,
+          performance metrics.
+
+  presets:
+    count: 6
+    description: >-
+      SME-specific configuration presets covering different size tiers and
+      sectors. Each preset optimized for data availability, budget constraints,
+      and certification pathways appropriate to SME type.
+
+    items:
+      - id: micro_business
+        name: Micro Business (1-9 employees)
+        target_audience: "Micro enterprises, freelancers, solopreneurs"
+        description: >-
+          Bronze tier (industry averages only), S1+2 estimate, S3 optional,
+          30% reduction by 2030, top 3 quick wins, <€5,000 budget, micro-grants
+          focus, SME Climate Hub certification, self-declaration verification.
+
+      - id: small_business
+        name: Small Business (10-49 employees)
+        target_audience: "Small enterprises, local businesses"
+        description: >-
+          Silver tier (basic activity data), S1+2 measured, S3 spend-based
+          (Cat 1/6/7), 42% by 2030 (SBTi SME minimum), top 5-7 quick wins,
+          €5K-€20K budget, national grants, SME Climate Hub + B Corp, third-
+          party light verification.
+
+      - id: medium_business
+        name: Medium Business (50-249 employees)
+        target_audience: "Medium enterprises, growth companies"
+        description: >-
+          Gold tier (detailed bills + questionnaires), S1+2 measured, S3
+          detailed (Cat 1-7), 50% by 2030 (full 1.5°C), top 10 actions (MACC),
+          €20K-€100K budget, EU/national strategic programs, ISO 14001 +
+          Carbon Trust, third-party full audit.
+
+      - id: service_sme
+        name: Service Sector SME
+        target_audience: "Tech, consulting, professional services SMEs"
+        description: >-
+          Scope focus: S2 (electricity) + S3 dominant (Cat 1/6/7). Emissions
+          profile: 15% S1+2, 85% S3. Quick wins: renewable PPA, remote work,
+          supplier engagement. Grant eligibility: energy efficiency, innovation.
+          B Corp Climate Collective certification.
+
+      - id: manufacturing_sme
+        name: Manufacturing SME
+        target_audience: "Small manufacturing, production companies"
+        description: >-
+          Scope focus: S1 (fuel) + S2 (electricity) significant. Emissions
+          profile: 40% S1, 35% S2, 25% S3. Quick wins: process efficiency,
+          HVAC, renewable energy. Grant eligibility: industrial decarbonization,
+          technology. ISO 14001 + Carbon Trust certification.
+
+      - id: retail_sme
+        name: Retail SME
+        target_audience: "Retail shops, small chains"
+        description: >-
+          Scope focus: S2 (store electricity) + S3 (Cat 1/4/9 packaging).
+          Emissions profile: 20% S1+2, 80% S3. Quick wins: LED lighting,
+          refrigeration, packaging reduction. Grant eligibility: retail energy,
+          circular economy. SME Climate Hub + Carbon Trust certification.
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies
+# -----------------------------------------------------------------------------
+agent_dependencies:
+  mrv_agents:
+    count: 8
+    description: Subset of 30 MRV agents relevant to SMEs
+    items:
+      - AGENT-MRV-001  # Stationary Combustion
+      - AGENT-MRV-003  # Mobile Combustion
+      - AGENT-MRV-009  # Scope 2 Location-Based
+      - AGENT-MRV-014  # Purchased Goods & Services (spend-based)
+      - AGENT-MRV-019  # Business Travel
+      - AGENT-MRV-020  # Employee Commuting
+      - AGENT-MRV-021  # Upstream Leased Assets (if applicable)
+      - AGENT-MRV-026  # Downstream Leased Assets (if applicable)
+
+  data_agents:
+    count: 10
+    description: Subset of 20 DATA agents for SME data quality
+    items:
+      - AGENT-DATA-002  # Excel/CSV Normalizer
+      - AGENT-DATA-009  # Spend Data Categorizer
+      - AGENT-DATA-010  # Data Quality Profiler
+      - AGENT-DATA-011  # Duplicate Detection
+      - AGENT-DATA-012  # Missing Value Imputer
+      - AGENT-DATA-013  # Outlier Detection
+      - AGENT-DATA-019  # Validation Rule Engine
+
+  foundation_agents:
+    count: 5
+    description: Core foundation agents (simplified)
+    items:
+      - AGENT-FOUND-003  # Unit & Reference Normalizer
+      - AGENT-FOUND-005  # Citations & Evidence
+      - AGENT-FOUND-008  # Reproducibility
+      - AGENT-FOUND-009  # QA Test Harness
+      - AGENT-FOUND-010  # Observability & Telemetry
+
+  bridged_apps:
+    count: 2
+    description: Integration with existing apps (optional)
+    items:
+      - GL-GHG-APP       # Optional: For full GHG inventory if SME grows
+      - GL-SBTi-APP      # Optional: If SME graduates to corporate SBTi route
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  baseline_calculation:
+    bronze_tier: "2 seconds"
+    silver_tier: "10 seconds"
+    gold_tier: "30 seconds"
+
+  express_onboarding: "15 minutes total"
+  standard_onboarding: "1-2 hours"
+  quarterly_review: "30 minutes"
+  grant_search: "15 seconds"
+
+  quick_wins_ranking: "10 seconds for 50 actions"
+  action_prioritization: "20 seconds for 10 actions"
+  cost_benefit_analysis: "10 seconds per action"
+
+  mobile_dashboard_load: "3 seconds"
+
+  memory_ceiling: "1024 MB"
+  storage_minimum: "20 GB"
+  cpu_minimum: "2 cores"
+
+# -----------------------------------------------------------------------------
+# Security & RBAC
+# -----------------------------------------------------------------------------
+security:
+  authentication: JWT (RS256)
+  authorization: RBAC
+  roles:
+    - name: sme_admin
+      permissions: [all]
+    - name: sustainability_manager
+      permissions: [baseline, targets, actions, grants, reporting]
+    - name: finance_manager
+      permissions: [accounting_integration, cost_benefit, grants]
+    - name: auditor
+      permissions: [read_all, verify]
+    - name: viewer
+      permissions: [read_baseline, read_targets, read_reports]
+
+  encryption:
+    at_rest: AES-256-GCM
+    in_transit: TLS 1.3
+
+  audit_trail:
+    enabled: true
+    retention_years: 3
+    events: [baseline_calc, target_set, action_planned, grant_applied, data_sync, report_generated]
+
+# -----------------------------------------------------------------------------
+# Database Migrations
+# -----------------------------------------------------------------------------
+migrations:
+  new_migrations:
+    - V158__PACK026_sme_net_zero_001_schema_and_profiles.sql
+    - V159__PACK026_sme_net_zero_002_baselines_and_targets.sql
+    - V160__PACK026_sme_net_zero_003_quick_wins_and_actions.sql
+    - V161__PACK026_sme_net_zero_004_grants_and_certifications.sql
+    - V162__PACK026_sme_net_zero_005_accounting_integration.sql
+    - V163__PACK026_sme_net_zero_006_progress_tracking.sql
+    - V164__PACK026_sme_net_zero_007_peer_benchmarking.sql
+    - V165__PACK026_sme_net_zero_008_audit_trails_views.sql
+
+  inherited_migrations:
+    - V001-V006: Core platform schema
+    - V007-V008: Feature flags + Agent factory
+    - V009-V010: Auth + RBAC
+    - V011-V018: Security infrastructure
+
+# -----------------------------------------------------------------------------
+# Installation Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  python_version: ">=3.11"
+  postgresql_version: ">=16.0"
+  redis_version: ">=7.0"
+
+  python_packages:
+    - pydantic>=2.0
+    - psycopg[binary,pool]>=3.1
+    - fastapi>=0.100
+    - redis>=5.0
+    - httpx>=0.24
+    - openpyxl>=3.1
+    - reportlab>=4.0
+    - pyxero>=1.0
+    - quickbooks-python>=1.5
+    - sage-api>=1.0
+
+  infrastructure:
+    cpu_cores: 2
+    memory_gb: 2
+    storage_gb: 20
+
+# -----------------------------------------------------------------------------
+# Testing Requirements
+# -----------------------------------------------------------------------------
+testing:
+  target_coverage: "90%"
+  test_count_target: 700
+  categories:
+    - unit_tests_engines
+    - unit_tests_workflows
+    - unit_tests_templates
+    - integration_tests_accounting
+    - integration_tests_grants
+    - integration_tests_certifications
+    - e2e_tests
+    - performance_tests
+    - mobile_responsiveness_tests
+    - data_accuracy_tests
+
+# -----------------------------------------------------------------------------
+# Release Plan
+# -----------------------------------------------------------------------------
+release:
+  phases:
+    - name: Phase 1 - Foundation
+      deliverables: [engines, config, presets]
+      duration: 2 weeks
+
+    - name: Phase 2 - Workflows
+      deliverables: [workflows, orchestrator]
+      duration: 2 weeks
+
+    - name: Phase 3 - Templates
+      deliverables: [templates, report generation]
+      duration: 1 week
+
+    - name: Phase 4 - Integrations
+      deliverables: [accounting connectors, grant DB, certification]
+      duration: 2 weeks
+
+    - name: Phase 5 - Testing
+      deliverables: [test suite, performance validation]
+      duration: 1 week
+
+    - name: Phase 6 - Documentation
+      deliverables: [README, guides, API docs]
+      duration: 1 week
+
+    - name: Phase 7 - Migrations
+      deliverables: [database migrations V158-V165]
+      duration: 1 week
+
+    - name: Phase 8 - Deployment
+      deliverables: [pack.yaml, deployment validation]
+      duration: 1 week

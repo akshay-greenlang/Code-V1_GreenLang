@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-PACK-003 CSRD Enterprise - Computation Engines
+PACK-003 CSRD Enterprise - Engines
+====================================
 
 Ten specialized engines providing the computational backbone for
 enterprise-tier CSRD reporting with multi-tenant SaaS capabilities:
@@ -30,149 +31,21 @@ Status: Production Ready
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+__version__: str = "1.0.0"
+__pack__: str = "PACK-003"
+__pack_name__: str = "CSRD Enterprise Pack"
+__engines_count__: int = 10
+
+_loaded_engines: list[str] = []
+
+# ===================================================================
 # Engine 1: Multi-Tenant Lifecycle Management
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.multi_tenant_engine import (
-    IsolationLevel,
-    MultiTenantEngine,
-    QuotaViolation,
-    ResourceUsage,
-    TenantLifecycleStatus,
-    TenantProvisionRequest,
-    TenantResource,
-    TenantStatus,
-    TenantTier,
-)
-
-# Engine 2: White-Label Brand Customization
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.white_label_engine import (
-    BrandConfig,
-    BrandTheme,
-    BrandValidationIssue,
-    BrandValidationSeverity,
-    ColorVariant,
-    SSLStatus,
-    TemplateType,
-    WhiteLabelEngine,
-)
-
-# Engine 3: Predictive Analytics & Forecasting
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.predictive_analytics_engine import (
-    AnomalyMethod,
-    AnomalyPoint,
-    AnomalyResult,
-    AnomalySeverity,
-    ForecastRequest,
-    ForecastResult,
-    HistoricalDataPoint,
-    ModelType,
-    PredictionPoint,
-    PredictiveAnalyticsEngine,
-)
-
-# Engine 4: Narrative Generation with Fact-Checking
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.narrative_generation_engine import (
-    Citation,
-    ESRSSection,
-    FactCheckResult,
-    FactCheckStatus,
-    NarrativeGenerationEngine,
-    NarrativeRequest,
-    NarrativeResult,
-    NarrativeTone,
-    RevisionDiff,
-)
-
-# Engine 5: Workflow Builder & Execution
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.workflow_builder_engine import (
-    ConditionOperator,
-    ExecutionStatus,
-    StepResult,
-    StepStatus,
-    StepType,
-    ValidationIssue,
-    WorkflowBuilderEngine,
-    WorkflowCondition,
-    WorkflowDefinition,
-    WorkflowExecution,
-    WorkflowStatus,
-    WorkflowStep,
-)
-
-# Engine 6: IoT Streaming & Real-Time Data
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.iot_streaming_engine import (
-    AggregatedReading,
-    AlertSeverity,
-    AlertType,
-    DeviceLocation,
-    DeviceProtocol,
-    DeviceStatus,
-    DeviceType,
-    IoTDevice,
-    IoTReading,
-    IoTStreamingEngine,
-    QualityFlag,
-    StreamAlert,
-)
-
-# Engine 7: Carbon Credit Portfolio Management
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.carbon_credit_engine import (
-    CarbonCredit,
-    CarbonCreditEngine,
-    CreditPortfolio,
-    CreditRegistry,
-    CreditStatus,
-    CreditType,
-    NetZeroAccounting,
-    RetirementReason,
-)
-
-# Engine 8: Supply Chain ESG Scoring
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.supply_chain_esg_engine import (
-    Action,
-    ESGScore,
-    Finding,
-    ImprovementPlan,
-    ImprovementStatus,
-    QuestionnaireStatus,
-    RiskTier,
-    Supplier,
-    SupplierQuestionnaire,
-    SupplierTier,
-    SupplyChainESGEngine,
-)
-
-# Engine 9: Filing Automation
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.filing_automation_engine import (
-    AuthMethod,
-    DeadlineUrgency,
-    FilingAutomationEngine,
-    FilingDeadline,
-    FilingFormat,
-    FilingPackage,
-    FilingStatus,
-    FilingSubmission,
-    FilingTarget,
-    FilingTargetName,
-    ValidationFinding,
-    ValidationSeverity,
-)
-
-# Engine 10: API Management & Governance
-from packs.eu_compliance.PACK_003_csrd_enterprise.engines.api_management_engine import (
-    APIKey,
-    APIManagementEngine,
-    APIUsageMetrics,
-    EndpointUsage,
-    GraphQLConfig,
-    KeyStatus,
-    RateLimitAlgorithm,
-    RateLimitPolicy,
-    WebhookEvent,
-    WebhookRegistration,
-)
-
-__all__: list[str] = [
-    # Engine 1: Multi-Tenant
+# ===================================================================
+_ENGINE_1_SYMBOLS: list[str] = [
     "MultiTenantEngine",
     "TenantProvisionRequest",
     "TenantResource",
@@ -182,7 +55,29 @@ __all__: list[str] = [
     "IsolationLevel",
     "ResourceUsage",
     "QuotaViolation",
-    # Engine 2: White-Label
+]
+
+try:
+    from .multi_tenant_engine import (  # noqa: F401
+        IsolationLevel,
+        MultiTenantEngine,
+        QuotaViolation,
+        ResourceUsage,
+        TenantLifecycleStatus,
+        TenantProvisionRequest,
+        TenantResource,
+        TenantStatus,
+        TenantTier,
+    )
+    _loaded_engines.append("MultiTenantEngine")
+except ImportError as e:
+    logger.debug("Engine 1 (MultiTenantEngine) not available: %s", e)
+    _ENGINE_1_SYMBOLS = []
+
+# ===================================================================
+# Engine 2: White-Label Brand Customization
+# ===================================================================
+_ENGINE_2_SYMBOLS: list[str] = [
     "WhiteLabelEngine",
     "BrandConfig",
     "BrandTheme",
@@ -191,7 +86,28 @@ __all__: list[str] = [
     "BrandValidationSeverity",
     "TemplateType",
     "SSLStatus",
-    # Engine 3: Predictive Analytics
+]
+
+try:
+    from .white_label_engine import (  # noqa: F401
+        BrandConfig,
+        BrandTheme,
+        BrandValidationIssue,
+        BrandValidationSeverity,
+        ColorVariant,
+        SSLStatus,
+        TemplateType,
+        WhiteLabelEngine,
+    )
+    _loaded_engines.append("WhiteLabelEngine")
+except ImportError as e:
+    logger.debug("Engine 2 (WhiteLabelEngine) not available: %s", e)
+    _ENGINE_2_SYMBOLS = []
+
+# ===================================================================
+# Engine 3: Predictive Analytics & Forecasting
+# ===================================================================
+_ENGINE_3_SYMBOLS: list[str] = [
     "PredictiveAnalyticsEngine",
     "ForecastRequest",
     "ForecastResult",
@@ -202,7 +118,30 @@ __all__: list[str] = [
     "ModelType",
     "AnomalyMethod",
     "AnomalySeverity",
-    # Engine 4: Narrative Generation
+]
+
+try:
+    from .predictive_analytics_engine import (  # noqa: F401
+        AnomalyMethod,
+        AnomalyPoint,
+        AnomalyResult,
+        AnomalySeverity,
+        ForecastRequest,
+        ForecastResult,
+        HistoricalDataPoint,
+        ModelType,
+        PredictionPoint,
+        PredictiveAnalyticsEngine,
+    )
+    _loaded_engines.append("PredictiveAnalyticsEngine")
+except ImportError as e:
+    logger.debug("Engine 3 (PredictiveAnalyticsEngine) not available: %s", e)
+    _ENGINE_3_SYMBOLS = []
+
+# ===================================================================
+# Engine 4: Narrative Generation with Fact-Checking
+# ===================================================================
+_ENGINE_4_SYMBOLS: list[str] = [
     "NarrativeGenerationEngine",
     "NarrativeRequest",
     "NarrativeResult",
@@ -212,7 +151,29 @@ __all__: list[str] = [
     "FactCheckStatus",
     "ESRSSection",
     "RevisionDiff",
-    # Engine 5: Workflow Builder
+]
+
+try:
+    from .narrative_generation_engine import (  # noqa: F401
+        Citation,
+        ESRSSection,
+        FactCheckResult,
+        FactCheckStatus,
+        NarrativeGenerationEngine,
+        NarrativeRequest,
+        NarrativeResult,
+        NarrativeTone,
+        RevisionDiff,
+    )
+    _loaded_engines.append("NarrativeGenerationEngine")
+except ImportError as e:
+    logger.debug("Engine 4 (NarrativeGenerationEngine) not available: %s", e)
+    _ENGINE_4_SYMBOLS = []
+
+# ===================================================================
+# Engine 5: Workflow Builder & Execution
+# ===================================================================
+_ENGINE_5_SYMBOLS: list[str] = [
     "WorkflowBuilderEngine",
     "WorkflowStep",
     "WorkflowCondition",
@@ -225,7 +186,32 @@ __all__: list[str] = [
     "WorkflowStatus",
     "ExecutionStatus",
     "ValidationIssue",
-    # Engine 6: IoT Streaming
+]
+
+try:
+    from .workflow_builder_engine import (  # noqa: F401
+        ConditionOperator,
+        ExecutionStatus,
+        StepResult,
+        StepStatus,
+        StepType,
+        ValidationIssue,
+        WorkflowBuilderEngine,
+        WorkflowCondition,
+        WorkflowDefinition,
+        WorkflowExecution,
+        WorkflowStatus,
+        WorkflowStep,
+    )
+    _loaded_engines.append("WorkflowBuilderEngine")
+except ImportError as e:
+    logger.debug("Engine 5 (WorkflowBuilderEngine) not available: %s", e)
+    _ENGINE_5_SYMBOLS = []
+
+# ===================================================================
+# Engine 6: IoT Streaming & Real-Time Data
+# ===================================================================
+_ENGINE_6_SYMBOLS: list[str] = [
     "IoTStreamingEngine",
     "IoTDevice",
     "IoTReading",
@@ -238,7 +224,32 @@ __all__: list[str] = [
     "QualityFlag",
     "AlertType",
     "AlertSeverity",
-    # Engine 7: Carbon Credits
+]
+
+try:
+    from .iot_streaming_engine import (  # noqa: F401
+        AggregatedReading,
+        AlertSeverity,
+        AlertType,
+        DeviceLocation,
+        DeviceProtocol,
+        DeviceStatus,
+        DeviceType,
+        IoTDevice,
+        IoTReading,
+        IoTStreamingEngine,
+        QualityFlag,
+        StreamAlert,
+    )
+    _loaded_engines.append("IoTStreamingEngine")
+except ImportError as e:
+    logger.debug("Engine 6 (IoTStreamingEngine) not available: %s", e)
+    _ENGINE_6_SYMBOLS = []
+
+# ===================================================================
+# Engine 7: Carbon Credit Portfolio Management
+# ===================================================================
+_ENGINE_7_SYMBOLS: list[str] = [
     "CarbonCreditEngine",
     "CarbonCredit",
     "CreditPortfolio",
@@ -247,7 +258,28 @@ __all__: list[str] = [
     "CreditType",
     "CreditStatus",
     "RetirementReason",
-    # Engine 8: Supply Chain ESG
+]
+
+try:
+    from .carbon_credit_engine import (  # noqa: F401
+        CarbonCredit,
+        CarbonCreditEngine,
+        CreditPortfolio,
+        CreditRegistry,
+        CreditStatus,
+        CreditType,
+        NetZeroAccounting,
+        RetirementReason,
+    )
+    _loaded_engines.append("CarbonCreditEngine")
+except ImportError as e:
+    logger.debug("Engine 7 (CarbonCreditEngine) not available: %s", e)
+    _ENGINE_7_SYMBOLS = []
+
+# ===================================================================
+# Engine 8: Supply Chain ESG Scoring
+# ===================================================================
+_ENGINE_8_SYMBOLS: list[str] = [
     "SupplyChainESGEngine",
     "Supplier",
     "ESGScore",
@@ -259,7 +291,31 @@ __all__: list[str] = [
     "RiskTier",
     "QuestionnaireStatus",
     "ImprovementStatus",
-    # Engine 9: Filing Automation
+]
+
+try:
+    from .supply_chain_esg_engine import (  # noqa: F401
+        Action,
+        ESGScore,
+        Finding,
+        ImprovementPlan,
+        ImprovementStatus,
+        QuestionnaireStatus,
+        RiskTier,
+        Supplier,
+        SupplierQuestionnaire,
+        SupplierTier,
+        SupplyChainESGEngine,
+    )
+    _loaded_engines.append("SupplyChainESGEngine")
+except ImportError as e:
+    logger.debug("Engine 8 (SupplyChainESGEngine) not available: %s", e)
+    _ENGINE_8_SYMBOLS = []
+
+# ===================================================================
+# Engine 9: Filing Automation
+# ===================================================================
+_ENGINE_9_SYMBOLS: list[str] = [
     "FilingAutomationEngine",
     "FilingTarget",
     "FilingPackage",
@@ -272,7 +328,32 @@ __all__: list[str] = [
     "ValidationSeverity",
     "AuthMethod",
     "DeadlineUrgency",
-    # Engine 10: API Management
+]
+
+try:
+    from .filing_automation_engine import (  # noqa: F401
+        AuthMethod,
+        DeadlineUrgency,
+        FilingAutomationEngine,
+        FilingDeadline,
+        FilingFormat,
+        FilingPackage,
+        FilingStatus,
+        FilingSubmission,
+        FilingTarget,
+        FilingTargetName,
+        ValidationFinding,
+        ValidationSeverity,
+    )
+    _loaded_engines.append("FilingAutomationEngine")
+except ImportError as e:
+    logger.debug("Engine 9 (FilingAutomationEngine) not available: %s", e)
+    _ENGINE_9_SYMBOLS = []
+
+# ===================================================================
+# Engine 10: API Management & Governance
+# ===================================================================
+_ENGINE_10_SYMBOLS: list[str] = [
     "APIManagementEngine",
     "APIKey",
     "RateLimitPolicy",
@@ -284,3 +365,62 @@ __all__: list[str] = [
     "RateLimitAlgorithm",
     "WebhookEvent",
 ]
+
+try:
+    from .api_management_engine import (  # noqa: F401
+        APIKey,
+        APIManagementEngine,
+        APIUsageMetrics,
+        EndpointUsage,
+        GraphQLConfig,
+        KeyStatus,
+        RateLimitAlgorithm,
+        RateLimitPolicy,
+        WebhookEvent,
+        WebhookRegistration,
+    )
+    _loaded_engines.append("APIManagementEngine")
+except ImportError as e:
+    logger.debug("Engine 10 (APIManagementEngine) not available: %s", e)
+    _ENGINE_10_SYMBOLS = []
+
+# ===================================================================
+# Module exports
+# ===================================================================
+_METADATA_SYMBOLS: list[str] = [
+    "__version__",
+    "__pack__",
+    "__pack_name__",
+    "__engines_count__",
+]
+
+__all__: list[str] = [
+    *_METADATA_SYMBOLS,
+    *_ENGINE_1_SYMBOLS,
+    *_ENGINE_2_SYMBOLS,
+    *_ENGINE_3_SYMBOLS,
+    *_ENGINE_4_SYMBOLS,
+    *_ENGINE_5_SYMBOLS,
+    *_ENGINE_6_SYMBOLS,
+    *_ENGINE_7_SYMBOLS,
+    *_ENGINE_8_SYMBOLS,
+    *_ENGINE_9_SYMBOLS,
+    *_ENGINE_10_SYMBOLS,
+]
+
+
+def get_loaded_engines() -> list[str]:
+    """Return list of engine class names that loaded successfully."""
+    return list(_loaded_engines)
+
+
+def get_engine_count() -> int:
+    """Return count of engines that loaded successfully."""
+    return len(_loaded_engines)
+
+
+logger.info(
+    "PACK-003 engines: %d/%d loaded",
+    len(_loaded_engines),
+    __engines_count__,
+)

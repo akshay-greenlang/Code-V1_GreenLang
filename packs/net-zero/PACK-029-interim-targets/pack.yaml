@@ -1,0 +1,504 @@
+# PACK-029: Interim Targets Pack
+# Comprehensive interim target setting, progress monitoring, variance analysis,
+# and corrective action planning for net-zero pathways
+# Supports SBTi 21-criteria validation, LMDI decomposition, and multi-scope timelines
+
+pack_id: "PACK-029"
+pack_name: "Interim Targets Pack"
+version: "1.0.0"
+tier: "Professional"
+category: "Net Zero"
+description: >-
+  Comprehensive interim target setting, progress monitoring, variance analysis,
+  and corrective action planning for organizations on their net-zero journey.
+  Supports SBTi 21-criteria validation, LMDI variance decomposition, quarterly
+  monitoring with RAG scoring, corrective action planning via MACC optimization,
+  and regulatory reporting (CDP C4.1/C4.2, TCFD Metrics and Targets, SBTi annual
+  disclosure). Bridges the gap between long-term net-zero commitments and
+  near-term operational planning.
+
+# Target audience
+target_audience:
+  company_types:
+    - "Companies with validated or pending SBTi targets"
+    - "Organizations seeking near-term emission reduction milestones"
+    - "CDP respondents requiring C4.1/C4.2 interim target disclosure"
+    - "TCFD reporters needing Metrics and Targets content"
+    - "Multi-division enterprises with hierarchical targets"
+    - "Financial institutions tracking portfolio interim targets"
+  maturity_level: "Intermediate to Advanced"
+  use_cases:
+    - "5-year and 10-year interim target setting with SBTi validation"
+    - "Quarterly progress monitoring with RAG scoring and alerts"
+    - "Annual progress review with year-over-year comparison"
+    - "LMDI variance decomposition (activity, intensity, structural effects)"
+    - "Corrective action planning with MACC curve optimization"
+    - "Trend extrapolation (linear, exponential smoothing, ARIMA)"
+    - "Carbon budget tracking and remaining budget calculation"
+    - "Target recalibration for acquisitions, divestments, methodology changes"
+    - "CDP C4.1/C4.2 interim target export"
+    - "TCFD Metrics and Targets disclosure generation"
+    - "SBTi annual disclosure preparation"
+    - "Scope-specific timelines (Scope 1+2, Scope 3, FLAG)"
+
+# Pack components
+components:
+  engines:
+    count: 10
+    list:
+      - id: interim_target_engine
+        name: "Interim Target Engine"
+        file: "engines/interim_target_engine.py"
+        description: >-
+          5-year and 10-year interim target calculation with SBTi validation,
+          scope-specific timelines, 5 pathway shapes, and cumulative budget
+        inputs:
+          - entity_name
+          - baseline_data
+          - long_term_target
+          - ambition_level
+          - pathway_shape
+          - milestone_overrides
+        outputs:
+          - scope_timelines
+          - five_year_targets
+          - ten_year_targets
+          - sbti_validation
+          - implied_temperature_score
+          - provenance_hash
+
+      - id: quarterly_monitoring_engine
+        name: "Quarterly Monitoring Engine"
+        file: "engines/quarterly_monitoring_engine.py"
+        description: >-
+          Quarterly actual-vs-target comparison with RAG scoring,
+          trend analysis, and automated alert triggering
+        inputs:
+          - entity_id
+          - reporting_quarter
+          - actual_emissions
+          - target_emissions
+        outputs:
+          - rag_status
+          - variance_pct
+          - trend_direction
+          - alerts
+
+      - id: annual_review_engine
+        name: "Annual Review Engine"
+        file: "engines/annual_review_engine.py"
+        description: >-
+          Annual progress assessment with year-over-year comparison,
+          cumulative carbon budget tracking, and pathway adherence scoring
+        inputs:
+          - entity_id
+          - reporting_year
+          - annual_actual
+          - annual_target
+          - historical_data
+        outputs:
+          - yoy_comparison
+          - cumulative_budget_status
+          - pathway_adherence_score
+          - forward_projection
+
+      - id: variance_analysis_engine
+        name: "Variance Analysis Engine"
+        file: "engines/variance_analysis_engine.py"
+        description: >-
+          LMDI (Logarithmic Mean Divisia Index) decomposition of emissions
+          variance into activity, intensity, and structural effects with
+          guaranteed perfect decomposition
+        inputs:
+          - emissions_start
+          - emissions_end
+          - activity_data_start
+          - activity_data_end
+          - decomposition_factors
+        outputs:
+          - total_change_tco2e
+          - activity_effect_tco2e
+          - intensity_effect_tco2e
+          - structural_effect_tco2e
+          - is_perfect_decomposition
+
+      - id: trend_extrapolation_engine
+        name: "Trend Extrapolation Engine"
+        file: "engines/trend_extrapolation_engine.py"
+        description: >-
+          Linear regression, exponential smoothing, and ARIMA-based
+          emissions forecasting with 80% and 95% confidence intervals
+        inputs:
+          - historical_emissions
+          - forecast_periods
+          - models
+        outputs:
+          - forecasts
+          - confidence_intervals
+          - forecast_accuracy_metrics
+          - recommended_model
+
+      - id: corrective_action_engine
+        name: "Corrective Action Engine"
+        file: "engines/corrective_action_engine.py"
+        description: >-
+          Gap-to-target quantification and initiative portfolio optimization
+          using MACC curve analysis with budget and timeline constraints
+        inputs:
+          - gap_tco2e
+          - available_initiatives
+          - max_budget
+          - max_years
+        outputs:
+          - selected_initiatives
+          - total_reduction_tco2e
+          - total_cost_usd
+          - gap_closure_pct
+          - implementation_schedule
+
+      - id: target_recalibration_engine
+        name: "Target Recalibration Engine"
+        file: "engines/target_recalibration_engine.py"
+        description: >-
+          Trigger-based target recalculation for acquisitions, divestments,
+          methodology changes, and significant baseline changes
+        inputs:
+          - trigger_type
+          - trigger_details
+          - current_baseline
+          - current_targets
+        outputs:
+          - new_baseline
+          - adjusted_milestones
+          - recalibration_report
+
+      - id: sbti_validation_engine
+        name: "SBTi Validation Engine"
+        file: "engines/sbti_validation_engine.py"
+        description: >-
+          21-criteria validation against SBTi Corporate Net-Zero Standard
+          v1.2 with detailed per-criterion pass/fail/warning results
+        inputs:
+          - interim_targets
+          - baseline_data
+          - entity_metadata
+        outputs:
+          - is_compliant
+          - criteria_results
+          - passed_count
+          - failed_count
+          - recommendations
+
+      - id: carbon_budget_tracker_engine
+        name: "Carbon Budget Tracker Engine"
+        file: "engines/carbon_budget_tracker_engine.py"
+        description: >-
+          Cumulative carbon budget calculation using trapezoidal integration,
+          remaining budget quantification, and budget burn rate analysis
+        inputs:
+          - annual_pathway
+          - actual_emissions_history
+          - forecast_emissions
+        outputs:
+          - total_budget_tco2e
+          - consumed_budget_tco2e
+          - remaining_budget_tco2e
+          - burn_rate
+          - years_until_exhaustion
+
+      - id: alert_generation_engine
+        name: "Alert Generation Engine"
+        file: "engines/alert_generation_engine.py"
+        description: >-
+          Threshold-based alert generation for off-track performance
+          with configurable severity levels and escalation rules
+        inputs:
+          - monitoring_results
+          - alert_thresholds
+          - escalation_rules
+        outputs:
+          - alerts
+          - escalation_actions
+          - notification_channels
+
+  workflows:
+    count: 7
+    list:
+      - id: interim_target_setting_workflow
+        name: "Interim Target Setting Workflow"
+        file: "workflows/interim_target_setting_workflow.py"
+        phases: 5
+        description: "Set interim targets with SBTi validation"
+        phase_sequence:
+          - "BaselineImport: Import baseline from PACK-021 or direct input"
+          - "InterimCalc: Calculate 5-year and 10-year interim targets"
+          - "SBTiValidation: Validate against 21 SBTi criteria"
+          - "PathwayGen: Generate annual reduction pathway"
+          - "TargetReport: Generate interim targets summary report"
+
+      - id: quarterly_monitoring_workflow
+        name: "Quarterly Monitoring Workflow"
+        file: "workflows/quarterly_monitoring_workflow.py"
+        phases: 4
+        description: "Monitor quarterly progress against targets"
+        phase_sequence:
+          - "DataCollection: Collect quarterly actual emissions from MRV"
+          - "ProgressCheck: Compare actual vs target with RAG scoring"
+          - "TrendAnalysis: Analyze trend direction and velocity"
+          - "QuarterlyReport: Generate quarterly progress report + alerts"
+
+      - id: annual_progress_review_workflow
+        name: "Annual Progress Review Workflow"
+        file: "workflows/annual_progress_review_workflow.py"
+        phases: 5
+        description: "Comprehensive annual progress review"
+        phase_sequence:
+          - "AnnualDataCollect: Collect annual actual emissions"
+          - "YoYComparison: Year-over-year comparison"
+          - "BudgetCheck: Carbon budget consumption assessment"
+          - "TrendForecast: Multi-year trend extrapolation"
+          - "AnnualReport: Generate annual progress report"
+
+      - id: variance_investigation_workflow
+        name: "Variance Investigation Workflow"
+        file: "workflows/variance_investigation_workflow.py"
+        phases: 4
+        description: "Investigate variance using LMDI decomposition"
+        phase_sequence:
+          - "DataPrep: Prepare activity and emissions data for decomposition"
+          - "LMDIDecomposition: Run LMDI variance decomposition"
+          - "RootCauseAttribution: Attribute variance to root causes"
+          - "VarianceReport: Generate variance waterfall report"
+
+      - id: corrective_action_planning_workflow
+        name: "Corrective Action Planning Workflow"
+        file: "workflows/corrective_action_planning_workflow.py"
+        phases: 5
+        description: "Plan corrective actions for off-track performance"
+        phase_sequence:
+          - "GapQuantification: Quantify gap to target"
+          - "InitiativeScanning: Scan available reduction initiatives"
+          - "MACCOptimization: Optimize initiative portfolio via MACC"
+          - "ScheduleGen: Generate implementation schedule"
+          - "ActionPlanReport: Generate corrective action plan report"
+
+      - id: annual_reporting_workflow
+        name: "Annual Reporting Workflow"
+        file: "workflows/annual_reporting_workflow.py"
+        phases: 4
+        description: "Generate annual regulatory disclosures"
+        phase_sequence:
+          - "DataConsolidation: Consolidate annual data"
+          - "CDPExport: Generate CDP C4.1/C4.2 export"
+          - "TCFDExport: Generate TCFD Metrics and Targets content"
+          - "SBTiDisclosure: Generate SBTi annual disclosure"
+
+      - id: target_recalibration_workflow
+        name: "Target Recalibration Workflow"
+        file: "workflows/target_recalibration_workflow.py"
+        phases: 4
+        description: "Recalibrate targets after trigger events"
+        phase_sequence:
+          - "TriggerDetection: Detect recalibration triggers"
+          - "BaselineAdjustment: Adjust baseline for trigger event"
+          - "TargetRecalc: Recalculate all interim milestones"
+          - "RecalibrationReport: Generate recalibration report"
+
+  templates:
+    count: 10
+    list:
+      - id: interim_targets_summary
+        name: "Interim Targets Summary"
+        file: "templates/interim_targets_summary.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: quarterly_progress_report
+        name: "Quarterly Progress Report"
+        file: "templates/quarterly_progress_report.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: annual_progress_report
+        name: "Annual Progress Report"
+        file: "templates/annual_progress_report.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: variance_waterfall_report
+        name: "Variance Waterfall Report"
+        file: "templates/variance_waterfall_report.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: corrective_action_plan_report
+        name: "Corrective Action Plan Report"
+        file: "templates/corrective_action_plan_report.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: sbti_validation_report
+        name: "SBTi Validation Report"
+        file: "templates/sbti_validation_report.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: cdp_export_template
+        name: "CDP Export Template"
+        file: "templates/cdp_export_template.py"
+        formats: ["json", "xlsx"]
+      - id: tcfd_disclosure_template
+        name: "TCFD Disclosure Template"
+        file: "templates/tcfd_disclosure_template.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: carbon_budget_report
+        name: "Carbon Budget Report"
+        file: "templates/carbon_budget_report.py"
+        formats: ["md", "html", "json", "pdf"]
+      - id: executive_dashboard_template
+        name: "Executive Dashboard Template"
+        file: "templates/executive_dashboard_template.py"
+        formats: ["html", "pdf"]
+
+  integrations:
+    count: 10
+    list:
+      - id: pack_orchestrator
+        name: "Pack Orchestrator"
+        file: "integrations/pack_orchestrator.py"
+        description: "12-phase DAG pipeline with conditional routing"
+      - id: pack021_bridge
+        name: "PACK-021 Bridge"
+        file: "integrations/pack021_bridge.py"
+        description: "Baseline and long-term target import from Net Zero Starter Pack"
+      - id: pack028_bridge
+        name: "PACK-028 Bridge"
+        file: "integrations/pack028_bridge.py"
+        description: "Sector pathway and abatement lever import"
+      - id: mrv_bridge
+        name: "MRV Bridge"
+        file: "integrations/mrv_bridge.py"
+        description: "All 30 MRV agents for actual emissions calculation"
+      - id: sbti_portal_bridge
+        name: "SBTi Portal Bridge"
+        file: "integrations/sbti_portal_bridge.py"
+        description: "SBTi target submission and annual disclosure"
+      - id: cdp_bridge
+        name: "CDP Bridge"
+        file: "integrations/cdp_bridge.py"
+        description: "CDP C4.1/C4.2 export and scoring integration"
+      - id: tcfd_bridge
+        name: "TCFD Bridge"
+        file: "integrations/tcfd_bridge.py"
+        description: "TCFD Metrics and Targets disclosure integration"
+      - id: alerting_bridge
+        name: "Alerting Bridge"
+        file: "integrations/alerting_bridge.py"
+        description: "Multi-channel alerting (email, Slack, Teams)"
+      - id: health_check
+        name: "Health Check"
+        file: "integrations/health_check.py"
+        description: "20-category system verification"
+      - id: setup_wizard
+        name: "Setup Wizard"
+        file: "integrations/setup_wizard.py"
+        description: "7-step guided configuration wizard"
+
+  presets:
+    count: 7
+    list:
+      - id: sbti_15c
+        name: "SBTi 1.5C Aligned"
+        file: "config/presets/sbti_15c.yaml"
+      - id: sbti_wb2c
+        name: "SBTi Well-Below 2C"
+        file: "config/presets/sbti_wb2c.yaml"
+      - id: race_to_zero
+        name: "Race to Zero"
+        file: "config/presets/race_to_zero.yaml"
+      - id: corporate_net_zero
+        name: "Corporate Net-Zero"
+        file: "config/presets/corporate_net_zero.yaml"
+      - id: financial_institution
+        name: "Financial Institution"
+        file: "config/presets/financial_institution.yaml"
+      - id: sme_simplified
+        name: "SME Simplified"
+        file: "config/presets/sme_simplified.yaml"
+      - id: manufacturing
+        name: "Manufacturing"
+        file: "config/presets/manufacturing.yaml"
+
+# Dependencies
+platform_dependencies:
+  infrastructure:
+    - INFRA-001  # Kubernetes/EKS
+    - INFRA-002  # PostgreSQL + TimescaleDB
+    - INFRA-003  # Redis
+    - INFRA-006  # API Gateway (Kong)
+    - INFRA-010  # Agent Factory
+
+  security:
+    - SEC-001    # JWT Authentication
+    - SEC-002    # RBAC Authorization
+    - SEC-003    # Encryption at Rest
+    - SEC-005    # Centralized Audit Logging
+
+  observability:
+    - OBS-001    # Prometheus Metrics
+    - OBS-002    # Grafana Dashboards
+    - OBS-003    # OpenTelemetry Tracing
+
+  mrv_agents:
+    all: true  # All 30 MRV agents
+
+  data_agents:
+    all: true  # All 20 DATA agents
+
+  pack_dependencies:
+    - pack_id: "PACK-021"
+      name: "Net Zero Starter Pack"
+      relationship: "recommended"
+      description: "Provides baseline emissions and long-term targets"
+    - pack_id: "PACK-028"
+      name: "Sector Pathway Pack"
+      relationship: "recommended"
+      description: "Provides sector pathways and abatement levers"
+
+# Database
+database:
+  migrations:
+    start: "V196"
+    end: "V210"
+    count: 15
+  tables: 15
+  views: 3
+  indexes: "250+"
+
+# Testing
+testing:
+  files: 15
+  tests: "1300+"
+  coverage: "92%"
+  pass_rate: "100%"
+
+# Technical specifications
+technical_specs:
+  language: "Python 3.11+"
+  framework: "FastAPI 0.110+"
+  async: true
+  database: "PostgreSQL 16+ with TimescaleDB"
+  caching: "Redis 7+"
+  deployment: "Kubernetes 1.28+"
+
+# Release
+release:
+  status: "Production Ready"
+  release_date: "2026-03-19"
+
+# Metadata
+metadata:
+  author: "GreenLang Platform Team"
+  maintainer: "net-zero-team@greenlang.io"
+  license: "Proprietary (Professional License Required)"
+  homepage: "https://greenlang.io/packs/interim-targets"
+  documentation: "https://docs.greenlang.io/packs/029"
+  keywords:
+    - net-zero
+    - interim-targets
+    - sbti-validation
+    - lmdi-decomposition
+    - quarterly-monitoring
+    - variance-analysis
+    - corrective-actions
+    - carbon-budget
+    - cdp-disclosure
+    - tcfd-reporting

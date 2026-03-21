@@ -1,0 +1,262 @@
+# =============================================================================
+# PACK-030 Net Zero Reporting Pack - Multi-Framework Comprehensive Preset
+# =============================================================================
+# Configuration for generating all 7 framework reports in a single reporting
+# cycle with strict cross-framework consistency validation. This is the most
+# comprehensive preset, executing all framework workflows in parallel and
+# producing a unified report suite with maximum coverage.
+#
+# Frameworks Included (All 7):
+#   - SBTi: Annual progress disclosure against validated targets
+#   - CDP: Climate Change questionnaire (C0-C12) with data tables
+#   - TCFD: 4-pillar disclosure with scenario analysis
+#   - GRI: GRI 305 emissions disclosures (305-1 through 305-7)
+#   - ISSB: IFRS S2 climate disclosure with industry metrics
+#   - SEC: 10-K climate disclosure with XBRL/iXBRL tagging
+#   - CSRD: ESRS E1 Climate Change with digital taxonomy
+#
+# Output Formats Generated:
+#   - PDF: SBTi, TCFD, GRI, ISSB, SEC, CSRD reports
+#   - HTML: Executive dashboard with all frameworks
+#   - Excel: CDP questionnaire preparation
+#   - XBRL: SEC + CSRD digital taxonomies
+#   - iXBRL: SEC inline XBRL
+#   - JSON: API output for ESG data vendors
+#
+# Typical use cases:
+#   - Large multinationals reporting across all 7 frameworks
+#   - Enterprises with multiple regulatory jurisdictions (US + EU + UK)
+#   - Companies seeking comprehensive climate disclosure strategy
+#   - Organizations with SBTi + CDP + TCFD + CSRD obligations
+#   - ESG data vendors needing complete framework coverage
+#
+# Key characteristics:
+#   - All 7 frameworks enabled with parallel execution
+#   - Strict consistency validation across all frameworks
+#   - Full output format coverage (6 formats)
+#   - Multi-language support (EN, DE, FR, ES)
+#   - Evidence bundle covering all frameworks
+#   - Executive dashboard with framework coverage heatmap
+#   - Maximum data source utilization (all packs + all apps)
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+reporting_year: 2025
+baseline_year: 2019
+fiscal_year_end_month: 12
+
+# --- Framework Configuration (ALL 7) ---
+frameworks:
+  frameworks_enabled:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "GRI"
+    - "ISSB"
+    - "SEC"
+    - "CSRD"
+  primary_framework: null
+  secondary_frameworks: []
+  framework_outputs:
+    - format: "PDF"
+      template: "sbti_progress_report"
+      enabled: true
+    - format: "PDF"
+      template: "tcfd_executive_report"
+      enabled: true
+    - format: "PDF"
+      template: "gri_305_report"
+      enabled: true
+    - format: "PDF"
+      template: "issb_s2_report"
+      enabled: true
+    - format: "PDF"
+      template: "sec_narrative_disclosure"
+      enabled: true
+    - format: "PDF"
+      template: "csrd_e1_template"
+      enabled: true
+    - format: "HTML"
+      template: "executive_dashboard"
+      enabled: true
+    - format: "Excel"
+      template: "cdp_questionnaire"
+      enabled: true
+    - format: "XBRL"
+      template: "sec_climate_xbrl"
+      enabled: true
+    - format: "XBRL"
+      template: "csrd_esrs_taxonomy"
+      enabled: true
+    - format: "iXBRL"
+      template: "sec_climate_ixbrl"
+      enabled: true
+
+# --- Output Settings (ALL 6 FORMATS) ---
+output_formats:
+  - "PDF"
+  - "HTML"
+  - "Excel"
+  - "JSON"
+  - "XBRL"
+  - "iXBRL"
+languages:
+  - "en"
+  - "de"
+  - "fr"
+  - "es"
+
+# --- Branding ---
+branding:
+  style: "corporate"
+  logo_path: null
+  primary_color: "#1E3A8A"
+  secondary_color: "#3B82F6"
+  font_family: "Arial, Helvetica, sans-serif"
+  include_charts: true
+  include_toc: true
+  include_page_numbers: true
+  include_headers_footers: true
+  custom_css: null
+
+# --- Data Aggregation (ALL SOURCES) ---
+data_aggregation:
+  pack_021_requirement: "required"
+  pack_022_requirement: "required"
+  pack_028_requirement: "required"
+  pack_029_requirement: "required"
+  gl_sbti_app_requirement: "required"
+  gl_cdp_app_requirement: "required"
+  gl_tcfd_app_requirement: "required"
+  gl_ghg_app_requirement: "required"
+  auto_reconciliation: true
+  reconciliation_tolerance_pct: 0.5
+  gap_detection_enabled: true
+  lineage_tracking_enabled: true
+  lineage_diagram_format: "svg"
+  completeness_scoring: true
+  parallel_fetching: true
+  fetch_timeout_seconds: 45
+  retry_count: 3
+  circuit_breaker_threshold: 5
+
+# --- Narrative Generation ---
+narrative:
+  narrative_quality: "high"
+  citation_management_enabled: true
+  citation_format: "footnote"
+  hyperlinked_citations: true
+  consistency_validation_enabled: true
+  consistency_target_pct: 95.0
+  harmonization_suggestions: true
+  human_review_required: true
+  review_workflow_enabled: true
+  max_narrative_length_words: 5000
+
+# --- Translation ---
+translation:
+  languages:
+    - "en"
+    - "de"
+    - "fr"
+    - "es"
+  primary_language: "en"
+  translation_service: "deepl"
+  climate_glossary_enabled: true
+  preserve_citations: true
+  quality_validation_enabled: true
+  quality_target_pct: 98.0
+
+# --- XBRL/iXBRL ---
+xbrl:
+  xbrl_enabled: true
+  sec_taxonomy_version: "2024"
+  csrd_taxonomy_version: "2024"
+  issb_taxonomy_version: "2024"
+  taxonomy_validation_enabled: true
+  ixbrl_enabled: true
+  taxonomy_cache_enabled: true
+  taxonomy_cache_ttl_hours: 168
+  auto_tag_detection: true
+
+# --- Assurance ---
+assurance:
+  assurance_level: "limited"
+  include_evidence_bundle: true
+  include_provenance: true
+  include_lineage_diagrams: true
+  include_methodology_docs: true
+  include_control_matrix: true
+  include_assumption_register: true
+  include_change_log: true
+  evidence_bundle_format: "zip"
+  isae_3410_compliance: true
+  isae_3000_compliance: true
+
+# --- Dashboard ---
+dashboard:
+  executive_dashboard_enabled: true
+  framework_dashboards_enabled: true
+  stakeholder_views_enabled: true
+  default_stakeholder_view: "board"
+  framework_coverage_heatmap: true
+  deadline_countdown: true
+  drill_down_enabled: true
+  interactive_charts: true
+  responsive_design: true
+  export_to_pdf: true
+  auto_refresh_interval_seconds: 0
+
+# --- Validation (STRICT CONSISTENCY) ---
+validation:
+  schema_validation_enabled: true
+  completeness_validation_enabled: true
+  consistency_validation_enabled: true
+  consistency_strictness: "strict"
+  quality_scoring_enabled: true
+  minimum_quality_score: 85.0
+  metric_reconciliation: true
+  metric_tolerance_pct: 0.1
+  narrative_spell_check: true
+  narrative_grammar_check: true
+  block_publish_on_critical: true
+
+# --- Notifications ---
+notifications:
+  email_notifications_enabled: true
+  slack_notifications_enabled: true
+  teams_notifications_enabled: false
+  webhook_notifications_enabled: false
+  notification_recipients: []
+  slack_channel: null
+  webhook_url: null
+  deadline_reminders:
+    - 120
+    - 90
+    - 60
+    - 30
+    - 14
+    - 7
+  notify_on_generation: true
+  notify_on_validation_failure: true
+  notify_on_approval: true
+
+# --- Performance (PARALLEL EXECUTION) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  cache_hit_ratio_target: 95.0
+  max_concurrent_reports: 10
+  report_generation_timeout_seconds: 10
+  api_response_timeout_ms: 200
+  pdf_render_timeout_seconds: 5
+  parallel_framework_execution: true
+  batch_size: 2000
+  memory_limit_mb: 8192
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

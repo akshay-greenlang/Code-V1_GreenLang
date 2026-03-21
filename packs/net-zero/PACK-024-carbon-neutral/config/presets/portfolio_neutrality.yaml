@@ -1,0 +1,274 @@
+# =============================================================================
+# PACK-024 Carbon Neutral Pack - Portfolio Neutrality Preset
+# =============================================================================
+# Multi-entity portfolio carbon neutrality for corporate groups, investment
+# portfolios, franchise networks, and multi-site organizations. Covers
+# entity-level footprinting with portfolio-level aggregation, intercompany
+# elimination, cross-entity credit allocation, and consolidated neutrality
+# claims. Supports holding companies, REITs, private equity portfolios,
+# and franchise networks.
+#
+# Typical use cases:
+#   - Corporate groups with 10-500 subsidiaries
+#   - Private equity / venture capital fund portfolios
+#   - REIT property portfolios (50-500 buildings)
+#   - Franchise networks (100-10,000 locations)
+#   - Multi-national corporations with regional subsidiaries
+#   - Joint ventures and consortium-based neutrality
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+neutrality_type: "PORTFOLIO"
+boundary_scope: "MULTI_ENTITY"
+region: "GLOBAL"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+portfolio_name: ""
+entity_count: 10
+
+# --- Scope Configuration ---
+scope_boundaries:
+  scope1:
+    included: true
+    coverage_pct: 100.0
+    consolidation: "equity_share"
+    sources:
+      - "stationary_combustion"
+      - "mobile_combustion"
+      - "process_emissions"
+      - "fugitive_emissions"
+      - "refrigerant_leakage"
+  scope2:
+    included: true
+    coverage_pct: 100.0
+    methods:
+      - "location_based"
+      - "market_based"
+    preferred_method: "market_based"
+    sources:
+      - "purchased_electricity"
+      - "purchased_steam"
+      - "purchased_heating"
+      - "purchased_cooling"
+  scope3:
+    included: true
+    coverage_pct: 67.0
+    categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15]
+    materiality_threshold_pct: 1.0
+    de_minimis_pct: 5.0
+    portfolio_specific:
+      intercompany_elimination: true
+      double_counting_prevention: true
+      financed_emissions_included: true
+      pcaf_methodology: true
+
+# --- Portfolio-Specific Parameters ---
+portfolio_parameters:
+  max_entities: 500
+  consolidation_method: "equity_share"
+  ownership_threshold_pct: 20.0
+  intercompany_elimination: true
+  entity_types:
+    - "subsidiary"
+    - "joint_venture"
+    - "associate"
+    - "franchise"
+    - "leased_asset"
+  reporting_hierarchies:
+    - "geographic"
+    - "business_unit"
+    - "legal_entity"
+    - "sector"
+    - "risk_rating"
+  entity_classification:
+    large: "scope_1_2_3_full"
+    medium: "scope_1_2_plus_material_scope3"
+    small: "scope_1_2_only"
+  data_collection_approach:
+    primary: "entity_reported"
+    secondary: "sector_average"
+    fallback: "revenue_proxy"
+
+# --- Engines Configuration ---
+engines:
+  footprint_quantification:
+    enabled: true
+    consolidation_approach: "equity_share"
+    include_biogenic_co2: false
+    uncertainty_assessment: true
+    data_quality_scoring: true
+    gwp_source: "IPCC_AR6"
+    gwp_timeframe: 100
+    materiality_threshold_pct: 1.0
+    portfolio_specific:
+      entity_level_tracking: true
+      portfolio_aggregation: true
+      intercompany_elimination: true
+      weighted_average_quality: true
+      gap_filling_methodology: "sector_average"
+  carbon_management_plan:
+    enabled: true
+    planning_horizon_years: 5
+    reduction_first_strategy: true
+    min_reduction_before_offset_pct: 50.0
+    internal_carbon_price_eur: 100.0
+    max_offset_reliance_pct: 50.0
+    annual_reduction_target_pct: 4.2
+    portfolio_level_plan: true
+    entity_level_targets: true
+  credit_quality:
+    enabled: true
+    min_quality_score: 65
+    icvcm_ccp_compliance: true
+    preferred_standards:
+      - "verra_vcs"
+      - "gold_standard"
+      - "american_carbon_registry"
+      - "climate_action_reserve"
+    min_additionality_score: 7
+    min_permanence_score: 7
+    require_sdg_contribution: true
+  portfolio_optimization:
+    enabled: true
+    max_nature_based_pct: 40.0
+    max_avoidance_pct: 50.0
+    min_removal_pct: 20.0
+    diversification_min_types: 4
+    vintage_max_age_years: 5
+    geographic_diversification: true
+    budget_constraint_enabled: true
+    entity_level_allocation: true
+    centralized_procurement: true
+  registry_retirement:
+    enabled: true
+    auto_retirement: false
+    retirement_timing: "within_reporting_period"
+    supported_registries:
+      - "verra"
+      - "gold_standard"
+      - "american_carbon_registry"
+      - "climate_action_reserve"
+    serial_number_tracking: true
+    double_counting_prevention: true
+    entity_attribution: true
+  neutralization_balance:
+    enabled: true
+    balance_method: "annual"
+    allow_forward_credits: false
+    buffer_pool_pct: 10.0
+    shortfall_action: "purchase_additional"
+    surplus_carryover: false
+    verification_frequency: "annual"
+    entity_level_balance: true
+    portfolio_level_balance: true
+  claims_substantiation:
+    enabled: true
+    claim_type: "carbon_neutral_portfolio"
+    standard: "ISO_14068_1"
+    pas2060_compliance: true
+    vcmi_claims_code: false
+    public_disclosure_required: true
+    third_party_verification: true
+    claim_period: "annual"
+    entity_level_claims: false
+    portfolio_level_claim: true
+  verification_package:
+    enabled: true
+    assurance_level: "limited"
+    standard: "ISAE_3410"
+    third_party_verifier: true
+    evidence_completeness_target_pct: 90.0
+    documentation_format: "PDF"
+    entity_sampling_approach: "risk_based"
+    sample_size_pct: 30.0
+  annual_cycle:
+    enabled: true
+    cycle_start_month: 1
+    cycle_end_month: 12
+    milestone_frequency: "quarterly"
+    progress_reporting: true
+    recertification_reminder_days: 90
+    continuous_improvement_tracking: true
+    entity_reporting_deadline_days: 60
+  permanence_risk:
+    enabled: true
+    risk_assessment_frequency: "annual"
+    buffer_contribution_pct: 15.0
+    reversal_monitoring: true
+    replacement_trigger_threshold_pct: 10.0
+    insurance_coverage_required: true
+    portfolio_risk_aggregation: true
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  carbon_price_eur_per_tco2e: 100.0
+  reporting_currency: "EUR"
+  credit_budget_annual_eur: 2000000.0
+  credit_price_range:
+    min_eur: 10.0
+    max_eur: 150.0
+    avg_eur: 40.0
+  centralized_procurement: true
+  entity_cost_allocation: "proportional_emissions"
+
+# --- Data Quality ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "entity_reported"
+    - "sector_average"
+    - "revenue_proxy"
+    - "default_factors"
+  emission_factor_source: "IPCC_AR6_2022"
+  grid_factor_update_frequency: "annual"
+  entity_data_quality_minimum: 3.0
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2027
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  sha256_provenance: true
+  retention_years: 10
+  entity_sampling: true
+  sample_size_pct: 30.0
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+    - "XBRL"
+  include_iso14068_mapping: true
+  include_pas2060_mapping: true
+  include_ghg_protocol_mapping: true
+  include_pcaf_mapping: true
+  include_cdp_mapping: true
+  language: "en"
+  multi_language_support: true
+  supported_languages:
+    - "en"
+    - "de"
+    - "fr"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 16
+  timeout_seconds: 600
+  batch_size: 2000
+  memory_limit_mb: 8192

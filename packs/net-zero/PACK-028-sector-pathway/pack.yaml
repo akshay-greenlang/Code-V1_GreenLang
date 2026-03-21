@@ -1,0 +1,773 @@
+# PACK-028: Sector Pathway Pack
+# Sector-specific decarbonization pathway analysis aligned with SBTi SDA and IEA NZE 2050
+# Supports 15+ sectors with technology roadmaps, abatement waterfall, and multi-scenario modeling
+
+pack_id: "PACK-028"
+pack_name: "Sector Pathway Pack"
+version: "1.0.0"
+tier: "Professional"
+category: "Net Zero"
+description: >-
+  Sector-specific decarbonization pathway analysis aligned with SBTi Sectoral
+  Decarbonization Approach (SDA) methodology and IEA Net Zero by 2050 roadmap.
+  Supports 15+ sectors with intensity convergence, technology transition roadmaps,
+  abatement waterfall analysis, sector benchmarking, and multi-scenario modeling.
+
+# Target audience
+target_audience:
+  company_types:
+    - "Companies in SBTi SDA-eligible sectors (power, steel, cement, aluminum, chemicals, pulp, aviation, shipping, road transport, rail, buildings)"
+    - "Companies in IEA NZE-covered sectors (agriculture, food & beverage, oil & gas)"
+    - "Multi-sector conglomerates with SDA-eligible divisions"
+    - "Financial institutions assessing portfolio sector alignment"
+  maturity_level: "Intermediate to Advanced"
+  use_cases:
+    - "SBTi SDA pathway design and validation"
+    - "Sector-specific intensity convergence analysis"
+    - "IEA NZE 2050 scenario alignment"
+    - "Technology transition roadmap planning"
+    - "Abatement waterfall by sector lever"
+    - "Sector benchmarking vs. peers, leaders, and IEA pathway"
+    - "Multi-scenario pathway comparison (1.5C, WB2C, 2C, APS, STEPS)"
+    - "Gap analysis vs. sector decarbonization pathway"
+    - "IPCC AR6 emission factor integration"
+    - "Cross-sector portfolio pathway assessment"
+
+# Pack components
+components:
+  engines:
+    count: 8
+    list:
+      - id: sector_classification_engine
+        name: "Sector Classification Engine"
+        file: "engines/sector_classification_engine.py"
+        description: >-
+          Automatic sector classification using NACE Rev.2, GICS, ISIC Rev.4
+          codes with SBTi SDA sector mapping and multi-sector support
+        inputs:
+          - company_profile
+          - nace_codes
+          - gics_code
+          - isic_code
+          - revenue_breakdown
+        outputs:
+          - primary_sector
+          - sub_sectors
+          - sda_eligibility
+          - sda_methodology
+          - intensity_metric
+          - iea_chapter
+
+      - id: intensity_calculator_engine
+        name: "Intensity Calculator Engine"
+        file: "engines/intensity_calculator_engine.py"
+        description: >-
+          Sector-specific intensity metric calculation for 20+ sector-metric
+          pairs with data normalization and trend analysis
+        inputs:
+          - activity_data
+          - emissions_data
+          - sector_type
+          - production_data
+        outputs:
+          - base_year_intensity
+          - current_intensity
+          - intensity_trend
+          - normalized_metrics
+          - data_quality_score
+
+      - id: pathway_generator_engine
+        name: "Pathway Generator Engine"
+        file: "engines/pathway_generator_engine.py"
+        description: >-
+          SBTi SDA and IEA NZE pathway generation for 15+ sectors with
+          5 scenario support and 4 convergence models
+        inputs:
+          - sector
+          - base_year_intensity
+          - target_year_near
+          - target_year_long
+          - scenario
+          - production_forecast
+          - region
+          - convergence_model
+        outputs:
+          - annual_pathway
+          - target_intensity_2030
+          - target_intensity_2050
+          - absolute_emissions_trajectory
+          - convergence_curve
+          - sbti_alignment_check
+
+      - id: convergence_analyzer_engine
+        name: "Convergence Analyzer Engine"
+        file: "engines/convergence_analyzer_engine.py"
+        description: >-
+          Sector intensity convergence analysis comparing company trajectory
+          against SBTi SDA and IEA NZE benchmarks with gap quantification
+        inputs:
+          - current_intensity
+          - current_year
+          - company_trajectory
+          - sector_pathway
+        outputs:
+          - gap_to_pathway
+          - gap_to_2030_target
+          - required_annual_reduction
+          - risk_level
+          - time_to_convergence
+          - acceleration_needed
+
+      - id: technology_roadmap_engine
+        name: "Technology Roadmap Engine"
+        file: "engines/technology_roadmap_engine.py"
+        description: >-
+          Technology transition roadmaps with IEA milestone mapping (400+
+          milestones), S-curve adoption modeling, CapEx phasing, and
+          dependency analysis
+        inputs:
+          - sector
+          - pathway
+          - current_technology_mix
+          - capex_budget
+          - region
+        outputs:
+          - technology_transitions
+          - adoption_curves
+          - capex_schedule
+          - iea_milestone_tracking
+          - dependency_graph
+          - risk_assessment
+
+      - id: abatement_waterfall_engine
+        name: "Abatement Waterfall Engine"
+        file: "engines/abatement_waterfall_engine.py"
+        description: >-
+          Sector-specific abatement waterfall with lever-by-lever contribution
+          analysis, cost curves, implementation sequencing, and interdependency
+          modeling
+        inputs:
+          - sector
+          - pathway
+          - current_emissions
+          - sector_specific_parameters
+          - target_year
+        outputs:
+          - lever_contributions
+          - cost_per_lever
+          - implementation_timeline
+          - lever_interactions
+          - cumulative_abatement
+          - residual_emissions
+
+      - id: sector_benchmark_engine
+        name: "Sector Benchmark Engine"
+        file: "engines/sector_benchmark_engine.py"
+        description: >-
+          Multi-dimensional sector benchmarking against peer averages, sector
+          leaders, SBTi-validated companies, IEA pathway milestones, and
+          regulatory benchmarks
+        inputs:
+          - sector
+          - company_intensity
+          - company_year
+          - region
+          - production_volume
+        outputs:
+          - percentile_rank
+          - gap_to_average
+          - gap_to_leader
+          - gap_to_pathway
+          - sbti_peer_comparison
+          - regulatory_benchmark
+          - improvement_recommendations
+
+      - id: scenario_comparison_engine
+        name: "Scenario Comparison Engine"
+        file: "engines/scenario_comparison_engine.py"
+        description: >-
+          Multi-scenario pathway comparison across NZE 1.5C, WB2C, 2C, APS,
+          and STEPS with risk-return analysis and optimal pathway recommendation
+        inputs:
+          - sector
+          - base_year_intensity
+          - scenarios
+          - milestones
+          - investment_assumptions
+        outputs:
+          - scenario_pathway_matrix
+          - investment_comparison
+          - technology_timeline_comparison
+          - risk_return_analysis
+          - optimal_pathway
+          - sensitivity_drivers
+
+  workflows:
+    count: 6
+    list:
+      - id: sector_pathway_design_workflow
+        name: "Sector Pathway Design Workflow"
+        file: "workflows/sector_pathway_design_workflow.py"
+        phases: 5
+        description: "Design SBTi SDA-aligned sector pathway"
+        phase_sequence:
+          - "SectorClassify: Classify company into SDA sector"
+          - "IntensityCalc: Calculate base year sector intensity"
+          - "PathwayGen: Generate SDA/IEA convergence pathway"
+          - "GapAnalysis: Analyze convergence gap vs. pathway"
+          - "ValidationReport: Generate SBTi validation report"
+
+      - id: pathway_validation_workflow
+        name: "Pathway Validation Workflow"
+        file: "workflows/pathway_validation_workflow.py"
+        phases: 4
+        description: "Validate sector pathway against SBTi criteria"
+        phase_sequence:
+          - "DataValidation: Validate input data quality and completeness"
+          - "PathwayValidation: Verify pathway calculations and convergence"
+          - "SBTiCheck: Check against SBTi SDA criteria"
+          - "ComplianceReport: Generate compliance report"
+
+      - id: technology_planning_workflow
+        name: "Technology Planning Workflow"
+        file: "workflows/technology_planning_workflow.py"
+        phases: 5
+        description: "Build sector-specific technology transition roadmap"
+        phase_sequence:
+          - "TechInventory: Assess current technology base"
+          - "RoadmapGen: Generate technology transition roadmap"
+          - "CapExMapping: Map CapEx requirements by technology"
+          - "DependencyAnalysis: Analyze technology interdependencies"
+          - "ImplementationPlan: Create implementation plan"
+
+      - id: progress_monitoring_workflow
+        name: "Progress Monitoring Workflow"
+        file: "workflows/progress_monitoring_workflow.py"
+        phases: 4
+        description: "Monitor sector intensity progress vs. pathway"
+        phase_sequence:
+          - "IntensityUpdate: Update current intensity from latest data"
+          - "ConvergenceCheck: Check convergence vs. pathway"
+          - "BenchmarkUpdate: Update sector benchmark position"
+          - "ProgressReport: Generate progress monitoring report"
+
+      - id: multi_scenario_analysis_workflow
+        name: "Multi-Scenario Analysis Workflow"
+        file: "workflows/multi_scenario_analysis_workflow.py"
+        phases: 5
+        description: "Compare pathways across climate scenarios"
+        phase_sequence:
+          - "ScenarioSetup: Configure scenario parameters"
+          - "PathwayModeling: Generate pathway for each scenario"
+          - "RiskAnalysis: Assess transition and physical risks"
+          - "ScenarioCompare: Side-by-side scenario comparison"
+          - "StrategyRecommend: Recommend optimal pathway"
+
+      - id: full_sector_assessment_workflow
+        name: "Full Sector Assessment Workflow"
+        file: "workflows/full_sector_assessment_workflow.py"
+        phases: 7
+        description: "End-to-end sector pathway assessment"
+        phase_sequence:
+          - "Classify: Sector classification"
+          - "Pathway: Pathway generation"
+          - "Technology: Technology roadmap"
+          - "Abatement: Abatement waterfall"
+          - "Benchmark: Sector benchmarking"
+          - "Scenarios: Multi-scenario analysis"
+          - "Strategy: Strategy report generation"
+
+  templates:
+    count: 8
+    list:
+      - id: sector_pathway_report
+        name: "Sector Pathway Report"
+        file: "templates/sector_pathway_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "Sector-specific decarbonization pathway with SDA/IEA alignment"
+
+      - id: intensity_convergence_report
+        name: "Intensity Convergence Report"
+        file: "templates/intensity_convergence_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "Intensity metric tracking and convergence analysis"
+
+      - id: technology_roadmap_report
+        name: "Technology Roadmap Report"
+        file: "templates/technology_roadmap_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "Technology transition roadmap with IEA milestones"
+
+      - id: abatement_waterfall_report
+        name: "Abatement Waterfall Report"
+        file: "templates/abatement_waterfall_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "Sector abatement waterfall with lever contributions"
+
+      - id: sector_benchmark_report
+        name: "Sector Benchmark Report"
+        file: "templates/sector_benchmark_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "Multi-dimensional sector benchmarking dashboard"
+
+      - id: scenario_comparison_report
+        name: "Scenario Comparison Report"
+        file: "templates/scenario_comparison_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "Multi-scenario pathway comparison and risk analysis"
+
+      - id: sbti_validation_report
+        name: "SBTi Validation Report"
+        file: "templates/sbti_validation_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "SBTi SDA pathway validation and compliance report"
+
+      - id: sector_strategy_report
+        name: "Sector Strategy Report"
+        file: "templates/sector_strategy_report.py"
+        formats: ["md", "html", "json", "pdf"]
+        description: "Executive sector transition strategy document"
+
+  integrations:
+    count: 10
+    list:
+      - id: pack_orchestrator
+        name: "Pack Orchestrator"
+        file: "integrations/pack_orchestrator.py"
+        description: "10-phase DAG pipeline with sector-specific conditional routing"
+
+      - id: sbti_sda_bridge
+        name: "SBTi SDA Bridge"
+        file: "integrations/sbti_sda_bridge.py"
+        description: "SBTi SDA sector pathway data and validation tools integration"
+
+      - id: iea_nze_bridge
+        name: "IEA NZE Bridge"
+        file: "integrations/iea_nze_bridge.py"
+        description: "IEA Net Zero by 2050 sector pathway and milestone data integration"
+
+      - id: ipcc_ar6_bridge
+        name: "IPCC AR6 Bridge"
+        file: "integrations/ipcc_ar6_bridge.py"
+        description: "IPCC AR6 sector-specific emission factors and pathways integration"
+
+      - id: pack021_bridge
+        name: "PACK-021 Bridge"
+        file: "integrations/pack021_bridge.py"
+        description: "PACK-021 baseline and target engines integration"
+
+      - id: mrv_bridge
+        name: "MRV Bridge"
+        file: "integrations/mrv_bridge.py"
+        description: "All 30 MRV agents for sector-specific emissions calculation"
+
+      - id: decarb_bridge
+        name: "Decarbonization Bridge"
+        file: "integrations/decarb_bridge.py"
+        description: "Decarbonization agents for sector-specific reduction actions"
+
+      - id: data_bridge
+        name: "Data Bridge"
+        file: "integrations/data_bridge.py"
+        description: "20 DATA agents for sector activity data intake"
+
+      - id: health_check
+        name: "Health Check"
+        file: "integrations/health_check.py"
+        description: "20-category system verification including sector data freshness"
+
+      - id: setup_wizard
+        name: "Setup Wizard"
+        file: "integrations/setup_wizard.py"
+        description: "7-step guided sector pathway configuration wizard"
+
+  presets:
+    count: 6
+    list:
+      - id: heavy_industry
+        name: "Heavy Industry"
+        file: "config/presets/heavy_industry.yaml"
+        sectors: ["steel", "cement", "aluminum", "chemicals"]
+        description: "SDA mandatory, high process emissions, CCS/hydrogen pathways"
+
+      - id: power_utilities
+        name: "Power Utilities"
+        file: "config/presets/power_utilities.yaml"
+        sectors: ["power_generation", "district_heating"]
+        description: "SDA mandatory, grid decarbonization, renewable capacity expansion"
+
+      - id: transport
+        name: "Transport"
+        file: "config/presets/transport.yaml"
+        sectors: ["aviation", "shipping", "road_transport", "rail"]
+        description: "SDA per transport mode, fuel switching pathways"
+
+      - id: buildings
+        name: "Buildings"
+        file: "config/presets/buildings.yaml"
+        sectors: ["buildings_residential", "buildings_commercial"]
+        description: "SDA buildings pathway, energy efficiency, heat pumps"
+
+      - id: light_industry
+        name: "Light Industry"
+        file: "config/presets/light_industry.yaml"
+        sectors: ["pulp_paper", "food_beverage"]
+        description: "SDA available, energy efficiency focus, biomass/bioenergy"
+
+      - id: agriculture
+        name: "Agriculture"
+        file: "config/presets/agriculture.yaml"
+        sectors: ["agriculture", "land_use"]
+        description: "FLAG pathway integration, N2O/CH4 reduction, soil carbon"
+
+# Sector coverage
+sector_coverage:
+  sda_sectors:
+    count: 12
+    list:
+      - sector: power_generation
+        sda_id: "SDA-Power"
+        intensity_metric: "gCO2/kWh"
+        iea_chapter: "Chapter 3: Electricity"
+      - sector: steel
+        sda_id: "SDA-Steel"
+        intensity_metric: "tCO2e/tonne crude steel"
+        iea_chapter: "Chapter 5: Industry (Steel)"
+      - sector: cement
+        sda_id: "SDA-Cement"
+        intensity_metric: "tCO2e/tonne cement"
+        iea_chapter: "Chapter 5: Industry (Cement)"
+      - sector: aluminum
+        sda_id: "SDA-Aluminum"
+        intensity_metric: "tCO2e/tonne aluminum"
+        iea_chapter: "Chapter 5: Industry (Aluminum)"
+      - sector: pulp_paper
+        sda_id: "SDA-Pulp"
+        intensity_metric: "tCO2e/tonne pulp"
+        iea_chapter: "Chapter 5: Industry (Pulp)"
+      - sector: chemicals
+        sda_id: "SDA-Chemicals"
+        intensity_metric: "tCO2e/tonne product"
+        iea_chapter: "Chapter 5: Industry (Chemicals)"
+      - sector: aviation
+        sda_id: "SDA-Aviation"
+        intensity_metric: "gCO2/pkm"
+        iea_chapter: "Chapter 4: Transport (Aviation)"
+      - sector: shipping
+        sda_id: "SDA-Shipping"
+        intensity_metric: "gCO2/tkm"
+        iea_chapter: "Chapter 4: Transport (Shipping)"
+      - sector: road_transport
+        sda_id: "SDA-Transport"
+        intensity_metric: "gCO2/vkm"
+        iea_chapter: "Chapter 4: Transport (Road)"
+      - sector: rail
+        sda_id: "SDA-Rail"
+        intensity_metric: "gCO2/pkm"
+        iea_chapter: "Chapter 4: Transport (Rail)"
+      - sector: buildings_residential
+        sda_id: "SDA-Buildings"
+        intensity_metric: "kgCO2/m2/year"
+        iea_chapter: "Chapter 2: Buildings (Residential)"
+      - sector: buildings_commercial
+        sda_id: "SDA-Buildings"
+        intensity_metric: "kgCO2/m2/year"
+        iea_chapter: "Chapter 2: Buildings (Commercial)"
+
+  extended_sectors:
+    count: 4
+    list:
+      - sector: agriculture
+        intensity_metric: "tCO2e/tonne food"
+        iea_chapter: "Chapter 6: Agriculture"
+      - sector: food_beverage
+        intensity_metric: "tCO2e/tonne product"
+        iea_chapter: "Chapter 5: Industry (Food)"
+      - sector: oil_gas
+        intensity_metric: "gCO2/MJ energy produced"
+        iea_chapter: "Chapter 1: Energy Supply"
+      - sector: cross_sector
+        intensity_metric: "Generic ACA fallback"
+        iea_chapter: "Multiple chapters"
+
+# Scenario support
+scenarios:
+  supported:
+    - id: nze_15c
+      name: "Net Zero Emissions (1.5C)"
+      temperature: "+1.5C"
+      probability: "50%"
+      iea_reference: "IEA NZE 2050 (2023 update)"
+      sbti_alignment: "SBTi 1.5C pathway"
+    - id: wb2c
+      name: "Well-Below 2C"
+      temperature: "<2C"
+      probability: "66%"
+      iea_reference: "IEA WB2C"
+      sbti_alignment: "SBTi well-below 2C"
+    - id: 2c
+      name: "2 Degrees Celsius"
+      temperature: "+2C"
+      probability: "50%"
+      iea_reference: "IEA 2DS"
+      sbti_alignment: "SBTi 2C pathway"
+    - id: aps
+      name: "Announced Pledges"
+      temperature: "+1.7C"
+      probability: "N/A"
+      iea_reference: "IEA APS"
+      sbti_alignment: "Announced pledges"
+    - id: steps
+      name: "Stated Policies"
+      temperature: "+2.4C"
+      probability: "N/A"
+      iea_reference: "IEA STEPS"
+      sbti_alignment: "Current policies"
+
+# Convergence models
+convergence_models:
+  - id: linear
+    name: "Linear Convergence"
+    formula: "Intensity(t) = Intensity(base) - (t - base_year) * reduction_rate"
+    best_for: "Buildings, some transport modes"
+  - id: exponential
+    name: "Exponential Convergence"
+    formula: "Intensity(t) = Intensity(base) * exp(-k * (t - base_year))"
+    best_for: "Power generation, road transport"
+  - id: s_curve
+    name: "S-Curve Convergence"
+    formula: "Intensity(t) = I(2050) + (I(base) - I(2050)) / (1 + exp(k*(t-t_inflection)))"
+    best_for: "Steel, cement, aviation (technology-driven)"
+  - id: stepped
+    name: "Stepped Convergence"
+    formula: "Intensity(t) = Intensity(step_n) for t in [step_n_start, step_n_end]"
+    best_for: "Shipping (IMO), sectors with policy milestones"
+
+# Dependencies on GreenLang platform
+platform_dependencies:
+  infrastructure:
+    - INFRA-001  # Kubernetes/EKS
+    - INFRA-002  # PostgreSQL + TimescaleDB
+    - INFRA-003  # Redis
+    - INFRA-004  # S3/Object Storage
+    - INFRA-006  # API Gateway (Kong)
+    - INFRA-010  # Agent Factory
+
+  security:
+    - SEC-001    # JWT Authentication
+    - SEC-002    # RBAC Authorization
+    - SEC-003    # Encryption at Rest
+    - SEC-005    # Centralized Audit Logging
+
+  observability:
+    - OBS-001    # Prometheus Metrics
+    - OBS-002    # Grafana Dashboards
+    - OBS-003    # OpenTelemetry Tracing
+
+  foundation_agents:
+    - AGENT-FOUND-001  # GreenLang Orchestrator
+    - AGENT-FOUND-002  # Schema Compiler & Validator
+    - AGENT-FOUND-003  # Unit & Reference Normalizer
+    - AGENT-FOUND-004  # Assumptions Registry
+    - AGENT-FOUND-005  # Citations & Evidence Agent
+    - AGENT-FOUND-006  # Access & Policy Guard
+    - AGENT-FOUND-008  # Reproducibility Agent
+    - AGENT-FOUND-009  # QA Test Harness
+    - AGENT-FOUND-010  # Observability & Telemetry
+
+  data_agents:
+    - AGENT-DATA-001   # PDF & Invoice Extractor
+    - AGENT-DATA-002   # Excel/CSV Normalizer
+    - AGENT-DATA-003   # ERP/Finance Connector
+    - AGENT-DATA-010   # Data Quality Profiler
+    - AGENT-DATA-015   # Cross-Source Reconciliation
+    - AGENT-DATA-018   # Data Lineage Tracker
+    - AGENT-DATA-019   # Validation Rule Engine
+
+  mrv_agents:
+    all: true  # All 30 MRV agents for sector-specific emission calculations
+    key_agents:
+      scope_1:
+        - AGENT-MRV-001  # Stationary Combustion
+        - AGENT-MRV-002  # Refrigerants & F-Gas
+        - AGENT-MRV-003  # Mobile Combustion
+        - AGENT-MRV-004  # Process Emissions
+        - AGENT-MRV-005  # Fugitive Emissions
+        - AGENT-MRV-006  # Land Use Emissions
+        - AGENT-MRV-007  # Waste Treatment
+        - AGENT-MRV-008  # Agricultural Emissions
+      scope_2:
+        - AGENT-MRV-009  # Location-Based
+        - AGENT-MRV-010  # Market-Based
+        - AGENT-MRV-011  # Steam/Heat Purchase
+        - AGENT-MRV-012  # Cooling Purchase
+        - AGENT-MRV-013  # Dual Reporting Reconciliation
+      scope_3:
+        - AGENT-MRV-014 through AGENT-MRV-030  # All 17 Scope 3 agents
+
+  pack_dependencies:
+    - pack_id: "PACK-021"
+      name: "Net Zero Starter Pack"
+      relationship: "recommended"
+      description: "Provides baseline emissions and target setting foundation"
+    - pack_id: "PACK-022"
+      name: "Net Zero Acceleration Pack"
+      relationship: "optional"
+      description: "Advanced scenario modeling and MACC analysis"
+
+  application_dependencies:
+    - GL-GHG-APP     # GHG inventory management
+    - GL-SBTi-APP    # SBTi pathway validation and temperature scoring
+    - GL-CDP-APP     # CDP sector-specific questionnaire responses
+    - GL-TCFD-APP    # TCFD scenario analysis and metrics
+    - GL-Taxonomy-APP # EU Taxonomy sector criteria
+
+# Database requirements
+database:
+  migrations:
+    range: "V181-V186"
+    count: 6
+    schemas:
+      - sector_pathway
+    tables:
+      - gl_sector_classifications
+      - gl_sector_intensities
+      - gl_sector_pathways
+      - gl_sector_benchmarks
+      - gl_technology_roadmaps
+      - gl_abatement_waterfalls
+
+# Technical specifications
+technical_specs:
+  language: "Python 3.11+"
+  framework: "FastAPI 0.110+"
+  async: true
+  database: "PostgreSQL 16+ with TimescaleDB"
+  caching: "Redis 7+"
+  observability: "OpenTelemetry + Prometheus + Grafana"
+  deployment: "Kubernetes 1.28+"
+
+  performance_targets:
+    sector_classification: "<2 seconds"
+    intensity_calculation: "<5 seconds"
+    pathway_generation: "<30 seconds"
+    convergence_analysis: "<10 seconds"
+    technology_roadmap: "<60 seconds"
+    abatement_waterfall: "<30 seconds"
+    sector_benchmarking: "<15 seconds"
+    scenario_comparison: "<120 seconds"
+    full_assessment: "<5 minutes"
+    api_response_p95: "<2 seconds"
+
+  data_quality_targets:
+    pathway_accuracy: "+/-2% vs. SBTi SDA tool"
+    iea_alignment: "+/-5% vs. IEA NZE milestones"
+    benchmark_freshness: "Annual update cycle"
+    provenance: "SHA-256 hashed outputs"
+
+# Regulatory alignment
+regulatory_alignment:
+  frameworks:
+    - name: "SBTi Corporate Standard v2.0"
+      coverage: "100% (SDA methodology)"
+    - name: "SBTi FLAG Guidance v1.1"
+      coverage: "100% (agriculture/land use sectors)"
+    - name: "IEA Net Zero by 2050 Roadmap"
+      coverage: "100% (15+ sectors, 400+ milestones)"
+    - name: "IPCC AR6 Pathways"
+      coverage: "100% (GWP-100 values, sector factors)"
+    - name: "GHG Protocol Corporate Standard"
+      coverage: "100% (intensity metric definitions)"
+    - name: "EU ETS Phase 4 Benchmarks"
+      coverage: "90% (power, industry sectors)"
+    - name: "IMO GHG Strategy"
+      coverage: "100% (shipping sector CII)"
+
+# Pricing and licensing
+pricing:
+  model: "Professional License"
+  base_price: "$15,000/year"
+  multi_sector_pricing: "+$3,000/additional sector"
+  support_tier: "Standard (business hours)"
+  deployment: "Self-hosted or GreenLang Cloud"
+
+# Testing coverage
+testing:
+  unit_tests: "650+"
+  integration_tests: "100+"
+  end_to_end_tests: "15+"
+  accuracy_tests: "50+"
+  target_coverage: ">90%"
+
+# Documentation
+documentation:
+  guides:
+    - README.md
+    - docs/API_REFERENCE.md
+    - docs/USER_GUIDE.md
+    - docs/INTEGRATION_GUIDE.md
+    - docs/VALIDATION_REPORT.md
+    - docs/DEPLOYMENT_CHECKLIST.md
+    - docs/CHANGELOG.md
+    - docs/CONTRIBUTING.md
+  sector_guides:
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_POWER.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_STEEL.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_CEMENT.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_ALUMINUM.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_CHEMICALS.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_PULP_PAPER.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_AVIATION.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_SHIPPING.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_ROAD_TRANSPORT.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_RAIL.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_BUILDINGS.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_AGRICULTURE.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_FOOD_BEVERAGE.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_OIL_GAS.md
+    - docs/SECTOR_GUIDES/SECTOR_GUIDE_CROSS_SECTOR.md
+  api_docs: "OpenAPI 3.1 (Swagger/ReDoc)"
+
+# Support and maintenance
+support:
+  channels:
+    - "Email: sector-pathway-support@greenlang.io"
+    - "Slack: #pack-028-sector-pathway"
+  sla:
+    availability: "99.9%"
+    response_time: "<4 hours (business hours)"
+    resolution_time: "<48 hours"
+
+# Release information
+release:
+  status: "Production Ready"
+  release_date: "2026-03-19"
+  changelog_url: "https://docs.greenlang.io/packs/028/changelog"
+
+# Metadata
+metadata:
+  author: "GreenLang Platform Team"
+  maintainer: "net-zero-team@greenlang.io"
+  license: "Proprietary (Professional License Required)"
+  homepage: "https://greenlang.io/packs/sector-pathway"
+  documentation: "https://docs.greenlang.io/packs/028"
+  repository: "https://github.com/greenlang/packs/net-zero/PACK-028"
+  keywords:
+    - net-zero
+    - sector-pathway
+    - sbti-sda
+    - iea-nze
+    - intensity-convergence
+    - technology-roadmap
+    - abatement-waterfall
+    - sector-benchmarking
+    - multi-scenario
+    - power
+    - steel
+    - cement
+    - aluminum
+    - aviation
+    - shipping
+    - buildings
+    - agriculture
+    - decarbonization

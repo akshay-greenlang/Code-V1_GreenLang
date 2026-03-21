@@ -1,0 +1,260 @@
+# =============================================================================
+# PACK-030 Net Zero Reporting Pack - Assurance-Ready Package Preset
+# =============================================================================
+# Configuration optimized for preparing full evidence bundles for external
+# assurance engagements under ISAE 3410 (GHG statements) and ISAE 3000
+# (sustainability information). Prioritizes comprehensive provenance tracking,
+# data lineage documentation, methodology transparency, and control matrix
+# generation for Big 4 audit firms.
+#
+# ISAE 3410 Evidence Requirements:
+#   - Calculation provenance: SHA-256 hashes for all metric computations
+#   - Data lineage: Source-to-report data flow diagrams
+#   - Methodology: Calculation methods, emission factors, assumptions
+#   - Control matrix: Control objectives mapped to evidence artifacts
+#   - Change log: Immutable audit trail of all modifications
+#   - Assumption register: All assumptions with justifications
+#   - Boundary documentation: Organizational and operational boundaries
+#   - Base year recalculation: Policy and trigger documentation
+#
+# ISAE 3000 Additional Requirements:
+#   - Narrative evidence: Source data for qualitative disclosures
+#   - Stakeholder engagement: Evidence of materiality process
+#   - Governance: Board oversight and management role documentation
+#   - Consistency: Cross-framework narrative alignment evidence
+#
+# Assurance Levels:
+#   - Limited assurance: Analytical procedures and inquiry-based
+#   - Reasonable assurance: Full testing of controls and calculations
+#
+# Typical use cases:
+#   - Companies preparing for first ISAE 3410 GHG assurance engagement
+#   - Organizations upgrading from limited to reasonable assurance
+#   - CSRD-mandated assurance preparation (EU companies)
+#   - SEC climate disclosure attestation preparation
+#   - Companies responding to investor requests for assured emissions
+#   - Internal audit teams preparing for external auditor fieldwork
+#
+# Key characteristics:
+#   - All 7 frameworks enabled for maximum evidence coverage
+#   - Reasonable assurance level (highest evidence standard)
+#   - Full evidence bundle with all 6 component types
+#   - Both ISAE 3410 and ISAE 3000 compliance enabled
+#   - Strict consistency validation for cross-framework alignment
+#   - Highest quality scoring threshold (95%) for publication
+#   - Comprehensive lineage diagrams in SVG format
+#   - Extended notification schedule for audit milestones
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+reporting_year: 2025
+baseline_year: 2019
+fiscal_year_end_month: 12
+
+# --- Framework Configuration (ALL 7 for full evidence coverage) ---
+frameworks:
+  frameworks_enabled:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "GRI"
+    - "ISSB"
+    - "SEC"
+    - "CSRD"
+  primary_framework: null
+  secondary_frameworks: []
+  framework_outputs:
+    - format: "PDF"
+      template: "sbti_progress_report"
+      enabled: true
+    - format: "PDF"
+      template: "tcfd_executive_report"
+      enabled: true
+    - format: "PDF"
+      template: "gri_305_report"
+      enabled: true
+    - format: "PDF"
+      template: "issb_s2_report"
+      enabled: true
+    - format: "PDF"
+      template: "sec_narrative_disclosure"
+      enabled: true
+    - format: "PDF"
+      template: "csrd_e1_template"
+      enabled: true
+    - format: "Excel"
+      template: "cdp_questionnaire"
+      enabled: true
+    - format: "XBRL"
+      template: "sec_climate_xbrl"
+      enabled: true
+    - format: "XBRL"
+      template: "csrd_esrs_taxonomy"
+      enabled: true
+    - format: "iXBRL"
+      template: "sec_climate_ixbrl"
+      enabled: true
+
+# --- Output Settings ---
+output_formats:
+  - "PDF"
+  - "HTML"
+  - "Excel"
+  - "JSON"
+  - "XBRL"
+  - "iXBRL"
+languages:
+  - "en"
+
+# --- Branding ---
+branding:
+  style: "corporate"
+  logo_path: null
+  primary_color: "#1E3A8A"
+  secondary_color: "#3B82F6"
+  font_family: "Arial, Helvetica, sans-serif"
+  include_charts: true
+  include_toc: true
+  include_page_numbers: true
+  include_headers_footers: true
+  custom_css: null
+
+# --- Data Aggregation ---
+data_aggregation:
+  pack_021_requirement: "required"
+  pack_022_requirement: "required"
+  pack_028_requirement: "required"
+  pack_029_requirement: "required"
+  gl_sbti_app_requirement: "required"
+  gl_cdp_app_requirement: "required"
+  gl_tcfd_app_requirement: "required"
+  gl_ghg_app_requirement: "required"
+  auto_reconciliation: true
+  reconciliation_tolerance_pct: 0.1
+  gap_detection_enabled: true
+  lineage_tracking_enabled: true
+  lineage_diagram_format: "svg"
+  completeness_scoring: true
+  parallel_fetching: true
+  fetch_timeout_seconds: 45
+  retry_count: 3
+  circuit_breaker_threshold: 5
+
+# --- Narrative Generation ---
+narrative:
+  narrative_quality: "high"
+  citation_management_enabled: true
+  citation_format: "footnote"
+  hyperlinked_citations: true
+  consistency_validation_enabled: true
+  consistency_target_pct: 98.0
+  harmonization_suggestions: true
+  human_review_required: true
+  review_workflow_enabled: true
+  max_narrative_length_words: 5000
+
+# --- Translation ---
+translation:
+  languages:
+    - "en"
+  primary_language: "en"
+  translation_service: "native"
+  climate_glossary_enabled: true
+  preserve_citations: true
+  quality_validation_enabled: false
+  quality_target_pct: 98.0
+
+# --- XBRL/iXBRL ---
+xbrl:
+  xbrl_enabled: true
+  sec_taxonomy_version: "2024"
+  csrd_taxonomy_version: "2024"
+  issb_taxonomy_version: "2024"
+  taxonomy_validation_enabled: true
+  ixbrl_enabled: true
+  taxonomy_cache_enabled: true
+  taxonomy_cache_ttl_hours: 168
+  auto_tag_detection: true
+
+# --- Assurance (FOCUS AREA - MAXIMUM EVIDENCE) ---
+assurance:
+  assurance_level: "reasonable"
+  include_evidence_bundle: true
+  include_provenance: true
+  include_lineage_diagrams: true
+  include_methodology_docs: true
+  include_control_matrix: true
+  include_assumption_register: true
+  include_change_log: true
+  evidence_bundle_format: "zip"
+  isae_3410_compliance: true
+  isae_3000_compliance: true
+
+# --- Dashboard ---
+dashboard:
+  executive_dashboard_enabled: true
+  framework_dashboards_enabled: true
+  stakeholder_views_enabled: true
+  default_stakeholder_view: "board"
+  framework_coverage_heatmap: true
+  deadline_countdown: true
+  drill_down_enabled: true
+  interactive_charts: true
+  responsive_design: true
+  export_to_pdf: true
+  auto_refresh_interval_seconds: 0
+
+# --- Validation (STRICTEST SETTINGS) ---
+validation:
+  schema_validation_enabled: true
+  completeness_validation_enabled: true
+  consistency_validation_enabled: true
+  consistency_strictness: "strict"
+  quality_scoring_enabled: true
+  minimum_quality_score: 95.0
+  metric_reconciliation: true
+  metric_tolerance_pct: 0.01
+  narrative_spell_check: true
+  narrative_grammar_check: true
+  block_publish_on_critical: true
+
+# --- Notifications ---
+notifications:
+  email_notifications_enabled: true
+  slack_notifications_enabled: true
+  teams_notifications_enabled: false
+  webhook_notifications_enabled: false
+  notification_recipients: []
+  slack_channel: null
+  webhook_url: null
+  deadline_reminders:
+    - 120
+    - 90
+    - 60
+    - 30
+    - 14
+    - 7
+    - 3
+  notify_on_generation: true
+  notify_on_validation_failure: true
+  notify_on_approval: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  cache_hit_ratio_target: 95.0
+  max_concurrent_reports: 10
+  report_generation_timeout_seconds: 10
+  api_response_timeout_ms: 200
+  pdf_render_timeout_seconds: 5
+  parallel_framework_execution: true
+  batch_size: 2000
+  memory_limit_mb: 8192
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

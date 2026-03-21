@@ -1,0 +1,172 @@
+# =============================================================================
+# PACK-028 Sector Pathway Pack - Heavy Industry Preset
+# =============================================================================
+# Configuration for heavy industry organizations: steel, cement, aluminium,
+# and related high-temperature process industries. SDA pathway mandatory with
+# intensity convergence to IEA NZE 2050 sector targets. S-curve convergence
+# reflects technology-driven transformation cycles (EAF conversion, CCS
+# retrofit, green hydrogen DRI, inert anodes, novel cements).
+#
+# Typical use cases:
+#   - Integrated steel producers (blast furnace + BOF route)
+#   - Electric arc furnace steel producers (scrap-based)
+#   - Cement manufacturers (clinker production)
+#   - Aluminium smelters (primary and secondary)
+#   - Glass and ceramics manufacturers
+#   - Non-ferrous metals processing
+#
+# Key sector characteristics:
+#   - Very high Scope 1 from process reactions (50-80%)
+#   - Long asset lifetimes (30-50 years for blast furnaces/kilns)
+#   - Capital-intensive transitions (EUR 500M+ for EAF conversion)
+#   - Process emissions that cannot be eliminated without CCS or novel chemistry
+#   - Strong dependency on green hydrogen availability
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+primary_sector: "STEEL"
+secondary_sectors:
+  - "CEMENT"
+  - "ALUMINUM"
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+
+# --- SBTi SDA (mandatory for heavy industry) ---
+sbti_sda:
+  sbti_sda_enabled: true
+  sbti_sector_category: "STEEL"
+  sbti_pathway: "CELSIUS_1_5"
+  sbti_target_year: 2030
+  sbti_net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  sbti_submission_planned: true
+  flag_pathway_enabled: false
+
+# --- IEA NZE ---
+iea_nze:
+  iea_nze_enabled: true
+  iea_scenario: "NZE"
+  iea_region: "Global"
+  iea_milestone_tracking: true
+  iea_technology_outlook: true
+
+# --- IPCC AR6 ---
+ipcc:
+  ipcc_pathway: "C1"
+  ipcc_overshoot: "no"
+  ipcc_gwp_metric: "GWP100"
+
+# --- Intensity ---
+intensity:
+  baseline_intensity: 0.0
+  baseline_year: 2019
+  intensity_metric: "tCO2e/tonne crude steel"
+  intensity_boundary: "scope_1_2"
+  production_unit: "tonne crude steel"
+  production_forecast_enabled: true
+  production_growth_rate_pct: 0.5
+
+# --- Convergence ---
+convergence:
+  convergence_model: "s_curve"
+  convergence_rate: 0.06
+  catch_up_period: 15
+  inflection_year: 2035
+  step_years: null
+  step_reductions_pct: null
+
+# --- Technology Roadmap ---
+technology:
+  technology_roadmap_enabled: true
+  trl_threshold: 6
+  capex_phasing: "front_loaded"
+  planning_horizon_years: 20
+  critical_materials_risk: true
+  dependency_analysis: true
+  iea_milestone_mapping: true
+  max_parallel_transitions: 5
+  s_curve_adoption: true
+
+# --- MACC ---
+macc:
+  macc_enabled: true
+  carbon_price_floor: 80.0
+  carbon_price_ceiling: 300.0
+  abatement_potential_target: 0.85
+  lever_interaction_modeling: true
+  implementation_sequencing: true
+  discount_rate_pct: 10.0
+  max_levers: 50
+  include_negative_cost: true
+
+# --- Benchmarking ---
+benchmark:
+  benchmark_peer_enabled: true
+  benchmark_leader_enabled: true
+  benchmark_iea_enabled: true
+  peer_selection: "auto"
+  leader_percentile: 10
+  peer_group_size: 20
+  sbti_validated_only: false
+  regulatory_benchmarks:
+    - "EU_ETS"
+    - "SBTi_SDA"
+    - "IEA_NZE"
+    - "CBAM"
+  benchmark_dimensions:
+    - "intensity_rank"
+    - "reduction_rate"
+    - "technology_mix"
+    - "process_route"
+    - "ccs_readiness"
+    - "hydrogen_readiness"
+    - "target_ambition"
+    - "pathway_gap"
+
+# --- Scenarios ---
+scenarios:
+  scenarios_enabled:
+    - "NZE"
+    - "WB2C"
+    - "2C"
+    - "APS"
+  scenario_sensitivity: true
+  carbon_price_sensitivity: true
+  technology_sensitivity: true
+  monte_carlo_runs: 1000
+  confidence_interval_pct: 90.0
+  risk_return_analysis: true
+  optimal_pathway_recommendation: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "ESRS"
+    - "GRI"
+  reporting_frequency: "quarterly"
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 10
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 600
+  batch_size: 1000
+  memory_limit_mb: 8192

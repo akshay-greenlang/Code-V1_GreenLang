@@ -1,0 +1,143 @@
+# =============================================================================
+# PACK-021 Net Zero Starter Pack - SME General Preset
+# =============================================================================
+# Simplified configuration for small and medium enterprises across any
+# sector. Uses a reduced engine set (5 engines: baseline, target, gap,
+# scorecard, benchmark) for faster implementation with lower resource
+# requirements. Spend-based Scope 3 as default with minimal data
+# requirements. ACA pathway. 5-year data retention. PDF reports only.
+# No offset strategy initially. Quick maturity assessment mode to
+# reduce onboarding time.
+#
+# Typical use cases:
+#   - SMEs starting their net-zero journey
+#   - Companies with limited sustainability team resources
+#   - Organizations seeking basic SBTi alignment
+#   - Companies preparing for CSRD scope expansion (Omnibus)
+#   - Startups and scale-ups with climate commitments
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "OTHER"
+  size: "MEDIUM"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  erp_system: "NONE"
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  include_joint_ventures: false
+  base_year_recalculation_threshold_pct: 10.0
+
+# --- Scope Configuration (Simplified Scope 3, spend-based only) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 3, 4, 5, 6, 7]
+  scope3_method: "SPEND_BASED"
+  scope3_category_methods:
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 5.0
+
+# --- Target Setting (ACA, conservative coverage) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  sbti_submission_planned: false
+
+# --- Reduction Actions (Minimal, no advanced levers) ---
+reduction:
+  max_actions: 20
+  planning_horizon_years: 5
+  include_renewable_procurement: true
+  include_supplier_engagement: false
+  include_fleet_electrification: false
+  include_energy_efficiency: true
+  include_fuel_switching: false
+  include_process_optimization: false
+  include_ccs: false
+  discount_rate_pct: 8.0
+  carbon_price_eur_per_tco2e: 60.0
+  scenario_count: 2
+
+# --- Offset Portfolio (disabled initially for SMEs) ---
+offset:
+  strategy: "COMPENSATION_ONLY"
+  quality_minimum_score: 50
+  max_nature_based_pct: 60.0
+  vcmi_target_claim: "SILVER"
+  preferred_credit_types:
+    - "gold_standard"
+  shift_to_removals_by_year: 2045
+  track_co_benefits: false
+
+# --- Reporting (PDF only, minimal frameworks) ---
+reporting:
+  formats:
+    - "PDF"
+  include_cdp_mapping: false
+  include_tcfd_mapping: false
+  include_esrs_mapping: false
+  include_sbti_mapping: true
+  language: "en"
+  review_workflow_enabled: false
+  watermark_draft: true
+
+# --- Performance (reduced resources for SME) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 1800
+  max_concurrent_calcs: 2
+  timeout_seconds: 120
+  batch_size: 500
+  memory_limit_mb: 2048
+
+# --- Audit Trail (5-year retention for SME) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 5
+  external_audit_export: false
+
+# --- Scorecard (Quick assessment mode) ---
+scorecard:
+  enabled: true
+  assessment_mode: "QUICK"
+  dimensions:
+    - "baseline_completeness"
+    - "target_ambition"
+    - "reduction_progress"
+    - "scope3_coverage"
+    - "disclosure_readiness"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+  target_years: [2025, 2030, 2040, 2050]

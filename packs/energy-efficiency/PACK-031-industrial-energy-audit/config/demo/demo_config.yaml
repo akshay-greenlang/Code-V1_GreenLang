@@ -1,0 +1,249 @@
+# =============================================================================
+# PACK-031 Industrial Energy Audit Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for Mittelwerk GmbH, a fictional mid-sized German
+# automotive parts manufacturer operating a single plant in Stuttgart.
+# This configuration demonstrates all engines with realistic energy data
+# for a discrete manufacturing facility with compressed air, steam, and
+# process heat systems.
+#
+# Company: Mittelwerk GmbH
+# Headquarters: Stuttgart, Germany
+# Revenue: EUR 85 million
+# Employees: 420
+# Facility: Single plant (18,000 m2)
+# Annual Production: 12,500 tonnes of machined parts
+# Annual Energy: ~14.5 GWh (electricity 8.2 GWh + gas 6.3 GWh)
+# Reporting Year: 2025
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: "Mittelwerk Stuttgart Plant"
+company_name: "Mittelwerk GmbH"
+industry_sector: "MANUFACTURING"
+facility_tier: "MID_MARKET"
+country: "DE"
+reporting_year: 2025
+
+# --- Facility Characteristics ---
+floor_area_m2: 18000.0
+production_area_m2: 12500.0
+annual_production_tonnes: 12500.0
+production_unit_name: "tonne"
+employees: 420
+operating_hours_per_year: 5800
+number_of_shifts: 2
+
+# --- Energy Carriers ---
+energy_carriers:
+  - "ELECTRICITY"
+  - "NATURAL_GAS"
+  - "COMPRESSED_AIR"
+
+# --- Baseline ---
+baseline:
+  min_months: 24
+  r_squared_threshold: 0.80
+  cv_rmse_threshold: 0.20
+  normalization_method: "PRODUCTION_VOLUME"
+  secondary_variables:
+    - "degree_days"
+  granularity: "MONTHLY"
+  baseline_year: 2023
+  energy_carriers:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+  ipmvp_option: "C"
+
+# --- Audit ---
+audit:
+  default_audit_level: "DETAILED"
+  en16247_compliance: true
+  en16247_parts: [1, 2, 3]
+  eed_article_8: true
+  schedule_months: 48
+  significant_energy_use_threshold_pct: 5.0
+  minimum_coverage_pct: 90.0
+  measure_payback_threshold_years: 5.0
+  include_no_cost_measures: true
+  include_behavioral_measures: true
+
+# --- Equipment (motors and drives) ---
+equipment:
+  enabled: true
+  motor_efficiency_min_class: "IE3"
+  motor_inventory_enabled: true
+  motor_load_profiling: true
+  pump_benchmark_enabled: true
+  pump_system_assessment: true
+  fan_benchmark_enabled: true
+  vsd_retrofit_analysis: true
+  vsd_min_savings_threshold_pct: 15.0
+  power_quality_monitoring: true
+  equipment_age_threshold_years: 15
+
+# --- Steam ---
+steam:
+  enabled: true
+  boiler_efficiency_assessment: true
+  boiler_efficiency_target_pct: 88.0
+  trap_survey_enabled: true
+  trap_survey_interval_months: 12
+  insulation_assessment_enabled: true
+  condensate_return_tracking: true
+  condensate_return_target_pct: 85.0
+  blowdown_optimization: true
+  blowdown_target_pct: 5.0
+  flash_steam_recovery: true
+  steam_pressure_optimization: true
+  chp_assessment: false
+
+# --- Compressed Air ---
+compressed_air:
+  enabled: true
+  leak_survey_enabled: true
+  leak_survey_interval_months: 6
+  leak_rate_target_pct: 10.0
+  specific_power_target_kw_per_m3_min: 6.5
+  pressure_optimization: true
+  pressure_band_bar: [6.0, 7.0]
+  heat_recovery_assessment: true
+  control_optimization: true
+  demand_profiling: true
+  inappropriate_use_audit: true
+  dryer_efficiency: true
+
+# --- Waste Heat ---
+waste_heat:
+  enabled: true
+  min_temperature_c: 60.0
+  pinch_analysis_enabled: false
+  heat_exchanger_assessment: true
+  orc_screening: false
+  heat_pump_assessment: true
+  heat_pump_max_sink_temperature_c: 80.0
+  cascade_analysis: true
+  flue_gas_recovery: true
+  thermal_storage_screening: false
+
+# --- Lighting ---
+lighting:
+  enabled: true
+  lpd_standard: "EN_12464_1"
+  led_retrofit_analysis: true
+  controls_assessment: true
+  daylighting_integration: false
+  outdoor_lighting: true
+  high_bay_assessment: true
+  lux_level_measurement: true
+
+# --- HVAC ---
+hvac:
+  enabled: true
+  vsd_analysis: true
+  economizer_analysis: true
+  heat_recovery: true
+  ahu_optimization: true
+  chiller_efficiency: true
+  free_cooling_assessment: true
+  building_envelope: false
+  bms_optimization: true
+  setpoint_review: true
+  process_ventilation: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  peer_group_size_min: 5
+  bat_ael_comparison: true
+  kpi_set:
+    - "sec_kwh_per_tonne"
+    - "electricity_intensity"
+    - "thermal_intensity"
+    - "compressed_air_specific_power"
+    - "steam_system_efficiency"
+    - "lighting_power_density"
+    - "enpi_trend"
+  site_to_site_comparison: false
+  sector_benchmark_source: "ODYSSEE_MURE"
+  percentile_tracking: true
+  gap_to_best_practice: true
+  trend_analysis_years: 3
+
+# --- ISO 50001 ---
+iso50001:
+  enabled: true
+  certification_target_date: "2026-12-31"
+  enpi_tracking_frequency: "MONTHLY"
+  enpi_types:
+    - "SEC"
+    - "THERMAL_EFFICIENCY"
+  energy_review_frequency: "ANNUAL"
+  management_review_frequency: "SEMI_ANNUAL"
+  seu_register_enabled: true
+  action_plan_tracking: true
+  competence_matrix_enabled: true
+  internal_audit_enabled: true
+  eed_exemption_tracking: true
+
+# --- EED ---
+eed:
+  enabled: true
+  large_enterprise_threshold_employees: 250
+  large_enterprise_threshold_revenue_eur: 50000000.0
+  large_enterprise_threshold_balance_sheet_eur: 43000000.0
+  mandatory_audit: true
+  audit_interval_months: 48
+  minimum_energy_covered_pct: 90.0
+  member_state: "DE"
+  national_registry_submission: true
+
+# --- Performance ---
+performance:
+  max_facilities: 1
+  max_equipment_items: 5000
+  max_meters: 200
+  cache_ttl_seconds: 3600
+  batch_size: 1000
+  calculation_timeout_seconds: 300
+  parallel_engines: 4
+
+# --- Security ---
+security:
+  roles:
+    - "energy_auditor"
+    - "facility_manager"
+    - "energy_manager"
+    - "engineer"
+    - "viewer"
+    - "admin"
+  data_classification: "CONFIDENTIAL"
+  audit_logging: true
+  pii_redaction: true
+  encryption_at_rest: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  measure_tracking: true
+
+# --- Reporting ---
+reporting:
+  executive_summary_enabled: true
+  detailed_report_enabled: true
+  equipment_register_enabled: true
+  ecm_register_enabled: true
+  energy_balance_enabled: true
+  benchmark_report_enabled: true
+  iso50001_gap_report_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  output_language: "de"
+  watermark_draft: true

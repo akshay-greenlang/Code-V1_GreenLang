@@ -1,0 +1,148 @@
+# =============================================================================
+# PACK-021 Net Zero Starter Pack - Technology Preset
+# =============================================================================
+# Configuration for technology companies with very low Scope 1+2 (office
+# and data center operations) and very high Scope 3 (category 1 cloud
+# infrastructure and hardware procurement, category 2 capital goods,
+# category 11 product use-phase energy consumption). ACA pathway.
+# Renewable electricity procurement is the primary Scope 2 lever.
+# 7 engines (offset portfolio optional for early-stage companies).
+#
+# Typical use cases:
+#   - Software companies (SaaS, enterprise, consumer)
+#   - Hardware manufacturers (semiconductors, devices)
+#   - Cloud service providers
+#   - IT consulting and services
+#   - Telecommunications
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "TECHNOLOGY"
+  size: "LARGE"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  erp_system: "NONE"
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  include_joint_ventures: false
+  base_year_recalculation_threshold_pct: 5.0
+
+# --- Scope Configuration (Scope 3 dominant: cloud, hardware, use-phase) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 11, 12]
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "hybrid"
+    cat_2: "spend_based"
+    cat_8: "activity_based"
+    cat_11: "activity_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 1.0
+
+# --- Target Setting (ACA pathway) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  sbti_submission_planned: true
+
+# --- Reduction Actions (Renewable-focused, no heavy process optimization) ---
+reduction:
+  max_actions: 60
+  planning_horizon_years: 8
+  include_renewable_procurement: true
+  include_supplier_engagement: true
+  include_fleet_electrification: false
+  include_energy_efficiency: true
+  include_fuel_switching: false
+  include_process_optimization: false
+  include_ccs: false
+  discount_rate_pct: 6.0
+  carbon_price_eur_per_tco2e: 80.0
+  scenario_count: 3
+
+# --- Offset Portfolio (optional for technology) ---
+offset:
+  strategy: "COMPENSATION_ONLY"
+  quality_minimum_score: 60
+  max_nature_based_pct: 50.0
+  vcmi_target_claim: "SILVER"
+  preferred_credit_types:
+    - "gold_standard"
+    - "verified_carbon_standard"
+  shift_to_removals_by_year: 2040
+  track_co_benefits: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_cdp_mapping: true
+  include_tcfd_mapping: true
+  include_esrs_mapping: true
+  include_sbti_mapping: true
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 240
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+
+# --- Scorecard ---
+scorecard:
+  enabled: true
+  assessment_mode: "FULL"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "cagr_reduction_rate"
+    - "renewable_electricity_pct"
+    - "supplier_engagement_rate"
+    - "sbti_target_status"
+    - "cdp_score"
+  target_years: [2025, 2030, 2035, 2040, 2050]

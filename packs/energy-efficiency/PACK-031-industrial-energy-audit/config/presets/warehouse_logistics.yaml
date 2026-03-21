@@ -1,0 +1,169 @@
+# =============================================================================
+# PACK-031 Industrial Energy Audit - Warehouse & Logistics Preset
+# =============================================================================
+# Warehouses, distribution centers, cold storage facilities. Focus on lighting
+# (large floor areas with high-bay fixtures), HVAC, dock door management,
+# and refrigeration for cold chain. Lower process energy, higher building
+# energy share. Material handling equipment (MHE) battery charging is a
+# growing electricity consumer.
+#
+# Typical use cases:
+#   - Ambient warehouses and distribution centers
+#   - Cold storage and frozen food warehouses
+#   - Cross-docking and sortation hubs
+#   - Retail distribution centers
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+industry_sector: "WAREHOUSE_LOGISTICS"
+facility_tier: "LARGE_ENTERPRISE"
+country: "DE"
+reporting_year: 2025
+operating_hours_per_year: 5000
+number_of_shifts: 2
+production_unit_name: "pallet"
+
+energy_carriers:
+  - "ELECTRICITY"
+  - "NATURAL_GAS"
+
+# --- Baseline ---
+baseline:
+  min_months: 12
+  r_squared_threshold: 0.70
+  cv_rmse_threshold: 0.30
+  normalization_method: "DEGREE_DAYS"
+  secondary_variables:
+    - "throughput_pallets"
+  granularity: "MONTHLY"
+  energy_carriers:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+  ipmvp_option: "C"
+
+# --- Audit ---
+audit:
+  default_audit_level: "DETAILED"
+  en16247_compliance: true
+  en16247_parts: [1, 2]
+  eed_article_8: true
+  schedule_months: 48
+  significant_energy_use_threshold_pct: 5.0
+  minimum_coverage_pct: 90.0
+  measure_payback_threshold_years: 5.0
+  include_no_cost_measures: true
+  include_behavioral_measures: true
+
+# --- Equipment ---
+equipment:
+  enabled: true
+  motor_efficiency_min_class: "IE3"
+  motor_inventory_enabled: true
+  motor_load_profiling: false
+  pump_benchmark_enabled: false
+  pump_system_assessment: false
+  fan_benchmark_enabled: true
+  vsd_retrofit_analysis: true
+  vsd_min_savings_threshold_pct: 15.0
+  equipment_age_threshold_years: 15
+
+# --- Steam (typically not applicable) ---
+steam:
+  enabled: false
+
+# --- Compressed Air (minimal use) ---
+compressed_air:
+  enabled: false
+
+# --- Waste Heat (limited sources) ---
+waste_heat:
+  enabled: true
+  min_temperature_c: 40.0
+  pinch_analysis_enabled: false
+  heat_exchanger_assessment: false
+  heat_pump_assessment: true
+  heat_pump_max_sink_temperature_c: 55.0
+  cascade_analysis: false
+  flue_gas_recovery: true
+
+# --- Lighting (CRITICAL - large floor area, high bay) ---
+lighting:
+  enabled: true
+  lpd_standard: "EN_12464_1"
+  lpd_target_w_per_m2: 6.0
+  led_retrofit_analysis: true
+  controls_assessment: true
+  daylighting_integration: true
+  outdoor_lighting: true
+  high_bay_assessment: true
+  lux_level_measurement: true
+
+# --- HVAC (dock doors, cold chain) ---
+hvac:
+  enabled: true
+  vsd_analysis: true
+  economizer_analysis: true
+  heat_recovery: true
+  ahu_optimization: true
+  chiller_efficiency: true
+  free_cooling_assessment: true
+  building_envelope: true
+  bms_optimization: true
+  setpoint_review: true
+  process_ventilation: false
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  peer_group_size_min: 5
+  bat_ael_comparison: false
+  kpi_set:
+    - "eui_kwh_per_m2"
+    - "electricity_intensity"
+    - "lighting_power_density"
+    - "hvac_efficiency"
+    - "refrigeration_cop"
+    - "enpi_trend"
+  sector_benchmark_source: "ENERGY_STAR"
+  percentile_tracking: true
+  gap_to_best_practice: true
+  trend_analysis_years: 3
+
+# --- ISO 50001 ---
+iso50001:
+  enabled: false
+  enpi_types:
+    - "EUI"
+
+# --- EED ---
+eed:
+  enabled: true
+  mandatory_audit: true
+  audit_interval_months: 48
+  member_state: "DE"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  measure_tracking: true
+
+# --- Reporting ---
+reporting:
+  executive_summary_enabled: true
+  detailed_report_enabled: true
+  equipment_register_enabled: true
+  ecm_register_enabled: true
+  energy_balance_enabled: true
+  benchmark_report_enabled: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  watermark_draft: true

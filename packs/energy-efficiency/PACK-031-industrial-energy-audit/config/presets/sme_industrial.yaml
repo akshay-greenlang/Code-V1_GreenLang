@@ -1,0 +1,168 @@
+# =============================================================================
+# PACK-031 Industrial Energy Audit - SME Industrial Preset
+# =============================================================================
+# Small and medium industrial enterprises. Simplified configuration focused
+# on quick wins: lighting upgrades, compressed air leak repair, motor
+# replacements. Reduced engine set for faster implementation and lower cost.
+# EED Article 8 assessment included (threshold check). Shorter baseline
+# data requirement (6 months minimum). Walk-through or detailed audit level.
+#
+# Typical use cases:
+#   - Small machine shops (<50 employees)
+#   - Family-owned manufacturing SMEs
+#   - Industrial workshops and fabricators
+#   - Light industry and assembly operations
+#   - SMEs preparing for energy management
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+industry_sector: "MANUFACTURING"
+facility_tier: "SME"
+country: "DE"
+reporting_year: 2025
+operating_hours_per_year: 4000
+number_of_shifts: 1
+production_unit_name: "unit"
+
+energy_carriers:
+  - "ELECTRICITY"
+  - "NATURAL_GAS"
+
+# --- Baseline (reduced data requirement) ---
+baseline:
+  min_months: 6
+  r_squared_threshold: 0.65
+  cv_rmse_threshold: 0.30
+  normalization_method: "PRODUCTION_VOLUME"
+  granularity: "MONTHLY"
+  energy_carriers:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+  ipmvp_option: "C"
+
+# --- Audit (walk-through or basic detailed) ---
+audit:
+  default_audit_level: "WALK_THROUGH"
+  en16247_compliance: true
+  en16247_parts: [1]
+  eed_article_8: true
+  schedule_months: 48
+  significant_energy_use_threshold_pct: 10.0
+  minimum_coverage_pct: 80.0
+  measure_payback_threshold_years: 3.0
+  include_no_cost_measures: true
+  include_behavioral_measures: true
+
+# --- Equipment (quick wins: motor replacements) ---
+equipment:
+  enabled: true
+  motor_efficiency_min_class: "IE3"
+  motor_inventory_enabled: true
+  motor_load_profiling: false
+  pump_benchmark_enabled: false
+  pump_system_assessment: false
+  fan_benchmark_enabled: false
+  vsd_retrofit_analysis: true
+  vsd_min_savings_threshold_pct: 20.0
+  equipment_age_threshold_years: 12
+
+# --- Steam (disabled for most SMEs) ---
+steam:
+  enabled: false
+
+# --- Compressed Air (quick win: leak repair) ---
+compressed_air:
+  enabled: true
+  leak_survey_enabled: true
+  leak_survey_interval_months: 12
+  leak_rate_target_pct: 15.0
+  specific_power_target_kw_per_m3_min: 7.5
+  pressure_optimization: true
+  pressure_band_bar: [6.0, 7.0]
+  heat_recovery_assessment: false
+  control_optimization: false
+  demand_profiling: false
+  inappropriate_use_audit: true
+  dryer_efficiency: false
+
+# --- Waste Heat (disabled for SMEs) ---
+waste_heat:
+  enabled: false
+
+# --- Lighting (quick win: LED retrofit) ---
+lighting:
+  enabled: true
+  lpd_standard: "EN_12464_1"
+  led_retrofit_analysis: true
+  controls_assessment: true
+  outdoor_lighting: true
+  high_bay_assessment: true
+  lux_level_measurement: false
+
+# --- HVAC (basic assessment) ---
+hvac:
+  enabled: true
+  vsd_analysis: false
+  economizer_analysis: false
+  heat_recovery: false
+  ahu_optimization: false
+  chiller_efficiency: false
+  free_cooling_assessment: false
+  bms_optimization: false
+  setpoint_review: true
+  process_ventilation: false
+
+# --- Benchmark (simplified) ---
+benchmark:
+  enabled: true
+  peer_group_size_min: 3
+  bat_ael_comparison: false
+  kpi_set:
+    - "sec_kwh_per_unit"
+    - "electricity_intensity"
+    - "compressed_air_specific_power"
+    - "lighting_power_density"
+  sector_benchmark_source: "NATIONAL"
+  percentile_tracking: false
+  gap_to_best_practice: true
+  trend_analysis_years: 2
+
+# --- ISO 50001 (not yet, but EED check) ---
+iso50001:
+  enabled: false
+
+# --- EED (threshold assessment) ---
+eed:
+  enabled: true
+  large_enterprise_threshold_employees: 250
+  large_enterprise_threshold_revenue_eur: 50000000.0
+  large_enterprise_threshold_balance_sheet_eur: 43000000.0
+  mandatory_audit: false
+  audit_interval_months: 48
+  member_state: "DE"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5
+  external_audit_export: true
+  measure_tracking: true
+
+# --- Reporting (simplified) ---
+reporting:
+  executive_summary_enabled: true
+  detailed_report_enabled: true
+  equipment_register_enabled: true
+  ecm_register_enabled: true
+  energy_balance_enabled: false
+  benchmark_report_enabled: true
+  iso50001_gap_report_enabled: false
+  output_formats:
+    - "PDF"
+  watermark_draft: true

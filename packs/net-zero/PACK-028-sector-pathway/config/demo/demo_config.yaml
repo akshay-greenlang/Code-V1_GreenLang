@@ -1,0 +1,238 @@
+# =============================================================================
+# PACK-028 Sector Pathway Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for EuroSteel GmbH, a fictional mid-size integrated steel
+# producer headquartered in Duisburg, Germany. The company operates two plants:
+# a blast furnace facility (Duisburg) producing 1.5 million tonnes crude steel
+# per year, and an electric arc furnace facility (Dresden) producing 500,000
+# tonnes per year from scrap. The company has committed to SBTi 1.5C alignment
+# through the SDA pathway for steel, with EAF conversion of the blast furnace
+# planned by 2035 and green hydrogen DRI pilot by 2032.
+#
+# Company: EuroSteel GmbH
+# Headquarters: Duisburg, Germany
+# Revenue: EUR 3.2 billion
+# Employees: 6,200
+# Production: 2,000,000 tonnes crude steel / year
+# Plants: 2 (Duisburg BF, Dresden EAF)
+# Base Year: 2019
+# Reporting Year: 2025
+# SBTi Status: Committed, preparing SDA pathway submission
+#
+# Total Footprint (2019 base year):
+#   Scope 1:   2,850,000 tCO2e (BF process: 2,200,000; EAF: 120,000;
+#                                gas heating: 350,000; fugitive: 180,000)
+#   Scope 2:     210,000 tCO2e (location-based grid electricity)
+#   Scope 3:     640,000 tCO2e (Cat 1: 320K, Cat 3: 110K, Cat 4: 85K,
+#                                Cat 5: 40K, Cat 9: 50K, other: 35K)
+#   Total:     3,700,000 tCO2e
+#
+# SDA Intensity (2019): 1.85 tCO2e / tonne crude steel (Scope 1+2)
+# SDA 2050 Target:       0.06 tCO2e / tonne crude steel (NZE 1.5C)
+# Required Reduction:    96.8% intensity reduction over 31 years
+# =============================================================================
+
+# --- Organization ---
+organization_name: "EuroSteel GmbH"
+primary_sector: "STEEL"
+secondary_sectors: []
+nace_code: "C24.10"
+gics_code: "15104050"
+isic_code: "2410"
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+
+# --- SBTi SDA (mandatory for steel) ---
+sbti_sda:
+  sbti_sda_enabled: true
+  sbti_sector_category: "STEEL"
+  sbti_pathway: "CELSIUS_1_5"
+  sbti_target_year: 2030
+  sbti_net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  sbti_submission_planned: true
+  flag_pathway_enabled: false
+
+# --- IEA NZE ---
+iea_nze:
+  iea_nze_enabled: true
+  iea_scenario: "NZE"
+  iea_region: "EU"
+  iea_milestone_tracking: true
+  iea_technology_outlook: true
+
+# --- IPCC AR6 ---
+ipcc:
+  ipcc_pathway: "C1"
+  ipcc_overshoot: "no"
+  ipcc_gwp_metric: "GWP100"
+
+# --- Intensity ---
+intensity:
+  baseline_intensity: 1.85
+  baseline_year: 2019
+  intensity_metric: "tCO2e/tonne crude steel"
+  intensity_boundary: "scope_1_2"
+  production_unit: "tonne crude steel"
+  production_forecast_enabled: true
+  production_growth_rate_pct: 0.5
+
+# --- Convergence ---
+convergence:
+  convergence_model: "s_curve"
+  convergence_rate: 0.06
+  catch_up_period: 15
+  inflection_year: 2035
+  step_years: null
+  step_reductions_pct: null
+
+# --- Technology Roadmap ---
+# Key transitions for EuroSteel:
+#   2026-2028: Scrap pre-heating upgrade (Dresden EAF)
+#   2028-2030: Renewable PPA (wind + solar, 500 GWh/year)
+#   2030-2032: Green hydrogen DRI pilot (50 kt/year)
+#   2032-2035: BF-to-EAF conversion (Duisburg, EUR 600M)
+#   2035-2040: Full green hydrogen DRI scale-up (1.5 Mt/year)
+#   2038-2045: CCS for remaining process emissions
+technology:
+  technology_roadmap_enabled: true
+  trl_threshold: 6
+  capex_phasing: "front_loaded"
+  capex_budget_eur: 1200000000.0
+  planning_horizon_years: 20
+  critical_materials_risk: true
+  dependency_analysis: true
+  iea_milestone_mapping: true
+  max_parallel_transitions: 4
+  s_curve_adoption: true
+
+# --- MACC ---
+# Key abatement levers for EuroSteel:
+#   - Scrap rate increase: -50 EUR/tCO2e (cost-saving)
+#   - Energy efficiency: -30 EUR/tCO2e (cost-saving)
+#   - Renewable PPAs: 10 EUR/tCO2e
+#   - EAF conversion: 45 EUR/tCO2e
+#   - Green hydrogen DRI: 80 EUR/tCO2e
+#   - Biomass injection: 60 EUR/tCO2e
+#   - CCS retrofit: 120 EUR/tCO2e
+macc:
+  macc_enabled: true
+  carbon_price_floor: 80.0
+  carbon_price_ceiling: 300.0
+  abatement_potential_target: 0.90
+  lever_interaction_modeling: true
+  implementation_sequencing: true
+  discount_rate_pct: 10.0
+  max_levers: 30
+  include_negative_cost: true
+
+# --- Benchmarking ---
+benchmark:
+  benchmark_peer_enabled: true
+  benchmark_leader_enabled: true
+  benchmark_iea_enabled: true
+  peer_selection: "auto"
+  leader_percentile: 10
+  peer_group_size: 15
+  sbti_validated_only: false
+  regulatory_benchmarks:
+    - "EU_ETS"
+    - "SBTi_SDA"
+    - "IEA_NZE"
+    - "CBAM"
+  benchmark_dimensions:
+    - "intensity_rank"
+    - "reduction_rate"
+    - "technology_mix"
+    - "process_route"
+    - "scrap_rate"
+    - "hydrogen_readiness"
+    - "ccs_readiness"
+    - "target_ambition"
+    - "pathway_gap"
+
+# --- Scenarios ---
+# Three scenarios for EuroSteel board:
+#   NZE: Full BF-to-EAF + green H2 DRI (ambitious, Paris-aligned)
+#   WB2C: Partial EAF conversion + CCS (moderate, WB2C-aligned)
+#   APS: Incremental efficiency only (pledges, high stranding risk)
+scenarios:
+  scenarios_enabled:
+    - "NZE"
+    - "WB2C"
+    - "APS"
+  scenario_sensitivity: true
+  carbon_price_sensitivity: true
+  technology_sensitivity: true
+  monte_carlo_runs: 1000
+  confidence_interval_pct: 90.0
+  risk_return_analysis: true
+  optimal_pathway_recommendation: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "ESRS"
+    - "GRI"
+  reporting_frequency: "quarterly"
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 10
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 600
+  batch_size: 1000
+  memory_limit_mb: 8192
+
+# =============================================================================
+# Demo Data Notes - EuroSteel GmbH Emissions Profile (2019 Base Year)
+# =============================================================================
+#
+# Scope 1 (Total: 2,850,000 tCO2e)
+#   - Duisburg BF process (coke reduction + limestone): 2,200,000 tCO2e
+#   - Dresden EAF (electrode consumption + natural gas): 120,000 tCO2e
+#   - Natural gas for reheating/annealing furnaces: 350,000 tCO2e
+#   - Fugitive emissions (coke oven gas, BF gas leaks): 180,000 tCO2e
+#
+# Scope 2 (Total: 210,000 tCO2e location-based)
+#   - Grid electricity (both plants): 210,000 tCO2e
+#   - Market-based (20% green PPA): 168,000 tCO2e
+#
+# Scope 3 (Total: 640,000 tCO2e)
+#   - Cat 1 Purchased goods (iron ore, scrap, alloys): 320,000 tCO2e
+#   - Cat 3 Fuel & energy activities: 110,000 tCO2e
+#   - Cat 4 Upstream transportation: 85,000 tCO2e
+#   - Cat 5 Waste generated: 40,000 tCO2e
+#   - Cat 9 Downstream transport: 50,000 tCO2e
+#   - Other (Cat 6, 7, 12): 35,000 tCO2e
+#
+# Key Production Data:
+#   - Crude steel output: 2,000,000 tonnes/year
+#   - BF route: 1,500,000 tonnes (75%)
+#   - EAF route: 500,000 tonnes (25%)
+#   - Scrap rate: 25% (BF) and 95% (EAF)
+#   - Average scrap rate: 42.5%
+#
+# SDA Intensity Calculation:
+#   Scope 1+2 = 2,850,000 + 210,000 = 3,060,000 tCO2e
+#   Production = 2,000,000 tonnes crude steel
+#   Intensity = 3,060,000 / 2,000,000 = 1.53 tCO2e/t
+#   (Note: demo uses 1.85 to illustrate a company above sector average)
+# =============================================================================

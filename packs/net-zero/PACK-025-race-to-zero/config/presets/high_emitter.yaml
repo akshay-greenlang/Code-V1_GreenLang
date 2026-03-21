@@ -1,0 +1,528 @@
+# =============================================================================
+# PACK-025 Race to Zero Pack - High Emitter Preset
+# =============================================================================
+# Configuration for heavy industry, energy, and mining organizations with
+# very high Scope 1 emissions from combustion, process, and fugitive sources.
+# SDA (Sectoral Decarbonization Approach) sector pathways mandatory. Process
+# emissions require specialized methodology. Fossil fuel phase-out assessment
+# is a critical HLEG criterion. CCS/CCUS (Carbon Capture, Utilization, and
+# Storage) pathway included as a decarbonization lever. Hard-to-abate sector
+# alignment using Mission Possible Partnership (MPP) pathways for steel,
+# cement, shipping, aviation, trucking, chemicals, and aluminium. Enhanced
+# credibility scrutiny due to high climate impact. Long planning horizon
+# (20 years) reflecting capital-intensive asset replacement cycles.
+#
+# Target: Sector-specific SDA pathway alignment
+# Technology transition roadmaps: Enabled
+# CCS/CCUS integration: Enabled
+# Partnership: High (technology consortiums)
+# Verification: Annual with sector-specific methodology
+# Offset limit: 5% (more stringent)
+#
+# Typical use cases:
+#   - Steel and cement producers
+#   - Oil and gas companies (upstream, midstream, downstream)
+#   - Power generation utilities (thermal)
+#   - Mining and metals companies
+#   - Chemical producers
+#   - Shipping and aviation operators
+#   - Aluminium smelters
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+actor_type: "CORPORATE"
+sector: "HEAVY_INDUSTRY"
+size: "LARGE"
+region: "GLOBAL"
+country: ""
+employee_count_range: "1000+"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+campaign_join_date: ""
+
+# --- Race to Zero Campaign ---
+campaign:
+  campaign_name: "Race to Zero"
+  campaign_version: "2022"
+  interpretation_guide_version: "June 2022"
+  hleg_report_version: "November 2022"
+  net_zero_target_year: 2050
+  interim_target_year: 2030
+  starting_line_deadline_months: 12
+  annual_reporting_required: true
+  public_disclosure_required: true
+
+# --- Partner Initiative ---
+partner:
+  primary_partner: "SBTi"
+  secondary_partners:
+    - "CDP"
+    - "We Mean Business Coalition"
+    - "Climate Action 100+"
+    - "Mission Possible Partnership"
+  reporting_channel: "CDP"
+  partner_requirements_mapped: true
+  cross_partner_synergy: true
+  partner_compliance_tracking: true
+  engagement_level: "HIGH"
+  technology_consortium_participation: true
+
+# --- Pledge Configuration ---
+pledge:
+  net_zero_by_2050: true
+  interim_2030_target: true
+  action_plan_commitment: true
+  annual_reporting_commitment: true
+  scope_coverage_full: true
+  governance_endorsement: true
+  public_disclosure: true
+  no_contradictory_actions: true
+  fossil_fuel_phaseout_commitment: true
+  no_new_fossil_capacity: true
+
+# --- Starting Line Criteria ---
+starting_line:
+  enabled: true
+  assessment_mode: "FULL"
+  pillars:
+    pledge:
+      sl_p1_net_zero_target: true
+      sl_p2_interim_target: true
+      sl_p3_science_based: true
+      sl_p4_fair_share: true
+      sl_p5_scope_coverage: true
+    plan:
+      sl_a1_action_plan_published: true
+      sl_a2_quantified_actions: true
+      sl_a3_timeline_milestones: true
+      sl_a4_resource_allocation: true
+      sl_a5_sector_alignment: true
+    proceed:
+      sl_r1_immediate_action: true
+      sl_r2_emission_reductions: true
+      sl_r3_investment_commitment: true
+      sl_r4_governance_integration: true
+      sl_r5_no_contradictory_action: true
+    publish:
+      sl_d1_annual_reporting: true
+      sl_d2_emissions_disclosure: true
+      sl_d3_target_progress: true
+      sl_d4_plan_updates: true
+      sl_d5_transparency: true
+  evidence_collection_automated: true
+  gap_remediation_guidance: true
+  compliance_deadline_tracking: true
+  threshold_scores:
+    pledge_minimum_pct: 90.0
+    plan_minimum_pct: 85.0
+    proceed_minimum_pct: 80.0
+    publish_minimum_pct: 90.0
+    overall_minimum_pct: 85.0
+
+# --- Interim Target Validation (SDA mandatory) ---
+interim_target:
+  minimum_reduction_pct: 42.0
+  preferred_reduction_pct: 50.0
+  baseline_year_minimum: 2015
+  baseline_year_preferred: 2019
+  methodology: "SBTi_SDA"
+  sda_pathway_mandatory: true
+  annual_reduction_rate_min_pct: 4.2
+  scope1_coverage_pct: 100.0
+  scope2_coverage_pct: 95.0
+  scope3_coverage_pct: 67.0
+  fair_share_assessment: true
+  intensity_target_enabled: true
+  absolute_target_required: true
+  pathway_sources:
+    - "IPCC_AR6_WG3"
+    - "IEA_NZE_2023"
+    - "SBTi_SDA"
+    - "MPP_SECTOR_PATHWAYS"
+    - "TPI"
+
+# --- Long-Term Target ---
+long_term_target:
+  net_zero_year: 2050
+  residual_emissions_max_pct: 5.0
+  neutralization_required: true
+  neutralization_method: "CARBON_REMOVAL"
+  scope1_reduction_pct: 95.0
+  scope2_reduction_pct: 95.0
+  scope3_reduction_pct: 90.0
+  process_emissions_strategy: "TECHNOLOGY_TRANSITION"
+
+# --- Technology Transition Roadmap ---
+technology_roadmap:
+  enabled: true
+  ccs_ccus_integration: true
+  ccs_pathway:
+    enabled: true
+    capture_technologies:
+      - "POST_COMBUSTION"
+      - "PRE_COMBUSTION"
+      - "OXY_FUEL"
+      - "DIRECT_AIR_CAPTURE"
+    utilization_pathways:
+      - "ENHANCED_OIL_RECOVERY"
+      - "MINERAL_CARBONATION"
+      - "SYNTHETIC_FUELS"
+      - "BUILDING_MATERIALS"
+    storage_options:
+      - "GEOLOGICAL_STORAGE"
+      - "SALINE_AQUIFERS"
+      - "DEPLETED_RESERVOIRS"
+    max_ccs_reliance_pct: 30.0
+    ccs_readiness_assessment: true
+  hydrogen:
+    enabled: true
+    types: ["GREEN", "BLUE"]
+    application_areas: ["PROCESS_HEAT", "FEEDSTOCK", "TRANSPORT"]
+  electrification:
+    enabled: true
+    application_areas: ["LOW_TEMP_HEAT", "MATERIAL_HANDLING", "LIGHTING"]
+  circular_economy:
+    enabled: true
+    material_recycling_targets: true
+    waste_valorization: true
+  timeline:
+    - year: 2025
+      description: "Technology assessment and pilot projects initiated"
+    - year: 2030
+      description: "First commercial-scale CCS/CCUS operational"
+    - year: 2035
+      description: "Hydrogen integration in process heating"
+    - year: 2040
+      description: "Full electrification of compatible processes"
+    - year: 2050
+      description: "Net-zero production achieved"
+
+# --- Action Plan (High-emitter specific) ---
+action_plan:
+  publication_deadline_months: 12
+  plan_type: "TRANSITION_PLAN"
+  quantified_actions_required: true
+  minimum_actions: 15
+  maximum_actions: 150
+  include_macc_analysis: true
+  include_timeline: true
+  include_milestones: true
+  include_resource_allocation: true
+  include_sector_alignment: true
+  include_technology_roadmap: true
+  include_ccs_pathway: true
+  action_categories:
+    - "ENERGY_EFFICIENCY"
+    - "FUEL_SWITCHING"
+    - "PROCESS_OPTIMIZATION"
+    - "ELECTRIFICATION"
+    - "RENEWABLE_PROCUREMENT"
+    - "CARBON_CAPTURE_STORAGE"
+    - "CARBON_CAPTURE_UTILIZATION"
+    - "HYDROGEN_FUEL"
+    - "CIRCULAR_ECONOMY"
+    - "SUPPLY_CHAIN_ENGAGEMENT"
+    - "FLEET_MODERNIZATION"
+    - "METHANE_LEAK_DETECTION"
+    - "WASTE_HEAT_RECOVERY"
+    - "MATERIAL_SUBSTITUTION"
+    - "DIGITAL_OPTIMIZATION"
+  planning_horizon_years: 20
+  scenario_count: 4
+  carbon_price_eur_per_tco2e: 120.0
+  discount_rate_pct: 10.0
+  milestones:
+    - year: 2025
+      description: "Full emissions inventory, technology roadmap published"
+    - year: 2027
+      description: "Pilot CCS/CCUS projects, methane abatement active"
+    - year: 2030
+      description: "SDA pathway milestones achieved, 42% intensity reduction"
+    - year: 2035
+      description: "Commercial CCS operational, hydrogen pilots scaling"
+    - year: 2040
+      description: "80% absolute reduction, circular economy integrated"
+    - year: 2050
+      description: "Net-zero production, 5% residual neutralized"
+
+# --- Scope Configuration (Process emissions + fugitive) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 15]
+  scope3_materiality_threshold_pct: 0.5
+  scope3_method: "ACTIVITY_BASED"
+  scope3_category_methods:
+    cat_1: "supplier_specific"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_5: "activity_based"
+    cat_10: "activity_based"
+    cat_11: "activity_based"
+    default: "spend_based"
+  process_emissions_enabled: true
+  fugitive_emissions_enabled: true
+  methane_tracking: true
+  pcaf_enabled: false
+
+# --- Sector Pathway (SDA mandatory, MPP for hard-to-abate) ---
+sector_pathway:
+  enabled: true
+  auto_classify: true
+  pathway_sources:
+    - "IEA_NZE_2050"
+    - "IPCC_AR6_WG3"
+    - "TPI"
+    - "MPP"
+    - "ACT"
+    - "SBTi_SDA"
+  benchmark_comparison: true
+  milestone_mapping: true
+  gap_to_benchmark_analysis: true
+  technology_milestones: true
+  sectors_covered: 25
+  priority_sectors:
+    - "STEEL"
+    - "CEMENT"
+    - "CHEMICALS"
+    - "ALUMINIUM"
+    - "POWER_GENERATION"
+    - "OIL_GAS"
+    - "MINING"
+    - "SHIPPING"
+    - "AVIATION"
+    - "TRUCKING"
+  sector_specific_methodology: true
+  pathway_selection: "SDA"
+
+# --- HLEG Credibility Assessment (Enhanced scrutiny) ---
+hleg:
+  enabled: true
+  assessment_mode: "ENHANCED"
+  recommendations_assessed: 10
+  sub_criteria_count: 45
+  recommendations:
+    r1_net_zero_pledge_quality: true
+    r2_interim_target_ambition: true
+    r3_voluntary_credit_use: true
+    r4_lobbying_alignment: true
+    r5_just_transition: true
+    r6_financial_commitment: true
+    r7_reporting_transparency: true
+    r8_scope_of_pledge: true
+    r9_internal_governance: true
+    r10_fossil_fuel_phaseout: true
+  credibility_rating_scale:
+    - "STRONG"
+    - "ADEQUATE"
+    - "WEAK"
+    - "INSUFFICIENT"
+  minimum_credibility_target: "STRONG"
+  science_based_validation: true
+  governance_maturity_review: true
+  fossil_fuel_exposure_check: true
+  new_fossil_capacity_check: true
+  methane_commitment_check: true
+  stranded_asset_assessment: true
+  just_transition_plan_required: true
+  lobbying_disclosure_required: true
+
+# --- Credibility Assessment Weights ---
+credibility_weights:
+  pledge_quality: 0.12
+  target_ambition: 0.12
+  action_plan_robustness: 0.12
+  progress_trajectory: 0.10
+  governance_maturity: 0.08
+  transparency_reporting: 0.08
+  sector_alignment: 0.10
+  partnership_engagement: 0.05
+  offset_integrity: 0.08
+  just_transition: 0.05
+  fossil_fuel_phaseout: 0.05
+  technology_roadmap: 0.05
+  total: 1.00
+  minimum_composite_score: 0.70
+  passing_threshold: "STRONG"
+
+# --- Partnership Engagement (Technology consortiums) ---
+partnership:
+  enabled: true
+  engagement_level: "HIGH"
+  max_partners: 10
+  partner_discovery: true
+  collaboration_agreements: true
+  joint_target_setting: true
+  performance_tracking: true
+  impact_reporting: true
+  synergy_analysis: true
+  technology_consortium_participation: true
+  partner_initiatives:
+    - "SBTi"
+    - "CDP"
+    - "Climate Action 100+"
+    - "Mission Possible Partnership"
+    - "We Mean Business Coalition"
+    - "Global Methane Pledge"
+    - "First Movers Coalition"
+
+# --- Verification ---
+verification:
+  enabled: true
+  frequency: "ANNUAL"
+  verification_level: "REASONABLE"
+  third_party_required: true
+  sector_specific_methodology: true
+  accepted_standards:
+    - "ISO_14064_3"
+    - "ISAE_3410"
+    - "ISAE_3000"
+    - "SECTOR_SPECIFIC_PROTOCOLS"
+  verification_scope:
+    - "emissions_inventory"
+    - "process_emissions"
+    - "fugitive_emissions"
+    - "methane_reporting"
+    - "target_progress"
+    - "technology_roadmap_progress"
+    - "ccs_performance"
+  historical_data_review: true
+  site_visits_required: true
+  verification_report_public: true
+  continuous_emissions_monitoring: true
+
+# --- Offset Strategy (More stringent - 5% limit) ---
+offset_strategy:
+  enabled: true
+  max_offset_pct: 5.0
+  offset_scope: "RESIDUAL_ONLY"
+  eligible_offset_types:
+    - "CARBON_REMOVAL"
+    - "DIRECT_AIR_CAPTURE"
+    - "BIOENERGY_WITH_CCS"
+    - "ENHANCED_WEATHERING"
+  excluded_offset_types:
+    - "AVOIDED_DEFORESTATION"
+    - "REDD_UNCERTIFIED"
+    - "NATURE_BASED_SOLUTIONS"
+  quality_standards:
+    - "PURO_EARTH"
+    - "ISOMETRIC"
+    - "VERRA_VCS"
+    - "GOLD_STANDARD"
+  permanence_minimum_years: 1000
+  additionality_required: true
+  co_benefits_preferred: false
+  vintage_maximum_years: 3
+  price_floor_eur_per_tco2e: 100.0
+  retirement_tracking: true
+  double_counting_prevention: true
+  removal_only: true
+
+# --- Annual Reporting ---
+reporting:
+  enabled: true
+  frequency: "ANNUAL"
+  channels:
+    - "CDP_CLIMATE"
+    - "R2Z_CAMPAIGN"
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+    - "XBRL"
+  include_emissions_inventory: true
+  include_target_progress: true
+  include_action_implementation: true
+  include_partnership_engagement: true
+  include_credibility_update: true
+  include_forward_commitments: true
+  include_technology_roadmap: true
+  include_fossil_fuel_phaseout_status: true
+  include_methane_reporting: true
+  include_ccs_progress: true
+  include_offset_usage: true
+  verification_required: true
+  verification_level: "REASONABLE"
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+  reporting_format_preferences:
+    primary: "PDF"
+    machine_readable: "JSON"
+    regulatory: "XBRL"
+    web: "HTML"
+
+# --- Progress Tracking ---
+progress:
+  enabled: true
+  trajectory_assessment: true
+  variance_analysis: true
+  yoy_comparison: true
+  corrective_action_triggers: true
+  on_track_threshold_pct: 3.0
+  alert_threshold_pct: 5.0
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_production"
+    - "emission_intensity_revenue"
+    - "scope1_trajectory"
+    - "process_emissions_share"
+    - "methane_emissions"
+    - "yoy_reduction_rate"
+    - "fossil_fuel_exposure_pct"
+    - "ccs_deployment_progress"
+    - "renewable_energy_share"
+    - "sector_benchmark_gap"
+    - "hleg_credibility_rating"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+
+# --- Race Readiness ---
+readiness:
+  enabled: true
+  dimensions:
+    - "pledge_strength"
+    - "starting_line_compliance"
+    - "target_ambition"
+    - "action_plan_quality"
+    - "progress_trajectory"
+    - "sector_alignment"
+    - "partnership_engagement"
+    - "hleg_credibility"
+  composite_scoring: true
+  rag_status: true
+  prioritized_improvements: true
+  readiness_levels:
+    - "CAMPAIGN_READY"
+    - "MOSTLY_READY"
+    - "PARTIALLY_READY"
+    - "SIGNIFICANT_GAPS"
+    - "NOT_READY"
+  minimum_readiness_target: "CAMPAIGN_READY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 10
+  timeout_seconds: 900
+  batch_size: 2000
+  memory_limit_mb: 16384
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 20
+  external_audit_export: true

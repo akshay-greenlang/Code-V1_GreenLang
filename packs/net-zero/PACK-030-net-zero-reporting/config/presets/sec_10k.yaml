@@ -1,0 +1,222 @@
+# =============================================================================
+# PACK-030 Net Zero Reporting Pack - SEC 10-K Compliance Preset
+# =============================================================================
+# Configuration optimized for SEC climate disclosure compliance within 10-K
+# annual filings. Prioritizes XBRL/iXBRL tagging against SEC taxonomy,
+# Regulation S-K Items 1502-1506 coverage, attestation report preparation,
+# and integration with financial reporting data.
+#
+# SEC Climate Disclosure Requirements (Regulation S-K):
+#   - Item 1502: Governance of climate-related risks
+#   - Item 1503: Strategy, business model, and outlook
+#   - Item 1504: Risk management processes
+#   - Item 1505: Scope 1 and Scope 2 GHG emissions (XBRL tagged)
+#   - Item 1506: Targets and goals, transition plans
+#
+# SEC Filing Requirements:
+#   - 10-K filing: Within 90 days of fiscal year-end (large accelerated filers)
+#   - XBRL tagging: All quantitative climate metrics must be XBRL tagged
+#   - iXBRL: Inline XBRL for human+machine-readable format
+#   - Attestation: Limited assurance over Scope 1+2 (phased in)
+#   - SOX integration: Climate disclosures subject to internal controls
+#
+# Typical use cases:
+#   - US public companies preparing 10-K climate disclosures
+#   - Large accelerated filers subject to SEC climate rules
+#   - Dual-listed companies with SEC and CSRD obligations
+#   - Companies preparing for SEC climate disclosure attestation
+#   - Legal/finance teams ensuring SOX compliance for climate data
+#
+# Key characteristics:
+#   - SEC as primary framework with TCFD secondary (TCFD alignment)
+#   - XBRL + iXBRL output mandatory for Scope 1/2 emissions
+#   - Regulatory branding style for formal SEC filing format
+#   - Attestation report template for limited assurance
+#   - SOX-compliant audit trail and internal controls documentation
+#   - 90-day filing deadline reminders with tight notification schedule
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+reporting_year: 2025
+baseline_year: 2019
+fiscal_year_end_month: 12
+
+# --- Framework Configuration ---
+frameworks:
+  frameworks_enabled:
+    - "SEC"
+    - "TCFD"
+  primary_framework: "SEC"
+  secondary_frameworks:
+    - "TCFD"
+  framework_outputs:
+    - format: "XBRL"
+      template: "sec_climate_xbrl"
+      enabled: true
+    - format: "iXBRL"
+      template: "sec_climate_ixbrl"
+      enabled: true
+    - format: "PDF"
+      template: "sec_narrative_disclosure"
+      enabled: true
+
+# --- Output Settings ---
+output_formats:
+  - "XBRL"
+  - "iXBRL"
+  - "PDF"
+  - "JSON"
+languages:
+  - "en"
+
+# --- Branding ---
+branding:
+  style: "regulator"
+  logo_path: null
+  primary_color: "#1E3A5F"
+  secondary_color: "#4A7C9B"
+  font_family: "'Times New Roman', Times, serif"
+  include_charts: false
+  include_toc: true
+  include_page_numbers: true
+  include_headers_footers: true
+  custom_css: null
+
+# --- Data Aggregation ---
+data_aggregation:
+  pack_021_requirement: "required"
+  pack_022_requirement: "recommended"
+  pack_028_requirement: "optional"
+  pack_029_requirement: "required"
+  gl_sbti_app_requirement: "optional"
+  gl_cdp_app_requirement: "optional"
+  gl_tcfd_app_requirement: "recommended"
+  gl_ghg_app_requirement: "required"
+  auto_reconciliation: true
+  reconciliation_tolerance_pct: 0.1
+  gap_detection_enabled: true
+  lineage_tracking_enabled: true
+  lineage_diagram_format: "svg"
+  completeness_scoring: true
+  parallel_fetching: true
+  fetch_timeout_seconds: 30
+  retry_count: 3
+  circuit_breaker_threshold: 5
+
+# --- Narrative Generation ---
+narrative:
+  narrative_quality: "high"
+  citation_management_enabled: true
+  citation_format: "footnote"
+  hyperlinked_citations: false
+  consistency_validation_enabled: true
+  consistency_target_pct: 95.0
+  harmonization_suggestions: true
+  human_review_required: true
+  review_workflow_enabled: true
+  max_narrative_length_words: 4000
+
+# --- Translation ---
+translation:
+  languages:
+    - "en"
+  primary_language: "en"
+  translation_service: "native"
+  climate_glossary_enabled: true
+  preserve_citations: true
+  quality_validation_enabled: false
+  quality_target_pct: 98.0
+
+# --- XBRL/iXBRL (FOCUS AREA) ---
+xbrl:
+  xbrl_enabled: true
+  sec_taxonomy_version: "2024"
+  csrd_taxonomy_version: "2024"
+  issb_taxonomy_version: "2024"
+  taxonomy_validation_enabled: true
+  ixbrl_enabled: true
+  taxonomy_cache_enabled: true
+  taxonomy_cache_ttl_hours: 168
+  auto_tag_detection: true
+
+# --- Assurance ---
+assurance:
+  assurance_level: "limited"
+  include_evidence_bundle: true
+  include_provenance: true
+  include_lineage_diagrams: true
+  include_methodology_docs: true
+  include_control_matrix: true
+  include_assumption_register: true
+  include_change_log: true
+  evidence_bundle_format: "zip"
+  isae_3410_compliance: true
+  isae_3000_compliance: false
+
+# --- Dashboard ---
+dashboard:
+  executive_dashboard_enabled: true
+  framework_dashboards_enabled: true
+  stakeholder_views_enabled: true
+  default_stakeholder_view: "regulator"
+  framework_coverage_heatmap: true
+  deadline_countdown: true
+  drill_down_enabled: true
+  interactive_charts: false
+  responsive_design: true
+  export_to_pdf: true
+  auto_refresh_interval_seconds: 0
+
+# --- Validation ---
+validation:
+  schema_validation_enabled: true
+  completeness_validation_enabled: true
+  consistency_validation_enabled: true
+  consistency_strictness: "strict"
+  quality_scoring_enabled: true
+  minimum_quality_score: 95.0
+  metric_reconciliation: true
+  metric_tolerance_pct: 0.01
+  narrative_spell_check: true
+  narrative_grammar_check: true
+  block_publish_on_critical: true
+
+# --- Notifications ---
+notifications:
+  email_notifications_enabled: true
+  slack_notifications_enabled: false
+  teams_notifications_enabled: false
+  webhook_notifications_enabled: false
+  notification_recipients: []
+  slack_channel: null
+  webhook_url: null
+  deadline_reminders:
+    - 90
+    - 60
+    - 30
+    - 14
+    - 7
+    - 3
+  notify_on_generation: true
+  notify_on_validation_failure: true
+  notify_on_approval: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  cache_hit_ratio_target: 95.0
+  max_concurrent_reports: 4
+  report_generation_timeout_seconds: 10
+  api_response_timeout_ms: 200
+  pdf_render_timeout_seconds: 5
+  parallel_framework_execution: true
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

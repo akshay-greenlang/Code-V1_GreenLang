@@ -1,0 +1,255 @@
+# =============================================================================
+# PACK-032 Building Energy Assessment Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for Thames Quarter Office Tower, a fictional 12-storey
+# commercial office building in London SE1. Built in 2005 with gas-fired
+# central heating, split-system air conditioning, and aging fluorescent
+# lighting. Currently rated EPC D, targeting EPC B and BREEAM In-Use
+# Very Good after retrofit.
+#
+# Building: Thames Quarter Office Tower
+# Address: 42 Riverside Walk, London SE1 7PB
+# Client: Riverside Property Holdings Ltd
+# Gross Internal Area: 18,500 m2
+# Net Lettable Area: 15,200 m2
+# Floors: 12 above ground + 2 basement levels
+# Construction: 2005 (steel frame, curtain wall glazing)
+# Occupancy: ~950 persons typical (Mon-Fri 8am-6pm)
+# Annual Energy: ~3.3 GWh (electricity 2.1 GWh + gas 1.2 GWh)
+# Current EPC: D (score 115 kWh/m2/yr asset rating)
+# Current EUI: 178 kWh/m2/yr (operational, DEC rating 148)
+# Target EPC: B (score <50 kWh/m2/yr)
+# Target EUI: <120 kWh/m2/yr
+# =============================================================================
+
+# --- Building Details ---
+building_name: "Thames Quarter Office Tower"
+building_address: "42 Riverside Walk, London SE1 7PB"
+client_name: "Riverside Property Holdings Ltd"
+building_type: "OFFICE"
+building_age: "1996_2006"
+climate_zone: "CENTRAL_MARITIME"
+country: "GB"
+assessment_level: "DETAILED"
+certification_target: "BREEAM_VERY_GOOD"
+reporting_year: 2025
+
+# --- Building Characteristics ---
+gross_internal_area_m2: 18500.0
+net_lettable_area_m2: 15200.0
+number_of_floors: 12
+number_of_basements: 2
+floor_to_ceiling_height_m: 2.75
+occupancy_pattern: "SINGLE_SHIFT"
+typical_occupancy_persons: 950
+operating_hours_per_year: 2600
+ownership_type: "MULTI_TENANT"
+primary_heating_fuel: "NATURAL_GAS"
+
+# --- Current Energy Performance ---
+current_epc_rating: "D"
+current_eui_kwh_m2: 178.0
+target_epc_rating: "B"
+target_eui_kwh_m2: 120.0
+
+# --- Envelope ---
+envelope:
+  wall_u_target: 0.25
+  roof_u_target: 0.18
+  floor_u_target: 0.22
+  window_u_target: 1.3
+  window_g_value_target: 0.35
+  airtightness_target_m3_h_m2: 5.0
+  thermal_bridge_method: "TABULATED_PSI"
+  condensation_risk_check: true
+  overheating_assessment: true
+  window_to_wall_ratio: 0.55
+
+# --- HVAC ---
+hvac:
+  heating_system_type: "gas_boiler"
+  cooling_system_type: "chiller"
+  ventilation_type: "MECHANICAL_SUPPLY_EXTRACT"
+  heat_recovery_enabled: true
+  heat_recovery_efficiency_pct: 72.0
+  target_heating_cop: 3.5
+  target_cooling_seer: 5.0
+  boiler_efficiency_target_pct: 93.0
+  ahu_optimization: true
+  free_cooling_assessment: true
+  bms_optimization: true
+  zone_control_assessment: true
+  demand_controlled_ventilation: true
+  vsd_on_pumps_fans: true
+  pipe_insulation_assessment: true
+
+# --- Lighting ---
+lighting:
+  lpd_target_w_m2: 7.0
+  control_type: "DALI_ADDRESSABLE"
+  daylight_factor_target: 2.5
+  led_retrofit_analysis: true
+  emergency_lighting_audit: true
+  outdoor_lighting: true
+  lux_level_measurement: true
+  parasitic_lighting_load: true
+
+# --- DHW ---
+dhw:
+  system_type: "gas_boiler"
+  solar_thermal_enabled: false
+  legionella_temp_c: 60.0
+  distribution_loss_assessment: true
+  secondary_return_enabled: true
+
+# --- Renewables ---
+renewable:
+  solar_pv_enabled: true
+  pv_capacity_kwp: 120.0
+  pv_orientation_deg: 180.0
+  pv_tilt_deg: 10.0
+  pv_yield_kwh_per_kwp: 850.0
+  battery_storage_enabled: true
+  battery_capacity_kwh: 50.0
+  heat_pump_enabled: false
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  benchmark_standard: "CIBSE_TM46"
+  reference_eui_kwh_m2: 120
+  peer_group_size: 15
+  dec_rating_enabled: true
+  asset_rating_enabled: true
+  percentile_tracking: true
+  gap_to_best_practice: true
+  trend_analysis_years: 5
+  kpi_set:
+    - "eui_kwh_m2_yr"
+    - "heating_kwh_m2_yr"
+    - "cooling_kwh_m2_yr"
+    - "electricity_kwh_m2_yr"
+    - "gas_kwh_m2_yr"
+    - "carbon_kgco2_m2_yr"
+    - "dec_operational_rating"
+    - "epc_rating"
+
+# --- Retrofit ---
+retrofit:
+  budget_eur: 1500000
+  retrofit_ambition: "COST_OPTIMAL"
+  discount_rate_pct: 3.5
+  energy_price_escalation_pct: 2.5
+  study_period_years: 25
+  carbon_price_eur_per_tonne: 85.0
+  fabric_first_approach: true
+  include_grants_subsidies: true
+  measure_interaction_modelling: true
+  max_payback_years: 10.0
+  include_maintenance_costs: true
+  enable_staged_retrofit: true
+
+# --- Indoor Environment ---
+indoor_environment:
+  ieq_category: "CATEGORY_II"
+  thermal_comfort_method: "PMV_PPD"
+  target_co2_ppm: 800
+  target_temperature_heating_c: 21.0
+  target_temperature_cooling_c: 24.0
+  relative_humidity_range_pct: [40.0, 60.0]
+  daylighting_assessment: true
+  acoustic_assessment: true
+  post_occupancy_evaluation: true
+  overheating_hours_threshold: 35
+
+# --- Carbon ---
+carbon:
+  grid_emission_factor_kg_per_kwh: 0.233
+  gas_emission_factor_kg_per_kwh: 0.204
+  study_period_years: 60
+  include_embodied: true
+  carbon_target_kgco2_m2_yr: 25.0
+  grid_decarbonisation_enabled: true
+  grid_decarbonisation_rate_pct_yr: 3.0
+  scope_1_included: true
+  scope_2_included: true
+  refrigerant_leakage_included: true
+
+# --- Compliance ---
+compliance:
+  epbd_country: "GB"
+  epc_methodology: "SBEM"
+  mees_enabled: true
+  mees_minimum_rating: "E"
+  bps_enabled: true
+  bps_target_rating: "3_star"
+  dec_required: false
+  eed_public_body: false
+  epbd_renovation_passport: true
+  zero_emission_building_target: false
+
+# --- Report ---
+report:
+  language: "en"
+  currency: "GBP"
+  include_executive_summary: true
+  include_financial_analysis: true
+  include_thermal_model: true
+  include_retrofit_roadmap: true
+  include_epc_simulation: true
+  include_carbon_trajectory: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  watermark_draft: true
+  client_logo_enabled: true
+
+# --- Integration ---
+integration:
+  bms_enabled: true
+  bms_protocol: "BACNET"
+  weather_source: "met_office"
+  degree_day_base_heating_c: 15.5
+  degree_day_base_cooling_c: 18.0
+  certification_api_enabled: true
+  utility_data_api: true
+  epc_register_lookup: true
+  cad_import_enabled: true
+
+# --- Performance ---
+performance:
+  max_buildings: 1
+  max_zones: 200
+  max_meters: 150
+  cache_ttl_seconds: 3600
+  batch_size: 1000
+  calculation_timeout_seconds: 300
+  parallel_engines: 4
+
+# --- Security ---
+security:
+  roles:
+    - "energy_assessor"
+    - "building_manager"
+    - "sustainability_officer"
+    - "property_owner"
+    - "tenant"
+    - "viewer"
+    - "admin"
+  data_classification: "CONFIDENTIAL"
+  audit_logging: true
+  pii_redaction: true
+  encryption_at_rest: true
+  tenant_data_isolation: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+  measure_tracking: true
+  epc_lodgement_record: true

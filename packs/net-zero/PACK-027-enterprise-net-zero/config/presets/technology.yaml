@@ -1,0 +1,326 @@
+# =============================================================================
+# PACK-027 Enterprise Net Zero Pack - Technology Preset
+# =============================================================================
+# Sector-specific configuration for large technology, software, and data center
+# enterprises. Low Scope 1 (3%, backup generators/cooling), Scope 2 dominated
+# by data center electricity (22%), Scope 3 dominant (75%) via hardware
+# procurement (Cat 1), capital goods (Cat 2), use of sold products (Cat 11),
+# and end-of-life (Cat 12). RE100 alignment and PUE tracking are key.
+#
+# Sector: Technology, Software, Data Centers, Cloud Services
+# Consolidation: Operational control (typical for tech companies)
+# Data quality: Level 1 target (+/-3% accuracy)
+# SBTi pathway: ACA 1.5C
+# Key S3 categories: Cat 1 (hardware procurement), Cat 2 (capital goods),
+#                     Cat 3 (fuel & energy), Cat 11 (product use-phase),
+#                     Cat 12 (end-of-life electronics)
+#
+# Target organizations:
+#   - Microsoft, Google/Alphabet, Apple, Amazon (AWS)
+#   - SAP, Salesforce, Oracle, Adobe, ServiceNow
+#   - Intel, Samsung, TSMC (semiconductor)
+#   - Meta, Netflix (data center heavy)
+#
+# Key decarbonization levers:
+#   - RE100 renewable energy (100% renewable electricity)
+#   - Data center PUE optimization (target PUE < 1.2)
+#   - Hardware supply chain engagement (Cat 1/2)
+#   - Cloud carbon efficiency (compute per kWh)
+#   - Product energy efficiency (Cat 11 use-phase)
+#   - Avoided emissions (SaaS vs. on-premise efficiency gains)
+#   - Circular economy (e-waste, device longevity)
+#
+# Regulatory exposure:
+#   - SEC Climate Rule (most are LAF)
+#   - CSRD/ESRS E1 (EU operations)
+#   - California SB 253 / SB 261
+#   - CDP Climate Change (A-list targets)
+#   - EU Taxonomy (data center energy efficiency)
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "TECHNOLOGY"
+  region: "GLOBAL"
+  headquarters_country: "US"
+  operating_countries: []
+  entity_count: 40
+  facility_count: 80
+  fiscal_year_end: "12-31"
+  erp_system: "SAP_S4HANA"
+  erp_secondary: "WORKDAY"
+  is_large_accelerated_filer: true
+  csrd_in_scope: true
+
+# --- Multi-Entity Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  entity_count: 40
+  include_joint_ventures: true
+  include_associates: false
+  intercompany_elimination: true
+  base_year_recalculation_threshold_pct: 5.0
+  mid_year_acquisition_prorata: true
+  reporting_currency: "USD"
+  alignment_with_financial_reporting: true
+
+# --- Data Quality (Level 1 target) ---
+data_quality:
+  target_tier: "LEVEL_1"
+  minimum_tier: "LEVEL_3"
+  accuracy_target_pct: 3.0
+  data_completeness_target_pct: 95.0
+  emission_factor_sources:
+    - "EPA_2024"
+    - "DEFRA_2024"
+    - "IPCC_AR6"
+    - "ecoinvent_3.10"
+  require_supplier_specific_data: true
+  supplier_specific_threshold_count: 50
+  allow_spend_based_fallback: true
+  data_improvement_plan_enabled: true
+  dq_monitoring_frequency: "MONTHLY"
+
+# --- Scope Configuration (Data center S2, hardware S3) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_agents:
+    - "MRV-001"  # Backup generators, on-site heating
+    - "MRV-002"  # Data center cooling (refrigerants)
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope2_agents:
+    - "MRV-009"
+    - "MRV-010"
+    - "MRV-011"
+    - "MRV-012"
+    - "MRV-013"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  scope3_priority_categories: [1, 2, 3, 11, 12]
+  scope3_default_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "supplier_specific"
+    cat_2: "average_data"
+    cat_3: "activity_based"
+    cat_4: "spend_based"
+    cat_5: "activity_based"
+    cat_6: "activity_based"
+    cat_7: "hybrid"
+    cat_8: "average_data"
+    cat_9: "spend_based"
+    cat_10: "spend_based"
+    cat_11: "activity_based"
+    cat_12: "average_data"
+    cat_13: "average_data"
+    cat_14: "spend_based"
+    cat_15: "spend_based"
+    default: "hybrid"
+  scope3_materiality_threshold_pct: 1.0
+  scope3_total_exclusion_max_pct: 5.0
+  gases_included: ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
+
+# --- SBTi Target (ACA 1.5C, RE100 alignment) ---
+target:
+  sbti_pathway: "ACA_15C"
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_scope1_2_reduction_pct: 50.0
+  near_term_scope3_reduction_pct: 30.0
+  long_term_reduction_pct: 90.0
+  scope1_2_coverage_pct: 95.0
+  scope3_near_term_coverage_pct: 67.0
+  scope3_long_term_coverage_pct: 90.0
+  sda_sectors: []
+  flag_enabled: false
+  flag_commodities: []
+  sbti_submission_planned: true
+  sbti_committed: true
+  sbti_target_validated: false
+  five_year_review_schedule: true
+
+# --- Scenario Modeling (RE100 + supply chain focus) ---
+scenarios:
+  enabled: true
+  scenarios:
+    - "AGGRESSIVE_1_5C"
+    - "MODERATE_2C"
+    - "CONSERVATIVE_BAU"
+  monte_carlo_runs: 10000
+  confidence_intervals: [10, 25, 50, 75, 90]
+  sensitivity_method: "sobol"
+  technology_focus:
+    - "renewable_energy"
+    - "energy_efficiency"
+    - "data_center_optimization"
+    - "hardware_supply_chain"
+    - "cloud_efficiency"
+  stranded_asset_analysis: false
+  custom_scenario_enabled: true
+
+# --- Carbon Pricing (Shadow price, data center allocation) ---
+carbon_pricing:
+  enabled: true
+  approach: "SHADOW_PRICE"
+  price_usd_per_tco2e: 100.0
+  price_escalation_pct_per_year: 5.0
+  price_scenario: "MEDIUM"
+  apply_to_capex: true
+  apply_to_bu_allocation: true
+  cbam_enabled: false
+  ets_enabled: false
+  carbon_adjusted_financials: true
+
+# --- Scope 4 Avoided Emissions (SaaS vs. on-premise) ---
+scope4:
+  enabled: true
+  methodology: "WBCSD"
+  product_categories:
+    - "cloud_services"
+    - "saas_platform"
+    - "energy_management_software"
+  baseline_scenario: "market_average"
+  include_rebound_effects: true
+  attribution_methodology: "proportional"
+
+# --- Supply Chain (Hardware suppliers, cloud providers) ---
+supply_chain:
+  enabled: true
+  tier_depth: 3
+  tier1_critical_count: 50
+  tier2_strategic_count: 200
+  tier3_managed_count: 1000
+  cdp_supply_chain_integration: true
+  ecovadis_integration: true
+  wbcsd_pact_integration: false
+  engagement_program_enabled: true
+  sbti_cascade_target: true
+  commodity_tracking: []
+
+# --- External Assurance ---
+assurance:
+  level: "LIMITED"
+  standard: "ISAE_3410"
+  scope_of_assurance:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  workpaper_generation: true
+  sample_selection_automated: true
+  management_assertion_template: true
+  target_auditor_hours: 80
+  reasonable_assurance_timeline_year: 2028
+
+# --- Financial Integration ---
+financial_integration:
+  enabled: true
+  carbon_adjusted_pnl: true
+  carbon_balance_sheet: true
+  ebitda_carbon_intensity: true
+  product_level_footprint: false
+  eu_taxonomy_alignment: true
+  esrs_e1_8_disclosure: true
+  esrs_e1_9_disclosure: true
+  green_bond_screening: true
+  stranded_asset_assessment: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+    - "HTML"
+    - "JSON"
+    - "MARKDOWN"
+  templates:
+    - "ghg_inventory_report"
+    - "sbti_target_submission"
+    - "cdp_climate_response"
+    - "tcfd_report"
+    - "executive_dashboard"
+    - "supply_chain_heatmap"
+    - "scenario_comparison"
+    - "assurance_statement"
+    - "board_climate_report"
+    - "regulatory_filings"
+  regulatory_frameworks:
+    - "GHG_PROTOCOL"
+    - "SBTI"
+    - "CDP"
+    - "TCFD_ISSB"
+    - "SEC_CLIMATE"
+    - "CSRD_ESRS"
+    - "ISO_14064"
+    - "CA_SB253"
+  language: "en"
+  secondary_languages: []
+  review_workflow_enabled: true
+  watermark_draft: true
+  board_reporting_frequency: "QUARTERLY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 7200
+  max_concurrent_calcs: 16
+  timeout_seconds: 300
+  batch_size: 5000
+  memory_limit_mb: 16384
+  monte_carlo_parallelism: 8
+  entity_parallel_processing: true
+  lightweight_mode: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  immutable_log: true
+
+# --- Scorecard (Tech-specific KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "COMPREHENSIVE"
+  dimensions:
+    - "governance_oversight"
+    - "baseline_completeness"
+    - "target_ambition"
+    - "scope3_coverage"
+    - "data_quality"
+    - "reduction_progress"
+    - "supply_chain_engagement"
+    - "scenario_resilience"
+    - "assurance_readiness"
+    - "regulatory_compliance"
+    - "financial_integration"
+    - "stakeholder_communication"
+  benchmark_enabled: true
+  peer_group: "SECTOR_AND_SCALE"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "renewable_electricity_pct"
+    - "data_center_pue"
+    - "scope3_hardware_intensity"
+    - "yoy_reduction_rate"
+    - "sbti_criteria_compliance"
+    - "supplier_engagement_rate"
+    - "avoided_emissions_ratio"
+    - "assurance_coverage_pct"
+    - "re100_progress"
+    - "carbon_price_coverage"
+  target_years: [2025, 2027, 2030, 2035, 2040, 2045, 2050]
+  tpi_alignment_check: true

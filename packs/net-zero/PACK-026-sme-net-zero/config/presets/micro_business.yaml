@@ -1,0 +1,190 @@
+# =============================================================================
+# PACK-026 SME Net Zero Pack - Micro Business Preset
+# =============================================================================
+# Configuration for micro enterprises (1-9 employees, <EUR 2M revenue).
+# Uses BRONZE data quality tier with industry averages only. Scope 1+2
+# estimated, Scope 3 optional with only Category 1 (purchased goods) and
+# Category 6 (business travel) if included. ACA pathway with 30% reduction
+# target by 2030 (less ambitious but practical for micro enterprises).
+# Top 3 quick wins only. Total budget <EUR 5,000.
+#
+# Grant focus: Micro-grants, local programs
+# Certification: SME Climate Hub (easiest, self-declaration)
+# Verification: Self-declaration
+# Processing: Lightweight mode, 512MB memory, <15 sec processing
+#
+# Typical use cases:
+#   - Freelancers and sole traders with climate commitment
+#   - Small shops and cafes (1-5 employees)
+#   - Local trades and services (plumbers, electricians, etc.)
+#   - Micro startups and home-based businesses
+#   - Small consultancies and agencies (2-9 people)
+#   - Artisan producers and craft businesses
+#   - Small farms and holdings
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sme_size: "MICRO"
+  sector: "OTHER"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  accounting_software: "NONE"
+  number_of_sites: 1
+  has_fleet: false
+  has_production_facility: false
+
+# --- Data Quality (BRONZE: Industry averages only) ---
+data_quality:
+  tier: "BRONZE"
+  allow_industry_averages: true
+  allow_spend_based_estimation: true
+  require_utility_bills: false
+  require_supplier_data: false
+  data_completeness_target_pct: 40.0
+  emission_factor_source: "DEFRA_2024"
+  data_improvement_plan: true
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  base_year_recalculation_threshold_pct: 15.0
+  include_all_sites: true
+
+# --- Scope Configuration (S1+2 estimate, S3 optional) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: false
+  scope1_estimation_method: "estimation"
+  scope2_methods:
+    - "location_based"
+  scope3_categories: [1, 6]
+  scope3_method: "SPEND_BASED"
+  scope3_category_methods:
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 10.0
+  scope3_optional: true
+
+# --- Target Setting (30% by 2030 - practical for micro) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_reduction_pct: 30.0
+  long_term_reduction_pct: 90.0
+  annual_linear_reduction_pct: 3.5
+  sbti_sme_route: true
+  sbti_submission_planned: false
+  sme_climate_hub_commitment: true
+
+# --- Reduction Actions (Top 3 quick wins only, <EUR 5,000) ---
+reduction:
+  max_actions: 3
+  planning_horizon_years: 3
+  budget_range_min_eur: 0.0
+  budget_range_max_eur: 5000.0
+  include_quick_wins: true
+  quick_win_max_count: 3
+  include_renewable_procurement: true
+  include_energy_efficiency: true
+  include_supplier_engagement: false
+  include_fleet_electrification: false
+  include_process_optimization: false
+  include_behavioral_change: true
+  include_macc_analysis: false
+  carbon_price_eur_per_tco2e: 30.0
+  discount_rate_pct: 8.0
+  scenario_count: 1
+
+# --- Grant Preferences (Micro-grants, local programs) ---
+grant:
+  enabled: true
+  preferred_categories:
+    - "MICRO_GRANT"
+    - "LOCAL_PROGRAM"
+    - "ENERGY_EFFICIENCY"
+  max_application_complexity: "LOW"
+  region_focus: "LOCAL"
+  sector_specific: false
+  include_tax_incentives: true
+  include_green_loans: false
+  budget_match_required: true
+
+# --- Certification (SME Climate Hub - easiest) ---
+certification:
+  primary_pathway: "SME_CLIMATE_HUB"
+  auto_recommend: true
+  readiness_assessment: true
+  max_certification_budget_eur: 500.0
+  max_time_months: 1
+
+# --- Reporting (PDF only, 2 templates) ---
+reporting:
+  formats:
+    - "PDF"
+  templates:
+    - "net_zero_summary"
+    - "action_plan"
+  include_cdp_mapping: false
+  include_sbti_mapping: false
+  include_sme_climate_hub_mapping: true
+  language: "en"
+  review_workflow_enabled: false
+  watermark_draft: true
+  include_grant_recommendations: true
+  include_certification_roadmap: true
+
+# --- Performance (Minimal: 512MB, <15 sec) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 900
+  max_concurrent_calcs: 1
+  timeout_seconds: 15
+  batch_size: 100
+  memory_limit_mb: 512
+  lightweight_mode: true
+
+# --- Audit Trail (3-year, minimal) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 3
+  external_audit_export: false
+
+# --- Verification (Self-declaration) ---
+verification:
+  level: "SELF_DECLARATION"
+  frequency: "ANNUAL"
+  scope_of_verification:
+    - "scope_1"
+    - "scope_2"
+  include_scope3_in_verification: false
+
+# --- Scorecard (Quick assessment, minimal KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "QUICK"
+  dimensions:
+    - "baseline_completeness"
+    - "target_ambition"
+    - "reduction_progress"
+  benchmark_enabled: false
+  peer_group: "SME_SIZE"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+  target_years: [2025, 2028, 2030, 2050]

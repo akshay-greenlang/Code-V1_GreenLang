@@ -1,0 +1,223 @@
+# =============================================================================
+# PACK-024 Carbon Neutral Pack - Event Neutrality Preset
+# =============================================================================
+# Event-specific carbon neutrality for conferences, trade shows, sporting
+# events, concerts, festivals, and corporate gatherings. Covers event-specific
+# emission sources including venue energy, attendee travel, catering,
+# accommodation, freight, waste, and digital streaming. Aligned with
+# ISO 20121:2012 (sustainable events) and PAS 2060:2014 for event carbon
+# neutrality claims.
+#
+# Typical use cases:
+#   - Conferences and trade shows (500-50,000 attendees)
+#   - Corporate annual general meetings
+#   - Sporting events and tournaments
+#   - Music festivals and concerts
+#   - Product launch events
+#   - Hybrid and virtual events with streaming
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+neutrality_type: "EVENT"
+boundary_scope: "EVENT_SPECIFIC"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+event_date_start: "2025-06-01"
+event_date_end: "2025-06-03"
+event_name: ""
+
+# --- Scope Configuration ---
+scope_boundaries:
+  scope1:
+    included: true
+    coverage_pct: 100.0
+    consolidation: "event_boundary"
+    sources:
+      - "backup_generators"
+      - "event_vehicles"
+      - "catering_cooking_fuel"
+      - "mobile_stage_equipment"
+  scope2:
+    included: true
+    coverage_pct: 100.0
+    methods:
+      - "location_based"
+      - "market_based"
+    preferred_method: "market_based"
+    sources:
+      - "venue_electricity"
+      - "venue_heating_cooling"
+      - "temporary_power_supply"
+  scope3:
+    included: true
+    coverage_pct: 80.0
+    categories: [1, 3, 4, 5, 6, 7, 9]
+    materiality_threshold_pct: 2.0
+    de_minimis_pct: 5.0
+    event_specific_sources:
+      - "attendee_travel"
+      - "attendee_accommodation"
+      - "freight_logistics"
+      - "catering_food_waste"
+      - "marketing_materials"
+      - "digital_streaming"
+      - "exhibition_stands"
+
+# --- Engines Configuration ---
+engines:
+  footprint_quantification:
+    enabled: true
+    consolidation_approach: "event_boundary"
+    include_biogenic_co2: false
+    uncertainty_assessment: true
+    data_quality_scoring: true
+    gwp_source: "IPCC_AR6"
+    gwp_timeframe: 100
+    materiality_threshold_pct: 2.0
+    event_specific:
+      attendee_travel_survey: true
+      accommodation_nights_tracking: true
+      catering_portions_tracking: true
+      waste_weighing: true
+      digital_streaming_kwh: true
+  carbon_management_plan:
+    enabled: true
+    planning_horizon_years: 1
+    reduction_first_strategy: true
+    min_reduction_before_offset_pct: 20.0
+    internal_carbon_price_eur: 50.0
+    max_offset_reliance_pct: 80.0
+    annual_reduction_target_pct: 5.0
+  credit_quality:
+    enabled: true
+    min_quality_score: 55
+    icvcm_ccp_compliance: false
+    preferred_standards:
+      - "gold_standard"
+      - "verra_vcs"
+    min_additionality_score: 6
+    min_permanence_score: 5
+    require_sdg_contribution: true
+  portfolio_optimization:
+    enabled: true
+    max_nature_based_pct: 60.0
+    max_avoidance_pct: 70.0
+    min_removal_pct: 10.0
+    diversification_min_types: 2
+    vintage_max_age_years: 5
+    geographic_diversification: false
+    budget_constraint_enabled: true
+  registry_retirement:
+    enabled: true
+    auto_retirement: false
+    retirement_timing: "within_3_months_post_event"
+    supported_registries:
+      - "gold_standard"
+      - "verra"
+    serial_number_tracking: true
+    double_counting_prevention: true
+  neutralization_balance:
+    enabled: true
+    balance_method: "event_total"
+    allow_forward_credits: false
+    buffer_pool_pct: 10.0
+    shortfall_action: "purchase_additional"
+    surplus_carryover: false
+    verification_frequency: "per_event"
+  claims_substantiation:
+    enabled: true
+    claim_type: "carbon_neutral_event"
+    standard: "PAS_2060"
+    pas2060_compliance: true
+    vcmi_claims_code: false
+    public_disclosure_required: true
+    third_party_verification: false
+    claim_period: "event"
+  verification_package:
+    enabled: true
+    assurance_level: "limited"
+    standard: "ISAE_3410"
+    third_party_verifier: false
+    evidence_completeness_target_pct: 85.0
+    documentation_format: "PDF"
+  annual_cycle:
+    enabled: false
+    milestone_frequency: "event_based"
+    progress_reporting: true
+  permanence_risk:
+    enabled: true
+    risk_assessment_frequency: "per_event"
+    buffer_contribution_pct: 10.0
+    reversal_monitoring: false
+    replacement_trigger_threshold_pct: 15.0
+
+# --- Event-Specific Parameters ---
+event_parameters:
+  max_attendees: 10000
+  venue_type: "convention_center"
+  catering_meals_per_day: 3
+  average_travel_distance_km: 500
+  modal_split:
+    air: 0.40
+    rail: 0.25
+    car: 0.25
+    bus: 0.10
+  accommodation_nights: 2
+  digital_attendance_pct: 0.20
+  exhibition_area_sqm: 5000
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  carbon_price_eur_per_tco2e: 40.0
+  reporting_currency: "EUR"
+  credit_budget_total_eur: 15000.0
+  credit_price_range:
+    min_eur: 8.0
+    max_eur: 50.0
+    avg_eur: 20.0
+
+# --- Data Quality ---
+data_quality:
+  target_dqis_score: 3.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "survey_data"
+    - "default_factors"
+    - "industry_averages"
+  emission_factor_source: "DEFRA_2024"
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  sha256_provenance: true
+  retention_years: 5
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+  include_iso14068_mapping: true
+  include_pas2060_mapping: true
+  include_iso20121_mapping: true
+  language: "en"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 1800
+  max_concurrent_calcs: 4
+  timeout_seconds: 180
+  batch_size: 500
+  memory_limit_mb: 2048

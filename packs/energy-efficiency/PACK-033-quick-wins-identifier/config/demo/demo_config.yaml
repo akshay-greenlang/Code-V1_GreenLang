@@ -1,0 +1,110 @@
+# =============================================================================
+# PACK-033 Quick Wins Identifier Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for Greenleaf Services GmbH, a fictional mid-sized
+# German office building operator assessing quick win energy savings
+# opportunities across their headquarters.
+#
+# Company: Greenleaf Services GmbH
+# Headquarters: Munich, Germany
+# Employees: 280
+# Facility: Single office building (4,200 m2, 5 floors)
+# Annual Electricity: ~420 MWh
+# Annual Gas: ~180 MWh
+# Annual Energy Cost: ~EUR 140,000
+# Reporting Year: 2026
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: "Greenleaf Munich HQ"
+company_name: "Greenleaf Services GmbH"
+facility_type: "OFFICE"
+country: "DE"
+reporting_year: 2026
+
+# --- Facility Characteristics ---
+floor_area_m2: 4200.0
+annual_electricity_kwh: 420000.0
+annual_gas_kwh: 180000.0
+employees: 280
+operating_hours_per_year: 2600
+
+# --- Scan Configuration ---
+scan:
+  depth: "STANDARD"
+  categories:
+    - "LIGHTING"
+    - "HVAC"
+    - "PLUG_LOADS"
+    - "CONTROLS_SCHEDULING"
+    - "BEHAVIORAL"
+    - "IT_EQUIPMENT"
+    - "WATER_HEATING"
+  max_measures_per_category: 8
+  include_no_cost_measures: true
+  include_low_cost_measures: true
+  include_medium_cost_measures: true
+  max_payback_years: 3.0
+  minimum_annual_savings_eur: 200.0
+  utility_bill_months: 24
+  walkthrough_checklist: true
+
+# --- Financial Parameters ---
+financial:
+  electricity_rate_eur_per_kwh: 0.30
+  gas_rate_eur_per_kwh: 0.10
+  discount_rate: 0.06
+  analysis_period_years: 10
+  energy_price_escalation_pct: 4.0
+  maintenance_cost_included: true
+  currency: "EUR"
+
+# --- Carbon Assessment ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.38
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+  include_scope_1: true
+  include_scope_2: true
+
+# --- Prioritization ---
+prioritization:
+  profile: "BALANCED"
+  top_n_recommendations: 10
+  group_by_category: true
+  include_implementation_roadmap: true
+
+# --- Behavioural Programme ---
+behavioral:
+  enabled: true
+  awareness_campaign: true
+  switch_off_programme: true
+  thermostat_discipline: true
+
+# --- Rebate Matching ---
+rebate:
+  enabled: true
+  country: "DE"
+  region: "Bayern"
+  include_federal_programmes: true
+  include_eu_programmes: true
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  detailed_measure_cards: true
+  output_language: "de"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5

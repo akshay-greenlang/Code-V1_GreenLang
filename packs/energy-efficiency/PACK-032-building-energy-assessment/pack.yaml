@@ -1,0 +1,2207 @@
+# =============================================================================
+# PACK-032: Building Energy Assessment Pack
+# GreenLang Energy Efficiency Pack for Building Energy Performance Assessment
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for building energy performance assessment, rating, and
+# retrofit optimization. It covers the full building energy lifecycle from
+# envelope thermal analysis through renewable integration and whole-life carbon
+# assessment, tailored for commercial offices, retail, hospitality, healthcare,
+# education, residential multi-dwelling, public buildings, and mixed-use
+# developments.
+#
+# Buildings account for approximately 40% of global energy consumption and 36%
+# of energy-related CO2 emissions. This pack enables systematic evaluation of
+# building energy performance through rigorous engineering analysis, EPC rating
+# calculation, retrofit pathway optimization, and certification readiness. It
+# follows a zero-hallucination approach: all energy calculations use
+# deterministic formulas from EN ISO 52000, EN 15603, EN 16798, and ASHRAE 90.1
+# -- no LLM is used in any calculation path.
+#
+# Key Capabilities:
+#   - Building envelope assessment (U-values, thermal bridging, air tightness,
+#     condensation risk, EN ISO 6946, EN ISO 13370, EN ISO 10077)
+#   - EPC/DEC rating calculation (SAP/RdSAP for dwellings, SBEM for non-
+#     domestic, EPBD recast methodology, A-G banding)
+#   - HVAC system assessment (heating plant efficiency, cooling COP/EER,
+#     ventilation SFP, distribution losses, controls optimization)
+#   - Domestic hot water assessment (system efficiency, solar thermal,
+#     heat pump DHW, storage losses, distribution losses)
+#   - Lighting assessment (LENI calculation EN 15193, daylight factor,
+#     LED retrofit, occupancy and daylight controls)
+#   - Renewable energy integration (solar PV yield, heat pump SPF,
+#     wind feasibility, battery storage, grid interaction)
+#   - Building benchmark comparison (CIBSE TM46, Energy Star, DEC ratings,
+#     CRREM decarbonization pathways, NABERS)
+#   - Retrofit analysis (fabric first approach, whole-house retrofit,
+#     EnerPHit, deep renovation, staged improvement pathways)
+#   - Indoor environment quality (thermal comfort PMV/PPD per EN 16798,
+#     IAQ ventilation rates, daylighting, overheating TM59/CIBSE TM52)
+#   - Whole-life carbon assessment (EN 15978 lifecycle stages A1-D,
+#     embodied carbon, operational carbon, biogenic carbon, circularity)
+#
+# Regulatory References:
+#   - EPBD: Directive (EU) 2024/1275 (Energy Performance of Buildings recast)
+#   - EN ISO 52000-1:2017 (Energy Performance of Buildings - Overarching EPB)
+#   - EN 15603:2008 (Energy Performance of Buildings - Overall energy use)
+#   - EN 15978:2011 (Sustainability of Buildings - Assessment of environmental
+#     performance / Whole-life carbon)
+#   - EN 16798-1:2019 (Energy Performance of Buildings - Ventilation / Indoor
+#     environment)
+#   - ASHRAE 90.1-2022 (Energy Standard for Sites and Buildings)
+#   - LEED v4.1 (Leadership in Energy and Environmental Design)
+#   - BREEAM 2024 (Building Research Establishment Environmental Assessment)
+#   - CRREM (Carbon Risk Real Estate Monitor - decarbonization pathways)
+#   - Energy Star Portfolio Manager (US building benchmarking program)
+#   - EN ISO 6946 (Building components - Thermal resistance and transmittance)
+#   - EN ISO 13370 (Thermal performance - Heat transfer via the ground)
+#   - EN ISO 10077 (Windows and doors - Thermal transmittance)
+#   - EN 15193 (Energy performance of buildings - Lighting energy requirements)
+#   - EN ISO 13790 (Energy performance of buildings - Calculation of energy use)
+#   - EN 15316 series (Heating systems and water based cooling systems)
+#   - CIBSE TM46 (Energy benchmarks for building types)
+#   - CIBSE TM54 (Evaluating operational energy use)
+#   - CIBSE Guide F (Energy efficiency in buildings)
+#   - GHG Protocol: Corporate Standard (Scope 1+2 building energy emissions)
+#
+# Building Sub-Sectors Supported:
+#   - Commercial Office: Grade A, Grade B, serviced offices, co-working
+#   - Retail: High street, shopping centres, supermarkets, warehouses
+#   - Hospitality: Hotels, restaurants, conference centres
+#   - Healthcare: Hospitals, clinics, care homes, laboratories
+#   - Education: Schools, universities, lecture halls, libraries
+#   - Residential: Multi-dwelling units, social housing, student accommodation
+#   - Public Buildings: Government offices, museums, leisure centres
+#   - Mixed-Use: Combined commercial, residential, retail developments
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-20)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-032-building-energy-assessment
+  version: "1.0.0"
+  display_name: "Building Energy Assessment Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for building energy performance
+    assessment, EPC/DEC rating, and retrofit optimization per EU Energy
+    Performance of Buildings Directive (EPBD 2024/1275), EN ISO 52000-1:2017,
+    and EN 15978:2011. Includes 10 engines for building envelope thermal
+    analysis, EPC rating calculation, HVAC system assessment, domestic hot
+    water evaluation, lighting energy assessment with LENI calculation,
+    renewable energy integration with solar PV and heat pump SPF, building
+    energy benchmarking against CIBSE TM46 and CRREM pathways, retrofit
+    analysis with fabric-first and deep renovation strategies, indoor
+    environment quality assessment per EN 16798, and whole-life carbon
+    assessment per EN 15978 lifecycle stages A1-D. Bundles building-specific
+    MRV agents for operational emissions, 20 data intake/quality agents, 10
+    foundation agents, and bridged agents for LEED certification, BREEAM
+    assessment, CRREM compliance, Energy Star benchmarking, EPC lodgement,
+    and regulatory reporting. Supports commercial office, retail, hospitality,
+    healthcare, education, residential multi-dwelling, public building, and
+    mixed-use development sub-sectors with tailored presets and regulatory
+    template packages.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-20"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/building-energy-assessment"
+  changelog_url: "https://docs.greenlang.io/packs/building-energy-assessment/changelog"
+
+  tags:
+    - building-energy
+    - EPC
+    - EPBD
+    - HVAC
+    - envelope
+    - retrofit
+    - LEED
+    - BREEAM
+    - CRREM
+    - nZEB
+    - whole-life-carbon
+    - benchmarking
+    - EN-ISO-52000
+    - EN-15978
+    - ASHRAE-90.1
+    - Energy-Star
+    - thermal-comfort
+    - indoor-environment
+    - renewable
+    - solar-PV
+    - heat-pump
+    - DEC
+    - certification
+    - building-performance-standards
+
+  regulation:
+    primary:
+      name: "EU Energy Performance of Buildings Directive (EPBD recast)"
+      reference: "Directive (EU) 2024/1275"
+      effective_date: "2024-05-08"
+      description: >-
+        The recast EPBD sets requirements for nearly-zero energy buildings (nZEB)
+        and zero-emission buildings (ZEB). All new buildings must be zero-emission
+        from 2030 (2028 for public buildings). Existing buildings must achieve
+        at least energy performance class E by 2030 and class D by 2033 for
+        non-residential, with residential achieving class E by 2030 and D by
+        2033. Mandatory Building Renovation Passports, Minimum Energy Performance
+        Standards (MEPS), solar energy obligations on new and existing buildings,
+        and enhanced EPC requirements with standardized A-G scale across Member
+        States. The directive mandates whole-life carbon reporting from 2030
+        for new buildings and introduces mandatory lifecycle Global Warming
+        Potential (GWP) thresholds. It also requires smart readiness indicators
+        (SRI) and strengthens inspection regimes for heating and air conditioning
+        systems.
+    secondary:
+      - name: "EN ISO 52000-1:2017 Energy Performance of Buildings"
+        reference: "EN ISO 52000-1:2017"
+        effective_date: "2017-06-01"
+      - name: "EN 15603:2008 Overall Energy Use and Definition of Ratings"
+        reference: "EN 15603:2008"
+        effective_date: "2008-01-01"
+      - name: "EN 15978:2011 Sustainability Assessment - Environmental Performance"
+        reference: "EN 15978:2011"
+        effective_date: "2011-11-01"
+      - name: "EN 16798-1:2019 Indoor Environmental Input Parameters"
+        reference: "EN 16798-1:2019"
+        effective_date: "2019-06-01"
+      - name: "ASHRAE Standard 90.1-2022 Energy Standard for Buildings"
+        reference: "ASHRAE 90.1-2022"
+        effective_date: "2022-10-01"
+      - name: "LEED v4.1 Building Design and Construction"
+        reference: "LEED v4.1 BD+C"
+        effective_date: "2021-07-01"
+      - name: "BREEAM New Construction 2024"
+        reference: "BREEAM NC 2024"
+        effective_date: "2024-01-01"
+      - name: "CRREM Carbon Risk Real Estate Monitor"
+        reference: "CRREM v2.0"
+        effective_date: "2023-01-01"
+      - name: "Energy Star Portfolio Manager"
+        reference: "Energy Star PM v4"
+        effective_date: "2022-01-01"
+      - name: "EN ISO 6946 Building Components - Thermal Resistance"
+        reference: "EN ISO 6946:2017"
+        effective_date: "2017-06-01"
+      - name: "EN 15193 Energy Requirements for Lighting"
+        reference: "EN 15193-1:2017"
+        effective_date: "2017-09-01"
+
+  compliance_references:
+    - id: "EPBD"
+      name: "EU Energy Performance of Buildings Directive (recast)"
+      regulation: "Directive (EU) 2024/1275"
+      effective_date: "2024-05-08"
+      description: >-
+        The EPBD recast introduces zero-emission building (ZEB) requirements
+        for all new buildings from 2030, with public buildings from 2028. It
+        mandates Minimum Energy Performance Standards (MEPS) requiring non-
+        residential buildings to achieve at least class E by 2030 and D by 2033.
+        Enhanced EPC requirements include a standardized A-G scale, digital
+        building logbooks, Building Renovation Passports, and smart readiness
+        indicators (SRI). Solar energy obligations require installation of
+        solar energy systems on new buildings and existing public/commercial
+        buildings during major renovation. Whole-life carbon reporting becomes
+        mandatory from 2030 for new buildings above 1000 sqm, with lifecycle
+        GWP thresholds phasing in from 2030.
+
+    - id: "EN_ISO_52000"
+      name: "EN ISO 52000-1:2017 Overarching EPB Assessment"
+      regulation: "EN ISO 52000-1:2017"
+      effective_date: "2017-06-01"
+      description: >-
+        EN ISO 52000-1 provides the overarching framework for assessing the
+        energy performance of buildings. It defines the overall structure of
+        the set of EPB assessment standards (the EPB umbrella), establishes
+        a systematic approach for the energy performance calculation procedure,
+        and defines how to handle different building types, zones, and energy
+        services. The standard establishes the concept of energy needs, energy
+        use, energy delivery, exported energy, and primary energy. It provides
+        the basis for national calculation methods used in EPC rating and
+        building code compliance.
+
+    - id: "EN_15603"
+      name: "EN 15603:2008 Overall Energy Use"
+      regulation: "EN 15603:2008"
+      effective_date: "2008-01-01"
+      description: >-
+        EN 15603 defines the methodology for calculating overall building
+        energy use and energy ratings. It covers all energy services including
+        heating, cooling, ventilation, domestic hot water, lighting, and
+        auxiliary energy for pumps, fans, and controls. The standard defines
+        four types of energy rating: calculated (asset) rating using
+        standardized conditions, measured (operational) rating using actual
+        consumption, and two design variants. Primary energy conversion
+        factors are defined per national annexes. The standard establishes
+        the framework for EPC asset ratings and DEC operational ratings.
+
+    - id: "EN_15978"
+      name: "EN 15978:2011 Whole-Life Carbon Assessment"
+      regulation: "EN 15978:2011"
+      effective_date: "2011-11-01"
+      description: >-
+        EN 15978 provides the assessment method for the environmental
+        performance of buildings across their whole life cycle. It defines
+        lifecycle stages: product stage (A1-A3: raw material extraction,
+        transport, manufacturing), construction process stage (A4-A5:
+        transport to site, construction/installation), use stage (B1-B7:
+        use, maintenance, repair, replacement, refurbishment, operational
+        energy use B6, operational water use B7), and end-of-life stage
+        (C1-C4: deconstruction, transport, waste processing, disposal).
+        Module D covers benefits and loads beyond the system boundary
+        (reuse, recovery, recycling). This standard forms the basis for
+        whole-life carbon assessment required under EPBD from 2030.
+
+    - id: "EN_16798"
+      name: "EN 16798-1:2019 Indoor Environmental Parameters"
+      regulation: "EN 16798-1:2019"
+      effective_date: "2019-06-01"
+      description: >-
+        EN 16798-1 specifies indoor environmental input parameters for
+        design and assessment of energy performance of buildings. It
+        defines four categories of indoor environment (I to IV) for
+        thermal environment, indoor air quality, lighting, and acoustics.
+        Thermal comfort criteria include operative temperature ranges,
+        PMV/PPD limits per category, and adaptive comfort model for
+        naturally ventilated buildings. Ventilation rate requirements are
+        defined per person, per floor area, and per building component
+        for different pollution categories. The standard is essential for
+        balancing energy efficiency with occupant comfort in building
+        energy assessment.
+
+    - id: "ASHRAE_90_1"
+      name: "ASHRAE Standard 90.1-2022"
+      regulation: "ASHRAE 90.1-2022"
+      effective_date: "2022-10-01"
+      description: >-
+        ASHRAE 90.1 provides minimum energy efficiency requirements for
+        the design and construction of new buildings and alterations to
+        existing buildings. It covers building envelope (insulation,
+        fenestration, air leakage), HVAC systems (equipment efficiency,
+        controls, economizers, energy recovery), service water heating,
+        power (transformers, motors, elevators), lighting (LPD limits,
+        controls, exterior), and other equipment. The 2022 edition
+        introduces enhanced envelope requirements, mandatory heat recovery
+        for many building types, expanded demand response requirements,
+        and updated equipment efficiency tables. The standard provides
+        three compliance paths: prescriptive, trade-off (envelope only),
+        and performance (energy cost budget or performance rating method).
+
+    - id: "LEED"
+      name: "LEED v4.1 Building Certification"
+      regulation: "LEED v4.1"
+      effective_date: "2021-07-01"
+      description: >-
+        LEED v4.1 is a green building rating system providing a framework
+        for healthy, efficient, and cost-saving buildings. Energy and
+        Atmosphere credits cover fundamental commissioning, minimum energy
+        performance (based on ASHRAE 90.1 baseline), optimize energy
+        performance (up to 50% improvement), advanced energy metering,
+        demand response, renewable energy production, enhanced
+        refrigerant management, and grid harmonization. The EA Prerequisite
+        requires minimum 5% energy cost savings (new construction) over
+        ASHRAE 90.1-2016 baseline. EA Credit: Optimize Energy Performance
+        awards points for 6% to 50% improvement using whole-building energy
+        simulation per ASHRAE 90.1 Appendix G performance rating method.
+
+    - id: "BREEAM"
+      name: "BREEAM 2024 Assessment Method"
+      regulation: "BREEAM New Construction 2024"
+      effective_date: "2024-01-01"
+      description: >-
+        BREEAM is the world's leading sustainability assessment method for
+        buildings. The Energy category (Ene) covers reduction of energy use
+        and carbon emissions (Ene 01), energy monitoring (Ene 02), external
+        lighting (Ene 03), low carbon design (Ene 04), energy efficient
+        cold storage (Ene 05), and energy efficient transportation systems
+        (Ene 06). Ene 01 awards credits based on energy performance ratio
+        (EPR) improvement over a notional building baseline, using approved
+        dynamic simulation methodology (DSM). BREEAM 2024 aligns with
+        EPBD recast requirements and introduces enhanced whole-life carbon
+        assessment under Mat 01.
+
+    - id: "CRREM"
+      name: "Carbon Risk Real Estate Monitor"
+      regulation: "CRREM v2.0"
+      effective_date: "2023-01-01"
+      description: >-
+        CRREM provides science-based decarbonization pathways for commercial
+        real estate assets aligned with the Paris Agreement. It defines
+        stranding risk timelines for buildings that fail to reduce energy
+        and carbon intensity in line with 1.5C and 2C warming scenarios.
+        CRREM pathways are defined per building type and country, covering
+        both energy intensity (kWh/sqm/year) and carbon intensity
+        (kgCO2e/sqm/year). The tool assesses current building performance
+        against the decarbonization pathway and identifies the stranding
+        year (when performance exceeds the allowable threshold). CRREM is
+        widely used by institutional real estate investors, GRESB reporting,
+        and EU Taxonomy alignment for Substantial Contribution screening
+        under Climate Change Mitigation.
+
+    - id: "ENERGY_STAR"
+      name: "Energy Star Portfolio Manager"
+      regulation: "Energy Star PM v4"
+      effective_date: "2022-01-01"
+      description: >-
+        Energy Star Portfolio Manager is the EPA benchmarking tool for
+        commercial buildings in the United States. It calculates an Energy
+        Star Score (1-100) based on source energy use intensity (EUI in
+        kBtu/sqft) normalized for weather, operating hours, number of
+        workers, and building-specific parameters. Buildings scoring 75+
+        are eligible for Energy Star certification. The tool provides
+        national median comparisons for over 80 building types. The energy
+        performance metric enables year-over-year tracking and portfolio-
+        level benchmarking. Increasingly referenced in international markets
+        as a complement to EPC-based benchmarking systems.
+
+    - id: "EN_ISO_6946"
+      name: "EN ISO 6946 Thermal Resistance Calculation"
+      regulation: "EN ISO 6946:2017"
+      effective_date: "2017-06-01"
+      description: >-
+        EN ISO 6946 provides calculation methods for the thermal resistance
+        and thermal transmittance (U-value) of building components made up
+        of homogeneous and inhomogeneous layers. It covers walls, roofs,
+        and floors excluding doors, windows, and glazed components. The
+        standard defines surface resistances (internal and external),
+        air layer thermal resistance, combined method for inhomogeneous
+        layers (upper and lower limits), and correction factors for air
+        gaps, mechanical fasteners, and inverted roofs. U-value calculation
+        is fundamental to building energy assessment and EPC rating.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 building energy engines)
+  # ===========================================================================
+  engines:
+    - id: building_envelope
+      name: "Building Envelope Engine"
+      description: >-
+        Performs comprehensive building envelope thermal analysis per EN ISO
+        6946:2017, EN ISO 13370:2017, EN ISO 10077-1:2017, and EN ISO 13789.
+        Calculates elemental U-values for opaque building elements: walls
+        (cavity, solid, timber frame, SIPs, ICF), roofs (pitched, flat,
+        warm deck, cold deck, green roof), and ground floors (slab-on-grade,
+        suspended, basement) including edge insulation effects. Handles
+        inhomogeneous layers using the combined method (upper/lower limit
+        averaging per EN ISO 6946 Annex C). Calculates window and door
+        thermal transmittance per EN ISO 10077-1 including frame fraction,
+        glazing U-value (Ug), frame U-value (Uf), spacer linear thermal
+        transmittance (psi-g), and installation thermal bridging (psi-
+        install). Performs linear thermal bridge analysis at junctions
+        (wall-floor, wall-roof, wall-window, corner, balcony) using psi-
+        values from approved junction catalogues (BR 497, BRE IP 1/06) or
+        numerical modelling results. Calculates whole-building fabric heat
+        loss coefficient (HTC) as the sum of elemental transmission plus
+        thermal bridging. Assesses air tightness performance: converts
+        pressure test results (n50 in ach at 50 Pa, q50 in m3/h/m2) to
+        infiltration rate using the n50/20 rule or CIBSE Guide A shelter
+        factor method. Evaluates condensation risk using EN ISO 13788
+        (Glaser method for interstitial condensation) and surface
+        temperature factor (fRsi) for surface condensation at thermal
+        bridges. Generates fabric improvement recommendations with delta-U
+        savings and payback analysis.
+        Zero-hallucination: all U-value calculations from material
+        conductivity databases and EN ISO standards, thermal bridge psi-
+        values from validated catalogues, no LLM in any calculation path.
+      required: true
+
+    - id: epc_rating
+      name: "EPC Rating Engine"
+      description: >-
+        Calculates Energy Performance Certificate (EPC) ratings using
+        approved national methodologies aligned with EPBD and EN ISO 52000.
+        Supports SAP 10.2 (Standard Assessment Procedure) for dwellings
+        and RdSAP for existing dwellings (UK methodology), SBEM (Simplified
+        Building Energy Model) for non-domestic buildings, and the EPB
+        framework for EU Member State implementations. Implements the full
+        SAP calculation: fabric heat loss, ventilation heat loss, solar
+        gains through glazed elements, internal heat gains, heating and
+        cooling energy demand, system efficiencies for space heating (boiler
+        seasonal efficiency, heat pump SPF, CHP), DHW system efficiency,
+        lighting energy (LENI-based), renewable energy contribution (solar
+        PV, solar thermal, wind), and primary energy conversion to derive
+        the SAP rating (1-100+) and EPC band (A-G). For non-domestic
+        buildings, implements SBEM monthly quasi-steady-state energy
+        balance with zone-level calculation including HVAC system
+        efficiencies, auxiliary energy, and building services configuration.
+        Generates the Building Emission Rate (BER) vs. Target Emission
+        Rate (TER) and Building Primary Energy Rate (BPER) vs. Target
+        Primary Energy Rate (TPER) for Part L compliance checking. Supports
+        Display Energy Certificate (DEC) operational rating from actual
+        metered consumption normalized to floor area and weather. Handles
+        the EPBD A-G standardized scale with performance thresholds per
+        building type and climate zone.
+        Zero-hallucination: all SAP/SBEM calculations from published
+        methodology documents, fuel factors from SAP Table 12, no LLM.
+      required: true
+
+    - id: hvac_assessment
+      name: "HVAC Assessment Engine"
+      description: >-
+        Performs comprehensive HVAC system assessment per EN 15316 series,
+        EN 16798-1:2019, and EN 15243. Heating assessment: evaluates boiler
+        seasonal efficiency (condensing, non-condensing, biomass) using
+        direct and indirect methods, heat pump seasonal performance factor
+        (SPF) per EN 14825 including climate zone correction, district
+        heating interface efficiency, CHP heat-to-power ratio and overall
+        efficiency, electric heating system efficiency, and hybrid system
+        optimization. Cooling assessment: calculates chiller seasonal
+        energy efficiency ratio (SEER) per EN 14825, evaluates free
+        cooling potential (economizer hours from weather bin analysis),
+        assesses cooling tower approach temperature and wet-bulb
+        effectiveness, evaluates VRF/VRV system part-load efficiency, and
+        assesses evaporative cooling feasibility. Ventilation assessment:
+        calculates specific fan power (SFP) in W/(l/s) per EN 13779 and
+        compares against category limits (SFP 1 to SFP 7), evaluates
+        demand-controlled ventilation (DCV) potential with CO2 sensing,
+        assesses heat recovery effectiveness (sensible and latent) for
+        plate, rotary, run-around, and heat pipe exchangers, and evaluates
+        natural ventilation potential using wind-driven and buoyancy-
+        driven airflow calculations. Distribution assessment: evaluates
+        pipe and duct insulation against EN ISO 12241, calculates pump
+        energy and VSD retrofit potential, assesses duct air leakage class
+        per EN 15727 (ATC A through D), and evaluates hydraulic balancing
+        status. Controls assessment: evaluates BMS/BACS (Building
+        Automation and Control Systems) class per EN 15232 (Class A to D)
+        and calculates energy savings potential from controls upgrade.
+        Zero-hallucination: efficiency calculations from manufacturer data
+        and EN standards, SFP from measured fan power and flow, no LLM.
+      required: true
+
+    - id: domestic_hot_water
+      name: "Domestic Hot Water Engine"
+      description: >-
+        Assesses domestic hot water (DHW) system energy performance per
+        EN 15316-3, EN 12831-3, and SAP methodology. Calculates DHW energy
+        demand based on building occupancy, number of draw-off points, and
+        usage patterns per EN 15316-3 Table B.6 for non-domestic and SAP
+        Table 1 for dwellings. Evaluates generation system efficiency:
+        dedicated DHW boiler (seasonal efficiency), combi-boiler (including
+        storage/instantaneous losses), heat pump water heater (COP per EN
+        16147 tapping profile), solar thermal contribution (f-chart method
+        per EN 15316-4-3 including collector area, tilt, orientation,
+        storage volume, and climate), immersion heater (100% electrical
+        efficiency with tariff impact), and point-of-use instantaneous
+        heaters. Calculates storage losses for hot water cylinders: standing
+        heat loss rate from measured cylinder loss factor per BS 1566 or
+        manufacturer data, temperature set point impact, and cylinder
+        insulation assessment. Evaluates distribution losses: primary
+        pipework heat loss (insulated vs. uninsulated, per EN ISO 12241),
+        secondary circulation system pump energy and heat loss, dead-leg
+        volume and run-off waste. Assesses Legionella compliance per HSG274
+        (storage at 60C, distribution at 50C minimum) and impact on energy
+        consumption. Generates DHW improvement recommendations including
+        solar thermal retrofit, heat pump DHW, waste water heat recovery,
+        and point-of-use conversion for remote draw-off points.
+        Zero-hallucination: DHW demand from occupancy-based tables, system
+        efficiencies from manufacturer data and EN standards, f-chart from
+        validated solar models, no LLM in any calculation path.
+      required: true
+
+    - id: lighting_assessment
+      name: "Lighting Assessment Engine"
+      description: >-
+        Assesses building lighting energy performance per EN 15193-1:2017
+        (LENI calculation), EN 12464-1:2021 (workplace lighting), and
+        CIBSE Lighting Guide series. Calculates Lighting Energy Numeric
+        Indicator (LENI) in kWh/sqm/year for each zone using the
+        comprehensive method: installed lighting power (W), maintenance
+        factor, daylight dependency factor (FD based on daylight factor,
+        glazing ratio, and room geometry), occupancy dependency factor (FO
+        based on control type -- manual, auto-on/dimming, auto-on/off,
+        absence detection), and operating hours per zone type. Inventories
+        existing luminaires by technology (fluorescent T8, T5, HPS/SON,
+        metal halide, LED), wattage (including control gear losses),
+        control method, and mounting height. Calculates installed Lighting
+        Power Density (LPD) in W/sqm and compares against EN 12464-1
+        maintained illuminance requirements per task area (offices 500 lux,
+        retail 300 lux, corridors 100 lux, etc.) and ASHRAE 90.1 LPD
+        limits. Evaluates daylight factor using the BRE average daylight
+        factor formula (Af * tau * theta / A_total * (1-R^2)) for each
+        zone considering window area, glazing transmittance, room reflectance,
+        and external obstructions. Assesses LED retrofit opportunities with
+        lumen-for-lumen replacement analysis, driver efficiency, dimming
+        compatibility, and colour rendering index (CRI) requirements.
+        Evaluates control strategy upgrades: occupancy/absence detection,
+        daylight-linked dimming (constant illuminance), time scheduling,
+        task-ambient lighting, and personal control. Generates lighting
+        retrofit packages ranked by simple payback, energy saving (kWh
+        and percent), and carbon reduction.
+        Zero-hallucination: LENI from EN 15193 calculation method, LPD
+        from measured wattage and floor area, daylight factor from BRE
+        formula, no LLM in any calculation.
+      required: true
+
+    - id: renewable_integration
+      name: "Renewable Integration Engine"
+      description: >-
+        Assesses renewable energy integration potential for buildings per
+        EPBD solar energy obligations and EN 15316-4 series. Solar PV
+        assessment: calculates annual yield using the peak power method
+        (kWp * PSH * PR) with performance ratio adjusted for temperature
+        coefficient, inverter efficiency, cable losses, soiling, and
+        shading. Evaluates roof area availability, optimal tilt and
+        orientation for latitude, and shading analysis using sun-path
+        diagrams or horizon profiling. Assesses self-consumption ratio
+        and grid export/import based on building load profile matching.
+        Battery storage sizing using load-shifting optimization for
+        maximum self-consumption. Heat pump assessment: calculates
+        seasonal performance factor (SPF) per EN 14825 for air-source
+        (ASHP), ground-source (GSHP), and water-source (WSHP) heat pumps.
+        Evaluates heat pump suitability based on building fabric standard
+        (low-temperature heating compatibility), existing emitter sizing
+        (radiator up-sizing or underfloor conversion), DHW cylinder
+        requirements, and electrical supply capacity. Solar thermal
+        assessment: calculates annual yield using f-chart method with
+        collector performance parameters (optical efficiency, heat loss
+        coefficients a1, a2), storage volume optimization, and solar
+        fraction for DHW and space heating support. Wind assessment:
+        evaluates micro-wind feasibility using Rayleigh wind speed
+        distribution and capacity factor estimation for building-mounted
+        and free-standing small wind turbines (typically not viable in
+        urban settings). Grid interaction: calculates nearly-zero energy
+        balance per EPBD methodology, evaluates net-zero energy building
+        (nZEB) compliance, and assesses smart readiness indicator (SRI)
+        for demand response capability.
+        Zero-hallucination: PV yield from irradiance data and equipment
+        parameters, SPF from EN 14825 test data, f-chart from validated
+        correlations, no LLM in any energy calculation.
+      required: true
+
+    - id: building_benchmark
+      name: "Building Benchmark Engine"
+      description: >-
+        Benchmarks building energy performance against sector databases,
+        certification thresholds, and decarbonization pathways. Calculates
+        energy use intensity (EUI) in kWh/sqm/year for total energy,
+        heating, cooling, lighting, DHW, and auxiliary systems. Compares
+        against CIBSE TM46 energy benchmarks for UK building types (typical
+        and good practice values for over 30 building categories), Energy
+        Star Portfolio Manager source EUI percentiles for US building types
+        (1-100 score based on normalized source energy), and EU Member
+        State median EPC benchmarks per building type and climate zone.
+        Generates Display Energy Certificate (DEC) operational rating
+        from actual metered consumption using the methodology in CIBSE
+        TM46 and CLG OR (operational rating) calculation: heating
+        benchmark factor, electrical benchmark factor, weather correction
+        factor, and occupancy hours normalization. CRREM pathway alignment:
+        compares current energy and carbon intensity against science-based
+        decarbonization pathways per building type and country, calculates
+        stranding year (when building performance exceeds the allowable
+        carbon pathway), and identifies the investment required to realign
+        with 1.5C or 2C trajectories. NABERS (National Australian Built
+        Environment Rating System) star rating calculation for international
+        portfolio benchmarking. Tracks quartile ranking within peer group
+        and year-over-year EUI improvement. Generates gap analysis showing
+        performance distance to next EPC band, LEED/BREEAM credit
+        thresholds, and regulatory MEPS deadlines.
+        Zero-hallucination: EUI from metered data and floor area, DEC
+        rating from published methodology, CRREM from published pathways,
+        no LLM in any benchmarking calculation.
+      required: true
+
+    - id: retrofit_analysis
+      name: "Retrofit Analysis Engine"
+      description: >-
+        Analyzes building retrofit and renovation options using fabric-first
+        hierarchy per PAS 2035:2019 and EPBD renovation requirements.
+        Implements the fabric-first approach: prioritizes envelope
+        improvements (wall insulation, roof insulation, floor insulation,
+        window upgrades, draught-proofing, thermal bridge remediation)
+        before system upgrades (heating plant, controls, ventilation) and
+        renewable additions (solar PV, heat pump). Evaluates individual
+        retrofit measures: external wall insulation (EWI), internal wall
+        insulation (IWI), cavity wall insulation (CWI), loft insulation
+        top-up, flat roof insulation, floor insulation, window replacement
+        (double to triple glazing, low-e coatings), draught stripping,
+        and mechanical ventilation with heat recovery (MVHR). Calculates
+        energy savings for each measure using the building energy model
+        (delta in space heating demand from U-value improvement, delta in
+        ventilation loss from air tightness improvement). Generates
+        retrofit packages combining compatible measures with interactive
+        effects analysis (e.g., improved airtightness requires controlled
+        ventilation). Evaluates EnerPHit certification pathway for deep
+        retrofit to Passivhaus standard. Supports staged improvement
+        planning aligned with EPBD MEPS trajectory (achieve class E by
+        2030, class D by 2033, class B by 2040). Performs whole-house
+        retrofit planning per PAS 2035 including moisture risk assessment,
+        ventilation strategy, and installation sequencing. Financial
+        analysis: calculates NPV, IRR, simple payback, and lifecycle
+        cost for individual measures and packages. Evaluates grant
+        eligibility and incentive scheme compatibility (ECO4, BUS, SHDF
+        for UK; national renovation schemes for EU Member States).
+        Zero-hallucination: energy savings from building physics
+        calculations, costs from published cost databases (BCIS, Spon's),
+        financial analysis from standard DCF methods, no LLM.
+      required: true
+
+    - id: indoor_environment
+      name: "Indoor Environment Quality Engine"
+      description: >-
+        Assesses indoor environmental quality (IEQ) per EN 16798-1:2019,
+        CIBSE Guide A, and ASHRAE Standard 55. Thermal comfort assessment:
+        calculates Predicted Mean Vote (PMV) and Predicted Percentage
+        Dissatisfied (PPD) per ISO 7730 using operative temperature, mean
+        radiant temperature, air speed, humidity, metabolic rate, and
+        clothing insulation. Evaluates adaptive thermal comfort for
+        naturally ventilated buildings using EN 16798-1 adaptive model
+        (running mean outdoor temperature). Classifies comfort category
+        (I to IV per EN 16798-1) based on PMV range and operative
+        temperature limits. Overheating risk assessment: evaluates against
+        CIBSE TM59 criterion (for dwellings: hours above 26C in bedrooms,
+        PMV above 1 adaptive hours of exceedance in living areas) and
+        CIBSE TM52 (for non-domestic: criterion 1 hours of exceedance,
+        criterion 2 daily weighted exceedance, criterion 3 upper limit
+        temperature). Projects future overheating risk using climate change
+        scenarios (CIBSE Design Summer Years: DSY1, DSY2, DSY3 for 2020s,
+        2050s, 2080s). Indoor air quality: calculates required ventilation
+        rates per EN 16798-1 Table B.6/B.7 for different pollution
+        categories and occupancy densities. Evaluates CO2 concentration as
+        a proxy for ventilation adequacy (Category I: 550 ppm above
+        outdoor, Category II: 800 ppm, Category III: 1350 ppm). Assesses
+        filtration requirements per EN ISO 16890 (ePM1, ePM2.5, ePM10).
+        Daylighting: evaluates daylight provision using Climate-Based
+        Daylight Modelling (CBDM) metrics -- spatial Daylight Autonomy
+        (sDA300/50%), Annual Sunlight Exposure (ASE1000/250h), and Useful
+        Daylight Illuminance (UDI). Generates IEQ improvement
+        recommendations that balance energy efficiency with occupant
+        wellbeing.
+        Zero-hallucination: PMV/PPD from ISO 7730 equations, ventilation
+        rates from EN 16798 tables, overheating from TM59/TM52 criteria,
+        no LLM in any calculation.
+      required: true
+
+    - id: whole_life_carbon
+      name: "Whole-Life Carbon Engine"
+      description: >-
+        Calculates whole-life carbon (WLC) for buildings per EN 15978:2011,
+        EN 15804:2012+A2:2019 (EPDs), and RICS Whole Life Carbon Assessment
+        (2nd edition). Implements all lifecycle stages: product stage A1-A3
+        (raw material supply, transport, manufacturing -- from Environmental
+        Product Declarations or generic databases), construction process
+        stage A4-A5 (transport to site based on distance and mode, on-site
+        construction energy and waste), use stage B1-B5 (in-use emissions,
+        maintenance cycles, repair frequency, replacement intervals based
+        on component reference service life from EN 15978 Table 1), B6
+        operational energy (from building energy model integration with
+        building_envelope and hvac_assessment engines), B7 operational
+        water, end-of-life stage C1-C4 (deconstruction energy, transport,
+        waste processing, disposal by waste type), and Module D (benefits
+        from reuse, recovery, recycling beyond system boundary). Calculates
+        embodied carbon using material quantity take-off multiplied by
+        carbon factors from ICE database (Inventory of Carbon and Energy),
+        RICS BCIS, One Click LCA, or project-specific EPDs. Handles
+        biogenic carbon accounting per EN 15804+A2 (separate reporting of
+        biogenic CO2 uptake and release). Evaluates structural system
+        carbon comparison (steel frame vs. concrete frame vs. mass timber
+        vs. hybrid) for early-stage design decisions. Calculates upfront
+        carbon (A1-A5), lifetime embodied carbon (A1-A5, B1-B5, C1-C4),
+        whole-life carbon (A1-D including B6), and net whole-life carbon
+        (with Module D benefits). Generates WLC benchmarks per LETI, RIBA
+        2030 Climate Challenge, and GLA (Greater London Authority) targets
+        per building type. Supports EPBD whole-life GWP reporting
+        requirements from 2030 for new buildings above 1000 sqm.
+        Zero-hallucination: embodied carbon from EPD databases and
+        material quantities, operational carbon from energy model, lifecycle
+        calculations from EN 15978 methodology, no LLM in any calculation.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 building energy workflows)
+  # ===========================================================================
+  workflows:
+    - id: full_building_assessment
+      name: "Full Building Energy Assessment Workflow"
+      description: >-
+        6-phase workflow for executing a complete building energy assessment
+        per EN ISO 52000 and EPBD: Phase 1 - Building Data Collection
+        (architectural drawings, floor area schedule, construction details,
+        U-value evidence, air test results, HVAC system schedules, lighting
+        schedule, metered energy data for 12-36 months, occupancy data,
+        operating hours, weather station data) -> Phase 2 - Envelope
+        Analysis (elemental U-value calculation per EN ISO 6946, window
+        U-values per EN ISO 10077, thermal bridge assessment, air tightness
+        evaluation, condensation risk check per EN ISO 13788) -> Phase 3 -
+        Systems Assessment (HVAC efficiency evaluation per EN 15316, DHW
+        system analysis, lighting LENI calculation per EN 15193, renewable
+        contribution, controls and BACS class assessment per EN 15232) ->
+        Phase 4 - EPC Rating Calculation (SAP/SBEM energy model, primary
+        energy calculation, CO2 emissions rate, EPC band determination,
+        Part L compliance check with BER vs. TER and BPER vs. TPER) ->
+        Phase 5 - Performance Analysis (benchmark comparison against CIBSE
+        TM46 and CRREM, DEC operational rating from metered data, gap
+        analysis to next EPC band and MEPS targets, overheating risk
+        assessment per TM59/TM52) -> Phase 6 - Report Generation (EPC
+        certificate data, recommendation report with prioritized
+        improvement measures, Building Renovation Passport data, CRREM
+        pathway alignment report).
+      schedule: "on_demand"
+      estimated_duration_minutes: 360
+      phases: 6
+
+    - id: epc_certification
+      name: "EPC Certification Workflow"
+      description: >-
+        4-phase workflow for EPC production and lodgement: Phase 1 -
+        Survey Data Collection (building geometry, construction type and
+        date, insulation details, window specification, heating system
+        type and age, hot water system, lighting, ventilation, renewable
+        systems, metering arrangement) -> Phase 2 - Data Entry and
+        Validation (input validation against SAP/SBEM conventions, cross-
+        check construction date against default U-values, verify heating
+        system efficiency data, validate floor area against RICS Code of
+        Measuring Practice) -> Phase 3 - Rating Calculation (run SAP 10.2
+        for dwellings or SBEM for non-domestic, calculate environmental
+        impact rating, primary energy indicator, generate recommendation
+        report with cost-effective improvements ranked by payback and
+        carbon saving, check MEPS compliance trajectory) -> Phase 4 -
+        Certificate Production and Lodgement (generate EPC in standard
+        format, produce recommendation report, prepare lodgement data
+        for national EPC register, archive survey evidence for audit
+        trail, generate Building Renovation Passport data per EPBD).
+      schedule: "on_demand"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: retrofit_planning
+      name: "Retrofit Planning Workflow"
+      description: >-
+        5-phase workflow for building retrofit and renovation planning per
+        PAS 2035 and EPBD renovation requirements: Phase 1 - Condition
+        Survey (building fabric condition assessment, moisture survey using
+        thermal imaging and moisture meters, structural assessment for
+        insulation loading, services condition and remaining life, window
+        condition and replacement priority, ventilation adequacy assessment)
+        -> Phase 2 - Baseline Energy Model (build calibrated energy model
+        from survey data and metered consumption, validate model against
+        actual consumption within +/- 15% tolerance, identify performance
+        gap between calculated and actual) -> Phase 3 - Measure Evaluation
+        (evaluate individual retrofit measures using fabric-first hierarchy,
+        calculate energy saving per measure with interactive effects,
+        assess moisture risk for insulation measures per BS 5250 and BRE
+        BR 262, evaluate ventilation strategy changes required, calculate
+        cost and payback for each measure) -> Phase 4 - Package Development
+        (combine compatible measures into retrofit packages, optimize
+        package selection using cost-benefit analysis, develop staged
+        improvement pathway aligned with MEPS trajectory, assess EnerPHit
+        certification feasibility for deep retrofit, evaluate grant and
+        incentive scheme eligibility) -> Phase 5 - Implementation Plan
+        (generate detailed specification for each measure, produce
+        installation sequencing plan per PAS 2035, create M&V plan for
+        savings verification, produce Building Renovation Passport showing
+        staged improvement pathway, generate procurement packages).
+      schedule: "on_demand"
+      estimated_duration_minutes: 480
+      phases: 5
+
+    - id: operational_rating
+      name: "Operational Rating Workflow"
+      description: >-
+        4-phase workflow for Display Energy Certificate and operational
+        performance tracking: Phase 1 - Meter Data Collection (collect
+        12 months of metered energy data by fuel type -- electricity, gas,
+        district heating, oil, biomass; validate data completeness and
+        accuracy; reconcile sub-meters against main meters; apply estimated
+        readings where gaps exist with documented methodology) -> Phase 2 -
+        Weather Normalization (obtain degree-day data for building location,
+        apply heating and cooling degree-day normalization to separate
+        weather-dependent and weather-independent consumption, calculate
+        weather-corrected annual energy consumption) -> Phase 3 - DEC
+        Calculation (calculate operational rating using CLG OR methodology:
+        actual CO2 emissions from metered data divided by benchmark CO2
+        emissions for building type per CIBSE TM46 adjusted for weather,
+        operating hours, and floor area; generate DEC band A-G; compare
+        against previous year DEC for trend analysis) -> Phase 4 - Advisory
+        Report (identify discrepancies between DEC operational rating and
+        EPC asset rating as indicator of operational efficiency potential,
+        generate operational improvement recommendations, compare against
+        CRREM pathway and flag stranding risk, produce annual operational
+        energy report for stakeholders).
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: certification_readiness
+      name: "Green Building Certification Readiness Workflow"
+      description: >-
+        4-phase workflow for LEED, BREEAM, and other green building
+        certification preparation: Phase 1 - Credit Screening (assess
+        building against all energy-related credits for target certification
+        -- LEED EA prerequisites and credits, BREEAM Ene category, WELL
+        Building thermal comfort and air quality; estimate achievable
+        credit scores based on current design/performance; identify
+        mandatory prerequisites and gap to minimum certification level) ->
+        Phase 2 - Energy Modelling (perform whole-building energy simulation
+        per ASHRAE 90.1 Appendix G (LEED) or approved DSM methodology
+        (BREEAM); calculate percentage improvement over baseline building;
+        document modelling assumptions, inputs, and results; generate
+        energy model compliance report) -> Phase 3 - Documentation
+        Preparation (compile energy performance evidence per certification
+        scheme requirements, prepare energy model input/output summary,
+        document commissioning plan per ASHRAE Guideline 0, prepare
+        measurement and verification plan per IPMVP for LEED EA credit,
+        compile enhanced refrigerant management evidence, document demand
+        response capability) -> Phase 4 - Submission Package (generate
+        complete energy credit submission package, perform internal QA
+        review against certification body requirements, prepare responses
+        to common reviewer queries, generate cost-benefit analysis of
+        additional credits achievable with further investment).
+      schedule: "on_demand"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: renewable_feasibility
+      name: "Renewable Energy Feasibility Workflow"
+      description: >-
+        4-phase workflow for building-integrated renewable energy assessment:
+        Phase 1 - Resource Assessment (solar irradiance analysis from TMY
+        weather data or satellite-derived datasets -- Global Horizontal
+        Irradiance, Diffuse Horizontal Irradiance, Direct Normal Irradiance;
+        roof area survey with orientation, tilt, and shading analysis using
+        sun-path diagrams; wind resource assessment for micro-wind; ground
+        conditions for GSHP borehole feasibility; heat source availability
+        for WSHP) -> Phase 2 - Technology Sizing (solar PV system sizing
+        including module selection, inverter sizing, string configuration,
+        and annual yield calculation; heat pump sizing based on building
+        heat loss at design temperature per EN 12831, buffer tank and
+        DHW cylinder sizing; solar thermal collector area and storage
+        optimization using f-chart method; battery storage sizing for
+        optimal self-consumption) -> Phase 3 - Grid Integration (assess
+        electrical supply capacity for PV export and heat pump import,
+        calculate self-consumption ratio from building load profile
+        matching, evaluate time-of-use tariff optimization, assess smart
+        readiness indicator (SRI) for demand response, evaluate vehicle-
+        to-building (V2B) potential with EV charging) -> Phase 4 -
+        Feasibility Report (techno-economic assessment with NPV, IRR,
+        LCOE, and payback for each technology, EPBD solar obligation
+        compliance check, nZEB energy balance calculation, grant and
+        incentive eligibility assessment, carbon saving quantification,
+        implementation phasing recommendation).
+      schedule: "on_demand"
+      estimated_duration_minutes: 180
+      phases: 4
+
+    - id: whole_life_carbon_assessment
+      name: "Whole-Life Carbon Assessment Workflow"
+      description: >-
+        4-phase workflow for EN 15978 whole-life carbon assessment: Phase 1 -
+        Material Quantity Take-Off (extract material quantities from BIM
+        model or measured survey -- structural frame, substructure, upper
+        floors, roof, external walls, internal walls, windows and doors,
+        finishes, MEP systems; classify materials by EN 15804 product
+        category; document material specifications, sourcing, and transport
+        distances) -> Phase 2 - Embodied Carbon Calculation (calculate
+        product stage A1-A3 using EPD data or ICE database generic factors,
+        construction stage A4-A5 from transport distances and construction
+        energy estimates, use stage B1-B5 from maintenance schedules and
+        replacement intervals based on reference service life, end-of-life
+        C1-C4 from waste scenarios, Module D from recyclability and energy
+        recovery potential; handle biogenic carbon separately per EN
+        15804+A2) -> Phase 3 - Operational Carbon Integration (integrate
+        operational energy carbon B6 from building energy model over 60-year
+        reference study period, apply future grid decarbonization scenarios
+        for electricity, apply fuel switching scenarios, calculate
+        operational water carbon B7) -> Phase 4 - WLC Reporting (generate
+        whole-life carbon report per RICS WLC methodology, benchmark
+        against LETI, RIBA 2030, and GLA targets, compare structural
+        options where applicable, generate EPBD WLC declaration for new
+        buildings above 1000 sqm, produce carbon reduction roadmap
+        showing measures to reduce embodied and operational carbon).
+      schedule: "on_demand"
+      estimated_duration_minutes: 300
+      phases: 4
+
+    - id: portfolio_assessment
+      name: "Portfolio Assessment Workflow"
+      description: >-
+        4-phase workflow for multi-building portfolio energy assessment:
+        Phase 1 - Portfolio Registration (register all buildings with
+        address, floor area, building type, year of construction, EPC
+        rating, DEC rating, ownership/tenancy status, and renovation
+        history; group by building type, geography, and ownership entity;
+        prioritize assessment order by EPC rating, floor area, and MEPS
+        deadline proximity) -> Phase 2 - Bulk Assessment (execute
+        streamlined energy assessment for each building using available
+        data -- EPC survey records, metered consumption, building drawings;
+        calculate EUI for all buildings; identify worst-performing assets
+        per MEPS criteria) -> Phase 3 - Portfolio Benchmarking (rank
+        buildings by EUI, EPC band, DEC rating, and CRREM stranding year;
+        generate portfolio-level Energy Star score distribution; calculate
+        aggregate carbon footprint Scope 1 and Scope 2; identify top-10
+        worst performers and top-10 improvement opportunities; assess
+        portfolio-level CRREM alignment and aggregate stranding risk) ->
+        Phase 4 - Portfolio Strategy (generate prioritized renovation
+        roadmap across portfolio aligned with MEPS trajectory and CRREM
+        pathways, allocate capital expenditure across buildings based on
+        carbon saved per pound invested, identify buildings for disposal
+        vs. renovation decision, generate portfolio ESG reporting data
+        for GRESB submission and SFDR PAI indicators).
+      schedule: "annual"
+      estimated_duration_minutes: 600
+      phases: 4
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 building energy templates)
+  # ===========================================================================
+  templates:
+    - id: epc_certificate
+      display_name: "Energy Performance Certificate (EPC)"
+      description: >-
+        Standard EPC output including energy efficiency rating (A-G band),
+        environmental impact rating, primary energy indicator in kWh/sqm/year,
+        estimated energy costs, recommended improvement measures ranked by
+        payback and indicative cost, potential rating after improvements,
+        building description (address, type, floor area, construction date),
+        assessor details, and lodgement reference. Conforms to EPBD Annex V
+        standardized EPC format with A-G colour-coded scale. Includes QR
+        code linking to digital building logbook data.
+      format: "pdf"
+      template_file: "templates/epc_certificate.jinja2"
+      enabled: true
+
+    - id: dec_certificate
+      display_name: "Display Energy Certificate (DEC)"
+      description: >-
+        Operational energy rating certificate showing actual energy performance
+        based on metered consumption. Includes operational rating (A-G band),
+        total CO2 emissions, breakdown by electricity and heating fuel,
+        comparison against benchmark for building type per CIBSE TM46,
+        weather correction methodology, floor area and occupancy details,
+        previous year comparison, and advisory report recommendations for
+        operational improvement.
+      format: "pdf"
+      template_file: "templates/dec_certificate.jinja2"
+      enabled: true
+
+    - id: building_assessment_report
+      display_name: "Building Energy Assessment Report"
+      description: >-
+        Comprehensive building energy assessment report including executive
+        summary with key findings, building description and construction
+        details, envelope thermal performance analysis with U-value schedule,
+        HVAC system assessment with efficiency ratings, DHW system evaluation,
+        lighting assessment with LENI results, renewable energy contribution,
+        indoor environment quality analysis, energy balance breakdown by end
+        use (heating, cooling, DHW, lighting, fans/pumps/controls), EPC
+        rating analysis, benchmark comparison against CIBSE TM46 and CRREM,
+        prioritized improvement recommendations with energy savings, cost,
+        and payback for each measure, and appendices with survey data and
+        calculation methodology.
+      format: "pdf"
+      template_file: "templates/building_assessment_report.jinja2"
+      enabled: true
+
+    - id: retrofit_report
+      display_name: "Retrofit Analysis Report"
+      description: >-
+        Building retrofit analysis report including current building
+        performance baseline, fabric condition survey findings, individual
+        measure analysis with energy savings and payback calculations,
+        retrofit package options with interactive effects, moisture risk
+        assessment for insulation measures, ventilation strategy
+        recommendations, staged improvement pathway aligned with MEPS
+        trajectory, EnerPHit feasibility assessment where applicable,
+        financial analysis with NPV, IRR and lifecycle cost, grant and
+        incentive eligibility summary, Building Renovation Passport data,
+        and implementation sequencing plan.
+      format: "pdf"
+      template_file: "templates/retrofit_report.jinja2"
+      enabled: true
+
+    - id: whole_life_carbon_report
+      display_name: "Whole-Life Carbon Assessment Report"
+      description: >-
+        EN 15978 compliant whole-life carbon assessment report including
+        building description and functional equivalent, system boundary
+        definition, lifecycle stage breakdown (A1-A3 product, A4-A5
+        construction, B1-B5 use, B6 operational energy, B7 operational
+        water, C1-C4 end-of-life, Module D beyond system boundary),
+        material quantity summary, carbon factor sources (EPDs, generic
+        databases), embodied carbon results by building element, operational
+        carbon over 60-year reference study period, whole-life carbon
+        total and benchmark comparison against LETI, RIBA 2030, and GLA
+        targets, biogenic carbon statement, and carbon reduction
+        recommendations for both embodied and operational components.
+      format: "pdf"
+      template_file: "templates/whole_life_carbon_report.jinja2"
+      enabled: true
+
+    - id: building_energy_dashboard
+      display_name: "Building Energy Performance Dashboard"
+      description: >-
+        Real-time building energy performance dashboard with EUI trending
+        by month and year, energy consumption breakdown by end use (heating,
+        cooling, DHW, lighting, small power, other), weather-normalized
+        consumption tracking, EPC and DEC rating status with MEPS deadline
+        countdown, CRREM pathway alignment graph showing current trajectory
+        vs. target, indoor environment conditions (temperature, CO2, humidity),
+        renewable energy generation and self-consumption ratio, tenant
+        sub-metered consumption (where applicable), cost tracking by fuel
+        type, and anomaly alerts for consumption deviation.
+      format: "html"
+      template_file: "templates/building_energy_dashboard.jinja2"
+      enabled: true
+
+    - id: certification_report
+      display_name: "Green Building Certification Report"
+      description: >-
+        Green building certification evidence report supporting LEED,
+        BREEAM, and other schemes. Includes energy model summary per
+        ASHRAE 90.1 Appendix G (LEED) or approved DSM (BREEAM), percentage
+        improvement over baseline, credit-by-credit compliance assessment
+        for energy-related credits, commissioning plan evidence, measurement
+        and verification plan, enhanced refrigerant management evidence,
+        renewable energy contribution, demand response capability, and
+        energy performance guarantee documentation. Formatted for direct
+        submission to certification body review.
+      format: "pdf"
+      template_file: "templates/certification_report.jinja2"
+      enabled: true
+
+    - id: renewable_feasibility_report
+      display_name: "Renewable Energy Feasibility Report"
+      description: >-
+        Renewable energy feasibility report including solar PV yield
+        analysis with shading assessment, heat pump system design with SPF
+        calculation, solar thermal contribution analysis, battery storage
+        sizing, grid integration assessment, self-consumption optimization,
+        techno-economic analysis with NPV, IRR, and LCOE for each
+        technology, EPBD solar obligation compliance, nZEB energy balance,
+        carbon savings quantification, grant eligibility summary, and
+        phased implementation recommendation.
+      format: "pdf"
+      template_file: "templates/renewable_feasibility_report.jinja2"
+      enabled: true
+
+    - id: portfolio_report
+      display_name: "Portfolio Energy Performance Report"
+      description: >-
+        Multi-building portfolio energy performance report including
+        portfolio summary statistics (total floor area, total energy,
+        weighted average EUI, aggregate carbon), building-by-building
+        performance table, EPC band distribution chart, DEC rating
+        distribution, CRREM stranding analysis by building, portfolio-
+        level decarbonization pathway, prioritized renovation investment
+        schedule, capital expenditure allocation model, GRESB energy
+        performance indicators, SFDR PAI disclosure data, and executive
+        summary for asset management and board reporting.
+      format: "pdf"
+      template_file: "templates/portfolio_report.jinja2"
+      enabled: true
+
+    - id: benchmarking_report
+      display_name: "Building Benchmarking Report"
+      description: >-
+        Building energy benchmarking report comparing facility EUI against
+        CIBSE TM46 typical and good practice benchmarks, Energy Star
+        Portfolio Manager percentile ranking, EU median by building type,
+        CRREM pathway position with stranding year, DEC operational rating
+        analysis, peer group quartile ranking, year-over-year trend
+        analysis, and gap analysis to next EPC band, MEPS threshold, and
+        certification credit thresholds. Includes recommendations for
+        closing the performance gap with estimated investment.
+      format: "pdf"
+      template_file: "templates/benchmarking_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        12-phase master pipeline: Health Check -> Configuration and Preset
+        Loading -> Data Acquisition (BMS, metering, ERP, weather) ->
+        Building Envelope Analysis -> HVAC System Assessment -> DHW and
+        Lighting Assessment -> Renewable Integration Analysis -> EPC
+        Rating Calculation -> Benchmark and CRREM Assessment -> Retrofit
+        Analysis -> Indoor Environment Assessment -> Whole-Life Carbon ->
+        Report Generation. Orchestrates all building energy assessment
+        phases with parallel execution where possible (e.g., envelope
+        analysis and HVAC assessment run in parallel after data acquisition)
+        and dependency management between engines (envelope must complete
+        before EPC rating; all engines must complete before retrofit
+        analysis).
+      required: true
+
+    - id: bms_bridge
+      name: "BMS Integration Bridge"
+      description: >-
+        Connects to Building Management Systems for comprehensive building
+        operational data. Supports BACnet/IP, BACnet MS/TP, LON, KNX,
+        Modbus TCP/RTU, and DALI (for lighting). Extracts HVAC data
+        (zone temperatures, supply/return water temperatures, fan speeds,
+        valve and damper positions, AHU status, chiller/boiler run hours),
+        lighting data (schedules, dimming levels, occupancy sensor status,
+        daylight sensor readings), energy metering (electricity sub-meters,
+        gas meters, heat meters, water meters), and indoor environment
+        data (CO2, temperature, humidity sensors). Supports trend log
+        extraction for performance analysis over historical periods.
+        Handles alarm and fault detection data for energy-related
+        building services faults.
+      required: true
+
+    - id: smart_meter_bridge
+      name: "Smart Meter Integration Bridge"
+      description: >-
+        Connects to smart metering infrastructure for automated building
+        energy data collection. Supports SMETS2 (UK smart meters), P272
+        half-hourly settlement meters, AMR (Automatic Meter Reading),
+        DLMS/COSEM, and M-Bus protocols. Handles half-hourly, 15-minute,
+        and 5-minute interval data for electricity, gas, district heating,
+        and water. Supports meter data management including validation,
+        estimation, and editing (VEE). Manages landlord and tenant meter
+        hierarchies for multi-tenanted buildings. Handles time-of-use
+        tariff data for cost allocation. Stores raw meter data with
+        provenance tracking for DEC and operational rating calculations.
+      required: true
+
+    - id: weather_bridge
+      name: "Weather Data Bridge"
+      description: >-
+        Integrates weather data for degree-day normalization, HVAC energy
+        analysis, and overheating assessment. Sources include on-site
+        weather stations (preferred for large buildings), national
+        meteorological services (Met Office, DWD, Meteo France, AEMET,
+        KNMI, NOAA), Test Reference Years (TRY) and Design Summer Years
+        (DSY) for overheating assessment, and commercial weather APIs.
+        Calculates heating degree-days (HDD) and cooling degree-days (CDD)
+        with configurable base temperatures. Provides hourly dry-bulb,
+        wet-bulb, solar radiation (global, diffuse, direct), wind speed
+        and direction for detailed building simulation input. Supplies
+        running mean outdoor temperature for adaptive comfort calculation
+        per EN 16798-1. Handles missing data interpolation and quality
+        control for weather station outages.
+      required: true
+
+    - id: erp_bridge
+      name: "ERP/Property Management Bridge"
+      description: >-
+        Connects to property management and ERP systems for building
+        portfolio data. Integrates with Yardi Voyager, MRI Software,
+        RealPage, SAP RE-FX, and Planon for building attributes (floor
+        area, occupancy, operating hours, lease terms), utility cost data,
+        and maintenance records. Extracts building asset registers,
+        equipment inventories with age and condition, maintenance history
+        for HVAC and building fabric, and capital expenditure records.
+        Maps tenancy schedules to energy apportionment for multi-let
+        buildings. Supports OSCRE and RICS property data standards.
+      required: true
+
+    - id: mrv_building_bridge
+      name: "MRV Building Bridge"
+      description: >-
+        Routes data from building-related MRV agents for integrated carbon
+        and energy reporting. Prioritizes GL-MRV-BLD-001 (stationary
+        combustion for building heating plant -- gas boilers, oil boilers,
+        biomass), GL-MRV-BLD-002 (refrigerant emissions from building
+        cooling systems), GL-MRV-BLD-003 through GL-MRV-BLD-008 for
+        Scope 2 purchased electricity, district heating, and district
+        cooling. Connects AGENT-MRV-009/010 (Scope 2 location and market
+        based) for building electricity emissions. Maps MRV outputs to
+        building energy consumption data for integrated operational carbon
+        reporting aligned with DEC and CRREM methodology.
+      required: true
+
+    - id: data_building_bridge
+      name: "Data Building Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for building energy data intake.
+        Routes EPC survey data and building plans through AGENT-DATA-001
+        (PDF extraction), meter data exports and building schedules through
+        AGENT-DATA-002 (Excel/CSV normalization), property management data
+        through AGENT-DATA-003 (ERP connector), and external benchmarks
+        (CIBSE TM46, Energy Star, CRREM) through AGENT-DATA-004 (API
+        gateway). Applies data quality profiling through AGENT-DATA-010,
+        outlier detection through AGENT-DATA-013, and time series gap
+        filling through AGENT-DATA-014 for continuous building metering
+        data. Handles multi-format building data ingestion from diverse
+        property management systems.
+      required: true
+
+    - id: epc_lodgement_bridge
+      name: "EPC Lodgement Bridge"
+      description: >-
+        Connects to national EPC registers for certificate lodgement and
+        retrieval. Supports UK EPC Register (England and Wales, Scotland,
+        Northern Ireland), Irish BER (Building Energy Rating) system, and
+        EU Member State EPC databases where API access is available.
+        Handles data format transformation for lodgement submissions,
+        retrieves existing EPC data for portfolio analysis, and monitors
+        EPC expiry dates for re-assessment scheduling. Supports bulk EPC
+        data retrieval for portfolio benchmarking and MEPS compliance
+        tracking.
+      required: false
+
+    - id: crrem_bridge
+      name: "CRREM Integration Bridge"
+      description: >-
+        Connects to CRREM pathways database for science-based
+        decarbonization alignment. Retrieves country-specific and building-
+        type-specific pathways for 1.5C and 2C scenarios. Calculates
+        stranding year for individual buildings and portfolio aggregation.
+        Supports CRREM v2.0 methodology including both energy intensity
+        (kWh/sqm) and carbon intensity (kgCO2e/sqm) pathways. Integrates
+        with GRESB reporting requirements for real estate ESG disclosure.
+        Provides annual pathway data updates when CRREM revises scenarios.
+      required: true
+
+    - id: bim_cad_bridge
+      name: "BIM/CAD Integration Bridge"
+      description: >-
+        Connects to Building Information Modelling (BIM) and CAD platforms
+        for automated building geometry, construction specification, and
+        material quantity extraction. Supports IFC (Industry Foundation
+        Classes) 4.0 import per ISO 16739, gbXML (Green Building XML) for
+        energy model interoperability, and Revit API for direct model
+        interrogation. Extracts building geometry (floor areas, zone
+        volumes, window-to-wall ratios, orientation), construction build-
+        ups (material layers, thicknesses, thermal conductivities for
+        U-value calculation), material quantities (for whole-life carbon
+        take-off), shading geometry (overhangs, fins, neighbouring
+        buildings), and MEP system layouts (ductwork routing, pipework
+        runs, equipment locations). Supports COBie (Construction Operations
+        Building Information Exchange) for asset data handover. Handles
+        model validation for energy analysis readiness (watertight
+        geometry, zone assignment, space boundaries).
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        24-category system verification covering all 10 engines, 70+ agent
+        dependencies, database connectivity, emission factor database
+        currency, weather data source availability, EPC methodology version
+        currency, CRREM pathway data freshness, BMS connectivity status,
+        meter communication status, property management system connectivity,
+        LEED/BREEAM credit database version, EN 15978 carbon factor
+        database freshness, and deployment readiness status.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        10-step guided configuration wizard: Building Sub-Sector Selection
+        (commercial office / retail / hospitality / healthcare / education /
+        residential / public building / mixed-use) -> Building Registration
+        (address, floor area per RICS Code of Measuring Practice, year of
+        construction, number of storeys, orientation) -> Construction
+        Details (wall type, roof type, floor type, glazing specification,
+        construction date for default U-values) -> HVAC System Registration
+        (heating plant type and age, cooling system, ventilation type,
+        controls and BMS brand, distribution type) -> DHW and Lighting
+        Configuration (DHW system type, lighting technology, control
+        systems) -> Renewable Systems Registration (solar PV capacity,
+        heat pump type, solar thermal, battery storage) -> Meter
+        Infrastructure Registration (main meters, sub-meters, BMS points,
+        data logger configuration) -> Regulatory Scope (EPC methodology,
+        target certification scheme, MEPS compliance deadline, CRREM
+        pathway selection) -> Occupancy and Operating Hours (typical
+        occupancy density, operating schedule, out-of-hours usage) ->
+        Reporting Preferences and Benchmark Peer Group Selection.
+      required: false
+
+  # ===========================================================================
+  # Presets - Building sub-sector specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: commercial_office
+      name: "Commercial Office Preset"
+      description: >-
+        Configuration for Grade A and Grade B commercial offices, serviced
+        offices, and co-working spaces. HVAC is typically the dominant energy
+        consumer (40-60% in air-conditioned offices). Lighting is secondary
+        (15-25%). Small power from IT equipment is increasingly significant
+        (20-30%). Cooling loads driven by solar gains and internal heat gains
+        from occupants and IT. Heating dominated by fabric and ventilation
+        losses. DEC/EPC benchmarks per CIBSE TM46 Category: General Office
+        (typical 120 kWh/sqm electricity, 120 kWh/sqm fossil fuel). CRREM
+        office pathway applied. Key standards: BCO Guide to Specification,
+        EN 16798-1 Category II for comfort, WELL Building Standard for
+        occupant wellbeing. Common certifications: BREEAM, LEED, NABERS
+        UK, Fitwel.
+      building_sub_sector: "COMMERCIAL_OFFICE"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/commercial_office.yaml"
+
+    - id: retail
+      name: "Retail Preset"
+      description: >-
+        Configuration for high street retail, shopping centres, supermarkets,
+        and retail warehouses. Lighting is typically the dominant electricity
+        consumer in retail (30-50% for display lighting). Refrigeration
+        dominates in supermarkets (40-60%). HVAC significant in enclosed
+        shopping centres. Large glazed frontages create substantial solar
+        gains requiring cooling. Door opening frequency creates infiltration
+        losses -- air curtain assessment included. Extended operating hours
+        (often 12+ hours per day, 7 days) increase annual energy intensity.
+        CIBSE TM46 benchmarks vary significantly by retail type (general
+        retail vs. supermarket vs. department store). CRREM retail pathway
+        applied. Retail-specific controls: scheduled lighting dimming, demand-
+        controlled ventilation based on occupancy and CO2.
+      building_sub_sector: "RETAIL"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/retail.yaml"
+
+    - id: hospitality
+      name: "Hospitality Preset"
+      description: >-
+        Configuration for hotels, restaurants, conference centres, and
+        leisure facilities. Hotels have diverse energy end-uses: heating
+        and cooling for guest rooms and public areas, DHW for guest
+        bathrooms and laundry (20-30% of total), kitchen energy for
+        cooking and refrigeration, lighting for public areas and exterior,
+        and pool/spa heating where applicable. 24-hour operation with
+        variable occupancy creates complex load profiles. Laundry
+        operations consume significant thermal energy. CIBSE TM46
+        benchmarks for hotels, restaurants, and leisure separately. CRREM
+        hotel pathway applied. Key considerations: Legionella compliance
+        constrains DHW temperature reduction, guest comfort expectations
+        influence thermostat set points, and aesthetic requirements
+        constrain LED retrofit options in heritage buildings.
+      building_sub_sector: "HOSPITALITY"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/hospitality.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Configuration for hospitals, clinics, care homes, and laboratory
+        buildings. Healthcare buildings are energy intensive due to 24/7
+        operation, stringent ventilation requirements (6-25 ACH for
+        operating theatres per HTM 03-01), precise temperature and humidity
+        control, sterilization (autoclaves), and high DHW demand. Heating
+        and ventilation typically dominate (50-65% of total). Medical
+        equipment adds to electrical base load. Laboratories require
+        100% fresh air supply with no recirculation. CIBSE TM46 Category:
+        General Hospital (typical 90 kWh/sqm electricity, 300 kWh/sqm
+        fossil fuel). CRREM healthcare pathway applied. Special
+        considerations: infection control ventilation cannot be
+        compromised, patient thermal comfort for vulnerable populations
+        per EN 16798-1 Category I, and clinical waste energy recovery.
+        NHS Net Zero targets for UK healthcare.
+      building_sub_sector: "HEALTHCARE"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/healthcare.yaml"
+
+    - id: education
+      name: "Education Preset"
+      description: >-
+        Configuration for schools, colleges, universities, and lecture halls.
+        Education buildings have intermittent occupancy patterns (term-time
+        weekdays with holiday periods). Heating dominates in temperate
+        climates (40-60% of total). Lighting significant in classrooms and
+        lecture theatres. Ventilation critical for IAQ in densely occupied
+        classrooms (8-10 l/s per person per BB101 or EN 16798-1). Natural
+        ventilation common in schools but increasingly challenged by
+        overheating and air quality concerns. CIBSE TM46 benchmarks for
+        primary schools, secondary schools, and university buildings
+        separately. Display Energy Certificates mandatory for public
+        buildings over 250 sqm. Key standards: BB101 (ventilation, thermal
+        comfort and IAQ in schools), Priority Schools Building Programme
+        output specification. Solar PV particularly suitable for large
+        flat roofs on school buildings. SALIX and DfE funding streams
+        for public sector decarbonization.
+      building_sub_sector: "EDUCATION"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/education.yaml"
+
+    - id: residential_multi
+      name: "Residential Multi-Dwelling Preset"
+      description: >-
+        Configuration for multi-dwelling residential buildings including
+        apartment blocks, social housing, student accommodation, and
+        retirement living. Space heating dominates (55-70% of total energy
+        in UK/Northern European climates). DHW is secondary (20-30%).
+        Communal heating systems (district heating, communal gas boilers,
+        heat networks) require different assessment methodology vs.
+        individual systems. SAP/RdSAP methodology for dwellings with
+        per-unit EPC rating. Communal areas assessed separately under
+        non-domestic methodology. Fuel poverty and affordability
+        constraints influence retrofit prioritization (EPC band C target
+        for social housing). PAS 2035 whole-house retrofit approach
+        critical for fabric-first improvement. Overheating risk
+        increasingly significant for top-floor and single-aspect
+        apartments. Ventilation strategy must balance IAQ with heat loss
+        (MVHR for airtight retrofit, MEV for moderate improvement).
+        Common certifications: Passivhaus/EnerPHit, Home Quality Mark.
+      building_sub_sector: "RESIDENTIAL_MULTI"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/residential_multi.yaml"
+
+    - id: public_building
+      name: "Public Building Preset"
+      description: >-
+        Configuration for government offices, museums, leisure centres,
+        courts, and civic buildings. Display Energy Certificates (DECs)
+        mandatory for public buildings over 250 sqm under EPBD -- DEC
+        must be prominently displayed. Government estate net-zero targets
+        (UK Greening Government Commitments, EU public buildings ZEB by
+        2028). Heritage and listed building constraints may limit external
+        insulation, window replacement, and solar PV options -- requiring
+        sympathetic retrofit approaches (secondary glazing, internal
+        insulation with vapour control, discreet renewable installations).
+        Variable occupancy patterns across building types. Museums and
+        galleries have strict environmental control requirements for
+        collections (temperature 19-24C, RH 45-60% per BS EN 16893).
+        Leisure centres with swimming pools have high DHW and ventilation
+        energy demand with pool hall dehumidification. CIBSE TM46
+        benchmarks applied per building type. SALIX and public sector
+        decarbonization funding available.
+      building_sub_sector: "PUBLIC_BUILDING"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/public_building.yaml"
+
+    - id: mixed_use
+      name: "Mixed-Use Development Preset"
+      description: >-
+        Configuration for buildings combining commercial, residential, and
+        retail uses. Mixed-use developments require zone-level energy
+        assessment with different methodologies per use: SAP for residential
+        zones, SBEM for commercial/retail zones. Complex HVAC arrangements
+        with potentially shared plant serving different use zones (e.g.,
+        communal heat network serving residential DHW and commercial
+        heating). Sub-metering critical for energy cost allocation between
+        tenures and regulatory compliance. Multiple EPC ratings may be
+        required (per dwelling plus per commercial unit). CRREM pathway
+        selection based on predominant use or area-weighted combination.
+        Renewable energy allocation between uses per EPBD methodology.
+        Shared services energy (lifts, common area lighting, car park
+        ventilation) must be apportioned. Building Renovation Passport
+        must address all uses coherently with sequenced improvement plan.
+      building_sub_sector: "MIXED_USE"
+      enabled_engines:
+        - building_envelope
+        - epc_rating
+        - hvac_assessment
+        - domestic_hot_water
+        - lighting_assessment
+        - renewable_integration
+        - building_benchmark
+        - retrofit_analysis
+        - indoor_environment
+        - whole_life_carbon
+      file: "config/presets/mixed_use.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Building Agents - Building-specific MRV agents for operational emissions
+# ---------------------------------------------------------------------------
+agents_mrv:
+  building_specific:
+    - id: GL-MRV-BLD-001
+      name: "Building Stationary Combustion Agent"
+      description: "Calculates emissions from building heating plant -- gas boilers, oil boilers, biomass boilers, CHP"
+      path: "greenlang/agents/mrv/building_stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: GL-MRV-BLD-002
+      name: "Building Refrigerant Agent"
+      description: "Calculates F-gas emissions from building cooling systems -- chillers, split systems, VRF/VRV"
+      path: "greenlang/agents/mrv/building_refrigerants/"
+      required: true
+      version: "1.0.0"
+    - id: GL-MRV-BLD-003
+      name: "Building Scope 2 Location Agent"
+      description: "Calculates location-based electricity emissions for building HVAC, lighting, and small power"
+      path: "greenlang/agents/mrv/building_scope2_location/"
+      required: true
+      version: "1.0.0"
+    - id: GL-MRV-BLD-004
+      name: "Building Scope 2 Market Agent"
+      description: "Calculates market-based electricity emissions using PPAs, GOs, RECs for building load"
+      path: "greenlang/agents/mrv/building_scope2_market/"
+      required: true
+      version: "1.0.0"
+    - id: GL-MRV-BLD-005
+      name: "Building District Heating Agent"
+      description: "Calculates emissions from purchased district heating and heat network connections"
+      path: "greenlang/agents/mrv/building_district_heating/"
+      required: true
+      version: "1.0.0"
+    - id: GL-MRV-BLD-006
+      name: "Building District Cooling Agent"
+      description: "Calculates emissions from purchased district cooling and chilled water networks"
+      path: "greenlang/agents/mrv/building_district_cooling/"
+      required: true
+      version: "1.0.0"
+    - id: GL-MRV-BLD-007
+      name: "Building Dual Reporting Agent"
+      description: "Reconciles location-based and market-based Scope 2 for building portfolio reporting"
+      path: "greenlang/agents/mrv/building_dual_reporting/"
+      required: true
+      version: "1.0.0"
+    - id: GL-MRV-BLD-008
+      name: "Building Fuel & Energy Activities Agent"
+      description: "Calculates upstream fuel and energy-related emissions (Scope 3 Cat 3) for building energy"
+      path: "greenlang/agents/mrv/building_fuel_energy/"
+      required: true
+      version: "1.0.0"
+
+  decarbonization:
+    - id: GL-DECARB-BLD-001
+      name: "Building Decarbonization Pathway Agent"
+      description: "Models building decarbonization pathways aligned with CRREM, SBTi, and EPBD MEPS targets"
+      path: "greenlang/agents/decarb/building_pathway/"
+      required: true
+      version: "1.0.0"
+    - id: GL-DECARB-BLD-002
+      name: "Building Retrofit Impact Agent"
+      description: "Calculates carbon impact of retrofit measures across Scope 1, 2, and embodied carbon"
+      path: "greenlang/agents/decarb/building_retrofit_impact/"
+      required: true
+      version: "1.0.0"
+
+  building_profile:
+    - id: GL-BLD-PROFILE-001
+      name: "Building Profile Agent"
+      description: "Manages building asset data, construction details, system inventory, and renovation history"
+      path: "greenlang/agents/building/building_profile/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts energy data from utility bills, EPC certificates, survey reports, and equipment specifications"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes meter data exports, building schedules, equipment inventories, and material take-offs"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to property management systems (Yardi, MRI, SAP RE-FX) for building and lease data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for weather, grid factors, CRREM pathways, EPC registers, and Energy Star"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability for timber and bio-based building materials (whole-life carbon)"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for building locations, solar irradiance mapping, and district heating network proximity"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for timber sourcing verification in whole-life carbon assessment"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes equipment manufacturer EPDs, material carbon factors, and supply chain questionnaires"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Physical climate hazard data for overheating risk, flood risk, and building resilience assessment"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes building procurement spend for Scope 3 estimation and embodied carbon tracking"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across meter data, building surveys, material quantities, and EPC records"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate meter readings, building records, EPC entries, and material line items"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing meter data using regression, interpolation, and similar-day methods for buildings"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous building energy consumption, unusual EUI spikes, and meter faults"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in continuous building metering and BMS data with validated estimates"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles data across utility meters, BMS, sub-meters, EPC records, and property management systems"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of meter data, weather feeds, EPC certificates, CRREM pathways, and carbon factors"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for EPBD, SAP, SBEM, EN 15978, and certification format changes"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from raw meter data and survey inputs through calculations to EPC and report outputs"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces U-value limits, EPC calculation validation, EN 15978 completeness, and M&V rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution using directed acyclic graphs for building assessment pipelines"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates building energy data schemas, EPC formats, and EN 15978 structures"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes building energy units (kWh, MJ, W/m2K, m3/h, l/s, lux, ppm, kgCO2e/sqm) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in energy calculations, U-values, system efficiencies, and carbon factors"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links building data points to source evidence for EPC audit, certification review, and WLC verification"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-building portfolio and tenant-level data segregation"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and building energy assessment capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all building energy calculations are reproducible with SHA-256 provenance for EPC audit"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for all building assessment outputs, EPC ratings, and WLC reports"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors agent performance, pipeline health, and BMS/meter data ingestion rates"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Agents (10 agents for certification, benchmarking, and building)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: leed-certification-agent
+    name: "LEED Certification Agent"
+    description: "Manages LEED v4.1 energy credit compliance, energy model review, and submission package preparation"
+    required: true
+  - id: breeam-assessment-agent
+    name: "BREEAM Assessment Agent"
+    description: "Manages BREEAM Ene category credit compliance, EPR calculation, and evidence compilation"
+    required: true
+  - id: crrem-pathway-agent
+    name: "CRREM Pathway Agent"
+    description: "Calculates building position against CRREM decarbonization pathways and stranding year"
+    required: true
+  - id: energy-star-agent
+    name: "Energy Star Portfolio Manager Agent"
+    description: "Calculates Energy Star score, manages property data, and tracks portfolio benchmarking"
+    required: true
+  - id: epc-methodology-agent
+    name: "EPC Methodology Agent"
+    description: "Maintains SAP, RdSAP, and SBEM calculation engines with version control and national annexes"
+    required: true
+  - id: epd-database-agent
+    name: "EPD Database Agent"
+    description: "Manages Environmental Product Declaration database for whole-life carbon material carbon factors"
+    required: true
+  - id: building-renovation-passport-agent
+    name: "Building Renovation Passport Agent"
+    description: "Generates and maintains Building Renovation Passports per EPBD Article 12 requirements"
+    required: true
+  - id: smart-readiness-indicator-agent
+    name: "Smart Readiness Indicator Agent"
+    description: "Calculates building SRI (Smart Readiness Indicator) per EPBD delegated regulation methodology"
+    required: true
+  - id: regulatory-change-monitor
+    name: "Regulatory Change Monitor Agent"
+    description: "Monitors EPBD, MEPS, ASHRAE, LEED, BREEAM, and EN standard updates affecting building energy"
+    required: true
+  - id: grid-carbon-agent
+    name: "Grid Carbon Intensity Agent"
+    description: "Provides real-time and forecast grid carbon intensity for operational carbon and demand response"
+    required: false
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 71
+  breakdown:
+    mrv_building_agents: 8
+    decarbonization_agents: 2
+    building_profile_agent: 1
+    data_agents: 20
+    foundation_agents: 10
+    bridged_agents: 10
+    subtotal_unique: 51
+    shared_data_foundation: 30
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  single_building:
+    envelope_analysis_ms: 1500
+    epc_rating_calculation_ms: 2000
+    hvac_assessment_ms: 1800
+    dhw_assessment_ms: 800
+    lighting_assessment_ms: 1000
+    renewable_integration_ms: 1500
+    benchmark_comparison_ms: 500
+    retrofit_analysis_ms: 2000
+    indoor_environment_ms: 1200
+    whole_life_carbon_ms: 2000
+    full_assessment_target_seconds: 15
+  batch_processing:
+    buildings_per_batch: 100
+    target_duration_seconds: 30
+    parallel_workers: 8
+  report_generation:
+    epc_certificate_ms: 2000
+    full_assessment_report_ms: 5000
+    retrofit_report_ms: 4000
+    whole_life_carbon_report_ms: 4000
+    portfolio_report_ms: 8000
+  portfolio:
+    max_buildings: 10000
+    max_zones_per_building: 200
+    max_total_zones: 500000
+    portfolio_benchmark_target_minutes: 15
+  meter_data_ingestion:
+    max_readings_per_batch: 1000000
+    ingestion_rate_readings_per_second: 10000
+    target_latency_seconds: 60
+  cache_hit_ratio_target: 0.75
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with building-level and zone-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - admin
+    - energy_assessor
+    - building_manager
+    - tenant
+    - viewer
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "scikit-learn>=1.3"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "lxml>=4.9"
+    - "cryptography>=41.0"
+    - "ladybug-core>=0.42"
+    - "eppy>=0.5"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+  regulatory_references:
+    - id: "EPBD_2024_1275"
+      name: "EU Energy Performance of Buildings Directive (recast)"
+      reference: "Directive (EU) 2024/1275"
+      description: "Zero-emission buildings, MEPS, Building Renovation Passports, EPC reform, solar obligations"
+    - id: "EN_ISO_52000_1"
+      name: "EN ISO 52000-1:2017"
+      reference: "Overarching EPB assessment framework"
+      description: "Overall structure for energy performance calculation procedures"
+    - id: "EN_15603"
+      name: "EN 15603:2008"
+      reference: "Overall energy use and energy ratings"
+      description: "Calculated (asset) and measured (operational) energy rating methodology"
+    - id: "EN_15978"
+      name: "EN 15978:2011"
+      reference: "Assessment of environmental performance of buildings"
+      description: "Whole-life carbon lifecycle stages A1-D, reference study period, system boundary"
+    - id: "EN_16798_1"
+      name: "EN 16798-1:2019"
+      reference: "Indoor environmental input parameters"
+      description: "Thermal comfort, IAQ ventilation rates, Categories I-IV"
+    - id: "ASHRAE_90_1_2022"
+      name: "ASHRAE Standard 90.1-2022"
+      reference: "Energy Standard for Sites and Buildings"
+      description: "Prescriptive, trade-off, and performance compliance paths"
+    - id: "LEED_V4_1"
+      name: "LEED v4.1"
+      reference: "Leadership in Energy and Environmental Design"
+      description: "Energy and Atmosphere prerequisites and credits"
+    - id: "BREEAM_2024"
+      name: "BREEAM 2024"
+      reference: "Building Research Establishment Environmental Assessment Method"
+      description: "Ene category credits, EPR, DSM methodology"
+    - id: "CRREM_V2"
+      name: "CRREM v2.0"
+      reference: "Carbon Risk Real Estate Monitor"
+      description: "Science-based decarbonization pathways, stranding year, 1.5C/2C alignment"
+    - id: "ENERGY_STAR_PM"
+      name: "Energy Star Portfolio Manager"
+      reference: "EPA commercial building benchmarking"
+      description: "1-100 score, source EUI normalization, 75+ certification"
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_weather_data_source
+    - verify_epc_methodology_version
+    - verify_crrem_pathway_data
+    - verify_epd_carbon_factor_database
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+    new:
+      - "PACK032-001"  # Building profiles, zones, and construction details tables
+      - "PACK032-002"  # Envelope U-values, thermal bridges, and air tightness tables
+      - "PACK032-003"  # EPC rating, SAP/SBEM calculation, and certificate tables
+      - "PACK032-004"  # HVAC systems, efficiency, and controls assessment tables
+      - "PACK032-005"  # DHW systems, solar thermal, and distribution loss tables
+      - "PACK032-006"  # Lighting inventory, LENI calculation, and daylight tables
+      - "PACK032-007"  # Renewable systems, PV yield, heat pump SPF tables
+      - "PACK032-008"  # Benchmark data, CIBSE TM46, CRREM pathway tables
+      - "PACK032-009"  # Retrofit measures, packages, and Building Renovation Passport tables
+      - "PACK032-010"  # Indoor environment, thermal comfort, and IAQ tables
+      - "PACK032-011"  # Whole-life carbon, EN 15978 lifecycle stages, EPD tables
+      - "PACK032-012"  # Meter data management and time series tables (TimescaleDB hypertable)
+
+  post_install:
+    - seed_emission_factors
+    - seed_epc_methodology_tables
+    - seed_uvalue_defaults_by_construction_age
+    - seed_cibse_tm46_benchmarks
+    - seed_crrem_pathway_data
+    - seed_energy_star_benchmarks
+    - seed_epd_carbon_factor_database
+    - seed_en15978_reference_service_life
+    - seed_weather_station_metadata
+    - seed_default_presets
+    - configure_timescaledb_hypertables
+    - run_health_checks
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: BuildingEnvelopeEngine
+    file: engines/building_envelope_engine.py
+    description: "Fabric/envelope thermal performance, U-values, thermal bridging"
+  - name: EPCRatingEngine
+    file: engines/epc_rating_engine.py
+    description: "Energy Performance Certificate rating calculation (SAP/SBEM)"
+  - name: HVACAssessmentEngine
+    file: engines/hvac_assessment_engine.py
+    description: "HVAC system efficiency assessment, heating/cooling/ventilation"
+  - name: DomesticHotWaterEngine
+    file: engines/domestic_hot_water_engine.py
+    description: "DHW system assessment per EN 15316-3, solar thermal, heat pump"
+  - name: LightingAssessmentEngine
+    file: engines/lighting_assessment_engine.py
+    description: "Lighting energy/quality per EN 12464-1, EN 15193 LENI calculation"
+  - name: RenewableIntegrationEngine
+    file: engines/renewable_integration_engine.py
+    description: "Building-integrated renewables: solar PV yield, heat pump SPF"
+  - name: BuildingBenchmarkEngine
+    file: engines/building_benchmark_engine.py
+    description: "Energy benchmarking: DEC, CRREM, ENERGY STAR, CIBSE TM46"
+  - name: RetrofitAnalysisEngine
+    file: engines/retrofit_analysis_engine.py
+    description: "Retrofit cost-benefit, MACC, nZEB gap analysis, staged roadmap"
+  - name: IndoorEnvironmentEngine
+    file: engines/indoor_environment_engine.py
+    description: "IEQ per EN 16798-1, ISO 7730 PMV/PPD, adaptive thermal comfort"
+  - name: WholeLifeCarbonEngine
+    file: engines/whole_life_carbon_engine.py
+    description: "Whole life carbon assessment per EN 15978 lifecycle stages A1-D"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: InitialBuildingAssessmentWorkflow
+    file: workflows/initial_building_assessment_workflow.py
+    description: "5-phase comprehensive building energy assessment"
+  - name: EPCGenerationWorkflow
+    file: workflows/epc_generation_workflow.py
+    description: "Energy Performance Certificate generation with A-G rating"
+  - name: RetrofitPlanningWorkflow
+    file: workflows/retrofit_planning_workflow.py
+    description: "Retrofit planning with 60+ measure screening and MACC curve"
+  - name: ContinuousBuildingMonitoringWorkflow
+    file: workflows/continuous_building_monitoring_workflow.py
+    description: "Ongoing performance monitoring with CUSUM and anomaly detection"
+  - name: CertificationAssessmentWorkflow
+    file: workflows/certification_assessment_workflow.py
+    description: "LEED/BREEAM/Energy Star/NABERS certification assessment"
+  - name: TenantEngagementWorkflow
+    file: workflows/tenant_engagement_workflow.py
+    description: "Tenant energy engagement with CIBSE TM46 benchmarking"
+  - name: RegulatoryComplianceWorkflow
+    file: workflows/regulatory_compliance_workflow.py
+    description: "EPBD/MEES/BPS obligation assessment and compliance reporting"
+  - name: NZEBReadinessWorkflow
+    file: workflows/nzeb_readiness_workflow.py
+    description: "Nearly Zero-Energy Building readiness assessment"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: EPCReportTemplate
+    file: templates/epc_report.py
+    description: "Energy Performance Certificate report (A-G rating)"
+  - name: DECReportTemplate
+    file: templates/dec_report.py
+    description: "Display Energy Certificate report (0-150+ scale)"
+  - name: BuildingAssessmentReportTemplate
+    file: templates/building_assessment_report.py
+    description: "Comprehensive building assessment report"
+  - name: RetrofitRecommendationReportTemplate
+    file: templates/retrofit_recommendation_report.py
+    description: "Retrofit business case with NPV/IRR analysis"
+  - name: BuildingBenchmarkReportTemplate
+    file: templates/building_benchmark_report.py
+    description: "Peer comparison and energy benchmarking report"
+  - name: CertificationScorecardTemplate
+    file: templates/certification_scorecard.py
+    description: "LEED/BREEAM/Energy Star certification scorecard"
+  - name: TenantEnergyReportTemplate
+    file: templates/tenant_energy_report.py
+    description: "Tenant-facing energy performance report"
+  - name: BuildingDashboardTemplate
+    file: templates/building_dashboard.py
+    description: "Real-time building energy dashboard"
+  - name: RegulatoryComplianceReportTemplate
+    file: templates/regulatory_compliance_report.py
+    description: "EPBD/MEES regulatory compliance report"
+  - name: WholeLifeCarbonReportTemplate
+    file: templates/whole_life_carbon_report.py
+    description: "Embodied + operational carbon report per EN 15978"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: BuildingAssessmentOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "12-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVBuildingBridge
+    file: integrations/mrv_building_bridge.py
+    description: "Routes building energy data to MRV agents for emissions calculation"
+  - name: DataBuildingBridge
+    file: integrations/data_building_bridge.py
+    description: "Routes data intake to DATA agents for meter data and quality profiling"
+  - name: EPBDComplianceBridge
+    file: integrations/epbd_compliance_bridge.py
+    description: "EU EPBD obligation assessment and national transposition tracking"
+  - name: BMSIntegrationBridge
+    file: integrations/bms_integration_bridge.py
+    description: "BACnet/Modbus/OPC-UA/MQTT data adapters and Project Haystack tagging"
+  - name: WeatherDataBridge
+    file: integrations/weather_data_bridge.py
+    description: "TMY data, HDD/CDD degree-day calculation, solar irradiance estimation"
+  - name: CertificationBridge
+    file: integrations/certification_bridge.py
+    description: "LEED v4.1, BREEAM 2024, Energy Star, NABERS certification evaluation"
+  - name: GridCarbonBridge
+    file: integrations/grid_carbon_bridge.py
+    description: "Grid emission factors, hourly carbon profiles, REC/GO tracking"
+  - name: PropertyRegistryBridge
+    file: integrations/property_registry_bridge.py
+    description: "UPRN/cadastral registration, tenant management, portfolio aggregation"
+  - name: CRREMPathwayBridge
+    file: integrations/crrem_pathway_bridge.py
+    description: "CRREM 1.5C/2C pathway alignment and stranding year assessment"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "22-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided building configuration with 8 building type presets"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: commercial_office
+    file: config/presets/commercial_office.yaml
+    description: "Grade A/B offices, serviced offices, co-working spaces"
+  - name: retail_building
+    file: config/presets/retail_building.yaml
+    description: "High street, shopping centres, supermarkets, warehouses"
+  - name: hotel_hospitality
+    file: config/presets/hotel_hospitality.yaml
+    description: "Hotels, restaurants, conference centres"
+  - name: healthcare_facility
+    file: config/presets/healthcare_facility.yaml
+    description: "Hospitals, clinics, care homes, laboratories"
+  - name: education_building
+    file: config/presets/education_building.yaml
+    description: "Schools, universities, lecture halls, libraries"
+  - name: residential_multifamily
+    file: config/presets/residential_multifamily.yaml
+    description: "Multi-dwelling units, social housing, student accommodation"
+  - name: mixed_use_development
+    file: config/presets/mixed_use_development.yaml
+    description: "Combined commercial, residential, retail developments"
+  - name: public_sector_building
+    file: config/presets/public_sector_building.yaml
+    description: "Government offices, museums, leisure centres"

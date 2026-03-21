@@ -1,0 +1,254 @@
+# =============================================================================
+# PACK-023 SBTi Alignment Pack - Heavy Industry Preset
+# =============================================================================
+# Configuration for heavy industry organizations (cement, steel, aluminium,
+# chemicals) with SDA pathway mandatory. Very high Scope 1 emissions from
+# process reactions, high-temperature heat, and fugitive sources. CCS and
+# green hydrogen pathways enabled for residual emissions. Long 15-year
+# planning horizon reflecting capital-intensive asset replacement cycles.
+# Supplier engagement focused on upstream raw materials and energy inputs.
+#
+# Typical use cases:
+#   - Cement manufacturers (clinker production)
+#   - Steel producers (blast furnace / electric arc furnace)
+#   - Aluminium smelters
+#   - Chemical producers (ammonia, ethylene, methanol)
+#   - Glass and ceramics manufacturers
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "HEAVY_INDUSTRY"
+sector_code: "NACE_C23_C24_C25_C26"
+gics_sector: "1510"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- SBTi Engines Configuration ---
+engines:
+  target_setting:
+    enabled: true
+    ambition_level: "CELSIUS_1_5"
+    scope_priorities:
+      scope1: 0.95
+      scope2: 0.95
+      scope3: 0.67
+  criteria_validation:
+    enabled: true
+    near_term_criteria: ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28"]
+    net_zero_criteria: ["NZ-C1", "NZ-C2", "NZ-C3", "NZ-C4", "NZ-C5", "NZ-C6", "NZ-C7", "NZ-C8", "NZ-C9", "NZ-C10", "NZ-C11", "NZ-C12", "NZ-C13", "NZ-C14"]
+  scope3_screening:
+    enabled: true
+    materiality_trigger_pct: 40.0
+    coverage_near_term_pct: 67.0
+    coverage_long_term_pct: 90.0
+    categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12]
+  sda_sector:
+    enabled: true
+    sda_applicable: true
+    sda_sectors:
+      - "CEMENT"
+      - "STEEL"
+      - "ALUMINIUM"
+      - "CHEMICALS"
+    sector_benchmark_2050_cement_tco2e_per_tonne: 0.119
+    sector_benchmark_2050_steel_tco2e_per_tonne: 0.156
+    sector_benchmark_2050_aluminium_tco2e_per_tonne: 1.31
+    convergence_method: "SBTi_SDA_Tool_V3.0"
+  flag_assessment:
+    enabled: false
+    flag_applicable: false
+  temperature_rating:
+    enabled: true
+    aggregation_methods:
+      - "WATS"
+      - "TETS"
+      - "MOTS"
+    default_score_celsius: 3.2
+    include_scope3: true
+  progress_tracking:
+    enabled: true
+    review_cycle_years: 5
+    recalculation_trigger_threshold_pct: 5.0
+  recalculation:
+    enabled: true
+    trigger_types:
+      - "acquisition"
+      - "divestiture"
+      - "merger"
+      - "methodology_change"
+      - "structural_change"
+      - "organic_growth"
+  fi_portfolio:
+    enabled: false
+    fi_applicable: false
+  submission_readiness:
+    enabled: true
+    readiness_dimensions: 5
+
+# --- Pathway Configuration (SDA Mandatory) ---
+pathway:
+  methodology: "SDA"
+  sda_enabled: true
+  sda_sectors:
+    - "CEMENT"
+    - "STEEL"
+    - "ALUMINIUM"
+    - "CHEMICALS"
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Scope 3 Configuration ---
+scope3:
+  categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12]
+  activity_based_categories: [1, 3, 4, 5, 11]
+  supplier_specific_categories: [1]
+  spend_based_categories: [2, 6, 7, 9, 12]
+  materiality_threshold_pct: 0.5
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Supplier Engagement ---
+supplier:
+  enabled: true
+  max_suppliers: 5000
+  tier_thresholds:
+    collaborate: 3.0
+    require: 12.0
+    engage: 35.0
+    inform: 100.0
+  top_supplier_count: 100
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+    - "innovation"
+  batch_size: 2000
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 10.0
+  carbon_price_eur_per_tco2e: 120.0
+  carbon_price_escalation_pct: 7.0
+  reporting_currency: "EUR"
+  planning_horizon_years: 15
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 12.0
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+    - "MOTS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: false
+  portfolio_weighting: "revenue"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Decomposition & Variance ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 8.0
+  top_drivers_count: 10
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: true
+  max_entities: 50
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "divisional"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI & Carbon Removal ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 75
+  max_nature_based_pct: 40.0
+  shift_to_removals_by_year: 2035
+  preferred_registries:
+    - "verra"
+    - "gold_standard"
+    - "american_carbon_registry"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2028
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10
+
+# --- Data Quality Targets ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "default_factors"
+  emission_factor_source: "IEA_NZE_2023"
+  process_emission_data_source: "equipment_specific"
+
+# --- Sector-Specific Parameters ---
+sector_parameters:
+  process_emissions_coverage_pct: 95.0
+  ccs_pathway_enabled: true
+  ccs_permanent_storage_verification: true
+  green_hydrogen_pathway_enabled: true
+  electrification_technical_feasibility_assessment: true
+  fuel_switching_alternative_fuels: ["green_hydrogen", "electricity"]
+  waste_heat_recovery_potential_assessment: true
+  supply_chain_raw_material_carbon_intensity_tracking: true
+  capital_replacement_cycle_years: 30

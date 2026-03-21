@@ -1,0 +1,238 @@
+# =============================================================================
+# PACK-024 Carbon Neutral Pack - Product Neutrality Preset
+# =============================================================================
+# Product-level carbon neutrality using life cycle assessment (LCA)
+# boundaries covering cradle-to-gate, cradle-to-grave, or cradle-to-cradle
+# system boundaries. Aligned with ISO 14067:2018 (carbon footprint of
+# products), ISO 14044:2006 (LCA), PAS 2050:2011, and PAS 2060:2014 for
+# product carbon neutrality claims.
+#
+# Typical use cases:
+#   - Consumer packaged goods (CPG) carbon-neutral product lines
+#   - Industrial products with carbon-neutral certification
+#   - Food and beverage products with climate claims
+#   - Technology hardware with product carbon footprint labels
+#   - Building materials with Environmental Product Declarations (EPD)
+#   - Textile and fashion items with carbon-neutral labeling
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+neutrality_type: "PRODUCT"
+boundary_scope: "PRODUCT_LCA"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+product_name: ""
+product_category: ""
+functional_unit: "1 unit"
+
+# --- Scope Configuration ---
+scope_boundaries:
+  scope1:
+    included: true
+    coverage_pct: 100.0
+    consolidation: "product_boundary"
+    sources:
+      - "manufacturing_process"
+      - "on_site_energy"
+  scope2:
+    included: true
+    coverage_pct: 100.0
+    methods:
+      - "location_based"
+      - "market_based"
+    preferred_method: "market_based"
+    sources:
+      - "manufacturing_electricity"
+      - "facility_heating"
+  scope3:
+    included: true
+    coverage_pct: 90.0
+    categories: [1, 3, 4, 5, 9, 11, 12]
+    materiality_threshold_pct: 1.0
+    de_minimis_pct: 3.0
+    lca_stages:
+      - "raw_material_extraction"
+      - "material_processing"
+      - "component_manufacturing"
+      - "assembly"
+      - "packaging"
+      - "distribution"
+      - "retail"
+      - "use_phase"
+      - "end_of_life"
+      - "recycling_recovery"
+
+# --- LCA Configuration ---
+lca:
+  system_boundary: "cradle_to_grave"
+  functional_unit: "1 unit of product"
+  reference_flow: 1.0
+  allocation_method: "physical"
+  cutoff_criteria_pct: 1.0
+  impact_categories:
+    - "climate_change_gwp100"
+    - "fossil_resource_depletion"
+  data_quality_requirements:
+    temporal_representativeness_years: 5
+    geographical_representativeness: "national"
+    technological_representativeness: "specific"
+  lca_database: "ecoinvent_3.10"
+
+# --- Engines Configuration ---
+engines:
+  footprint_quantification:
+    enabled: true
+    consolidation_approach: "product_boundary"
+    include_biogenic_co2: true
+    uncertainty_assessment: true
+    data_quality_scoring: true
+    gwp_source: "IPCC_AR6"
+    gwp_timeframe: 100
+    materiality_threshold_pct: 1.0
+    product_specific:
+      bill_of_materials_tracking: true
+      mass_balance: true
+      energy_balance: true
+      yield_loss_accounting: true
+  carbon_management_plan:
+    enabled: true
+    planning_horizon_years: 3
+    reduction_first_strategy: true
+    min_reduction_before_offset_pct: 40.0
+    internal_carbon_price_eur: 80.0
+    max_offset_reliance_pct: 60.0
+    annual_reduction_target_pct: 5.0
+  credit_quality:
+    enabled: true
+    min_quality_score: 60
+    icvcm_ccp_compliance: false
+    preferred_standards:
+      - "gold_standard"
+      - "verra_vcs"
+    min_additionality_score: 6
+    min_permanence_score: 6
+    require_sdg_contribution: true
+  portfolio_optimization:
+    enabled: true
+    max_nature_based_pct: 50.0
+    max_avoidance_pct: 60.0
+    min_removal_pct: 15.0
+    diversification_min_types: 2
+    vintage_max_age_years: 5
+    geographic_diversification: false
+    budget_constraint_enabled: true
+  registry_retirement:
+    enabled: true
+    auto_retirement: false
+    retirement_timing: "within_reporting_period"
+    supported_registries:
+      - "gold_standard"
+      - "verra"
+    serial_number_tracking: true
+    double_counting_prevention: true
+  neutralization_balance:
+    enabled: true
+    balance_method: "per_unit_produced"
+    allow_forward_credits: false
+    buffer_pool_pct: 5.0
+    shortfall_action: "purchase_additional"
+    surplus_carryover: false
+    verification_frequency: "annual"
+  claims_substantiation:
+    enabled: true
+    claim_type: "carbon_neutral_product"
+    standard: "ISO_14068_1"
+    pas2060_compliance: true
+    vcmi_claims_code: false
+    public_disclosure_required: true
+    third_party_verification: true
+    claim_period: "product_batch"
+    product_label_requirements:
+      carbon_footprint_value: true
+      offset_details: true
+      verification_reference: true
+      qr_code_link: true
+  verification_package:
+    enabled: true
+    assurance_level: "limited"
+    standard: "ISAE_3410"
+    third_party_verifier: true
+    evidence_completeness_target_pct: 90.0
+    documentation_format: "PDF"
+  annual_cycle:
+    enabled: true
+    cycle_start_month: 1
+    cycle_end_month: 12
+    milestone_frequency: "quarterly"
+    progress_reporting: true
+    recertification_reminder_days: 60
+    continuous_improvement_tracking: true
+  permanence_risk:
+    enabled: true
+    risk_assessment_frequency: "annual"
+    buffer_contribution_pct: 10.0
+    reversal_monitoring: false
+    replacement_trigger_threshold_pct: 10.0
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  carbon_price_eur_per_tco2e: 80.0
+  reporting_currency: "EUR"
+  credit_budget_annual_eur: 100000.0
+  credit_price_range:
+    min_eur: 10.0
+    max_eur: 100.0
+    avg_eur: 30.0
+  cost_per_unit_allocation: true
+
+# --- Data Quality ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "lca_database"
+    - "supplier_specific"
+    - "default_factors"
+  emission_factor_source: "ecoinvent_3.10"
+  lca_database_version: "3.10"
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2027
+  workpaper_format: "ISO_14067"
+  methodology_documentation: true
+  calculation_trace: true
+  sha256_provenance: true
+  retention_years: 7
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_iso14068_mapping: true
+  include_pas2060_mapping: true
+  include_iso14067_mapping: true
+  include_epd_mapping: true
+  language: "en"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096

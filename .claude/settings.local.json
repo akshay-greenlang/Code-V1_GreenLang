@@ -537,7 +537,13 @@
       "WebFetch(domain:www.crowell.com)",
       "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\eu-compliance\\\\PACK-016-esrs-e1-climate\\\\tests\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\eu-compliance\\\\PACK-016-esrs-e1-climate\\\\tests\")",
       "WebFetch(domain:www.usetappr.com)",
-      "WebFetch(domain:www.nortonrosefulbright.com)"
+      "WebFetch(domain:www.nortonrosefulbright.com)",
+      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\net-zero\\\\PACK-025-race-to-zero\\\\workflows\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\net-zero\\\\PACK-025-race-to-zero\\\\workflows\")",
+      "Bash(if not exist \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\net-zero\\\\PACK-025-race-to-zero\\\\integrations\" mkdir \"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\net-zero\\\\PACK-025-race-to-zero\\\\integrations\")",
+      "Bash(do sed -i 's/^\\\\.conftest import/from .conftest import/g' \"$file\")",
+      "Bash(# Check what test files we''re missing echo \"\"=== Missing test files ===\"\" for f in test_compliance.py; do test -f \"\"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\energy-efficiency\\\\PACK-033-quick-wins-identifier\\\\tests\\\\$f\"\" && echo \"\"$f EXISTS\"\" || echo \"\"$f MISSING\"\" done # Check total file counts echo \"\"=== Directory breakdown ===\"\" echo \"\"root:\"\" && find \"\"C:\\\\Users\\\\aksha\\\\Code-V1_GreenLang\\\\packs\\\\energy-efficiency\\\\PACK-033-quick-wins-identifier\"\" -maxdepth 1 -type f)",
+      "Bash(__NEW_LINE_e115d24cccee11b6__ echo \"=== PRD ===\")",
+      "Bash(P=\"C:/Users/aksha/Code-V1_GreenLang/packs/energy-efficiency/PACK-033-quick-wins-identifier\")"
     ],
     "deny": [],
     "ask": []

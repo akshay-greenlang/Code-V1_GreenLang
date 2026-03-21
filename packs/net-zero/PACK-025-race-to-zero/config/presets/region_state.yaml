@@ -1,0 +1,490 @@
+# =============================================================================
+# PACK-025 Race to Zero Pack - Region / State / Province Preset
+# =============================================================================
+# Configuration for sub-national governments (regions, states, provinces)
+# joining Race to Zero through the Under2 Coalition or similar regional
+# climate networks. Sub-national emissions inventory covering energy,
+# transport, industrial, agriculture, and land use sectors. Policy lever
+# focus (regulation, incentives, standards) rather than direct operational
+# actions. Governor/Premier endorsement required. Broader geographic scope
+# than cities but narrower than national commitments. LULUCF (Land Use,
+# Land-Use Change and Forestry) significant for many regions.
+#
+# Target: Economy-wide 50% by 2030
+# Multi-sector coverage: Power, transport, buildings, industry, AFOLU
+# Regional climate plans: Enabled
+# Partnership: Very high (multi-stakeholder)
+# Verification: Annual
+#
+# Typical use cases:
+#   - US states with climate action plans (California, New York, etc.)
+#   - EU regions with regional climate strategies
+#   - Canadian provinces with carbon pricing
+#   - Sub-national jurisdictions in developing countries
+#   - Under2 Coalition member regions/states
+#   - Regions with significant LULUCF sectors (forestry, agriculture)
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+actor_type: "REGION"
+sector: "PUBLIC_SECTOR"
+size: "REGION"
+region: "GLOBAL"
+country: ""
+population_range: ""
+gdp_range: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2017
+pack_version: "1.0.0"
+campaign_join_date: ""
+
+# --- Race to Zero Campaign ---
+campaign:
+  campaign_name: "Race to Zero"
+  campaign_version: "2022"
+  interpretation_guide_version: "June 2022"
+  hleg_report_version: "November 2022"
+  net_zero_target_year: 2050
+  interim_target_year: 2030
+  starting_line_deadline_months: 12
+  annual_reporting_required: true
+  public_disclosure_required: true
+
+# --- Partner Initiative (Under2 Coalition) ---
+partner:
+  primary_partner: "Under2 Coalition"
+  secondary_partners:
+    - "ICLEI"
+    - "CDP_STATES_REGIONS"
+    - "Climate Group"
+    - "Regions4"
+  reporting_channel: "CDP_STATES_REGIONS"
+  partner_requirements_mapped: true
+  cross_partner_synergy: true
+  partner_compliance_tracking: true
+  engagement_level: "VERY_HIGH"
+  multi_stakeholder_governance: true
+
+# --- Pledge Configuration (Regional-specific) ---
+pledge:
+  net_zero_by_2050: true
+  interim_2030_target: true
+  action_plan_commitment: true
+  annual_reporting_commitment: true
+  scope_coverage_full: true
+  governance_endorsement: true
+  public_disclosure: true
+  no_contradictory_actions: true
+  executive_endorsement: true
+  legislative_mandate: false
+  policy_alignment_commitment: true
+
+# --- Starting Line Criteria ---
+starting_line:
+  enabled: true
+  assessment_mode: "FULL"
+  pillars:
+    pledge:
+      sl_p1_net_zero_target: true
+      sl_p2_interim_target: true
+      sl_p3_science_based: true
+      sl_p4_fair_share: true
+      sl_p5_scope_coverage: true
+    plan:
+      sl_a1_action_plan_published: true
+      sl_a2_quantified_actions: true
+      sl_a3_timeline_milestones: true
+      sl_a4_resource_allocation: true
+      sl_a5_sector_alignment: true
+    proceed:
+      sl_r1_immediate_action: true
+      sl_r2_emission_reductions: true
+      sl_r3_investment_commitment: true
+      sl_r4_governance_integration: true
+      sl_r5_no_contradictory_action: true
+    publish:
+      sl_d1_annual_reporting: true
+      sl_d2_emissions_disclosure: true
+      sl_d3_target_progress: true
+      sl_d4_plan_updates: true
+      sl_d5_transparency: true
+  evidence_collection_automated: true
+  gap_remediation_guidance: true
+  compliance_deadline_tracking: true
+  threshold_scores:
+    pledge_minimum_pct: 75.0
+    plan_minimum_pct: 70.0
+    proceed_minimum_pct: 65.0
+    publish_minimum_pct: 75.0
+    overall_minimum_pct: 70.0
+
+# --- Interim Target Validation (Regional-level) ---
+interim_target:
+  minimum_reduction_pct: 42.0
+  preferred_reduction_pct: 50.0
+  baseline_year_minimum: 2010
+  baseline_year_preferred: 2017
+  methodology: "UNDER2_PATHWAY"
+  annual_reduction_rate_min_pct: 4.2
+  territorial_coverage: true
+  economy_wide_target: true
+  scope1_coverage_pct: 95.0
+  scope2_coverage_pct: 95.0
+  scope3_coverage_pct: 0.0
+  fair_share_assessment: true
+  per_capita_target: true
+  per_gdp_target: true
+  lulucf_included: true
+  pathway_sources:
+    - "IPCC_AR6_WG3"
+    - "IEA_NZE_2023"
+    - "UNDER2_COALITION"
+
+# --- Long-Term Target ---
+long_term_target:
+  net_zero_year: 2050
+  residual_emissions_max_pct: 10.0
+  neutralization_required: true
+  neutralization_method: "NATURE_BASED_SOLUTIONS"
+  economy_wide_reduction_pct: 90.0
+  lulucf_net_sink_required: true
+
+# --- Multi-Sector Coverage ---
+multi_sector_coverage:
+  enabled: true
+  sectors:
+    power:
+      description: "Electricity generation and grid decarbonization"
+      target_2030_reduction_pct: 65.0
+      key_levers: ["renewable_mandate", "coal_phase_out", "grid_storage"]
+    transport:
+      description: "Road, rail, aviation, navigation"
+      target_2030_reduction_pct: 40.0
+      key_levers: ["ev_mandate", "public_transit", "mode_shift"]
+    buildings:
+      description: "Residential and commercial buildings"
+      target_2030_reduction_pct: 45.0
+      key_levers: ["building_codes", "heat_pumps", "retrofit_programs"]
+    industry:
+      description: "Manufacturing, mining, construction"
+      target_2030_reduction_pct: 35.0
+      key_levers: ["efficiency_standards", "electrification", "carbon_pricing"]
+    afolu:
+      description: "Agriculture, forestry, and other land use"
+      target_2030_reduction_pct: 25.0
+      key_levers: ["sustainable_agriculture", "reforestation", "peatland_restoration"]
+
+# --- Action Plan (Regional Climate Strategy) ---
+action_plan:
+  publication_deadline_months: 12
+  plan_type: "REGIONAL_CLIMATE_STRATEGY"
+  quantified_actions_required: true
+  minimum_actions: 20
+  maximum_actions: 100
+  include_macc_analysis: true
+  include_timeline: true
+  include_milestones: true
+  include_resource_allocation: true
+  include_sector_alignment: true
+  include_policy_levers: true
+  action_categories:
+    - "ENERGY_TRANSITION"
+    - "RENEWABLE_ENERGY_TARGETS"
+    - "TRANSPORT_POLICY"
+    - "BUILDING_CODES"
+    - "INDUSTRIAL_POLICY"
+    - "LAND_USE_PLANNING"
+    - "FORESTRY_CONSERVATION"
+    - "AGRICULTURE_POLICY"
+    - "CARBON_PRICING"
+    - "GREEN_PROCUREMENT"
+    - "JUST_TRANSITION_PROGRAMS"
+    - "RESEARCH_INNOVATION"
+    - "CLIMATE_ADAPTATION"
+  planning_horizon_years: 15
+  scenario_count: 3
+  carbon_price_eur_per_tco2e: 70.0
+  discount_rate_pct: 4.0
+  milestones:
+    - year: 2025
+      description: "Regional inventory complete, climate strategy adopted"
+    - year: 2027
+      description: "Key policies enacted, carbon pricing operational"
+    - year: 2030
+      description: "50% economy-wide reduction achieved"
+    - year: 2035
+      description: "70% reduction, clean energy grid dominant"
+    - year: 2040
+      description: "85% reduction, industrial transition accelerating"
+    - year: 2050
+      description: "Net-zero economy achieved, LULUCF net sink"
+
+# --- Emission Inventory (Regional territorial) ---
+inventory:
+  methodology: "IPCC_2006_GUIDELINES"
+  sectors:
+    - "ENERGY"
+    - "TRANSPORT"
+    - "INDUSTRIAL_PROCESSES"
+    - "AGRICULTURE"
+    - "LULUCF"
+    - "WASTE"
+  sub_sectors:
+    energy:
+      - "power_generation"
+      - "petroleum_refining"
+      - "manufacturing_combustion"
+      - "residential_commercial"
+      - "fugitive_emissions"
+    transport:
+      - "road_transport"
+      - "rail"
+      - "domestic_aviation"
+      - "domestic_navigation"
+    agriculture:
+      - "enteric_fermentation"
+      - "manure_management"
+      - "rice_cultivation"
+      - "agricultural_soils"
+    lulucf:
+      - "forest_land"
+      - "cropland"
+      - "grassland"
+      - "wetlands"
+      - "settlements"
+  include_scope1: true
+  include_scope2: true
+  include_scope3: false
+  territorial_vs_consumption: "TERRITORIAL"
+  lulucf_reporting: "NET_NET"
+
+# --- Sector Pathway (Regional sectors) ---
+sector_pathway:
+  enabled: true
+  auto_classify: true
+  pathway_sources:
+    - "IEA_NZE_2050"
+    - "IPCC_AR6_WG3"
+    - "TPI"
+    - "UNDER2_SECTOR_PATHWAYS"
+  benchmark_comparison: true
+  milestone_mapping: true
+  gap_to_benchmark_analysis: true
+  regional_pathways: true
+  sectors_covered: 12
+  priority_sectors:
+    - "ENERGY"
+    - "TRANSPORT"
+    - "AGRICULTURE"
+    - "LAND_USE"
+    - "BUILDINGS"
+    - "INDUSTRY"
+  pathway_selection: "REGIONAL"
+
+# --- HLEG Credibility Assessment ---
+hleg:
+  enabled: true
+  assessment_mode: "FULL"
+  recommendations_assessed: 10
+  sub_criteria_count: 45
+  recommendations:
+    r1_net_zero_pledge_quality: true
+    r2_interim_target_ambition: true
+    r3_voluntary_credit_use: true
+    r4_lobbying_alignment: true
+    r5_just_transition: true
+    r6_financial_commitment: true
+    r7_reporting_transparency: true
+    r8_scope_of_pledge: true
+    r9_internal_governance: true
+    r10_fossil_fuel_phaseout: true
+  credibility_rating_scale:
+    - "STRONG"
+    - "ADEQUATE"
+    - "WEAK"
+    - "INSUFFICIENT"
+  minimum_credibility_target: "ADEQUATE"
+  science_based_validation: true
+  governance_maturity_review: true
+  fossil_fuel_exposure_check: true
+  just_transition_emphasis: true
+
+# --- Credibility Assessment Weights ---
+credibility_weights:
+  pledge_quality: 0.15
+  target_ambition: 0.15
+  action_plan_robustness: 0.12
+  progress_trajectory: 0.10
+  governance_maturity: 0.10
+  transparency_reporting: 0.10
+  sector_alignment: 0.08
+  partnership_engagement: 0.07
+  offset_integrity: 0.05
+  just_transition: 0.08
+  total: 1.00
+  minimum_composite_score: 0.60
+  passing_threshold: "ADEQUATE"
+
+# --- Partnership Engagement (Regional networks) ---
+partnership:
+  enabled: true
+  engagement_level: "VERY_HIGH"
+  max_partners: 8
+  partner_discovery: true
+  collaboration_agreements: true
+  joint_target_setting: true
+  performance_tracking: true
+  impact_reporting: true
+  synergy_analysis: true
+  multi_stakeholder_governance: true
+  partner_initiatives:
+    - "Under2 Coalition"
+    - "Climate Group"
+    - "ICLEI"
+    - "Regions4"
+    - "CDP States and Regions"
+
+# --- Verification ---
+verification:
+  enabled: true
+  frequency: "ANNUAL"
+  verification_level: "LIMITED"
+  third_party_required: false
+  accepted_standards:
+    - "IPCC_2006_GUIDELINES"
+    - "ISO_14064_3"
+    - "CDP_STATES_REGIONS_SCORING"
+  verification_scope:
+    - "emissions_inventory"
+    - "target_progress"
+    - "policy_implementation"
+    - "lulucf_accounting"
+  historical_data_review: true
+  site_visits_required: false
+  verification_report_public: true
+
+# --- Offset Strategy ---
+offset_strategy:
+  enabled: true
+  max_offset_pct: 10.0
+  offset_scope: "RESIDUAL_ONLY"
+  eligible_offset_types:
+    - "NATURE_BASED_SOLUTIONS"
+    - "REFORESTATION"
+    - "PEATLAND_RESTORATION"
+    - "CARBON_REMOVAL"
+    - "ENHANCED_WEATHERING"
+  excluded_offset_types:
+    - "AVOIDED_DEFORESTATION"
+    - "REDD_UNCERTIFIED"
+  quality_standards:
+    - "VERRA_VCS"
+    - "GOLD_STANDARD"
+    - "WOODLAND_CARBON_CODE"
+  permanence_minimum_years: 50
+  additionality_required: true
+  co_benefits_preferred: true
+  local_offsets_preferred: true
+  vintage_maximum_years: 5
+  retirement_tracking: true
+  double_counting_prevention: true
+
+# --- Annual Reporting ---
+reporting:
+  enabled: true
+  frequency: "ANNUAL"
+  channels:
+    - "CDP_STATES_REGIONS"
+    - "UNDER2_REPORTING"
+    - "R2Z_CAMPAIGN"
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_emissions_inventory: true
+  include_target_progress: true
+  include_action_implementation: true
+  include_partnership_engagement: true
+  include_credibility_update: true
+  include_forward_commitments: true
+  include_per_capita_metrics: true
+  include_per_gdp_metrics: true
+  include_lulucf_reporting: true
+  include_policy_progress: true
+  include_offset_usage: true
+  verification_required: true
+  verification_level: "LIMITED"
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+  reporting_format_preferences:
+    primary: "PDF"
+    machine_readable: "JSON"
+    web: "HTML"
+
+# --- Progress Tracking ---
+progress:
+  enabled: true
+  trajectory_assessment: true
+  variance_analysis: true
+  yoy_comparison: true
+  corrective_action_triggers: true
+  on_track_threshold_pct: 5.0
+  alert_threshold_pct: 10.0
+  kpi_set:
+    - "total_territorial_emissions"
+    - "per_capita_emissions"
+    - "per_gdp_emissions"
+    - "energy_sector_emissions"
+    - "transport_sector_emissions"
+    - "lulucf_net_emissions"
+    - "renewable_energy_share"
+    - "yoy_reduction_rate"
+    - "policy_implementation_rate"
+    - "hleg_credibility_rating"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+
+# --- Race Readiness ---
+readiness:
+  enabled: true
+  dimensions:
+    - "pledge_strength"
+    - "starting_line_compliance"
+    - "target_ambition"
+    - "action_plan_quality"
+    - "progress_trajectory"
+    - "sector_alignment"
+    - "partnership_engagement"
+    - "hleg_credibility"
+  composite_scoring: true
+  rag_status: true
+  prioritized_improvements: true
+  readiness_levels:
+    - "CAMPAIGN_READY"
+    - "MOSTLY_READY"
+    - "PARTIALLY_READY"
+    - "SIGNIFICANT_GAPS"
+    - "NOT_READY"
+  minimum_readiness_target: "MOSTLY_READY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 6
+  timeout_seconds: 600
+  batch_size: 1500
+  memory_limit_mb: 4096
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 15
+  external_audit_export: true

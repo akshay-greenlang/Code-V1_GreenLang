@@ -1,0 +1,141 @@
+# =============================================================================
+# PACK-034 ISO 50001 EnMS Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for Europarts Manufacturing GmbH, a fictional
+# medium-sized German automotive component manufacturer implementing
+# ISO 50001 for the first time at their main production facility.
+#
+# Company: Europarts Manufacturing GmbH
+# Facility: Ingolstadt Production Plant
+# Employees: 450
+# Floor Area: 12,000 m2 (production 8,000 m2 + office 4,000 m2)
+# Annual Electricity: ~3,200 MWh
+# Annual Gas: ~1,800 MWh (process heat + space heating)
+# Annual Production: 85,000 units (precision machined components)
+# Annual Energy Cost: ~EUR 850,000
+# Reporting Year: 2026
+# EnMS Maturity: IMPLEMENTING (policy agreed, team formed, SEUs pending)
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: "Europarts Ingolstadt Plant"
+company_name: "Europarts Manufacturing GmbH"
+facility_type: "MANUFACTURING"
+enms_maturity: "IMPLEMENTING"
+country: "DE"
+reporting_year: 2026
+
+# --- Facility Characteristics ---
+floor_area_m2: 12000.0
+annual_electricity_kwh: 3200000.0
+annual_gas_kwh: 1800000.0
+employees: 450
+operating_hours_per_year: 5500
+production_units: "units"
+annual_production_volume: 85000.0
+
+# --- EnMS Scope ---
+enms_scope: "All energy use within the Ingolstadt production facility boundary including manufacturing, office, and ancillary buildings"
+enms_boundary: "Ingolstadt production site, Industriestrasse 42, 85055 Ingolstadt"
+
+# --- SEU Configuration ---
+seu:
+  cumulative_threshold_pct: 80.0
+  individual_threshold_pct: 5.0
+  min_consumers: 4
+  include_categories:
+    - "PROCESS_HEAT"
+    - "COMPRESSED_AIR"
+    - "MOTORS_DRIVES"
+    - "HVAC"
+    - "LIGHTING"
+  review_frequency: "ANNUAL"
+  include_relevant_variables: true
+  track_personnel: true
+
+# --- Baseline ---
+baseline:
+  model_preference: "AUTO"
+  min_data_months: 12
+  max_cv_rmse: 25.0
+  min_r_squared: 0.75
+  significance_level: 0.05
+  outlier_method: "IQR"
+  auto_adjust: true
+  normalisation_variables:
+    - "hdd"
+    - "cdd"
+    - "production"
+
+# --- EnPI ---
+enpi:
+  enpi_types:
+    - "ABSOLUTE"
+    - "INTENSITY"
+    - "REGRESSION_BASED"
+  normalization_method: "PRODUCTION"
+  target_improvement_pct: 5.0
+  track_by_seu: true
+  benchmark_enabled: true
+
+# --- CUSUM ---
+cusum:
+  method: "TABULAR"
+  alert_threshold: 2.0
+  monitoring_interval: "MONTHLY"
+  seasonal_adjustment: "DEGREE_DAY"
+
+# --- Degree Day ---
+degree_day:
+  heating_base_celsius: 15.5
+  cooling_base_celsius: 18.3
+  optimize_base_temp: true
+  normalization_basis: "TMY3"
+
+# --- Compliance ---
+compliance:
+  assessment_frequency: "QUARTERLY"
+  auto_gap_analysis: true
+  nc_closure_days: 90
+  surveillance_reminder_days: 30
+  internal_audit_frequency: "ANNUAL"
+  management_review_frequency: "ANNUAL"
+
+# --- Monitoring ---
+monitoring:
+  granularity: "MONTHLY"
+  data_retention_months: 60
+  quality_threshold: 0.95
+  auto_alerts: true
+
+# --- Action Plan ---
+action_plan:
+  max_payback_years: 5.0
+  discount_rate: 0.06
+  analysis_period_years: 10
+  verification_method: "OPTION_B"
+  electricity_rate_eur_per_kwh: 0.28
+  gas_rate_eur_per_kwh: 0.10
+  carbon_price_eur_per_tco2: 85.0
+  currency: "EUR"
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  output_formats:
+    - "MARKDOWN"
+    - "HTML"
+  include_charts: true
+  include_recommendations: true
+  management_review_template: true
+  output_language: "de"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  baseline_change_log: true
+  retention_days: 2555

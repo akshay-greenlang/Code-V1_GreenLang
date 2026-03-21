@@ -1,0 +1,1710 @@
+# =============================================================================
+# PACK-025: Race to Zero Pack
+# GreenLang Comprehensive Race to Zero Campaign Lifecycle Management Pack
+# =============================================================================
+# This pack provides a complete, standalone Race to Zero campaign lifecycle
+# management solution covering the full journey from initial pledge commitment
+# through ongoing annual participation with credibility assurance. It implements
+# 10 engines for pledge commitment validation (8 eligibility criteria), Starting
+# Line Criteria assessment (4 pillars, 20 sub-criteria per the June 2022
+# Interpretation Guide), interim target validation against 1.5C pathways with
+# scope coverage and fair share contribution, climate action plan generation
+# with quantified actions and 12-month publication deadline, annual progress
+# tracking with trajectory alignment and variance analysis, sector pathway
+# alignment across 25+ sectors using IEA NZE/IPCC AR6/TPI/MPP/ACT/CRREM
+# benchmarks, partnership scoring across 40+ Race to Zero partner initiatives,
+# campaign reporting with multi-partner output formatting, credibility
+# assessment against HLEG "Integrity Matters" 10 recommendations with 45+
+# sub-criteria, and overall race readiness scoring with 8-dimension composite
+# score (0-100) and RAG status.
+#
+# The pack implements zero-hallucination calculation engines: all eligibility
+# checks, Starting Line assessments, target validations, action plan scoring,
+# progress calculations, sector benchmarking, partnership scoring, credibility
+# assessments, and readiness scores use deterministic formulas with published
+# criteria and lookup tables. LLMs are used only for classification, entity
+# resolution, and narrative generation.
+#
+# Key Capabilities:
+#   - Pledge eligibility validation (8 criteria, 4 quality levels)
+#   - Starting Line Criteria assessment (4 pillars, 20 sub-criteria)
+#   - Interim 2030 target validation against 1.5C pathway (43% by 2030)
+#   - Climate action plan generation with MACC, milestones, and costs
+#   - Annual progress tracking with trajectory alignment (on/off track)
+#   - Sector pathway alignment across 25+ sectors (IEA, IPCC, TPI, MPP)
+#   - Partnership scoring across 40+ partner initiatives
+#   - HLEG credibility assessment (10 recommendations, 45+ sub-criteria)
+#   - Campaign reporting with multi-partner format output
+#   - Race readiness scoring (0-100, 8 dimensions, RAG status)
+#   - 8 actor types: Corporate, Financial Institution, City, Region, SME,
+#     Heavy Industry, Services, Manufacturing
+#   - 7 partner initiative integrations: SBTi, CDP, C40, ICLEI, GFANZ,
+#     SME Climate Hub, Under2 Coalition
+#
+# Regulatory and Framework References:
+#   - Race to Zero Campaign (UNFCCC Climate Champions, 2020, updated 2022)
+#   - Race to Zero Interpretation Guide (June 2022 update)
+#   - HLEG "Integrity Matters" Report (November 2022)
+#   - Paris Agreement (2015)
+#   - IPCC AR6 WG3 (2022)
+#   - SBTi Corporate Net-Zero Standard v1.3 (2024)
+#   - CDP Climate Change Questionnaire (2024)
+#   - C40 Deadline 2020 Program
+#   - ICLEI GreenClimateCities
+#   - GFANZ Guidance (2022)
+#   - IEA Net Zero by 2050 Roadmap (2021, updated 2023)
+#   - TPI Global Climate Transition Centre (2024)
+#   - ACT Assessing low-Carbon Transition (2023)
+#   - Mission Possible Partnership (2022)
+#   - CRREM Carbon Risk Real Estate Monitor (2023)
+#   - GHG Protocol Corporate Standard (revised)
+#   - GHG Protocol Scope 2 Guidance
+#   - GHG Protocol Scope 3 Standard
+#   - ISO 14064-1:2018
+#   - ESRS E1 Climate Change
+#   - TCFD Recommendations
+#   - PCAF Global Standard (2022)
+#
+# Target Organizations:
+#   - Sustainability managers preparing Race to Zero applications (corporates)
+#   - City and regional climate officers joining through C40 or ICLEI
+#   - Financial institution sustainability teams joining through GFANZ
+#   - Organizations already in Race to Zero tracking annual compliance
+#   - University sustainability officers joining through Second Nature
+#   - Board members reviewing net-zero pledge commitments
+#   - Sustainability consultants guiding clients into Race to Zero
+#   - Partner initiative administrators validating member compliance
+#   - Investor relations teams communicating campaign participation credibility
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-18)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-025-race-to-zero
+  version: "1.0.0"
+  display_name: "Race to Zero Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for Race to Zero campaign lifecycle
+    management. Provides 10 engines covering pledge commitment validation
+    (8 eligibility criteria, 4 quality levels), Starting Line Criteria
+    assessment (4 pillars: Pledge/Plan/Proceed/Publish, 20 sub-criteria per
+    the June 2022 Interpretation Guide), interim target validation against
+    1.5C pathways with scope coverage and fair share contribution, climate
+    action plan generation with quantified actions and MACC analysis, annual
+    progress tracking with trajectory alignment and variance analysis, sector
+    pathway alignment across 25+ sectors using IEA/IPCC/TPI/MPP/ACT/CRREM
+    benchmarks, partnership scoring across 40+ Race to Zero partner
+    initiatives, campaign reporting with multi-partner output formatting,
+    HLEG "Integrity Matters" credibility assessment with 10 recommendations
+    and 45+ sub-criteria, and overall race readiness scoring with 8-dimension
+    composite score (0-100) and RAG status. Bundles all 30 MRV agents, 20
+    data agents, and 10 foundation agents. Supports 8 actor types (Corporate,
+    Financial Institution, City, Region, SME, Heavy Industry, Services,
+    Manufacturing) with tailored presets and cross-framework reporting.
+  category: net-zero
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-18"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/race-to-zero"
+  changelog_url: "https://docs.greenlang.io/packs/race-to-zero/changelog"
+  prerequisite_packs:
+    - pack_id: PACK-021-net-zero-starter
+      version: ">=1.0.0"
+      required: false
+      description: "PACK-021 baseline, gap analysis, and roadmap (optional, enhances baseline capabilities)"
+    - pack_id: PACK-022-net-zero-acceleration
+      version: ">=1.0.0"
+      required: false
+      description: "PACK-022 scenarios, SDA, temperature scoring (optional, enhances pathway analysis)"
+    - pack_id: PACK-023-sbti-alignment
+      version: ">=1.0.0"
+      required: false
+      description: "PACK-023 SBTi target validation and progress tracking (optional, enhances target alignment)"
+
+  tags:
+    - race-to-zero
+    - unfccc
+    - climate-champions
+    - net-zero
+    - pledge-commitment
+    - starting-line-criteria
+    - interpretation-guide
+    - hleg
+    - integrity-matters
+    - credibility-assessment
+    - interim-targets
+    - action-plan
+    - annual-reporting
+    - sector-pathways
+    - partnership-scoring
+    - campaign-reporting
+    - readiness-scoring
+    - sbti
+    - cdp
+    - c40
+    - iclei
+    - gfanz
+    - sme-climate-hub
+    - under2-coalition
+    - we-mean-business
+    - paris-agreement
+    - 1-5c-pathway
+    - ipcc-ar6
+    - iea-nze
+    - tpi
+    - mpp
+    - act
+    - crrem
+    - ghg-protocol
+    - scope-1
+    - scope-2
+    - scope-3
+    - pcaf
+    - gpc
+    - sda
+    - aca
+    - corporate
+    - financial-institution
+    - city
+    - region
+    - sme
+    - heavy-industry
+    - services
+    - manufacturing
+    - cop26
+    - cop27
+    - cop28
+    - fossil-fuel-phaseout
+    - just-transition
+    - lobbying-alignment
+    - standalone-tier
+
+  regulation:
+    primary:
+      name: "Race to Zero Campaign"
+      reference: "UNFCCC Climate Champions Race to Zero Campaign (2020, updated 2022)"
+      effective_date: "2020-06-05"
+      description: >-
+        UN-backed global campaign rallying non-state actors to take rigorous,
+        immediate action to halve global emissions by 2030 and achieve net
+        zero by 2050 at the latest. Mobilizes 11,000+ entities (corporates,
+        financial institutions, cities, regions, universities, healthcare)
+        representing ~25% of global CO2 emissions and ~50% of GDP. Operates
+        through 40+ partner initiatives (SBTi, CDP, C40, ICLEI, GFANZ, etc.)
+        with Starting Line Criteria (Pledge, Plan, Proceed, Publish) defining
+        minimum participation requirements per the June 2022 Interpretation
+        Guide.
+    secondary:
+      - name: "Race to Zero Interpretation Guide"
+        reference: "UNFCCC Race to Zero Interpretation Guide (June 2022 update)"
+        effective_date: "2022-06-15"
+      - name: "HLEG Integrity Matters Report"
+        reference: "UN Secretary-General HLEG - Integrity Matters (November 2022)"
+        effective_date: "2022-11-08"
+      - name: "Paris Agreement"
+        reference: "UNFCCC Paris Agreement (2015)"
+        effective_date: "2016-11-04"
+      - name: "IPCC AR6 WG3"
+        reference: "IPCC Sixth Assessment Report Working Group III: Mitigation (2022)"
+        effective_date: "2022-04-04"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi Corporate Net-Zero Standard V1.3 (2024)"
+        effective_date: "2024-01-01"
+      - name: "CDP Climate Change Questionnaire"
+        reference: "CDP Climate Change Questionnaire (2024)"
+        effective_date: "2024-02-01"
+      - name: "C40 Deadline 2020"
+        reference: "C40 Cities Climate Leadership - Deadline 2020 Program"
+        effective_date: "2020-07-01"
+      - name: "ICLEI GreenClimateCities"
+        reference: "ICLEI Local Governments for Sustainability - GreenClimateCities"
+        effective_date: "2019-01-01"
+      - name: "GFANZ Guidance"
+        reference: "Glasgow Financial Alliance for Net Zero Guidance (2022)"
+        effective_date: "2022-11-01"
+      - name: "IEA Net Zero by 2050"
+        reference: "IEA Net Zero by 2050 Roadmap (2021, updated 2023)"
+        effective_date: "2021-05-18"
+      - name: "TPI Benchmarks"
+        reference: "Transition Pathway Initiative Global Climate Transition Centre (2024)"
+        effective_date: "2024-01-01"
+      - name: "Mission Possible Partnership"
+        reference: "MPP Hard-to-Abate Sector Pathways (2022)"
+        effective_date: "2022-01-01"
+      - name: "ACT Initiative"
+        reference: "ACT Assessing low-Carbon Transition Methodology (2023)"
+        effective_date: "2023-01-01"
+      - name: "CRREM"
+        reference: "Carbon Risk Real Estate Monitor V2.0 (2023)"
+        effective_date: "2023-01-01"
+      - name: "GHG Protocol Corporate Standard"
+        reference: "GHG Protocol Corporate Accounting and Reporting Standard (revised)"
+        effective_date: "2004-03-01"
+      - name: "GHG Protocol Scope 3 Standard"
+        reference: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+        effective_date: "2011-10-01"
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018 Organization-level GHG quantification and reporting"
+        effective_date: "2018-12-01"
+      - name: "PCAF Global Standard"
+        reference: "PCAF Global GHG Accounting and Reporting Standard (2022)"
+        effective_date: "2022-12-01"
+
+  compliance_references:
+    - id: "R2Z_CAMPAIGN"
+      name: "Race to Zero Campaign"
+      regulation: "UNFCCC Race to Zero Campaign (2020, updated 2022)"
+      effective_date: "2020-06-05"
+      description: >-
+        UN-backed global campaign for non-state actor climate action.
+        Requires participants to pledge net zero by 2050, set interim
+        2030 targets covering all scopes, publish a climate action plan
+        within 12 months, take immediate action, and report progress
+        annually through partner initiative channels. Starting Line
+        Criteria (4 pillars, 20 sub-criteria) define minimum compliance.
+
+    - id: "R2Z_INTERPRETATION"
+      name: "Race to Zero Interpretation Guide"
+      regulation: "UNFCCC Race to Zero Interpretation Guide (June 2022)"
+      effective_date: "2022-06-15"
+      description: >-
+        Detailed guidance document defining the four Starting Line Criteria
+        (Pledge, Plan, Proceed, Publish) with 20 sub-criteria, minimum
+        ambition levels for interim and long-term targets, scope coverage
+        requirements, and evidence standards for compliance demonstration.
+
+    - id: "HLEG_INTEGRITY"
+      name: "HLEG Integrity Matters"
+      regulation: "UN Secretary-General HLEG - Integrity Matters (November 2022)"
+      effective_date: "2022-11-08"
+      description: >-
+        High-Level Expert Group report on credible net-zero commitments
+        of non-state entities. Establishes 10 recommendations with 45+
+        sub-criteria: net-zero pledge quality, interim target ambition,
+        voluntary credit use, lobbying alignment, just transition,
+        financial commitment, reporting transparency, scope of pledge,
+        internal governance, and fossil fuel phase-out.
+
+    - id: "PARIS_AGREEMENT"
+      name: "Paris Agreement"
+      regulation: "UNFCCC Paris Agreement (2015)"
+      effective_date: "2016-11-04"
+      description: >-
+        International climate agreement aiming to limit global temperature
+        rise to well below 2C, preferably 1.5C, compared to pre-industrial
+        levels. Provides the overarching framework for Race to Zero's
+        net-zero-by-2050 commitment and the 1.5C pathway alignment
+        requirement for interim targets.
+
+    - id: "IPCC_AR6"
+      name: "IPCC Sixth Assessment Report"
+      regulation: "IPCC AR6 WG1 (2021) and WG3 (2022)"
+      effective_date: "2021-08-09"
+      description: >-
+        Provides scientific basis for GWP-100 values, global carbon
+        budgets, and sector-specific decarbonization pathways. AR6 WG3
+        establishes the 43% emission reduction by 2030 benchmark for
+        1.5C alignment that underpins Race to Zero interim target
+        requirements.
+
+    - id: "SBTI_NET_ZERO"
+      name: "SBTi Corporate Net-Zero Standard"
+      regulation: "SBTi Corporate Net-Zero Standard V1.3 (2024)"
+      effective_date: "2024-01-01"
+      description: >-
+        Science Based Targets initiative standard for corporate net-zero
+        targets. Defines near-term (5-10 year), long-term, and net-zero
+        target validation criteria. Key Race to Zero partner initiative
+        for corporate participants. SDA and ACA pathway methodologies
+        with 4.2%/yr minimum reduction rate for 1.5C alignment.
+
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol Corporate Accounting and Reporting Standard"
+      effective_date: "2004-03-01"
+      description: >-
+        The foundational standard for corporate GHG accounting. Defines
+        organizational and operational boundaries, Scope 1/2/3 categories,
+        emission factor selection, and reporting requirements. Required
+        for Race to Zero emission inventory and target baseline.
+
+    - id: "GHG_SCOPE3"
+      name: "GHG Protocol Scope 3 Standard"
+      regulation: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+      effective_date: "2011-10-01"
+      description: >-
+        Defines 15 categories of Scope 3 emissions across the corporate
+        value chain. Critical for Race to Zero scope coverage requirements
+        that mandate inclusion of material Scope 3 categories.
+
+    - id: "GFANZ"
+      name: "GFANZ Guidance"
+      regulation: "Glasgow Financial Alliance for Net Zero Guidance (2022)"
+      effective_date: "2022-11-01"
+      description: >-
+        Financial institution transition plan framework covering PCAF
+        financed emissions, portfolio targets, and sector pathway
+        alignment for banks, insurers, and asset managers participating
+        in Race to Zero through the GFANZ partnership.
+
+    - id: "IEA_NZE"
+      name: "IEA Net Zero by 2050"
+      regulation: "IEA Net Zero by 2050 Roadmap (2021, updated 2023)"
+      effective_date: "2021-05-18"
+      description: >-
+        International Energy Agency roadmap with sector-specific
+        milestones and benchmarks for achieving global net-zero emissions
+        by 2050. Provides key sector pathway reference data for the
+        sector pathway alignment engine.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Race to Zero lifecycle calculation engines (10 engines)
+  # ===========================================================================
+  engines:
+    - id: pledge_commitment
+      name: "Pledge Commitment Engine"
+      description: >-
+        Validates pledge eligibility, commitment quality, and actor-type
+        requirements for Race to Zero participation. Assesses 8 eligibility
+        criteria: net-zero commitment by 2050, partner initiative membership,
+        interim 2030 target, action plan commitment, annual reporting
+        commitment, scope coverage, governance endorsement, and public
+        disclosure. Generates pledge quality rating (Strong/Adequate/Weak/
+        Ineligible) with criterion-level pass/fail/partial assessment and
+        partner alignment crosswalk. Zero-hallucination: all eligibility
+        criteria from Race to Zero Interpretation Guide; quality scoring
+        rubric deterministic with SHA-256 provenance hashing.
+      module: "engines.pledge_commitment_engine"
+      required: true
+
+    - id: starting_line
+      name: "Starting Line Engine"
+      description: >-
+        Assesses compliance with the four Starting Line Criteria (Pledge,
+        Plan, Proceed, Publish) per the June 2022 Interpretation Guide.
+        Evaluates 20 sub-criteria: Pledge (SL-P1 to SL-P5: net-zero target,
+        interim target, science-based methodology, fair share, scope
+        coverage), Plan (SL-A1 to SL-A5: action plan published, quantified
+        actions, timeline/milestones, resource allocation, sector alignment),
+        Proceed (SL-R1 to SL-R5: immediate action, emission reductions,
+        investment commitment, governance integration, no contradictory
+        action), Publish (SL-D1 to SL-D5: annual reporting, emissions
+        disclosure, target progress, plan updates, transparency). Produces
+        per-pillar and overall compliance score with gap identification and
+        remediation guidance. Zero-hallucination: criteria from published
+        Interpretation Guide; all assessments deterministic.
+      module: "engines.starting_line_engine"
+      required: true
+
+    - id: interim_target
+      name: "Interim Target Engine"
+      description: >-
+        Validates 2030 interim targets against 1.5C pathway requirements.
+        Confirms approximately 50% absolute emission reduction by 2030
+        from a recent baseline (IPCC AR6: 43% by 2030). Validates scope
+        coverage (Scope 1+2+3 for corporates; community-wide for cities),
+        checks science-based methodology alignment (SBTi SDA/ACA with
+        minimum 4.2%/yr reduction rate), assesses "fair share" contribution
+        to global effort, and validates target boundary and ambition level.
+        Supports cross-validation against SBTi, IEA NZE, and IPCC AR6
+        benchmarks. Zero-hallucination: pathway benchmarks from published
+        scientific literature; all validation logic deterministic.
+      module: "engines.interim_target_engine"
+      required: true
+
+    - id: action_plan
+      name: "Action Plan Engine"
+      description: >-
+        Generates and validates climate action plans per Race to Zero
+        requirements. Produces quantified action plans with specific
+        decarbonization levers, timelines (12-month publication deadline),
+        milestones, resource allocation, abatement impact (tCO2e), and
+        cost estimates (EUR/tCO2e MACC). Validates plan completeness
+        against HLEG and Interpretation Guide criteria. Covers energy
+        efficiency, renewable procurement, fuel switching, process
+        optimization, supply chain engagement, transport electrification,
+        and sector-specific actions. Zero-hallucination: MACC coefficients
+        from published sector studies; abatement potentials from technology
+        databases; all calculations deterministic.
+      module: "engines.action_plan_engine"
+      required: true
+
+    - id: progress_tracking
+      name: "Progress Tracking Engine"
+      description: >-
+        Tracks annual progress against interim and long-term targets.
+        Calculates year-over-year emission changes (absolute and intensity),
+        assesses trajectory alignment with 2030 and 2050 targets, identifies
+        on-track/off-track status (ON_TRACK, SLIGHTLY_OFF, SIGNIFICANTLY_OFF,
+        REVERSED), generates variance analysis with root cause identification,
+        triggers corrective action recommendations, and produces annual
+        progress disclosures for partner initiative reporting channels.
+        Supports multi-year trend analysis with cumulative reduction tracking.
+        Zero-hallucination: all progress arithmetic deterministic with
+        published benchmark comparison.
+      module: "engines.progress_tracking_engine"
+      required: true
+
+    - id: sector_pathway
+      name: "Sector Pathway Engine"
+      description: >-
+        Maps entity-level decarbonization plans to sector-specific pathways
+        from 25+ sectors. Sources pathway data from IEA NZE (2021/2023),
+        IPCC AR6 WG3 (2022), TPI (2024), MPP (2022 - steel, cement,
+        shipping, aviation, trucking, chemicals, aluminium), ACT (2023),
+        and CRREM (2023 - real estate). Calculates gap-to-benchmark for
+        the entity's sector, identifies sector-specific milestones (coal
+        phase-out dates, EV penetration targets, renewable energy share,
+        process emission reduction targets), and assesses pathway
+        credibility. Supports SDA and ACA pathway types with intensity
+        and absolute benchmarking. Zero-hallucination: all pathway data
+        from published sources; gap calculations deterministic.
+      module: "engines.sector_pathway_engine"
+      required: true
+
+    - id: partnership_scoring
+      name: "Partnership Scoring Engine"
+      description: >-
+        Assesses collaboration quality and partner initiative alignment
+        across Race to Zero's 40+ partner network. Maps partner initiative
+        requirements to Race to Zero Starting Line Criteria, scores entity
+        participation across multiple partnerships, identifies reporting
+        synergies and duplications, evaluates engagement quality (active
+        vs. passive membership), tracks partner-specific compliance
+        deadlines, and generates engagement recommendations. Covers
+        7 primary partners: SBTi, CDP, C40, ICLEI, GFANZ, SME Climate
+        Hub, Under2 Coalition, plus We Mean Business Coalition and The
+        Climate Pledge. Zero-hallucination: partner requirements from
+        published documentation; scoring rubric deterministic.
+      module: "engines.partnership_scoring_engine"
+      required: true
+
+    - id: campaign_reporting
+      name: "Campaign Reporting Engine"
+      description: >-
+        Generates Race to Zero annual disclosure reports aligned to campaign
+        and partner requirements. Produces structured reports covering
+        emissions inventory, target progress, action plan implementation,
+        partnership engagement, and forward-looking commitments. Maps
+        outputs to partner-specific reporting formats: CDP Climate Change
+        for corporates, GFANZ transition plans for financial institutions,
+        C40 reporting for cities, ICLEI GreenClimateCities for local
+        governments, and custom formats for other partner initiatives.
+        Supports multi-channel submission with consistency validation.
+        Zero-hallucination: report structure from campaign requirements;
+        data aggregation deterministic.
+      module: "engines.campaign_reporting_engine"
+      required: true
+
+    - id: credibility_assessment
+      name: "Credibility Assessment Engine"
+      description: >-
+        Evaluates pledge credibility against the HLEG "Integrity Matters"
+        10 recommendations with 45+ sub-criteria. Covers: R1 net-zero
+        pledge quality (specificity, boundary, ambition), R2 interim
+        target ambition (1.5C alignment, scope coverage, methodology),
+        R3 voluntary credit use (reduction-first, offset quality, no
+        greenwashing), R4 lobbying alignment (trade association review,
+        policy advocacy consistency), R5 just transition (social impact
+        assessment, stakeholder engagement), R6 financial commitment
+        (CapEx alignment, green investment share), R7 reporting
+        transparency (annual disclosure, methodology documentation),
+        R8 scope of pledge (full value chain, no cherry-picking), R9
+        internal governance (board oversight, incentive alignment), R10
+        fossil fuel phase-out (no new capacity, divestment timeline).
+        Generates overall credibility rating (A-F) with per-recommendation
+        scores. Zero-hallucination: HLEG criteria from published report;
+        scoring rubric deterministic.
+      module: "engines.credibility_assessment_engine"
+      required: true
+
+    - id: race_readiness
+      name: "Race Readiness Engine"
+      description: >-
+        Overall readiness scoring for Race to Zero campaign participation.
+        Aggregates results from all other engines into a composite
+        readiness score across 8 dimensions: pledge strength, Starting
+        Line compliance, target ambition, action plan quality, progress
+        trajectory, sector alignment, partnership engagement, and HLEG
+        credibility. Produces a 0-100 composite score with configurable
+        dimension weights (default equal weighting), RAG status (Red/
+        Amber/Green), readiness level (Not Ready/Partially Ready/Ready/
+        Exemplary), and prioritized improvement actions ranked by impact.
+        Supports actor-type-specific weighting for different participant
+        categories. Zero-hallucination: all aggregation arithmetic
+        deterministic; weights from configurable parameters.
+      module: "engines.race_readiness_engine"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 workflows)
+  # ===========================================================================
+  workflows:
+    - id: pledge_onboarding_workflow
+      name: "Pledge Onboarding Workflow"
+      description: >-
+        5-phase guided onboarding for new Race to Zero participants:
+        EligibilityCheck (validate actor type, entity profile, and basic
+        eligibility against 8 criteria) -> PledgeFormulation (draft
+        pledge statement with net-zero commitment, scope, and timeline)
+        -> PartnerSelection (match to optimal partner initiative based
+        on actor type, sector, and geography) -> PledgeSubmission
+        (prepare and submit pledge package to campaign secretariat) ->
+        ConfirmationTracking (track submission status and confirmation
+        from partner initiative). Orchestrates pledge commitment engine
+        with partner scoring engine.
+      schedule: "on_demand"
+      estimated_duration_minutes: 45
+      phases: 5
+
+    - id: starting_line_assessment_workflow
+      name: "Starting Line Assessment Workflow"
+      description: >-
+        4-phase full Starting Line Criteria assessment: CriteriaMapping
+        (map organizational activities to all 20 sub-criteria across
+        4 pillars) -> EvidenceCollection (identify and gather evidence
+        documents for each sub-criterion) -> ComplianceCheck (assess
+        compliance status for each criterion: pass/fail/partial) ->
+        GapReport (generate gap analysis with remediation actions and
+        priority ranking). Orchestrates starting line engine with
+        action plan engine.
+      schedule: "on_demand"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: action_planning_workflow
+      name: "Action Planning Workflow"
+      description: >-
+        5-phase end-to-end climate action plan development:
+        EmissionsProfile (quantify current emissions by scope and
+        category using MRV agents) -> LeverIdentification (identify
+        available decarbonization levers by sector and actor type) ->
+        ActionPrioritization (rank actions by MACC cost-effectiveness,
+        abatement potential, and implementation readiness) ->
+        PlanDrafting (generate quantified action plan with milestones,
+        costs, and resource requirements) -> PlanValidation (validate
+        plan completeness against HLEG and Interpretation Guide
+        criteria). Orchestrates action plan engine with MRV bridge
+        and sector pathway engine.
+      schedule: "on_demand"
+      estimated_duration_minutes: 90
+      phases: 5
+
+    - id: annual_reporting_workflow
+      name: "Annual Reporting Workflow"
+      description: >-
+        5-phase annual progress reporting cycle: DataCollection (gather
+        current year emissions data from all sources via DATA agents)
+        -> ProgressCalculation (calculate year-over-year changes and
+        trajectory alignment) -> VarianceAnalysis (identify variances
+        from target trajectory with root cause analysis) ->
+        ReportGeneration (generate annual disclosure report with
+        metrics, charts, and narrative) -> PartnerSubmission (format
+        and submit reports to partner-specific channels: CDP, GFANZ,
+        C40, ICLEI). Orchestrates progress tracking engine with
+        campaign reporting engine and partner bridges.
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 5
+
+    - id: sector_pathway_workflow
+      name: "Sector Pathway Workflow"
+      description: >-
+        4-phase sector pathway alignment assessment: SectorClassification
+        (classify entity into primary and secondary sectors using NACE/
+        NAICS/GICS codes) -> BenchmarkMapping (map sector to published
+        pathways from IEA, IPCC, TPI, MPP, ACT, CRREM) ->
+        GapAnalysis (calculate gap-to-benchmark for current and
+        projected emissions intensity) -> RoadmapAlignment (generate
+        sector-aligned roadmap with milestone dates and actions).
+        Orchestrates sector pathway engine.
+      schedule: "on_demand"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: partnership_engagement_workflow
+      name: "Partnership Engagement Workflow"
+      description: >-
+        4-phase partner initiative optimization: PartnerInventory
+        (catalog current and potential partner memberships with
+        requirements) -> RequirementCrosswalk (map partner requirements
+        to Race to Zero Starting Line Criteria for synergy analysis) ->
+        SynergyAnalysis (identify reporting overlaps, duplications, and
+        gaps across partnerships) -> EngagementPlan (generate optimized
+        engagement plan with timeline and resource allocation).
+        Orchestrates partnership scoring engine.
+      schedule: "on_demand"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: credibility_review_workflow
+      name: "Credibility Review Workflow"
+      description: >-
+        5-phase HLEG credibility assessment: HLEGMapping (map
+        organization activities to all 10 HLEG recommendations) ->
+        EvidenceGathering (collect evidence for each recommendation
+        and sub-criterion) -> RecommendationAssess (score each
+        recommendation with per-sub-criterion assessment) ->
+        GapIdentification (identify credibility gaps with severity
+        ranking) -> RemediationPlan (generate remediation action plan
+        with timeline and resource requirements). Orchestrates
+        credibility assessment engine.
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 5
+
+    - id: full_race_to_zero_workflow
+      name: "Full Race to Zero Workflow"
+      description: >-
+        8-phase end-to-end Race to Zero lifecycle assessment: Pledge
+        (validate pledge eligibility and quality) -> StartingLine
+        (assess all 20 Starting Line sub-criteria) -> Targets
+        (validate interim and long-term targets against 1.5C pathway)
+        -> ActionPlan (generate and validate climate action plan) ->
+        SectorAlign (map to sector pathways and assess gap-to-benchmark)
+        -> Partners (score partnership engagement and identify synergies)
+        -> Credibility (assess HLEG credibility across 10 recommendations)
+        -> Readiness (calculate composite readiness score with RAG
+        status and improvement priorities). Orchestrates all 10 engines
+        in dependency order with conditional sector and partner phases.
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 8
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 templates)
+  # ===========================================================================
+  templates:
+    - id: pledge_commitment_letter
+      display_name: "Pledge Commitment Letter"
+      description: >-
+        Formal Race to Zero pledge commitment letter for submission to
+        campaign secretariat and partner initiative. Includes net-zero
+        commitment statement, interim 2030 target, scope coverage
+        declaration, partner initiative designation, governance
+        endorsement, and public disclosure commitment. Formats: MD,
+        HTML, PDF, JSON.
+      format: "pdf"
+      template_file: "templates/pledge_commitment_letter.py"
+      enabled: true
+
+    - id: starting_line_checklist
+      display_name: "Starting Line Checklist"
+      description: >-
+        Starting Line Criteria compliance checklist with 20 sub-criteria
+        evidence mapping. Shows per-pillar status (Pledge, Plan, Proceed,
+        Publish) with criterion-level pass/fail/partial, evidence
+        references, gap descriptions, and remediation actions. Includes
+        overall compliance score and 12-month compliance timeline.
+        Formats: MD, HTML, JSON.
+      format: "html"
+      template_file: "templates/starting_line_checklist.py"
+      enabled: true
+
+    - id: action_plan_document
+      display_name: "Action Plan Document"
+      description: >-
+        Complete climate action plan document meeting Race to Zero
+        Interpretation Guide publication requirements. Includes
+        emissions baseline, MACC curve visualization, prioritized
+        action list with tCO2e abatement and EUR/tCO2e cost, timeline
+        with milestones, resource allocation matrix, sector pathway
+        alignment, and governance commitments. Formats: MD, HTML,
+        PDF, JSON.
+      format: "pdf"
+      template_file: "templates/action_plan_document.py"
+      enabled: true
+
+    - id: annual_progress_report
+      display_name: "Annual Progress Report"
+      description: >-
+        Annual progress disclosure report with emissions trajectory
+        and target tracking. Shows year-over-year emission changes
+        (absolute and intensity), trajectory alignment status (on/off
+        track), cumulative reduction progress, scope-level breakdown,
+        action plan implementation status, and forward-looking
+        projections. Formats: MD, HTML, JSON.
+      format: "html"
+      template_file: "templates/annual_progress_report.py"
+      enabled: true
+
+    - id: sector_pathway_roadmap
+      display_name: "Sector Pathway Roadmap"
+      description: >-
+        Sector-specific decarbonization roadmap with benchmark alignment
+        visualization. Shows entity position relative to IEA/IPCC/TPI/
+        MPP/ACT/CRREM pathway benchmarks, gap-to-benchmark analysis,
+        sector-specific milestone dates, and recommended actions for
+        pathway alignment. Includes intensity trend charts and
+        peer comparison. Formats: MD, HTML, JSON.
+      format: "html"
+      template_file: "templates/sector_pathway_roadmap.py"
+      enabled: true
+
+    - id: partnership_framework
+      display_name: "Partnership Framework"
+      description: >-
+        Partnership engagement framework with requirement crosswalk
+        and synergy analysis. Shows partner initiative inventory,
+        requirement mapping to Race to Zero criteria, reporting
+        overlap analysis, engagement quality scores, compliance
+        deadline calendar, and optimized engagement plan.
+        Formats: MD, HTML, JSON.
+      format: "html"
+      template_file: "templates/partnership_framework.py"
+      enabled: true
+
+    - id: credibility_assessment_report
+      display_name: "Credibility Assessment Report"
+      description: >-
+        HLEG credibility assessment report with 10-recommendation
+        scoring matrix. Shows per-recommendation scores with sub-
+        criterion detail, overall credibility rating (A-F), gap
+        identification with severity ranking, remediation actions
+        with timeline, and benchmarking against peer organizations
+        in the same sector. Formats: MD, HTML, JSON.
+      format: "html"
+      template_file: "templates/credibility_assessment_report.py"
+      enabled: true
+
+    - id: campaign_submission_package
+      display_name: "Campaign Submission Package"
+      description: >-
+        Complete Race to Zero campaign submission package for partner
+        initiative. Consolidates pledge letter, Starting Line evidence,
+        action plan, progress reports, and credibility assessment into
+        a single submission-ready package. Includes partner-specific
+        formatting for CDP, GFANZ, C40, ICLEI, or custom channels.
+        Formats: MD, HTML, PDF, JSON.
+      format: "pdf"
+      template_file: "templates/campaign_submission_package.py"
+      enabled: true
+
+    - id: disclosure_dashboard
+      display_name: "Disclosure Dashboard"
+      description: >-
+        Real-time disclosure dashboard showing campaign compliance
+        status across all dimensions. Visualizes Starting Line
+        compliance, target progress, action plan implementation,
+        partnership engagement, HLEG credibility, and overall
+        readiness score with RAG status. Includes trend charts,
+        deadline alerts, and peer benchmarking. Formats: MD, HTML, JSON.
+      format: "html"
+      template_file: "templates/disclosure_dashboard.py"
+      enabled: true
+
+    - id: race_to_zero_certificate
+      display_name: "Race to Zero Certificate"
+      description: >-
+        Race to Zero readiness certificate with composite score and
+        dimension breakdown. Shows 8-dimension readiness scores,
+        overall composite score (0-100), readiness level (Not Ready/
+        Partially Ready/Ready/Exemplary), RAG status, improvement
+        priorities, and SHA-256 provenance hash for audit verification.
+        Formats: MD, HTML, PDF, JSON.
+      format: "pdf"
+      template_file: "templates/race_to_zero_certificate.py"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase DAG pipeline with dependency management, retry logic,
+        and SHA-256 provenance at each checkpoint. Phases: HealthCheck
+        -> Configuration -> PledgeCommitment -> StartingLine ->
+        InterimTarget -> ActionPlan -> ProgressTracking -> SectorPathway
+        -> PartnershipScoring -> CampaignReporting -> CredibilityAssessment
+        -> RaceReadiness. Supports parallel execution of independent
+        phases (e.g., sector pathway and partnership scoring can run
+        concurrently) and conditional skipping based on actor-type
+        configuration (e.g., skip GFANZ bridge for non-financial
+        institutions).
+      module: "integrations.pack_orchestrator"
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Routes data from all 30 AGENT-MRV agents for complete Scope
+        1/2/3 emissions calculation. Maps MRV outputs to progress
+        tracking engine format for baseline and current year emissions.
+        Supports all 8 Scope 1 agents, 5 Scope 2 agents, 15 Scope 3
+        category agents, and 2 cross-cutting agents. Provides emission
+        data for trajectory alignment and variance analysis.
+      module: "integrations.mrv_bridge"
+      required: true
+
+    - id: ghg_app_bridge
+      name: "GL-GHG-APP Bridge"
+      description: >-
+        Connects to GL-GHG-APP v1.0 for GHG inventory calculation
+        infrastructure. Reuses the full MRV agent pipeline with
+        zero-hallucination guarantees for emissions quantification.
+        Provides bidirectional data flow for inventory import, emission
+        factor access, and base year data retrieval.
+      module: "integrations.ghg_app_bridge"
+      required: true
+
+    - id: sbti_app_bridge
+      name: "GL-SBTi-APP Bridge"
+      description: >-
+        Connects to GL-SBTi-APP v1.0 Beta for science-based target
+        validation and alignment checking. Imports SBTi validated
+        targets, near-term/long-term/net-zero target status, SDA/ACA
+        pathway analysis results, and progress tracking data. Enables
+        cross-validation of Race to Zero interim targets against SBTi
+        criteria for enhanced credibility.
+      module: "integrations.sbti_app_bridge"
+      required: false
+
+    - id: decarb_bridge
+      name: "DECARB Agent Bridge"
+      description: >-
+        Connects to 21 DECARB-X agents for reduction planning and
+        action identification. Provides sector-specific decarbonization
+        levers, abatement potentials (tCO2e), MACC cost curves
+        (EUR/tCO2e), technology readiness assessments, and
+        implementation timelines for action plan generation.
+      module: "integrations.decarb_bridge"
+      required: false
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      description: >-
+        Connects to GL-Taxonomy-APP for EU Taxonomy alignment
+        validation. Checks climate CapEx alignment with Taxonomy
+        technical screening criteria, identifies Taxonomy-aligned
+        investment opportunities, and supports HLEG R6 financial
+        commitment assessment by mapping CapEx to green activities.
+      module: "integrations.taxonomy_bridge"
+      required: false
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Connects to all 20 AGENT-DATA agents for data intake, quality
+        management, and cross-source reconciliation. Provides energy
+        data extraction (PDF/Excel/ERP), supplier survey processing,
+        data quality profiling, duplicate detection, outlier flagging,
+        and time series gap filling for complete emissions data coverage
+        across all partner reporting channels.
+      module: "integrations.data_bridge"
+      required: true
+
+    - id: unfccc_bridge
+      name: "UNFCCC Campaign Bridge"
+      description: >-
+        Connects to UNFCCC Race to Zero campaign data feeds for partner
+        criteria updates, participant registry lookup, campaign
+        announcement monitoring, and Starting Line Criteria version
+        tracking. Provides real-time campaign intelligence for
+        compliance monitoring and deadline management.
+      module: "integrations.unfccc_bridge"
+      required: false
+
+    - id: cdp_bridge
+      name: "CDP Bridge"
+      description: >-
+        Connects to GL-CDP-APP for CDP Climate Change questionnaire
+        alignment. Maps Race to Zero annual progress data to CDP
+        disclosure format for corporate participants using CDP as
+        their primary reporting channel. Supports CDP scoring
+        optimization and response pre-population.
+      module: "integrations.cdp_bridge"
+      required: false
+
+    - id: gfanz_bridge
+      name: "GFANZ Bridge"
+      description: >-
+        Connects to GFANZ transition plan framework for financial
+        institution participants. Maps Race to Zero data to GFANZ
+        recommended disclosure format including PCAF financed
+        emissions, portfolio temperature scoring, and sector-level
+        transition targets for financial institution reporting.
+      module: "integrations.gfanz_bridge"
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided Race to Zero configuration wizard: ActorType
+        (select from 8 actor types) -> OrganizationProfile (name,
+        sector, size, geography) -> PartnerSelection (match partner
+        initiatives) -> ScopeConfiguration (Scope 1/2/3 boundaries)
+        -> TargetBaseline (base year, target year, pathway) ->
+        SectorPathway (select sector benchmark source) ->
+        ReportingChannels (configure partner reporting outputs) ->
+        ValidationPreview (run configuration validation and identify
+        quick wins).
+      module: "integrations.setup_wizard"
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        22-category system verification covering all 10 engines,
+        partner bridge connectivity (SBTi, CDP, C40, ICLEI, GFANZ),
+        MRV agent availability (30 agents), DATA agent availability
+        (20 agents), FOUND agent availability (10 agents), database
+        connectivity, migration status (V148-V157), preset
+        configuration validity, emission factor currency, pathway
+        benchmark data availability, and cross-framework template
+        integrity.
+      module: "integrations.health_check"
+      required: false
+
+  # ===========================================================================
+  # Presets - Actor-type and sector-specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: corporate_commitment
+      name: "Corporate Commitment Preset"
+      description: >-
+        Large Corporate (>1000 employees) Race to Zero configuration.
+        Full Scope 1+2+3 coverage, SBTi primary partner initiative,
+        CDP reporting channel, full HLEG 10-recommendation assessment,
+        25+ sector pathways available, all 10 engines enabled, SDA
+        or ACA pathway with 4.2%/yr minimum reduction rate, 1.5C
+        alignment validation, 10-year planning horizon, annual
+        reporting cycle.
+      actor_type: "CORPORATE"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - sector_pathway
+        - partnership_scoring
+        - campaign_reporting
+        - credibility_assessment
+        - race_readiness
+      file: "config/presets/corporate_commitment.yaml"
+
+    - id: financial_institution
+      name: "Financial Institution Preset"
+      description: >-
+        Bank/Insurance/Asset Manager Race to Zero configuration.
+        GFANZ primary partner pathway, PCAF financed emissions
+        methodology, portfolio temperature scoring, Scope 3 Category
+        15 (investments) focus, financed emissions pathway with
+        sector-level portfolio targets, GFANZ transition plan format,
+        all 10 engines enabled.
+      actor_type: "FINANCIAL_INSTITUTION"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - sector_pathway
+        - partnership_scoring
+        - campaign_reporting
+        - credibility_assessment
+        - race_readiness
+      file: "config/presets/financial_institution.yaml"
+
+    - id: city_municipality
+      name: "City/Municipality Preset"
+      description: >-
+        City/Municipality Race to Zero configuration. C40 and ICLEI
+        primary partner pathways, community-wide inventory using
+        GPC methodology, transport/buildings/waste sector focus,
+        city-scale pathway alignment with C40 Deadline 2020 benchmarks,
+        municipal governance integration, all 10 engines enabled.
+      actor_type: "CITY"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - sector_pathway
+        - partnership_scoring
+        - campaign_reporting
+        - credibility_assessment
+        - race_readiness
+      file: "config/presets/city_municipality.yaml"
+
+    - id: region_state
+      name: "Region/State Preset"
+      description: >-
+        Region/State/Province Race to Zero configuration. Under2
+        Coalition primary partner pathway, sub-national inventory
+        with LULUCF inclusion, energy/land use sector focus, policy
+        lever identification, 15-year planning horizon, regional
+        governance integration, all 10 engines enabled.
+      actor_type: "REGION"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - sector_pathway
+        - partnership_scoring
+        - campaign_reporting
+        - credibility_assessment
+        - race_readiness
+      file: "config/presets/region_state.yaml"
+
+    - id: sme_business
+      name: "SME Business Preset"
+      description: >-
+        SME (<250 employees) Race to Zero configuration. Simplified
+        6-engine flow (pledge, starting_line, interim_target,
+        action_plan, progress_tracking, race_readiness), SME Climate
+        Hub primary partner pathway, spend-based Scope 3 estimation,
+        streamlined reporting, abbreviated HLEG assessment, ACA
+        pathway with simplified methodology.
+      actor_type: "SME"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - race_readiness
+      file: "config/presets/sme_business.yaml"
+
+    - id: high_emitter
+      name: "High Emitter Preset"
+      description: >-
+        Heavy Industry/Energy/Mining Race to Zero configuration. SDA
+        mandatory pathway, process emissions focus with industrial
+        decarbonization levers, fossil fuel phase-out assessment
+        (HLEG R10 enhanced), CCS/CCUS pathway support, MPP sector
+        pathways (steel, cement, chemicals, aluminium), enhanced
+        HLEG credibility assessment, all 10 engines enabled with
+        sector-specific weighting.
+      actor_type: "HEAVY_INDUSTRY"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - sector_pathway
+        - partnership_scoring
+        - campaign_reporting
+        - credibility_assessment
+        - race_readiness
+      file: "config/presets/high_emitter.yaml"
+
+    - id: service_sector
+      name: "Service Sector Preset"
+      description: >-
+        Professional/Financial/Technology Services Race to Zero
+        configuration. Low Scope 1, high Scope 3 (Category 1, 6, 7)
+        profile, ACA pathway, RE100 renewable procurement focus,
+        supply chain engagement for purchased goods and services,
+        cloud computing emissions tracking, remote work accounting,
+        all 10 engines enabled.
+      actor_type: "SERVICES"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - sector_pathway
+        - partnership_scoring
+        - campaign_reporting
+        - credibility_assessment
+        - race_readiness
+      file: "config/presets/service_sector.yaml"
+
+    - id: manufacturing_sector
+      name: "Manufacturing Sector Preset"
+      description: >-
+        General Manufacturing Race to Zero configuration. Mixed
+        scopes with energy efficiency and process optimization focus,
+        SDA or ACA pathway selection based on sector availability,
+        product carbon footprint tracking, supplier engagement for
+        Scope 3 Categories 1 and 4, 15-year planning horizon, all
+        10 engines enabled.
+      actor_type: "MANUFACTURING"
+      enabled_engines:
+        - pledge_commitment
+        - starting_line
+        - interim_target
+        - action_plan
+        - progress_tracking
+        - sector_pathway
+        - partnership_scoring
+        - campaign_reporting
+        - credibility_assessment
+        - race_readiness
+      file: "config/presets/manufacturing_sector.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for operational emissions (Scope 1/2/3)
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from fuel combustion in stationary equipment"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Calculates emissions from refrigerant leakage and F-gas use"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates emissions from company-owned vehicles and fleet"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates emissions from industrial and chemical processes"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Calculates fugitive emissions from equipment and systems"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates emissions from land use and land use change"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates emissions from on-site waste treatment"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates emissions from agricultural operations"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based grid electricity emissions"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates emissions from purchased steam and heat"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates emissions from purchased cooling"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 reporting"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Scope 3 Category 1 emissions from purchased goods and services"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Scope 3 Category 2 emissions from capital goods"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Scope 3 Category 3 fuel- and energy-related activities"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Scope 3 Category 4 upstream transportation and distribution"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Scope 3 Category 5 waste generated in operations"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Scope 3 Category 6 business travel emissions"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Scope 3 Category 7 employee commuting emissions"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Scope 3 Category 8 upstream leased assets emissions"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Scope 3 Category 9 downstream transportation and distribution"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Scope 3 Category 10 processing of sold products"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Scope 3 Category 11 use of sold products"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Scope 3 Category 12 end-of-life treatment of sold products"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Scope 3 Category 13 downstream leased assets"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Scope 3 Category 14 franchises"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Scope 3 Category 15 investments (critical for financial institutions)"
+      path: "greenlang/agents/mrv/investments/"
+      required: true
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps and routes emissions across all 15 Scope 3 categories"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage and audit trails for all MRV calculations"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts emissions data from utility bills, fuel invoices, and receipts"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes energy consumption, fleet, and procurement data"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to SAP, Oracle, Workday, Dynamics for spend and activity data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for grid factors, campaign data, partner APIs"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability for land-use related Scope 3 emissions"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for facility locations and sector classification"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for land use emissions monitoring (regions/cities)"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier emissions surveys for Scope 3 data collection"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Climate hazard data for sector pathway risk assessment and physical risk"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes procurement spend for spend-based Scope 3 estimation"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across energy, fleet, supplier, and reporting data"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate invoices, meter readings, and reporting entries"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing energy data, supplier emissions, and entity-level gaps"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption, emission factors, and progress data"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in facility-level and entity-level emission time series"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles data across ERP, utility providers, meter readings, and partner reports"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of emission factors, pathway benchmarks, and campaign data"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for Race to Zero reporting formats"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage across Race to Zero pipeline for audit and provenance"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces GHG Protocol, Race to Zero criteria, and HLEG validation rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates Race to Zero data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes units (tCO2e, kWh, MJ, EUR, USD) and reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in target validation, pathway alignment, and scoring"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links data points to source evidence for Starting Line and HLEG assessments"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for pledge data, assessments, and reports"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for all Race to Zero pack outputs"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors agent performance and pipeline health"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Applications
+# ---------------------------------------------------------------------------
+agents_bridged_apps:
+  - id: GL-GHG-APP
+    name: "GL-GHG-APP v1.0"
+    description: "GHG inventory application for Scope 1/2/3 baseline and current year"
+    required: true
+  - id: GL-SBTi-APP
+    name: "GL-SBTi-APP v1.0 Beta"
+    description: "SBTi target validation for interim target cross-validation"
+    required: false
+  - id: GL-CDP-APP
+    name: "GL-CDP-APP v1.0 Beta"
+    description: "CDP Climate Change disclosure for corporate reporting channel"
+    required: false
+  - id: GL-ISO14064-APP
+    name: "GL-ISO14064-APP v1.0"
+    description: "ISO 14064 quantification and reporting application"
+    required: false
+
+# ---------------------------------------------------------------------------
+# Bridged Packs
+# ---------------------------------------------------------------------------
+agents_bridged_packs:
+  - id: PACK-021
+    name: "Net Zero Starter Pack"
+    description: "GHG baseline, targets, MACC, gap tracking (optional, enhances baseline)"
+    required: false
+    version: ">=1.0.0"
+  - id: PACK-022
+    name: "Net Zero Acceleration Pack"
+    description: "Scenarios, SDA, temperature scoring (optional, enhances pathways)"
+    required: false
+    version: ">=1.0.0"
+  - id: PACK-023
+    name: "SBTi Alignment Pack"
+    description: "SBTi target validation, criteria, progress (optional, enhances target alignment)"
+    required: false
+    version: ">=1.0.0"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 63
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    race_to_zero_engines: 10
+  bridged_apps: 4
+  bridged_packs: 3
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  pledge_commitment:
+    target_duration_minutes: 3
+    eligibility_criteria: 8
+    quality_levels: 4
+    max_partner_initiatives_assessed: 40
+  starting_line:
+    target_duration_minutes: 10
+    pillars: 4
+    sub_criteria: 20
+    evidence_mapping_per_criterion: true
+  interim_target:
+    target_duration_minutes: 5
+    pathway_sources: 6
+    scope_coverage_validation: true
+    fair_share_assessment: true
+  action_plan:
+    target_duration_minutes: 10
+    max_decarbonization_actions: 100
+    macc_curve_resolution: 50
+    milestone_tracking: true
+  progress_tracking:
+    target_duration_minutes: 5
+    max_historical_years: 10
+    trajectory_statuses: 4
+    multi_scope_variance: true
+  sector_pathway:
+    target_duration_minutes: 5
+    pathway_sources: 7
+    sectors_covered: 25
+    intensity_and_absolute_benchmarks: true
+  partnership_scoring:
+    target_duration_minutes: 3
+    max_partner_initiatives: 40
+    engagement_quality_dimensions: 5
+  campaign_reporting:
+    target_duration_minutes: 10
+    partner_format_outputs: 5
+    multi_channel_submission: true
+  credibility_assessment:
+    hleg_recommendations: 10
+    sub_criteria: 45
+    target_duration_minutes: 10
+    rating_levels: 6
+  race_readiness:
+    target_duration_minutes: 3
+    readiness_dimensions: 8
+    score_range: "0-100"
+    rag_levels: 3
+    readiness_levels: 4
+  full_race_to_zero_workflow:
+    target_duration_minutes: 180
+  cache_hit_ratio_target: 0.75
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with organization-level and pledge-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - race_to_zero_admin
+    - sustainability_manager
+    - climate_analyst
+    - pledge_coordinator
+    - partnership_manager
+    - external_auditor
+    - viewer
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 60
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_ipcc_ar6_gwp_values
+    - verify_pathway_benchmark_data
+    - verify_hleg_criteria_definitions
+    - verify_starting_line_criteria_data
+    - verify_partner_initiative_registry
+    - verify_sector_pathway_sources
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+      - "V082-V088"
+    new:
+      - "V148__pack025_race_to_zero_001"  # Schema + organization profiles + pledge commitments + partner memberships
+      - "V149__pack025_race_to_zero_002"  # Starting line assessments + starting line gaps
+      - "V150__pack025_race_to_zero_003"  # Interim targets + action plans + abatement actions
+      - "V151__pack025_race_to_zero_004"  # Annual reports (trajectory, verification, multi-channel)
+      - "V152__pack025_race_to_zero_005"  # Sector pathways (IEA, IPCC, TPI, MPP, ACT, CRREM)
+      - "V153__pack025_race_to_zero_006"  # Partnership collaborations (7 types, 5 engagement levels)
+      - "V154__pack025_race_to_zero_007"  # Credibility assessments (HLEG 10 recommendations)
+      - "V155__pack025_race_to_zero_008"  # Campaign submissions + readiness scores
+      - "V156__pack025_race_to_zero_009"  # Audit trail + workflow executions
+      - "V157__pack025_race_to_zero_010"  # Views (pledge summary, progress timeline, partner overview) + RLS
+
+  post_install:
+    - seed_race_to_zero_campaign_criteria
+    - seed_starting_line_sub_criteria
+    - seed_hleg_recommendations_and_sub_criteria
+    - seed_partner_initiative_registry
+    - seed_sector_pathway_benchmarks
+    - seed_emission_factor_databases
+    - seed_ipcc_ar6_pathway_data
+    - seed_iea_nze_milestones
+    - seed_actor_type_configurations
+    - seed_default_presets
+    - run_health_checks

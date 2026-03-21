@@ -1,0 +1,100 @@
+# =============================================================================
+# PACK-033 Quick Wins Identifier - Office Building Preset
+# =============================================================================
+# Typical office environment with focus on lighting, HVAC scheduling,
+# plug load management, and IT power management. EUI benchmark:
+# 150-300 kWh/m2/yr. Key opportunities: LED retrofit, occupancy sensors,
+# HVAC setpoint optimization, plug load timer strips, IT power management.
+#
+# Typical use cases:
+#   - Corporate headquarters and regional offices
+#   - Multi-tenant commercial office buildings
+#   - Government and public administration buildings
+#   - Co-working and flexible workspace facilities
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "OFFICE"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 2500
+
+# --- Scan ---
+scan:
+  depth: "STANDARD"
+  categories:
+    - "LIGHTING"
+    - "HVAC"
+    - "PLUG_LOADS"
+    - "CONTROLS_SCHEDULING"
+    - "BEHAVIORAL"
+    - "IT_EQUIPMENT"
+    - "WATER_HEATING"
+  max_measures_per_category: 10
+  include_no_cost_measures: true
+  include_low_cost_measures: true
+  include_medium_cost_measures: true
+  max_payback_years: 3.0
+  minimum_annual_savings_eur: 200.0
+  utility_bill_months: 12
+  walkthrough_checklist: true
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.28
+  gas_rate_eur_per_kwh: 0.09
+  discount_rate: 0.08
+  analysis_period_years: 10
+  energy_price_escalation_pct: 3.0
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Prioritization ---
+prioritization:
+  profile: "BALANCED"
+  weight_financial_savings: 0.30
+  weight_payback_period: 0.25
+  weight_carbon_reduction: 0.20
+  weight_implementation_ease: 0.15
+  weight_co_benefits: 0.10
+  top_n_recommendations: 10
+
+# --- Behavioural ---
+behavioral:
+  enabled: true
+  awareness_campaign: true
+  switch_off_programme: true
+  thermostat_discipline: true
+  energy_champion_network: true
+  estimated_savings_pct: 5.0
+
+# --- Rebate ---
+rebate:
+  enabled: true
+  country: "DE"
+  include_federal_programmes: true
+  include_utility_rebates: true
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  detailed_measure_cards: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

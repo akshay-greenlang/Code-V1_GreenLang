@@ -1,0 +1,1977 @@
+# =============================================================================
+# PACK-031: Industrial Energy Audit Pack
+# GreenLang Energy Efficiency Pack for Industrial Facility Energy Audits
+# =============================================================================
+# This pack provides a comprehensive, pre-configured deployment of GreenLang
+# agents and workflows for industrial energy auditing and optimization. It
+# covers the full energy audit lifecycle from baseline establishment through
+# savings verification, tailored for manufacturing plants, process industries,
+# food and beverage facilities, data centers, warehouses, automotive plants,
+# steel and metals processing, and SME industrial operations.
+#
+# Industrial energy consumption accounts for approximately 26% of global final
+# energy use. This pack enables systematic identification of energy savings
+# opportunities through rigorous engineering analysis, measurement and
+# verification (M&V), and continuous monitoring. It follows a zero-hallucination
+# approach: all energy calculations use deterministic formulas from ISO 50006,
+# EN 16247, and IPMVP protocols -- no LLM is used in any calculation path.
+#
+# Key Capabilities:
+#   - Energy baseline establishment (ISO 50006 EnPI, regression analysis,
+#     degree-day normalization, weather-adjusted baselines)
+#   - Full EN 16247 energy audits (Type 1 walk-through, Type 2 standard,
+#     Type 3 investment-grade per EN 16247-1 through EN 16247-5)
+#   - Process energy mapping (Sankey diagrams, energy balance, process-level
+#     efficiency analysis, utility flow diagrams)
+#   - Equipment efficiency assessment (motors IE1-IE5, pumps, compressors,
+#     fans, HVAC, boilers, heat exchangers, transformers)
+#   - Energy savings opportunity identification (ECM/ECO ranking, IPMVP
+#     measurement and verification, NPV/IRR/payback analysis)
+#   - Waste heat recovery analysis (pinch analysis, heat exchanger network
+#     synthesis, ORC and heat pump feasibility)
+#   - Compressed air system optimization (leak detection, specific power,
+#     VSD compressors, pressure profiling, air treatment)
+#   - Steam system optimization (boiler efficiency, steam trap surveys,
+#     insulation assessment, condensate recovery, blowdown heat recovery)
+#   - Lighting and HVAC optimization (LED retrofit, daylight harvesting,
+#     VSD fans/pumps, economizer cycles, heat recovery ventilation)
+#   - Energy benchmarking (SEC, EnPI, BAT-AEL from BREF documents, peer
+#     comparison, best practice targets)
+#
+# Regulatory References:
+#   - EED: Directive (EU) 2023/1791 (Energy Efficiency Directive - recast)
+#   - ISO 50001:2018 (Energy Management Systems)
+#   - ISO 50006:2014 (Energy Performance Indicators and Energy Baselines)
+#   - ISO 50015:2014 (Measurement and Verification of Energy Performance)
+#   - EN 16247-1:2022 (Energy Audits - General Requirements)
+#   - EN 16247-2:2022 (Energy Audits - Buildings)
+#   - EN 16247-3:2022 (Energy Audits - Processes)
+#   - EN 16247-4:2022 (Energy Audits - Transport)
+#   - EN 16247-5:2022 (Energy Audits - Competence of Energy Auditors)
+#   - EU ETS: Directive 2003/87/EC (Emissions Trading System)
+#   - IED: Directive 2010/75/EU (Industrial Emissions Directive)
+#   - Ecodesign Regulation (EU) 2019/1781 (Motors and Variable Speed Drives)
+#   - Ecodesign Regulation (EU) 2012/547 (Water Pumps)
+#   - IPMVP: International Performance Measurement and Verification Protocol
+#   - EU BAT/BREF Reference Documents (Best Available Techniques)
+#   - GHG Protocol: Corporate Standard (Scope 1+2 energy-related emissions)
+#
+# Industrial Sub-Sectors Supported:
+#   - Manufacturing: Discrete and batch manufacturing plants
+#   - Process Industry: Chemicals, petrochemicals, refineries, cement
+#   - Food & Beverage: Food processing, dairy, brewing, distilling
+#   - Data Centers: Server halls, cooling, UPS, power distribution
+#   - Warehouse & Logistics: Cold storage, distribution, material handling
+#   - Automotive: Assembly, paint shops, stamping, powertrain
+#   - Steel & Metals: Electric arc furnaces, rolling mills, foundries
+#   - SME Industrial: Small-medium workshops, light manufacturing
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-20)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-031-industrial-energy-audit
+  version: "1.0.0"
+  display_name: "Industrial Energy Audit Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for industrial energy auditing and
+    optimization per EU Energy Efficiency Directive (EED), ISO 50001:2018, and
+    EN 16247. Includes 10 engines for energy baseline establishment, EN 16247
+    audit execution, process energy mapping, equipment efficiency assessment,
+    energy savings opportunity identification with IPMVP M&V, waste heat
+    recovery with pinch analysis, compressed air system optimization, steam
+    system optimization, lighting and HVAC optimization, and energy benchmarking
+    against BAT-AEL from BREF documents. Bundles all 30 MRV agents for
+    energy-related emissions, 20 data intake/quality agents, 10 foundation
+    agents, and 10 bridged agents for ETS compliance, ISO 50001 certification,
+    smart metering, SCADA/BMS integration, and regulatory reporting. Supports
+    manufacturing, process industry, food and beverage, data center, warehouse,
+    automotive, steel/metals, and SME industrial sub-sectors with tailored
+    presets and regulatory template packages.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-20"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/industrial-energy-audit"
+  changelog_url: "https://docs.greenlang.io/packs/industrial-energy-audit/changelog"
+
+  tags:
+    - energy-audit
+    - energy-efficiency
+    - iso-50001
+    - en-16247
+    - eed
+    - eu-ets
+    - industrial
+    - manufacturing
+    - process-industry
+    - compressed-air
+    - steam-system
+    - waste-heat
+    - hvac
+    - lighting
+    - energy-baseline
+    - enpi
+    - ipmvp
+    - bref
+    - bat-ael
+    - pinch-analysis
+    - degree-day
+    - smart-meter
+    - scada
+    - bms
+    - motor-efficiency
+    - pump-optimization
+    - boiler-efficiency
+
+  regulation:
+    primary:
+      name: "EU Energy Efficiency Directive (EED)"
+      reference: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        The recast EED sets binding EU energy efficiency targets and requires
+        Member States to ensure that large enterprises (non-SMEs) carry out
+        energy audits at least every four years (Article 8). Enterprises with
+        average annual energy consumption above 10 TJ must implement an energy
+        management system certified to ISO 50001 or equivalent. The directive
+        mandates energy performance indicators (EnPIs), energy baselines,
+        and continuous improvement. It also requires waste heat mapping for
+        facilities above 1 MW thermal input and promotes energy efficiency
+        first principle across industrial policy and planning.
+    secondary:
+      - name: "ISO 50001:2018 Energy Management Systems"
+        reference: "ISO 50001:2018"
+        effective_date: "2018-08-21"
+      - name: "EN 16247-1:2022 Energy Audits - General Requirements"
+        reference: "EN 16247-1:2022"
+        effective_date: "2022-07-01"
+      - name: "EN 16247-2:2022 Energy Audits - Buildings"
+        reference: "EN 16247-2:2022"
+        effective_date: "2022-07-01"
+      - name: "EN 16247-3:2022 Energy Audits - Processes"
+        reference: "EN 16247-3:2022"
+        effective_date: "2022-07-01"
+      - name: "EN 16247-4:2022 Energy Audits - Transport"
+        reference: "EN 16247-4:2022"
+        effective_date: "2022-07-01"
+      - name: "EN 16247-5:2022 Energy Audits - Competence of Energy Auditors"
+        reference: "EN 16247-5:2022"
+        effective_date: "2022-07-01"
+      - name: "EU Emissions Trading System"
+        reference: "Directive 2003/87/EC (amended)"
+        effective_date: "2005-01-01"
+      - name: "Industrial Emissions Directive"
+        reference: "Directive 2010/75/EU"
+        effective_date: "2011-01-06"
+      - name: "Ecodesign Regulation - Motors and Variable Speed Drives"
+        reference: "Regulation (EU) 2019/1781"
+        effective_date: "2021-07-01"
+      - name: "Ecodesign Regulation - Water Pumps"
+        reference: "Regulation (EU) 2012/547"
+        effective_date: "2013-01-01"
+      - name: "EU BAT/BREF Reference Documents"
+        reference: "IED Article 13 / BAT Conclusions"
+        effective_date: "2010-11-24"
+
+  compliance_references:
+    - id: "EED"
+      name: "EU Energy Efficiency Directive (recast)"
+      regulation: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        The EED requires mandatory energy audits every four years for non-SME
+        enterprises (Article 8) and mandates ISO 50001 or equivalent energy
+        management systems for enterprises consuming above 10 TJ average annual
+        energy. It sets requirements for energy performance indicators, energy
+        baselines, waste heat mapping for installations above 1 MW thermal
+        input, and energy efficiency first principle. Member States must
+        maintain national energy audit registries and enforce minimum audit
+        quality standards per EN 16247.
+
+    - id: "ISO_50001"
+      name: "ISO 50001:2018 Energy Management Systems"
+      regulation: "ISO 50001:2018"
+      effective_date: "2018-08-21"
+      description: >-
+        ISO 50001 provides a systematic framework for energy management systems
+        (EnMS). It requires organizations to establish an energy policy, set
+        energy objectives and targets, use data to understand and make decisions
+        concerning energy use, measure results, review effectiveness, and
+        continually improve energy management. The standard follows Plan-Do-
+        Check-Act and requires energy planning, energy baselines, energy
+        performance indicators (EnPIs), and operational control of significant
+        energy uses (SEUs).
+
+    - id: "EN_16247"
+      name: "EN 16247 Energy Audits Series"
+      regulation: "EN 16247-1:2022 through EN 16247-5:2022"
+      effective_date: "2022-07-01"
+      description: >-
+        The EN 16247 series defines requirements and methodology for energy
+        audits. EN 16247-1 covers general requirements for all sectors.
+        EN 16247-2 covers buildings (envelope, HVAC, lighting, DHW).
+        EN 16247-3 covers processes (industrial processes, compressed air,
+        steam, motors, pumps). EN 16247-4 covers transport (fleets,
+        logistics). EN 16247-5 covers auditor competence requirements. Audits
+        are classified as Type 1 (walk-through), Type 2 (standard/diagnostic),
+        and Type 3 (investment-grade with detailed measurement).
+
+    - id: "ISO_50006"
+      name: "ISO 50006:2014 Energy Performance Indicators"
+      regulation: "ISO 50006:2014"
+      effective_date: "2014-12-01"
+      description: >-
+        ISO 50006 provides guidance on establishing energy baselines and energy
+        performance indicators (EnPIs). It covers relevant variable
+        identification, baseline period selection, regression-based
+        normalization, static factors, routine and non-routine adjustments,
+        and EnPI trending methodology. Key concepts include specific energy
+        consumption (SEC), energy intensity, cumulative sum (CUSUM) analysis,
+        and baseline adjustment triggers.
+
+    - id: "IPMVP"
+      name: "International Performance Measurement and Verification Protocol"
+      regulation: "IPMVP Core Concepts 2022"
+      effective_date: "2022-01-01"
+      description: >-
+        IPMVP provides a framework for measuring and verifying energy savings
+        from energy conservation measures (ECMs). Four M&V options are defined:
+        Option A (retrofit isolation with key parameter measurement), Option B
+        (retrofit isolation with all parameter measurement), Option C (whole
+        facility measurement), and Option D (calibrated simulation). The
+        protocol establishes baseline models, adjustment procedures, savings
+        uncertainty quantification, and reporting requirements.
+
+    - id: "EU_ETS"
+      name: "EU Emissions Trading System"
+      regulation: "Directive 2003/87/EC (as amended)"
+      effective_date: "2005-01-01"
+      description: >-
+        The EU ETS is a cap-and-trade system covering industrial installations
+        and power plants. Energy audits support ETS compliance by identifying
+        emissions reduction opportunities. Phase 4 (2021-2030) introduces
+        free allocation benchmarks for industrial sectors based on product
+        benchmarks. Energy efficiency improvements directly reduce ETS
+        compliance costs through lower allowance requirements.
+
+    - id: "IED"
+      name: "Industrial Emissions Directive"
+      regulation: "Directive 2010/75/EU"
+      effective_date: "2011-01-06"
+      description: >-
+        The IED requires industrial installations to operate in accordance with
+        Best Available Techniques (BAT) as defined in BAT Reference Documents
+        (BREFs). BAT-Associated Energy Levels (BAT-AELs) define benchmark
+        energy consumption per unit of production for major industrial
+        activities. Energy audits assess current performance against BAT-AELs
+        and identify measures to achieve BAT compliance.
+
+    - id: "BREF"
+      name: "BAT Reference Documents"
+      regulation: "IED Article 13 BAT Conclusions"
+      effective_date: "2010-11-24"
+      description: >-
+        BREFs are technical reference documents covering best available
+        techniques for industrial sectors. Key BREFs for energy audits include
+        the Energy Efficiency BREF (ENE BREF), sector-specific BREFs for
+        iron and steel, chemicals, food/drink/milk, cement/lime, glass,
+        non-ferrous metals, pulp and paper, ceramics, and refining. Each
+        BREF defines BAT-Associated Emission Levels (BAT-AELs) and BAT-
+        Associated Energy Performance Levels (BAT-AEPLs) that serve as
+        benchmarks for energy audit assessments.
+
+    - id: "ECODESIGN_MOTORS"
+      name: "Ecodesign Regulation for Motors and VSDs"
+      regulation: "Regulation (EU) 2019/1781"
+      effective_date: "2021-07-01"
+      description: >-
+        Sets minimum energy efficiency requirements for electric motors
+        (0.12 kW to 1000 kW) and variable speed drives. Motors must meet
+        IE3 minimum (July 2021) with IE4 required for 75-200 kW motors
+        (July 2023). This regulation directly impacts motor replacement
+        decisions in industrial energy audits. Motor systems typically
+        account for 65-70% of industrial electricity consumption.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 energy audit engines)
+  # ===========================================================================
+  engines:
+    - id: energy_baseline
+      name: "Energy Baseline Engine"
+      description: >-
+        Establishes energy baselines and energy performance indicators (EnPIs)
+        per ISO 50006:2014. Supports multiple baseline methodologies including
+        single-variable linear regression (energy vs. production output),
+        multi-variable regression (energy vs. production, degree-days, shift
+        pattern, product mix), degree-day normalization (heating degree-days
+        HDD and cooling degree-days CDD with configurable base temperature),
+        and CUSUM (cumulative sum of differences) analysis for change
+        detection. Calculates specific energy consumption (SEC) in kWh/unit,
+        kWh/tonne, kWh/sqm, and custom intensity metrics. Implements baseline
+        adjustment triggers per ISO 50006 including process changes, equipment
+        modifications, and static factor changes. Supports rolling baselines,
+        fixed baselines, and target baselines. Generates R-squared goodness
+        of fit, CVRMSE validation (must be below 25% for monthly data, 30%
+        for weekly data per ASHRAE Guideline 14), and F-test significance for
+        model validity. Handles weather data integration from nearby weather
+        stations or on-site sensors.
+        Zero-hallucination: all regression calculations use scipy.stats and
+        numpy, degree-day calculations from verified weather data, no LLM
+        in any calculation path.
+      required: true
+
+    - id: energy_audit
+      name: "Energy Audit Engine"
+      description: >-
+        Executes industrial energy audits per EN 16247-1:2022 through EN
+        16247-5:2022 and EED Article 8 requirements. Supports three audit
+        types: Type 1 walk-through audit (preliminary energy review, utility
+        bill analysis, high-level opportunity identification), Type 2 standard
+        audit (sub-metered data analysis, major equipment assessment, detailed
+        energy balance, quantified savings opportunities), and Type 3
+        investment-grade audit (comprehensive measurement campaign, spot
+        measurements and short-term monitoring, detailed engineering analysis,
+        bankable savings estimates with uncertainty bounds). Manages the full
+        audit lifecycle: preliminary contact and scope definition, kick-off
+        meeting and data request, on-site data collection, analysis and
+        modelling, savings opportunity ranking, draft report review, final
+        audit report delivery. Tracks audit quality requirements per EN
+        16247-5 auditor competence standards. Generates EED-compliant audit
+        reports with mandatory content per Annex VI. Maintains audit history
+        and tracks implementation of previous audit recommendations.
+        Zero-hallucination: energy balance calculations deterministic, savings
+        estimates from engineering formulas, no LLM in quantification.
+      required: true
+
+    - id: process_energy_mapping
+      name: "Process Energy Mapping Engine"
+      description: >-
+        Creates detailed process energy maps and Sankey diagrams for industrial
+        facilities. Performs energy balance analysis at facility, process-line,
+        and equipment levels. Maps all energy flows: electricity, natural gas,
+        LPG, fuel oil, steam (multiple pressure levels), compressed air, hot
+        water, chilled water, cooling water, and waste heat streams. Calculates
+        process-level efficiency (energy input vs. useful output) and
+        identifies major loss streams (convection, radiation, exhaust,
+        condensate, leaks, friction). Generates utility flow diagrams showing
+        primary energy conversion through secondary utilities to end-use
+        processes. Supports sub-metering gap analysis to identify where
+        additional measurement is needed. Calculates energy cost allocation
+        by process, product, and cost center for management accounting.
+        Tracks energy flows across time periods (shift, day, week, month) to
+        identify load profiles and demand patterns. Supports mass and energy
+        balance reconciliation with tolerance checks.
+        Zero-hallucination: all energy balance calculations from first
+        principles (thermodynamics), Sankey values from measured/metered data,
+        no LLM in any quantitative path.
+      required: true
+
+    - id: equipment_efficiency
+      name: "Equipment Efficiency Engine"
+      description: >-
+        Assesses energy efficiency of industrial equipment against nameplate
+        ratings, design specifications, and regulatory minimum standards.
+        Motor systems: classifies motors IE1 through IE5 per IEC 60034-30-1,
+        calculates actual vs. rated efficiency, identifies oversized motors
+        (load factor below 40%), assesses VSD retrofit potential for variable
+        load applications, and evaluates compliance with Ecodesign Regulation
+        (EU) 2019/1781 (IE3 minimum, IE4 for 75-200 kW). Pumps: calculates
+        specific energy (kWh/m3), identifies throttling waste, evaluates
+        impeller trimming and VSD options, and checks Ecodesign MEI compliance.
+        Compressors: calculates specific power (kW/m3/min), isentropic
+        efficiency, and part-load efficiency. Fans: assesses fan efficiency
+        grade (FEG) and system effect losses. HVAC: evaluates chiller COP/EER,
+        boiler combustion efficiency (direct and indirect methods), cooling
+        tower approach and range, and AHU specific fan power. Transformers:
+        assesses load loss and no-load loss vs. Ecodesign Tier 2 requirements.
+        Heat exchangers: calculates fouling factor and effectiveness
+        degradation. All efficiency assessments generate improvement
+        recommendations with estimated savings, cost, and payback period.
+        Zero-hallucination: efficiency calculations from equipment curves
+        and engineering formulas, motor data from IEC standards, no LLM.
+      required: true
+
+    - id: energy_savings
+      name: "Energy Savings Opportunity Engine"
+      description: >-
+        Identifies, quantifies, and ranks energy conservation measures (ECMs)
+        and energy conservation opportunities (ECOs). Builds a comprehensive
+        ECM register with savings estimate, implementation cost, simple
+        payback, net present value (NPV), internal rate of return (IRR),
+        and lifecycle cost analysis. Supports IPMVP measurement and
+        verification across all four options: Option A (retrofit isolation
+        with key parameter measurement - for equipment-level measures),
+        Option B (retrofit isolation with all parameter measurement - for
+        complex equipment interactions), Option C (whole facility measurement
+        - for multiple interactive measures), and Option D (calibrated
+        simulation - for new construction or major renovation). Calculates
+        savings uncertainty using ASHRAE Guideline 14 methods including
+        fractional savings uncertainty (FSU) and t-statistic confidence
+        intervals. Manages M&V period planning, baseline adjustment
+        procedures, and non-routine adjustment protocols. Generates savings
+        persistence reports for ongoing M&V periods. Supports interactive
+        effects analysis when multiple ECMs are implemented simultaneously
+        (e.g., lighting reduction reduces cooling load but increases heating).
+        Ranks ECMs by marginal abatement cost curve (MACC) methodology.
+        Zero-hallucination: all savings calculated from engineering formulas
+        and metered data, financial calculations from standard DCF methods,
+        no LLM in quantification path.
+      required: true
+
+    - id: waste_heat_recovery
+      name: "Waste Heat Recovery Engine"
+      description: >-
+        Analyzes waste heat recovery opportunities using thermodynamic analysis
+        and process integration techniques. Performs pinch analysis per
+        Linnhoff methodology: constructs composite curves (hot and cold),
+        calculates minimum energy requirement (MER), determines pinch point
+        temperature, generates grand composite curve, and designs heat
+        exchanger network (HEN) above and below pinch. Evaluates waste heat
+        recovery technologies by temperature grade: high-grade (above 400C)
+        for steam generation, power generation (ORC, Kalina cycle), and
+        process-to-process heat exchange; medium-grade (100-400C) for
+        absorption cooling, preheating, and space heating; low-grade (below
+        100C) for heat pumps, economizers, and domestic hot water. Sizes
+        heat exchangers using LMTD and NTU-effectiveness methods with
+        fouling factor allowances. Calculates thermal energy storage (TES)
+        potential for batch processes with mismatched heat supply and demand
+        profiles. Evaluates district heating export potential per EED
+        waste heat mapping requirements (mandatory above 1 MW). Generates
+        techno-economic assessments with capital cost estimation (factored
+        estimates using Guthrie method) and operating cost analysis.
+        Zero-hallucination: all thermodynamic calculations from first
+        principles, pinch analysis using verified algorithms, heat exchanger
+        sizing from TEMA standards, no LLM in any calculation.
+      required: true
+
+    - id: compressed_air
+      name: "Compressed Air System Engine"
+      description: >-
+        Performs comprehensive compressed air system analysis per EN 16247-3
+        and Compressed Air & Gas Institute (CAGI) guidelines. Calculates
+        system-level specific power (kW per m3/min at reference conditions)
+        and compares against best practice benchmarks (typically 5-7
+        kW/m3/min for 7 bar systems). Performs air leak detection and
+        quantification using ultrasonic survey results, pressure decay
+        testing, and bag-over-leak measurement. Estimates leak rates as
+        percentage of total capacity (typical industrial facilities: 20-30%
+        leakage rate, best practice below 10%). Evaluates compressor
+        part-load efficiency for fixed-speed (load/unload, modulation,
+        VSD) and assesses VSD retrofit potential for trim compressors.
+        Analyzes pressure profile across the distribution system to identify
+        artificial demand from excessive pressure, pressure drops across
+        filters/dryers/headers, and opportunities for pressure reduction
+        (every 1 bar reduction saves approximately 7% energy). Evaluates
+        air treatment optimization: dryer type selection (refrigerant vs.
+        desiccant vs. membrane), filter pressure drop monitoring, and
+        condensate management. Assesses heat recovery potential from
+        compressor intercoolers and aftercoolers (up to 94% of input
+        energy recoverable as hot water at 70-80C). Evaluates demand-side
+        measures: air blow optimization, nozzle replacement, pressure
+        regulation at point-of-use, and alternative technologies (blowers,
+        vacuum pumps, mechanical agitation).
+        Zero-hallucination: specific power from measured kW and flow data,
+        leak quantification from engineering methods, no LLM.
+      required: true
+
+    - id: steam_optimization
+      name: "Steam System Optimization Engine"
+      description: >-
+        Performs comprehensive steam system analysis covering generation,
+        distribution, and end-use. Boiler assessment: calculates combustion
+        efficiency using both direct method (output/input) and indirect
+        method (100% minus losses: flue gas, unburnt fuel, radiation,
+        convection, blowdown, auxiliary power), evaluates excess air ratio
+        from O2/CO2 flue gas analysis, assesses economizer and air preheater
+        performance, and monitors scale/soot fouling indicators. Steam trap
+        survey management: tracks trap population by type (thermodynamic,
+        thermostatic, mechanical), records condition assessment (working,
+        failed open, failed closed, leaking), calculates steam loss from
+        failed traps (kg/hr based on orifice size and pressure differential),
+        and prioritizes replacement by annual energy cost. Insulation
+        assessment: calculates heat loss from uninsulated or damaged surfaces
+        using surface temperature measurements, ambient conditions, and
+        pipe/vessel geometry (per ASTM C680 standard), and evaluates
+        insulation ROI with typical payback under 12 months. Condensate
+        recovery: calculates flash steam from condensate return, evaluates
+        condensate contamination risks, and assesses pumped vs. gravity
+        return systems. Blowdown heat recovery: calculates recoverable heat
+        from continuous blowdown using flash vessel and heat exchanger.
+        Steam distribution: evaluates pressure drop, pipe sizing adequacy,
+        and steam quality at end-use. Generates steam cost allocation by
+        pressure level and end-use process.
+        Zero-hallucination: combustion calculations from stoichiometric
+        analysis, heat loss from thermodynamic formulas, trap loss from
+        orifice flow equations, no LLM.
+      required: true
+
+    - id: lighting_hvac
+      name: "Lighting & HVAC Optimization Engine"
+      description: >-
+        Analyzes lighting and HVAC systems in industrial buildings per
+        EN 16247-2:2022 and EN 12464-1 (lighting of work places). Lighting
+        assessment: inventories existing luminaires by type (fluorescent T8,
+        T5, HID, LED), wattage, and control method; calculates installed
+        lighting power density (W/sqm) vs. EN 12464 lux requirements for
+        industrial task areas; evaluates LED retrofit opportunities with
+        lumen-for-lumen replacement analysis; assesses daylight harvesting
+        potential using daylight factor calculations and window/rooflight
+        geometry; evaluates occupancy-based and time-scheduled dimming for
+        warehouses, corridors, and intermittently occupied areas; generates
+        lighting retrofit packages with payback analysis. HVAC assessment:
+        evaluates heating system efficiency (boilers, unit heaters, radiant
+        panels, heat pumps); analyzes ventilation rates against industrial
+        hygiene requirements and identifies over-ventilation; calculates
+        specific fan power (SFP) in W/(l/s) and compares against SFP
+        category limits; evaluates VSD retrofit for AHU supply/return fans
+        and circulation pumps; assesses economizer and free cooling potential
+        using bin-hour weather analysis; evaluates heat recovery from exhaust
+        air (run-around coils, plate exchangers, thermal wheels, heat pipes);
+        calculates HVAC energy breakdown by heating, cooling, fans, and pumps;
+        assesses destratification fan potential for high-bay spaces.
+        Zero-hallucination: lighting calculations from lumen method, HVAC
+        from psychrometric and heat balance calculations, no LLM.
+      required: true
+
+    - id: energy_benchmark
+      name: "Energy Benchmark Engine"
+      description: >-
+        Benchmarks industrial energy performance against sector peers, BAT-
+        AEL levels from BREF documents, and best practice targets. Calculates
+        specific energy consumption (SEC) in kWh per unit of production for
+        sector-appropriate metrics: kWh/tonne (process industry), kWh/unit
+        (discrete manufacturing), kWh/sqm (warehouses), PUE (data centers),
+        kWh/m3 (compressed air), kg-steam/tonne (process heating), and
+        custom EnPIs. Compares SEC against BAT-AEL ranges from relevant
+        BREF documents: Energy Efficiency BREF (ENE), Iron and Steel BREF,
+        Large Combustion Plants BREF, Food/Drink/Milk BREF, Chemicals BREF,
+        Cement/Lime BREF, Glass BREF, Non-Ferrous Metals BREF, Pulp and
+        Paper BREF, Ceramics BREF, and Refining BREF. Generates quartile
+        ranking (Q1-Q4) within sector peer groups and tracks decile movement
+        over time. Supports benchmarking against SBTi sector pathways for
+        1.5C and well-below 2C alignment. Calculates energy performance gap
+        to BAT-AEL (kWh and EUR) and estimated investment to close the gap.
+        Monitors EU ETS benchmark values for free allocation and calculates
+        exposure to carbon cost for below-benchmark operations. Integrates
+        with national energy audit registries for anonymized peer comparison
+        where data is available.
+        Zero-hallucination: SEC calculations from metered data and production
+        records, BAT-AEL values from published BREF documents, no LLM.
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 energy audit workflows)
+  # ===========================================================================
+  workflows:
+    - id: initial_energy_audit
+      name: "Initial Energy Audit Workflow"
+      description: >-
+        5-phase workflow for executing a complete initial energy audit per
+        EN 16247: Phase 1 - Preliminary Data Collection (utility bills for
+        12-36 months, production data, equipment lists, building plans,
+        existing sub-metering data, maintenance records) -> Phase 2 - Energy
+        Baseline Establishment (regression analysis, degree-day normalization,
+        EnPI calculation, baseline model validation with CVRMSE check) ->
+        Phase 3 - On-Site Assessment (equipment efficiency measurements,
+        process energy mapping, compressed air audit, steam system survey,
+        lighting and HVAC walkthrough, thermal imaging, power logging) ->
+        Phase 4 - Savings Analysis (ECM identification, engineering
+        calculations, financial analysis with NPV/IRR/payback, interactive
+        effects assessment, marginal abatement cost curve ranking) ->
+        Phase 5 - Audit Report Generation (EN 16247 compliant report with
+        executive summary, energy balance, savings register, implementation
+        roadmap, M&V plan recommendations).
+      schedule: "every_4_years"
+      estimated_duration_minutes: 480
+      phases: 5
+
+    - id: continuous_monitoring
+      name: "Continuous Monitoring Workflow"
+      description: >-
+        4-phase workflow for ongoing energy performance monitoring per
+        ISO 50001: Phase 1 - Data Acquisition (automatic retrieval from
+        smart meters, SCADA, BMS, and manual data entry validation) ->
+        Phase 2 - Performance Tracking (EnPI calculation vs. baseline,
+        CUSUM analysis for change detection, control chart monitoring for
+        significant deviations, weather normalization of ongoing data) ->
+        Phase 3 - Alert and Anomaly Detection (statistical process control
+        limits for energy consumption, equipment efficiency degradation
+        alerts, utility cost anomaly detection, meter fault identification)
+        -> Phase 4 - Management Reporting (monthly energy performance
+        dashboard, quarterly trend analysis, annual management review
+        inputs, ISO 50001 continual improvement evidence).
+      schedule: "continuous"
+      estimated_duration_minutes: 15
+      phases: 4
+
+    - id: energy_savings_verification
+      name: "Energy Savings Verification Workflow"
+      description: >-
+        4-phase workflow for measuring and verifying energy savings per
+        IPMVP: Phase 1 - M&V Plan Development (select IPMVP option A/B/C/D,
+        define measurement boundary, specify baseline model, define
+        adjustment procedures, establish reporting period) -> Phase 2 -
+        Baseline Documentation (collect and validate baseline period data,
+        develop baseline model, document static factors, calculate baseline
+        uncertainty) -> Phase 3 - Reporting Period Analysis (collect
+        reporting period data, apply routine adjustments for weather and
+        production changes, apply non-routine adjustments for equipment
+        additions/removals, calculate avoided energy consumption) ->
+        Phase 4 - Savings Verification Report (quantify savings with
+        uncertainty bounds, compare actual vs. estimated savings, calculate
+        fractional savings uncertainty, generate M&V compliance report).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: compressed_air_audit
+      name: "Compressed Air Audit Workflow"
+      description: >-
+        4-phase workflow for comprehensive compressed air system audit:
+        Phase 1 - System Inventory (compressor types and ratings, dryer
+        and filter inventory, distribution network mapping, end-use
+        identification, existing monitoring points) -> Phase 2 - Supply
+        Side Assessment (compressor power measurement, flow measurement,
+        specific power calculation, part-load efficiency profiling,
+        pressure/flow logging over representative period, heat recovery
+        assessment) -> Phase 3 - Demand Side Assessment (ultrasonic leak
+        survey and quantification, end-use audit and inappropriate use
+        identification, pressure profiling at key points, artificial demand
+        analysis) -> Phase 4 - Optimization Report (specific power gap
+        to best practice, leak repair priority list with costs and savings,
+        VSD compressor recommendation, pressure reduction opportunity,
+        control strategy optimization, demand-side improvement register).
+      schedule: "every_2_years"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: steam_system_audit
+      name: "Steam System Audit Workflow"
+      description: >-
+        4-phase workflow for comprehensive steam system assessment:
+        Phase 1 - System Mapping (boiler inventory and rating, steam
+        distribution network including all pressure levels, condensate
+        return system, end-use steam consumers, trap population register)
+        -> Phase 2 - Generation Assessment (flue gas analysis, combustion
+        efficiency by direct and indirect method, blowdown rate assessment,
+        feedwater quality review, auxiliary power consumption, economizer
+        and air preheater performance) -> Phase 3 - Distribution and
+        End-Use Assessment (steam trap survey with condition classification,
+        insulation thermographic survey, condensate recovery rate, flash
+        steam utilization, pressure reduction station assessment, steam
+        quality and dryness fraction checks) -> Phase 4 - Optimization
+        Report (boiler tuning recommendations, trap replacement priority
+        list, insulation remediation plan, condensate recovery improvement
+        plan, blowdown heat recovery feasibility, steam cost per tonne by
+        pressure level, implementation roadmap with payback analysis).
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 4
+
+    - id: waste_heat_recovery
+      name: "Waste Heat Recovery Workflow"
+      description: >-
+        4-phase workflow for waste heat recovery assessment: Phase 1 -
+        Heat Source Inventory (identify all waste heat streams by
+        temperature, flow rate, and temporal availability; classify by
+        temperature grade: high above 400C, medium 100-400C, low below
+        100C; map seasonal and batch-process variation) -> Phase 2 -
+        Pinch Analysis (construct hot and cold composite curves, determine
+        minimum energy requirement, identify pinch point temperature,
+        generate grand composite curve, assess current heat recovery vs.
+        theoretical maximum) -> Phase 3 - Technology Assessment (evaluate
+        applicable recovery technologies per temperature grade, size heat
+        exchangers and estimate capital cost, assess ORC/heat pump
+        feasibility for power/upgraded heat, evaluate thermal storage for
+        temporal mismatch, assess district heating export per EED mandate)
+        -> Phase 4 - Feasibility Report (techno-economic assessment with
+        NPV/IRR, implementation phasing plan, risk assessment, equipment
+        specifications, integration design with existing systems).
+      schedule: "every_4_years"
+      estimated_duration_minutes: 300
+      phases: 4
+
+    - id: regulatory_compliance
+      name: "Regulatory Compliance Workflow"
+      description: >-
+        3-phase workflow for EED and related regulatory compliance: Phase 1 -
+        Applicability Assessment (determine EED Article 8 applicability based
+        on enterprise size and annual energy consumption, assess ISO 50001
+        mandate threshold of 10 TJ, check EU ETS installation obligations,
+        verify IED BAT permit requirements, assess Ecodesign regulation
+        compliance for motors and drives) -> Phase 2 - Compliance Gap
+        Analysis (audit freshness check against 4-year cycle, EnMS
+        certification status, waste heat mapping completeness for above
+        1 MW installations, motor compliance against IE3/IE4 minimums,
+        energy audit report content vs. EED Annex VI requirements) ->
+        Phase 3 - Compliance Reporting (generate EED Article 8 compliance
+        evidence, ISO 50001 management review inputs, national audit
+        registry submission data, ETS monitoring and reporting plan
+        alignment, BAT compliance assessment for IED permits).
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 3
+
+    - id: iso_50001_certification
+      name: "ISO 50001 Certification Preparation Workflow"
+      description: >-
+        4-phase workflow for ISO 50001 certification readiness: Phase 1 -
+        Gap Analysis (assess current EnMS maturity against ISO 50001:2018
+        clauses 4-10, identify missing documentation, evaluate energy
+        planning completeness, review management commitment evidence) ->
+        Phase 2 - EnMS Documentation (establish energy policy, define
+        scope and boundaries, identify significant energy uses, establish
+        EnPIs and baselines, create energy objectives and action plans,
+        develop operational controls and monitoring plans) -> Phase 3 -
+        Implementation Support (populate energy data management system,
+        establish measurement and monitoring procedures, conduct internal
+        audits per clause 9.2, generate management review per clause 9.3,
+        prepare corrective action evidence per clause 10.2) -> Phase 4 -
+        Certification Readiness Assessment (pre-audit self-assessment
+        against all ISO 50001 requirements, evidence completeness check,
+        EnPI trend validation showing continual improvement, competence
+        records verification, mock audit findings resolution).
+      schedule: "on_demand"
+      estimated_duration_minutes: 360
+      phases: 4
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 energy audit templates)
+  # ===========================================================================
+  templates:
+    - id: energy_audit_report
+      display_name: "Energy Audit Report (EN 16247)"
+      description: >-
+        Full EN 16247 compliant energy audit report with mandatory content
+        per EED Annex VI. Includes executive summary with key findings and
+        top savings opportunities, facility description and energy supply
+        overview, energy balance with Sankey diagram, detailed assessment
+        by energy use area (process, compressed air, steam, motors, lighting,
+        HVAC), savings opportunity register with engineering calculations,
+        financial analysis (payback, NPV, IRR) for each ECM, implementation
+        roadmap with phasing and priority, M&V plan recommendations, and
+        appendices with measurement data and assumptions.
+      format: "pdf"
+      template_file: "templates/energy_audit_report.jinja2"
+      enabled: true
+
+    - id: energy_baseline_report
+      display_name: "Energy Baseline Report (ISO 50006)"
+      description: >-
+        ISO 50006 compliant energy baseline report documenting baseline
+        period selection, relevant variables identified, regression model
+        parameters, goodness of fit metrics (R-squared, CVRMSE, t-stats),
+        baseline adjustment procedures, static factors, and EnPI definitions.
+        Includes graphical baseline model with confidence intervals,
+        residual analysis, and baseline period energy consumption summary.
+      format: "pdf"
+      template_file: "templates/energy_baseline_report.jinja2"
+      enabled: true
+
+    - id: mv_report
+      display_name: "M&V Savings Report (IPMVP)"
+      description: >-
+        IPMVP compliant measurement and verification report documenting
+        M&V option selected, baseline model, adjustment procedures applied,
+        reporting period data, calculated avoided energy consumption, savings
+        uncertainty quantification, and comparison of actual vs. estimated
+        savings. Includes baseline and reporting period comparison charts,
+        CUSUM plots, and fractional savings uncertainty calculations.
+      format: "pdf"
+      template_file: "templates/mv_report.jinja2"
+      enabled: true
+
+    - id: compressed_air_report
+      display_name: "Compressed Air System Report"
+      description: >-
+        Compressed air system audit report including system schematic,
+        compressor performance data, specific power calculations, air leak
+        survey results with location map and repair priority list, pressure
+        profile analysis, demand-side assessment, heat recovery potential,
+        and optimization recommendations with savings and cost estimates.
+      format: "pdf"
+      template_file: "templates/compressed_air_report.jinja2"
+      enabled: true
+
+    - id: steam_system_report
+      display_name: "Steam System Assessment Report"
+      description: >-
+        Steam system assessment report including boiler efficiency analysis,
+        steam trap survey results with condition summary and loss
+        quantification, insulation assessment with thermal images and heat
+        loss calculations, condensate recovery assessment, blowdown
+        analysis, steam distribution evaluation, and optimization
+        recommendations with implementation priority and financial analysis.
+      format: "pdf"
+      template_file: "templates/steam_system_report.jinja2"
+      enabled: true
+
+    - id: waste_heat_report
+      display_name: "Waste Heat Recovery Feasibility Report"
+      description: >-
+        Waste heat recovery feasibility report including waste heat source
+        inventory with temperature and availability profiles, composite
+        curve diagrams, pinch analysis results, heat exchanger network
+        design, technology options comparison, techno-economic assessment
+        with NPV and IRR, and implementation recommendations. Includes
+        EED waste heat mapping data for installations above 1 MW.
+      format: "pdf"
+      template_file: "templates/waste_heat_report.jinja2"
+      enabled: true
+
+    - id: energy_dashboard
+      display_name: "Energy Performance Dashboard"
+      description: >-
+        Real-time energy performance dashboard template with EnPI trending
+        vs. baseline, energy cost tracking, CUSUM control charts, equipment
+        efficiency degradation alerts, utility consumption heatmaps by
+        time-of-day and day-of-week, production-normalized energy tracking,
+        and savings progress against targets. Designed for facility energy
+        managers with drill-down capability to equipment level.
+      format: "html"
+      template_file: "templates/energy_dashboard.jinja2"
+      enabled: true
+
+    - id: regulatory_compliance_report
+      display_name: "EED Regulatory Compliance Report"
+      description: >-
+        EED Article 8 compliance evidence report documenting audit execution
+        within the 4-year cycle, ISO 50001 certification status (if
+        applicable), EnPI and baseline documentation, waste heat mapping
+        completion for above 1 MW installations, motor efficiency compliance,
+        and national audit registry submission data. Suitable for regulatory
+        authority inspection and third-party verification.
+      format: "pdf"
+      template_file: "templates/regulatory_compliance_report.jinja2"
+      enabled: true
+
+    - id: iso_50001_evidence
+      display_name: "ISO 50001 Evidence Package"
+      description: >-
+        ISO 50001 certification support evidence package including energy
+        policy documentation, scope and boundaries, significant energy use
+        analysis, EnPI and baseline documentation, energy objectives and
+        action plans, operational control evidence, monitoring and
+        measurement records, internal audit reports, management review
+        minutes, and continual improvement evidence with EnPI trend data.
+      format: "pdf"
+      template_file: "templates/iso_50001_evidence.jinja2"
+      enabled: true
+
+    - id: benchmarking_report
+      display_name: "Energy Benchmarking Report"
+      description: >-
+        Energy benchmarking report comparing facility SEC against BAT-AEL
+        ranges from relevant BREF documents, sector peer quartile ranking,
+        best practice targets, and SBTi pathway alignment. Includes gap
+        analysis with estimated investment to close performance gaps, EU ETS
+        benchmark comparison, and recommended improvement trajectory.
+      format: "pdf"
+      template_file: "templates/benchmarking_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        12-phase master pipeline: Health Check -> Configuration and Preset
+        Loading -> Data Acquisition (meters, SCADA, BMS, ERP) -> Energy
+        Baseline Establishment -> Process Energy Mapping -> Equipment
+        Efficiency Assessment -> Utility-Specific Audits (compressed air,
+        steam, lighting/HVAC) -> Waste Heat Recovery Analysis -> Savings
+        Opportunity Ranking -> Benchmark Assessment -> Regulatory Compliance
+        Check -> Report Generation. Orchestrates all energy audit phases
+        with parallel execution where possible (e.g., compressed air and
+        steam audits run in parallel) and dependency management between
+        engines (baseline must complete before savings verification).
+      required: true
+
+    - id: smart_meter_bridge
+      name: "Smart Meter Integration Bridge"
+      description: >-
+        Connects to smart metering infrastructure for automated energy data
+        collection. Supports common industrial metering protocols: Modbus
+        TCP/RTU (electricity meters, gas meters, steam flow meters), M-Bus
+        (utility meters), DLMS/COSEM (smart electricity meters), and
+        BACnet (BMS-connected meters). Handles half-hourly, 15-minute, and
+        1-minute interval data. Supports meter data management including
+        validation, estimation, and editing (VEE) processes. Manages meter
+        hierarchies for sub-metering reconciliation (check meters vs.
+        fiscal meters). Handles time synchronization and daylight saving
+        transitions. Stores raw meter data with provenance tracking.
+      required: true
+
+    - id: scada_bridge
+      name: "SCADA/DCS Integration Bridge"
+      description: >-
+        Connects to SCADA (Supervisory Control and Data Acquisition) and
+        DCS (Distributed Control System) platforms for real-time process
+        data. Supports OPC-UA (preferred), OPC-DA (legacy), and Historian
+        databases (OSIsoft PI, Honeywell PHD, Wonderware InSQL, GE Proficy).
+        Extracts process variables relevant to energy analysis: temperatures,
+        pressures, flow rates, motor speeds, valve positions, and equipment
+        run status. Implements configurable polling intervals and data
+        buffering for historian integration. Handles data quality codes
+        and instrument calibration status.
+      required: true
+
+    - id: bms_bridge
+      name: "BMS Integration Bridge"
+      description: >-
+        Connects to Building Management Systems for HVAC, lighting, and
+        building energy data. Supports BACnet/IP, BACnet MS/TP, LON,
+        KNX, and Modbus protocols. Extracts HVAC operational data (supply/
+        return temperatures, fan speeds, valve positions, damper positions,
+        zone temperatures), lighting control data (schedules, dimming
+        levels, occupancy sensor status), and utility metering data
+        (electricity, gas, water, district heating/cooling). Supports
+        trend logging and alarm monitoring for energy-related faults.
+      required: true
+
+    - id: erp_bridge
+      name: "ERP/Production Data Bridge"
+      description: >-
+        Connects to ERP systems for production data essential to energy
+        baseline normalization and SEC calculation. Integrates with SAP
+        (PP module), Oracle Manufacturing, Microsoft Dynamics 365, and
+        custom MES (Manufacturing Execution Systems). Extracts production
+        volumes by product type, shift schedules, maintenance windows,
+        raw material input quantities, and product mix data. Maps
+        production data to energy consumption periods for regression
+        analysis. Handles production unit conversions and aggregation
+        across multiple production lines.
+      required: true
+
+    - id: weather_bridge
+      name: "Weather Data Bridge"
+      description: >-
+        Integrates weather data for degree-day normalization and HVAC
+        energy analysis. Sources include local weather stations (on-site
+        sensors preferred), national meteorological services (Met Office,
+        DWD, Meteo France, AEMET, KNMI), and commercial weather APIs.
+        Calculates heating degree-days (HDD) and cooling degree-days (CDD)
+        with configurable base temperatures (default 15.5C HDD, 18C CDD).
+        Provides hourly dry-bulb temperature, wet-bulb temperature,
+        relative humidity, wind speed, and solar radiation for detailed
+        HVAC analysis. Handles missing data interpolation and quality
+        control for weather station outages.
+      required: true
+
+    - id: mrv_energy_bridge
+      name: "MRV Energy Bridge"
+      description: >-
+        Routes data from AGENT-MRV agents with energy-audit-specific
+        context. Prioritizes AGENT-MRV-001 (stationary combustion for
+        boilers and furnaces), AGENT-MRV-009/010 (Scope 2 electricity for
+        motor systems, compressed air, lighting), AGENT-MRV-011 (steam
+        purchases), AGENT-MRV-012 (cooling purchases), and AGENT-MRV-016
+        (fuel and energy activities for upstream energy emissions). Maps
+        MRV emissions outputs to energy consumption data for integrated
+        carbon and energy reporting. Enables simultaneous energy audit
+        and GHG inventory reporting from shared data sources.
+      required: true
+
+    - id: data_energy_bridge
+      name: "Data Energy Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for energy audit data intake.
+        Routes utility invoices through AGENT-DATA-001 (PDF extraction),
+        meter data exports through AGENT-DATA-002 (Excel/CSV normalization),
+        ERP production data through AGENT-DATA-003, and external benchmarks
+        through AGENT-DATA-004 (API gateway). Applies data quality
+        profiling through AGENT-DATA-010, outlier detection through
+        AGENT-DATA-013, and time series gap filling through AGENT-DATA-014
+        for continuous metering data. Handles multi-format energy data
+        ingestion from diverse industrial systems.
+      required: true
+
+    - id: ets_bridge
+      name: "EU ETS Integration Bridge"
+      description: >-
+        Connects energy audit data to EU ETS monitoring, reporting, and
+        verification (MRV) systems. Maps energy consumption to CO2
+        emissions using installation-specific emission factors and
+        oxidation/conversion factors from the MRV plan. Calculates ETS
+        benchmark comparison for free allocation assessment. Supports
+        Phase 4 product benchmarks and cross-sectoral fallback approaches.
+        Links energy savings opportunities to ETS allowance cost savings.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        24-category system verification covering all 10 engines, 70 agent
+        dependencies, database connectivity, emission factor database
+        currency, weather data source availability, BREF/BAT-AEL data
+        freshness, meter communication status, SCADA connectivity, BMS
+        connectivity, ERP data pipeline status, ISO 50001 evidence
+        completeness, regulatory deadline tracking, benchmarking data
+        vintage, and deployment readiness status.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        10-step guided configuration wizard: Industrial Sub-Sector Selection
+        (manufacturing/process/food-beverage/data-center/warehouse/
+        automotive/steel-metals/sme) -> Facility Registration (locations,
+        floor area, production capacity, operating hours) -> Utility Supply
+        Configuration (electricity, gas, steam, compressed air tariffs and
+        meter points) -> Process and Production Line Mapping -> Equipment
+        Inventory Import (motors, compressors, boilers, chillers) -> Meter
+        Infrastructure Registration (smart meters, SCADA tags, BMS points)
+        -> Baseline Period Selection (12-36 months) -> EnPI Definition
+        (SEC metric, normalization variables) -> Regulatory Scope Definition
+        (EED, ETS, IED applicability) -> Reporting Preferences and
+        Benchmarking Peer Group Selection.
+      required: false
+
+  # ===========================================================================
+  # Presets - Industrial sub-sector specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: manufacturing_plant
+      name: "Manufacturing Plant Preset"
+      description: >-
+        Configuration for discrete and batch manufacturing plants. Motor
+        systems are typically the dominant electricity consumer (60-70% of
+        electricity). Compressed air systems are critical (often the most
+        expensive utility per kWh delivered). Process heating via gas-fired
+        furnaces and ovens. Equipment efficiency engine emphasized for motor
+        population analysis. Baseline normalization by production units
+        and product mix. Typical SEC range: 0.5-5 kWh/unit depending on
+        product complexity. EN 16247-3 process audit methodology.
+      industrial_sub_sector: "MANUFACTURING"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - process_energy_mapping
+        - equipment_efficiency
+        - energy_savings
+        - waste_heat_recovery
+        - compressed_air
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/manufacturing_plant.yaml"
+
+    - id: process_industry
+      name: "Process Industry Preset"
+      description: >-
+        Configuration for continuous process industries: chemicals,
+        petrochemicals, refineries, cement, glass, and ceramics. Steam
+        systems dominate thermal energy. High waste heat availability at
+        multiple temperature grades. Pinch analysis critical for heat
+        integration optimization. EU ETS installation likely -- ETS bridge
+        enabled. IED/BREF compliance required with BAT-AEL benchmarking.
+        Typical SEC highly sector-specific. All 10 engines enabled with
+        steam optimization and waste heat recovery at highest priority.
+      industrial_sub_sector: "PROCESS_INDUSTRY"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - process_energy_mapping
+        - equipment_efficiency
+        - energy_savings
+        - waste_heat_recovery
+        - compressed_air
+        - steam_optimization
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/process_industry.yaml"
+
+    - id: food_beverage
+      name: "Food & Beverage Preset"
+      description: >-
+        Configuration for food processing, dairy, brewing, distilling,
+        and beverage production. Refrigeration dominates electricity
+        consumption (40-60%). Steam used extensively for cooking, drying,
+        pasteurization, and CIP (clean-in-place). Significant waste heat
+        from refrigeration condensers and process exhaust. Compressed air
+        for pneumatic controls and packaging. EN 16247-3 process audit
+        with food safety constraints on measurement access. Food/Drink/
+        Milk BREF BAT-AEL benchmarking. Seasonal production variation
+        requires careful baseline normalization.
+      industrial_sub_sector: "FOOD_BEVERAGE"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - process_energy_mapping
+        - equipment_efficiency
+        - energy_savings
+        - waste_heat_recovery
+        - compressed_air
+        - steam_optimization
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/food_beverage.yaml"
+
+    - id: data_center
+      name: "Data Center Preset"
+      description: >-
+        Configuration for data center facilities including server halls,
+        cooling infrastructure, UPS systems, and power distribution.
+        Primary metric is Power Usage Effectiveness (PUE = Total Facility
+        Power / IT Load Power). Cooling is the dominant non-IT energy
+        consumer (typically 30-40% of total). Focus on free cooling
+        potential (economizer hours), chiller COP optimization, hot/cold
+        aisle containment effectiveness, UPS efficiency at partial load,
+        and power distribution losses (transformer, PDU, cabling). Waste
+        heat recovery for server exhaust air is an emerging opportunity.
+        EU Code of Conduct for Data Centres applies. EN 50600 series for
+        data center design and operation.
+      industrial_sub_sector: "DATA_CENTER"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - equipment_efficiency
+        - energy_savings
+        - waste_heat_recovery
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/data_center.yaml"
+
+    - id: warehouse_logistics
+      name: "Warehouse & Logistics Preset"
+      description: >-
+        Configuration for warehouses, distribution centers, and cold
+        storage facilities. Lighting is often the dominant electricity
+        consumer in ambient warehouses (40-60% of electricity). Cold
+        storage facilities have refrigeration as dominant consumer.
+        Material handling equipment (forklifts, conveyors, sorters)
+        is secondary. High-bay LED lighting with occupancy control and
+        daylight harvesting offer significant savings. HVAC focused on
+        dock door management, destratification, and insulation. Baseline
+        normalization by throughput volume or pallet movements. SEC in
+        kWh/pallet or kWh/sqm. EN 16247-2 building audit methodology
+        with EN 16247-3 for process areas.
+      industrial_sub_sector: "WAREHOUSE_LOGISTICS"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - equipment_efficiency
+        - energy_savings
+        - compressed_air
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/warehouse_logistics.yaml"
+
+    - id: automotive_manufacturing
+      name: "Automotive Manufacturing Preset"
+      description: >-
+        Configuration for automotive assembly plants, paint shops, stamping,
+        and powertrain manufacturing. Paint shops dominate energy consumption
+        (often 50-60% of total) due to heating, ventilation, and curing
+        ovens. Compressed air demand is extensive across assembly (pneumatic
+        tools, body welding robots). Steam for paint preparation and surface
+        treatment. Motor systems throughout (conveyors, robots, presses).
+        Waste heat from paint oven exhaust and compressed air aftercoolers.
+        Complex production schedules with model changeover require careful
+        baseline normalization by vehicles produced weighted by model
+        complexity. Automotive sector-specific BREF benchmarking.
+      industrial_sub_sector: "AUTOMOTIVE"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - process_energy_mapping
+        - equipment_efficiency
+        - energy_savings
+        - waste_heat_recovery
+        - compressed_air
+        - steam_optimization
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/automotive_manufacturing.yaml"
+
+    - id: steel_metals
+      name: "Steel & Metals Preset"
+      description: >-
+        Configuration for steel production (EAF and integrated routes),
+        aluminium smelting, rolling mills, and foundries. Extremely energy
+        intensive: EAF steelmaking at 400-700 kWh/tonne liquid steel,
+        integrated route at 4-6 GJ/tonne. EU ETS installation -- ETS
+        bridge mandatory. Iron and Steel BREF and Non-Ferrous Metals
+        BREF BAT-AEL benchmarking. Massive waste heat streams from
+        furnace exhaust, slag, and cooling water. Compressed air for
+        pneumatic controls and material handling. Steam for turbine
+        drives and process heating. Off-gas recovery and utilization
+        critical. All 10 engines enabled at maximum intensity with
+        waste heat recovery and process mapping at highest priority.
+      industrial_sub_sector: "STEEL_METALS"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - process_energy_mapping
+        - equipment_efficiency
+        - energy_savings
+        - waste_heat_recovery
+        - compressed_air
+        - steam_optimization
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/steel_metals.yaml"
+
+    - id: sme_industrial
+      name: "SME Industrial Preset"
+      description: >-
+        Simplified configuration for small and medium-sized industrial
+        operations (below 250 employees or below EUR 50M turnover). SMEs
+        are exempt from EED Article 8 mandatory audits but benefit from
+        voluntary audits. Reduced engine set focuses on highest-impact
+        areas: lighting (often quickest payback), compressed air (most
+        common waste source), HVAC (comfort and process ventilation), and
+        motor systems (largest electricity consumer). Simplified baseline
+        using utility bill analysis without sub-metering. Spend-based
+        benchmarking against sector peers. Type 1 walk-through audit
+        methodology for initial assessment, upgrading to Type 2 for
+        implementation planning. Financial analysis focused on simple
+        payback (SME decision criterion) rather than NPV/IRR.
+      industrial_sub_sector: "SME_INDUSTRIAL"
+      enabled_engines:
+        - energy_baseline
+        - energy_audit
+        - equipment_efficiency
+        - energy_savings
+        - compressed_air
+        - lighting_hvac
+        - energy_benchmark
+      file: "config/presets/sme_industrial.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for energy-related emissions (Scope 1/2/3)
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from boilers, furnaces, ovens, kilns, and backup generators"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Calculates emissions from industrial refrigeration and air conditioning F-gas leakage"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates emissions from forklifts, company vehicles, and on-site mobile equipment"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates process emissions from industrial chemical reactions and transformations"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Calculates fugitive emissions from equipment leaks, valves, flanges, and seals"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates emissions from land use change at industrial facility sites"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates emissions from on-site industrial waste treatment and incineration"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates agricultural emissions for food and beverage processing feedstock"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions for industrial motor systems and processes"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs for industrial load)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates emissions from purchased steam and process heat from external suppliers"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates emissions from purchased chilled water and district cooling"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 for industrial installations"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Raw materials, components, chemicals, and consumables for industrial processes"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Machinery, equipment, production lines, and facility construction"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Upstream fuel and energy-related emissions for all industrial energy consumption"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Inbound logistics for raw materials and components to facility"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Industrial waste disposal emissions from manufacturing and process waste"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Employee business travel emissions"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Plant and office employee commuting emissions"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Emissions from leased industrial equipment and facilities"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Outbound logistics for finished products to customers"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Emissions from further processing of intermediate products by customers"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Energy consumption during use of energy-consuming industrial products"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Emissions from end-of-life treatment of sold industrial products"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Emissions from leased-out industrial equipment and facilities"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Emissions from franchised industrial operations"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Scope 3 Category 15 investment emissions for industrial conglomerates"
+      path: "greenlang/agents/mrv/investments/"
+      required: false
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps emissions across all 15 Scope 3 categories with industrial sector weighting"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage and audit trails for all MRV and energy audit calculations"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts energy data from utility bills, equipment specifications, and vendor invoices"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes meter data exports, production records, equipment inventories, and audit data"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to SAP PP/PM, Oracle Manufacturing, Dynamics 365 for production and maintenance data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for weather data, grid factors, BREF benchmarks, and metering platforms"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability for raw material sourcing in process industries"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for facility locations, waste heat mapping, and district heating network proximity"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for land use change assessment at facility sites"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes equipment vendor energy performance data and supply chain questionnaires"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Physical climate hazard data for facility risk assessment and resilience planning"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes procurement spend for Scope 3 estimation of industrial inputs"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across meter data, production records, and equipment inventories"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate meter readings, equipment records, and invoice entries"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing meter data using regression, interpolation, and similar-day methods"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption, equipment efficiency drops, and meter faults"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in continuous metering and SCADA data with validated estimates"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles data across utility meters, SCADA, BMS, sub-meters, and ERP records"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of meter data, weather feeds, emission factors, and BREF benchmarks"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for EN 16247, ISO 50001, and IPMVP format changes"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from raw meter data through calculations to audit report outputs"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces energy balance, meter hierarchy, regression validity, and M&V validation rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution using directed acyclic graphs for audit pipelines"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates energy audit data schemas and EN 16247 structures"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes energy units (kWh, MJ, GJ, tce, toe, m3, bar, C, kg/h) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in energy calculations, baselines, and savings estimates"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links energy data points to source evidence for regulatory audit and ISO 50001 certification"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-facility and multi-site energy management"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and energy audit capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all energy calculations are reproducible with SHA-256 provenance for M&V auditing"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for all energy audit outputs and compliance reports"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors agent performance, pipeline health, and meter data ingestion rates"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Agents (10 agents for ETS, ISO 50001, metering, and industrial)
+# ---------------------------------------------------------------------------
+agents_bridged:
+  - id: ets-compliance-agent
+    name: "EU ETS Compliance Agent"
+    description: "Maps energy savings to ETS allowance reductions and benchmark compliance"
+    required: true
+  - id: iso-50001-enms-agent
+    name: "ISO 50001 EnMS Agent"
+    description: "Manages ISO 50001 Energy Management System documentation and evidence"
+    required: true
+  - id: smart-meter-agent
+    name: "Smart Meter Data Agent"
+    description: "Manages smart meter data validation, estimation, and editing (VEE) processes"
+    required: true
+  - id: scada-historian-agent
+    name: "SCADA Historian Agent"
+    description: "Extracts and processes SCADA/Historian data for energy analysis"
+    required: true
+  - id: bms-data-agent
+    name: "BMS Data Agent"
+    description: "Manages BMS trend data extraction and HVAC performance monitoring"
+    required: true
+  - id: weather-normalization-agent
+    name: "Weather Normalization Agent"
+    description: "Provides degree-day calculations and weather normalization for energy baselines"
+    required: true
+  - id: bref-bat-agent
+    name: "BREF/BAT Benchmark Agent"
+    description: "Provides BAT-AEL benchmarks from BREF documents for industrial sector comparison"
+    required: true
+  - id: ecodesign-compliance-agent
+    name: "Ecodesign Compliance Agent"
+    description: "Assesses motor, pump, and drive compliance against Ecodesign regulation minimums"
+    required: true
+  - id: regulatory-change-monitor
+    name: "Regulatory Change Monitor Agent"
+    description: "Monitors EED, ETS, IED, Ecodesign, and ISO 50001 regulatory and standards updates"
+    required: true
+  - id: carbon-cost-agent
+    name: "Carbon Cost Agent"
+    description: "Calculates ETS allowance cost savings from energy efficiency improvements"
+    required: false
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 70
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    bridged_agents: 10
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  facility_processing:
+    max_facilities: 200
+    max_meters_per_facility: 500
+    max_total_meters: 50000
+    target_duration_minutes: 30
+    baseline_regression_per_meter_ms: 200
+  energy_audit:
+    max_equipment_items: 10000
+    equipment_efficiency_calc_per_item_ms: 50
+    energy_balance_per_process_ms: 500
+    target_duration_minutes: 45
+  compressed_air:
+    max_compressors: 100
+    max_leak_points: 5000
+    specific_power_calc_ms: 100
+    leak_quantification_per_point_ms: 20
+    target_duration_minutes: 15
+  steam_system:
+    max_traps: 10000
+    trap_survey_assessment_per_trap_ms: 30
+    boiler_efficiency_calc_ms: 500
+    target_duration_minutes: 20
+  waste_heat:
+    max_heat_streams: 200
+    pinch_analysis_per_stream_pair_ms: 50
+    heat_exchanger_sizing_ms: 500
+    target_duration_minutes: 30
+  savings_analysis:
+    max_ecm_register_items: 500
+    npv_irr_calc_per_ecm_ms: 100
+    ipmvp_verification_per_ecm_ms: 500
+    target_duration_minutes: 20
+  benchmarking:
+    max_peer_comparisons: 1000
+    sec_calculation_per_facility_ms: 100
+    bat_ael_comparison_ms: 200
+    target_duration_minutes: 10
+  meter_data_ingestion:
+    max_readings_per_batch: 1000000
+    ingestion_rate_readings_per_second: 10000
+    target_latency_seconds: 60
+  cache_hit_ratio_target: 0.75
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level and equipment-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - energy_manager
+    - facility_manager
+    - maintenance_engineer
+    - process_engineer
+    - sustainability_officer
+    - energy_auditor
+    - external_verifier
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "scikit-learn>=1.3"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "lxml>=4.9"
+    - "cryptography>=41.0"
+    - "asyncua>=1.0"
+    - "pymodbus>=3.5"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_bref_bat_ael_data
+    - verify_weather_data_source
+    - verify_meter_connectivity
+    - verify_scada_connectivity
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+    new:
+      - "PACK031-001"  # Energy baseline and EnPI tables
+      - "PACK031-002"  # Energy audit lifecycle and EN 16247 tables
+      - "PACK031-003"  # Process energy mapping and Sankey tables
+      - "PACK031-004"  # Equipment inventory and efficiency tables
+      - "PACK031-005"  # ECM register and savings analysis tables
+      - "PACK031-006"  # Waste heat recovery and pinch analysis tables
+      - "PACK031-007"  # Compressed air system tables
+      - "PACK031-008"  # Steam system and trap survey tables
+      - "PACK031-009"  # Lighting and HVAC assessment tables
+      - "PACK031-010"  # Benchmarking, BAT-AEL, and peer comparison tables
+      - "PACK031-011"  # Meter data management and time series tables (TimescaleDB hypertable)
+      - "PACK031-012"  # ISO 50001 evidence and certification tracking tables
+
+  post_install:
+    - seed_emission_factors
+    - seed_bref_bat_ael_benchmarks
+    - seed_ecodesign_motor_classes
+    - seed_degree_day_base_temperatures
+    - seed_compressed_air_benchmarks
+    - seed_steam_trap_loss_tables
+    - seed_lighting_lux_standards
+    - seed_ets_product_benchmarks
+    - seed_weather_station_metadata
+    - seed_default_presets
+    - configure_timescaledb_hypertables
+    - run_health_checks
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: EnergyBaselineEngine
+    file: engines/energy_baseline_engine.py
+    description: "ISO 50006 EnPI, regression analysis, degree-day normalization"
+  - name: EnergyAuditEngine
+    file: engines/energy_audit_engine.py
+    description: "EN 16247 Type 1/2/3 audits, EED Article 8 compliance"
+  - name: ProcessEnergyMappingEngine
+    file: engines/process_energy_mapping_engine.py
+    description: "Sankey diagrams, energy balance, process-level efficiency"
+  - name: EquipmentEfficiencyEngine
+    file: engines/equipment_efficiency_engine.py
+    description: "Motors IE1-IE5, pumps, compressors, boilers, HVAC assessment"
+  - name: EnergySavingsEngine
+    file: engines/energy_savings_engine.py
+    description: "ECM identification, IPMVP M&V, NPV/IRR/payback analysis"
+  - name: WasteHeatRecoveryEngine
+    file: engines/waste_heat_recovery_engine.py
+    description: "Pinch analysis, heat exchanger sizing, ORC feasibility"
+  - name: CompressedAirEngine
+    file: engines/compressed_air_engine.py
+    description: "Leak detection, specific power, VSD, pressure optimization"
+  - name: SteamOptimizationEngine
+    file: engines/steam_optimization_engine.py
+    description: "Boiler efficiency, trap survey, condensate, flash steam recovery"
+  - name: LightingHVACEngine
+    file: engines/lighting_hvac_engine.py
+    description: "LED retrofit, daylight harvesting, VSD fans/pumps, economizers"
+  - name: EnergyBenchmarkEngine
+    file: engines/energy_benchmark_engine.py
+    description: "SEC, EnPI, BAT-AEL from BREF documents, peer comparison"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: InitialEnergyAuditWorkflow
+    file: workflows/initial_energy_audit_workflow.py
+    description: "5-phase comprehensive energy audit with EN 16247 compliance"
+  - name: ContinuousMonitoringWorkflow
+    file: workflows/continuous_monitoring_workflow.py
+    description: "Real-time monitoring with CUSUM deviation and EnPI trend analysis"
+  - name: EnergySavingsVerificationWorkflow
+    file: workflows/energy_savings_verification_workflow.py
+    description: "IPMVP-compliant savings verification and M&V reporting"
+  - name: CompressedAirAuditWorkflow
+    file: workflows/compressed_air_audit_workflow.py
+    description: "Compressed air system audit with leak survey and optimization"
+  - name: SteamSystemAuditWorkflow
+    file: workflows/steam_system_audit_workflow.py
+    description: "Steam system audit with boiler, distribution, and condensate analysis"
+  - name: WasteHeatRecoveryWorkflow
+    file: workflows/waste_heat_recovery_workflow.py
+    description: "Waste heat recovery assessment with pinch analysis and ROI"
+  - name: RegulatoryComplianceWorkflow
+    file: workflows/regulatory_compliance_workflow.py
+    description: "EED compliance with obligation checking and authority reporting"
+  - name: ISO50001CertificationWorkflow
+    file: workflows/iso_50001_certification_workflow.py
+    description: "ISO 50001:2018 certification support with EnMS gap analysis"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: EnergyAuditReportTemplate
+    file: templates/energy_audit_report.py
+    description: "EN 16247-compliant full audit report"
+  - name: EnergyBaselineReportTemplate
+    file: templates/energy_baseline_report.py
+    description: "ISO 50006/50015 baseline establishment report"
+  - name: SavingsVerificationReportTemplate
+    file: templates/savings_verification_report.py
+    description: "IPMVP-compliant M&V report"
+  - name: EnergyManagementDashboardTemplate
+    file: templates/energy_management_dashboard.py
+    description: "Real-time energy management dashboard with KPIs"
+  - name: CompressedAirReportTemplate
+    file: templates/compressed_air_report.py
+    description: "ISO 11011 compressed air audit report"
+  - name: SteamSystemReportTemplate
+    file: templates/steam_system_report.py
+    description: "Steam system assessment report"
+  - name: WasteHeatRecoveryReportTemplate
+    file: templates/waste_heat_recovery_report.py
+    description: "Waste heat recovery feasibility report"
+  - name: EquipmentEfficiencyReportTemplate
+    file: templates/equipment_efficiency_report.py
+    description: "Equipment-level efficiency assessment report"
+  - name: RegulatoryComplianceReportTemplate
+    file: templates/regulatory_compliance_report.py
+    description: "EED/ISO/ETS compliance summary report"
+  - name: ISO50001ReviewReportTemplate
+    file: templates/iso_50001_review_report.py
+    description: "ISO 50001 management review package"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: IndustrialEnergyAuditOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "12-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVEnergyBridge
+    file: integrations/mrv_energy_bridge.py
+    description: "Routes industrial energy data to MRV agents for emissions calculation"
+  - name: DataEnergyBridge
+    file: integrations/data_energy_bridge.py
+    description: "Routes data intake to DATA agents for meter data and quality profiling"
+  - name: EEDComplianceBridge
+    file: integrations/eed_compliance_bridge.py
+    description: "EU EED Article 8 obligation assessment and national authority reporting"
+  - name: ISO50001Bridge
+    file: integrations/iso_50001_bridge.py
+    description: "Energy Management System documentation and certification tracking"
+  - name: BMSSCADABridge
+    file: integrations/bms_scada_bridge.py
+    description: "BACnet/Modbus/OPC-UA data adapters and real-time meter ingestion"
+  - name: UtilityMeteringBridge
+    file: integrations/utility_metering_bridge.py
+    description: "AMI data ingestion, sub-meter hierarchy, and bill reconciliation"
+  - name: EquipmentRegistryBridge
+    file: integrations/equipment_registry_bridge.py
+    description: "Asset management/CMMS integration and equipment lifecycle tracking"
+  - name: WeatherNormalizationBridge
+    file: integrations/weather_normalization_bridge.py
+    description: "HDD/CDD calculation, TMY data, and weather-normalized baselines"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "22-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided facility configuration with 6 industry presets"
+  - name: EUETSBridge
+    file: integrations/eu_ets_bridge.py
+    description: "EU ETS permit tracking, carbon price impact, and benchmark comparison"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: manufacturing_plant
+    file: config/presets/manufacturing_plant.yaml
+    description: "Discrete manufacturing: automotive parts, electronics, machining"
+  - name: process_industry
+    file: config/presets/process_industry.yaml
+    description: "Chemical, petrochemical, and pharmaceutical continuous processes"
+  - name: food_beverage
+    file: config/presets/food_beverage.yaml
+    description: "Food processing, breweries, dairies, bakeries"
+  - name: data_center
+    file: config/presets/data_center.yaml
+    description: "Server halls, cooling, UPS, power distribution"
+  - name: warehouse_logistics
+    file: config/presets/warehouse_logistics.yaml
+    description: "Cold storage, distribution, material handling"
+  - name: automotive_manufacturing
+    file: config/presets/automotive_manufacturing.yaml
+    description: "Assembly, paint shops, stamping, powertrain"
+  - name: steel_metals
+    file: config/presets/steel_metals.yaml
+    description: "Electric arc furnaces, rolling mills, foundries"
+  - name: sme_industrial
+    file: config/presets/sme_industrial.yaml
+    description: "Small-medium workshops, light manufacturing"

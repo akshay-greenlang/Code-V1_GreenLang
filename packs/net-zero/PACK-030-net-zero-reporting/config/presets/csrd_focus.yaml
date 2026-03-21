@@ -1,0 +1,227 @@
+# =============================================================================
+# PACK-030 Net Zero Reporting Pack - CSRD ESRS E1 Focus Preset
+# =============================================================================
+# Configuration optimized for EU Corporate Sustainability Reporting Directive
+# compliance with ESRS E1 Climate Change disclosure requirements. Prioritizes
+# digital taxonomy tagging, ESRS E1-1 through E1-9 data point coverage,
+# and EU-language support (EN, DE, FR, ES).
+#
+# CSRD ESRS E1 Disclosure Requirements:
+#   - E1-1: Transition plan for climate change mitigation
+#   - E1-2: Policies related to climate change mitigation and adaptation
+#   - E1-3: Actions and resources related to climate change policies
+#   - E1-4: Targets related to climate change mitigation and adaptation
+#   - E1-5: Energy consumption and mix
+#   - E1-6: Gross Scopes 1, 2, 3 and total GHG emissions
+#   - E1-7: GHG removals and GHG mitigation projects (carbon credits)
+#   - E1-8: Internal carbon pricing
+#   - E1-9: Anticipated financial effects from climate change
+#
+# Typical use cases:
+#   - EU-domiciled companies subject to CSRD reporting obligations
+#   - Large undertakings with 250+ employees in the EU
+#   - Third-country companies with significant EU operations
+#   - Financial institutions preparing SFDR-aligned climate disclosures
+#   - Organizations preparing for CSRD assurance requirements
+#
+# Key characteristics:
+#   - CSRD as primary framework with TCFD and GRI as secondary
+#   - Digital taxonomy (XBRL) tagging for machine-readable ESRS submission
+#   - Multi-language support (EN, DE, FR, ES) for EU subsidiaries
+#   - Regulatory branding style for compliance formatting
+#   - Reasonable assurance preparation (CSRD Phase 2 requirement)
+#   - Deadline reminders aligned with 5-month CSRD filing window
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+reporting_year: 2025
+baseline_year: 2019
+fiscal_year_end_month: 12
+
+# --- Framework Configuration ---
+frameworks:
+  frameworks_enabled:
+    - "CSRD"
+    - "TCFD"
+    - "GRI"
+  primary_framework: "CSRD"
+  secondary_frameworks:
+    - "TCFD"
+    - "GRI"
+  framework_outputs:
+    - format: "PDF"
+      template: "csrd_e1_template"
+      enabled: true
+    - format: "iXBRL"
+      template: "esrs_taxonomy"
+      enabled: true
+    - format: "HTML"
+      template: "csrd_dashboard"
+      enabled: true
+
+# --- Output Settings ---
+output_formats:
+  - "PDF"
+  - "iXBRL"
+  - "HTML"
+  - "JSON"
+languages:
+  - "en"
+  - "de"
+  - "fr"
+  - "es"
+
+# --- Branding ---
+branding:
+  style: "regulator"
+  logo_path: null
+  primary_color: "#1E3A5F"
+  secondary_color: "#4A7C9B"
+  font_family: "'Times New Roman', Times, serif"
+  include_charts: true
+  include_toc: true
+  include_page_numbers: true
+  include_headers_footers: true
+  custom_css: null
+
+# --- Data Aggregation ---
+data_aggregation:
+  pack_021_requirement: "required"
+  pack_022_requirement: "required"
+  pack_028_requirement: "recommended"
+  pack_029_requirement: "required"
+  gl_sbti_app_requirement: "optional"
+  gl_cdp_app_requirement: "optional"
+  gl_tcfd_app_requirement: "recommended"
+  gl_ghg_app_requirement: "required"
+  auto_reconciliation: true
+  reconciliation_tolerance_pct: 0.5
+  gap_detection_enabled: true
+  lineage_tracking_enabled: true
+  lineage_diagram_format: "svg"
+  completeness_scoring: true
+  parallel_fetching: true
+  fetch_timeout_seconds: 30
+  retry_count: 3
+  circuit_breaker_threshold: 5
+
+# --- Narrative Generation ---
+narrative:
+  narrative_quality: "high"
+  citation_management_enabled: true
+  citation_format: "footnote"
+  hyperlinked_citations: true
+  consistency_validation_enabled: true
+  consistency_target_pct: 95.0
+  harmonization_suggestions: true
+  human_review_required: true
+  review_workflow_enabled: true
+  max_narrative_length_words: 5000
+
+# --- Translation ---
+translation:
+  languages:
+    - "en"
+    - "de"
+    - "fr"
+    - "es"
+  primary_language: "en"
+  translation_service: "deepl"
+  climate_glossary_enabled: true
+  preserve_citations: true
+  quality_validation_enabled: true
+  quality_target_pct: 98.0
+
+# --- XBRL/iXBRL ---
+xbrl:
+  xbrl_enabled: true
+  sec_taxonomy_version: "2024"
+  csrd_taxonomy_version: "2024"
+  issb_taxonomy_version: "2024"
+  taxonomy_validation_enabled: true
+  ixbrl_enabled: true
+  taxonomy_cache_enabled: true
+  taxonomy_cache_ttl_hours: 168
+  auto_tag_detection: true
+
+# --- Assurance ---
+assurance:
+  assurance_level: "reasonable"
+  include_evidence_bundle: true
+  include_provenance: true
+  include_lineage_diagrams: true
+  include_methodology_docs: true
+  include_control_matrix: true
+  include_assumption_register: true
+  include_change_log: true
+  evidence_bundle_format: "zip"
+  isae_3410_compliance: true
+  isae_3000_compliance: true
+
+# --- Dashboard ---
+dashboard:
+  executive_dashboard_enabled: true
+  framework_dashboards_enabled: true
+  stakeholder_views_enabled: true
+  default_stakeholder_view: "regulator"
+  framework_coverage_heatmap: true
+  deadline_countdown: true
+  drill_down_enabled: true
+  interactive_charts: true
+  responsive_design: true
+  export_to_pdf: true
+  auto_refresh_interval_seconds: 0
+
+# --- Validation ---
+validation:
+  schema_validation_enabled: true
+  completeness_validation_enabled: true
+  consistency_validation_enabled: true
+  consistency_strictness: "strict"
+  quality_scoring_enabled: true
+  minimum_quality_score: 85.0
+  metric_reconciliation: true
+  metric_tolerance_pct: 0.1
+  narrative_spell_check: true
+  narrative_grammar_check: true
+  block_publish_on_critical: true
+
+# --- Notifications ---
+notifications:
+  email_notifications_enabled: true
+  slack_notifications_enabled: false
+  teams_notifications_enabled: false
+  webhook_notifications_enabled: false
+  notification_recipients: []
+  slack_channel: null
+  webhook_url: null
+  deadline_reminders:
+    - 120
+    - 90
+    - 60
+    - 30
+    - 14
+    - 7
+  notify_on_generation: true
+  notify_on_validation_failure: true
+  notify_on_approval: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  cache_hit_ratio_target: 95.0
+  max_concurrent_reports: 8
+  report_generation_timeout_seconds: 10
+  api_response_timeout_ms: 200
+  pdf_render_timeout_seconds: 5
+  parallel_framework_execution: true
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

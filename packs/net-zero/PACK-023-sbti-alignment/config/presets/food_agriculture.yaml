@@ -1,0 +1,270 @@
+# =============================================================================
+# PACK-023 SBTi Alignment Pack - Food & Agriculture Preset
+# =============================================================================
+# Configuration for food, beverage, and agriculture with FLAG mandatory
+# (>20% FLAG emissions). 11 commodity categories assessed with FLAG pathway
+# at 3.03%/yr. No-deforestation commitments validated. Land use change
+# emissions quantified. Combined FLAG + ACA targets for non-FLAG operations.
+# Covers food manufacturers, beverage producers, agricultural inputs
+# providers, and farm management organizations.
+#
+# Typical use cases:
+#   - Food and beverage manufacturers
+#   - Retail and distribution with private label food
+#   - Ingredient and agricultural inputs suppliers
+#   - Farming and livestock operations
+#   - Agribusiness and commodity traders
+#   - Animal feed and nutrition producers
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "FOOD_AGRICULTURE"
+sector_code: "NACE_A01_A02_C10"
+gics_sector: "3010_3020"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- SBTi Engines Configuration ---
+engines:
+  target_setting:
+    enabled: true
+    ambition_level: "CELSIUS_1_5"
+    scope_priorities:
+      scope1: 0.95
+      scope2: 0.95
+      scope3: 0.67
+  criteria_validation:
+    enabled: true
+    near_term_criteria: ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28"]
+    net_zero_criteria: ["NZ-C1", "NZ-C2", "NZ-C3", "NZ-C4", "NZ-C5", "NZ-C6", "NZ-C7", "NZ-C8", "NZ-C9", "NZ-C10", "NZ-C11", "NZ-C12", "NZ-C13", "NZ-C14"]
+  scope3_screening:
+    enabled: true
+    materiality_trigger_pct: 40.0
+    coverage_near_term_pct: 67.0
+    coverage_long_term_pct: 90.0
+    categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 14]
+  sda_sector:
+    enabled: true
+    sda_applicable: false
+    sda_sectors:
+      - "FOOD_BEVERAGE"
+  flag_assessment:
+    enabled: true
+    flag_applicable: true
+    flag_trigger_threshold_pct: 20.0
+    flag_commodities:
+      - "cattle"
+      - "soy"
+      - "palm_oil"
+      - "timber"
+      - "cocoa"
+      - "coffee"
+      - "rubber"
+      - "rice"
+      - "sugarcane"
+      - "maize"
+      - "wheat"
+    flag_annual_reduction_rate_pct: 3.03
+  temperature_rating:
+    enabled: true
+    aggregation_methods:
+      - "WATS"
+      - "TETS"
+      - "MOTS"
+    default_score_celsius: 3.2
+    include_scope3: true
+  progress_tracking:
+    enabled: true
+    review_cycle_years: 5
+    recalculation_trigger_threshold_pct: 5.0
+  recalculation:
+    enabled: true
+    trigger_types:
+      - "acquisition"
+      - "divestiture"
+      - "merger"
+      - "methodology_change"
+      - "commodity_sourcing_change"
+      - "land_acquisition_change"
+  fi_portfolio:
+    enabled: false
+    fi_applicable: false
+  submission_readiness:
+    enabled: true
+    readiness_dimensions: 5
+
+# --- Pathway Configuration (FLAG Mandatory + ACA) ---
+pathway:
+  methodology: "FLAG_ACA"
+  sda_enabled: false
+  sda_sectors: []
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: true
+  flag_trigger_threshold_pct: 20.0
+  aca_annual_reduction_rate_pct: 4.2
+  flag_annual_reduction_rate_pct: 3.03
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Scope 3 Configuration (FLAG Commodities Dominant) ---
+scope3:
+  categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 14]
+  activity_based_categories: [1, 4, 11, 14]
+  supplier_specific_categories: [1, 14]
+  spend_based_categories: [2, 3, 5, 6, 7, 9, 12]
+  materiality_threshold_pct: 0.5
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Supplier Engagement ---
+supplier:
+  enabled: true
+  max_suppliers: 6000
+  tier_thresholds:
+    collaborate: 3.0
+    require: 10.0
+    engage: 30.0
+    inform: 100.0
+  top_supplier_count: 120
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "deforestation_commitment"
+    - "target_ambition"
+    - "reduction_progress"
+    - "land_management_practices"
+  batch_size: 2000
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 8.5
+  carbon_price_eur_per_tco2e: 105.0
+  carbon_price_escalation_pct: 6.0
+  reporting_currency: "EUR"
+  planning_horizon_years: 12
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "SUSTAINABILITY_LINKED_BOND"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 10.0
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+    - "MOTS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: false
+  portfolio_weighting: "revenue"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Decomposition & Variance ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+    - "land_use_change"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 8.0
+  top_drivers_count: 15
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: true
+  max_entities: 50
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "commodity"
+    - "business_unit"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI & Carbon Removal ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 75
+  max_nature_based_pct: 60.0
+  shift_to_removals_by_year: 2035
+  preferred_registries:
+    - "verra"
+    - "gold_standard"
+    - "american_carbon_registry"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2027
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10
+
+# --- Data Quality Targets ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "default_factors"
+    - "secondary_calculated"
+  flag_commodity_traceability_required: true
+  land_use_data_source: "satellite_verified"
+  deforestation_monitoring_frequency: "monthly"
+
+# --- Sector-Specific Parameters ---
+sector_parameters:
+  flag_trigger_assessment_required: true
+  flag_commodities_coverage: "all_11_commodity_types"
+  no_deforestation_commitment_validation: true
+  land_use_change_emissions_quantification: true
+  high_carbon_stock_habitat_protection: true
+  peatland_protection_measures: true
+  supply_chain_traceability_requirement: "commodity_to_origin"
+  sustainable_agriculture_practice_promotion: true
+  livestock_emissions_reduction_focus: true
+  feed_efficiency_improvement_programs: true
+  soil_carbon_sequestration_projects: true
+  farmer_engagement_target_coverage_pct: 80
+  commodity_supplier_direct_engagement_pct: 60

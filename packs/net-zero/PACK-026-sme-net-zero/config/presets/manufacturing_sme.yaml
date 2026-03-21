@@ -1,0 +1,221 @@
+# =============================================================================
+# PACK-026 SME Net Zero Pack - Manufacturing SME Preset
+# =============================================================================
+# Sector-specific configuration for small manufacturing and production SMEs.
+# Emissions profile is S1+S2-heavy: S1 (fuel combustion, process heat) ~40%,
+# S2 (electricity for machinery) ~35%, S3 (materials, waste) ~25%. Process
+# efficiency and fuel switching are the key levers. Requires GOLD data quality
+# for accurate Scope 1 measurement (fuel logs, production records).
+#
+# Sector: Small manufacturing, production, workshops
+# Data tier: GOLD (detailed bills + production logs)
+# Scope focus: S1 (fuel) + S2 (electricity) significant
+# Emissions profile: 40% S1, 35% S2, 25% S3
+# Quick wins: Process efficiency, HVAC upgrade, renewable energy
+# Certification: ISO 14001 + Carbon Trust
+#
+# Key actions:
+#   - Production process optimization (reduce waste, improve yield)
+#   - HVAC and compressed air system upgrades
+#   - Renewable electricity procurement (PPA or on-site solar)
+#   - LED lighting across production floor and warehouse
+#   - Waste heat recovery from production processes
+#   - Material substitution (lower-carbon alternatives)
+#   - Motor and drive efficiency upgrades (IE4/IE5)
+#   - Insulation improvements (building envelope)
+#
+# Typical use cases:
+#   - Small metal fabrication workshops (welding, CNC, casting)
+#   - Food processing plants and bakeries
+#   - Furniture and woodworking manufacturers
+#   - Plastics and composites producers
+#   - Printing and packaging companies
+#   - Textile and garment manufacturers
+#   - Chemical mixing and formulation companies
+#   - Electronics assembly and contract manufacturers
+#   - Ceramics and glass producers
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sme_size: "SMALL"
+  sector: "MANUFACTURING"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  accounting_software: "SAGE"
+  number_of_sites: 2
+  has_fleet: true
+  has_production_facility: true
+
+# --- Data Quality (GOLD: Detailed bills + production logs) ---
+data_quality:
+  tier: "GOLD"
+  allow_industry_averages: false
+  allow_spend_based_estimation: true
+  require_utility_bills: true
+  require_supplier_data: true
+  data_completeness_target_pct: 80.0
+  emission_factor_source: "DEFRA_2024"
+  data_improvement_plan: true
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  base_year_recalculation_threshold_pct: 5.0
+  include_all_sites: true
+
+# --- Scope Configuration (S1+S2 heavy, S3 Cat 1, 3, 4, 5) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_estimation_method: "activity_based"
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 3, 4, 5]
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "hybrid"
+    cat_3: "activity_based"
+    cat_4: "spend_based"
+    cat_5: "activity_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 3.0
+  scope3_optional: false
+
+# --- Target Setting (42% by 2030 - SBTi SME route) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_reduction_pct: 42.0
+  long_term_reduction_pct: 90.0
+  annual_linear_reduction_pct: 4.2
+  sbti_sme_route: true
+  sbti_submission_planned: true
+  sme_climate_hub_commitment: true
+
+# --- Reduction Actions (Process-focused, MACC analysis) ---
+reduction:
+  max_actions: 10
+  planning_horizon_years: 5
+  budget_range_min_eur: 10000.0
+  budget_range_max_eur: 50000.0
+  include_quick_wins: true
+  quick_win_max_count: 5
+  include_renewable_procurement: true
+  include_energy_efficiency: true
+  include_supplier_engagement: true
+  include_fleet_electrification: true
+  include_process_optimization: true
+  include_behavioral_change: true
+  include_macc_analysis: true
+  carbon_price_eur_per_tco2e: 70.0
+  discount_rate_pct: 8.0
+  scenario_count: 3
+
+# --- Grant Preferences (Industrial decarbonization, technology adoption) ---
+grant:
+  enabled: true
+  preferred_categories:
+    - "INDUSTRIAL_DECARBONIZATION"
+    - "TECHNOLOGY_ADOPTION"
+    - "ENERGY_EFFICIENCY"
+    - "NATIONAL_PROGRAM"
+    - "EU_PROGRAM"
+  max_application_complexity: "HIGH"
+  region_focus: "NATIONAL"
+  sector_specific: true
+  include_tax_incentives: true
+  include_green_loans: true
+  budget_match_required: false
+
+# --- Certification (ISO 14001 + Carbon Trust) ---
+certification:
+  primary_pathway: "ISO_14001"
+  secondary_pathway: "CARBON_TRUST"
+  auto_recommend: true
+  readiness_assessment: true
+  max_certification_budget_eur: 15000.0
+  max_time_months: 12
+
+# --- Reporting (PDF + Excel, all 3 templates) ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+  templates:
+    - "net_zero_summary"
+    - "action_plan"
+    - "annual_progress"
+  include_cdp_mapping: false
+  include_sbti_mapping: true
+  include_sme_climate_hub_mapping: true
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+  include_grant_recommendations: true
+  include_certification_roadmap: true
+
+# --- Performance (Full: 2GB, <30 sec) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 2
+  timeout_seconds: 30
+  batch_size: 500
+  memory_limit_mb: 2048
+  lightweight_mode: false
+
+# --- Audit Trail (5-year, with external export) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5
+  external_audit_export: true
+
+# --- Verification (Third-party full audit) ---
+verification:
+  level: "THIRD_PARTY_FULL"
+  frequency: "ANNUAL"
+  scope_of_verification:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  include_scope3_in_verification: true
+
+# --- Scorecard (Quick assessment, manufacturing-relevant KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "QUICK"
+  dimensions:
+    - "baseline_completeness"
+    - "target_ambition"
+    - "reduction_progress"
+    - "data_quality"
+    - "certification_readiness"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_production"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+    - "energy_intensity_kwh_per_unit"
+    - "data_quality_score"
+    - "process_efficiency_score"
+  target_years: [2025, 2027, 2030, 2040, 2050]

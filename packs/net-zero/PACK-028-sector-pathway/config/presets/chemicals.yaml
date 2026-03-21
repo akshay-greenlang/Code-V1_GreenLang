@@ -1,0 +1,170 @@
+# =============================================================================
+# PACK-028 Sector Pathway Pack - Chemicals Preset
+# =============================================================================
+# Configuration for chemical manufacturing sector including petrochemicals,
+# specialty chemicals, and fertilizer production. SDA pathway available for
+# high-volume commodity chemicals. Key transitions: electrification of steam
+# cracking, green hydrogen for ammonia, bio-based feedstocks, waste heat
+# integration, and CCS for remaining process emissions.
+#
+# Typical use cases:
+#   - Petrochemical producers (ethylene, propylene, BTX)
+#   - Fertilizer manufacturers (ammonia, urea, nitric acid)
+#   - Specialty chemical companies
+#   - Industrial gas producers
+#   - Pharmaceutical intermediates
+#   - Polymer and plastics manufacturers
+#
+# Key sector characteristics:
+#   - High-temperature process heat (steam cracking at 850C+)
+#   - Process CO2 from chemical reactions (ammonia, soda ash)
+#   - Dual use of fossil fuels (feedstock + energy)
+#   - Strong feedstock-to-product CO2 nexus
+#   - Circular chemistry opportunities (chemical recycling)
+#   - Green hydrogen critical for ammonia decarbonization
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+primary_sector: "CHEMICALS"
+secondary_sectors: []
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+
+# --- SBTi SDA ---
+sbti_sda:
+  sbti_sda_enabled: true
+  sbti_sector_category: "CHEMICALS"
+  sbti_pathway: "CELSIUS_1_5"
+  sbti_target_year: 2030
+  sbti_net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  sbti_submission_planned: true
+  flag_pathway_enabled: false
+
+# --- IEA NZE ---
+iea_nze:
+  iea_nze_enabled: true
+  iea_scenario: "NZE"
+  iea_region: "Global"
+  iea_milestone_tracking: true
+  iea_technology_outlook: true
+
+# --- IPCC AR6 ---
+ipcc:
+  ipcc_pathway: "C1"
+  ipcc_overshoot: "no"
+  ipcc_gwp_metric: "GWP100"
+
+# --- Intensity ---
+intensity:
+  baseline_intensity: 0.0
+  baseline_year: 2019
+  intensity_metric: "tCO2e/tonne product"
+  intensity_boundary: "scope_1_2"
+  production_unit: "tonne product"
+  production_forecast_enabled: true
+  production_growth_rate_pct: 1.5
+
+# --- Convergence ---
+convergence:
+  convergence_model: "s_curve"
+  convergence_rate: 0.05
+  catch_up_period: 12
+  inflection_year: 2035
+  step_years: null
+  step_reductions_pct: null
+
+# --- Technology Roadmap ---
+technology:
+  technology_roadmap_enabled: true
+  trl_threshold: 6
+  capex_phasing: "linear"
+  planning_horizon_years: 18
+  critical_materials_risk: true
+  dependency_analysis: true
+  iea_milestone_mapping: true
+  max_parallel_transitions: 6
+  s_curve_adoption: true
+
+# --- MACC ---
+macc:
+  macc_enabled: true
+  carbon_price_floor: 70.0
+  carbon_price_ceiling: 250.0
+  abatement_potential_target: 0.80
+  lever_interaction_modeling: true
+  implementation_sequencing: true
+  discount_rate_pct: 9.0
+  max_levers: 45
+  include_negative_cost: true
+
+# --- Benchmarking ---
+benchmark:
+  benchmark_peer_enabled: true
+  benchmark_leader_enabled: true
+  benchmark_iea_enabled: true
+  peer_selection: "auto"
+  leader_percentile: 10
+  peer_group_size: 20
+  sbti_validated_only: false
+  regulatory_benchmarks:
+    - "EU_ETS"
+    - "SBTi_SDA"
+    - "IEA_NZE"
+    - "REACH"
+  benchmark_dimensions:
+    - "intensity_rank"
+    - "reduction_rate"
+    - "feedstock_mix"
+    - "hydrogen_readiness"
+    - "circular_chemistry"
+    - "ccs_readiness"
+    - "target_ambition"
+    - "pathway_gap"
+
+# --- Scenarios ---
+scenarios:
+  scenarios_enabled:
+    - "NZE"
+    - "WB2C"
+    - "2C"
+    - "APS"
+  scenario_sensitivity: true
+  carbon_price_sensitivity: true
+  technology_sensitivity: true
+  monte_carlo_runs: 1000
+  confidence_interval_pct: 90.0
+  risk_return_analysis: true
+  optimal_pathway_recommendation: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "GRI"
+  reporting_frequency: "quarterly"
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 7
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096

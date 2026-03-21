@@ -1,0 +1,160 @@
+# =============================================================================
+# PACK-035 Energy Benchmark - Data Center Preset
+# =============================================================================
+# Data centres, server farms, and colocation facilities. EUI range
+# 1000-5000 kWh/m2/yr. PUE (Power Usage Effectiveness) is the primary
+# benchmark metric. Dominant end uses: IT load, cooling, UPS losses,
+# lighting. Heating benchmark is NOT applicable. Cooling benchmark is
+# the dominant driver. 24/7/365 operation, 8760 hours/year.
+# Benchmarked against ENERGY STAR (Data Center) and BPIE.
+#
+# Typical use cases:
+#   - Enterprise data centres
+#   - Colocation / multi-tenant facilities
+#   - Edge data centres and modular facilities
+#   - Hyperscale campuses (per building)
+# =============================================================================
+
+# --- Facility Details ---
+facility_id: ""
+facility_name: ""
+building_type: "DATA_CENTER"
+climate_zone: "ASHRAE_4A"
+country_code: "NL"
+currency: "EUR"
+floor_area_type: "GIA"
+reporting_year: 2025
+operating_hours_per_week: 168.0
+
+# --- EUI ---
+eui:
+  accounting_boundary: "site"
+  floor_area_type: "GIA"
+  include_renewables: true
+  renewable_offset_method: "net_metered"
+  rolling_months: 12
+  include_plug_loads: true
+  include_process_loads: true
+  include_exterior_loads: true
+  data_frequency: "MONTHLY"
+  minimum_data_coverage_pct: 98.0
+  energy_carriers:
+    - "ELECTRICITY"
+    - "DISTRICT_COOLING"
+
+# --- Weather ---
+weather:
+  enabled: true
+  normalisation_method: "REGRESSION"
+  base_temp_heating_c: 10.0
+  base_temp_cooling_c: 15.0
+  min_r_squared: 0.75
+  max_cv_rmse: 0.20
+  weather_source: "auto"
+  degree_day_method: "mean_temperature"
+  min_months_regression: 12
+
+# --- Peer Comparison ---
+peer_comparison:
+  enabled: true
+  benchmark_sources:
+    - "ENERGY_STAR"
+    - "BPIE"
+  peer_group_criteria:
+    - "building_type"
+    - "climate_zone"
+    - "floor_area_band"
+  min_peer_count: 5
+  include_energy_star_score: true
+  percentile_display: [10, 25, 50, 75, 90]
+  include_quartile_analysis: true
+  include_best_practice_target: true
+  normalise_for_hours: false
+
+# --- Portfolio ---
+portfolio:
+  enabled: false
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: true
+  disaggregation_method: "end_use_split"
+  end_use_categories:
+    - "it_load"
+    - "cooling"
+    - "ups_losses"
+    - "power_distribution"
+    - "lighting"
+    - "other"
+  min_gap_threshold_pct: 3.0
+  link_to_measures: true
+  include_savings_potential: true
+  target_source: "peer_top_quartile"
+  include_payback_period: true
+  include_capital_cost_estimate: true
+
+# --- Rating ---
+rating:
+  enabled: true
+  rating_systems:
+    - "ENERGY_STAR"
+    - "CRREM"
+  epc_methodology: "operational"
+  epc_country_annex: "NL"
+  crrem_pathway_year: 2050
+  crrem_scenario: "1.5C"
+  include_regulatory_compliance: true
+
+# --- Trend ---
+trend:
+  enabled: true
+  rolling_window_months: 12
+  cusum_enabled: true
+  cusum_threshold_kwh_m2: 30.0
+  spc_enabled: true
+  spc_sigma: 2.0
+  yoy_comparison: true
+  seasonality_detection: true
+  alert_enabled: true
+  alert_channels:
+    - "EMAIL"
+    - "SLACK"
+    - "WEBHOOK"
+  alert_threshold_pct: 5.0
+  forecast_enabled: true
+  forecast_method: "exponential_smoothing"
+
+# --- Report ---
+report:
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  include_methodology: true
+  include_provenance: true
+  include_data_quality_notes: true
+  include_recommendations: true
+  include_executive_summary: true
+  include_charts: true
+  language: "en"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_ttl_seconds: 1800
+  max_facilities: 50
+  parallel_processing: true
+  max_parallel_workers: 8
+  memory_ceiling_mb: 4096
+  calculation_timeout_seconds: 180
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true

@@ -1,0 +1,1719 @@
+# =============================================================================
+# PACK-022: Net Zero Acceleration Pack
+# GreenLang Advanced Net Zero Decarbonization and Transition Finance Pack
+# =============================================================================
+# This pack extends PACK-021 (Net Zero Starter Pack) with advanced capabilities
+# for organizations accelerating their net-zero journey. It adds multi-scenario
+# Monte Carlo pathway analysis, SBTi Sectoral Decarbonization Approach (SDA)
+# for 12 sectors, tiered supplier engagement at scale (up to 50,000 suppliers),
+# climate transition finance integration (CapEx/OpEx, green bonds, EU Taxonomy),
+# SBTi Temperature Rating methodology, VCMI Claims Code validation, emissions
+# variance decomposition, multi-entity consolidation (up to 50 subsidiaries),
+# and assurance-ready workpaper generation for reasonable assurance readiness.
+#
+# The pack implements zero-hallucination calculation engines: all emissions
+# calculations, pathway models, temperature scores, and financial allocations
+# use deterministic formulas with published coefficients and lookup tables.
+# LLMs are used only for classification, entity resolution, and narrative
+# generation.
+#
+# Key Capabilities:
+#   - Multi-scenario Monte Carlo pathway analysis (1000 runs, 3+ scenarios)
+#   - SBTi Sectoral Decarbonization Approach for 12 sectors
+#   - 4-tier supplier engagement cascade (inform, engage, require, collaborate)
+#   - Activity-based Scope 3 calculations with supplier-specific emission factors
+#   - Climate transition CapEx/OpEx planning with EU Taxonomy alignment
+#   - SBTi Temperature Rating v2.0 (WATS, TETS, MOTS, EOTS, ECOTS, AOTS)
+#   - Emissions variance decomposition (structural, activity, intensity)
+#   - Multi-entity consolidation for up to 50 subsidiaries
+#   - VCMI Claims Code Silver/Gold/Platinum validation with evidence scoring
+#   - Assurance workpaper generation for limited and reasonable assurance
+#   - All PACK-021 capabilities (baseline, targets, MACC, gap, offsets, scorecard)
+#
+# Regulatory and Framework References:
+#   - SBTi Net-Zero Standard v1.2 (2024)
+#   - SBTi Temperature Rating Methodology v2.0 (2024)
+#   - SBTi Sectoral Decarbonization Approach (2015, updated 2024)
+#   - GHG Protocol Corporate Accounting and Reporting Standard (revised)
+#   - GHG Protocol Scope 3 Standard (Corporate Value Chain)
+#   - IPCC AR6 WG3 (Mitigation of Climate Change, 2022)
+#   - Paris Agreement Article 4
+#   - ISO 14064-1:2018 (GHG quantification and reporting)
+#   - ISO 14068-1:2023 (Carbon neutrality)
+#   - VCMI Claims Code of Practice (2023)
+#   - Oxford Principles for Net Zero Aligned Carbon Offsetting (2024)
+#   - ESRS E1 Climate Change (Delegated Regulation (EU) 2023/2772)
+#   - EU Taxonomy Climate Delegated Act (Regulation (EU) 2021/2139)
+#   - CDP Climate Change Questionnaire (2025)
+#   - TCFD Recommendations (2017, updated 2021)
+#   - PCAF Global Standard for Financed Emissions (2022)
+#   - IEA Net Zero Roadmap (2023)
+#   - TPI Global Climate Transition Centre (2024)
+#   - CRREM Carbon Risk Real Estate Monitor (2024)
+#
+# Target Organizations:
+#   - Large corporates accelerating net-zero implementation (>1000 employees)
+#   - Companies with approved SBTi targets pursuing rapid decarbonization
+#   - Organizations with complex multi-entity structures
+#   - Companies preparing for reasonable assurance on climate disclosures
+#   - CFOs integrating climate transition into financial planning
+#   - Supply chain managers running Scope 3 reduction programs at scale
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-18)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-022-net-zero-acceleration
+  version: "1.0.0"
+  display_name: "Net Zero Acceleration Pack"
+  description: >-
+    Advanced GreenLang deployment pack for organizations accelerating their
+    net-zero journey. Extends PACK-021 with 10 engines for multi-scenario Monte
+    Carlo pathway analysis, SBTi Sectoral Decarbonization Approach (12 sectors),
+    tiered supplier engagement (up to 50,000 suppliers), activity-based Scope 3
+    calculations, climate transition finance (CapEx/OpEx, green bonds, EU
+    Taxonomy alignment), SBTi Temperature Rating v2.0 (WATS/TETS/MOTS/EOTS),
+    emissions variance decomposition, multi-entity consolidation (up to 50
+    subsidiaries), VCMI Claims Code validation (Silver/Gold/Platinum), and
+    assurance workpaper generation. Bundles all 30 MRV agents, 20 data agents,
+    10 foundation agents, 21 decarbonization agents, 3 offset agents, and
+    bridges to GL-GHG-APP, GL-SBTi-APP, GL-CDP-APP, GL-TCFD-APP, and
+    GL-Taxonomy-APP. Supports heavy industry, power/utilities, manufacturing,
+    transport, financial services, real estate, consumer goods, and technology
+    sectors with tailored presets and multi-framework reporting (CDP, TCFD,
+    SBTi, ESRS E1).
+  category: net-zero
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-18"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/net-zero-acceleration"
+  changelog_url: "https://docs.greenlang.io/packs/net-zero-acceleration/changelog"
+  prerequisite_packs:
+    - pack_id: PACK-021-net-zero-starter
+      version: ">=1.0.0"
+      required: false
+      description: "PACK-021 baseline, targets, and roadmap (recommended but not required)"
+
+  tags:
+    - net-zero
+    - net-zero-acceleration
+    - sbti
+    - sbti-temperature-rating
+    - sbti-sda
+    - sbti-sectoral-decarbonization
+    - ghg-protocol
+    - scope-1
+    - scope-2
+    - scope-3
+    - scope-3-activity-based
+    - decarbonization
+    - monte-carlo
+    - scenario-modeling
+    - multi-scenario
+    - supplier-engagement
+    - supplier-tiering
+    - climate-finance
+    - transition-finance
+    - green-bonds
+    - eu-taxonomy
+    - capex-planning
+    - internal-carbon-pricing
+    - temperature-scoring
+    - variance-decomposition
+    - multi-entity
+    - consolidation
+    - vcmi
+    - vcmi-claims-code
+    - carbon-credits
+    - oxford-principles
+    - assurance
+    - audit-workpapers
+    - reasonable-assurance
+    - cdp-climate
+    - tcfd
+    - esrs-e1
+    - pcaf
+    - crrem
+    - iea-net-zero
+    - tpi
+    - paris-agreement
+    - ipcc-ar6
+    - iso-14064
+    - iso-14068
+    - carbon-neutrality
+    - target-setting
+    - pathway-modeling
+    - sector-benchmarking
+    - heavy-industry
+    - power-utilities
+    - professional-tier
+
+  regulation:
+    primary:
+      name: "SBTi Net-Zero Standard"
+      reference: "SBTi Net-Zero Standard v1.2 (2024)"
+      effective_date: "2024-01-01"
+      description: >-
+        The SBTi Net-Zero Standard defines a science-based pathway for companies
+        to achieve net-zero greenhouse gas emissions by no later than 2050.
+        It requires near-term targets (5-10 years) covering at least 95% of
+        Scope 1 and 2 emissions and 67% of Scope 3 emissions, and long-term
+        targets reducing emissions by at least 90% before 2050. Residual
+        emissions must be neutralized through permanent carbon removals.
+    secondary:
+      - name: "SBTi Temperature Rating Methodology"
+        reference: "SBTi Temperature Rating v2.0 (2024)"
+        effective_date: "2024-01-01"
+      - name: "SBTi Sectoral Decarbonization Approach"
+        reference: "SBTi SDA (2015, updated 2024)"
+        effective_date: "2015-01-01"
+      - name: "GHG Protocol Corporate Accounting and Reporting Standard"
+        reference: "GHG Protocol (revised 2004, updated 2015)"
+        effective_date: "2004-03-01"
+      - name: "GHG Protocol Scope 3 Standard"
+        reference: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+        effective_date: "2011-10-01"
+      - name: "IPCC Sixth Assessment Report (WG3)"
+        reference: "IPCC AR6 WG3, Mitigation of Climate Change (2022)"
+        effective_date: "2022-04-04"
+      - name: "Paris Agreement"
+        reference: "UNFCCC Paris Agreement, Article 4"
+        effective_date: "2016-11-04"
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018 (GHG quantification and reporting)"
+        effective_date: "2018-12-01"
+      - name: "ISO 14068-1:2023"
+        reference: "ISO 14068-1:2023 (Carbon neutrality)"
+        effective_date: "2023-11-01"
+      - name: "VCMI Claims Code of Practice"
+        reference: "VCMI Claims Code v1.0 (2023)"
+        effective_date: "2023-06-28"
+      - name: "Oxford Principles for Net Zero Aligned Carbon Offsetting"
+        reference: "Oxford Principles (revised 2024)"
+        effective_date: "2024-01-01"
+      - name: "ESRS E1 Climate Change"
+        reference: "Delegated Regulation (EU) 2023/2772"
+        effective_date: "2024-01-01"
+      - name: "EU Taxonomy Climate Delegated Act"
+        reference: "Regulation (EU) 2021/2139"
+        effective_date: "2022-01-01"
+      - name: "PCAF Global Standard"
+        reference: "PCAF Global GHG Accounting and Reporting Standard (2022)"
+        effective_date: "2022-12-01"
+      - name: "IEA Net Zero Roadmap"
+        reference: "IEA Net Zero by 2050 (2023 update)"
+        effective_date: "2023-09-01"
+      - name: "TPI Global Climate Transition Centre"
+        reference: "TPI Carbon Performance Assessment (2024)"
+        effective_date: "2024-01-01"
+      - name: "CRREM Carbon Risk Real Estate Monitor"
+        reference: "CRREM v2.0 (2024)"
+        effective_date: "2024-01-01"
+
+  compliance_references:
+    - id: "SBTI_NZ"
+      name: "SBTi Net-Zero Standard"
+      regulation: "SBTi Net-Zero Standard v1.2 (2024)"
+      effective_date: "2024-01-01"
+      description: >-
+        Defines science-based net-zero targets requiring near-term emission
+        reductions (5-10 years) aligned with 1.5C pathways, long-term
+        reductions of at least 90% by 2050, and neutralization of residual
+        emissions through permanent carbon dioxide removals.
+
+    - id: "SBTI_TEMP"
+      name: "SBTi Temperature Rating"
+      regulation: "SBTi Temperature Rating Methodology v2.0 (2024)"
+      effective_date: "2024-01-01"
+      description: >-
+        Methodology for translating corporate emissions targets into implied
+        temperature rise scores. Supports WATS (weighted average temperature
+        score), TETS, MOTS, EOTS, ECOTS, and AOTS aggregation methods.
+
+    - id: "SBTI_SDA"
+      name: "SBTi Sectoral Decarbonization Approach"
+      regulation: "SBTi SDA (2015, updated 2024)"
+      effective_date: "2015-01-01"
+      description: >-
+        Sector-specific intensity convergence pathways for homogeneous sectors
+        including power, cement, steel, aluminium, pulp/paper, transport,
+        buildings, chemicals, aviation, shipping, agriculture, and food/beverage.
+
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol Corporate Accounting and Reporting Standard"
+      effective_date: "2004-03-01"
+      description: >-
+        The foundational standard for corporate GHG accounting. Defines
+        organizational and operational boundaries, Scope 1/2/3 categories,
+        emission factor selection, and reporting requirements.
+
+    - id: "GHG_SCOPE3"
+      name: "GHG Protocol Scope 3 Standard"
+      regulation: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+      effective_date: "2011-10-01"
+      description: >-
+        Defines 15 categories of Scope 3 emissions across the corporate
+        value chain. Specifies calculation approaches (supplier-specific,
+        hybrid, average-data, spend-based) and data quality scoring.
+
+    - id: "IPCC_AR6"
+      name: "IPCC Sixth Assessment Report"
+      regulation: "IPCC AR6 WG3: Mitigation of Climate Change (2022)"
+      effective_date: "2022-04-04"
+      description: >-
+        Provides the scientific basis for 1.5C and well-below 2C pathways.
+        Defines global carbon budgets, sector-specific decarbonization
+        pathways, and GWP values used in emissions calculations.
+
+    - id: "PARIS"
+      name: "Paris Agreement"
+      regulation: "UNFCCC Paris Agreement, Article 4"
+      effective_date: "2016-11-04"
+      description: >-
+        International treaty committing parties to limit global warming
+        to well below 2C and pursue efforts toward 1.5C above pre-industrial
+        levels.
+
+    - id: "ISO_14064"
+      name: "ISO 14064-1:2018"
+      regulation: "ISO 14064-1:2018"
+      effective_date: "2018-12-01"
+      description: >-
+        International standard for GHG quantification and reporting at
+        the organization level.
+
+    - id: "ISO_14068"
+      name: "ISO 14068-1:2023"
+      regulation: "ISO 14068-1:2023"
+      effective_date: "2023-11-01"
+      description: >-
+        International standard for carbon neutrality. Defines requirements
+        for demonstrating carbon neutrality including quantification,
+        reduction, and offsetting.
+
+    - id: "VCMI"
+      name: "VCMI Claims Code of Practice"
+      regulation: "VCMI Claims Code v1.0 (2023)"
+      effective_date: "2023-06-28"
+      description: >-
+        Provides a rulebook for companies making voluntary carbon credit
+        claims. Defines Silver, Gold, and Platinum claim tiers based on
+        emission reduction progress and credit quality.
+
+    - id: "OXFORD"
+      name: "Oxford Principles for Net Zero Aligned Carbon Offsetting"
+      regulation: "Oxford Principles (revised 2024)"
+      effective_date: "2024-01-01"
+      description: >-
+        Principles for shifting offset portfolios toward carbon removal
+        over time.
+
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Climate Delegated Act"
+      regulation: "Regulation (EU) 2021/2139"
+      effective_date: "2022-01-01"
+      description: >-
+        Technical screening criteria for determining whether an economic
+        activity substantially contributes to climate change mitigation or
+        adaptation under the EU Taxonomy.
+
+    - id: "PCAF"
+      name: "PCAF Global Standard"
+      regulation: "PCAF Global GHG Accounting Standard (2022)"
+      effective_date: "2022-12-01"
+      description: >-
+        Global standard for measuring and disclosing financed emissions
+        across six asset classes (listed equity, corporate bonds, business
+        loans, project finance, commercial real estate, mortgages).
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Advanced calculation and processing engines (10 engines)
+  # ===========================================================================
+  engines:
+    - id: scenario_modeling
+      name: "Scenario Modeling Engine"
+      description: >-
+        Multi-scenario Monte Carlo pathway analysis with uncertainty
+        quantification. Models aggressive, moderate, conservative, and custom
+        decarbonization scenarios with 1000+ simulation runs per scenario.
+        Generates probability distributions for target achievement,
+        investment requirements, and emission trajectories. Supports
+        tornado sensitivity analysis to identify key decision variables.
+        Produces scenario comparison matrices with NPV-adjusted cost per
+        tCO2e abated. Zero-hallucination: all pathway coefficients from
+        SBTi and IEA published data; Monte Carlo sampling uses
+        deterministic seed for reproducibility; all arithmetic is native
+        Python with SHA-256 provenance hashing.
+      module: "engines.scenario_modeling_engine"
+      required: true
+
+    - id: sda_pathway
+      name: "SDA Pathway Engine"
+      description: >-
+        SBTi Sectoral Decarbonization Approach implementation for 12 sectors:
+        power generation, cement, steel, aluminium, pulp and paper, transport
+        (road, rail), buildings (residential, commercial), chemicals, aviation,
+        shipping, agriculture, and food/beverage. Calculates sector-specific
+        emission intensity convergence pathways using IEA sector benchmarks
+        and IPCC carbon budgets. Supports both absolute and intensity-based
+        convergence. Generates sector pathway curves with annual milestones
+        and validates targets against SBTi sector tools. Zero-hallucination:
+        all sector benchmarks from SBTi published pathway data and IEA Net
+        Zero Roadmap; convergence formulas are deterministic with provenance.
+      module: "engines.sda_pathway_engine"
+      required: true
+
+    - id: supplier_engagement
+      name: "Supplier Engagement Engine"
+      description: >-
+        Four-tier supplier engagement cascade for Scope 3 reduction at scale.
+        Tier 1 Inform: awareness communications and training.
+        Tier 2 Engage: data collection and target sharing.
+        Tier 3 Require: contractual emission reduction commitments.
+        Tier 4 Collaborate: joint decarbonization projects and innovation.
+        Supports automatic supplier tiering by emissions materiality,
+        engagement maturity scoring, progress tracking dashboards, and
+        data collection automation. Handles up to 50,000 suppliers with
+        batch processing. Zero-hallucination: supplier scoring from
+        deterministic rubrics; emission allocation by procurement share;
+        all aggregations verifiable.
+      module: "engines.supplier_engagement_engine"
+      required: true
+
+    - id: scope3_activity
+      name: "Scope 3 Activity Engine"
+      description: >-
+        Activity-based Scope 3 calculations replacing spend-based estimates
+        with precise emission factors for top categories. Supports
+        supplier-specific emission factors (DQIS score 1), hybrid method
+        with activity data plus emission factors (DQIS 2), average-data
+        method with physical quantities (DQIS 3), and spend-based as
+        fallback (DQIS 4-5). Calculates data quality improvement scores
+        (DQIS) per GHG Protocol Technical Guidance. Handles all 15 Scope 3
+        categories with category-specific calculation logic. Zero-hallucination:
+        emission factors from published databases (DEFRA, EPA, ecoinvent,
+        EXIOBASE); all calculations deterministic.
+      module: "engines.scope3_activity_engine"
+      required: true
+
+    - id: climate_finance
+      name: "Climate Finance Engine"
+      description: >-
+        Climate transition finance integration engine. Maps decarbonization
+        actions to CapEx and OpEx allocations with multi-year investment
+        scheduling. Screens actions for green bond eligibility per ICMA
+        Green Bond Principles. Calculates EU Taxonomy climate mitigation
+        alignment for climate CapEx and OpEx. Models internal carbon price
+        impact on action prioritization and ROI. Generates CFO-ready
+        investment cases with IRR, NPV, payback, and WACC-adjusted hurdle
+        rate comparisons. Zero-hallucination: all financial calculations
+        use standard DCF formulas; Taxonomy screening uses published
+        technical criteria; no LLM in any financial calculation.
+      module: "engines.climate_finance_engine"
+      required: true
+
+    - id: temperature_scoring
+      name: "Temperature Scoring Engine"
+      description: >-
+        SBTi Temperature Rating v2.0 implementation. Calculates implied
+        temperature rise scores for corporate targets using six aggregation
+        methods: WATS (Weighted Average Temperature Score), TETS (Total
+        Emissions Temperature Score), MOTS (Market Owned Temperature Score),
+        EOTS (Enterprise Owned Temperature Score), ECOTS (Enterprise Value
+        plus Cash Temperature Score), and AOTS (Revenue Owned Temperature
+        Score). Supports linear and logarithmic regression for target-to-
+        temperature mapping. Calculates portfolio-level temperature scores
+        for investment portfolios and supply chains. Zero-hallucination:
+        regression coefficients from SBTi published methodology; temperature
+        mapping tables from peer-reviewed literature; all scoring deterministic.
+      module: "engines.temperature_scoring_engine"
+      required: true
+
+    - id: variance_decomposition
+      name: "Variance Decomposition Engine"
+      description: >-
+        Emissions variance decomposition into structural, activity, and
+        intensity effects using logarithmic mean Divisia index (LMDI)
+        method. Decomposes year-over-year emission changes into: structural
+        effect (changes in activity mix), activity effect (changes in
+        output volume), and intensity effect (changes in emission intensity).
+        Generates driver attribution charts identifying top contributors
+        to variance. Produces rolling 4-quarter forecasts with confidence
+        intervals. Triggers early warning alerts when off-track metrics
+        exceed configurable thresholds. Zero-hallucination: LMDI
+        decomposition uses published mathematical formulation; all
+        forecasts based on statistical models with stated assumptions.
+      module: "engines.variance_decomposition_engine"
+      required: true
+
+    - id: multi_entity
+      name: "Multi-Entity Engine"
+      description: >-
+        Multi-entity emissions consolidation for corporate groups with
+        up to 50 subsidiaries. Supports three consolidation methods:
+        equity share (proportional to ownership), financial control
+        (100% if control), and operational control (100% if operating
+        authority). Handles intercompany elimination adjustments for
+        internal transactions (e.g., captive power plants, shared
+        services). Generates consolidated GHG inventory with entity-level
+        drill-down. Supports multiple reporting hierarchies (geographic,
+        divisional, legal entity). Zero-hallucination: consolidation
+        arithmetic follows GHG Protocol rules; elimination adjustments
+        are deterministic; all entity contributions traced.
+      module: "engines.multi_entity_engine"
+      required: false
+
+    - id: vcmi_validation
+      name: "VCMI Validation Engine"
+      description: >-
+        VCMI Claims Code Silver/Gold/Platinum validation engine. Evaluates
+        15 criteria across four pillars: Foundation (SBTi target, public
+        commitment), Credibility (reduction progress, Scope 3 coverage),
+        Credit Quality (registry, methodology, additionality, permanence),
+        and Transparency (disclosure, third-party verification). Scores
+        each criterion on a 0-100 scale with evidence requirements.
+        Generates claim tier recommendation with gap analysis for tier
+        upgrade. Tracks credit retirement evidence and portfolio quality
+        per Oxford Principles. Zero-hallucination: all scoring rubrics
+        from VCMI published criteria; tier thresholds deterministic.
+      module: "engines.vcmi_validation_engine"
+      required: false
+
+    - id: assurance_workpaper
+      name: "Assurance Workpaper Engine"
+      description: >-
+        Audit workpaper generation engine for limited and reasonable
+        assurance on climate disclosures. Generates methodology
+        documentation covering every calculation step with formula
+        references. Produces calculation trace files linking outputs to
+        source data with SHA-256 provenance chains. Creates data lineage
+        maps showing the flow from source system through transformation
+        to reported value. Generates control evidence summaries documenting
+        review and approval workflows. Supports ISAE 3000 and ISAE 3410
+        assurance engagement formats. Zero-hallucination: all workpapers
+        generated from deterministic templates populated with auditable
+        calculation traces; no LLM-generated content in assurance documents.
+      module: "engines.assurance_workpaper_engine"
+      required: false
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 workflows)
+  # ===========================================================================
+  workflows:
+    - id: scenario_analysis
+      name: "Scenario Analysis Workflow"
+      description: >-
+        5-phase workflow: Setup (define scenarios, uncertainty ranges,
+        Monte Carlo parameters) -> Model Run (execute 1000 simulations per
+        scenario with parallel processing) -> Sensitivity (tornado analysis
+        identifying top 10 decision variables) -> Compare (scenario
+        comparison matrix with probability-weighted outcomes) -> Recommend
+        (optimal scenario selection with risk-return tradeoff analysis).
+        Triggers PACK-021 baseline and target engines as prerequisites.
+      schedule: "quarterly"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: sda_target_setting
+      name: "SDA Target Setting Workflow"
+      description: >-
+        4-phase workflow: Sector Classification (map organization to SBTi
+        SDA sectors using NACE/GICS codes) -> Benchmark Calculation
+        (retrieve sector-specific convergence pathway from SBTi and IEA
+        benchmarks) -> Target Setting (calculate sector-aligned intensity
+        targets with base year normalization) -> Validation (cross-check
+        against SBTi target-setting tool and generate submission package).
+        Requires PACK-021 baseline engine output.
+      schedule: "once"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: supplier_program
+      name: "Supplier Engagement Program Workflow"
+      description: >-
+        5-phase workflow: Assess (profile all suppliers by Scope 3
+        materiality, collecting emission data and SBTi target status) ->
+        Tier (assign suppliers to engagement tiers 1-4 based on emission
+        share and responsiveness) -> Design (create tier-specific
+        engagement programs with targets, timelines, and resources) ->
+        Execute (deploy engagement campaigns with automated data collection
+        and progress monitoring) -> Report (generate supplier engagement
+        dashboard with emission reduction attribution).
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 5
+
+    - id: transition_finance
+      name: "Transition Finance Planning Workflow"
+      description: >-
+        4-phase workflow: CapEx Mapping (allocate decarbonization actions
+        to multi-year CapEx and OpEx budgets) -> Taxonomy Alignment (screen
+        climate CapEx against EU Taxonomy technical screening criteria) ->
+        Bond Screening (evaluate green bond eligibility per ICMA GBP for
+        qualifying expenditure) -> Investment Case (generate CFO-ready
+        investment case with IRR, NPV, payback, and carbon abatement
+        cost for each action).
+      schedule: "annual"
+      estimated_duration_minutes: 45
+      phases: 4
+
+    - id: advanced_progress
+      name: "Advanced Progress Analytics Workflow"
+      description: >-
+        5-phase workflow: Data Ingest (collect current-period emission data
+        from MRV agents) -> Decompose (LMDI variance decomposition into
+        structural, activity, and intensity effects) -> Attribute (identify
+        top 10 drivers of emission change with root cause annotation) ->
+        Forecast (rolling 4-quarter forward projection with confidence
+        intervals) -> Alert Generation (generate early warnings for
+        off-track metrics with corrective action recommendations).
+      schedule: "quarterly"
+      estimated_duration_minutes: 30
+      phases: 5
+
+    - id: temperature_alignment
+      name: "Temperature Alignment Workflow"
+      description: >-
+        4-phase workflow: Target Collection (gather approved SBTi targets
+        with timeframes, base years, and coverage) -> Score Calculation
+        (calculate implied temperature rise using SBTi regression model) ->
+        Portfolio Aggregation (aggregate scores using WATS, TETS, or MOTS
+        methods across entities or portfolio companies) -> Report (generate
+        temperature alignment report with sector comparison and trajectory
+        visualization).
+      schedule: "annual"
+      estimated_duration_minutes: 15
+      phases: 4
+
+    - id: vcmi_certification
+      name: "VCMI Certification Workflow"
+      description: >-
+        4-phase workflow: Evidence Collection (gather SBTi target
+        confirmation, reduction progress data, credit portfolio details,
+        and disclosure records) -> Criteria Check (evaluate all 15 VCMI
+        criteria across foundation, credibility, credit quality, and
+        transparency pillars) -> Claim Validation (determine eligible
+        claim tier: Silver, Gold, or Platinum with gap analysis) ->
+        Certification Report (generate VCMI-ready certification package
+        with evidence documentation).
+      schedule: "annual"
+      estimated_duration_minutes: 20
+      phases: 4
+
+    - id: full_acceleration
+      name: "Full Acceleration Assessment Workflow"
+      description: >-
+        8-phase end-to-end workflow: Scenario Analysis (multi-scenario
+        Monte Carlo) -> SDA Pathway (sector-specific targets) -> Supplier
+        Engagement (tiered program design) -> Transition Finance (CapEx/OpEx
+        planning) -> Advanced Progress (variance decomposition) ->
+        Temperature Scoring (implied temperature rating) -> VCMI Validation
+        (claims code compliance) -> Strategy Assembly (executive
+        acceleration strategy document with prioritized actions, investment
+        requirements, and governance recommendations). Orchestrates all
+        pack engines in dependency order.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 8
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 templates)
+  # ===========================================================================
+  templates:
+    - id: scenario_comparison_report
+      display_name: "Scenario Comparison Report"
+      description: >-
+        Multi-scenario comparison report with tornado sensitivity charts,
+        probability distributions for target achievement, investment
+        requirement ranges, and decision matrix. Includes Monte Carlo
+        confidence intervals and optimal scenario recommendation with
+        risk-adjusted return analysis.
+      format: "pdf"
+      template_file: "templates/scenario_comparison_report.jinja2"
+      enabled: true
+
+    - id: sda_pathway_report
+      display_name: "SDA Pathway Report"
+      description: >-
+        Sector-specific decarbonization pathway report with intensity
+        convergence curves, annual milestone targets, sector benchmark
+        comparison, and SBTi validation checklist. Includes IEA sector
+        pathway overlay and peer company positioning.
+      format: "pdf"
+      template_file: "templates/sda_pathway_report.jinja2"
+      enabled: true
+
+    - id: supplier_engagement_report
+      display_name: "Supplier Engagement Report"
+      description: >-
+        Supplier engagement program dashboard with tier distribution,
+        engagement maturity heatmap, emission reduction attribution by
+        supplier, progress tracking by tier, and data quality improvement
+        metrics. Includes supplier-level scorecards and aggregated
+        Scope 3 impact assessment.
+      format: "html"
+      template_file: "templates/supplier_engagement_report.jinja2"
+      enabled: true
+
+    - id: transition_finance_report
+      display_name: "Transition Finance Report"
+      description: >-
+        Climate CapEx/OpEx allocation report with multi-year investment
+        schedule, EU Taxonomy alignment ratios, green bond eligible
+        expenditure summary, IRR/NPV analysis per action, and internal
+        carbon pricing impact assessment. CFO-ready format with executive
+        summary.
+      format: "pdf"
+      template_file: "templates/transition_finance_report.jinja2"
+      enabled: true
+
+    - id: variance_analysis_report
+      display_name: "Variance Analysis Report"
+      description: >-
+        Emissions variance decomposition report with structural, activity,
+        and intensity effect waterfall charts. Year-over-year and
+        cumulative driver attribution. Rolling 4-quarter forecast with
+        confidence intervals. Off-track metric alerts with corrective
+        action recommendations.
+      format: "pdf"
+      template_file: "templates/variance_analysis_report.jinja2"
+      enabled: true
+
+    - id: temperature_alignment_report
+      display_name: "Temperature Alignment Report"
+      description: >-
+        SBTi Temperature Rating report showing implied temperature scores
+        by scope, timeframe, and aggregation method (WATS/TETS/MOTS).
+        Portfolio-level temperature alignment with sector comparison.
+        Trajectory visualization showing temperature pathway under
+        current targets vs. required 1.5C alignment.
+      format: "pdf"
+      template_file: "templates/temperature_alignment_report.jinja2"
+      enabled: true
+
+    - id: vcmi_claims_report
+      display_name: "VCMI Claims Report"
+      description: >-
+        VCMI Claims Code validation report with 15-criteria scorecard,
+        pillar-level assessment (foundation, credibility, credit quality,
+        transparency), claim tier recommendation (Silver/Gold/Platinum),
+        gap analysis for tier upgrade, and evidence documentation index.
+      format: "pdf"
+      template_file: "templates/vcmi_claims_report.jinja2"
+      enabled: true
+
+    - id: multi_entity_report
+      display_name: "Multi-Entity Consolidation Report"
+      description: >-
+        Multi-entity consolidated emissions report with entity-level
+        breakdown, consolidation method documentation, intercompany
+        elimination adjustments, reporting hierarchy visualization, and
+        entity contribution waterfall. Supports equity share, financial
+        control, and operational control presentations.
+      format: "pdf"
+      template_file: "templates/multi_entity_report.jinja2"
+      enabled: true
+
+    - id: assurance_package_report
+      display_name: "Assurance Package Report"
+      description: >-
+        Audit workpaper package for external assurance engagements.
+        Includes methodology documentation, calculation trace files
+        with SHA-256 provenance chains, data lineage maps, control
+        evidence summaries, assumption registers, and materiality
+        assessments. Formatted for ISAE 3000/3410 engagements.
+      format: "pdf"
+      template_file: "templates/assurance_package_report.jinja2"
+      enabled: true
+
+    - id: acceleration_strategy_report
+      display_name: "Acceleration Strategy Report"
+      description: >-
+        Executive acceleration strategy document synthesizing all pack
+        engine outputs. Includes scenario recommendation, sector pathway
+        alignment, supplier program impact, transition finance summary,
+        progress analytics, temperature alignment, VCMI readiness, and
+        prioritized action plan with governance recommendations. Board-ready
+        format with data-driven narratives.
+      format: "pdf"
+      template_file: "templates/acceleration_strategy_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase DAG pipeline with conditional phase execution, retry logic,
+        and SHA-256 provenance at each checkpoint. Phases: Health Check ->
+        Configuration -> PACK-021 Bridge -> Scenario Modeling -> SDA Pathway ->
+        Supplier Engagement -> Climate Finance -> Progress Analytics ->
+        Temperature Scoring -> Strategy Assembly. Supports parallel execution
+        of independent phases with dependency management.
+      module: "integrations.pack_orchestrator"
+      required: true
+
+    - id: pack021_bridge
+      name: "PACK-021 Bridge"
+      description: >-
+        Connects to PACK-021 Net Zero Starter Pack for baseline, target
+        setting, MACC analysis, gap analysis, offset portfolio, net-zero
+        scorecard, and sector benchmarking capabilities. Provides seamless
+        access to all 8 PACK-021 engines and their outputs. Handles
+        configuration inheritance and version compatibility.
+      module: "integrations.pack021_bridge"
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Routes data from all 30 AGENT-MRV agents for complete Scope 1/2/3
+        emissions calculation. Maps MRV outputs to acceleration pack format
+        for variance decomposition and multi-entity consolidation. Enhanced
+        with activity-based Scope 3 routing for supplier-specific emission
+        factors.
+      module: "integrations.mrv_bridge"
+      required: true
+
+    - id: ghg_app_bridge
+      name: "GL-GHG-APP Bridge"
+      description: >-
+        Connects to GL-GHG-APP v1.0 for GHG inventory calculation
+        infrastructure. Reuses the full MRV agent pipeline with
+        zero-hallucination guarantees.
+      module: "integrations.ghg_app_bridge"
+      required: true
+
+    - id: sbti_app_bridge
+      name: "GL-SBTi-APP Bridge"
+      description: >-
+        Connects to GL-SBTi-APP v1.0 for science-based target setting,
+        SDA pathway data, and temperature rating infrastructure. Enhanced
+        with SDA sector pathway access and temperature score regression
+        coefficients.
+      module: "integrations.sbti_app_bridge"
+      required: true
+
+    - id: decarb_bridge
+      name: "Decarbonization Agent Bridge"
+      description: >-
+        Connects to all 21 DECARB-X agents for reduction action modeling.
+        Enhanced with scenario-aware action evaluation for Monte Carlo
+        pathway analysis. Routes action costs and abatement potentials
+        to climate finance engine.
+      module: "integrations.decarb_bridge"
+      required: true
+
+    - id: taxonomy_bridge
+      name: "EU Taxonomy Bridge"
+      description: >-
+        Connects to GL-Taxonomy-APP v1.0 for EU Taxonomy climate mitigation
+        alignment. Screens climate CapEx against technical screening criteria
+        and Do No Significant Harm tests. Provides Taxonomy-aligned CapEx
+        and OpEx ratios for transition finance reporting.
+      module: "integrations.taxonomy_bridge"
+      required: false
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Connects to all 20 AGENT-DATA agents for supplier data intake,
+        quality management, and cross-source reconciliation. Enhanced
+        with supplier questionnaire automation for tier 2-4 engagement
+        and activity data collection at scale.
+      module: "integrations.data_bridge"
+      required: true
+
+    - id: reporting_bridge
+      name: "Reporting Framework Bridge"
+      description: >-
+        Cross-framework reporting bridge connecting to GL-CDP-APP,
+        GL-TCFD-APP, and ESRS E1 disclosure generation. Maps acceleration
+        pack outputs to CDP C4 (targets), TCFD metrics and targets, and
+        ESRS E1-1 (transition plan) disclosure requirements.
+      module: "integrations.reporting_bridge"
+      required: false
+
+    - id: offset_bridge
+      name: "Offset Agent Bridge"
+      description: >-
+        Connects to AGENT-OFFSET-001/002/003 for carbon credit quality
+        scoring, registry integration, and retirement tracking. Enhanced
+        with VCMI claims evidence collection and Oxford Principles
+        portfolio composition tracking.
+      module: "integrations.offset_bridge"
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        22-category system verification covering all 10 engines, PACK-021
+        availability, agent dependencies (30 MRV + 20 DATA + 10 FOUND +
+        21 DECARB + 3 OFFSET), database connectivity, emission factor
+        freshness, SDA pathway data currency, temperature rating
+        coefficient availability, VCMI criteria templates, and Taxonomy
+        screening criteria version.
+      module: "integrations.health_check"
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration wizard: Organization Profile (sector,
+        size, region, multi-entity structure) -> PACK-021 Link (import
+        baseline and targets) -> Scenario Definition (BAU, moderate,
+        ambitious, custom) -> SDA Sector Mapping (NACE/GICS to SBTi
+        sector) -> Supplier Tiering (emission threshold configuration) ->
+        Finance Parameters (discount rate, carbon price, budget) ->
+        Temperature Scoring (aggregation method selection) -> Assurance
+        Level (limited vs. reasonable assurance configuration).
+      module: "integrations.setup_wizard"
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: heavy_industry
+      name: "Heavy Industry Preset"
+      description: >-
+        Configuration for heavy industry (cement, steel, aluminium, chemicals)
+        with SDA pathway mandatory. Very high Scope 1 from process emissions
+        and combustion. CCS pathway enabled. Long 15-year planning horizon.
+        Supplier engagement focused on upstream raw materials. Temperature
+        scoring aligned with TPI sector benchmarks.
+      sector: "HEAVY_INDUSTRY"
+      enabled_engines:
+        - scenario_modeling
+        - sda_pathway
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - multi_entity
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/heavy_industry.yaml"
+
+    - id: power_utilities
+      name: "Power & Utilities Preset"
+      description: >-
+        Configuration for power generation and utilities with SDA pathway
+        mandatory. Grid decarbonization focus with coal phase-out modeling,
+        renewable capacity expansion, and storage integration. Long 20-year
+        planning horizon reflecting asset lifecycles. PCAF financed emissions
+        for utility holding structures.
+      sector: "POWER_UTILITIES"
+      enabled_engines:
+        - scenario_modeling
+        - sda_pathway
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - multi_entity
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/power_utilities.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for general manufacturing with mixed SDA/ACA pathway.
+        Energy efficiency and fuel switching as primary levers. Process
+        optimization enabled. Activity-based Scope 3 for categories 1, 3,
+        4, 5. Supplier engagement for top 200 suppliers.
+      sector: "MANUFACTURING"
+      enabled_engines:
+        - scenario_modeling
+        - sda_pathway
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/manufacturing.yaml"
+
+    - id: transport_logistics
+      name: "Transport & Logistics Preset"
+      description: >-
+        Configuration for transport, logistics, aviation, and shipping.
+        SDA pathway for transport sector. Fleet electrification, modal
+        shift, sustainable aviation fuel (SAF), and alternative marine
+        fuels as primary levers. High Scope 1 from mobile combustion.
+        Scope 3 Category 9 downstream transport dominant.
+      sector: "TRANSPORT"
+      enabled_engines:
+        - scenario_modeling
+        - sda_pathway
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/transport_logistics.yaml"
+
+    - id: financial_services
+      name: "Financial Services Preset"
+      description: >-
+        Configuration for banks, insurance, and asset managers. PCAF
+        financed emissions methodology for Scope 3 Category 15 (investments).
+        Portfolio temperature scoring using WATS aggregation. Very low
+        direct emissions, dominant financed/insured emissions. Green bond
+        screening and Taxonomy alignment for lending portfolios.
+      sector: "FINANCIAL_SERVICES"
+      enabled_engines:
+        - scenario_modeling
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - multi_entity
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/financial_services.yaml"
+
+    - id: real_estate
+      name: "Real Estate Preset"
+      description: >-
+        Configuration for real estate investment, development, and
+        management. CRREM carbon risk pathway alignment for building
+        portfolios. Scope 3 Category 13 (downstream leased assets)
+        dominant. Building energy performance certificates and retrofit
+        program management. Multi-entity for property portfolios.
+      sector: "REAL_ESTATE"
+      enabled_engines:
+        - scenario_modeling
+        - sda_pathway
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - multi_entity
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/real_estate.yaml"
+
+    - id: consumer_goods
+      name: "Consumer Goods Preset"
+      description: >-
+        Configuration for FMCG, retail, and consumer goods with supply
+        chain focus. Scope 3 Category 1 (purchased goods) represents
+        60-80% of total footprint. Supplier engagement critical with
+        emphasis on packaging, logistics, and raw material sourcing.
+        ACA pathway. Product carbon footprint integration.
+      sector: "CONSUMER_GOODS"
+      enabled_engines:
+        - scenario_modeling
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/consumer_goods.yaml"
+
+    - id: technology
+      name: "Technology Preset"
+      description: >-
+        Configuration for technology, software, and data center companies.
+        ACA pathway. Data center PUE optimization, cloud efficiency,
+        RE100 procurement as primary levers. Scope 3 Category 1 (purchased
+        hardware and cloud), Category 2 (capital goods), and Category 11
+        (product use-phase energy) dominant. Low direct emissions.
+      sector: "TECHNOLOGY"
+      enabled_engines:
+        - scenario_modeling
+        - supplier_engagement
+        - scope3_activity
+        - climate_finance
+        - temperature_scoring
+        - variance_decomposition
+        - vcmi_validation
+        - assurance_workpaper
+      file: "config/presets/technology.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for operational emissions (Scope 1/2/3)
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from fuel combustion in stationary equipment"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Calculates emissions from refrigerant leakage and F-gas use"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates emissions from company-owned vehicles and fleet"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates emissions from industrial and chemical processes"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Calculates fugitive emissions from equipment and systems"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates emissions from land use and land use change"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates emissions from on-site waste treatment"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates emissions from agricultural operations (FLAG)"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based grid electricity emissions"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates emissions from purchased steam and heat"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates emissions from purchased cooling"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 reporting"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Scope 3 Category 1 emissions from purchased goods and services"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Scope 3 Category 2 emissions from capital goods"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Scope 3 Category 3 fuel- and energy-related activities"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Scope 3 Category 4 upstream transportation and distribution"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Scope 3 Category 5 waste generated in operations"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Scope 3 Category 6 business travel emissions"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Scope 3 Category 7 employee commuting emissions"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Scope 3 Category 8 upstream leased assets emissions"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Scope 3 Category 9 downstream transportation and distribution"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Scope 3 Category 10 processing of sold products"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Scope 3 Category 11 use of sold products"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Scope 3 Category 12 end-of-life treatment of sold products"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Scope 3 Category 13 downstream leased assets"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Scope 3 Category 14 franchises"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Scope 3 Category 15 investments"
+      path: "greenlang/agents/mrv/investments/"
+      required: true
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps and routes emissions across all 15 Scope 3 categories"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage and audit trails for all MRV calculations"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts emissions data from utility bills, fuel invoices, and receipts"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes energy consumption, fleet, and procurement data"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to SAP, Oracle, Workday, Dynamics for spend and activity data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for grid factors, credit registries, SBTi data"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability for land-use related Scope 3"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for facility locations and climate risk"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for land-use and FLAG pathway verification"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier emissions surveys and CDP supply chain data at scale"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Physical climate hazard data for TCFD scenario analysis"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes procurement spend for spend-based Scope 3 estimation"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across energy, fleet, supplier, and financial data"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate invoices, meter readings, supplier entries, and entities"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing energy data, supplier emissions, and entity-level gaps"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption, emission factors, and financial values"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in facility-level and entity-level time series"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles data across ERP, utility providers, meter readings, and subsidiaries"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of grid factors, SDA pathways, temperature coefficients"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for GHG reporting and multi-entity formats"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage across acceleration pipeline for assurance workpapers"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces GHG Protocol, SBTi, ISO 14064, VCMI, and Taxonomy validation rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates net-zero and multi-entity data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes units (tCO2e, kWh, MJ, EUR, USD) and reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in scenario modeling, SDA pathways, and finance"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links data points to source evidence for SBTi and VCMI validation"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for net-zero data, reports, and workpapers"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for all acceleration pack outputs"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors agent performance and pipeline health"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Decarbonization Agents (21 DECARB-X agents for reduction modeling)
+# ---------------------------------------------------------------------------
+agents_decarb:
+  - id: AGENT-DECARB-001
+    name: "Energy Efficiency Agent"
+    description: "Models energy efficiency measures (LED, HVAC, insulation, motors)"
+    required: true
+  - id: AGENT-DECARB-002
+    name: "Renewable Procurement Agent"
+    description: "Models renewable electricity procurement (PPAs, GOs, on-site solar, RECs)"
+    required: true
+  - id: AGENT-DECARB-003
+    name: "Fuel Switching Agent"
+    description: "Models fuel switching scenarios (gas-to-electric, coal-to-biomass, hydrogen)"
+    required: true
+  - id: AGENT-DECARB-004
+    name: "Fleet Electrification Agent"
+    description: "Models vehicle fleet electrification and alternative fuel transition"
+    required: true
+  - id: AGENT-DECARB-005
+    name: "Process Optimization Agent"
+    description: "Models industrial process efficiency improvements and waste heat recovery"
+    required: true
+  - id: AGENT-DECARB-006
+    name: "Supplier Engagement Agent"
+    description: "Models Scope 3 reduction through tiered supplier engagement programs"
+    required: true
+  - id: AGENT-DECARB-007
+    name: "Circular Economy Agent"
+    description: "Models waste reduction, recycling, material efficiency, and product lifetime"
+    required: true
+  - id: AGENT-DECARB-008
+    name: "Building Retrofit Agent"
+    description: "Models building energy retrofit scenarios with CRREM alignment"
+    required: true
+  - id: AGENT-DECARB-009
+    name: "Heat Pump Agent"
+    description: "Models heat pump deployment for space and process heating"
+    required: true
+  - id: AGENT-DECARB-010
+    name: "Carbon Capture Agent"
+    description: "Models carbon capture and storage (CCS) scenarios for heavy industry"
+    required: true
+  - id: AGENT-DECARB-011
+    name: "Green Hydrogen Agent"
+    description: "Models green hydrogen as fuel substitute for hard-to-abate sectors"
+    required: true
+  - id: AGENT-DECARB-012
+    name: "Travel Reduction Agent"
+    description: "Models business travel reduction (video conferencing, policy changes)"
+    required: true
+  - id: AGENT-DECARB-013
+    name: "Commuting Reduction Agent"
+    description: "Models employee commuting reduction (remote work, transit subsidies)"
+    required: true
+  - id: AGENT-DECARB-014
+    name: "Logistics Optimization Agent"
+    description: "Models logistics and transportation optimization (modal shift, routing)"
+    required: true
+  - id: AGENT-DECARB-015
+    name: "Refrigerant Transition Agent"
+    description: "Models transition to low-GWP refrigerants"
+    required: true
+  - id: AGENT-DECARB-016
+    name: "On-Site Generation Agent"
+    description: "Models on-site renewable energy generation (solar PV, wind, storage)"
+    required: true
+  - id: AGENT-DECARB-017
+    name: "Green IT Agent"
+    description: "Models data center and IT infrastructure efficiency (PUE optimization)"
+    required: true
+  - id: AGENT-DECARB-018
+    name: "Sustainable Procurement Agent"
+    description: "Models low-carbon procurement policies and supplier switching"
+    required: true
+  - id: AGENT-DECARB-019
+    name: "Nature-Based Solutions Agent"
+    description: "Models afforestation, reforestation, and ecosystem restoration"
+    required: false
+  - id: AGENT-DECARB-020
+    name: "Behavior Change Agent"
+    description: "Models employee awareness and behavior change programs"
+    required: false
+  - id: AGENT-DECARB-021
+    name: "Scenario Comparison Agent"
+    description: "Compares multiple decarbonization scenarios and pathways"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Offset and Credit Agents (3 agents)
+# ---------------------------------------------------------------------------
+agents_offset:
+  - id: AGENT-OFFSET-001
+    name: "Credit Quality Agent"
+    description: "Scores carbon credit quality per VCMI and Oxford Principles"
+    required: true
+  - id: AGENT-OFFSET-002
+    name: "Registry Integration Agent"
+    description: "Integrates with Verra, Gold Standard, ACR, and CAR registries"
+    required: true
+  - id: AGENT-OFFSET-003
+    name: "Retirement Tracking Agent"
+    description: "Tracks credit retirement, vintage, and claim documentation"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Applications
+# ---------------------------------------------------------------------------
+agents_bridged_apps:
+  - id: GL-GHG-APP
+    name: "GL-GHG-APP v1.0"
+    description: "GHG inventory application for Scope 1/2/3 baseline"
+    required: true
+  - id: GL-SBTi-APP
+    name: "GL-SBTi-APP v1.0"
+    description: "SBTi target setting, SDA pathways, and temperature rating"
+    required: true
+  - id: GL-CDP-APP
+    name: "GL-CDP-APP v1.0 Beta"
+    description: "CDP Climate Change questionnaire response application"
+    required: false
+  - id: GL-TCFD-APP
+    name: "GL-TCFD-APP v1.0 Beta"
+    description: "TCFD disclosure generation application"
+    required: false
+  - id: GL-Taxonomy-APP
+    name: "GL-Taxonomy-APP v1.0 Alpha"
+    description: "EU Taxonomy alignment application for climate CapEx screening"
+    required: false
+
+# ---------------------------------------------------------------------------
+# Bridged Packs
+# ---------------------------------------------------------------------------
+agents_bridged_packs:
+  - id: PACK-021
+    name: "Net Zero Starter Pack"
+    description: "GHG baseline, SBTi targets, MACC analysis, gap tracking, offsets, scorecard"
+    required: false
+    version: ">=1.0.0"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 89
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    decarb_agents: 21
+    offset_agents: 3
+  bridged_apps: 5
+  bridged_packs: 1
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  scenario_modeling:
+    monte_carlo_runs: 1000
+    max_scenarios: 10
+    target_duration_minutes: 15
+    per_scenario_minutes: 3
+  sda_pathway:
+    supported_sectors: 12
+    target_duration_minutes: 2
+    per_sector_calc_ms: 500
+  supplier_engagement:
+    max_suppliers: 50000
+    scoring_per_1000_minutes: 10
+    batch_size: 2000
+  scope3_activity:
+    max_line_items: 200000
+    target_duration_minutes: 60
+    per_category_minutes: 4
+  climate_finance:
+    max_actions: 500
+    taxonomy_screening_ms: 200
+    target_duration_minutes: 15
+  temperature_scoring:
+    max_targets: 200
+    portfolio_aggregation_ms: 500
+    target_duration_minutes: 5
+  variance_decomposition:
+    max_periods: 40
+    decomposition_per_period_ms: 100
+    target_duration_minutes: 5
+  multi_entity:
+    max_entities: 50
+    consolidation_minutes: 30
+    per_entity_calc_ms: 300
+  vcmi_validation:
+    criteria_count: 15
+    target_duration_minutes: 10
+  assurance_workpaper:
+    workpaper_generation_minutes: 20
+    lineage_map_ms: 1000
+  baseline_calculation:
+    max_facilities: 2000
+    max_emission_sources: 10000
+    target_duration_minutes: 45
+  full_acceleration:
+    target_duration_minutes: 240
+  cache_hit_ratio_target: 0.75
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level, entity-level, and supplier access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - net_zero_director
+    - climate_strategy_lead
+    - sustainability_analyst
+    - supply_chain_manager
+    - finance_reviewer
+    - executive_viewer
+    - external_auditor
+    - admin
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 100
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 30
+    recommended_connections: 80
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_sbti_pathway_data
+    - verify_sbti_sda_sector_data
+    - verify_sbti_temperature_coefficients
+    - verify_ipcc_gwp_values
+    - verify_taxonomy_screening_criteria
+    - verify_vcmi_criteria_templates
+    - verify_pack021_availability
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+      - "V082-V088"
+      - "V089-V128"
+    pack021_migrations:
+      - "V083-PACK021-001"
+      - "V083-PACK021-002"
+      - "V083-PACK021-003"
+      - "V083-PACK021-004"
+      - "V083-PACK021-005"
+      - "V083-PACK021-006"
+    new:
+      - "V083-PACK022-001"  # Scenario model definitions and Monte Carlo results
+      - "V083-PACK022-002"  # SDA sector-specific decarbonization pathways
+      - "V083-PACK022-003"  # Supplier engagement program tracking
+      - "V083-PACK022-004"  # Climate CapEx/OpEx allocation records
+      - "V083-PACK022-005"  # Temperature rating results
+      - "V083-PACK022-006"  # Variance decomposition records
+      - "V083-PACK022-007"  # Multi-entity consolidation records
+      - "V083-PACK022-008"  # VCMI claims validation records
+
+  post_install:
+    - seed_ipcc_ar6_gwp_values
+    - seed_emission_factor_databases
+    - seed_sbti_pathway_models
+    - seed_sbti_sda_sector_benchmarks
+    - seed_sbti_temperature_coefficients
+    - seed_grid_emission_factors
+    - seed_sector_benchmark_data
+    - seed_credit_registry_metadata
+    - seed_taxonomy_screening_criteria
+    - seed_vcmi_criteria_templates
+    - seed_default_presets
+    - run_health_checks

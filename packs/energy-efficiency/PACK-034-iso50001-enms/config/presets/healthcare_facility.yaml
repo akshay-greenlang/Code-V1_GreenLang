@@ -1,0 +1,120 @@
+# =============================================================================
+# PACK-034 ISO 50001 EnMS - Healthcare Facility Preset
+# =============================================================================
+# 24/7 healthcare facility with HVAC, sterilisation, medical equipment,
+# and bed-day normalised EnPIs. EUI benchmark: 300-700 kWh/m2/yr.
+# Focus: patient safety constraints on energy measures, bed-day or
+# patient-normalised intensity EnPIs, strict compliance requirements.
+#
+# Typical use cases:
+#   - Acute hospitals and teaching hospitals
+#   - Private clinics and day surgery centres
+#   - Residential care homes and nursing facilities
+#   - Community health centres and polyclinics
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "HEALTHCARE"
+enms_maturity: "PLANNING"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 8760
+
+# --- SEU ---
+seu:
+  cumulative_threshold_pct: 80.0
+  individual_threshold_pct: 5.0
+  min_consumers: 4
+  include_categories:
+    - "HVAC"
+    - "WATER_HEATING"
+    - "LIGHTING"
+    - "STEAM"
+    - "REFRIGERATION"
+  review_frequency: "ANNUAL"
+  include_relevant_variables: true
+  track_personnel: true
+
+# --- Baseline ---
+baseline:
+  model_preference: "AUTO"
+  min_data_months: 12
+  max_cv_rmse: 25.0
+  min_r_squared: 0.75
+  significance_level: 0.05
+  outlier_method: "IQR"
+  auto_adjust: true
+
+# --- EnPI ---
+enpi:
+  enpi_types:
+    - "ABSOLUTE"
+    - "INTENSITY"
+    - "REGRESSION_BASED"
+  normalization_method: "OCCUPANCY"
+  target_improvement_pct: 2.0
+  track_by_seu: true
+  benchmark_enabled: true
+
+# --- CUSUM ---
+cusum:
+  method: "TABULAR"
+  alert_threshold: 2.0
+  monitoring_interval: "MONTHLY"
+  seasonal_adjustment: "DEGREE_DAY"
+
+# --- Degree Day ---
+degree_day:
+  heating_base_celsius: 15.5
+  cooling_base_celsius: 18.3
+  optimize_base_temp: true
+  normalization_basis: "TMY3"
+
+# --- Compliance ---
+compliance:
+  assessment_frequency: "ANNUAL"
+  auto_gap_analysis: true
+  nc_closure_days: 90
+  surveillance_reminder_days: 45
+  internal_audit_frequency: "ANNUAL"
+  management_review_frequency: "ANNUAL"
+  track_legal_requirements: true
+
+# --- Monitoring ---
+monitoring:
+  granularity: "MONTHLY"
+  data_retention_months: 84
+  quality_threshold: 0.95
+  auto_alerts: true
+  meter_hierarchy_enabled: true
+
+# --- Action Plan ---
+action_plan:
+  max_payback_years: 7.0
+  discount_rate: 0.06
+  analysis_period_years: 15
+  verification_method: "OPTION_C"
+  electricity_rate_eur_per_kwh: 0.26
+  gas_rate_eur_per_kwh: 0.09
+  include_non_energy_benefits: true
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  output_formats:
+    - "MARKDOWN"
+    - "HTML"
+  include_charts: true
+  include_recommendations: true
+  management_review_template: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  baseline_change_log: true
+  retention_days: 2555

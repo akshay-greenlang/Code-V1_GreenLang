@@ -1,0 +1,100 @@
+# =============================================================================
+# PACK-033 Quick Wins Identifier - Data Center Preset
+# =============================================================================
+# Data centre and server room environment with focus on cooling
+# optimization, UPS efficiency, airflow management, and IT load
+# management. EUI benchmark: 1000-5000 kWh/m2/yr. Key opportunities:
+# blanking panel installation, hot/cold aisle containment, raised floor
+# tile management, UPS eco-mode, free cooling setpoint raise, idle
+# server decommissioning.
+#
+# Typical use cases:
+#   - Enterprise data centres
+#   - Colocation facilities
+#   - Server rooms within office buildings
+#   - Edge computing sites
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "DATA_CENTER"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 8760
+
+# --- Scan ---
+scan:
+  depth: "COMPREHENSIVE"
+  categories:
+    - "HVAC"
+    - "IT_EQUIPMENT"
+    - "CONTROLS_SCHEDULING"
+    - "LIGHTING"
+    - "PLUG_LOADS"
+    - "BUILDING_ENVELOPE"
+  max_measures_per_category: 10
+  include_no_cost_measures: true
+  include_low_cost_measures: true
+  include_medium_cost_measures: true
+  max_payback_years: 2.0
+  minimum_annual_savings_eur: 1000.0
+  utility_bill_months: 12
+  walkthrough_checklist: true
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.20
+  gas_rate_eur_per_kwh: 0.08
+  discount_rate: 0.10
+  analysis_period_years: 7
+  energy_price_escalation_pct: 3.0
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+  sbti_alignment_tracking: true
+
+# --- Prioritization ---
+prioritization:
+  profile: "SAVINGS_FOCUSED"
+  weight_financial_savings: 0.35
+  weight_payback_period: 0.20
+  weight_carbon_reduction: 0.25
+  weight_implementation_ease: 0.10
+  weight_co_benefits: 0.10
+  top_n_recommendations: 15
+
+# --- Behavioural ---
+behavioral:
+  enabled: false
+  estimated_savings_pct: 1.0
+
+# --- Rebate ---
+rebate:
+  enabled: true
+  country: "DE"
+  include_federal_programmes: true
+  include_eu_programmes: true
+  include_utility_rebates: true
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "JSON"
+  executive_summary: true
+  detailed_measure_cards: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

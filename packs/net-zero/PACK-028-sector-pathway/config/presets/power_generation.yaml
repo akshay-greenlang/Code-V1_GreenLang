@@ -1,0 +1,166 @@
+# =============================================================================
+# PACK-028 Sector Pathway Pack - Power Generation Preset
+# =============================================================================
+# Configuration for power generation and grid electricity sector with SBTi SDA
+# pathway mandatory. Intensity metric: gCO2/kWh. Key transitions include coal
+# phase-out by 2030 (OECD) / 2040 (non-OECD), renewable capacity expansion,
+# grid-scale storage deployment, nuclear fleet management, and CCS for
+# remaining fossil baseload.
+#
+# Typical use cases:
+#   - Vertically integrated utilities
+#   - Independent power producers (IPPs)
+#   - District heating companies
+#   - Grid operators with generation assets
+#   - Renewable energy developers (benchmarking)
+#
+# IEA NZE key milestones:
+#   - 2025: No new unabated coal plants approved
+#   - 2030: 60% power from renewables, coal phase-out in OECD
+#   - 2035: All electricity in OECD from zero-emission sources
+#   - 2040: Coal phase-out globally, near-zero unabated gas
+#   - 2050: Net-zero electricity globally (gCO2/kWh -> 0)
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+primary_sector: "POWER"
+secondary_sectors: []
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+
+# --- SBTi SDA (mandatory for power) ---
+sbti_sda:
+  sbti_sda_enabled: true
+  sbti_sector_category: "POWER"
+  sbti_pathway: "CELSIUS_1_5"
+  sbti_target_year: 2030
+  sbti_net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  sbti_submission_planned: true
+  flag_pathway_enabled: false
+
+# --- IEA NZE ---
+iea_nze:
+  iea_nze_enabled: true
+  iea_scenario: "NZE"
+  iea_region: "Global"
+  iea_milestone_tracking: true
+  iea_technology_outlook: true
+
+# --- IPCC AR6 ---
+ipcc:
+  ipcc_pathway: "C1"
+  ipcc_overshoot: "no"
+  ipcc_gwp_metric: "GWP100"
+
+# --- Intensity ---
+intensity:
+  baseline_intensity: 0.0
+  baseline_year: 2019
+  intensity_metric: "gCO2/kWh"
+  intensity_boundary: "scope_1"
+  production_unit: "MWh"
+  production_forecast_enabled: true
+  production_growth_rate_pct: 2.5
+
+# --- Convergence ---
+convergence:
+  convergence_model: "exponential"
+  convergence_rate: 0.08
+  catch_up_period: 8
+  inflection_year: null
+  step_years: null
+  step_reductions_pct: null
+
+# --- Technology Roadmap ---
+technology:
+  technology_roadmap_enabled: true
+  trl_threshold: 7
+  capex_phasing: "front_loaded"
+  planning_horizon_years: 15
+  critical_materials_risk: true
+  dependency_analysis: true
+  iea_milestone_mapping: true
+  max_parallel_transitions: 8
+  s_curve_adoption: true
+
+# --- MACC ---
+macc:
+  macc_enabled: true
+  carbon_price_floor: 60.0
+  carbon_price_ceiling: 250.0
+  abatement_potential_target: 0.95
+  lever_interaction_modeling: true
+  implementation_sequencing: true
+  discount_rate_pct: 7.0
+  max_levers: 40
+  include_negative_cost: true
+
+# --- Benchmarking ---
+benchmark:
+  benchmark_peer_enabled: true
+  benchmark_leader_enabled: true
+  benchmark_iea_enabled: true
+  peer_selection: "auto"
+  leader_percentile: 10
+  peer_group_size: 25
+  sbti_validated_only: false
+  regulatory_benchmarks:
+    - "EU_ETS"
+    - "SBTi_SDA"
+    - "IEA_NZE"
+  benchmark_dimensions:
+    - "intensity_rank"
+    - "reduction_rate"
+    - "renewable_share"
+    - "coal_exposure"
+    - "storage_capacity"
+    - "target_ambition"
+    - "pathway_gap"
+
+# --- Scenarios ---
+scenarios:
+  scenarios_enabled:
+    - "NZE"
+    - "WB2C"
+    - "APS"
+    - "STEPS"
+  scenario_sensitivity: true
+  carbon_price_sensitivity: true
+  technology_sensitivity: true
+  monte_carlo_runs: 1000
+  confidence_interval_pct: 90.0
+  risk_return_analysis: true
+  optimal_pathway_recommendation: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "ESRS"
+  reporting_frequency: "quarterly"
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 7
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096

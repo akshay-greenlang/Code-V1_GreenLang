@@ -1,0 +1,116 @@
+# =============================================================================
+# PACK-034 ISO 50001 EnMS - Retail Chain Preset
+# =============================================================================
+# Multi-site retail chain with lighting, HVAC, refrigeration, and
+# store-level EnPIs. EUI benchmark: 200-500 kWh/m2/yr.
+# Focus: portfolio-level EnMS with store-type grouping, sales-area
+# normalised EnPIs, and centralised energy team coordination.
+#
+# Typical use cases:
+#   - Supermarket and grocery chains
+#   - Department store groups
+#   - Fashion and specialty retail chains
+#   - Convenience store networks
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "RETAIL"
+enms_maturity: "PLANNING"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 3500
+
+# --- SEU ---
+seu:
+  cumulative_threshold_pct: 80.0
+  individual_threshold_pct: 5.0
+  min_consumers: 3
+  include_categories:
+    - "LIGHTING"
+    - "HVAC"
+    - "REFRIGERATION"
+    - "IT_EQUIPMENT"
+    - "WATER_HEATING"
+  review_frequency: "ANNUAL"
+  include_relevant_variables: true
+  track_personnel: true
+
+# --- Baseline ---
+baseline:
+  model_preference: "AUTO"
+  min_data_months: 12
+  max_cv_rmse: 25.0
+  min_r_squared: 0.75
+  significance_level: 0.05
+  outlier_method: "IQR"
+  auto_adjust: true
+
+# --- EnPI ---
+enpi:
+  enpi_types:
+    - "ABSOLUTE"
+    - "INTENSITY"
+    - "REGRESSION_BASED"
+  normalization_method: "AREA"
+  target_improvement_pct: 3.0
+  track_by_seu: true
+  benchmark_enabled: true
+
+# --- CUSUM ---
+cusum:
+  method: "TABULAR"
+  alert_threshold: 2.0
+  monitoring_interval: "MONTHLY"
+  seasonal_adjustment: "DEGREE_DAY"
+
+# --- Degree Day ---
+degree_day:
+  heating_base_celsius: 15.5
+  cooling_base_celsius: 18.3
+  optimize_base_temp: true
+  normalization_basis: "TMY3"
+
+# --- Compliance ---
+compliance:
+  assessment_frequency: "ANNUAL"
+  auto_gap_analysis: true
+  nc_closure_days: 90
+  surveillance_reminder_days: 30
+  internal_audit_frequency: "ANNUAL"
+  management_review_frequency: "ANNUAL"
+
+# --- Monitoring ---
+monitoring:
+  granularity: "MONTHLY"
+  data_retention_months: 60
+  quality_threshold: 0.95
+  auto_alerts: true
+  meter_hierarchy_enabled: true
+
+# --- Action Plan ---
+action_plan:
+  max_payback_years: 4.0
+  discount_rate: 0.08
+  verification_method: "OPTION_C"
+  electricity_rate_eur_per_kwh: 0.26
+  gas_rate_eur_per_kwh: 0.09
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  output_formats:
+    - "MARKDOWN"
+    - "HTML"
+  include_charts: true
+  include_recommendations: true
+  management_review_template: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_days: 2555

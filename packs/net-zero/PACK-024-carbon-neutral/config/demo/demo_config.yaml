@@ -1,0 +1,244 @@
+# =============================================================================
+# PACK-024 Carbon Neutral Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for CleanTech Manufacturing GmbH, a fictional mid-size
+# industrial manufacturing company headquartered in Stuttgart, Germany. The
+# company operates in the technology-enhanced manufacturing sector with a
+# carbon neutrality commitment under ISO 14068-1:2023.
+#
+# This configuration demonstrates:
+#   - Comprehensive GHG footprint (Scope 1, 2, 3) per ISO 14064-1
+#   - Carbon management plan with reduction-first strategy
+#   - ICVCM CCP-aligned credit quality assessment (12 dimensions)
+#   - Optimized credit portfolio (avoidance + removal mix)
+#   - Registry retirement tracking (Verra, Gold Standard)
+#   - Annual neutralization balance with buffer pool
+#   - ISO 14068-1 and PAS 2060 claims substantiation
+#   - ISAE 3410 limited assurance verification package
+#   - Annual cycle with quarterly milestones
+#   - Permanence risk assessment with reversal monitoring
+#   - Multi-framework reporting (ISO 14068-1, PAS 2060, GHG Protocol)
+#
+# Company Profile:
+#   - Legal Name: CleanTech Manufacturing GmbH
+#   - Headquarters: Stuttgart, Germany (NACE: C26 - Electronics Manufacturing)
+#   - Revenue: EUR 420 million (2024)
+#   - Employees: 1,800
+#   - Facilities: 3 (HQ Stuttgart, Production Munich, Logistics Frankfurt)
+#
+# Carbon Footprint (2024):
+#   Scope 1: ~5,200 tCO2e (natural gas, fleet, refrigerants)
+#   Scope 2: ~3,800 tCO2e location-based, ~1,900 market-based (50% PPA)
+#   Scope 3: ~42,000 tCO2e across 9 material categories
+#   Total: ~51,000 tCO2e (location-based)
+#
+# Neutrality Strategy:
+#   - Year 1 (2025): Achieve carbon neutrality via offsets (51,000 tCO2e)
+#   - Years 2-3: Reduce footprint by 15% through energy efficiency + PPAs
+#   - Years 4-5: Shift portfolio from avoidance to 40% removal credits
+#   - Long-term: Achieve absolute net-zero by 2040 (residual + CDR)
+#
+# Credit Portfolio (2025):
+#   - Total credits: 51,000 tCO2e + 5,100 buffer (10%)
+#   - Avoidance: 60% (renewable energy, cookstoves, methane capture)
+#   - Removal: 25% (reforestation, soil carbon, biochar)
+#   - Nature-based: 35% (within 40% limit)
+#   - Average quality score: 72/100 (B+ rating)
+#   - Average price: EUR 28/tCO2e
+#   - Total spend: EUR 1,571,000
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization Profile ---
+organization:
+  name: "CleanTech Manufacturing GmbH"
+  neutrality_type: "CORPORATE"
+  sector: "MANUFACTURING"
+  size: "LARGE"
+  region: "EU"
+  country: "DE"
+  revenue_eur: 420000000.0
+  employee_count: 1800
+  fiscal_year_end: "12-31"
+  erp_system: "SAP"
+
+# --- Organizational Boundary ---
+boundary:
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  entities_included:
+    - "CleanTech Manufacturing GmbH - HQ Stuttgart"
+    - "CleanTech Manufacturing GmbH - Production Munich"
+    - "CleanTech Manufacturing GmbH - Logistics Frankfurt"
+  reporting_currency: "EUR"
+  include_joint_ventures: false
+  include_scope3: true
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 9, 11]
+  materiality_threshold_pct: 1.0
+  de_minimis_pct: 5.0
+
+# --- Footprint Quantification ---
+footprint:
+  scope1_data_source: "ERP_SAP"
+  scope2_data_source: "FILE_UPLOAD"
+  scope3_data_source: "API"
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  emission_factors_source: "IPCC_AR6_2022"
+  include_biogenic_co2: false
+  gwp_source: "IPCC_AR6"
+  gwp_timeframe: 100
+  uncertainty_assessment: true
+  data_quality_scoring: true
+
+# --- Carbon Management Plan ---
+carbon_management_plan:
+  planning_horizon_years: 5
+  reduction_first_strategy: true
+  min_reduction_before_offset_pct: 50.0
+  internal_carbon_price_eur: 100.0
+  max_offset_reliance_pct: 50.0
+  annual_reduction_target_pct: 4.2
+
+# --- Credit Quality ---
+credit_quality:
+  min_quality_score: 65
+  icvcm_ccp_compliance: true
+  preferred_standards:
+    - "verra_vcs"
+    - "gold_standard"
+  min_additionality_score: 7
+  min_permanence_score: 7
+  require_sdg_contribution: true
+
+# --- Portfolio Optimization ---
+portfolio_optimization:
+  max_nature_based_pct: 40.0
+  max_avoidance_pct: 60.0
+  min_removal_pct: 20.0
+  diversification_min_types: 3
+  vintage_max_age_years: 5
+  geographic_diversification: true
+  budget_constraint_enabled: true
+
+# --- Registry Retirement ---
+registry_retirement:
+  auto_retirement: false
+  retirement_timing: "within_reporting_period"
+  supported_registries:
+    - "verra"
+    - "gold_standard"
+  serial_number_tracking: true
+  double_counting_prevention: true
+
+# --- Neutralization Balance ---
+neutralization_balance:
+  balance_method: "ANNUAL"
+  allow_forward_credits: false
+  buffer_pool_pct: 10.0
+  shortfall_action: "purchase_additional"
+  surplus_carryover: false
+  verification_frequency: "annual"
+
+# --- Claims Substantiation ---
+claims_substantiation:
+  claim_type: "CARBON_NEUTRAL"
+  standard: "ISO_14068_1"
+  pas2060_compliance: true
+  vcmi_claims_code: false
+  public_disclosure_required: true
+  third_party_verification: true
+  claim_period: "annual"
+
+# --- Verification Package ---
+verification_package:
+  assurance_level: "LIMITED"
+  standard: "ISAE_3410"
+  third_party_verifier: true
+  evidence_completeness_target_pct: 95.0
+  documentation_format: "PDF"
+
+# --- Annual Cycle ---
+annual_cycle:
+  cycle_start_month: 1
+  cycle_end_month: 12
+  milestone_frequency: "QUARTERLY"
+  progress_reporting: true
+  recertification_reminder_days: 90
+  continuous_improvement_tracking: true
+
+# --- Permanence Risk ---
+permanence_risk:
+  risk_assessment_frequency: "annual"
+  buffer_contribution_pct: 15.0
+  reversal_monitoring: true
+  replacement_trigger_threshold_pct: 10.0
+  insurance_coverage_required: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_iso14068_mapping: true
+  include_pas2060_mapping: true
+  include_ghg_protocol_mapping: true
+  include_cdp_mapping: false
+  language: "en"
+  multi_language_support: true
+  supported_languages:
+    - "en"
+    - "de"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 8
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# =============================================================================
+# Synthetic Footprint Data (2024)
+# =============================================================================
+# Scope 1: ~5,200 tCO2e
+#   - Natural gas heating: 2,400 tCO2e
+#   - Process heat: 1,200 tCO2e
+#   - Fleet vehicles (20 vans): 1,100 tCO2e
+#   - Refrigerants (R410A): 500 tCO2e
+#
+# Scope 2: ~3,800 tCO2e (location), ~1,900 tCO2e (market)
+#   - Grid electricity: 3,800 tCO2e location / 1,900 tCO2e market (50% PPA)
+#
+# Scope 3: ~42,000 tCO2e
+#   - Cat 1 Purchased goods: 18,000 tCO2e (43%)
+#   - Cat 2 Capital goods: 3,500 tCO2e (8%)
+#   - Cat 3 Fuel/energy: 2,100 tCO2e (5%)
+#   - Cat 4 Upstream transport: 5,200 tCO2e (12%)
+#   - Cat 5 Waste: 1,800 tCO2e (4%)
+#   - Cat 6 Business travel: 2,500 tCO2e (6%)
+#   - Cat 7 Commuting: 3,600 tCO2e (9%)
+#   - Cat 9 Downstream transport: 3,200 tCO2e (8%)
+#   - Cat 11 Use of products: 2,100 tCO2e (5%)
+#
+# Total: 51,000 tCO2e (location-based)
+#
+# Credit Portfolio Budget: EUR 1,571,000 (56,100 tCO2e @ EUR 28 avg)
+# =============================================================================

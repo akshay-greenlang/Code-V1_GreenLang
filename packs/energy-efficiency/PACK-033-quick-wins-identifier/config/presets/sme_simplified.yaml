@@ -1,0 +1,99 @@
+# =============================================================================
+# PACK-033 Quick Wins Identifier - SME Simplified Preset
+# =============================================================================
+# Simplified configuration for small and medium enterprises. Quick scan
+# focused on the top 5 highest-impact, lowest-cost measures. No sub-
+# metering required -- utility bills only. Simplified financial analysis
+# focused on simple payback. Targets measures under EUR 2,000 with
+# payback under 2 years.
+#
+# Typical use cases:
+#   - Small offices (under 50 employees)
+#   - Independent retail shops
+#   - Small workshops and light manufacturing
+#   - Professional services firms
+#   - Hospitality (small hotels, restaurants)
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "SME"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 2500
+
+# --- Scan ---
+scan:
+  depth: "QUICK"
+  categories:
+    - "LIGHTING"
+    - "HVAC"
+    - "PLUG_LOADS"
+    - "BEHAVIORAL"
+    - "WATER_HEATING"
+  max_measures_per_category: 5
+  include_no_cost_measures: true
+  include_low_cost_measures: true
+  include_medium_cost_measures: false
+  max_payback_years: 2.0
+  minimum_annual_savings_eur: 50.0
+  utility_bill_months: 12
+  walkthrough_checklist: true
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.32
+  gas_rate_eur_per_kwh: 0.11
+  discount_rate: 0.10
+  analysis_period_years: 5
+  energy_price_escalation_pct: 4.0
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Prioritization ---
+prioritization:
+  profile: "QUICK_IMPLEMENTATION"
+  weight_financial_savings: 0.25
+  weight_payback_period: 0.30
+  weight_carbon_reduction: 0.10
+  weight_implementation_ease: 0.30
+  weight_co_benefits: 0.05
+  top_n_recommendations: 5
+
+# --- Behavioural ---
+behavioral:
+  enabled: true
+  awareness_campaign: true
+  switch_off_programme: true
+  thermostat_discipline: true
+  estimated_savings_pct: 5.0
+
+# --- Rebate ---
+rebate:
+  enabled: true
+  country: "DE"
+  include_federal_programmes: true
+  include_utility_rebates: true
+  include_eu_programmes: false
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "MARKDOWN"
+  executive_summary: true
+  detailed_measure_cards: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  retention_years: 3

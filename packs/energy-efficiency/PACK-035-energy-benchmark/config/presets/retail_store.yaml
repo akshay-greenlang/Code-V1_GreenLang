@@ -1,0 +1,144 @@
+# =============================================================================
+# PACK-035 Energy Benchmark - Retail Store Preset
+# =============================================================================
+# Retail stores, shopping centres, and showrooms. EUI range 200-500
+# kWh/m2/yr. Dominant end uses: lighting, refrigeration, HVAC, plug
+# loads. Benchmarked against ENERGY STAR (Retail Store), CIBSE TM46
+# (General Retail), and BPIE.
+#
+# Typical use cases:
+#   - High street retail stores
+#   - Shopping centre / mall units
+#   - Supermarkets and grocery stores
+#   - Automotive showrooms
+# =============================================================================
+
+# --- Facility Details ---
+facility_id: ""
+facility_name: ""
+building_type: "RETAIL"
+climate_zone: "ASHRAE_4A"
+country_code: "GB"
+currency: "GBP"
+floor_area_type: "GLA"
+reporting_year: 2025
+operating_hours_per_week: 70.0
+
+# --- EUI ---
+eui:
+  accounting_boundary: "site"
+  floor_area_type: "GLA"
+  include_renewables: true
+  renewable_offset_method: "net_metered"
+  rolling_months: 12
+  include_plug_loads: true
+  include_process_loads: false
+  include_exterior_loads: true
+  data_frequency: "MONTHLY"
+  minimum_data_coverage_pct: 90.0
+  energy_carriers:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+
+# --- Weather ---
+weather:
+  enabled: true
+  normalisation_method: "CHANGE_POINT"
+  base_temp_heating_c: 15.5
+  base_temp_cooling_c: 18.0
+  min_r_squared: 0.70
+  max_cv_rmse: 0.25
+  weather_source: "auto"
+  degree_day_method: "mean_temperature"
+  min_months_regression: 12
+
+# --- Peer Comparison ---
+peer_comparison:
+  enabled: true
+  benchmark_sources:
+    - "ENERGY_STAR"
+    - "CIBSE_TM46"
+    - "BPIE"
+  peer_group_criteria:
+    - "building_type"
+    - "climate_zone"
+    - "floor_area_band"
+  min_peer_count: 10
+  include_energy_star_score: true
+  percentile_display: [10, 25, 50, 75, 90]
+  include_quartile_analysis: true
+  include_best_practice_target: true
+  normalise_for_hours: true
+
+# --- Portfolio ---
+portfolio:
+  enabled: false
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: true
+  disaggregation_method: "end_use_split"
+  end_use_categories:
+    - "heating"
+    - "cooling"
+    - "lighting"
+    - "refrigeration"
+    - "plug_loads"
+    - "other"
+  min_gap_threshold_pct: 5.0
+  link_to_measures: true
+  include_savings_potential: true
+  target_source: "peer_median"
+  include_payback_period: true
+
+# --- Rating ---
+rating:
+  enabled: true
+  rating_systems:
+    - "EPC_EU"
+    - "ENERGY_STAR"
+    - "DEC_UK"
+  epc_methodology: "operational"
+  epc_country_annex: "GB"
+  crrem_pathway_year: 2050
+  crrem_scenario: "1.5C"
+  include_regulatory_compliance: true
+  mees_threshold_grade: "E"
+
+# --- Trend ---
+trend:
+  enabled: true
+  rolling_window_months: 12
+  cusum_enabled: true
+  cusum_threshold_kwh_m2: 12.0
+  spc_enabled: true
+  spc_sigma: 2.0
+  yoy_comparison: true
+  seasonality_detection: true
+  alert_enabled: true
+  alert_channels:
+    - "EMAIL"
+  alert_threshold_pct: 10.0
+
+# --- Report ---
+report:
+  formats:
+    - "MARKDOWN"
+    - "JSON"
+  include_methodology: true
+  include_provenance: true
+  include_recommendations: true
+  include_executive_summary: true
+  include_charts: true
+  language: "en"
+  watermark_draft: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true

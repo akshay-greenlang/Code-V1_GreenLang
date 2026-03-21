@@ -1,0 +1,175 @@
+# =============================================================================
+# PACK-028 Sector Pathway Pack - Transport Preset
+# =============================================================================
+# Configuration for transport sectors: aviation, maritime shipping, road
+# transport, and rail. Each mode has a distinct SDA sector with mode-specific
+# intensity metrics. Key transitions include sustainable aviation fuels (SAF),
+# e-fuels for shipping, fleet electrification for road, and rail network
+# electrification. IMO stepped targets for shipping. ICAO CORSIA for aviation.
+#
+# Typical use cases:
+#   - Airlines (commercial passenger and cargo)
+#   - Shipping lines (container, bulk, tanker)
+#   - Road freight operators (LTL, FTL, last-mile)
+#   - Passenger transport operators (bus, coach, ride-hail)
+#   - Rail operators (freight and passenger)
+#   - Logistics integrators (multi-modal)
+#   - Airport and port operators
+#
+# Key sector characteristics:
+#   - Aviation: SAF blend mandates, CORSIA offsetting, hydrogen long-term
+#   - Shipping: IMO GHG Strategy (50% by 2050), CII rating, green corridors
+#   - Road: EV transition accelerating, charging infrastructure dependency
+#   - Rail: 70% already electrified in EU, hydrogen for non-electrified lines
+#   - All modes: operational efficiency (route, speed, load factor)
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+primary_sector: "AVIATION"
+secondary_sectors:
+  - "SHIPPING"
+  - "ROAD_TRANSPORT"
+  - "RAIL"
+region: "EU"
+country: "NL"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+
+# --- SBTi SDA ---
+sbti_sda:
+  sbti_sda_enabled: true
+  sbti_sector_category: "AVIATION"
+  sbti_pathway: "CELSIUS_1_5"
+  sbti_target_year: 2030
+  sbti_net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  sbti_submission_planned: true
+  flag_pathway_enabled: false
+
+# --- IEA NZE ---
+iea_nze:
+  iea_nze_enabled: true
+  iea_scenario: "NZE"
+  iea_region: "Global"
+  iea_milestone_tracking: true
+  iea_technology_outlook: true
+
+# --- IPCC AR6 ---
+ipcc:
+  ipcc_pathway: "C1"
+  ipcc_overshoot: "limited"
+  ipcc_gwp_metric: "GWP100"
+
+# --- Intensity ---
+intensity:
+  baseline_intensity: 0.0
+  baseline_year: 2019
+  intensity_metric: "gCO2/pkm"
+  intensity_boundary: "scope_1_2"
+  production_unit: "pkm"
+  production_forecast_enabled: true
+  production_growth_rate_pct: 3.0
+
+# --- Convergence ---
+convergence:
+  convergence_model: "s_curve"
+  convergence_rate: 0.04
+  catch_up_period: 12
+  inflection_year: 2035
+  step_years: null
+  step_reductions_pct: null
+
+# --- Technology Roadmap ---
+technology:
+  technology_roadmap_enabled: true
+  trl_threshold: 7
+  capex_phasing: "linear"
+  planning_horizon_years: 20
+  critical_materials_risk: true
+  dependency_analysis: true
+  iea_milestone_mapping: true
+  max_parallel_transitions: 6
+  s_curve_adoption: true
+
+# --- MACC ---
+macc:
+  macc_enabled: true
+  carbon_price_floor: 50.0
+  carbon_price_ceiling: 200.0
+  abatement_potential_target: 0.75
+  lever_interaction_modeling: true
+  implementation_sequencing: true
+  discount_rate_pct: 8.0
+  max_levers: 40
+  include_negative_cost: true
+
+# --- Benchmarking ---
+benchmark:
+  benchmark_peer_enabled: true
+  benchmark_leader_enabled: true
+  benchmark_iea_enabled: true
+  peer_selection: "auto"
+  leader_percentile: 10
+  peer_group_size: 25
+  sbti_validated_only: false
+  regulatory_benchmarks:
+    - "SBTi_SDA"
+    - "IEA_NZE"
+    - "ICAO_CORSIA"
+    - "IMO_CII"
+    - "EU_FIT55"
+  benchmark_dimensions:
+    - "intensity_rank"
+    - "reduction_rate"
+    - "fuel_mix"
+    - "fleet_age"
+    - "saf_blend_rate"
+    - "electrification_pct"
+    - "target_ambition"
+    - "pathway_gap"
+
+# --- Scenarios ---
+scenarios:
+  scenarios_enabled:
+    - "NZE"
+    - "WB2C"
+    - "APS"
+    - "STEPS"
+  scenario_sensitivity: true
+  carbon_price_sensitivity: true
+  technology_sensitivity: true
+  monte_carlo_runs: 1000
+  confidence_interval_pct: 90.0
+  risk_return_analysis: true
+  optimal_pathway_recommendation: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "GRI"
+    - "SASB"
+  reporting_frequency: "quarterly"
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 7
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096

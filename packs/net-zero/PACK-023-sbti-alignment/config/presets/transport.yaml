@@ -1,0 +1,258 @@
+# =============================================================================
+# PACK-023 SBTi Alignment Pack - Transport Preset
+# =============================================================================
+# Configuration for road, aviation, and maritime transport with SDA pathway
+# for transport sectors. Fleet electrification, sustainable aviation fuel
+# (SAF), and alternative marine fuels as primary levers. SDA convergence for
+# road transport (5.3 gCO2e/pkm by 2050), aviation, and maritime sub-sectors.
+# Scope 3 Cat 3 (fuel upstream) and Cat 9 (downstream transport) material.
+# Supports both passenger and freight transport operators.
+#
+# Typical use cases:
+#   - Airline operators (commercial aviation)
+#   - Shipping companies (maritime logistics)
+#   - Road transport and logistics providers
+#   - Passenger rail and bus operators
+#   - Multimodal transport operators
+#   - Mobility service providers
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "TRANSPORT"
+sector_code: "NACE_H49_H50_H51"
+gics_sector: "2030"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- SBTi Engines Configuration ---
+engines:
+  target_setting:
+    enabled: true
+    ambition_level: "CELSIUS_1_5"
+    scope_priorities:
+      scope1: 0.95
+      scope2: 0.95
+      scope3: 0.67
+  criteria_validation:
+    enabled: true
+    near_term_criteria: ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28"]
+    net_zero_criteria: ["NZ-C1", "NZ-C2", "NZ-C3", "NZ-C4", "NZ-C5", "NZ-C6", "NZ-C7", "NZ-C8", "NZ-C9", "NZ-C10", "NZ-C11", "NZ-C12", "NZ-C13", "NZ-C14"]
+  scope3_screening:
+    enabled: true
+    materiality_trigger_pct: 40.0
+    coverage_near_term_pct: 67.0
+    coverage_long_term_pct: 90.0
+    categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12]
+  sda_sector:
+    enabled: true
+    sda_applicable: true
+    sda_sectors:
+      - "AVIATION"
+      - "MARITIME"
+      - "ROAD_TRANSPORT"
+    sector_benchmark_2050_road_transport_gco2e_per_pkm: 5.3
+    convergence_method: "SBTi_SDA_Tool_V3.0"
+  flag_assessment:
+    enabled: false
+    flag_applicable: false
+  temperature_rating:
+    enabled: true
+    aggregation_methods:
+      - "WATS"
+      - "TETS"
+      - "MOTS"
+    default_score_celsius: 3.2
+    include_scope3: true
+  progress_tracking:
+    enabled: true
+    review_cycle_years: 5
+    recalculation_trigger_threshold_pct: 5.0
+  recalculation:
+    enabled: true
+    trigger_types:
+      - "acquisition"
+      - "divestiture"
+      - "merger"
+      - "methodology_change"
+      - "fleet_composition_change"
+      - "route_network_change"
+  fi_portfolio:
+    enabled: false
+    fi_applicable: false
+  submission_readiness:
+    enabled: true
+    readiness_dimensions: 5
+
+# --- Pathway Configuration (SDA Mandatory) ---
+pathway:
+  methodology: "SDA"
+  sda_enabled: true
+  sda_sectors:
+    - "AVIATION"
+    - "MARITIME"
+    - "ROAD_TRANSPORT"
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Scope 3 Configuration ---
+scope3:
+  categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12]
+  activity_based_categories: [3, 9, 11]
+  supplier_specific_categories: [3, 9]
+  spend_based_categories: [1, 2, 4, 5, 6, 7, 12]
+  materiality_threshold_pct: 0.5
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Supplier Engagement ---
+supplier:
+  enabled: true
+  max_suppliers: 3500
+  tier_thresholds:
+    collaborate: 4.5
+    require: 12.0
+    engage: 35.0
+    inform: 100.0
+  top_supplier_count: 85
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "fuel_decarbonization"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+  batch_size: 2000
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 9.5
+  carbon_price_eur_per_tco2e: 115.0
+  carbon_price_escalation_pct: 6.5
+  reporting_currency: "EUR"
+  planning_horizon_years: 18
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "SUSTAINABILITY_LINKED_BOND"
+    - "GREEN_LOAN"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 10.5
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+    - "MOTS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: false
+  portfolio_weighting: "revenue"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Decomposition & Variance ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 8.0
+  top_drivers_count: 12
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: true
+  max_entities: 50
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "transport_mode"
+    - "business_unit"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI & Carbon Removal ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 75
+  max_nature_based_pct: 35.0
+  shift_to_removals_by_year: 2035
+  preferred_registries:
+    - "verra"
+    - "gold_standard"
+    - "american_carbon_registry"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2027
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10
+
+# --- Data Quality Targets ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "default_factors"
+    - "secondary_calculated"
+  emission_factor_source: "IEA_NZE_2023"
+  fuel_consumption_tracking: "detailed"
+  fleet_composition_tracking_frequency: "quarterly"
+
+# --- Sector-Specific Parameters ---
+sector_parameters:
+  fleet_electrification_target_pct_2030: 30
+  fleet_electrification_target_pct_2050: 100
+  sustainable_aviation_fuel_blending_target_pct: 50
+  alternative_marine_fuel_adoption_target_pct: 25
+  logistics_optimization_efficiency_gain_pct: 15
+  modal_shift_encouragement_enabled: true
+  load_factor_improvement_programs: true
+  aerodynamic_efficiency_retrofits: true
+  route_optimization_algorithms: true
+  alternative_fuel_infrastructure_investment_tracking: true
+  passenger_shift_public_transport_modeling: true

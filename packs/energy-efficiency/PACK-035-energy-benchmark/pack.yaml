@@ -1,0 +1,1549 @@
+# =============================================================================
+# PACK-035: Energy Benchmark Pack
+# GreenLang Energy Efficiency Pack for Facility Energy Performance Benchmarking
+# =============================================================================
+# This pack provides a comprehensive energy benchmarking platform for comparing
+# facility energy performance against peers, published standards, and best
+# practices. It covers the full benchmarking lifecycle from EUI calculation
+# through weather normalisation, peer comparison, sector-specific benchmarking,
+# portfolio management, performance gap analysis, regulatory compliance rating,
+# target setting, trend analysis, and continuous monitoring.
+#
+# Energy benchmarking is the foundation of any energy management strategy.
+# Without knowing where a facility stands relative to peers and best practice,
+# it is impossible to set meaningful targets or prioritise improvement actions.
+# This pack enables facility managers, portfolio managers, energy consultants,
+# and sustainability teams to establish a clear picture of energy performance
+# across single facilities or portfolios of 1-1000+ sites.
+#
+# Key Capabilities:
+#   - EUI calculation with multiple accounting boundaries (site energy,
+#     source energy, primary energy) per ASHRAE Standard 100, ENERGY STAR,
+#     and EPBD methodologies
+#   - Weather normalisation using degree-day regression models (2-parameter
+#     through 5-parameter change-point models, TOWT, multivariate)
+#   - Peer comparison against ENERGY STAR Portfolio Manager, CIBSE TM46,
+#     DIN V 18599, BPIE, and custom peer datasets
+#   - Sector-specific benchmarks for office, retail, warehouse, healthcare,
+#     education, data centre, industrial, and mixed-use buildings
+#   - Portfolio benchmarking for 1-1000+ facilities with cross-site ranking,
+#     outlier detection, and improvement prioritisation
+#   - End-use disaggregated gap analysis (lighting, HVAC, process, plug loads,
+#     domestic hot water) against best-practice benchmarks
+#   - Performance ratings: EPC A-G (EPBD), ENERGY STAR 1-100, NABERS stars,
+#     CRREM pathway alignment
+#   - Continuous monitoring with CUSUM, SPC charts, seasonal decomposition,
+#     and automated alerting on performance deviations
+#   - Regulatory compliance: EPBD (EPC/DEC/MEPS/ZEB), EED Article 8/11,
+#     UK MEES, NYC LL97, NABERS
+#   - Target setting with peer context, absolute reduction, and SBTi alignment
+#
+# Regulatory References:
+#   - EED: Directive (EU) 2023/1791 (Energy Efficiency Directive - recast,
+#     Article 8 energy audit benchmarking, Article 11 energy services)
+#   - EPBD: Directive 2024/1275 (Energy Performance of Buildings Directive -
+#     recast, EPC, DEC, MEPS, zero-emission buildings)
+#   - ISO 50001:2018 (Energy Management Systems - EnPI benchmarking)
+#   - ISO 50006:2014 (Measuring energy performance using energy baselines
+#     and energy performance indicators)
+#   - ASHRAE Standard 100-2018 (Energy Efficiency in Existing Buildings)
+#   - ENERGY STAR Portfolio Manager Technical Reference (US EPA)
+#   - CIBSE TM46:2008 (Energy Benchmarks for UK buildings)
+#   - GHG Protocol Corporate Standard (carbon intensity benchmarking)
+#
+# Building Types Supported:
+#   - Office buildings (corporate HQ, multi-tenant, co-working)
+#   - Retail (supermarkets, department stores, specialty retail)
+#   - Warehouses (ambient, cold storage, distribution centres)
+#   - Healthcare (hospitals, clinics, care homes)
+#   - Education (schools, universities, campuses)
+#   - Data centres (enterprise, colocation, server rooms)
+#   - Industrial (manufacturing, process, light industrial)
+#   - Mixed-use / portfolio (heterogeneous building stock)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-21)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-035-energy-benchmark
+  version: "1.0.0"
+  display_name: "Energy Benchmark Pack"
+  description: >-
+    GreenLang deployment pack for comprehensive energy benchmarking of
+    facilities against peers, standards, and best practices. Includes
+    10 engines for EUI calculation (site/source/primary), weather
+    normalisation (2P-5P degree-day regression, TOWT), peer comparison
+    (ENERGY STAR, CIBSE TM46, DIN V 18599, BPIE), sector-specific
+    benchmarking, portfolio management (1-1000+ sites), end-use
+    disaggregated gap analysis, performance rating (EPC A-G, ENERGY
+    STAR 1-100, NABERS, CRREM), trend analysis (CUSUM, SPC), and
+    benchmark report generation. Supports office, retail, warehouse,
+    healthcare, education, data centre, industrial, and mixed-use
+    buildings. Bridges to PACK-031 (Industrial Energy Audit), PACK-032
+    (Building Energy Assessment), and PACK-033 (Quick Wins Identifier)
+    for deeper analysis. Integrates with ENERGY STAR Portfolio Manager
+    API, national EPC registries, and weather data services.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-21"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/energy-benchmark"
+  changelog_url: "https://docs.greenlang.io/packs/energy-benchmark/changelog"
+
+  tags:
+    - energy-benchmark
+    - energy-use-intensity
+    - eui
+    - weather-normalisation
+    - peer-comparison
+    - energy-star
+    - cibse-tm46
+    - epc
+    - performance-rating
+    - portfolio-benchmark
+    - gap-analysis
+    - cusum
+    - spc
+    - trend-analysis
+    - target-setting
+    - epbd
+    - eed
+    - meps
+    - nabers
+    - crrem
+    - sbti
+    - office-building
+    - retail
+    - warehouse
+    - healthcare
+    - education
+    - data-center
+    - industrial
+
+  regulation:
+    primary:
+      name: "EU Energy Efficiency Directive (EED)"
+      reference: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        The recast EED mandates energy audits for large enterprises and
+        requires benchmarking of energy performance as part of Article 8
+        compliance. Energy benchmarking provides the foundation for
+        identifying cost-effective energy savings measures and
+        demonstrating continual improvement. Article 11 energy services
+        provisions require standardised benchmarking methodologies.
+    secondary:
+      - name: "EU Energy Performance of Buildings Directive (EPBD)"
+        reference: "Directive 2024/1275"
+        effective_date: "2024-05-28"
+      - name: "ISO 50001:2018 Energy Management Systems"
+        reference: "ISO 50001:2018"
+        effective_date: "2018-08-21"
+      - name: "ISO 50006:2014 Energy Performance Indicators"
+        reference: "ISO 50006:2014"
+        effective_date: "2014-12-15"
+      - name: "ASHRAE Standard 100-2018 Building Energy Benchmarking"
+        reference: "ASHRAE 100-2018"
+        effective_date: "2018-01-01"
+      - name: "ENERGY STAR Portfolio Manager"
+        reference: "US EPA ENERGY STAR"
+        effective_date: "1999-01-01"
+      - name: "GHG Protocol Corporate Standard"
+        reference: "GHG Protocol (revised 2015)"
+        effective_date: "2015-01-01"
+
+  compliance_references:
+    - id: "EED"
+      name: "EU Energy Efficiency Directive (recast)"
+      regulation: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        Energy benchmarking supports EED Article 8 compliance by
+        providing standardised comparison of facility energy
+        performance against sector benchmarks. Benchmarking results
+        inform audit scope, prioritise improvement actions, and
+        demonstrate continual energy performance improvement to
+        national authorities.
+
+    - id: "EPBD"
+      name: "EU Energy Performance of Buildings Directive (recast)"
+      regulation: "Directive 2024/1275"
+      effective_date: "2024-05-28"
+      description: >-
+        The EPBD requires Energy Performance Certificates (EPC) for
+        buildings, Display Energy Certificates (DEC) for public
+        buildings, Minimum Energy Performance Standards (MEPS), and
+        zero-emission building (ZEB) definitions. This pack calculates
+        EPC ratings (A-G scale), generates DEC equivalents, assesses
+        MEPS compliance, and tracks progress towards ZEB targets.
+
+    - id: "ISO_50001"
+      name: "ISO 50001:2018 Energy Management Systems"
+      regulation: "ISO 50001:2018"
+      effective_date: "2018-08-21"
+      description: >-
+        ISO 50001 requires organisations to establish energy baselines
+        and energy performance indicators (EnPI). Benchmarking provides
+        the external reference context for EnPI evaluation, enabling
+        organisations to assess whether their energy performance is
+        improving relative to peers and best practice, not just
+        internally year-over-year.
+
+    - id: "ISO_50006"
+      name: "ISO 50006:2014 Energy Performance Indicators"
+      regulation: "ISO 50006:2014"
+      effective_date: "2014-12-15"
+      description: >-
+        ISO 50006 provides methodology for measuring energy performance
+        using energy baselines and energy performance indicators. This
+        pack implements ISO 50006 regression models for energy-driver
+        normalisation, including degree-day, production-output, and
+        multivariate models.
+
+    - id: "ASHRAE_100"
+      name: "ASHRAE Standard 100-2018"
+      regulation: "ASHRAE Standard 100-2018"
+      effective_date: "2018-01-01"
+      description: >-
+        ASHRAE Standard 100 provides energy efficiency requirements for
+        existing buildings including benchmarking methodology, EUI
+        targets by building type and climate zone, and requirements
+        for operational improvements. This pack implements ASHRAE 100
+        EUI targets and benchmarking procedures.
+
+    - id: "ENERGY_STAR"
+      name: "ENERGY STAR Portfolio Manager"
+      regulation: "US EPA ENERGY STAR"
+      effective_date: "1999-01-01"
+      description: >-
+        ENERGY STAR Portfolio Manager provides the standardised 1-100
+        score for benchmarking commercial building energy performance
+        in the US. This pack integrates with the ENERGY STAR API for
+        property synchronisation, score calculation, and certification
+        submission. It also uses ENERGY STAR percentile data as a
+        benchmark dataset for peer comparison.
+
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol (revised 2015)"
+      effective_date: "2015-01-01"
+      description: >-
+        The GHG Protocol provides the framework for carbon intensity
+        benchmarking. This pack calculates carbon-normalised EUI
+        (kgCO2e/m2) alongside energy-normalised EUI (kWh/m2),
+        supporting both location-based and market-based Scope 2
+        accounting for consistent peer comparison.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 benchmark engines)
+  # ===========================================================================
+  engines:
+    - id: eui_calculator
+      name: "EUI Calculator Engine"
+      description: >-
+        Calculates Energy Use Intensity (EUI) with multiple accounting
+        boundaries. SITE EUI: total energy delivered to the building
+        boundary (kWh/m2/yr) from all fuel types. SOURCE EUI: site
+        energy multiplied by site-to-source conversion factors to
+        account for generation, transmission, and distribution losses.
+        PRIMARY EUI: source energy per EPBD methodology using primary
+        energy factors from national regulations. Supports multiple
+        normalisation metrics: per gross floor area (GFA), per net
+        lettable area (NLA), per conditioned floor area (CFA), per
+        occupant, per bed (healthcare), per student (education), per
+        kW IT load (data centres). Handles mixed-fuel buildings with
+        electricity, natural gas, district heating/cooling, fuel oil,
+        LPG, and renewables. Annualises partial-year data and
+        interpolates gaps up to configurable threshold.
+        Zero-hallucination: EUI from metered data divided by floor
+        area, source factors from published databases, no LLM.
+      class: "EUICalculatorEngine"
+      file: "engines/eui_calculator_engine.py"
+      required: true
+
+    - id: peer_comparison
+      name: "Peer Comparison Engine"
+      description: >-
+        Compares facility EUI against peer datasets to determine
+        percentile position. Supports multiple benchmark sources:
+        ENERGY STAR (US commercial buildings, 1-100 score), CIBSE TM46
+        (UK typical and good practice by building type), DIN V 18599
+        (German building energy assessment), BPIE (EU-wide building
+        stock data), and custom peer datasets. Calculates percentile
+        position using kernel density estimation for smooth ranking.
+        Identifies gap-to-median and gap-to-best-practice (10th
+        percentile). Supports weather-normalised and non-normalised
+        comparison modes. Generates peer distribution charts with
+        facility position overlay. Handles building-type and climate-
+        zone filtering for accurate peer group definition.
+        Zero-hallucination: percentiles from statistical computation,
+        benchmarks from published datasets, no LLM.
+      class: "PeerComparisonEngine"
+      file: "engines/peer_comparison_engine.py"
+      required: true
+
+    - id: sector_benchmark
+      name: "Sector Benchmark Engine"
+      description: >-
+        Provides sector-specific benchmark comparison for 8 building
+        types with sub-sector granularity. OFFICE: naturally ventilated
+        (cellular, open plan), air-conditioned (standard, prestige).
+        RETAIL: food retail, non-food retail, department store. WAREHOUSE:
+        ambient, cold storage, distribution. HEALTHCARE: acute hospital,
+        mental health, primary care. EDUCATION: primary school, secondary
+        school, university. DATA CENTRE: enterprise, colocation, edge.
+        INDUSTRIAL: light manufacturing, heavy industry, process.
+        MIXED-USE: weighted by floor area proportion. Benchmarks sourced
+        from CIBSE TM46, ENERGY STAR, ASHRAE 100, national databases.
+        Climate-zone adjustment using published correction factors.
+        Zero-hallucination: benchmarks from published standards,
+        sector classification from building metadata, no LLM.
+      class: "SectorBenchmarkEngine"
+      file: "engines/sector_benchmark_engine.py"
+      required: true
+
+    - id: weather_normalisation
+      name: "Weather Normalisation Engine"
+      description: >-
+        Normalises energy consumption for weather effects using
+        degree-day regression models. Supports 2-parameter (simple
+        linear HDD or CDD), 3-parameter change-point (heating-only
+        or cooling-only with base load), 4-parameter (heating and
+        cooling with base load), and 5-parameter (heating and cooling
+        with separate change points and base load) models. Implements
+        ASHRAE Inverse Modeling Toolkit (IMT) methodology. Also
+        supports Time-of-Week-and-Temperature (TOWT) model for
+        buildings with distinct weekday/weekend patterns. Provides
+        model selection using AICc, BIC, and cross-validation. Reports
+        R-squared, CV(RMSE), and NMBE per ASHRAE Guideline 14 fit
+        criteria. Normalises to TMY (Typical Meteorological Year) or
+        long-term average weather for consistent year-over-year comparison.
+        Zero-hallucination: regression from scipy/numpy, weather data from
+        published TMY datasets, no LLM.
+      class: "WeatherNormalisationEngine"
+      file: "engines/weather_normalisation_engine.py"
+      required: true
+
+    - id: energy_performance_gap
+      name: "Energy Performance Gap Engine"
+      description: >-
+        Identifies and quantifies energy performance gaps by end use.
+        Disaggregates total consumption into end-use categories:
+        LIGHTING (interior, exterior, emergency), HVAC (heating,
+        cooling, ventilation, pumps, fans), PROCESS (production,
+        compressed air, refrigeration), PLUG_LOADS (office equipment,
+        servers, miscellaneous), DHW (domestic hot water, kitchen).
+        Disaggregation methods: sub-metering (preferred), statistical
+        estimation from operating hours and equipment inventory,
+        benchmark-based proportional allocation. Compares each end use
+        against best-practice benchmarks to quantify gap (kWh/m2/yr
+        and percentage). Prioritises gaps by absolute magnitude and
+        improvement feasibility. Links to savings opportunities from
+        PACK-033 quick wins and PACK-031/032 detailed measures.
+        Zero-hallucination: disaggregation from meter data or
+        engineering estimates, gaps from benchmark comparison, no LLM.
+      class: "EnergyPerformanceGapEngine"
+      file: "engines/energy_performance_gap_engine.py"
+      required: true
+
+    - id: portfolio_benchmark
+      name: "Portfolio Benchmark Engine"
+      description: >-
+        Benchmarks and ranks facilities across a portfolio of 1-1000+
+        sites. Normalises EUI by building type and climate zone for
+        fair cross-site comparison. Ranks facilities by EUI, ENERGY
+        STAR score, EPC rating, and carbon intensity. Identifies top
+        performers (best quartile), middle performers, and bottom
+        performers (worst quartile) with improvement potential
+        quantification. Detects statistical outliers using IQR and
+        Z-score methods. Calculates portfolio-level aggregates
+        (weighted average EUI, total consumption, total floor area,
+        total carbon). Generates improvement prioritisation ranking
+        combining savings potential, implementation cost, and
+        strategic importance. Supports portfolio segmentation by
+        region, business unit, building type, and ownership status.
+        Zero-hallucination: statistics from pandas/numpy, rankings
+        from deterministic sorting, no LLM.
+      class: "PortfolioBenchmarkEngine"
+      file: "engines/portfolio_benchmark_engine.py"
+      required: true
+
+    - id: regression_analysis
+      name: "Regression Analysis Engine"
+      description: >-
+        Performs advanced regression analysis for energy baseline
+        modelling and weather normalisation. Model types: ordinary
+        least squares (OLS), robust regression (Huber, bisquare),
+        change-point regression (2P-5P), multivariate regression
+        (temperature + production + occupancy), and TOWT (time-of-
+        week-and-temperature). Provides comprehensive model diagnostics:
+        R-squared, adjusted R-squared, CV(RMSE), NMBE, F-statistic,
+        Durbin-Watson, AICc, BIC. Performs residual analysis for
+        heteroscedasticity (Breusch-Pagan), autocorrelation (Ljung-Box),
+        and normality (Shapiro-Wilk). Variable importance ranking using
+        standardised coefficients and partial R-squared. Automated model
+        selection with cross-validation. ASHRAE Guideline 14 compliance
+        checking for M&V applications.
+        Zero-hallucination: regression from scipy/statsmodels, diagnostics
+        from standard statistical tests, no LLM.
+      class: "RegressionAnalysisEngine"
+      file: "engines/regression_analysis_engine.py"
+      required: true
+
+    - id: performance_rating
+      name: "Performance Rating Engine"
+      description: >-
+        Generates energy performance ratings across multiple rating
+        schemes. EPC (Energy Performance Certificate): A-G rating per
+        EPBD methodology using primary energy and CO2 emissions with
+        national thresholds. ENERGY STAR 1-100: percentile score using
+        CBECS statistical model with source EUI normalised for
+        operating characteristics. NABERS (National Australian Built
+        Environment Rating System): 1-6 star rating for Australian
+        buildings. CRREM (Carbon Risk Real Estate Monitor): pathway
+        alignment assessment showing stranding risk year. DEC (Display
+        Energy Certificate): operational rating based on actual
+        consumption. MEPS compliance: assessment against Minimum Energy
+        Performance Standards with timeline to non-compliance. Supports
+        multi-scheme comparison for facilities subject to multiple
+        jurisdictions.
+        Zero-hallucination: ratings from published thresholds and
+        formulas, compliance from regulatory criteria, no LLM.
+      class: "PerformanceRatingEngine"
+      file: "engines/performance_rating_engine.py"
+      required: true
+
+    - id: trend_analysis
+      name: "Trend Analysis Engine"
+      description: >-
+        Analyses energy performance trends over time for deviation
+        detection and continuous improvement tracking. CUSUM (Cumulative
+        Sum): tracks cumulative deviations from baseline to detect
+        sustained performance shifts with configurable target and
+        threshold parameters (V-mask or tabular). SPC (Statistical
+        Process Control): Shewhart control charts (X-bar, R, S, EWMA)
+        with Western Electric and Nelson rule violation detection for
+        out-of-control signal identification. Seasonal decomposition:
+        STL (Seasonal-Trend decomposition using LOESS) to separate
+        trend, seasonal, and residual components. Moving average and
+        exponential smoothing for short-term trend assessment.
+        Automated alerting on: CUSUM exceedance, SPC rule violations,
+        trend slope change, and seasonal anomalies.
+        Zero-hallucination: CUSUM/SPC from statistical formulas,
+        decomposition from statsmodels, no LLM.
+      class: "TrendAnalysisEngine"
+      file: "engines/trend_analysis_engine.py"
+      required: true
+
+    - id: benchmark_report
+      name: "Benchmark Report Engine"
+      description: >-
+        Generates comprehensive benchmark reports combining outputs
+        from all other engines into formatted deliverables. Report
+        sections: executive summary, facility profile, EUI analysis,
+        peer comparison, sector benchmarks, performance ratings,
+        weather-normalised trends, gap analysis, target progress,
+        regulatory compliance, and recommendations. Output formats:
+        Markdown (for version control and CI/CD), HTML (with inline
+        CSS and interactive charts via Plotly), JSON (for API
+        consumption and data pipelines), PDF (via HTML-to-PDF
+        conversion). Chart types: bar (EUI comparison), box-whisker
+        (peer distribution), radar (multi-metric), line (trends),
+        waterfall (end-use breakdown), gauge (ratings). All reports
+        include SHA-256 provenance hash for audit trail integrity.
+        Zero-hallucination: report content from engine outputs,
+        charts from Plotly, no LLM-generated numbers.
+      class: "BenchmarkReportEngine"
+      file: "engines/benchmark_report_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 benchmark workflows)
+  # ===========================================================================
+  workflows:
+    - id: initial_benchmark
+      name: "Initial Benchmark Workflow"
+      description: >-
+        4-phase workflow for initial benchmark establishment: Phase 1 -
+        Facility Registration (building type, floor area, climate zone,
+        operating hours, occupancy, meter configuration) -> Phase 2 -
+        Data Collection (12-36 months utility bills, weather data,
+        sub-meter data where available) -> Phase 3 - EUI Calculation
+        (site/source/primary EUI, weather normalisation, annualisation)
+        -> Phase 4 - Peer Comparison (benchmark against ENERGY STAR,
+        CIBSE TM46, sector benchmarks, generate initial report with
+        percentile position and performance rating).
+      schedule: "on_demand"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: continuous_monitoring
+      name: "Continuous Monitoring Workflow"
+      description: >-
+        4-phase workflow for ongoing performance monitoring: Phase 1 -
+        Data Ingestion (latest meter readings, weather data, occupancy
+        data) -> Phase 2 - Deviation Detection (CUSUM update, SPC rule
+        checks, comparison against baseline model) -> Phase 3 - Alert
+        Assessment (evaluate deviations against alert thresholds,
+        classify severity, identify potential root causes) -> Phase 4 -
+        Trend Update (update trend decomposition, rolling EUI,
+        year-to-date tracking, and dashboard refresh).
+      schedule: "weekly"
+      estimated_duration_minutes: 15
+      phases: 4
+
+    - id: peer_comparison
+      name: "Peer Comparison Workflow"
+      description: >-
+        3-phase workflow for peer comparison: Phase 1 - Peer Group
+        Definition (select benchmark datasets, apply building type and
+        climate zone filters, define custom peer groups where needed) ->
+        Phase 2 - Percentile Ranking (calculate percentile position
+        across all selected datasets, statistical distribution analysis)
+        -> Phase 3 - Gap Analysis (gap-to-median, gap-to-best-practice,
+        savings potential quantification, improvement recommendations).
+      schedule: "annual"
+      estimated_duration_minutes: 20
+      phases: 3
+
+    - id: portfolio_benchmark
+      name: "Portfolio Benchmark Workflow"
+      description: >-
+        4-phase workflow for portfolio benchmarking: Phase 1 - Facility
+        Inventory (load all facilities, validate data completeness,
+        classify by building type) -> Phase 2 - Cross-Site Ranking
+        (normalise EUI by type and climate, rank by performance, detect
+        outliers) -> Phase 3 - Portfolio Analysis (aggregate metrics,
+        identify top/bottom performers, calculate improvement potential)
+        -> Phase 4 - Prioritisation (rank facilities by savings
+        potential, generate portfolio dashboard and investment plan).
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: performance_gap
+      name: "Performance Gap Workflow"
+      description: >-
+        3-phase workflow for gap analysis: Phase 1 - End-Use
+        Disaggregation (allocate total consumption to end uses using
+        sub-meters or estimation methods) -> Phase 2 - Gap Identification
+        (compare each end use against best-practice benchmarks, quantify
+        gaps in kWh/m2/yr and percentage) -> Phase 3 - Opportunity
+        Assessment (prioritise gaps by magnitude and feasibility, link
+        to specific improvement measures, estimate savings and cost).
+      schedule: "annual"
+      estimated_duration_minutes: 45
+      phases: 3
+
+    - id: regulatory_compliance
+      name: "Regulatory Compliance Workflow"
+      description: >-
+        3-phase workflow for regulatory compliance: Phase 1 - Obligation
+        Assessment (determine applicable regulations by jurisdiction:
+        EPBD, EED, MEES, LL97, NABERS) -> Phase 2 - Rating Generation
+        (calculate EPC rating, ENERGY STAR score, DEC rating, MEPS
+        compliance status, CRREM pathway) -> Phase 3 - Compliance
+        Reporting (generate compliance reports, track deadlines,
+        identify non-compliance risks, recommend remediation).
+      schedule: "annual"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: target_setting
+      name: "Target Setting Workflow"
+      description: >-
+        3-phase workflow for target setting: Phase 1 - Baseline
+        Definition (establish baseline year EUI, weather normalisation,
+        peer percentile position) -> Phase 2 - Target Trajectory
+        (generate target pathway: peer-based targeting median or top
+        quartile, absolute percentage reduction per year, SBTi-aligned
+        1.5C or well-below 2C pathway) -> Phase 3 - Milestone
+        Scheduling (set interim milestones at annual and quarterly
+        intervals, define success criteria, create monitoring plan).
+      schedule: "on_demand"
+      estimated_duration_minutes: 20
+      phases: 3
+
+    - id: full_assessment
+      name: "Full Assessment Workflow"
+      description: >-
+        6-phase end-to-end assessment orchestrating all engines:
+        Phase 1 - Data Collection and Validation -> Phase 2 - EUI
+        Calculation and Weather Normalisation -> Phase 3 - Peer
+        Comparison and Sector Benchmarking -> Phase 4 - Gap Analysis
+        and Performance Rating -> Phase 5 - Target Setting and Trend
+        Analysis -> Phase 6 - Comprehensive Report Generation with
+        all analyses, ratings, and recommendations.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 6
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 benchmark templates)
+  # ===========================================================================
+  templates:
+    - id: eui_benchmark_report
+      display_name: "EUI Benchmark Report"
+      description: >-
+        Energy Use Intensity benchmark report with site/source/primary
+        EUI, accounting boundary breakdown, weather-normalised
+        consumption, and benchmark comparison against published standards.
+      format: "html"
+      template_file: "templates/eui_benchmark_report.jinja2"
+      enabled: true
+
+    - id: peer_comparison_report
+      display_name: "Peer Comparison Report"
+      description: >-
+        Peer group ranking and percentile analysis against ENERGY STAR,
+        CIBSE TM46, DIN V 18599, and BPIE datasets with gap-to-median
+        and gap-to-best-practice calculations.
+      format: "html"
+      template_file: "templates/peer_comparison_report.jinja2"
+      enabled: true
+
+    - id: sector_benchmark_report
+      display_name: "Sector Benchmark Report"
+      description: >-
+        Sector-specific benchmark comparison with building type
+        classification, sub-sector breakdown, and climate-adjusted
+        performance evaluation.
+      format: "html"
+      template_file: "templates/sector_benchmark_report.jinja2"
+      enabled: true
+
+    - id: energy_performance_certificate
+      display_name: "Energy Performance Certificate"
+      description: >-
+        EPBD-compliant Energy Performance Certificate with A-G rating,
+        primary energy consumption, CO2 emissions, improvement
+        recommendations, and MEPS compliance status.
+      format: "html"
+      template_file: "templates/energy_performance_certificate.jinja2"
+      enabled: true
+
+    - id: portfolio_dashboard
+      display_name: "Portfolio Dashboard"
+      description: >-
+        Multi-facility portfolio dashboard with cross-site EUI ranking,
+        performer categorisation, outlier flagging, and investment
+        prioritisation by savings potential.
+      format: "html"
+      template_file: "templates/portfolio_dashboard.jinja2"
+      enabled: true
+
+    - id: gap_analysis_report
+      display_name: "Gap Analysis Report"
+      description: >-
+        End-use disaggregated gap analysis with consumption breakdown
+        by end use, gap quantification against best-practice benchmarks,
+        and prioritised savings opportunities.
+      format: "html"
+      template_file: "templates/gap_analysis_report.jinja2"
+      enabled: true
+
+    - id: target_tracking_report
+      display_name: "Target Tracking Report"
+      description: >-
+        Target trajectory and progress tracking with baseline definition,
+        target pathway, actual vs. target comparison, milestone status,
+        and forecast to achievement date.
+      format: "html"
+      template_file: "templates/target_tracking_report.jinja2"
+      enabled: true
+
+    - id: regulatory_compliance_report
+      display_name: "Regulatory Compliance Report"
+      description: >-
+        EPBD/EED/MEES/LL97/NABERS compliance summary with rating status,
+        deadline tracking, non-compliance risk assessment, and
+        remediation recommendations.
+      format: "html"
+      template_file: "templates/regulatory_compliance_report.jinja2"
+      enabled: true
+
+    - id: trend_analysis_report
+      display_name: "Trend Analysis Report"
+      description: >-
+        CUSUM and SPC trend analysis with cumulative sum charts, control
+        chart rule violations, seasonal decomposition, and automated
+        alert history.
+      format: "html"
+      template_file: "templates/trend_analysis_report.jinja2"
+      enabled: true
+
+    - id: executive_summary_report
+      display_name: "Executive Summary Report"
+      description: >-
+        C-suite executive benchmark summary with KPIs, peer positioning,
+        regulatory status, target progress, risks, and strategic
+        recommendations for board-level reporting.
+      format: "html"
+      template_file: "templates/executive_summary_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration and
+        Preset Loading -> Data Acquisition (utility bills, meter data,
+        weather data) -> EUI Calculation (site/source/primary) ->
+        Weather Normalisation (degree-day regression) -> Peer Comparison
+        (percentile ranking) -> Performance Rating (EPC, ENERGY STAR,
+        NABERS) -> Gap Analysis (end-use disaggregation) -> Target and
+        Trend Analysis -> Report Generation. Orchestrates all 10
+        engines with parallel execution and dependency management.
+      required: true
+
+    - id: mrv_benchmark_bridge
+      name: "MRV Benchmark Bridge"
+      description: >-
+        Routes energy data to MRV agents for carbon intensity
+        benchmarking. Connects AGENT-MRV-001 (Scope 1 combustion),
+        AGENT-MRV-009/010 (Scope 2 location/market-based), and
+        AGENT-MRV-013 (dual reporting reconciliation). Calculates
+        carbon-normalised EUI (kgCO2e/m2) for consistent peer
+        comparison across fuel mixes.
+      required: true
+
+    - id: data_benchmark_bridge
+      name: "Data Benchmark Bridge"
+      description: >-
+        Routes data intake to DATA agents for utility bills, meter
+        data, equipment inventories, and building metadata. Connects
+        AGENT-DATA-001 (PDF extraction), AGENT-DATA-002 (Excel/CSV),
+        AGENT-DATA-003 (ERP), AGENT-DATA-010 (quality profiling),
+        AGENT-DATA-014 (time series gap filling), and AGENT-DATA-019
+        (validation rules).
+      required: true
+
+    - id: pack031_bridge
+      name: "PACK-031 Industrial Energy Audit Bridge"
+      description: >-
+        Imports energy audit baselines, equipment efficiency data,
+        and EnPI metrics from PACK-031 for industrial facility
+        benchmarking. Uses PACK-031 energy baseline engine outputs
+        as regression inputs for weather normalisation.
+      required: false
+
+    - id: pack032_bridge
+      name: "PACK-032 Building Energy Assessment Bridge"
+      description: >-
+        Imports building assessment results, zone profiles, DEC/EPC
+        ratings, and HVAC system data from PACK-032 for building
+        performance benchmarking context.
+      required: false
+
+    - id: pack033_bridge
+      name: "PACK-033 Quick Wins Identifier Bridge"
+      description: >-
+        Imports quick win scan results, facility profiles, and
+        savings verification data from PACK-033. Uses quick win
+        savings estimates to project benchmark improvement potential.
+      required: false
+
+    - id: energy_star_bridge
+      name: "ENERGY STAR Portfolio Manager Bridge"
+      description: >-
+        Integrates with US EPA ENERGY STAR Portfolio Manager API for
+        property creation/synchronisation, score calculation, benchmark
+        comparison, and ENERGY STAR certification submission. Supports
+        bulk property upload and monthly score updates.
+      required: false
+
+    - id: weather_service_bridge
+      name: "Weather Service Bridge"
+      description: >-
+        Connects to weather data APIs for HDD/CDD calculation, TMY
+        dataset retrieval, and real-time weather station data. Supports
+        multiple providers: NOAA, Meteostat, Open-Meteo, and national
+        meteorological services. Caches weather data locally for
+        offline operation.
+      required: true
+
+    - id: epc_registry_bridge
+      name: "EPC Registry Bridge"
+      description: >-
+        Connects to national EPC registries for existing certificate
+        lookup, rating comparison, and new certificate lodgement.
+        Supports UK EPC Register, EU Building Stock Observatory, and
+        national registry APIs. Retrieves historical ratings for
+        trend analysis.
+      required: false
+
+    - id: benchmark_database_bridge
+      name: "Benchmark Database Bridge"
+      description: >-
+        Manages benchmark datasets for peer comparison. Loads and
+        indexes CIBSE TM46, DIN V 18599, ENERGY STAR CBECS, BPIE,
+        and custom peer datasets. Supports dataset versioning,
+        metadata tracking, and automated updates from published
+        sources.
+      required: true
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        18-category system health verification covering all 10
+        engines, benchmark dataset availability and freshness,
+        weather data connectivity, ENERGY STAR API status, EPC
+        registry connectivity, database health, agent dependencies,
+        preset validation, template integrity, and deployment
+        readiness.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration wizard: Building Type Selection
+        (office / retail / warehouse / healthcare / education /
+        data_center / industrial / mixed) -> Facility Registration
+        (location, floor area, climate zone, operating hours) ->
+        Energy Data Import (utility bills upload or API connection) ->
+        Meter Configuration (main meter, sub-meters, virtual meters) ->
+        Weather Station Assignment (nearest station, TMY dataset) ->
+        Benchmark Dataset Selection (ENERGY STAR, CIBSE, DIN, custom) ->
+        Rating Scheme Selection (EPC, ENERGY STAR, NABERS, CRREM) ->
+        Reporting Preferences (format, frequency, language).
+      required: false
+
+  # ===========================================================================
+  # Presets - Building-type specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: office_building
+      name: "Office Building Preset"
+      description: >-
+        Configuration for office buildings with CIBSE TM46 office
+        benchmarks (Type 1: naturally ventilated cellular, Type 2:
+        naturally ventilated open plan, Type 3: air-conditioned
+        standard, Type 4: air-conditioned prestige). Typical EUI
+        150-400 kWh/m2/yr. Normalisation per NLA. Priority end uses:
+        HVAC, lighting, plug loads.
+      facility_type: "OFFICE"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/office_building.yaml"
+
+    - id: retail_store
+      name: "Retail Store Preset"
+      description: >-
+        Configuration for retail with CIBSE TM46 retail benchmarks
+        (food retail, non-food retail, department stores). Typical EUI
+        200-700 kWh/m2/yr. Normalisation per sales floor area.
+        Priority end uses: lighting, HVAC, refrigeration.
+      facility_type: "RETAIL"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/retail_store.yaml"
+
+    - id: warehouse
+      name: "Warehouse Preset"
+      description: >-
+        Configuration for warehouses and distribution centres with
+        CIBSE TM46 warehouse benchmarks. Typical EUI 50-250 kWh/m2/yr.
+        Normalisation per GFA. Priority end uses: lighting, HVAC,
+        material handling equipment.
+      facility_type: "WAREHOUSE"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/warehouse.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Configuration for healthcare facilities with CIBSE TM46
+        hospital benchmarks and ENERGY STAR hospital scoring. Typical
+        EUI 300-800 kWh/m2/yr. Normalisation per GFA or per bed.
+        Priority end uses: HVAC (24/7), lighting, medical equipment,
+        DHW.
+      facility_type: "HEALTHCARE"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/healthcare.yaml"
+
+    - id: education
+      name: "Education Preset"
+      description: >-
+        Configuration for schools and universities with CIBSE TM46
+        education benchmarks and ENERGY STAR K-12/university scoring.
+        Typical EUI 100-400 kWh/m2/yr. Normalisation per GFA or per
+        student. Priority end uses: HVAC, lighting, IT equipment.
+      facility_type: "EDUCATION"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/education.yaml"
+
+    - id: data_center
+      name: "Data Center Preset"
+      description: >-
+        Configuration for data centres with PUE benchmarking, ENERGY
+        STAR data center scoring, and EN 50600 alignment. Typical EUI
+        1000-5000 kWh/m2/yr. Normalisation per kW IT load (PUE) or
+        per GFA. Priority end uses: cooling, IT load, UPS losses.
+      facility_type: "DATA_CENTER"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/data_center.yaml"
+
+    - id: industrial
+      name: "Industrial Preset"
+      description: >-
+        Configuration for industrial facilities with SEC (Specific
+        Energy Consumption) benchmarking, BAT-AEL references from EU
+        BREF documents, and ISO 50006 EnPI methodology. Typical EUI
+        200-2000 kWh/m2/yr. Normalisation per unit of production or
+        per GFA. Priority end uses: process, motors, compressed air.
+      facility_type: "INDUSTRIAL"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/industrial.yaml"
+
+    - id: mixed_portfolio
+      name: "Mixed Portfolio Preset"
+      description: >-
+        Configuration for heterogeneous building portfolios containing
+        multiple building types. Applies type-specific benchmarks per
+        facility, normalises for fair cross-type comparison using
+        percentile-based ranking, and generates portfolio-level
+        aggregations weighted by floor area.
+      facility_type: "MIXED"
+      enabled_engines:
+        - eui_calculator
+        - peer_comparison
+        - sector_benchmark
+        - weather_normalisation
+        - energy_performance_gap
+        - portfolio_benchmark
+        - regression_analysis
+        - performance_rating
+        - trend_analysis
+        - benchmark_report
+      file: "config/presets/mixed_portfolio.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - Energy-related MRV agents for carbon intensity benchmarking
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from heating systems for Scope 1 carbon intensity"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions for carbon EUI"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 for consistent benchmarking"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts energy data from utility bills and vendor invoices"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises meter data exports and building metadata"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to finance systems for energy cost data"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections (ENERGY STAR, weather, EPC registry)"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across utility bills and meter data"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption readings"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills gaps in meter time series data for continuous baselines"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from utility bills through to benchmark reports"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Validates energy data against business rules and physical constraints"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution for benchmark pipeline"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates benchmark data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises energy units (kWh, MJ, GJ, m2, ft2) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in EUI calculations and normalisation"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links benchmark values to source standards and datasets"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-site portfolio operations"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all benchmark calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors pipeline health and engine performance"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Pack Dependencies
+# ---------------------------------------------------------------------------
+agents_packs:
+  - id: PACK-031
+    name: "Industrial Energy Audit Pack"
+    description: "Industrial energy baselines and EnPI data for benchmark context"
+    required: false
+    version: "1.0.0"
+  - id: PACK-032
+    name: "Building Energy Assessment Pack"
+    description: "Building assessment data and DEC/EPC ratings"
+    required: false
+    version: "1.0.0"
+  - id: PACK-033
+    name: "Quick Wins Identifier Pack"
+    description: "Quick win scan data and savings verification for improvement tracking"
+    required: false
+    version: "1.0.0"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 27
+  breakdown:
+    mrv_agents: 4
+    data_agents: 9
+    foundation_agents: 8
+    pack_dependencies: 3
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: pack035_energy_benchmark
+  migrations:
+    - id: "V266__pack035_energy_benchmark_001"
+      description: "Core benchmark schema, facility profiles, and building metadata"
+    - id: "V267__pack035_energy_benchmark_002"
+      description: "EUI calculation tables (site, source, primary, normalised)"
+    - id: "V268__pack035_energy_benchmark_003"
+      description: "Peer comparison tables (datasets, peer groups, percentile rankings)"
+    - id: "V269__pack035_energy_benchmark_004"
+      description: "Weather normalisation tables (regression models, degree-day data, TMY)"
+    - id: "V270__pack035_energy_benchmark_005"
+      description: "Performance rating tables (EPC, ENERGY STAR, NABERS, CRREM, MEPS)"
+    - id: "V271__pack035_energy_benchmark_006"
+      description: "Portfolio benchmark tables (facility rankings, aggregations, outliers)"
+    - id: "V272__pack035_energy_benchmark_007"
+      description: "Gap analysis tables (end-use breakdown, benchmarks, opportunities)"
+    - id: "V273__pack035_energy_benchmark_008"
+      description: "Trend analysis tables (CUSUM, SPC, alerts, seasonal decomposition)"
+    - id: "V274__pack035_energy_benchmark_009"
+      description: "Target setting tables (baselines, trajectories, milestones, progress)"
+    - id: "V275__pack035_energy_benchmark_010"
+      description: "Views, indexes, RLS policies, benchmark dataset seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  eui_calculation:
+    max_facilities: 1000
+    target_duration_per_facility_ms: 200
+    annualisation_interpolation_ms: 50
+    source_factor_lookup_ms: 10
+  weather_normalisation:
+    regression_per_facility_ms: 500
+    model_selection_per_facility_ms: 200
+    tmy_normalisation_ms: 100
+    target_duration_minutes: 5
+  peer_comparison:
+    percentile_calc_per_facility_ms: 100
+    peer_group_filtering_ms: 50
+    distribution_chart_generation_ms: 200
+    target_duration_minutes: 3
+  portfolio_benchmark:
+    max_facilities: 1000
+    ranking_per_portfolio_ms: 500
+    outlier_detection_ms: 200
+    aggregation_ms: 100
+    target_duration_minutes: 5
+  performance_rating:
+    epc_rating_per_facility_ms: 100
+    energy_star_score_per_facility_ms: 200
+    crrem_pathway_per_facility_ms: 300
+    target_duration_minutes: 3
+  trend_analysis:
+    cusum_update_per_facility_ms: 50
+    spc_check_per_facility_ms: 50
+    decomposition_per_facility_ms: 200
+    target_duration_minutes: 2
+  report_generation:
+    markdown_per_facility_ms: 200
+    html_per_facility_ms: 500
+    chart_generation_per_chart_ms: 300
+    target_duration_minutes: 5
+  cache_hit_ratio_target: 0.85
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level and portfolio-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+  required_roles:
+    - energy_manager
+    - facility_manager
+    - portfolio_manager
+    - sustainability_officer
+    - consultant
+    - viewer
+    - admin
+  audit_events:
+    - "benchmark.facility.registered"
+    - "benchmark.eui.calculated"
+    - "benchmark.peer_comparison.completed"
+    - "benchmark.rating.generated"
+    - "benchmark.portfolio.ranked"
+    - "benchmark.gap.analysed"
+    - "benchmark.target.set"
+    - "benchmark.alert.triggered"
+    - "benchmark.report.generated"
+    - "benchmark.report.exported"
+    - "benchmark.config.modified"
+    - "benchmark.preset.loaded"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_utility_bills.json"
+    - "tests/fixtures/sample_meter_data.json"
+    - "tests/fixtures/sample_weather_data.json"
+    - "tests/fixtures/sample_benchmark_datasets.json"
+    - "tests/fixtures/sample_portfolio.json"
+
+# -----------------------------------------------------------------------------
+# Compliance
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "EU_EED"
+      name: "EU Energy Efficiency Directive"
+      coverage: "Article 8 benchmarking, Article 11 energy services"
+    - id: "EU_EPBD"
+      name: "EU Energy Performance of Buildings Directive"
+      coverage: "EPC rating, DEC, MEPS compliance, ZEB tracking"
+    - id: "ISO_50001"
+      name: "ISO 50001:2018"
+      coverage: "EnPI benchmarking, energy baseline establishment"
+    - id: "ISO_50006"
+      name: "ISO 50006:2014"
+      coverage: "Energy performance indicators, regression normalisation"
+    - id: "ASHRAE_100"
+      name: "ASHRAE Standard 100-2018"
+      coverage: "Building energy benchmarking methodology, EUI targets"
+    - id: "ENERGY_STAR"
+      name: "ENERGY STAR Portfolio Manager"
+      coverage: "1-100 score calculation, property benchmarking, certification"
+    - id: "CIBSE_TM46"
+      name: "CIBSE TM46:2008"
+      coverage: "UK building energy benchmarks by type"
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      coverage: "Carbon intensity benchmarking (kgCO2e/m2)"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "statsmodels>=0.14"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 100
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 10
+    recommended_connections: 30
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_benchmark_datasets
+    - verify_weather_data_access
+    - verify_emission_factor_database
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+    new:
+      - "V266__pack035_energy_benchmark_001"
+      - "V267__pack035_energy_benchmark_002"
+      - "V268__pack035_energy_benchmark_003"
+      - "V269__pack035_energy_benchmark_004"
+      - "V270__pack035_energy_benchmark_005"
+      - "V271__pack035_energy_benchmark_006"
+      - "V272__pack035_energy_benchmark_007"
+      - "V273__pack035_energy_benchmark_008"
+      - "V274__pack035_energy_benchmark_009"
+      - "V275__pack035_energy_benchmark_010"
+
+  post_install:
+    - seed_benchmark_datasets
+    - seed_eui_benchmarks
+    - seed_epc_thresholds
+    - seed_sector_benchmarks
+    - seed_emission_factors
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: EUICalculatorEngine
+    file: engines/eui_calculator_engine.py
+    description: "Site/source/primary EUI with multiple accounting boundaries"
+  - name: PeerComparisonEngine
+    file: engines/peer_comparison_engine.py
+    description: "ENERGY STAR, CIBSE TM46, DIN V 18599, BPIE percentile ranking"
+  - name: SectorBenchmarkEngine
+    file: engines/sector_benchmark_engine.py
+    description: "Sector-specific benchmarks for 8 building types with sub-sectors"
+  - name: WeatherNormalisationEngine
+    file: engines/weather_normalisation_engine.py
+    description: "2P-5P degree-day regression, TOWT, TMY normalisation"
+  - name: EnergyPerformanceGapEngine
+    file: engines/energy_performance_gap_engine.py
+    description: "End-use disaggregated gap analysis against best-practice benchmarks"
+  - name: PortfolioBenchmarkEngine
+    file: engines/portfolio_benchmark_engine.py
+    description: "Multi-facility portfolio ranking, outlier detection, prioritisation"
+  - name: RegressionAnalysisEngine
+    file: engines/regression_analysis_engine.py
+    description: "OLS, robust, change-point, multivariate, TOWT regression with diagnostics"
+  - name: PerformanceRatingEngine
+    file: engines/performance_rating_engine.py
+    description: "EPC A-G, ENERGY STAR 1-100, NABERS stars, CRREM pathway alignment"
+  - name: TrendAnalysisEngine
+    file: engines/trend_analysis_engine.py
+    description: "CUSUM, SPC, STL decomposition, automated alerting"
+  - name: BenchmarkReportEngine
+    file: engines/benchmark_report_engine.py
+    description: "Multi-format report generation with Plotly charts and provenance"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: InitialBenchmarkWorkflow
+    file: workflows/initial_benchmark_workflow.py
+    description: "4-phase initial benchmark with EUI, normalisation, and peer comparison"
+  - name: ContinuousMonitoringWorkflow
+    file: workflows/continuous_monitoring_workflow.py
+    description: "4-phase CUSUM/SPC monitoring with alerting and trend updates"
+  - name: PeerComparisonWorkflow
+    file: workflows/peer_comparison_workflow.py
+    description: "3-phase peer comparison with percentile ranking and gap analysis"
+  - name: PortfolioBenchmarkWorkflow
+    file: workflows/portfolio_benchmark_workflow.py
+    description: "4-phase portfolio ranking with outlier detection and prioritisation"
+  - name: PerformanceGapWorkflow
+    file: workflows/performance_gap_workflow.py
+    description: "3-phase end-use gap analysis with opportunity assessment"
+  - name: RegulatoryComplianceWorkflow
+    file: workflows/regulatory_compliance_workflow.py
+    description: "3-phase EPBD/EED/MEES/LL97 compliance assessment"
+  - name: TargetSettingWorkflow
+    file: workflows/target_setting_workflow.py
+    description: "3-phase target setting with peer-based and SBTi trajectories"
+  - name: FullAssessmentWorkflow
+    file: workflows/full_assessment_workflow.py
+    description: "6-phase end-to-end benchmark assessment pipeline"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: EUIBenchmarkReportTemplate
+    file: templates/eui_benchmark_report.py
+    description: "EUI calculation and benchmark comparison report"
+  - name: PeerComparisonReportTemplate
+    file: templates/peer_comparison_report.py
+    description: "Peer group ranking and percentile analysis report"
+  - name: SectorBenchmarkReportTemplate
+    file: templates/sector_benchmark_report.py
+    description: "Sector-specific benchmark comparison report"
+  - name: EnergyPerformanceCertificateTemplate
+    file: templates/energy_performance_certificate.py
+    description: "EPBD-compliant EPC/DEC rating report"
+  - name: PortfolioDashboardTemplate
+    file: templates/portfolio_dashboard.py
+    description: "Multi-facility portfolio dashboard"
+  - name: GapAnalysisReportTemplate
+    file: templates/gap_analysis_report.py
+    description: "End-use disaggregated gap analysis report"
+  - name: TargetTrackingReportTemplate
+    file: templates/target_tracking_report.py
+    description: "Target trajectory and progress tracking report"
+  - name: RegulatoryComplianceReportTemplate
+    file: templates/regulatory_compliance_report.py
+    description: "EPBD/EED/MEES/LL97/NABERS compliance summary"
+  - name: TrendAnalysisReportTemplate
+    file: templates/trend_analysis_report.py
+    description: "CUSUM and SPC trend analysis report"
+  - name: ExecutiveSummaryReportTemplate
+    file: templates/executive_summary_report.py
+    description: "C-suite executive benchmark summary"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: EnergyBenchmarkOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "10-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVBenchmarkBridge
+    file: integrations/mrv_benchmark_bridge.py
+    description: "Routes energy data to MRV agents for carbon intensity benchmarking"
+  - name: DataBenchmarkBridge
+    file: integrations/data_benchmark_bridge.py
+    description: "Routes data intake to DATA agents for utility and meter data"
+  - name: Pack031Bridge
+    file: integrations/pack031_bridge.py
+    description: "Imports energy audit baselines and EnPI data from PACK-031"
+  - name: Pack032Bridge
+    file: integrations/pack032_bridge.py
+    description: "Imports building assessment results and DEC/EPC ratings from PACK-032"
+  - name: Pack033Bridge
+    file: integrations/pack033_bridge.py
+    description: "Imports quick win scan data and savings verification from PACK-033"
+  - name: EnergyStarBridge
+    file: integrations/energy_star_bridge.py
+    description: "ENERGY STAR Portfolio Manager API integration"
+  - name: WeatherServiceBridge
+    file: integrations/weather_service_bridge.py
+    description: "Weather data API integration for HDD/CDD and TMY datasets"
+  - name: EPCRegistryBridge
+    file: integrations/epc_registry_bridge.py
+    description: "National EPC registry lookup and lodgement"
+  - name: BenchmarkDatabaseBridge
+    file: integrations/benchmark_database_bridge.py
+    description: "Benchmark dataset management (CIBSE TM46, DIN, CBECS, BPIE)"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "18-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided facility configuration with building type presets"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: office_building
+    file: config/presets/office_building.yaml
+    description: "Corporate HQ, multi-tenant, co-working spaces"
+  - name: retail_store
+    file: config/presets/retail_store.yaml
+    description: "Supermarkets, department stores, specialty retail"
+  - name: warehouse
+    file: config/presets/warehouse.yaml
+    description: "Ambient, cold storage, distribution centres"
+  - name: healthcare
+    file: config/presets/healthcare.yaml
+    description: "Hospitals, clinics, care homes"
+  - name: education
+    file: config/presets/education.yaml
+    description: "Schools, universities, campuses"
+  - name: data_center
+    file: config/presets/data_center.yaml
+    description: "Enterprise, colocation, server rooms"
+  - name: industrial
+    file: config/presets/industrial.yaml
+    description: "Manufacturing, process, light industrial"
+  - name: mixed_portfolio
+    file: config/presets/mixed_portfolio.yaml
+    description: "Heterogeneous building portfolios with mixed types"

@@ -32,102 +32,184 @@ Status: Production Ready
 
 from __future__ import annotations
 
-# Engine 1: CBAM Calculation
-from packs.eu_compliance.PACK_004_cbam_readiness.engines.cbam_calculation_engine import (
-    CBAMCalculationEngine,
-    CBAMGoodsCategory,
-    CalculationMethod,
-    EmissionInput,
-    EmissionResult,
+import logging
+
+logger = logging.getLogger(__name__)
+
+__version__: str = "1.0.0"
+__pack__: str = "PACK-004"
+__pack_name__: str = "CBAM Readiness Pack"
+__engines_count__: int = 7
+
+# ─── Engine 1: CBAM Calculation ──────────────────────────────────────
+_engine_1_symbols: list[str] = []
+try:
+    from .cbam_calculation_engine import (  # noqa: F401
+        CBAMCalculationEngine,
+        CBAMGoodsCategory,
+        CalculationMethod,
+        EmissionInput,
+        EmissionResult,
+    )
+    _engine_1_symbols = [
+        "CBAMCalculationEngine", "CBAMGoodsCategory",
+        "CalculationMethod", "EmissionInput", "EmissionResult",
+    ]
+    logger.debug("Engine 1 (CBAMCalculationEngine) loaded successfully")
+except ImportError as exc:
+    logger.debug("Engine 1 (CBAMCalculationEngine) not available: %s", exc)
+
+# ─── Engine 2: Certificate Obligation ────────────────────────────────
+_engine_2_symbols: list[str] = []
+try:
+    from .certificate_engine import (  # noqa: F401
+        CarbonPriceDeduction,
+        CertificateEngine,
+        CertificateObligation,
+        CostProjection,
+        FreeAllocationSchedule,
+        QuarterlyHolding,
+    )
+    _engine_2_symbols = [
+        "CertificateEngine", "CertificateObligation",
+        "FreeAllocationSchedule", "CarbonPriceDeduction",
+        "CostProjection", "QuarterlyHolding",
+    ]
+    logger.debug("Engine 2 (CertificateEngine) loaded successfully")
+except ImportError as exc:
+    logger.debug("Engine 2 (CertificateEngine) not available: %s", exc)
+
+# ─── Engine 3: Quarterly Reporting ───────────────────────────────────
+_engine_3_symbols: list[str] = []
+try:
+    from .quarterly_reporting_engine import (  # noqa: F401
+        GoodsEntry,
+        QuarterlyPeriod,
+        QuarterlyReport,
+        QuarterlyReportingEngine,
+    )
+    _engine_3_symbols = [
+        "QuarterlyReportingEngine", "QuarterlyPeriod",
+        "QuarterlyReport", "GoodsEntry",
+    ]
+    logger.debug("Engine 3 (QuarterlyReportingEngine) loaded successfully")
+except ImportError as exc:
+    logger.debug("Engine 3 (QuarterlyReportingEngine) not available: %s", exc)
+
+# ─── Engine 4: Supplier Management ───────────────────────────────────
+_engine_4_symbols: list[str] = []
+try:
+    from .supplier_management_engine import (  # noqa: F401
+        EmissionSubmission,
+        Installation,
+        SupplierManagementEngine,
+        SupplierProfile,
+    )
+    _engine_4_symbols = [
+        "SupplierManagementEngine", "SupplierProfile",
+        "Installation", "EmissionSubmission",
+    ]
+    logger.debug("Engine 4 (SupplierManagementEngine) loaded successfully")
+except ImportError as exc:
+    logger.debug("Engine 4 (SupplierManagementEngine) not available: %s", exc)
+
+# ─── Engine 5: De Minimis Threshold ──────────────────────────────────
+_engine_5_symbols: list[str] = []
+try:
+    from .deminimis_engine import (  # noqa: F401
+        DeMinimisAssessment,
+        DeMinimisEngine,
+        SectorGroup,
+        ThresholdStatus,
+    )
+    _engine_5_symbols = [
+        "DeMinimisEngine", "SectorGroup",
+        "ThresholdStatus", "DeMinimisAssessment",
+    ]
+    logger.debug("Engine 5 (DeMinimisEngine) loaded successfully")
+except ImportError as exc:
+    logger.debug("Engine 5 (DeMinimisEngine) not available: %s", exc)
+
+# ─── Engine 6: Verification ──────────────────────────────────────────
+_engine_6_symbols: list[str] = []
+try:
+    from .verification_engine import (  # noqa: F401
+        AccreditedVerifier,
+        VerificationEngine,
+        VerificationEngagement,
+        VerificationFinding,
+    )
+    _engine_6_symbols = [
+        "VerificationEngine", "AccreditedVerifier",
+        "VerificationEngagement", "VerificationFinding",
+    ]
+    logger.debug("Engine 6 (VerificationEngine) loaded successfully")
+except ImportError as exc:
+    logger.debug("Engine 6 (VerificationEngine) not available: %s", exc)
+
+# ─── Engine 7: Policy Compliance ─────────────────────────────────────
+_engine_7_symbols: list[str] = []
+try:
+    from .policy_compliance_engine import (  # noqa: F401
+        ComplianceAssessment,
+        ComplianceCheckResult,
+        ComplianceRule,
+        PolicyComplianceEngine,
+    )
+    _engine_7_symbols = [
+        "PolicyComplianceEngine", "ComplianceRule",
+        "ComplianceCheckResult", "ComplianceAssessment",
+    ]
+    logger.debug("Engine 7 (PolicyComplianceEngine) loaded successfully")
+except ImportError as exc:
+    logger.debug("Engine 7 (PolicyComplianceEngine) not available: %s", exc)
+
+# ─── Dynamic __all__ ──────────────────────────────────────────────────
+
+_loaded_engines: list[str] = []
+if _engine_1_symbols:
+    _loaded_engines.append("CBAMCalculationEngine")
+if _engine_2_symbols:
+    _loaded_engines.append("CertificateEngine")
+if _engine_3_symbols:
+    _loaded_engines.append("QuarterlyReportingEngine")
+if _engine_4_symbols:
+    _loaded_engines.append("SupplierManagementEngine")
+if _engine_5_symbols:
+    _loaded_engines.append("DeMinimisEngine")
+if _engine_6_symbols:
+    _loaded_engines.append("VerificationEngine")
+if _engine_7_symbols:
+    _loaded_engines.append("PolicyComplianceEngine")
+
+__all__: list[str] = (
+    _engine_1_symbols
+    + _engine_2_symbols
+    + _engine_3_symbols
+    + _engine_4_symbols
+    + _engine_5_symbols
+    + _engine_6_symbols
+    + _engine_7_symbols
 )
 
-# Engine 2: Certificate Obligation
-from packs.eu_compliance.PACK_004_cbam_readiness.engines.certificate_engine import (
-    CarbonPriceDeduction,
-    CertificateEngine,
-    CertificateObligation,
-    CostProjection,
-    FreeAllocationSchedule,
-    QuarterlyHolding,
-)
 
-# Engine 3: Quarterly Reporting
-from packs.eu_compliance.PACK_004_cbam_readiness.engines.quarterly_reporting_engine import (
-    GoodsEntry,
-    QuarterlyPeriod,
-    QuarterlyReport,
-    QuarterlyReportingEngine,
-)
+def get_loaded_engines() -> list[str]:
+    """Return names of successfully loaded engines."""
+    return list(_loaded_engines)
 
-# Engine 4: Supplier Management
-from packs.eu_compliance.PACK_004_cbam_readiness.engines.supplier_management_engine import (
-    EmissionSubmission,
-    Installation,
-    SupplierManagementEngine,
-    SupplierProfile,
-)
 
-# Engine 5: De Minimis Threshold
-from packs.eu_compliance.PACK_004_cbam_readiness.engines.deminimis_engine import (
-    DeMinimisAssessment,
-    DeMinimisEngine,
-    SectorGroup,
-    ThresholdStatus,
-)
+def get_engine_count() -> int:
+    """Return total number of expected engines."""
+    return __engines_count__
 
-# Engine 6: Verification
-from packs.eu_compliance.PACK_004_cbam_readiness.engines.verification_engine import (
-    AccreditedVerifier,
-    VerificationEngine,
-    VerificationEngagement,
-    VerificationFinding,
-)
 
-# Engine 7: Policy Compliance
-from packs.eu_compliance.PACK_004_cbam_readiness.engines.policy_compliance_engine import (
-    ComplianceAssessment,
-    ComplianceCheckResult,
-    ComplianceRule,
-    PolicyComplianceEngine,
-)
+def get_loaded_engine_count() -> int:
+    """Return number of successfully loaded engines."""
+    return len(_loaded_engines)
 
-__all__: list[str] = [
-    # Engine 1: CBAM Calculation
-    "CBAMCalculationEngine",
-    "CBAMGoodsCategory",
-    "CalculationMethod",
-    "EmissionInput",
-    "EmissionResult",
-    # Engine 2: Certificate Obligation
-    "CertificateEngine",
-    "CertificateObligation",
-    "FreeAllocationSchedule",
-    "CarbonPriceDeduction",
-    "CostProjection",
-    "QuarterlyHolding",
-    # Engine 3: Quarterly Reporting
-    "QuarterlyReportingEngine",
-    "QuarterlyPeriod",
-    "QuarterlyReport",
-    "GoodsEntry",
-    # Engine 4: Supplier Management
-    "SupplierManagementEngine",
-    "SupplierProfile",
-    "Installation",
-    "EmissionSubmission",
-    # Engine 5: De Minimis Threshold
-    "DeMinimisEngine",
-    "SectorGroup",
-    "ThresholdStatus",
-    "DeMinimisAssessment",
-    # Engine 6: Verification
-    "VerificationEngine",
-    "AccreditedVerifier",
-    "VerificationEngagement",
-    "VerificationFinding",
-    # Engine 7: Policy Compliance
-    "PolicyComplianceEngine",
-    "ComplianceRule",
-    "ComplianceCheckResult",
-    "ComplianceAssessment",
-]
+
+logger.info(
+    "PACK-004 engines: %d / %d loaded",
+    get_loaded_engine_count(),
+    get_engine_count(),
+)

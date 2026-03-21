@@ -1,0 +1,472 @@
+# =============================================================================
+# PACK-025 Race to Zero Pack - City / Municipality Preset
+# =============================================================================
+# Configuration for cities and municipalities joining Race to Zero through
+# C40 Cities Climate Leadership Group or ICLEI Local Governments for
+# Sustainability. Community-wide emissions inventory using GPC (Global
+# Protocol for Community-Scale GHG Emissions) methodology. Focus on
+# transport, buildings, waste, and energy sectors at city level. BASIC+
+# GPC inventory as minimum, BASIC inventory for smaller cities. City-level
+# governance structures with mayoral endorsement. No corporate Scope 3 --
+# replaced by community-wide territorial and consumption-based inventory.
+#
+# Target: 50% reduction by 2030 (municipal operations)
+# Scope: Municipal buildings, fleet, waste, public transport
+# C40 sector pathways: Enabled
+# Partnership: Very high (regional coalitions)
+# Verification: Annual with third-party
+#
+# Typical use cases:
+#   - C40 member cities (large/megacities)
+#   - ICLEI member local governments
+#   - Cities with climate emergency declarations
+#   - Municipal governments developing climate action plans
+#   - Urban areas participating in Deadline 2020 program
+#   - Cities preparing Global Covenant of Mayors reporting
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+actor_type: "CITY"
+sector: "PUBLIC_SECTOR"
+size: "CITY"
+region: "GLOBAL"
+country: ""
+population_range: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2018
+pack_version: "1.0.0"
+campaign_join_date: ""
+
+# --- Race to Zero Campaign ---
+campaign:
+  campaign_name: "Race to Zero"
+  campaign_version: "2022"
+  interpretation_guide_version: "June 2022"
+  hleg_report_version: "November 2022"
+  net_zero_target_year: 2050
+  interim_target_year: 2030
+  starting_line_deadline_months: 12
+  annual_reporting_required: true
+  public_disclosure_required: true
+
+# --- Partner Initiative (C40 / ICLEI) ---
+partner:
+  primary_partner: "C40"
+  secondary_partners:
+    - "ICLEI"
+    - "Global Covenant of Mayors"
+    - "CDP_CITIES"
+    - "Under2 Coalition"
+  reporting_channel: "CDP_CITIES"
+  partner_requirements_mapped: true
+  cross_partner_synergy: true
+  partner_compliance_tracking: true
+  engagement_level: "VERY_HIGH"
+  regional_coalition_participation: true
+
+# --- Pledge Configuration (City-specific) ---
+pledge:
+  net_zero_by_2050: true
+  interim_2030_target: true
+  action_plan_commitment: true
+  annual_reporting_commitment: true
+  scope_coverage_full: true
+  governance_endorsement: true
+  public_disclosure: true
+  no_contradictory_actions: true
+  mayoral_endorsement: true
+  council_resolution: true
+  climate_emergency_declaration: false
+
+# --- Starting Line Criteria (City-adapted) ---
+starting_line:
+  enabled: true
+  assessment_mode: "FULL"
+  pillars:
+    pledge:
+      sl_p1_net_zero_target: true
+      sl_p2_interim_target: true
+      sl_p3_science_based: true
+      sl_p4_fair_share: true
+      sl_p5_scope_coverage: true
+    plan:
+      sl_a1_action_plan_published: true
+      sl_a2_quantified_actions: true
+      sl_a3_timeline_milestones: true
+      sl_a4_resource_allocation: true
+      sl_a5_sector_alignment: true
+    proceed:
+      sl_r1_immediate_action: true
+      sl_r2_emission_reductions: true
+      sl_r3_investment_commitment: true
+      sl_r4_governance_integration: true
+      sl_r5_no_contradictory_action: true
+    publish:
+      sl_d1_annual_reporting: true
+      sl_d2_emissions_disclosure: true
+      sl_d3_target_progress: true
+      sl_d4_plan_updates: true
+      sl_d5_transparency: true
+  evidence_collection_automated: true
+  gap_remediation_guidance: true
+  compliance_deadline_tracking: true
+  threshold_scores:
+    pledge_minimum_pct: 75.0
+    plan_minimum_pct: 70.0
+    proceed_minimum_pct: 65.0
+    publish_minimum_pct: 75.0
+    overall_minimum_pct: 70.0
+
+# --- Interim Target Validation (City-level) ---
+interim_target:
+  minimum_reduction_pct: 42.0
+  preferred_reduction_pct: 50.0
+  baseline_year_minimum: 2015
+  baseline_year_preferred: 2018
+  methodology: "C40_DEADLINE_2020"
+  annual_reduction_rate_min_pct: 4.2
+  community_wide_coverage: true
+  scope1_coverage_pct: 95.0
+  scope2_coverage_pct: 95.0
+  scope3_coverage_pct: 0.0
+  fair_share_assessment: true
+  per_capita_target: true
+  pathway_sources:
+    - "IPCC_AR6_WG3"
+    - "IEA_NZE_2023"
+    - "C40_1_5C_COMPLIANT"
+
+# --- Long-Term Target ---
+long_term_target:
+  net_zero_year: 2050
+  residual_emissions_max_pct: 10.0
+  neutralization_required: true
+  neutralization_method: "NATURE_BASED_SOLUTIONS"
+  municipal_operations_reduction_pct: 95.0
+  community_wide_reduction_pct: 90.0
+
+# --- Action Plan (City Climate Action Plan) ---
+action_plan:
+  publication_deadline_months: 12
+  plan_type: "CLIMATE_ACTION_PLAN"
+  quantified_actions_required: true
+  minimum_actions: 15
+  maximum_actions: 80
+  include_macc_analysis: true
+  include_timeline: true
+  include_milestones: true
+  include_resource_allocation: true
+  include_sector_alignment: true
+  action_categories:
+    - "TRANSPORT_ELECTRIFICATION"
+    - "PUBLIC_TRANSIT_EXPANSION"
+    - "BUILDING_ENERGY_CODES"
+    - "BUILDING_RETROFIT"
+    - "RENEWABLE_ENERGY_PROCUREMENT"
+    - "DISTRICT_HEATING_COOLING"
+    - "WASTE_REDUCTION_RECYCLING"
+    - "GREEN_INFRASTRUCTURE"
+    - "URBAN_PLANNING_DENSITY"
+    - "ACTIVE_MOBILITY"
+    - "STREET_LIGHTING_LED"
+    - "WATER_EFFICIENCY"
+  planning_horizon_years: 10
+  scenario_count: 3
+  carbon_price_eur_per_tco2e: 60.0
+  discount_rate_pct: 5.0
+  milestones:
+    - year: 2025
+      description: "GPC inventory complete, climate action plan adopted"
+    - year: 2027
+      description: "Building retrofit programs launched, transit expansion started"
+    - year: 2030
+      description: "50% reduction in municipal operations achieved"
+    - year: 2035
+      description: "70% reduction, renewable grid supply dominant"
+    - year: 2040
+      description: "85% reduction, zero-emission transit fleet"
+    - year: 2050
+      description: "Net-zero city achieved"
+
+# --- Emission Inventory (GPC methodology) ---
+inventory:
+  methodology: "GPC"
+  gpc_level: "BASIC_PLUS"
+  sectors:
+    - "STATIONARY_ENERGY"
+    - "TRANSPORTATION"
+    - "WASTE"
+    - "IPPU"
+    - "AFOLU"
+  sub_sectors:
+    stationary_energy:
+      - "residential_buildings"
+      - "commercial_institutional"
+      - "manufacturing_construction"
+      - "energy_industries"
+      - "fugitive_from_energy"
+    transportation:
+      - "on_road"
+      - "railways"
+      - "waterborne"
+      - "aviation"
+      - "off_road"
+    waste:
+      - "solid_waste_disposal"
+      - "biological_treatment"
+      - "incineration"
+      - "wastewater_treatment"
+  municipal_operations_scope:
+    - "municipal_buildings"
+    - "municipal_fleet"
+    - "public_transport"
+    - "waste_management"
+    - "street_lighting"
+    - "water_wastewater"
+  include_scope1: true
+  include_scope2: true
+  include_scope3: false
+  territorial_vs_consumption: "TERRITORIAL"
+  community_wide: true
+
+# --- Sector Pathway (C40 sector pathways enabled) ---
+sector_pathway:
+  enabled: true
+  auto_classify: true
+  c40_sector_pathways_enabled: true
+  pathway_sources:
+    - "IEA_NZE_2050"
+    - "IPCC_AR6_WG3"
+    - "C40_PATHWAYS"
+    - "CRREM"
+  benchmark_comparison: true
+  milestone_mapping: true
+  gap_to_benchmark_analysis: true
+  city_specific_pathways: true
+  sectors_covered: 8
+  priority_sectors:
+    - "BUILDINGS"
+    - "TRANSPORT"
+    - "WASTE"
+    - "ENERGY"
+  c40_pathways:
+    buildings:
+      new_build_zero_carbon_by: 2030
+      existing_retrofit_rate_pct_per_year: 3.0
+      net_zero_carbon_buildings_by: 2050
+    transport:
+      zero_emission_bus_fleet_by: 2035
+      walking_cycling_share_pct_by_2030: 30.0
+      ev_new_sales_share_pct_by_2030: 30.0
+    waste:
+      landfill_gas_capture_pct: 75.0
+      organic_waste_diversion_by_2030_pct: 50.0
+    energy:
+      renewable_electricity_pct_by_2030: 70.0
+      coal_phase_out_by: 2030
+
+# --- HLEG Credibility Assessment (City-adapted) ---
+hleg:
+  enabled: true
+  assessment_mode: "FULL"
+  recommendations_assessed: 10
+  sub_criteria_count: 45
+  recommendations:
+    r1_net_zero_pledge_quality: true
+    r2_interim_target_ambition: true
+    r3_voluntary_credit_use: true
+    r4_lobbying_alignment: true
+    r5_just_transition: true
+    r6_financial_commitment: true
+    r7_reporting_transparency: true
+    r8_scope_of_pledge: true
+    r9_internal_governance: true
+    r10_fossil_fuel_phaseout: true
+  credibility_rating_scale:
+    - "STRONG"
+    - "ADEQUATE"
+    - "WEAK"
+    - "INSUFFICIENT"
+  minimum_credibility_target: "ADEQUATE"
+  science_based_validation: true
+  governance_maturity_review: true
+  fossil_fuel_exposure_check: false
+  just_transition_emphasis: true
+
+# --- Credibility Assessment Weights ---
+credibility_weights:
+  pledge_quality: 0.15
+  target_ambition: 0.15
+  action_plan_robustness: 0.15
+  progress_trajectory: 0.10
+  governance_maturity: 0.10
+  transparency_reporting: 0.10
+  sector_alignment: 0.08
+  partnership_engagement: 0.07
+  offset_integrity: 0.05
+  just_transition: 0.05
+  total: 1.00
+  minimum_composite_score: 0.60
+  passing_threshold: "ADEQUATE"
+
+# --- Partnership Engagement (City networks) ---
+partnership:
+  enabled: true
+  engagement_level: "VERY_HIGH"
+  max_partners: 8
+  partner_discovery: true
+  collaboration_agreements: true
+  joint_target_setting: true
+  performance_tracking: true
+  impact_reporting: true
+  synergy_analysis: true
+  regional_coalition_participation: true
+  partner_initiatives:
+    - "C40"
+    - "ICLEI"
+    - "Global Covenant of Mayors"
+    - "CDP Cities"
+    - "Under2 Coalition"
+    - "Deadline 2020"
+
+# --- Verification ---
+verification:
+  enabled: true
+  frequency: "ANNUAL"
+  verification_level: "LIMITED"
+  third_party_required: true
+  accepted_standards:
+    - "ISO_14064_3"
+    - "GPC_VERIFICATION"
+    - "CDP_CITIES_SCORING"
+  verification_scope:
+    - "emissions_inventory"
+    - "target_progress"
+    - "action_plan_implementation"
+    - "gpc_compliance"
+  historical_data_review: true
+  site_visits_required: false
+  verification_report_public: true
+  peer_review_enabled: true
+
+# --- Offset Strategy ---
+offset_strategy:
+  enabled: true
+  max_offset_pct: 10.0
+  offset_scope: "RESIDUAL_ONLY"
+  eligible_offset_types:
+    - "NATURE_BASED_SOLUTIONS"
+    - "URBAN_FORESTRY"
+    - "GREEN_INFRASTRUCTURE"
+    - "CARBON_REMOVAL"
+  excluded_offset_types:
+    - "AVOIDED_DEFORESTATION"
+    - "REDD_UNCERTIFIED"
+  quality_standards:
+    - "VERRA_VCS"
+    - "GOLD_STANDARD"
+    - "CITY_FOREST_CREDITS"
+  permanence_minimum_years: 50
+  additionality_required: true
+  co_benefits_preferred: true
+  local_offsets_preferred: true
+  vintage_maximum_years: 5
+  retirement_tracking: true
+  double_counting_prevention: true
+
+# --- Annual Reporting ---
+reporting:
+  enabled: true
+  frequency: "ANNUAL"
+  channels:
+    - "CDP_CITIES"
+    - "C40_REPORTING"
+    - "R2Z_CAMPAIGN"
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_emissions_inventory: true
+  include_target_progress: true
+  include_action_implementation: true
+  include_partnership_engagement: true
+  include_credibility_update: true
+  include_forward_commitments: true
+  include_per_capita_metrics: true
+  include_offset_usage: true
+  verification_required: true
+  verification_level: "LIMITED"
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+  reporting_format_preferences:
+    primary: "PDF"
+    machine_readable: "JSON"
+    web: "HTML"
+
+# --- Progress Tracking ---
+progress:
+  enabled: true
+  trajectory_assessment: true
+  variance_analysis: true
+  yoy_comparison: true
+  corrective_action_triggers: true
+  on_track_threshold_pct: 5.0
+  alert_threshold_pct: 10.0
+  kpi_set:
+    - "total_community_emissions"
+    - "per_capita_emissions"
+    - "transport_emissions_share"
+    - "building_emissions_share"
+    - "waste_diversion_rate"
+    - "renewable_energy_share"
+    - "ev_adoption_rate"
+    - "yoy_reduction_rate"
+    - "public_transit_ridership"
+    - "hleg_credibility_rating"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+
+# --- Race Readiness ---
+readiness:
+  enabled: true
+  dimensions:
+    - "pledge_strength"
+    - "starting_line_compliance"
+    - "target_ambition"
+    - "action_plan_quality"
+    - "progress_trajectory"
+    - "sector_alignment"
+    - "partnership_engagement"
+    - "hleg_credibility"
+  composite_scoring: true
+  rag_status: true
+  prioritized_improvements: true
+  readiness_levels:
+    - "CAMPAIGN_READY"
+    - "MOSTLY_READY"
+    - "PARTIALLY_READY"
+    - "SIGNIFICANT_GAPS"
+    - "NOT_READY"
+  minimum_readiness_target: "MOSTLY_READY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 6
+  timeout_seconds: 600
+  batch_size: 1500
+  memory_limit_mb: 4096
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true

@@ -1,0 +1,228 @@
+# =============================================================================
+# PACK-029 Interim Targets Pack - Scope 3 Extended Preset
+# =============================================================================
+# Configuration for organizations with significant Scope 3 value chain
+# emissions that need extended interim target timelines per SBTi guidance.
+# SBTi permits Scope 3 targets to lag 5 years behind Scope 1+2, allowing
+# the near-term Scope 3 target year to be 2035 (vs 2030 for Scope 1+2).
+#
+# SBTi Scope 3 Near-Term Requirements:
+#   - Scope 3 target required when Scope 3 >= 40% of total emissions
+#   - Near-term: >= 67% of Scope 3 emissions covered
+#   - Long-term: >= 90% of Scope 3 emissions covered
+#   - Minimum 2.5%/yr linear reduction (1.5C) or 1.8%/yr (WB2C)
+#   - Target year can be up to 5 years after Scope 1+2 near-term year
+#
+# Typical use cases:
+#   - Financial institutions (Scope 3 Cat 15 financed emissions dominate)
+#   - Retail and consumer goods (Scope 3 Cat 1, 4, 11, 12 dominate)
+#   - Technology companies (Scope 3 Cat 1, 11 dominate)
+#   - Food and beverage (Scope 3 Cat 1 agricultural supply chain)
+#   - Automotive OEMs (Scope 3 Cat 11 use of sold products)
+#   - Any organization where Scope 3 > 60% of total footprint
+#
+# Key characteristics:
+#   - All 15 Scope 3 categories tracked (full value chain coverage)
+#   - 5-year Scope 3 lag: Scope 1+2 target 2030, Scope 3 target 2035
+#   - Extended long-term: Scope 1+2 net-zero 2050, Scope 3 net-zero 2055
+#   - Category-level decomposition for variance analysis
+#   - Dual reporting (market-based and location-based for Scope 2)
+#   - Scope 3 coverage >= 90% for long-term target
+#   - ARIMA forecasting for complex multi-category trends
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+baseline_year: 2019
+current_year: 2024
+reporting_year: 2024
+
+# --- Long-Term Target ---
+long_term_target_year: 2050
+long_term_reduction_pct: 90.0
+net_zero_year: 2050
+sbti_pathway: "1.5C"
+
+# --- 5-Year Interim Target (Scope 1+2 only at 2030) ---
+interim_target_5yr:
+  enabled: true
+  target_year: 2030
+  min_reduction_pct: 42.0
+  scope_1_2_reduction_pct: 42.0
+  scope_3_reduction_pct: null
+  label: "SBTi 1.5C near-term Scope 1+2 target (2030)"
+
+# --- 10-Year Interim Target (Scope 1+2 + Scope 3) ---
+interim_target_10yr:
+  enabled: true
+  target_year: 2035
+  min_reduction_pct: 65.0
+  scope_1_2_reduction_pct: 65.0
+  scope_3_reduction_pct: 25.0
+  label: "Combined Scope 1+2+3 milestone (2035)"
+
+# --- Custom Milestones (Scope 3 specific checkpoints) ---
+custom_milestones:
+  - enabled: true
+    target_year: 2035
+    min_reduction_pct: 25.0
+    scope_3_reduction_pct: 25.0
+    label: "Scope 3 near-term target (2035, lagged 5yr)"
+  - enabled: true
+    target_year: 2040
+    min_reduction_pct: 50.0
+    scope_3_reduction_pct: 50.0
+    label: "Scope 3 mid-term milestone (2040)"
+  - enabled: true
+    target_year: 2045
+    min_reduction_pct: 75.0
+    scope_3_reduction_pct: 75.0
+    label: "Scope 3 acceleration milestone (2045)"
+
+# --- Pathway ---
+pathway_type: "linear"
+annual_reduction_rate: 4.2
+s_curve_inflection_year: null
+milestone_years: null
+milestone_reductions_pct: null
+
+# --- Scope Coverage (FOCUS AREA - Full 15 Categories) ---
+scope:
+  scope_1_included: true
+  scope_2_included: true
+  scope_2_method: "dual_reporting"
+  scope_3_included: true
+  scope_3_lag_years: 5
+  scope_3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  scope_3_significant_threshold_pct: 40.0
+  scope_3_coverage_pct: 90.0
+  scope_1_coverage_pct: 95.0
+  scope_2_coverage_pct: 95.0
+
+# --- Progress Monitoring ---
+monitoring:
+  monitoring_frequency: "quarterly"
+  variance_tolerance_pct: 12.0
+  performance_scoring_enabled: true
+  amber_threshold_multiplier: 1.0
+  red_threshold_multiplier: 2.0
+  trend_detection_enabled: true
+  trend_window_periods: 4
+  cumulative_tracking_enabled: true
+  year_on_year_comparison: true
+  normalized_tracking: true
+
+# --- Variance Analysis ---
+variance:
+  variance_method: "lmdi"
+  decomposition_levels:
+    - "scope"
+    - "category"
+    - "initiative"
+  root_cause_classification: true
+  root_cause_taxonomy: "extended"
+  materiality_threshold_pct: 2.0
+  historical_comparison_years: 3
+  waterfall_visualization: true
+  attribution_confidence_enabled: true
+
+# --- Trend Extrapolation ---
+extrapolation:
+  extrapolation_method: "arima"
+  forecast_horizon_years: 5
+  confidence_interval: 0.95
+  backtesting_enabled: true
+  backtesting_holdout_years: 2
+  ensemble_enabled: true
+  scenario_adjustment_enabled: true
+  min_data_points: 8
+  outlier_detection: true
+  outlier_z_score_threshold: 2.5
+
+# --- Corrective Actions ---
+corrective_action:
+  corrective_action_trigger: "amber"
+  gap_quantification_enabled: true
+  initiative_optimization: true
+  macc_integration: true
+  macc_carbon_price_usd: 80.0
+  scenario_remodeling: true
+  action_plan_template: true
+  escalation_enabled: true
+  escalation_threshold_periods: 2
+  max_corrective_actions: 20
+  cost_benefit_analysis: true
+  implementation_timeline: true
+
+# --- Carbon Budget ---
+carbon_budget:
+  carbon_budget_enabled: true
+  budget_allocation_method: "linear"
+  budget_overshoot_allowed: false
+  overshoot_compensation_years: 3
+  cumulative_budget_tracking: true
+  budget_reserve_pct: 5.0
+  quarterly_budget_splits: true
+  scope_level_budgets: true
+  facility_level_budgets: false
+  budget_unit: "tCO2e"
+
+# --- SBTi Validation ---
+sbti_validation:
+  sbti_validation_enabled: true
+  sbti_criteria_count: 21
+  sbti_minimum_ambition_check: true
+  sbti_boundary_check: true
+  sbti_timeframe_check: true
+  sbti_recalculation_trigger_pct: 5.0
+  sbti_submission_date: null
+  sbti_commitment_type: "near_term_and_net_zero"
+  auto_fix_suggestions: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "sbti"
+    - "cdp"
+    - "tcfd"
+    - "gri"
+  reporting_frequency: "annual"
+  public_disclosure_enabled: true
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 10
+  executive_summary_enabled: true
+  benchmark_comparison: true
+
+# --- Alerting ---
+alerting:
+  email_alerts_enabled: true
+  slack_alerts_enabled: false
+  webhook_alerts_enabled: false
+  alert_recipients: []
+  slack_channel: null
+  webhook_url: null
+  alert_escalation_enabled: true
+  escalation_recipients: []
+  alert_on_green: false
+  alert_on_amber: true
+  alert_on_red: true
+  digest_frequency: "weekly"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 600
+  batch_size: 1000
+  memory_limit_mb: 8192
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

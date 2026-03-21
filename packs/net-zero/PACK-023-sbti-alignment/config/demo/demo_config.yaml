@@ -1,0 +1,384 @@
+# =============================================================================
+# PACK-023 SBTi Alignment Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for SustainableManufacturing AG, a fictional mid-size
+# industrial manufacturing company headquartered in Munich, Germany. The company
+# operates in the heavy industry sector (machinery manufacturing) with a committed
+# science-based target under the SBTi framework. This configuration demonstrates:
+#
+#   - Comprehensive GHG baseline inventory (Scope 1, 2, 3)
+#   - Near-term (2030) and long-term (2050) science-based targets
+#   - SDA pathway for intensity-based reduction (manufacturing sector)
+#   - 15-category Scope 3 materiality screening with 40% trigger
+#   - SBTi Temperature Rating v2.0 calculations (WATS method)
+#   - Annual progress tracking with on-track/off-track assessment
+#   - 42-criterion automated validation (C1-C28 near-term criteria)
+#   - Multi-framework reporting (CDP C4, TCFD, CSRD ESRS E1, GHG Protocol)
+#   - Offset portfolio management with VCMI Silver-tier high-quality credits
+#   - Base year recalculation procedures for M&A events
+#   - Comprehensive audit trail and provenance tracking
+#
+# Company Profile:
+#   - Legal Name: SustainableManufacturing AG
+#   - Headquarters: Munich, Germany (NACE: C28 - Machinery Manufacturing)
+#   - GICS Code: 20106010 (Machinery & Diversified Industrials)
+#   - Revenue: EUR 850 million (2024)
+#   - Employees: 3,200
+#   - Facilities: 4 (HQ Munich, Production Frankfurt, Assembly Berlin, Logistics Hamburg)
+#   - Public Company: Yes, listed on Xetra (DAX segment)
+#
+# Environmental Commitments:
+#   - SBTi Target Status: Committed (submitted 2024, validation pending)
+#   - Ambition Level: 1.5°C aligned (Paris Agreement)
+#   - Near-Term Target Year: 2030 (5-year commitment from 2025 submission)
+#   - Long-Term Target Year: 2050 (net-zero goal)
+#   - Pathway: SDA (Sectoral Decarbonization Approach) for manufacturing
+#   - Scope 3 Coverage: 67% near-term, 90% long-term (SBTi required)
+#   - Base Year: 2024 (latest available comprehensive data)
+#   - Reporting Year: 2025 (current period)
+#
+# Baseline Inventory (2024):
+#   Scope 1: ~15,200 tCO2e (natural gas, fuel, refrigerants)
+#   Scope 2: ~8,100 tCO2e location-based, ~4,200 market-based (with renewables)
+#   Scope 3: ~78,500 tCO2e across 11 material categories
+#   Total: ~101,800 tCO2e (location-based approach)
+#
+# Key Decarbonization Levers:
+#   - Renewable electricity PPAs (targeting 100% by 2030)
+#   - Process heat electrification and heat recovery optimization
+#   - Fleet electrification (commercial vehicles)
+#   - Supplier engagement program (top 100 suppliers)
+#   - Energy efficiency retrofits and operational improvements
+#   - Circular economy initiatives (waste/recycling reduction)
+#
+# Framework Alignments:
+#   - SBTi Corporate Net-Zero Standard V1.3 (2024)
+#   - GHG Protocol Corporate Standard (revised)
+#   - GHG Protocol Scope 3 Standard (15 categories)
+#   - IPCC AR6 (Global Warming Potential, 100-year timeframe)
+#   - Paris Agreement (1.5°C scenario pathways)
+#   - ISO 14064-1:2018 (GHG accounting and verification)
+#   - CDP Climate Change (2024 disclosure)
+#   - TCFD Recommendations (governance, strategy, risk, metrics)
+#   - CSRD ESRS E1 (European Single Electronic Format)
+#
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization Profile ---
+organization:
+  name: "SustainableManufacturing AG"
+  sector: "MANUFACTURING"
+  size: "LARGE"
+  region: "EU"
+  country: "DE"
+  revenue_eur: 850000000.0
+  employee_count: 3200
+  fiscal_year_end: "12-31"
+  nace_code: "C28"
+  gics_code: "20106010"
+  erp_system: "SAP"
+  public_company: true
+  listed_exchange: "Xetra"
+
+# --- Organizational Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  entities_included:
+    - "SustainableManufacturing AG - HQ Munich"
+    - "SustainableManufacturing AG - Production Frankfurt"
+    - "SustainableManufacturing AG - Assembly Berlin"
+    - "SustainableManufacturing AG - Logistics Hamburg"
+  reporting_currency: "EUR"
+  include_joint_ventures: false
+  base_year_recalculation_threshold_pct: 5.0
+
+# --- Baseline Inventory Configuration ---
+baseline_inventory:
+  scope1_data_source: "ERP_SAP"
+  scope2_data_source: "FILE_UPLOAD"
+  scope3_data_source: "API"
+  baseline_year: 2024
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  emission_factors_source: "IPCC_AR6_2022"
+  include_biogenic_co2: false
+
+# --- Scope 3 Materiality Screening Configuration ---
+# SBTi requires: >= 67% coverage near-term, >= 90% coverage long-term
+# Materiality trigger: Category is "immaterial" if <= 40% of total Scope 3
+scope3_screening:
+  include_scope3: true
+  scope3_categories:
+    - 1   # Purchased goods & services (CRITICAL: ~38% of Scope 3)
+    - 2   # Capital goods (MEDIUM: ~8% of Scope 3)
+    - 3   # Fuel & energy activities (HIGH: ~6% of Scope 3)
+    - 4   # Upstream transportation (HIGH: ~12% of Scope 3)
+    - 5   # Waste generated in operations (MEDIUM: ~4% of Scope 3)
+    - 6   # Business travel (MEDIUM: ~5% of Scope 3)
+    - 7   # Employee commuting (MEDIUM: ~8% of Scope 3)
+    - 8   # Upstream leased assets (LOW: ~1% of Scope 3)
+    - 9   # Downstream transportation (MEDIUM: ~10% of Scope 3)
+    - 11  # Use of sold products (HIGH: ~6% of Scope 3)
+    - 12  # End-of-life treatment (MEDIUM: ~2% of Scope 3)
+  materiality_trigger_pct: 40.0
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    1: "hybrid"
+    2: "activity_based"
+    3: "activity_based"
+    4: "activity_based"
+    6: "spend_based"
+    7: "activity_based"
+    9: "activity_based"
+  coverage_near_term_pct: 67.0
+  coverage_long_term_pct: 90.0
+
+# --- Target Setting Configuration ---
+# SBTi-aligned near-term (2030) and long-term (2050) science-based targets
+target_setting:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "SDA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  sbti_submission_planned: true
+  absolute_vs_intensity: "INTENSITY"
+
+# --- SDA Pathway Configuration ---
+# Manufacturing sector using IEA Net Zero Emissions pathway
+# Baseline intensity: ~0.095 tCO2e per EUR 1,000 revenue (2024)
+# Target intensity: ~0.045 tCO2e per EUR 1,000 revenue (2030)
+sda_pathway:
+  enabled: true
+  methodology: "SBTI_SDA_V3"
+  benchmark_year: 2030
+  sector: "manufacturing"
+  intensity_metric: "tCO2e_per_EUR_1000_revenue"
+  initial_intensity: 0.095
+  target_intensity: 0.045
+  use_iea_nze_benchmark: true
+
+# --- FLAG Pathway Configuration ---
+# Not applicable for machinery manufacturing (no land/agriculture scope)
+flag_pathway:
+  enabled: false
+  methodology: "SBTI_FLAG_V1.1"
+  commodities: []
+  no_deforestation_commitment: false
+  deforestation_trigger_pct: 20.0
+
+# --- Temperature Rating Configuration ---
+# SBTi Temperature Rating V2.0 calculations
+# Using WATS (Weighted Average Temperature Score) aggregation
+temperature_rating:
+  enabled: true
+  version: "2.0"
+  aggregation_method: "WATS"
+  scenario_year: 2050
+  include_financed_emissions: false
+  warming_threshold_celsius: 1.5
+
+# --- Progress Tracking Configuration ---
+# Annual on-track/off-track assessment against SBTi targets
+progress_tracking:
+  enabled: true
+  tracking_years:
+    - 2024
+    - 2025
+  on_track_threshold_pct: 90.0
+  update_frequency: "ANNUAL"
+  use_moving_average: true
+
+# --- Base Year Recalculation Configuration ---
+# Procedures for handling M&A, divestitures, and structural changes
+base_year_recalculation:
+  enabled: true
+  recalculation_threshold_pct: 5.0
+  last_recalculation_type: null
+  last_recalculation_date: null
+
+# --- FINZ Portfolio Configuration ---
+# Not applicable for manufacturing (not a financial institution)
+finz_portfolio:
+  enabled: false
+  version: "1.0"
+  asset_classes: []
+  data_quality_minimum: "4"
+  coverage_target_pct: 90.0
+  target_setting_year: 2025
+
+# --- Submission Readiness Configuration ---
+# 42-criterion SBTi validation checklist (C1-C28 near-term + NZ-C1 to NZ-C14)
+submission_readiness:
+  enabled: true
+  validation_criteria_count: 42
+  near_term_criteria_enabled: true
+  net_zero_criteria_enabled: false
+  target_readiness_pct: 90.0
+  generate_action_plan: true
+
+# --- Offset Portfolio Configuration ---
+# High-quality carbon credits for residual emissions
+# Target: VCMI Silver-tier offset portfolio with 50% nature-based credits
+offset_portfolio:
+  strategy: "BOTH"
+  quality_minimum_score: 70
+  max_nature_based_pct: 50.0
+  vcmi_target_claim: "SILVER"
+  preferred_credit_types:
+    - "gold_standard"
+    - "verified_carbon_standard"
+    - "american_carbon_registry"
+  shift_to_removals_by_year: 2040
+
+# --- Multi-Framework Reporting Configuration ---
+# Alignment with CDP C4, TCFD, CSRD ESRS E1, and GHG Protocol
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_cdp_mapping: true
+  include_tcfd_mapping: true
+  include_esrs_mapping: true
+  include_sbti_mapping: true
+  include_ghg_protocol_mapping: true
+  language: "en"
+  multi_language_support: true
+  supported_languages:
+    - "en"
+    - "de"
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Performance Tuning Configuration ---
+# Caching, concurrency, timeout settings for calculation pipeline
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 8
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Audit Trail & Provenance Configuration ---
+# Full calculation logging with SHA-256 provenance hashes
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# =============================================================================
+# Synthetic Baseline Inventory Data (2024)
+# =============================================================================
+# The following sections document the synthetic baseline used for demo mode.
+# All data is representative of a mid-size machinery manufacturer with
+# a commitment to net-zero emissions by 2050.
+
+# --- Scope 1 Direct Emissions (Total: ~15,200 tCO2e) ---
+# Natural gas heating (all facilities): 6,500 tCO2e
+#   - HQ Munich: 1,800 tCO2e
+#   - Production Frankfurt: 2,800 tCO2e
+#   - Assembly Berlin: 900 tCO2e
+#   - Logistics Hamburg: 1,000 tCO2e
+# Process heat (production facility): 4,200 tCO2e
+# Diesel/petrol fleet (fleet vehicles): 2,800 tCO2e (30 vans, 15 forklifts)
+# Refrigerants (R410A, chiller systems): 1,200 tCO2e (manufacturing cooling)
+# Emergency generators & backup power: 500 tCO2e
+
+# --- Scope 2 Indirect Emissions (Total: 8,100 location-based, 4,200 market-based) ---
+# Grid electricity (location-based method): 8,100 tCO2e
+#   - HQ Munich: 1,200 tCO2e
+#   - Production Frankfurt: 3,800 tCO2e
+#   - Assembly Berlin: 1,500 tCO2e
+#   - Logistics Hamburg: 1,600 tCO2e
+# Grid electricity (market-based method with 50% PPA): 4,200 tCO2e
+#   - Green electricity PPA: 4 GWh/year renewable (solar, wind)
+#   - Grid fallback: 3.6 GWh/year with German grid mix (higher carbon intensity)
+
+# --- Scope 3 Indirect Emissions (Total: ~78,500 tCO2e across 11 categories) ---
+# Category 1 - Purchased goods & services: 30,000 tCO2e (38% of Scope 3)
+#   - Raw materials and components (38% of total emissions)
+#   - Supplier base: 250+ suppliers (top 50 = 78% of spend)
+#   - Scope includes: steel, aluminum, electronics, hydraulics, bearings
+# Category 2 - Capital goods: 6,300 tCO2e (8% of Scope 3)
+#   - Manufacturing equipment, tooling, infrastructure investments
+# Category 3 - Fuel & energy activities (extraction & production): 4,700 tCO2e (6%)
+#   - Upstream emissions from natural gas and electricity
+# Category 4 - Upstream transportation & distribution: 9,400 tCO2e (12%)
+#   - Inbound freight (suppliers to production)
+#   - Distance: ~1,500 km average supply chain
+#   - Modal mix: 60% truck, 25% rail, 15% air freight
+# Category 5 - Waste generated in operations: 3,200 tCO2e (4%)
+#   - Manufacturing waste, scrap metal, packaging
+#   - Landfill + incineration + recycling
+# Category 6 - Business travel: 3,900 tCO2e (5%)
+#   - ~450,000 km/year (air: 65%, rail: 20%, car: 15%)
+#   - 120 business travelers, average 3.5 trips/person/year
+# Category 7 - Employee commuting: 6,300 tCO2e (8%)
+#   - 3,200 employees, average 35 km/day round trip
+#   - Modal split: 55% car (solo), 20% car (carpool), 15% transit, 10% bike
+# Category 8 - Upstream leased assets: 800 tCO2e (1%)
+#   - Leased office equipment, not significant
+# Category 9 - Downstream transportation: 7,800 tCO2e (10%)
+#   - Outbound logistics (production to customer)
+#   - Distance: ~800 km average sales region
+#   - Modal mix: 70% truck, 20% rail, 10% sea freight
+# Category 11 - Use of sold products: 4,700 tCO2e (6%)
+#   - Machinery in operation (energy consumption during use)
+#   - Assumed 15-year product lifetime with average 40 kW power consumption
+# Category 12 - End-of-life treatment of sold products: 1,400 tCO2e (2%)
+#   - Recycling, dismantling, waste treatment at end-of-life
+
+# Total GHG Footprint:
+#   Location-Based Scope 2: ~101,800 tCO2e (Scope 1+2+3)
+#   Market-Based Scope 2: ~97,900 tCO2e (with renewable PPA)
+#   Intensity: 0.1198 tCO2e/EUR 1000 revenue (2024)
+
+# =============================================================================
+# Decarbonization Roadmap Highlights
+# =============================================================================
+# Emission Reduction Targets:
+#   2030 Near-Term: 45% reduction vs. 2024 baseline (absolute Scope 1+2, intensity Scope 3)
+#   2050 Long-Term: 90% reduction vs. 2024 baseline, net-zero with offsets
+#
+# Key Action Categories:
+#   Phase 1 (2025-2027): Quick wins
+#     - LED lighting retrofit (all facilities): ~800 tCO2e/year
+#     - Energy efficiency (HVAC, motors, compressed air): ~1,200 tCO2e/year
+#     - Renewable PPA expansion (100% coverage): ~4,200 tCO2e/year
+#     - Fleet EV transition (30% of vehicles): ~800 tCO2e/year
+#
+#   Phase 2 (2028-2030): Medium-term investments
+#     - Process heat electrification: ~3,000 tCO2e/year
+#     - Additional rooftop solar (500 kWp): ~600 tCO2e/year
+#     - Supplier engagement (top 50 suppliers): ~4,000 tCO2e/year
+#     - Waste reduction and circular economy: ~1,200 tCO2e/year
+#     - Fleet complete EV transition: ~1,600 tCO2e/year
+#
+#   Phase 3 (2031-2050): Long-term transformation
+#     - Zero-emission manufacturing processes
+#     - 100% renewable energy (on-site + PPAs)
+#     - Carbon removal technologies (CDR)
+#     - Supply chain net-zero transition
+#     - Scope 3 residual offsets with nature-based credits
+#
+# Total Investment Requirement: EUR 45-55 million (2025-2050)
+# Payback Period: 8-12 years (with energy cost savings)
+# Risk Factors: Supply chain decarbonization pace, technology maturity, policy stability
+#
+# =============================================================================

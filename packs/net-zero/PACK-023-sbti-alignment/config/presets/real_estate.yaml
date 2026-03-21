@@ -1,0 +1,261 @@
+# =============================================================================
+# PACK-023 SBTi Alignment Pack - Real Estate Preset
+# =============================================================================
+# Configuration for real estate, property, and construction with SDA buildings
+# pathway. CRREM carbon risk alignment for building portfolios. Scope 3 Cat 13
+# (downstream leased assets) dominant for landlord models. SDA convergence
+# for buildings commercial (3.1 kgCO2e/m2) and residential (2.3 kgCO2e/m2)
+# by 2050. Supports property developers, REITs, facility managers, and
+# construction companies.
+#
+# Typical use cases:
+#   - Property developers and builders
+#   - Real estate investment trusts (REITs)
+#   - Facility and property management companies
+#   - Commercial real estate owners and operators
+#   - Residential property developers
+#   - Mixed-use development companies
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "REAL_ESTATE"
+sector_code: "NACE_L68_F41"
+gics_sector: "6010_2010"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- SBTi Engines Configuration ---
+engines:
+  target_setting:
+    enabled: true
+    ambition_level: "CELSIUS_1_5"
+    scope_priorities:
+      scope1: 0.95
+      scope2: 0.95
+      scope3: 0.67
+  criteria_validation:
+    enabled: true
+    near_term_criteria: ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28"]
+    net_zero_criteria: ["NZ-C1", "NZ-C2", "NZ-C3", "NZ-C4", "NZ-C5", "NZ-C6", "NZ-C7", "NZ-C8", "NZ-C9", "NZ-C10", "NZ-C11", "NZ-C12", "NZ-C13", "NZ-C14"]
+  scope3_screening:
+    enabled: true
+    materiality_trigger_pct: 40.0
+    coverage_near_term_pct: 67.0
+    coverage_long_term_pct: 90.0
+    categories: [1, 2, 3, 5, 6, 7, 9, 13]
+  sda_sector:
+    enabled: true
+    sda_applicable: true
+    sda_sectors:
+      - "BUILDINGS_COMMERCIAL"
+      - "BUILDINGS_RESIDENTIAL"
+    sector_benchmark_2050_commercial_kgco2e_per_m2: 3.1
+    sector_benchmark_2050_residential_kgco2e_per_m2: 2.3
+    convergence_method: "SBTi_SDA_Tool_V3.0"
+  flag_assessment:
+    enabled: false
+    flag_applicable: false
+  temperature_rating:
+    enabled: true
+    aggregation_methods:
+      - "WATS"
+      - "TETS"
+      - "MOTS"
+    default_score_celsius: 3.2
+    include_scope3: true
+  progress_tracking:
+    enabled: true
+    review_cycle_years: 5
+    recalculation_trigger_threshold_pct: 5.0
+  recalculation:
+    enabled: true
+    trigger_types:
+      - "acquisition"
+      - "divestiture"
+      - "merger"
+      - "methodology_change"
+      - "portfolio_composition_change"
+      - "refurbishment"
+  fi_portfolio:
+    enabled: false
+    fi_applicable: false
+  submission_readiness:
+    enabled: true
+    readiness_dimensions: 5
+
+# --- Pathway Configuration (SDA Mandatory for Buildings) ---
+pathway:
+  methodology: "SDA"
+  sda_enabled: true
+  sda_sectors:
+    - "BUILDINGS_COMMERCIAL"
+    - "BUILDINGS_RESIDENTIAL"
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  iea_benchmark_source: "IEA_NZE_2023"
+  crrem_alignment_enabled: true
+  sbti_submission_planned: true
+
+# --- Scope 3 Configuration (Downstream Leased Assets Dominant) ---
+scope3:
+  categories: [1, 2, 3, 5, 6, 7, 9, 13]
+  activity_based_categories: [13]
+  supplier_specific_categories: []
+  spend_based_categories: [1, 2, 3, 5, 6, 7, 9]
+  materiality_threshold_pct: 0.5
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Supplier Engagement ---
+supplier:
+  enabled: true
+  max_suppliers: 2500
+  tier_thresholds:
+    collaborate: 5.0
+    require: 15.0
+    engage: 40.0
+    inform: 100.0
+  top_supplier_count: 60
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+    - "innovation"
+  batch_size: 2000
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 7.0
+  carbon_price_eur_per_tco2e: 90.0
+  carbon_price_escalation_pct: 5.5
+  reporting_currency: "EUR"
+  planning_horizon_years: 25
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "SUSTAINABILITY_LINKED_BOND"
+    - "INTERNAL_CARBON_PRICE"
+    - "GREEN_MORTGAGE"
+  wacc_pct: 8.5
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+    - "MOTS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: true
+  portfolio_weighting: "gla_area"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Decomposition & Variance ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "occupancy"
+    - "intensity"
+    - "weather"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 8.0
+  top_drivers_count: 12
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: true
+  max_entities: 50
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "property_type"
+    - "asset_class"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI & Carbon Removal ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 75
+  max_nature_based_pct: 30.0
+  shift_to_removals_by_year: 2040
+  preferred_registries:
+    - "verra"
+    - "gold_standard"
+    - "american_carbon_registry"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2028
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 15
+
+# --- Data Quality Targets ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "tenant_reported"
+    - "default_factors"
+  building_performance_data_collection: "monthly"
+  portfolio_energy_benchmark_frequency: "annual"
+
+# --- Sector-Specific Parameters ---
+sector_parameters:
+  building_energy_efficiency_rating_target: "EPC_B"
+  deep_energy_retrofit_target_pct_2050: 100
+  renewable_on_site_generation_target_pct: 40
+  district_heating_connection_where_available: true
+  heat_pump_deployment_target_pct: 80
+  electrification_pathways_enabled: true
+  occupant_behavior_programs_enabled: true
+  tenant_engagement_programs_enabled: true
+  renewable_energy_procurement_for_tenancies: true
+  landlord_tenant_emission_allocation: "hybrid"
+  crrem_carbon_risk_alignment_required: true
+  embodied_carbon_assessment_scope3_cat13: true
+  building_portfolio_gla_tracking: true
+  energy_management_system_requirement: true
+  benchmarking_certification_program: "LEED_or_BREEAM"

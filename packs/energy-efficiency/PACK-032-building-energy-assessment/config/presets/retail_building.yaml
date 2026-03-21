@@ -1,0 +1,177 @@
+# =============================================================================
+# PACK-032 Building Energy Assessment - Retail Building Preset
+# =============================================================================
+# Retail premises: high street shops, shopping centres, supermarkets.
+# Typical 500-20,000 m2. Extended retail hours (8am-9pm + weekends).
+# Focus on lighting (dominant load), HVAC for customer comfort,
+# refrigeration (food retail), and display energy. Typical EUI:
+# 200-400 kWh/m2/yr, target <200 kWh/m2/yr.
+#
+# Typical use cases:
+#   - High street retail units
+#   - Shopping centre anchor stores
+#   - Supermarkets and convenience stores
+#   - Retail parks and out-of-town units
+# =============================================================================
+
+# --- Building Details ---
+building_name: ""
+building_address: ""
+client_name: ""
+building_type: "RETAIL"
+building_age: "1983_1995"
+climate_zone: "CENTRAL_MARITIME"
+country: "GB"
+assessment_level: "STANDARD"
+certification_target: "BREEAM_GOOD"
+reporting_year: 2025
+
+# --- Building Characteristics ---
+number_of_floors: 2
+floor_to_ceiling_height_m: 3.5
+occupancy_pattern: "RETAIL_HOURS"
+operating_hours_per_year: 4000
+ownership_type: "SINGLE_TENANT"
+primary_heating_fuel: "NATURAL_GAS"
+
+# --- Envelope ---
+envelope:
+  wall_u_target: 0.30
+  roof_u_target: 0.20
+  floor_u_target: 0.25
+  window_u_target: 1.6
+  window_g_value_target: 0.45
+  airtightness_target_m3_h_m2: 7.0
+  thermal_bridge_method: "DEFAULT_UPLIFT"
+  thermal_bridge_uplift_pct: 15.0
+  condensation_risk_check: true
+  overheating_assessment: true
+
+# --- HVAC ---
+hvac:
+  heating_system_type: "gas_boiler"
+  cooling_system_type: "split_system"
+  ventilation_type: "MECHANICAL_SUPPLY_EXTRACT"
+  heat_recovery_enabled: true
+  heat_recovery_efficiency_pct: 65.0
+  target_heating_cop: 0.90
+  target_cooling_seer: 4.0
+  boiler_efficiency_target_pct: 90.0
+  ahu_optimization: true
+  free_cooling_assessment: true
+  bms_optimization: true
+  zone_control_assessment: true
+  demand_controlled_ventilation: false
+  vsd_on_pumps_fans: true
+  pipe_insulation_assessment: true
+
+# --- Lighting (CRITICAL for retail) ---
+lighting:
+  lpd_target_w_m2: 12.0
+  control_type: "DAYLIGHT_DIMMING"
+  daylight_factor_target: 2.0
+  led_retrofit_analysis: true
+  outdoor_lighting: true
+  lux_level_measurement: true
+  parasitic_lighting_load: true
+  display_lighting: true
+
+# --- DHW ---
+dhw:
+  system_type: "point_of_use"
+  solar_thermal_enabled: false
+  legionella_temp_c: 60.0
+  distribution_loss_assessment: false
+
+# --- Renewables ---
+renewable:
+  solar_pv_enabled: true
+  pv_capacity_kwp: 100.0
+  pv_yield_kwh_per_kwp: 850.0
+  heat_pump_enabled: false
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  benchmark_standard: "CIBSE_TM46"
+  reference_eui_kwh_m2: 165
+  peer_group_size: 10
+  dec_rating_enabled: true
+  asset_rating_enabled: true
+  percentile_tracking: true
+  gap_to_best_practice: true
+  trend_analysis_years: 3
+  kpi_set:
+    - "eui_kwh_m2_yr"
+    - "lighting_kwh_m2_yr"
+    - "heating_kwh_m2_yr"
+    - "cooling_kwh_m2_yr"
+    - "electricity_kwh_m2_yr"
+    - "carbon_kgco2_m2_yr"
+    - "epc_rating"
+
+# --- Retrofit ---
+retrofit:
+  budget_eur: 400000
+  retrofit_ambition: "COST_OPTIMAL"
+  discount_rate_pct: 4.0
+  energy_price_escalation_pct: 3.0
+  study_period_years: 20
+  carbon_price_eur_per_tonne: 85.0
+  fabric_first_approach: false
+  max_payback_years: 7.0
+  enable_staged_retrofit: true
+
+# --- Indoor Environment ---
+indoor_environment:
+  ieq_category: "CATEGORY_III"
+  thermal_comfort_method: "PMV_PPD"
+  target_co2_ppm: 1000
+  target_temperature_heating_c: 19.0
+  target_temperature_cooling_c: 25.0
+  daylighting_assessment: true
+
+# --- Carbon ---
+carbon:
+  grid_emission_factor_kg_per_kwh: 0.233
+  gas_emission_factor_kg_per_kwh: 0.204
+  include_embodied: false
+  grid_decarbonisation_enabled: true
+
+# --- Compliance ---
+compliance:
+  epbd_country: "GB"
+  epc_methodology: "SBEM"
+  mees_enabled: true
+  mees_minimum_rating: "E"
+  dec_required: false
+
+# --- Report ---
+report:
+  language: "en"
+  currency: "GBP"
+  include_executive_summary: true
+  include_financial_analysis: true
+  include_retrofit_roadmap: true
+  include_epc_simulation: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  bms_enabled: false
+  weather_source: "met_office"
+  epc_register_lookup: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  measure_tracking: true
+  epc_lodgement_record: true

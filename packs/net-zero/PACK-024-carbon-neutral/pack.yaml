@@ -1,0 +1,1680 @@
+# =============================================================================
+# PACK-024: Carbon Neutral Pack
+# GreenLang Comprehensive Carbon Neutrality Management Pack
+# =============================================================================
+# This pack provides a complete, standalone carbon neutrality management
+# solution covering the full journey from GHG footprint quantification through
+# carbon credit procurement and retirement to verified neutrality claims.
+# It implements 10 engines for footprint quantification (ISO 14064-1:2018),
+# carbon management planning with reduction-first strategy, 12-dimension
+# ICVCM Core Carbon Principles credit quality scoring, portfolio optimization
+# with Markowitz-inspired risk/return allocation, registry retirement tracking
+# across 6 registries (Verra, Gold Standard, ACR, CAR, Puro.earth, Isometric),
+# neutralization balance calculation per ISO 14068-1:2023 and PAS 2060:2014,
+# claims substantiation with VCMI Claims Code compliance, ISAE 3410
+# verification package assembly, annual cycle management with milestone
+# tracking, and permanence risk assessment for nature-based and technology-
+# based carbon credits.
+#
+# The pack implements zero-hallucination calculation engines: all emissions
+# calculations, credit quality scoring, portfolio optimization, balance
+# calculations, and risk assessments use deterministic formulas with published
+# coefficients and lookup tables. LLMs are used only for classification,
+# entity resolution, and narrative generation.
+#
+# Key Capabilities:
+#   - ISO 14064-1:2018 aligned GHG footprint quantification (Scope 1/2/3)
+#   - Carbon management plan with reduction-first strategy and MACC curves
+#   - 12-dimension ICVCM CCP credit quality scoring (weights sum to 1.0)
+#   - Carbon credit portfolio optimization (avoidance/removal, nature/tech)
+#   - Registry retirement tracking across Verra, Gold Standard, ACR, CAR,
+#     Puro.earth, and Isometric with serial number verification
+#   - Neutralization balance per ISO 14068-1:2023 and PAS 2060:2014
+#   - Claims substantiation with VCMI Claims Code of Practice compliance
+#   - ISAE 3410 verification package assembly with evidence management
+#   - Annual cycle management with configurable milestone frequency
+#   - Permanence risk assessment with buffer pool contribution calculations
+#   - 8 neutrality types: Corporate, SME, Event, Product, Building, Service,
+#     Project, Portfolio
+#
+# Regulatory and Framework References:
+#   - ISO 14068-1:2023 (Carbon neutrality)
+#   - PAS 2060:2014 (Demonstrating carbon neutrality)
+#   - ISO 14064-1:2018 (Organization-level GHG quantification)
+#   - ISO 14064-2:2019 (Project-level GHG)
+#   - ISO 14067:2018 (Product carbon footprint)
+#   - GHG Protocol Corporate Standard (revised)
+#   - GHG Protocol Scope 2 Guidance
+#   - GHG Protocol Scope 3 Standard
+#   - ICVCM Core Carbon Principles (2023)
+#   - VCMI Claims Code of Practice (2023)
+#   - IPCC AR6 WG1/WG3 (2021/2022)
+#   - ISAE 3410 (Assurance on GHG statements)
+#   - CRREM Carbon Risk Real Estate Monitor
+#   - PCAF Global Standard (2022)
+#   - Oxford Principles for Net Zero Aligned Carbon Offsetting
+#   - Taskforce on Scaling Voluntary Carbon Markets (TSVCM)
+#
+# Target Organizations:
+#   - Sustainability managers pursuing carbon neutrality certifications
+#   - Companies seeking ISO 14068-1 or PAS 2060 compliance
+#   - SMEs with simplified carbon neutrality requirements
+#   - Event organizers offsetting conference/event carbon footprints
+#   - Product managers seeking carbon neutral product labeling
+#   - Real estate managers pursuing carbon neutral building certifications
+#   - Service companies offsetting operational and digital emissions
+#   - Project developers achieving carbon neutral construction
+#   - Multi-entity portfolio managers consolidating group neutrality
+#   - Auditors and verifiers assessing neutrality claims
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-18)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-024-carbon-neutral
+  version: "1.0.0"
+  display_name: "Carbon Neutral Pack"
+  description: >-
+    Comprehensive GreenLang deployment pack for carbon neutrality management.
+    Provides 10 engines covering GHG footprint quantification (ISO 14064-1),
+    carbon management planning with reduction-first strategy, 12-dimension
+    ICVCM CCP credit quality scoring, carbon credit portfolio optimization
+    with avoidance/removal and nature/tech allocation, registry retirement
+    tracking across 6 registries (Verra, Gold Standard, ACR, CAR, Puro.earth,
+    Isometric), neutralization balance per ISO 14068-1:2023 and PAS 2060:2014,
+    claims substantiation with VCMI Claims Code compliance, ISAE 3410
+    verification package assembly, annual cycle management, and permanence
+    risk assessment. Bundles all 30 MRV agents, 20 data agents, and 10
+    foundation agents. Supports 8 neutrality types (Corporate, SME, Event,
+    Product, Building, Service, Project, Portfolio) with tailored presets
+    and cross-framework reporting (ISO 14068-1, PAS 2060, GHG Protocol,
+    VCMI Claims Code).
+  category: net-zero
+  tier: standalone
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-18"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/carbon-neutral"
+  changelog_url: "https://docs.greenlang.io/packs/carbon-neutral/changelog"
+  prerequisite_packs:
+    - pack_id: PACK-021-net-zero-starter
+      version: ">=1.0.0"
+      required: false
+      description: "PACK-021 baseline, gap analysis, and roadmap (optional, enhances baseline capabilities)"
+    - pack_id: PACK-022-net-zero-acceleration
+      version: ">=1.0.0"
+      required: false
+      description: "PACK-022 scenarios, SDA, temperature scoring (optional, enhances pathway analysis)"
+    - pack_id: PACK-023-sbti-alignment
+      version: ">=1.0.0"
+      required: false
+      description: "PACK-023 SBTi target validation and progress tracking (optional, enhances target alignment)"
+
+  tags:
+    - carbon-neutral
+    - carbon-neutrality
+    - iso-14068
+    - pas-2060
+    - iso-14064
+    - iso-14064-1
+    - iso-14064-2
+    - iso-14067
+    - ghg-protocol
+    - ghg-footprint
+    - carbon-management
+    - carbon-credits
+    - carbon-offsets
+    - icvcm
+    - core-carbon-principles
+    - vcmi
+    - claims-code
+    - credit-quality
+    - portfolio-optimization
+    - registry-retirement
+    - verra
+    - gold-standard
+    - acr
+    - car
+    - puro-earth
+    - isometric
+    - neutralization-balance
+    - claims-substantiation
+    - verification-package
+    - isae-3410
+    - annual-cycle
+    - permanence-risk
+    - buffer-pool
+    - corporate-neutrality
+    - sme-neutrality
+    - event-neutrality
+    - product-neutrality
+    - building-neutrality
+    - service-neutrality
+    - project-neutrality
+    - portfolio-neutrality
+    - reduction-first
+    - macc-curve
+    - scope-1
+    - scope-2
+    - scope-3
+    - ipcc-ar6
+    - oxford-principles
+    - crrem
+    - net-zero
+    - standalone-tier
+
+  regulation:
+    primary:
+      name: "ISO 14068-1:2023"
+      reference: "ISO 14068-1:2023 Carbon neutrality"
+      effective_date: "2023-11-01"
+      description: >-
+        International standard providing principles, requirements, and
+        guidance for achieving and demonstrating carbon neutrality. Defines
+        the carbon neutrality process including GHG quantification,
+        reduction-first approach, offsetting residual emissions through
+        high-quality carbon credits, and public disclosure requirements.
+        Requires conformance with ISO 14064-1 for organizational
+        boundaries, ISO 14064-2 for project-level quantification, or
+        ISO 14067 for product carbon footprints.
+    secondary:
+      - name: "PAS 2060:2014"
+        reference: "PAS 2060:2014 Specification for the demonstration of carbon neutrality"
+        effective_date: "2014-06-30"
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018 Organization-level GHG quantification and reporting"
+        effective_date: "2018-12-01"
+      - name: "ISO 14064-2:2019"
+        reference: "ISO 14064-2:2019 Project-level GHG quantification, monitoring, reporting"
+        effective_date: "2019-04-01"
+      - name: "ISO 14067:2018"
+        reference: "ISO 14067:2018 Carbon footprint of products"
+        effective_date: "2018-08-01"
+      - name: "ICVCM Core Carbon Principles"
+        reference: "ICVCM Core Carbon Principles (CCP) Assessment Framework (2023)"
+        effective_date: "2023-07-01"
+      - name: "VCMI Claims Code of Practice"
+        reference: "VCMI Claims Code of Practice V1.0 (2023)"
+        effective_date: "2023-06-01"
+      - name: "GHG Protocol Corporate Standard"
+        reference: "GHG Protocol Corporate Accounting and Reporting Standard (revised)"
+        effective_date: "2004-03-01"
+      - name: "GHG Protocol Scope 2 Guidance"
+        reference: "GHG Protocol Scope 2 Guidance (2015)"
+        effective_date: "2015-01-01"
+      - name: "GHG Protocol Scope 3 Standard"
+        reference: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+        effective_date: "2011-10-01"
+      - name: "ISAE 3410"
+        reference: "ISAE 3410 Assurance Engagements on Greenhouse Gas Statements"
+        effective_date: "2012-09-15"
+      - name: "IPCC Sixth Assessment Report"
+        reference: "IPCC AR6 WG1 (2021) and WG3 (2022)"
+        effective_date: "2021-08-09"
+      - name: "Oxford Principles"
+        reference: "Oxford Principles for Net Zero Aligned Carbon Offsetting (2020, revised 2024)"
+        effective_date: "2020-09-01"
+      - name: "CRREM"
+        reference: "Carbon Risk Real Estate Monitor V2.0 (2023)"
+        effective_date: "2023-01-01"
+      - name: "PCAF Global Standard"
+        reference: "PCAF Global GHG Accounting and Reporting Standard (2022)"
+        effective_date: "2022-12-01"
+      - name: "TSVCM Recommendations"
+        reference: "Taskforce on Scaling Voluntary Carbon Markets (2021)"
+        effective_date: "2021-01-01"
+
+  compliance_references:
+    - id: "ISO_14068"
+      name: "ISO 14068-1:2023"
+      regulation: "ISO 14068-1:2023 Carbon neutrality"
+      effective_date: "2023-11-01"
+      description: >-
+        International standard for carbon neutrality. Defines the complete
+        neutrality process: GHG quantification per ISO 14064-1/14064-2/14067,
+        reduction-first strategy with minimum reduction trajectory, offsetting
+        of residual emissions using high-quality carbon credits meeting ICVCM
+        CCP criteria, neutralization balance demonstrating footprint equals
+        credits retired, and public disclosure requirements including qualifying
+        statements and substantiation evidence.
+
+    - id: "PAS_2060"
+      name: "PAS 2060:2014"
+      regulation: "PAS 2060:2014 Specification for demonstration of carbon neutrality"
+      effective_date: "2014-06-30"
+      description: >-
+        British Standards Institution specification for demonstrating carbon
+        neutrality for organizations, products, services, buildings, events,
+        and projects. Requires carbon footprint quantification, carbon
+        management plan with reduction commitment, offsetting via eligible
+        carbon credits, and qualifying explanatory statement. Commonly used
+        alongside ISO 14068-1 for dual compliance.
+
+    - id: "ISO_14064_1"
+      name: "ISO 14064-1:2018"
+      regulation: "ISO 14064-1:2018"
+      effective_date: "2018-12-01"
+      description: >-
+        International standard for organization-level GHG quantification
+        and reporting. Specifies principles and requirements for
+        quantification of direct and indirect GHG emissions/removals.
+        Required by ISO 14068-1 for organizational carbon neutrality.
+
+    - id: "ISO_14064_2"
+      name: "ISO 14064-2:2019"
+      regulation: "ISO 14064-2:2019"
+      effective_date: "2019-04-01"
+      description: >-
+        International standard for project-level GHG quantification,
+        monitoring, and reporting. Required by ISO 14068-1 for
+        project-level carbon neutrality assessments.
+
+    - id: "ISO_14067"
+      name: "ISO 14067:2018"
+      regulation: "ISO 14067:2018 Carbon footprint of products"
+      effective_date: "2018-08-01"
+      description: >-
+        International standard for quantifying and communicating the
+        carbon footprint of products using life cycle assessment (LCA).
+        Required by ISO 14068-1 for product-level carbon neutrality.
+
+    - id: "ICVCM_CCP"
+      name: "ICVCM Core Carbon Principles"
+      regulation: "ICVCM CCP Assessment Framework (2023)"
+      effective_date: "2023-07-01"
+      description: >-
+        The Integrity Council for the Voluntary Carbon Market's Core
+        Carbon Principles define 12 assessment dimensions for credit
+        quality: additionality, permanence, quantification, third-party
+        validation, unique claim, co-benefits, safeguards, contribution
+        to net-zero, environmental integrity, social integrity, governance,
+        and transparency. PACK-024 implements all 12 dimensions with
+        configurable weights summing to 1.0.
+
+    - id: "VCMI"
+      name: "VCMI Claims Code"
+      regulation: "VCMI Claims Code of Practice V1.0 (2023)"
+      effective_date: "2023-06-01"
+      description: >-
+        Voluntary Carbon Markets Integrity Initiative Claims Code
+        defining three claim tiers: Platinum (highest integrity), Gold,
+        and Silver. Specifies preconditions (science-aligned targets,
+        Scope 1+2 reduction), claim requirements per tier, and
+        substantiation guidance for each claim type.
+
+    - id: "ISAE_3410"
+      name: "ISAE 3410"
+      regulation: "ISAE 3410 Assurance Engagements on GHG Statements"
+      effective_date: "2012-09-15"
+      description: >-
+        International Standard on Assurance Engagements for GHG
+        statements. Specifies requirements for limited and reasonable
+        assurance engagements. PACK-024 assembles verification packages
+        aligned with ISAE 3410 evidence requirements.
+
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol Corporate Accounting and Reporting Standard"
+      effective_date: "2004-03-01"
+      description: >-
+        The foundational standard for corporate GHG accounting. Defines
+        organizational and operational boundaries, Scope 1/2/3 categories,
+        emission factor selection, and reporting requirements.
+
+    - id: "GHG_SCOPE3"
+      name: "GHG Protocol Scope 3 Standard"
+      regulation: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+      effective_date: "2011-10-01"
+      description: >-
+        Defines 15 categories of Scope 3 emissions across the corporate
+        value chain. Specifies calculation approaches (supplier-specific,
+        hybrid, average-data, spend-based) and data quality scoring.
+
+    - id: "IPCC_AR6"
+      name: "IPCC Sixth Assessment Report"
+      regulation: "IPCC AR6 WG1 (2021) and WG3 (2022)"
+      effective_date: "2021-08-09"
+      description: >-
+        Provides the scientific basis for GWP-100 values used in
+        emissions calculations. Defines global carbon budgets, sector-
+        specific decarbonization pathways, and climate scenario
+        projections relevant to permanence risk assessment.
+
+    - id: "OXFORD"
+      name: "Oxford Principles"
+      regulation: "Oxford Principles for Net Zero Aligned Carbon Offsetting (2020, revised 2024)"
+      effective_date: "2020-09-01"
+      description: >-
+        Principles for credible carbon offsetting aligned with net zero:
+        cut emissions first, shift to removals over time, support the
+        development of long-lived storage, and prioritize permanent
+        carbon dioxide removal over avoidance credits. Informs the
+        portfolio optimization engine's allocation strategy.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Carbon neutrality calculation engines (10 engines)
+  # ===========================================================================
+  engines:
+    - id: footprint_quantification
+      name: "Footprint Quantification Engine"
+      description: >-
+        ISO 14064-1:2018 aligned GHG footprint quantification for
+        organizational, product, building, event, service, and project
+        boundaries. Calculates Scope 1 (direct), Scope 2 (location-based
+        and market-based), and Scope 3 (15 categories) emissions using
+        IPCC AR6 GWP-100 values. Supports operational control, financial
+        control, and equity share consolidation approaches. Implements
+        data quality scoring with 5-tier DQIS rubric. Generates footprint
+        by scope, category, facility, and entity with uncertainty ranges.
+        Zero-hallucination: all emission factors from published databases
+        (DEFRA, EPA, ecoinvent); GWP values from IPCC AR6; all
+        arithmetic is deterministic with SHA-256 provenance hashing.
+      module: "engines.footprint_quantification_engine"
+      required: true
+
+    - id: carbon_management_plan
+      name: "Carbon Management Plan Engine"
+      description: >-
+        Reduction-first carbon management plan generation per ISO 14068-1
+        and PAS 2060 requirements. Generates multi-year reduction
+        trajectory with annual milestones. MACC (Marginal Abatement Cost
+        Curve) analysis for action prioritization by cost-effectiveness.
+        Identifies and prioritizes decarbonization actions: energy
+        efficiency, renewable procurement, fuel switching, process
+        optimization, supply chain engagement. Calculates residual
+        emissions requiring offset after all feasible reductions.
+        Validates reduction trajectory against minimum ambition levels
+        per ISO 14068-1. Zero-hallucination: MACC coefficients from
+        published sector studies; reduction potentials from technology
+        databases; all calculations deterministic.
+      module: "engines.carbon_mgmt_plan_engine"
+      required: true
+
+    - id: credit_quality
+      name: "Credit Quality Engine"
+      description: >-
+        12-dimension ICVCM Core Carbon Principles credit quality scoring
+        engine. Evaluates carbon credits across: additionality (weight
+        0.15), permanence (0.12), quantification (0.10), third-party
+        validation (0.08), unique claim (0.08), co-benefits (0.07),
+        safeguards (0.07), contribution to net-zero (0.08), environmental
+        integrity (0.07), social integrity (0.06), governance (0.06),
+        and transparency (0.06). Weights sum to 1.0. Generates overall
+        quality score (0-100) and letter rating (A+ to F). Supports
+        14 credit project types: avoided deforestation (REDD+),
+        afforestation/reforestation, improved forest management,
+        renewable energy, cookstoves, biochar, direct air capture,
+        enhanced weathering, soil carbon, blue carbon, methane capture,
+        industrial gas destruction, waste-to-energy, and energy
+        efficiency. Zero-hallucination: all dimension definitions from
+        ICVCM CCP Assessment Framework; scoring rubrics deterministic.
+      module: "engines.credit_quality_engine"
+      required: true
+
+    - id: portfolio_optimization
+      name: "Portfolio Optimization Engine"
+      description: >-
+        Carbon credit portfolio optimization with Markowitz-inspired
+        risk/return allocation. Optimizes credit mix across two axes:
+        avoidance vs. removal credits and nature-based vs. technology-
+        based solutions. Enforces configurable constraints: minimum
+        removal percentage (default 20%), maximum nature-based percentage
+        (default 40%), vintage age limits (default 5 years), and
+        geographic diversification targets. Supports Oxford Principles
+        alignment with increasing removal share over time. Calculates
+        portfolio-level quality score, cost per tCO2e, permanence risk,
+        and co-benefit index. Price discovery integration for market
+        pricing. Zero-hallucination: optimization constraints from
+        configurable parameters; price data from market feeds; all
+        allocation arithmetic deterministic.
+      module: "engines.portfolio_optimization_engine"
+      required: true
+
+    - id: registry_retirement
+      name: "Registry Retirement Engine"
+      description: >-
+        Registry and retirement tracking across 6 major registries:
+        Verra VCS (Verified Carbon Standard), Gold Standard, ACR
+        (American Carbon Registry), CAR (Climate Action Reserve),
+        Puro.earth (engineered removals), and Isometric (carbon removal
+        verification). Tracks credit lifecycle: issuance, purchase,
+        transfer, retirement, and cancellation. Serial number
+        verification and retirement confirmation. Generates retirement
+        certificates with beneficiary designation. Validates against
+        double-counting (double-issuance, double-use, double-claiming).
+        Supports corresponding adjustments under Article 6 for
+        international transfers. Zero-hallucination: registry API
+        specifications from published documentation; serial number
+        formats per registry standard; all tracking deterministic.
+      module: "engines.registry_retirement_engine"
+      required: true
+
+    - id: neutralization_balance
+      name: "Neutralization Balance Engine"
+      description: >-
+        Neutralization balance calculation per ISO 14068-1:2023 and
+        PAS 2060:2014. Demonstrates that total GHG footprint equals
+        total credits retired plus buffer pool contribution. Supports
+        6 balance methods: corporate_total (organization-wide), per_unit_
+        produced (product LCA), event_total (single event), project_total
+        (construction/infrastructure), entity_level (portfolio entities),
+        and service_revenue (per EUR/USD revenue). Calculates surplus/
+        deficit position, buffer adequacy, and confidence interval.
+        Generates qualifying explanatory statement per PAS 2060 Section
+        9. Handles multi-period balance across fiscal and calendar years.
+        Zero-hallucination: balance formulas from ISO 14068-1 Clause 9;
+        buffer calculations from configurable risk parameters; all
+        arithmetic deterministic.
+      module: "engines.neutralization_balance_engine"
+      required: true
+
+    - id: claims_substantiation
+      name: "Claims Substantiation Engine"
+      description: >-
+        Carbon neutrality claims substantiation per ISO 14068-1, PAS
+        2060, and VCMI Claims Code of Practice. Validates claim type
+        (corporate carbon neutral, product carbon neutral, event carbon
+        neutral, building carbon neutral, service carbon neutral, project
+        carbon neutral, portfolio carbon neutral). Checks VCMI
+        preconditions: science-aligned reduction targets, demonstrated
+        Scope 1+2 reductions, public disclosure. Generates qualifying
+        statements with required caveats and limitations. Produces public
+        disclosure documentation including carbon management plan summary,
+        credit portfolio composition, and neutralization balance.
+        Validates third-party verification status and assurance level.
+        Zero-hallucination: claim requirements from ISO 14068-1 and
+        PAS 2060; VCMI tier requirements from Claims Code V1.0; all
+        validation logic deterministic.
+      module: "engines.claims_substantiation_engine"
+      required: true
+
+    - id: verification_package
+      name: "Verification Package Engine"
+      description: >-
+        ISAE 3410 aligned verification package assembly engine. Compiles
+        complete evidence package for third-party assurance engagement.
+        Includes: GHG inventory with data sources and emission factors,
+        carbon management plan with reduction trajectory, credit quality
+        assessment per ICVCM CCP, registry retirement certificates with
+        serial numbers, neutralization balance calculation with
+        methodology documentation, claims substantiation with qualifying
+        statement, data quality assessment with DQIS scoring, boundary
+        documentation with exclusion justification, and organizational
+        charts with consolidation approach documentation. Supports
+        limited assurance and reasonable assurance engagement types.
+        Generates evidence index with SHA-256 content hashing for
+        integrity verification. Zero-hallucination: ISAE 3410 evidence
+        requirements from published standard; evidence packaging is
+        deterministic document assembly.
+      module: "engines.verification_package_engine"
+      required: true
+
+    - id: annual_cycle
+      name: "Annual Cycle Engine"
+      description: >-
+        Annual cycle management for ongoing carbon neutrality maintenance.
+        Tracks multi-year carbon neutrality journey with configurable
+        milestone frequency (monthly, quarterly, biannual). Manages
+        annual renewal process: updated footprint quantification,
+        reduction progress assessment, credit portfolio review, balance
+        recalculation, claim renewal, and verification scheduling.
+        Generates year-over-year comparison with improvement tracking.
+        Handles base year recalculation triggers for structural changes
+        exceeding significance thresholds. Produces annual progress
+        report with trend analysis and forward projections. Manages
+        credit procurement pipeline with lead time and pricing forecasts.
+        Zero-hallucination: cycle logic is state machine with
+        deterministic transitions; all progress arithmetic deterministic.
+      module: "engines.annual_cycle_engine"
+      required: true
+
+    - id: permanence_risk
+      name: "Permanence Risk Engine"
+      description: >-
+        Permanence risk assessment for carbon credit portfolio. Evaluates
+        reversal risk across credit categories: nature-based (biological
+        risks - fire, disease, drought, land use change; 25-100 year
+        permanence), technology-based (geological storage, DACCS,
+        enhanced weathering; 1000+ year permanence), and hybrid
+        (biochar, soil carbon; intermediate permanence). Calculates
+        credit-level and portfolio-level permanence risk scores.
+        Determines buffer pool contribution requirements based on risk
+        assessment (typically 10-20% buffer). Monitors reversal events
+        and triggers buffer replacement when reversals detected.
+        Integrates climate hazard data for forward-looking risk
+        projections. Zero-hallucination: permanence categories from
+        Oxford Principles; risk scoring rubrics from published
+        methodologies; buffer calculations deterministic.
+      module: "engines.permanence_risk_engine"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 workflows)
+  # ===========================================================================
+  workflows:
+    - id: full_neutrality_workflow
+      name: "Full Carbon Neutrality Workflow"
+      description: >-
+        8-phase end-to-end carbon neutrality workflow: Footprint (quantify
+        Scope 1/2/3 GHG emissions via MRV agents) -> ManagementPlan
+        (generate reduction-first carbon management plan with MACC) ->
+        CreditSource (assess credit needs and quality requirements) ->
+        Portfolio (optimize credit portfolio with avoidance/removal mix)
+        -> Procure (execute credit procurement and registry retirement)
+        -> Balance (calculate neutralization balance and verify surplus)
+        -> Claims (generate claims with qualifying statements) ->
+        Verify (assemble ISAE 3410 verification package). Orchestrates
+        all 10 engines in dependency order.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 8
+
+    - id: footprint_workflow
+      name: "Footprint Quantification Workflow"
+      description: >-
+        4-phase GHG footprint quantification workflow: DataCollect
+        (gather energy, fuel, fleet, supplier, and financial data from
+        all sources) -> Calculate (calculate Scope 1, 2, and 3 emissions
+        using appropriate methodologies) -> QualityAssess (score data
+        quality across all categories using 5-tier DQIS) -> Report
+        (generate footprint report with scope breakdown, uncertainty
+        ranges, and year-over-year comparison).
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: credit_assessment_workflow
+      name: "Credit Assessment Workflow"
+      description: >-
+        4-phase credit quality assessment workflow: InventoryCredits
+        (catalog all available and owned carbon credits with registry
+        metadata) -> QualityScore (evaluate each credit against 12
+        ICVCM CCP dimensions with per-dimension scoring) -> Rank
+        (rank credits by quality score, cost-effectiveness, and
+        permanence) -> Report (generate credit quality report with
+        benchmark comparisons and improvement recommendations).
+      schedule: "on_demand"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: portfolio_optimization_workflow
+      name: "Portfolio Optimization Workflow"
+      description: >-
+        5-phase portfolio optimization workflow: Requirements (calculate
+        residual emissions after reductions and determine credit needs)
+        -> Market (survey available credits by project type, vintage,
+        and geography with market pricing) -> Optimize (run portfolio
+        optimization with avoidance/removal and nature/tech constraints)
+        -> Simulate (Monte Carlo simulation of portfolio risk under
+        permanence and price scenarios) -> Recommend (generate portfolio
+        recommendation with procurement timeline and budget).
+      schedule: "annual"
+      estimated_duration_minutes: 45
+      phases: 5
+
+    - id: retirement_workflow
+      name: "Retirement Workflow"
+      description: >-
+        4-phase registry retirement workflow: Select (select credits
+        from optimized portfolio for retirement) -> Retire (execute
+        retirement across registries with serial number tracking) ->
+        Verify (verify retirement status and obtain retirement
+        certificates) -> Document (generate retirement documentation
+        with beneficiary designation and evidence chain).
+      schedule: "on_demand"
+      estimated_duration_minutes: 20
+      phases: 4
+
+    - id: balance_and_claims_workflow
+      name: "Balance and Claims Workflow"
+      description: >-
+        4-phase neutralization balance and claims workflow: Aggregate
+        (aggregate footprint totals and retired credits) -> Balance
+        (calculate neutralization balance using configured method) ->
+        Claims (generate claims with qualifying statements per ISO
+        14068-1 and PAS 2060) -> Disclose (produce public disclosure
+        documentation with carbon management plan summary).
+      schedule: "annual"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: verification_workflow
+      name: "Verification Workflow"
+      description: >-
+        4-phase ISAE 3410 verification package workflow: Evidence
+        (compile all evidence documents with SHA-256 content hashing)
+        -> Package (assemble verification package with evidence index
+        and methodology documentation) -> GapCheck (identify gaps in
+        evidence and documentation for pre-verification remediation)
+        -> Deliver (generate final verification package for third-party
+        assurance engagement).
+      schedule: "annual"
+      estimated_duration_minutes: 30
+      phases: 4
+
+    - id: annual_renewal_workflow
+      name: "Annual Renewal Workflow"
+      description: >-
+        6-phase annual renewal workflow: Review (review prior year
+        neutrality status and identify changes) -> Update (update
+        footprint with current year data) -> Recalculate (recalculate
+        base year if structural changes exceed threshold) -> Replenish
+        (assess credit portfolio adequacy and procure additional credits)
+        -> Rebalance (recalculate neutralization balance for new period)
+        -> Renew (renew claims and schedule verification).
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 6
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 templates)
+  # ===========================================================================
+  templates:
+    - id: footprint_report
+      display_name: "Footprint Report"
+      description: >-
+        GHG footprint report with Scope 1/2/3 breakdown. Shows emissions
+        by scope, category, facility, and entity with data quality scores,
+        emission factor sources, uncertainty ranges, and year-over-year
+        comparison. Includes materiality assessment for Scope 3 categories
+        and consolidation approach documentation.
+      format: "pdf"
+      template_file: "templates/footprint_report.jinja2"
+      enabled: true
+
+    - id: carbon_management_plan_report
+      display_name: "Carbon Management Plan Report"
+      description: >-
+        Reduction-first carbon management plan with MACC curve
+        visualization. Shows reduction trajectory with annual milestones,
+        action prioritization by cost-effectiveness, investment timeline,
+        expected reduction by action, and residual emissions projection.
+        Includes governance commitments and review cycle schedule.
+      format: "pdf"
+      template_file: "templates/carbon_management_plan_report.jinja2"
+      enabled: true
+
+    - id: credit_quality_report
+      display_name: "Credit Quality Report"
+      description: >-
+        12-dimension ICVCM CCP credit quality assessment. Shows per-
+        dimension scores with weights, overall quality rating (A+ to F),
+        benchmark comparison against market averages, SDG contribution
+        analysis, co-benefit assessment, and improvement recommendations
+        for each evaluated credit or project type.
+      format: "pdf"
+      template_file: "templates/credit_quality_report.jinja2"
+      enabled: true
+
+    - id: portfolio_summary_report
+      display_name: "Portfolio Summary Report"
+      description: >-
+        Carbon credit portfolio composition and optimization report.
+        Shows avoidance/removal split, nature-based/technology-based
+        allocation, geographic distribution, vintage analysis, cost
+        per tCO2e by project type, permanence risk profile, and Oxford
+        Principles alignment assessment with year-over-year trajectory.
+      format: "pdf"
+      template_file: "templates/portfolio_summary_report.jinja2"
+      enabled: true
+
+    - id: retirement_certificate
+      display_name: "Retirement Certificate"
+      description: >-
+        Carbon credit retirement certificate with registry verification.
+        Shows serial numbers, registry name and reference, retirement
+        date, beneficiary organization, project name and type, vintage
+        year, quantity retired (tCO2e), and registry confirmation status.
+        Includes QR code linking to registry retirement record.
+      format: "pdf"
+      template_file: "templates/retirement_certificate.jinja2"
+      enabled: true
+
+    - id: neutralization_statement
+      display_name: "Neutralization Statement"
+      description: >-
+        Neutralization balance statement per ISO 14068-1. Shows total
+        GHG footprint, total credits retired, buffer pool contribution,
+        surplus/deficit position, balance methodology, confidence
+        interval, and qualifying explanatory statement per PAS 2060
+        Section 9.
+      format: "pdf"
+      template_file: "templates/neutralization_statement.jinja2"
+      enabled: true
+
+    - id: claims_disclosure
+      display_name: "Claims Disclosure"
+      description: >-
+        Public claims disclosure document per ISO 14068-1 and PAS 2060.
+        Shows claim type, neutrality period, standard reference, VCMI
+        tier (if applicable), verification status, qualifying statement
+        with required caveats, carbon management plan summary, credit
+        portfolio composition, and links to supporting evidence.
+      format: "pdf"
+      template_file: "templates/claims_disclosure.jinja2"
+      enabled: true
+
+    - id: verification_package_report
+      display_name: "Verification Package Report"
+      description: >-
+        ISAE 3410 verification package index and summary. Shows evidence
+        index with SHA-256 content hashing, methodology summary for each
+        engine, assurance opinion template (limited or reasonable),
+        gap analysis with remediation guidance, and document management
+        system reference for all supporting materials.
+      format: "pdf"
+      template_file: "templates/verification_package_report.jinja2"
+      enabled: true
+
+    - id: annual_progress_report
+      display_name: "Annual Progress Report"
+      description: >-
+        Year-over-year carbon neutrality progress report. Shows
+        multi-year footprint trend, reduction progress against carbon
+        management plan, credit portfolio evolution, balance history,
+        claim renewal status, improvement actions implemented, and
+        forward projections for upcoming neutrality period.
+      format: "pdf"
+      template_file: "templates/annual_progress_report.jinja2"
+      enabled: true
+
+    - id: permanence_risk_report
+      display_name: "Permanence Risk Report"
+      description: >-
+        Permanence risk assessment report for credit portfolio. Shows
+        credit-level and portfolio-level risk scores by permanence
+        category (nature-based, technology-based, hybrid), reversal
+        monitoring status, buffer pool adequacy assessment, climate
+        hazard exposure, and mitigation recommendations for high-risk
+        credits.
+      format: "pdf"
+      template_file: "templates/permanence_risk_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase DAG pipeline with dependency management, retry logic,
+        and SHA-256 provenance at each checkpoint. Phases: Health Check
+        -> Configuration -> Footprint Quantification -> Carbon
+        Management Plan -> Credit Quality Assessment -> Portfolio
+        Optimization -> Registry Retirement -> Neutralization Balance
+        -> Claims Substantiation -> Verification Package. Supports
+        parallel execution of independent phases and conditional
+        skipping based on neutrality type configuration.
+      module: "integrations.pack_orchestrator"
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Routes data from all 30 AGENT-MRV agents for complete Scope
+        1/2/3 emissions calculation. Maps MRV outputs to footprint
+        quantification engine format. Provides emissions data for base
+        year, current year, and recalculation. Supports all 8 Scope 1
+        agents, 5 Scope 2 agents, 15 Scope 3 category agents, and 2
+        cross-cutting agents.
+      module: "integrations.mrv_bridge"
+      required: true
+
+    - id: ghg_app_bridge
+      name: "GL-GHG-APP Bridge"
+      description: >-
+        Connects to GL-GHG-APP v1.0 for GHG inventory calculation
+        infrastructure. Reuses the full MRV agent pipeline with
+        zero-hallucination guarantees for emissions quantification.
+        Provides bidirectional data flow for inventory import and
+        emission factor access.
+      module: "integrations.ghg_app_bridge"
+      required: true
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Connects to all 20 AGENT-DATA agents for data intake, quality
+        management, and cross-source reconciliation. Provides energy
+        data extraction (PDF/Excel/ERP), supplier survey processing,
+        data quality profiling, duplicate detection, outlier flagging,
+        and time series gap filling for complete footprint data coverage.
+      module: "integrations.data_bridge"
+      required: true
+
+    - id: registry_api_bridge
+      name: "Registry API Bridge"
+      description: >-
+        Connects to carbon credit registry APIs for real-time retirement
+        verification and serial number lookup. Supports Verra VCS,
+        Gold Standard, ACR, CAR, Puro.earth, and Isometric APIs.
+        Handles authentication, rate limiting, and retry logic for
+        each registry endpoint.
+      module: "integrations.registry_api_bridge"
+      required: true
+
+    - id: credit_marketplace_bridge
+      name: "Credit Marketplace Bridge"
+      description: >-
+        Connects to carbon credit marketplaces for price discovery,
+        credit availability checking, purchase order creation, and
+        delivery tracking. Supports integration with major voluntary
+        carbon market platforms for portfolio procurement automation.
+      module: "integrations.credit_marketplace_bridge"
+      required: false
+
+    - id: reporting_bridge
+      name: "Reporting Framework Bridge"
+      description: >-
+        Cross-framework reporting bridge for multi-standard alignment.
+        Maps carbon neutrality data to ISO 14068-1 disclosure, PAS 2060
+        qualifying statement, GHG Protocol reporting, CDP Climate Change
+        disclosure, and VCMI Claims Code reporting. Generates framework-
+        specific output formats.
+      module: "integrations.reporting_bridge"
+      required: false
+
+    - id: pack021_bridge
+      name: "PACK-021 Bridge"
+      description: >-
+        Optional bridge to PACK-021 Net Zero Starter Pack for baseline
+        and gap analysis capabilities. Imports baseline emissions data,
+        target definitions, and MACC analysis results when PACK-021 is
+        available. Handles graceful degradation when PACK-021 is not
+        installed.
+      module: "integrations.pack021_bridge"
+      required: false
+
+    - id: pack022_bridge
+      name: "PACK-022 Bridge"
+      description: >-
+        Optional bridge to PACK-022 Net Zero Acceleration Pack for
+        enhanced scenario analysis and temperature scoring. Imports
+        Monte Carlo scenario results and portfolio temperature scores
+        when PACK-022 is available. Handles graceful degradation when
+        PACK-022 is not installed.
+      module: "integrations.pack022_bridge"
+      required: false
+
+    - id: pack023_bridge
+      name: "PACK-023 Bridge"
+      description: >-
+        Optional bridge to PACK-023 SBTi Alignment Pack for science-
+        based target integration. Imports SBTi validated targets,
+        criteria status, and progress tracking data. Enables alignment
+        of carbon neutrality claims with SBTi target trajectory. Handles
+        graceful degradation when PACK-023 is not installed.
+      module: "integrations.pack023_bridge"
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        20-category system verification covering all 10 engines, registry
+        API connectivity (6 registries), emission factor database
+        currency, ICVCM CCP dimension definitions, VCMI Claims Code
+        criteria, IPCC AR6 GWP values, agent dependencies (30 MRV +
+        20 DATA + 10 FOUND), database connectivity, and cross-framework
+        template availability.
+      module: "integrations.health_check"
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        6-step guided carbon neutrality configuration: Organization
+        Profile (name, sector, size, region, neutrality type) ->
+        Boundary Configuration (scope boundaries, consolidation
+        approach, exclusions) -> Credit Preferences (quality thresholds,
+        project type preferences, registry preferences) -> Portfolio
+        Strategy (avoidance/removal targets, nature/tech split, budget)
+        -> Claims Configuration (claim type, standard reference,
+        assurance level) -> Validation Preview (run configuration
+        validation and identify quick wins).
+      module: "integrations.setup_wizard"
+      required: false
+
+  # ===========================================================================
+  # Presets - Neutrality-type configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: corporate_neutrality
+      name: "Corporate Neutrality Preset"
+      description: >-
+        Full organizational carbon neutrality with Scope 1+2+3. ISO
+        14068-1:2023 primary standard with PAS 2060 dual compliance.
+        ICVCM CCP quality scoring at minimum 70. Scope 3 all 15
+        categories included. Buffer pool at 10%. Minimum removal at
+        20%, maximum nature-based at 40%. Third-party reasonable
+        assurance. Suited for large enterprises pursuing comprehensive
+        carbon neutrality certification.
+      neutrality_type: "CORPORATE"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/corporate_neutrality.yaml"
+
+    - id: sme_neutrality
+      name: "SME Neutrality Preset"
+      description: >-
+        Simplified carbon neutrality for small and medium enterprises.
+        PAS 2060:2014 primary standard. Scope 1+2 only (Scope 3
+        excluded for simplification). Reduced credit quality threshold
+        at minimum 55. Simplified verification with limited assurance.
+        Budget-conscious portfolio with standard credit mix. Suited for
+        SMEs with under 250 employees seeking cost-effective neutrality.
+      neutrality_type: "SME"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/sme_neutrality.yaml"
+
+    - id: event_neutrality
+      name: "Event Neutrality Preset"
+      description: >-
+        Carbon neutral event management for conferences, exhibitions,
+        and corporate events. Event-specific emission sources: venue
+        energy, attendee travel, accommodation, catering, materials.
+        ISO 20121 sustainable events alignment. Event-total balance
+        method. Up to 10,000 attendees. Pre-event and post-event
+        footprint with actuals reconciliation.
+      neutrality_type: "EVENT"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/event_neutrality.yaml"
+
+    - id: product_neutrality
+      name: "Product Neutrality Preset"
+      description: >-
+        Product-level carbon neutrality with ISO 14067 LCA methodology.
+        System boundary options: cradle-to-gate, cradle-to-grave, or
+        gate-to-gate. Functional unit based calculation. ecoinvent 3.10
+        LCA database integration. Per-unit-produced balance method.
+        Product carbon footprint label requirements. Suited for FMCG,
+        consumer goods, and industrial products.
+      neutrality_type: "PRODUCT"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/product_neutrality.yaml"
+
+    - id: building_neutrality
+      name: "Building Neutrality Preset"
+      description: >-
+        Carbon neutral building operations with CRREM pathway alignment.
+        Weather-normalized and occupancy-adjusted energy intensity.
+        GRESB, NABERS, and LEED Zero Carbon alignment. Scope 1 (on-site
+        combustion), Scope 2 (grid electricity, district heating), and
+        Scope 3 (Cat 13 downstream leased assets). Multi-building
+        portfolio support with up to 200 buildings.
+      neutrality_type: "BUILDING"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/building_neutrality.yaml"
+
+    - id: service_neutrality
+      name: "Service Neutrality Preset"
+      description: >-
+        Carbon neutral professional and digital services. Covers office
+        operations, cloud computing (AWS/Azure/GCP provider emission
+        data), remote work accounting, and business travel. FTE and
+        revenue normalization. Scope 3 included for purchased services
+        and cloud infrastructure. Suited for consulting, technology
+        services, and financial services companies.
+      neutrality_type: "SERVICE"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/service_neutrality.yaml"
+
+    - id: project_neutrality
+      name: "Project Neutrality Preset"
+      description: >-
+        Carbon neutral construction and infrastructure projects per
+        ISO 14064-2 and PAS 2080. Lifecycle modules A1-A5 (product +
+        construction), B1-B7 (use), C1-C4 (end of life), D (beyond
+        lifecycle). Embodied carbon quantification with EPD data.
+        Project-total balance method with defined project boundary
+        and duration. Carbon budget allocation per module.
+      neutrality_type: "PROJECT"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/project_neutrality.yaml"
+
+    - id: portfolio_neutrality
+      name: "Portfolio Neutrality Preset"
+      description: >-
+        Multi-entity portfolio carbon neutrality with consolidated
+        reporting. Supports up to 500 entities with equity share
+        consolidation and intercompany elimination. Entity-level balance
+        calculation with portfolio rollup. Centralized credit procurement
+        with allocation to entities. PCAF methodology for financed
+        emissions. Group-level carbon management plan with entity
+        contributions.
+      neutrality_type: "PORTFOLIO"
+      enabled_engines:
+        - footprint_quantification
+        - carbon_management_plan
+        - credit_quality
+        - portfolio_optimization
+        - registry_retirement
+        - neutralization_balance
+        - claims_substantiation
+        - verification_package
+        - annual_cycle
+        - permanence_risk
+      file: "config/presets/portfolio_neutrality.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for operational emissions (Scope 1/2/3)
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from fuel combustion in stationary equipment"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Refrigerants & F-Gas Agent"
+      description: "Calculates emissions from refrigerant leakage and F-gas use"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Mobile Combustion Agent"
+      description: "Calculates emissions from company-owned vehicles and fleet"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Process Emissions Agent"
+      description: "Calculates emissions from industrial and chemical processes"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Fugitive Emissions Agent"
+      description: "Calculates fugitive emissions from equipment and systems"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Calculates emissions from land use and land use change"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Calculates emissions from on-site waste treatment"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Calculates emissions from agricultural operations"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based grid electricity emissions"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam/Heat Purchase Agent"
+      description: "Calculates emissions from purchased steam and heat"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates emissions from purchased cooling"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 reporting"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Purchased Goods & Services Agent (Cat 1)"
+      description: "Scope 3 Category 1 emissions from purchased goods and services"
+      path: "greenlang/agents/mrv/purchased_goods_services/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Capital Goods Agent (Cat 2)"
+      description: "Scope 3 Category 2 emissions from capital goods"
+      path: "greenlang/agents/mrv/capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Fuel & Energy Activities Agent (Cat 3)"
+      description: "Scope 3 Category 3 fuel- and energy-related activities"
+      path: "greenlang/agents/mrv/fuel_energy_activities/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Upstream Transportation Agent (Cat 4)"
+      description: "Scope 3 Category 4 upstream transportation and distribution"
+      path: "greenlang/agents/mrv/upstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Waste Generated Agent (Cat 5)"
+      description: "Scope 3 Category 5 waste generated in operations"
+      path: "greenlang/agents/mrv/waste_generated/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Business Travel Agent (Cat 6)"
+      description: "Scope 3 Category 6 business travel emissions"
+      path: "greenlang/agents/mrv/business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Employee Commuting Agent (Cat 7)"
+      description: "Scope 3 Category 7 employee commuting emissions"
+      path: "greenlang/agents/mrv/employee_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Upstream Leased Assets Agent (Cat 8)"
+      description: "Scope 3 Category 8 upstream leased assets emissions"
+      path: "greenlang/agents/mrv/upstream_leased_assets/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Downstream Transportation Agent (Cat 9)"
+      description: "Scope 3 Category 9 downstream transportation and distribution"
+      path: "greenlang/agents/mrv/downstream_transportation/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Processing of Sold Products (Cat 10)"
+      description: "Scope 3 Category 10 processing of sold products"
+      path: "greenlang/agents/mrv/processing_sold_products/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Use of Sold Products (Cat 11)"
+      description: "Scope 3 Category 11 use of sold products"
+      path: "greenlang/agents/mrv/use_sold_products/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "End-of-Life Treatment (Cat 12)"
+      description: "Scope 3 Category 12 end-of-life treatment of sold products"
+      path: "greenlang/agents/mrv/end_of_life_treatment/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Downstream Leased Assets (Cat 13)"
+      description: "Scope 3 Category 13 downstream leased assets"
+      path: "greenlang/agents/mrv/downstream_leased_assets/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Franchises Agent (Cat 14)"
+      description: "Scope 3 Category 14 franchises"
+      path: "greenlang/agents/mrv/franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Investments Agent (Cat 15)"
+      description: "Scope 3 Category 15 investments"
+      path: "greenlang/agents/mrv/investments/"
+      required: true
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper"
+      description: "Maps and routes emissions across all 15 Scope 3 categories"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage"
+      description: "Tracks data lineage and audit trails for all MRV calculations"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents (20 agents)
+# ---------------------------------------------------------------------------
+agents_data:
+  # Data Intake (9 agents)
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts emissions data from utility bills, fuel invoices, and receipts"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalizes energy consumption, fleet, and procurement data"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to SAP, Oracle, Workday, Dynamics for spend and activity data"
+    required: true
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for grid factors, registry APIs, market data"
+    required: true
+  - id: AGENT-DATA-005
+    name: "EUDR Traceability Connector"
+    description: "Supply chain traceability for land-use related Scope 3 emissions"
+    required: false
+  - id: AGENT-DATA-006
+    name: "GIS/Mapping Connector"
+    description: "Geospatial data for facility locations and project site mapping"
+    required: false
+  - id: AGENT-DATA-007
+    name: "Deforestation Satellite Connector"
+    description: "Satellite data for nature-based credit permanence monitoring"
+    required: false
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier emissions surveys for Scope 3 data collection"
+    required: true
+  - id: AGENT-DATA-020
+    name: "Climate Hazard Connector"
+    description: "Climate hazard data for permanence risk assessment and forward projections"
+    required: false
+  # Data Quality (11 agents)
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorizes procurement spend for spend-based Scope 3 estimation"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across energy, fleet, supplier, and credit data"
+    required: true
+  - id: AGENT-DATA-011
+    name: "Duplicate Detection Agent"
+    description: "Detects duplicate invoices, meter readings, and credit retirement records"
+    required: true
+  - id: AGENT-DATA-012
+    name: "Missing Value Imputer"
+    description: "Imputes missing energy data, supplier emissions, and entity-level gaps"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption, emission factors, and credit prices"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills temporal gaps in facility-level and entity-level time series"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles data across ERP, utility providers, meter readings, registries"
+    required: true
+  - id: AGENT-DATA-016
+    name: "Data Freshness Monitor"
+    description: "Monitors staleness of emission factors, credit prices, and registry data"
+    required: true
+  - id: AGENT-DATA-017
+    name: "Schema Migration Agent"
+    description: "Manages schema evolution for carbon neutrality reporting formats"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage across neutrality pipeline for audit and provenance"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Enforces GHG Protocol, ISO 14068-1, PAS 2060, and ICVCM validation rules"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents (all 10)
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution using directed acyclic graphs"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates carbon neutrality data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalizes units (tCO2e, kWh, MJ, EUR, USD) and reference data"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks all assumptions in footprint calculation, credit quality, and balance"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links data points to source evidence for verification package assembly"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for neutrality data, credits, and reports"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Maintains registry of available agents and capabilities"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Automated quality assurance for all carbon neutrality pack outputs"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors agent performance and pipeline health"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Bridged Applications
+# ---------------------------------------------------------------------------
+agents_bridged_apps:
+  - id: GL-GHG-APP
+    name: "GL-GHG-APP v1.0"
+    description: "GHG inventory application for Scope 1/2/3 baseline and current year"
+    required: true
+  - id: GL-CDP-APP
+    name: "GL-CDP-APP v1.0 Beta"
+    description: "CDP Climate Change disclosure for carbon neutrality claims alignment"
+    required: false
+  - id: GL-ISO14064-APP
+    name: "GL-ISO14064-APP v1.0"
+    description: "ISO 14064 quantification and reporting application"
+    required: false
+
+# ---------------------------------------------------------------------------
+# Bridged Packs
+# ---------------------------------------------------------------------------
+agents_bridged_packs:
+  - id: PACK-021
+    name: "Net Zero Starter Pack"
+    description: "GHG baseline, targets, MACC, gap tracking (optional, enhances baseline)"
+    required: false
+    version: ">=1.0.0"
+  - id: PACK-022
+    name: "Net Zero Acceleration Pack"
+    description: "Scenarios, SDA, temperature scoring (optional, enhances pathways)"
+    required: false
+    version: ">=1.0.0"
+  - id: PACK-023
+    name: "SBTi Alignment Pack"
+    description: "SBTi target validation, criteria, progress (optional, enhances target alignment)"
+    required: false
+    version: ">=1.0.0"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 63
+  breakdown:
+    mrv_agents: 30
+    data_agents: 20
+    foundation_agents: 10
+    carbon_neutral_engines: 10
+  bridged_apps: 3
+  bridged_packs: 3
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  footprint_quantification:
+    target_duration_minutes: 10
+    max_facilities: 500
+    max_scope3_categories: 15
+  carbon_management_plan:
+    target_duration_minutes: 5
+    max_reduction_actions: 100
+    macc_curve_resolution: 50
+  credit_quality:
+    icvcm_dimensions: 12
+    target_duration_minutes: 3
+    per_credit_assessment_seconds: 30
+    max_credits_batch: 200
+  portfolio_optimization:
+    target_duration_minutes: 5
+    max_credits_in_portfolio: 500
+    monte_carlo_iterations: 1000
+  registry_retirement:
+    target_duration_minutes: 2
+    supported_registries: 6
+    max_retirements_batch: 100
+  neutralization_balance:
+    target_duration_minutes: 2
+    balance_methods: 6
+    multi_period_max_years: 10
+  claims_substantiation:
+    target_duration_minutes: 3
+    claim_types: 7
+    vcmi_tier_assessment_minutes: 2
+  verification_package:
+    target_duration_minutes: 10
+    max_evidence_documents: 500
+    sha256_hash_verification: true
+  annual_cycle:
+    target_duration_minutes: 5
+    max_milestones_per_year: 12
+    max_historical_years: 10
+  permanence_risk:
+    target_duration_minutes: 3
+    risk_categories: 3
+    max_credits_assessed: 500
+  full_neutrality_workflow:
+    target_duration_minutes: 120
+  cache_hit_ratio_target: 0.75
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level and credit-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - CONFIDENTIAL
+    - RESTRICTED
+    - INTERNAL
+    - PUBLIC
+  required_roles:
+    - carbon_neutral_admin
+    - sustainability_manager
+    - climate_analyst
+    - credit_portfolio_manager
+    - external_auditor
+    - viewer
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+      - "timescaledb"
+    min_connections: 20
+    recommended_connections: 60
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_network_access
+    - verify_emission_factor_database
+    - verify_ipcc_ar6_gwp_values
+    - verify_icvcm_ccp_dimensions
+    - verify_vcmi_claims_criteria
+    - verify_registry_api_connectivity
+    - verify_credit_project_type_data
+    - verify_permanence_risk_parameters
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+      - "V082-V088"
+    new:
+      - "V084-PACK024-001"  # Footprint quantification and scope breakdown
+      - "V084-PACK024-002"  # Carbon management plan and reduction trajectory
+      - "V084-PACK024-003"  # Credit quality assessments and ICVCM CCP scores
+      - "V084-PACK024-004"  # Portfolio optimization and credit allocation
+      - "V084-PACK024-005"  # Registry retirement records and serial numbers
+      - "V084-PACK024-006"  # Neutralization balance and surplus/deficit
+      - "V084-PACK024-007"  # Claims substantiation and disclosure records
+      - "V084-PACK024-008"  # Verification package and evidence index
+      - "V084-PACK024-009"  # Annual cycle milestones and renewal tracking
+      - "V084-PACK024-010"  # Permanence risk scores and buffer pool records
+
+  post_install:
+    - seed_ipcc_ar6_gwp_values
+    - seed_emission_factor_databases
+    - seed_icvcm_ccp_dimension_definitions
+    - seed_credit_quality_rating_rubrics
+    - seed_credit_project_types
+    - seed_supported_registry_configurations
+    - seed_vcmi_claims_code_criteria
+    - seed_permanence_risk_parameters
+    - seed_grid_emission_factors
+    - seed_default_presets
+    - run_health_checks

@@ -61,7 +61,7 @@ _loaded_workflows: Dict[str, bool] = {}
 # GHG Inventory Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.ghg_inventory_workflow import (
+    from .ghg_inventory_workflow import (
         GHGInventoryWorkflow,
         GHGInventoryInput,
         GHGInventoryResult,
@@ -77,7 +77,7 @@ except ImportError as e:
 # Energy Assessment Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.energy_assessment_workflow import (
+    from .energy_assessment_workflow import (
         EnergyAssessmentWorkflow,
         EnergyAssessmentInput,
         EnergyAssessmentResult,
@@ -93,7 +93,7 @@ except ImportError as e:
 # Transition Plan Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.transition_plan_workflow import (
+    from .transition_plan_workflow import (
         TransitionPlanWorkflow,
         TransitionPlanInput,
         TransitionPlanResult,
@@ -110,7 +110,7 @@ except ImportError as e:
 # Target Setting Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.target_setting_workflow import (
+    from .target_setting_workflow import (
         TargetSettingWorkflow,
         TargetSettingInput,
         TargetSettingResult,
@@ -126,7 +126,7 @@ except ImportError as e:
 # Climate Actions Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.climate_actions_workflow import (
+    from .climate_actions_workflow import (
         ClimateActionsWorkflow,
         ClimateActionsInput,
         ClimateActionsResult,
@@ -142,7 +142,7 @@ except ImportError as e:
 # Carbon Credits Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.carbon_credits_workflow import (
+    from .carbon_credits_workflow import (
         CarbonCreditsWorkflow,
         CarbonCreditsInput,
         CarbonCreditsResult,
@@ -158,7 +158,7 @@ except ImportError as e:
 # Carbon Pricing Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.carbon_pricing_workflow import (
+    from .carbon_pricing_workflow import (
         CarbonPricingWorkflow,
         CarbonPricingInput,
         CarbonPricingResult,
@@ -174,7 +174,7 @@ except ImportError as e:
 # Climate Risk Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.climate_risk_workflow import (
+    from .climate_risk_workflow import (
         ClimateRiskWorkflow,
         ClimateRiskInput,
         ClimateRiskResult,
@@ -191,7 +191,7 @@ except ImportError as e:
 # Full E1 Workflow
 # ---------------------------------------------------------------------------
 try:
-    from packs.eu_compliance.PACK_016_esrs_e1_climate.workflows.full_e1_workflow import (
+    from .full_e1_workflow import (
         FullE1Workflow,
         FullE1Input,
         FullE1Result,

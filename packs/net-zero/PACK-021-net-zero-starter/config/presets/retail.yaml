@@ -1,0 +1,148 @@
+# =============================================================================
+# PACK-021 Net Zero Starter Pack - Retail Preset
+# =============================================================================
+# Configuration for retail organizations with mixed scope profile. Supply
+# chain focus with Scope 3 Category 1 (purchased goods) dominating at
+# 60-80% of total footprint. Spend-based Scope 3 as primary method with
+# supplier engagement for top suppliers. ACA pathway. All 8 engines
+# enabled. Supplier engagement is the critical Scope 3 reduction lever.
+#
+# Typical use cases:
+#   - Supermarket and grocery chains
+#   - Fashion and apparel retailers
+#   - Electronics retailers
+#   - General merchandise / department stores
+#   - E-commerce retailers
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "RETAIL"
+  size: "LARGE"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  erp_system: "SAP"
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  include_joint_ventures: false
+  base_year_recalculation_threshold_pct: 5.0
+
+# --- Scope Configuration (Supply chain dominant) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 14]
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "hybrid"
+    cat_4: "activity_based"
+    cat_9: "activity_based"
+    cat_6: "spend_based"
+    cat_7: "spend_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 1.0
+
+# --- Target Setting (ACA pathway) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  sbti_submission_planned: true
+
+# --- Reduction Actions (Supplier engagement critical) ---
+reduction:
+  max_actions: 80
+  planning_horizon_years: 10
+  include_renewable_procurement: true
+  include_supplier_engagement: true
+  include_fleet_electrification: true
+  include_energy_efficiency: true
+  include_fuel_switching: true
+  include_process_optimization: false
+  include_ccs: false
+  discount_rate_pct: 7.0
+  carbon_price_eur_per_tco2e: 80.0
+  scenario_count: 3
+
+# --- Offset Portfolio ---
+offset:
+  strategy: "BOTH"
+  quality_minimum_score: 60
+  max_nature_based_pct: 50.0
+  vcmi_target_claim: "SILVER"
+  preferred_credit_types:
+    - "gold_standard"
+    - "verified_carbon_standard"
+  shift_to_removals_by_year: 2040
+  track_co_benefits: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+  include_cdp_mapping: true
+  include_tcfd_mapping: true
+  include_esrs_mapping: true
+  include_sbti_mapping: true
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Scorecard ---
+scorecard:
+  enabled: true
+  assessment_mode: "FULL"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "cagr_reduction_rate"
+    - "renewable_electricity_pct"
+    - "supplier_engagement_rate"
+    - "sbti_target_status"
+    - "cdp_score"
+    - "offset_portfolio_quality"
+  target_years: [2025, 2030, 2035, 2040, 2050]

@@ -1,0 +1,268 @@
+# =============================================================================
+# PACK-023 SBTi Alignment Pack - Financial Services Preset
+# =============================================================================
+# Configuration for banks, insurance, and asset managers with FINZ V1.0.
+# PCAF financed emissions methodology for portfolio targets across 8 asset
+# classes. Portfolio temperature scoring using all 6 aggregation methods.
+# Very low direct emissions, dominant financed/insured emissions (Scope 3
+# Cat 15). FI portfolio engine enabled with up to 500 entities. Supports
+# commercial banks, investment banks, insurance companies, and asset
+# management firms.
+#
+# Typical use cases:
+#   - Commercial and investment banks
+#   - Insurance companies (general, life, reinsurance)
+#   - Asset management firms
+#   - Development finance institutions
+#   - Private equity and venture capital
+#   - Pension fund managers
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "FINANCIAL_SERVICES"
+sector_code: "NACE_K64_K65"
+gics_sector: "4010_4020_4030"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- SBTi Engines Configuration ---
+engines:
+  target_setting:
+    enabled: true
+    ambition_level: "CELSIUS_1_5"
+    scope_priorities:
+      scope1: 0.95
+      scope2: 0.95
+      scope3: 0.67
+  criteria_validation:
+    enabled: true
+    near_term_criteria: ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28"]
+    net_zero_criteria: ["NZ-C1", "NZ-C2", "NZ-C3", "NZ-C4", "NZ-C5", "NZ-C6", "NZ-C7", "NZ-C8", "NZ-C9", "NZ-C10", "NZ-C11", "NZ-C12", "NZ-C13", "NZ-C14"]
+  scope3_screening:
+    enabled: true
+    materiality_trigger_pct: 40.0
+    coverage_near_term_pct: 67.0
+    coverage_long_term_pct: 90.0
+    categories: [1, 2, 3, 5, 6, 7, 8, 13, 15]
+  sda_sector:
+    enabled: false
+    sda_applicable: false
+    sda_sectors: []
+  flag_assessment:
+    enabled: false
+    flag_applicable: false
+  temperature_rating:
+    enabled: true
+    aggregation_methods:
+      - "WATS"
+      - "TETS"
+      - "MOTS"
+      - "EOTS"
+      - "ECOTS"
+      - "AOTS"
+    default_score_celsius: 3.2
+    include_scope3: true
+  progress_tracking:
+    enabled: true
+    review_cycle_years: 5
+    recalculation_trigger_threshold_pct: 5.0
+  recalculation:
+    enabled: true
+    trigger_types:
+      - "acquisition"
+      - "divestiture"
+      - "merger"
+      - "portfolio_composition_change"
+      - "asset_class_rebalancing"
+  fi_portfolio:
+    enabled: true
+    fi_applicable: true
+    max_portfolio_entities: 500
+    asset_classes_count: 8
+  submission_readiness:
+    enabled: true
+    readiness_dimensions: 5
+
+# --- Pathway Configuration (ACA with FINZ Extension) ---
+pathway:
+  methodology: "ACA"
+  sda_enabled: false
+  sda_sectors: []
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  aca_annual_reduction_rate_pct: 4.2
+  finz_enabled: true
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Scope 3 Configuration (PCAF Enabled) ---
+scope3:
+  categories: [1, 2, 3, 5, 6, 7, 8, 13, 15]
+  activity_based_categories: [6, 7, 15]
+  supplier_specific_categories: []
+  spend_based_categories: [1, 2, 3, 5, 8, 13]
+  materiality_threshold_pct: 1.0
+  target_dqis_score: 2
+  pcaf_enabled: true
+  pcaf_asset_classes:
+    - "listed_equity"
+    - "corporate_bonds"
+    - "business_loans"
+    - "mortgages"
+    - "commercial_real_estate"
+    - "project_finance"
+    - "sovereign_bonds"
+    - "securitized"
+
+# --- Supplier Engagement ---
+supplier:
+  enabled: true
+  max_suppliers: 5000
+  tier_thresholds:
+    collaborate: 5.0
+    require: 15.0
+    engage: 40.0
+    inform: 100.0
+  top_supplier_count: 50
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+    - "innovation"
+  batch_size: 2000
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 6.0
+  carbon_price_eur_per_tco2e: 75.0
+  carbon_price_escalation_pct: 5.0
+  reporting_currency: "EUR"
+  planning_horizon_years: 10
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "SUSTAINABILITY_LINKED_BOND"
+    - "GREEN_LOAN"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 8.0
+
+# --- Temperature Scoring (Full Portfolio Methods) ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+    - "MOTS"
+    - "EOTS"
+    - "ECOTS"
+    - "AOTS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: true
+  portfolio_weighting: "enterprise_value"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Decomposition & Variance ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 10.0
+  top_drivers_count: 10
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: true
+  max_entities: 50
+  consolidation_method: "FINANCIAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "business_line"
+    - "asset_class"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI & Carbon Removal ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 75
+  max_nature_based_pct: 40.0
+  shift_to_removals_by_year: 2040
+  preferred_registries:
+    - "verra"
+    - "gold_standard"
+    - "american_carbon_registry"
+    - "climate_action_reserve"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2027
+  workpaper_format: "ISAE_3000"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10
+
+# --- Data Quality Targets ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "default_factors"
+  pcaf_score_target: 2.0
+  financed_emissions_coverage_target_pct: 85
+  portfolio_data_collection_frequency: "quarterly"
+
+# --- Sector-Specific Parameters ---
+sector_parameters:
+  finz_asset_class_coverage: "all_8_classes"
+  pcaf_data_quality_score_minimum: 2.0
+  portfolio_engagement_target_companies_pct: 100
+  green_finance_instruments_allocation_target_pct: 30
+  eu_taxonomy_aligned_screening_enabled: true
+  climate_risk_stress_testing_enabled: true
+  financed_emissions_attribution_method: "PCAF"
+  sovereign_bond_coverage_enabled: true
+  securitized_product_tracking_enabled: true
+  private_equity_target_integration_enabled: true
+  real_estate_portfolio_carbon_intensity_tracking: true

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PACK-016: ESRS E1 Climate Change Pack
 
@@ -9,3 +10,8 @@ tracking, transition plan compilation, climate risk and opportunity assessment,
 carbon credit management, internal carbon pricing, and full E1 report generation
 with XBRL tagging and provenance.
 """
+
+__version__: str = "1.0.0"
+__pack__: str = "PACK-016"
+__pack_name__: str = "ESRS E1 Climate Pack"
+__category__: str = "eu-compliance"

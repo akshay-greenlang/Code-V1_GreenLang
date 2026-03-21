@@ -1,0 +1,221 @@
+# =============================================================================
+# PACK-021 Net Zero Starter Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for CleanTech Industries GmbH, a fictional mid-size
+# manufacturing company headquartered in Berlin, Germany. The company operates
+# three facilities and is beginning its net-zero journey with a 1.5C-aligned
+# SBTi target. This configuration demonstrates full-scope GHG inventory,
+# target setting, decarbonization pathway modeling, and multi-framework
+# reporting capabilities with synthetic data for demo mode.
+#
+# Company: CleanTech Industries GmbH
+# Headquarters: Berlin, Germany
+# Revenue: EUR 500 million
+# Employees: 2,000
+# Facilities: 3 (HQ Berlin, Factory Munich, Warehouse Hamburg)
+# Base Year: 2024
+# Reporting Year: 2025
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: "CleanTech Industries GmbH"
+  sector: "MANUFACTURING"
+  size: "LARGE"
+  region: "EU"
+  country: "DE"
+  revenue_eur: 500000000.0
+  employee_count: 2000
+  fiscal_year_end: "12-31"
+  nace_code: "C28"
+  gics_code: "20106010"
+  erp_system: "SAP"
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  entities_included:
+    - "CleanTech Industries GmbH - HQ Berlin"
+    - "CleanTech Industries GmbH - Factory Munich"
+    - "CleanTech Industries GmbH - Warehouse Hamburg"
+  reporting_currency: "EUR"
+  include_joint_ventures: false
+  base_year_recalculation_threshold_pct: 5.0
+
+# --- Scope Configuration ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12]
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "hybrid"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_5: "activity_based"
+    cat_6: "spend_based"
+    cat_7: "spend_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 1.0
+
+# --- Target Setting ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  sbti_submission_planned: true
+
+# --- Reduction Actions ---
+# Sample decarbonization actions for CleanTech Industries
+# Action 1: LED lighting upgrade across all facilities
+# Action 2: Rooftop solar PV installation (500 kWp total)
+# Action 3: Heat pump replacement for HQ and warehouse heating
+# Action 4: Fleet electrification (30 diesel vans -> EVs)
+# Action 5: Green electricity PPA (50 GWh, 15-year term)
+# Action 6: Supplier engagement program (top 50 suppliers)
+# Action 7: Process optimization (factory compressed air, motors)
+# Action 8: Building insulation retrofit (HQ and warehouse)
+reduction:
+  budget_constraint_eur: 15000000.0
+  max_actions: 50
+  planning_horizon_years: 10
+  include_renewable_procurement: true
+  include_supplier_engagement: true
+  include_fleet_electrification: true
+  include_energy_efficiency: true
+  include_fuel_switching: true
+  include_process_optimization: true
+  include_ccs: false
+  discount_rate_pct: 8.0
+  carbon_price_eur_per_tco2e: 85.0
+  scenario_count: 3
+
+# --- Offset Portfolio ---
+# Sample offset configuration for residual emissions
+# Portfolio: 500 tCO2e Gold Standard credits
+offset:
+  strategy: "BOTH"
+  quality_minimum_score: 70
+  max_nature_based_pct: 50.0
+  vcmi_target_claim: "SILVER"
+  max_offset_budget_eur: 200000.0
+  preferred_credit_types:
+    - "gold_standard"
+    - "verified_carbon_standard"
+    - "american_carbon_registry"
+  shift_to_removals_by_year: 2040
+  track_co_benefits: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_cdp_mapping: true
+  include_tcfd_mapping: true
+  include_esrs_mapping: true
+  include_sbti_mapping: true
+  language: "en"
+  multi_language_support: true
+  supported_languages: ["en", "de"]
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+
+# --- Scorecard ---
+scorecard:
+  enabled: true
+  assessment_mode: "FULL"
+  dimensions:
+    - "governance"
+    - "strategy"
+    - "baseline_completeness"
+    - "target_ambition"
+    - "reduction_progress"
+    - "scope3_coverage"
+    - "supplier_engagement"
+    - "offset_quality"
+    - "disclosure_readiness"
+    - "transition_plan_credibility"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "cagr_reduction_rate"
+    - "renewable_electricity_pct"
+    - "supplier_engagement_rate"
+    - "sbti_target_status"
+    - "cdp_score"
+    - "offset_portfolio_quality"
+  target_years: [2025, 2030, 2035, 2040, 2050]
+
+# =============================================================================
+# Demo Data - Synthetic Emissions Inventory for 2024 (Base Year)
+# =============================================================================
+# The following comments document the synthetic demo data used for baseline:
+#
+# Scope 1 (Total: ~8,500 tCO2e)
+#   - Natural gas heating (HQ + Warehouse): 2,800 tCO2e
+#   - Natural gas process heat (Factory): 3,200 tCO2e
+#   - Diesel fleet (30 delivery vans): 1,500 tCO2e
+#   - Refrigerants (R410A, Factory chiller): 650 tCO2e
+#   - Emergency generators: 350 tCO2e
+#
+# Scope 2 (Total: ~4,200 tCO2e location-based, ~3,100 tCO2e market-based)
+#   - Grid electricity (all facilities): 4,200 tCO2e location-based
+#   - Electricity with 30% renewable PPA: 3,100 tCO2e market-based
+#   - District heating (HQ Berlin): included in Scope 1 natural gas
+#
+# Scope 3 (Total: ~35,000 tCO2e, spend-based/hybrid)
+#   - Cat 1 Purchased goods & services: 15,000 tCO2e (42%)
+#   - Cat 2 Capital goods: 3,500 tCO2e (10%)
+#   - Cat 3 Fuel & energy activities: 2,100 tCO2e (6%)
+#   - Cat 4 Upstream transportation: 4,200 tCO2e (12%)
+#   - Cat 5 Waste generated: 1,800 tCO2e (5%)
+#   - Cat 6 Business travel: 2,500 tCO2e (7%)
+#   - Cat 7 Employee commuting: 2,000 tCO2e (6%)
+#   - Cat 8 Upstream leased assets: 400 tCO2e (1%)
+#   - Cat 9 Downstream transport: 1,500 tCO2e (4%)
+#   - Cat 11 Use of sold products: 1,200 tCO2e (3%)
+#   - Cat 12 End-of-life treatment: 800 tCO2e (2%)
+#
+# Total Footprint: ~47,700 tCO2e (location-based Scope 2)
+#                  ~46,600 tCO2e (market-based Scope 2)
+# =============================================================================

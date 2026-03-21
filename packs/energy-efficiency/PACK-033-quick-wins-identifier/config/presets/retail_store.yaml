@@ -1,0 +1,100 @@
+# =============================================================================
+# PACK-033 Quick Wins Identifier - Retail Store Preset
+# =============================================================================
+# Retail environment with focus on lighting, HVAC aligned to trading hours,
+# refrigeration optimization, and exterior signage controls. EUI benchmark:
+# 200-500 kWh/m2/yr. Key opportunities: LED display lighting, night curtains
+# on refrigeration, HVAC scheduling, signage timer controls, door closer
+# maintenance.
+#
+# Typical use cases:
+#   - Supermarkets and grocery stores
+#   - Department stores and shopping centres
+#   - Specialty retail and fashion outlets
+#   - Convenience stores and forecourt shops
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "RETAIL"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 3500
+
+# --- Scan ---
+scan:
+  depth: "STANDARD"
+  categories:
+    - "LIGHTING"
+    - "HVAC"
+    - "REFRIGERATION"
+    - "CONTROLS_SCHEDULING"
+    - "BUILDING_ENVELOPE"
+    - "PLUG_LOADS"
+    - "BEHAVIORAL"
+  max_measures_per_category: 10
+  include_no_cost_measures: true
+  include_low_cost_measures: true
+  include_medium_cost_measures: true
+  max_payback_years: 2.5
+  minimum_annual_savings_eur: 300.0
+  utility_bill_months: 12
+  walkthrough_checklist: true
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.26
+  gas_rate_eur_per_kwh: 0.09
+  discount_rate: 0.08
+  analysis_period_years: 10
+  energy_price_escalation_pct: 3.5
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Prioritization ---
+prioritization:
+  profile: "COST_FOCUSED"
+  weight_financial_savings: 0.35
+  weight_payback_period: 0.30
+  weight_carbon_reduction: 0.15
+  weight_implementation_ease: 0.15
+  weight_co_benefits: 0.05
+  top_n_recommendations: 10
+
+# --- Behavioural ---
+behavioral:
+  enabled: true
+  awareness_campaign: true
+  switch_off_programme: true
+  thermostat_discipline: true
+  estimated_savings_pct: 4.0
+
+# --- Rebate ---
+rebate:
+  enabled: true
+  country: "DE"
+  include_federal_programmes: true
+  include_utility_rebates: true
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  detailed_measure_cards: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

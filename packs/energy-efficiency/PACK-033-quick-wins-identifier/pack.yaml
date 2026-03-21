@@ -1,0 +1,1406 @@
+# =============================================================================
+# PACK-033: Quick Wins Identifier Pack
+# GreenLang Energy Efficiency Pack for Quick Win Energy Savings Identification
+# =============================================================================
+# This pack provides a rapid, systematic approach to identifying low-cost,
+# high-impact energy efficiency measures across commercial and industrial
+# facilities. It covers the full quick-wins lifecycle from facility scanning
+# through measure identification, financial analysis, carbon impact
+# assessment, behavioural programme design, rebate matching, implementation
+# tracking, and post-implementation savings verification.
+#
+# Quick win measures typically deliver 10-30% energy savings with payback
+# periods under 3 years and minimal capital investment. This pack enables
+# facility managers, energy managers, and sustainability teams to rapidly
+# build an actionable list of measures ranked by composite score (financial
+# savings, payback, carbon reduction, implementation ease, and co-benefits).
+# It follows a zero-hallucination approach: all savings calculations use
+# deterministic engineering formulas and published benchmarks -- no LLM is
+# used in any calculation path.
+#
+# Key Capabilities:
+#   - Facility energy scanning (utility bill analysis, walkthrough checklist,
+#     area-by-area assessment with spot measurements)
+#   - Quick win measure identification (12 action categories: lighting, HVAC,
+#     plug loads, controls/scheduling, motors/drives, compressed air,
+#     refrigeration, water heating, building envelope, behavioural,
+#     IT equipment, process optimization)
+#   - Financial analysis (simple payback, NPV, IRR, lifecycle cost, energy
+#     price escalation, maintenance impact, tax incentives)
+#   - Carbon impact assessment (tCO2e per measure, Scope 1+2, grid factors,
+#     SBTi pathway alignment, carbon price monetisation)
+#   - Behavioural change programmes (awareness campaigns, switch-off
+#     policies, thermostat discipline, energy champion networks)
+#   - Rebate and incentive matching (federal, state, utility, and EU
+#     programmes matched to each identified measure)
+#   - Implementation tracking (status tracking from identification through
+#     completion, phased roadmap, Gantt chart generation)
+#   - Savings verification (pre/post comparison, IPMVP Option A/C,
+#     weather-normalised savings, persistence monitoring)
+#
+# Regulatory References:
+#   - EED: Directive (EU) 2023/1791 (Energy Efficiency Directive - recast)
+#   - ISO 50001:2018 (Energy Management Systems - quick wins as continual
+#     improvement evidence)
+#   - ASHRAE Guideline 14 (Measurement of Energy, Demand, and Water Savings)
+#   - IPMVP: International Performance Measurement and Verification Protocol
+#   - GHG Protocol: Corporate Standard (Scope 1+2 energy-related emissions)
+#   - SBTi: Science Based Targets initiative (energy efficiency pathway)
+#   - EN 16247-1:2022 (Energy Audits - quick wins identification within
+#     audit scope)
+#
+# Facility Types Supported:
+#   - Office buildings (corporate HQ, multi-tenant, co-working)
+#   - Manufacturing (discrete, batch, light industrial)
+#   - Retail (supermarkets, department stores, specialty retail)
+#   - Warehouses (ambient, cold storage, distribution centres)
+#   - Healthcare (hospitals, clinics, care homes)
+#   - Education (schools, universities, campuses)
+#   - Data centres (enterprise, colocation, server rooms)
+#   - SME (simplified scan for small-medium enterprises)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-21)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-033-quick-wins-identifier
+  version: "1.0.0"
+  display_name: "Quick Wins Identifier Pack"
+  description: >-
+    GreenLang deployment pack for rapid identification, prioritization, and
+    tracking of low-cost, high-impact energy efficiency measures. Includes
+    8 engines for facility energy scanning, quick-win measure identification
+    across 12 action categories, financial analysis with NPV/IRR/payback,
+    carbon impact assessment per GHG Protocol, behavioural change programme
+    design, rebate and incentive matching, implementation tracking with
+    phased roadmaps, and post-implementation savings verification per IPMVP.
+    Supports office buildings, manufacturing, retail, warehouses, healthcare,
+    education, data centres, and SME facilities with tailored presets and
+    sector-specific measure libraries. Bundles relevant MRV agents for
+    energy-related emissions, data intake/quality agents, and foundation
+    agents. Bridges to PACK-031 (Industrial Energy Audit) and PACK-032
+    (Building Energy Assessment) for deeper analysis of identified measures.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-21"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/quick-wins-identifier"
+  changelog_url: "https://docs.greenlang.io/packs/quick-wins-identifier/changelog"
+
+  tags:
+    - quick-wins
+    - energy-efficiency
+    - energy-savings
+    - low-cost-measures
+    - payback-analysis
+    - carbon-reduction
+    - behavioural-change
+    - rebate-matching
+    - implementation-tracking
+    - savings-verification
+    - ipmvp
+    - office-building
+    - manufacturing
+    - retail
+    - warehouse
+    - healthcare
+    - education
+    - data-center
+    - sme
+    - lighting
+    - hvac
+    - plug-loads
+    - controls
+    - compressed-air
+    - motors
+    - refrigeration
+
+  regulation:
+    primary:
+      name: "EU Energy Efficiency Directive (EED)"
+      reference: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        The recast EED mandates energy audits for large enterprises and
+        requires identification of cost-effective energy savings measures.
+        Quick wins identified by this pack directly support EED Article 8
+        compliance by demonstrating proactive energy efficiency improvement.
+        The directive's energy efficiency first principle prioritises
+        demand-side measures -- exactly the type of measures this pack
+        identifies and tracks.
+    secondary:
+      - name: "ISO 50001:2018 Energy Management Systems"
+        reference: "ISO 50001:2018"
+        effective_date: "2018-08-21"
+      - name: "ASHRAE Guideline 14 - Measurement of Energy Savings"
+        reference: "ASHRAE 14-2014"
+        effective_date: "2014-01-01"
+      - name: "IPMVP Core Concepts"
+        reference: "IPMVP 2022"
+        effective_date: "2022-01-01"
+      - name: "GHG Protocol Corporate Standard"
+        reference: "GHG Protocol (revised 2015)"
+        effective_date: "2015-01-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi v1.1"
+        effective_date: "2023-01-01"
+      - name: "EN 16247-1:2022 Energy Audits - General Requirements"
+        reference: "EN 16247-1:2022"
+        effective_date: "2022-07-01"
+
+  compliance_references:
+    - id: "EED"
+      name: "EU Energy Efficiency Directive (recast)"
+      regulation: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        Quick wins identification supports EED Article 8 compliance by
+        demonstrating proactive energy efficiency assessment and measure
+        implementation. The EED requires enterprises to identify and
+        implement cost-effective energy efficiency measures. This pack
+        automates the identification, financial analysis, and tracking
+        of such measures across all facility types.
+
+    - id: "ISO_50001"
+      name: "ISO 50001:2018 Energy Management Systems"
+      regulation: "ISO 50001:2018"
+      effective_date: "2018-08-21"
+      description: >-
+        ISO 50001 requires continual improvement of energy performance.
+        Quick wins serve as early wins in the Plan-Do-Check-Act cycle,
+        providing measurable EnPI improvement evidence for management
+        review and certification audits. The action plan tracking and
+        savings verification features directly support ISO 50001 Clause
+        6.2 (objectives and action plans) and Clause 9.1 (monitoring,
+        measurement, analysis, and evaluation).
+
+    - id: "ASHRAE_14"
+      name: "ASHRAE Guideline 14 - Measurement of Energy Savings"
+      regulation: "ASHRAE 14-2014"
+      effective_date: "2014-01-01"
+      description: >-
+        ASHRAE Guideline 14 provides methodology for measuring energy
+        savings from efficiency measures. This pack uses ASHRAE 14
+        methods for pre/post comparison, weather normalisation, and
+        uncertainty quantification when verifying savings from
+        implemented quick wins.
+
+    - id: "IPMVP"
+      name: "International Performance Measurement and Verification Protocol"
+      regulation: "IPMVP Core Concepts 2022"
+      effective_date: "2022-01-01"
+      description: >-
+        IPMVP provides the framework for savings verification. Quick
+        wins typically use Option A (retrofit isolation with key
+        parameter measurement) for equipment-level measures or Option C
+        (whole facility) for multiple interactive measures. The pack
+        automates M&V plan creation and savings calculations per IPMVP.
+
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol (revised 2015)"
+      effective_date: "2015-01-01"
+      description: >-
+        The GHG Protocol provides the accounting framework for
+        quantifying carbon reductions from energy efficiency measures.
+        This pack calculates tCO2e savings for each quick win using
+        Scope 1 (direct combustion) and Scope 2 (purchased electricity)
+        emission factors, supporting both location-based and market-
+        based accounting methods.
+
+    - id: "SBTi"
+      name: "Science Based Targets initiative"
+      regulation: "SBTi Corporate Net-Zero Standard v1.1"
+      effective_date: "2023-01-01"
+      description: >-
+        SBTi requires companies to set science-based emission reduction
+        targets. Energy efficiency quick wins are a primary lever for
+        achieving near-term targets (5-10 year horizon). This pack
+        tracks carbon savings against SBTi reduction pathways and
+        calculates the contribution of quick wins to overall target
+        achievement.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (8 quick wins engines)
+  # ===========================================================================
+  engines:
+    - id: facility_scanner
+      name: "Facility Energy Scanner Engine"
+      description: >-
+        Performs systematic facility energy scanning at three depth levels.
+        QUICK scan (30-60 min): utility bill analysis for 12-36 months,
+        energy use intensity (EUI) benchmarking against CIBSE TM46, ENERGY
+        STAR, or DIN V 18599 targets, identification of top consumption
+        categories from billing data, and generation of pre-populated
+        walkthrough checklist. STANDARD scan (2-4 hrs): area-by-area
+        walkthrough with spot measurements (lux levels, temperature,
+        airflow), equipment inventory for major consumers, operating hours
+        assessment, and occupancy pattern analysis. COMPREHENSIVE scan
+        (1-2 days): short-term data logging (power, temperature, flow),
+        sub-meter analysis where available, thermal imaging survey, and
+        detailed equipment nameplate data collection. All scan levels
+        generate a prioritised opportunity register for further analysis
+        by the quick wins identification engine.
+        Zero-hallucination: EUI calculations from metered data, benchmarks
+        from published standards, no LLM in any calculation path.
+      class: "FacilityScannerEngine"
+      file: "engines/facility_scanner.py"
+      required: true
+
+    - id: quick_wins_identifier
+      name: "Quick Wins Identification Engine"
+      description: >-
+        Identifies applicable quick win measures from a library of 200+
+        pre-defined measures across 12 action categories: LIGHTING (LED
+        retrofit, occupancy sensors, daylight dimming, task lighting,
+        delamping, cleaning), HVAC (setpoint adjustment, scheduling,
+        economiser enabling, filter maintenance, destratification, VSD),
+        PLUG_LOADS (timer strips, power management, vending machine
+        controls, copier sleep mode), CONTROLS_SCHEDULING (BMS
+        optimisation, time clock review, holiday scheduling, night
+        setback), MOTORS_DRIVES (belt tensioning, alignment, VSD,
+        right-sizing), COMPRESSED_AIR (leak repair, pressure reduction,
+        blow-off optimisation, idle shutdown), REFRIGERATION (night
+        curtains, anti-sweat controls, condenser cleaning, door seals),
+        WATER_HEATING (temperature reduction, insulation, timer control,
+        flow restrictors), BUILDING_ENVELOPE (draught proofing, door
+        closers, dock seals, pipe insulation), BEHAVIORAL (switch-off
+        campaigns, thermostat discipline, awareness signage), IT_EQUIPMENT
+        (server decommissioning, virtualisation, power management),
+        PROCESS_OPTIMIZATION (idle shutdown, batch scheduling, setpoint
+        review). Each measure includes estimated savings formula,
+        typical implementation cost range, and complexity rating.
+        Zero-hallucination: savings from engineering formulas and
+        published benchmarks, no LLM in quantification path.
+      class: "QuickWinsIdentifierEngine"
+      file: "engines/quick_wins_identifier.py"
+      required: true
+
+    - id: financial_analyzer
+      name: "Financial Analysis Engine"
+      description: >-
+        Performs comprehensive financial analysis for each identified
+        measure. Calculates simple payback period (implementation cost
+        divided by annual savings), net present value (NPV) using
+        discounted cash flow over the analysis period with configurable
+        discount rate, internal rate of return (IRR), savings-to-
+        investment ratio (SIR), and lifecycle cost including maintenance
+        impact and equipment replacement cycles. Supports energy price
+        escalation modelling with configurable annual escalation rate.
+        Handles multi-currency conversion for international portfolios.
+        Generates cumulative savings curves showing break-even point
+        and total benefit over analysis period. Supports sensitivity
+        analysis varying discount rate, energy prices, and measure
+        costs to show impact on payback and NPV.
+        Zero-hallucination: all financial calculations from standard DCF
+        formulas, energy cost from tariff data, no LLM.
+      class: "FinancialAnalyzerEngine"
+      file: "engines/financial_analyzer.py"
+      required: true
+
+    - id: carbon_impact
+      name: "Carbon Impact Assessment Engine"
+      description: >-
+        Calculates carbon reduction (tCO2e) for each identified measure.
+        Uses Scope 1 emission factors for natural gas, fuel oil, and LPG
+        savings (per GHG Protocol). Uses Scope 2 emission factors for
+        electricity savings with both location-based (grid average) and
+        market-based (supplier-specific, RECs, green tariffs) accounting.
+        Emission factors sourced from national grid databases (DEFRA, UBA,
+        EPA eGRID, IEA), updated annually. Calculates marginal abatement
+        cost (EUR per tCO2e avoided) for each measure. Generates carbon
+        abatement cost curve (MACC) ranking measures from negative-cost
+        (net savings) through to positive-cost. Tracks cumulative carbon
+        savings against SBTi reduction pathway when enabled. Monetises
+        carbon savings using configurable carbon price (default: EU ETS
+        price) for total benefit calculation.
+        Zero-hallucination: emission factors from published databases,
+        carbon calculations from GHG Protocol formulas, no LLM.
+      class: "CarbonImpactEngine"
+      file: "engines/carbon_impact.py"
+      required: true
+
+    - id: prioritization
+      name: "Measure Prioritization Engine"
+      description: >-
+        Ranks identified measures using a weighted composite scoring
+        methodology. Five scoring dimensions: financial savings (annual
+        EUR saved), payback period (years to break even, shorter scores
+        higher), carbon reduction (tCO2e per year), implementation ease
+        (no-cost > low-cost > medium-cost > capital), and co-benefits
+        (comfort improvement, maintenance reduction, safety, aesthetics,
+        productivity). Five priority profiles available: COST_FOCUSED
+        (minimise upfront spend), SAVINGS_FOCUSED (maximise annual
+        savings), BALANCED (equal weighting), CARBON_FOCUSED (maximise
+        tCO2e reduction), QUICK_IMPLEMENTATION (measures achievable
+        within 30 days). Generates ranked recommendation list with
+        top-N selection and category grouping. Creates phased
+        implementation roadmap: immediate (no-cost, this week),
+        short-term (low-cost, 1-3 months), medium-term (requires
+        procurement, 3-12 months).
+        Zero-hallucination: scoring from weighted arithmetic, no LLM.
+      class: "PrioritizationEngine"
+      file: "engines/prioritization.py"
+      required: true
+
+    - id: behavioral_programme
+      name: "Behavioural Programme Engine"
+      description: >-
+        Designs and tracks behavioural energy efficiency programmes.
+        Generates customised awareness campaign materials (posters,
+        email templates, intranet content) based on facility type and
+        identified quick wins. Creates switch-off checklists for end-
+        of-day and holiday shutdown procedures. Designs thermostat
+        discipline guidelines with recommended setpoints by zone type.
+        Supports energy champion network creation with role definitions,
+        floor assignments, and reporting structures. Provides gamification
+        framework with inter-departmental energy reduction competitions,
+        league tables, and reward structures. Estimates behavioural
+        savings at 3-8% of total consumption based on facility type and
+        programme intensity. Tracks programme engagement metrics
+        (participation rate, feedback scores, suggestion count).
+        Zero-hallucination: savings estimates from published behavioural
+        programme benchmarks, no LLM in percentage calculations.
+      class: "BehavioralProgrammeEngine"
+      file: "engines/behavioral_programme.py"
+      required: false
+
+    - id: rebate_matcher
+      name: "Rebate and Incentive Matcher Engine"
+      description: >-
+        Matches identified quick win measures to applicable rebate and
+        incentive programmes. Maintains a database of utility rebates,
+        federal/national grants, state/regional incentives, and EU
+        funding programmes (LIFE, Horizon Europe, Innovation Fund).
+        Supports country-specific programmes: Germany (BAFA energy
+        efficiency grants, KfW energy efficiency loans), UK (Enhanced
+        Capital Allowances, Salix Finance), France (CEE certificates),
+        and other EU member states. Calculates net implementation cost
+        after rebate application and adjusted payback period. Tracks
+        application deadlines and eligibility criteria. Generates
+        rebate application support documents with measure specifications
+        and savings calculations in the format required by each
+        programme.
+        Zero-hallucination: rebate values from published programme data,
+        eligibility from programme criteria, no LLM.
+      class: "RebateMatcherEngine"
+      file: "engines/rebate_matcher.py"
+      required: false
+
+    - id: savings_verifier
+      name: "Savings Verification Engine"
+      description: >-
+        Verifies energy savings from implemented quick win measures using
+        IPMVP and ASHRAE Guideline 14 methods. Supports two primary M&V
+        approaches for quick wins: Option A (retrofit isolation with key
+        parameter measurement) for equipment-level measures like LED
+        retrofit, VSD installation, and motor replacement; and Option C
+        (whole facility measurement) for multiple interactive measures
+        implemented simultaneously. Performs pre/post energy comparison
+        with weather normalisation using degree-day regression. Calculates
+        actual savings with uncertainty bounds using t-statistic confidence
+        intervals. Tracks savings persistence over time to detect
+        degradation or rebound effects. Generates savings verification
+        reports suitable for ISO 50001 management review evidence,
+        utility rebate post-verification, and internal reporting.
+        Zero-hallucination: savings from metered data comparison,
+        regression from scipy, uncertainty from ASHRAE 14 methods, no LLM.
+      class: "SavingsVerifierEngine"
+      file: "engines/savings_verifier.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (6 quick wins workflows)
+  # ===========================================================================
+  workflows:
+    - id: quick_scan
+      name: "Quick Scan Workflow"
+      description: >-
+        3-phase workflow for rapid facility assessment: Phase 1 - Utility
+        Bill Analysis (collect 12-24 months of utility bills, calculate
+        EUI benchmark, identify consumption patterns, seasonal variation,
+        and cost breakdown by fuel type) -> Phase 2 - Walkthrough Scan
+        (generate pre-populated checklist by facility type, systematic
+        area-by-area walk through with observation recording, photograph
+        documentation, and spot measurements) -> Phase 3 - Quick Wins
+        Report (identify top 5-10 quick win measures, calculate savings
+        and payback for each, generate executive summary with
+        implementation priority list).
+      schedule: "on_demand"
+      estimated_duration_minutes: 120
+      phases: 3
+
+    - id: comprehensive_assessment
+      name: "Comprehensive Assessment Workflow"
+      description: >-
+        5-phase workflow for detailed quick wins assessment: Phase 1 -
+        Data Collection (utility bills, sub-meter data, equipment
+        inventory, operating schedules, maintenance records, BMS trend
+        data) -> Phase 2 - Facility Scanning (comprehensive area-by-area
+        scan with data logging, thermal imaging, and power monitoring) ->
+        Phase 3 - Measure Identification (run all 12 action categories,
+        calculate savings for each measure, assess implementation cost
+        and complexity) -> Phase 4 - Financial and Carbon Analysis (NPV,
+        IRR, payback, lifecycle cost, tCO2e reduction, MACC curve,
+        rebate matching) -> Phase 5 - Prioritised Report (ranked
+        recommendation list, phased implementation roadmap, behavioural
+        programme design, executive summary with business case).
+      schedule: "annual"
+      estimated_duration_minutes: 480
+      phases: 5
+
+    - id: implementation_tracking
+      name: "Implementation Tracking Workflow"
+      description: >-
+        3-phase workflow for tracking quick win implementation: Phase 1 -
+        Status Update (collect implementation status for each approved
+        measure, update completion percentage, record actual costs and
+        any scope changes) -> Phase 2 - Progress Reporting (generate
+        implementation dashboard with Gantt chart, budget vs. actual
+        comparison, measures at risk identification, next actions
+        required) -> Phase 3 - Savings Forecast Update (recalculate
+        expected annual savings based on implemented and remaining
+        measures, update cumulative savings curve, flag overdue measures).
+      schedule: "monthly"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: savings_verification
+      name: "Savings Verification Workflow"
+      description: >-
+        4-phase workflow for post-implementation savings verification:
+        Phase 1 - M&V Plan (select IPMVP option per measure type,
+        define measurement boundary, document baseline) -> Phase 2 -
+        Data Collection (collect pre and post energy data, weather data
+        for normalisation, production data for adjustment) -> Phase 3 -
+        Savings Calculation (normalised comparison, actual savings
+        quantification, uncertainty analysis, persistence check) ->
+        Phase 4 - Verification Report (actual vs. estimated savings
+        comparison, lessons learned, recommendations for next cycle).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: portfolio_rollout
+      name: "Portfolio Rollout Workflow"
+      description: >-
+        4-phase workflow for rolling out quick wins across a portfolio of
+        facilities: Phase 1 - Portfolio Prioritisation (rank facilities
+        by savings potential, EUI gap to benchmark, and implementation
+        readiness) -> Phase 2 - Template Scan (run standardised quick
+        scan across facility portfolio using facility-type presets) ->
+        Phase 3 - Portfolio Report (aggregate savings opportunity across
+        portfolio, identify common measures applicable to multiple sites,
+        calculate portfolio-level NPV and carbon reduction) -> Phase 4 -
+        Rollout Plan (phased implementation schedule across sites,
+        procurement consolidation for common measures, resource
+        allocation planning).
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: behavioural_programme
+      name: "Behavioural Programme Workflow"
+      description: >-
+        3-phase workflow for behavioural energy efficiency programmes:
+        Phase 1 - Programme Design (select programme elements: awareness
+        campaign, switch-off policy, thermostat discipline, energy
+        champions, gamification; generate customised materials) ->
+        Phase 2 - Programme Launch (distribute materials, brief energy
+        champions, set up tracking metrics, establish baseline
+        consumption for programme area) -> Phase 3 - Programme
+        Monitoring (track engagement metrics, measure consumption
+        changes vs. baseline, generate monthly progress reports,
+        refresh materials and communications quarterly).
+      schedule: "quarterly"
+      estimated_duration_minutes: 60
+      phases: 3
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (8 quick wins templates)
+  # ===========================================================================
+  templates:
+    - id: quick_wins_report
+      display_name: "Quick Wins Summary Report"
+      description: >-
+        Executive summary report with top-ranked quick win measures,
+        total savings potential (financial and carbon), implementation
+        priority matrix, and recommended next steps. Designed for
+        facility managers and senior leadership with clear call to
+        action and business case summary.
+      format: "html"
+      template_file: "templates/quick_wins_report.jinja2"
+      enabled: true
+
+    - id: measure_cards
+      display_name: "Detailed Measure Cards"
+      description: >-
+        Individual measure cards for each identified quick win with
+        description, savings calculation methodology, implementation
+        steps, estimated cost, payback period, carbon reduction,
+        co-benefits, applicable rebates, and photo documentation
+        placeholders. Suitable for implementation team briefing.
+      format: "html"
+      template_file: "templates/measure_cards.jinja2"
+      enabled: true
+
+    - id: financial_summary
+      display_name: "Financial Analysis Summary"
+      description: >-
+        Financial analysis report with NPV, IRR, payback, and lifecycle
+        cost for all identified measures. Includes cumulative savings
+        curve, sensitivity analysis charts, and investment business
+        case for budget approval. Suitable for finance department
+        review and capital expenditure request.
+      format: "html"
+      template_file: "templates/financial_summary.jinja2"
+      enabled: true
+
+    - id: carbon_impact_report
+      display_name: "Carbon Impact Report"
+      description: >-
+        Carbon impact assessment with tCO2e reduction per measure,
+        marginal abatement cost curve (MACC), Scope 1 and Scope 2
+        breakdown, and SBTi pathway contribution. Includes carbon
+        price monetisation and total carbon benefit valuation.
+      format: "html"
+      template_file: "templates/carbon_impact_report.jinja2"
+      enabled: true
+
+    - id: implementation_dashboard
+      display_name: "Implementation Tracking Dashboard"
+      description: >-
+        Interactive dashboard template with implementation status for
+        all approved measures, Gantt chart timeline, budget tracking,
+        completion percentage, and overdue measure alerts. Updates
+        automatically with each tracking workflow run.
+      format: "html"
+      template_file: "templates/implementation_dashboard.jinja2"
+      enabled: true
+
+    - id: savings_verification_report
+      display_name: "Savings Verification Report"
+      description: >-
+        IPMVP-compliant savings verification report with pre/post
+        comparison, weather-normalised savings calculation, uncertainty
+        bounds, actual vs. estimated comparison, and persistence
+        monitoring results. Suitable for utility rebate verification
+        and ISO 50001 management review evidence.
+      format: "html"
+      template_file: "templates/savings_verification_report.jinja2"
+      enabled: true
+
+    - id: walkthrough_checklist
+      display_name: "Walkthrough Checklist"
+      description: >-
+        Pre-populated walkthrough checklist customised by facility type
+        with observation fields, photo capture prompts, spot measurement
+        recording, and initial savings estimate entry. Designed for
+        tablet or printed use during on-site scanning.
+      format: "html"
+      template_file: "templates/walkthrough_checklist.jinja2"
+      enabled: true
+
+    - id: behavioural_campaign
+      display_name: "Behavioural Campaign Materials"
+      description: >-
+        Template package for behavioural energy awareness campaigns
+        including poster designs, email templates, intranet content,
+        switch-off checklists, thermostat guidance, and energy champion
+        briefing materials. Customised to facility type and identified
+        quick wins.
+      format: "html"
+      template_file: "templates/behavioural_campaign.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (11 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        8-phase master pipeline: Health Check -> Configuration and Preset
+        Loading -> Data Acquisition (utility bills, meter data, equipment
+        inventory) -> Facility Scanning (EUI benchmark, walkthrough) ->
+        Quick Wins Identification (all action categories) -> Financial
+        and Carbon Analysis (NPV, payback, tCO2e, MACC) -> Prioritisation
+        and Ranking (composite score, implementation roadmap) -> Report
+        Generation (executive summary, measure cards, dashboard).
+        Orchestrates all engines with parallel execution where possible
+        (e.g., financial and carbon analysis run in parallel) and
+        dependency management (scanning must complete before
+        identification).
+      required: true
+
+    - id: utility_bill_bridge
+      name: "Utility Bill Integration Bridge"
+      description: >-
+        Connects to utility data sources for automated bill retrieval
+        and analysis. Supports manual CSV/Excel upload of billing data,
+        API integration with utility provider platforms, and OCR
+        extraction from scanned invoices via AGENT-DATA-001. Normalises
+        billing periods, handles estimated vs. actual readings, and
+        calculates annualised consumption with weather normalisation.
+      required: true
+
+    - id: bms_bridge
+      name: "BMS Integration Bridge"
+      description: >-
+        Connects to Building Management Systems for HVAC scheduling
+        data, zone temperature trends, lighting control status, and
+        equipment run-time data. Supports BACnet/IP, Modbus, and LON
+        protocols. Extracts current setpoints, schedules, and alarm
+        history to identify scheduling optimisation quick wins.
+      required: false
+
+    - id: meter_data_bridge
+      name: "Meter Data Integration Bridge"
+      description: >-
+        Connects to smart metering infrastructure for sub-meter data
+        supporting detailed savings analysis and verification. Supports
+        half-hourly and 15-minute interval data. Handles meter hierarchy
+        for consumption disaggregation by end use (lighting, HVAC,
+        plug loads, process).
+      required: false
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Routes data from AGENT-MRV agents for carbon impact calculations.
+        Prioritises AGENT-MRV-001 (stationary combustion for heating),
+        AGENT-MRV-009/010 (Scope 2 electricity), and AGENT-MRV-013
+        (dual reporting reconciliation). Maps energy savings to
+        emission reductions using consistent emission factors.
+      required: true
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for data intake. Routes utility
+        invoices through AGENT-DATA-001 (PDF extraction), meter data
+        through AGENT-DATA-002 (Excel/CSV normalization), and applies
+        data quality profiling through AGENT-DATA-010 and outlier
+        detection through AGENT-DATA-013.
+      required: true
+
+    - id: pack031_bridge
+      name: "PACK-031 Industrial Energy Audit Bridge"
+      description: >-
+        Bridges to PACK-031 for deeper analysis of manufacturing and
+        industrial quick wins. Escalates compressed air, motor system,
+        and process optimisation measures to PACK-031 engines for
+        detailed engineering analysis when COMPREHENSIVE scan depth
+        identifies measures requiring investment-grade assessment.
+      required: false
+
+    - id: pack032_bridge
+      name: "PACK-032 Building Energy Assessment Bridge"
+      description: >-
+        Bridges to PACK-032 for deeper analysis of building-related
+        quick wins. Escalates HVAC, lighting, and building envelope
+        measures to PACK-032 engines for detailed building energy
+        modelling when measures require DEC/EPC assessment or
+        building simulation.
+      required: false
+
+    - id: rebate_database_bridge
+      name: "Rebate Database Bridge"
+      description: >-
+        Connects to rebate and incentive programme databases for
+        measure matching. Integrates with national programme databases
+        (BAFA, Salix, ADEME), utility provider rebate APIs, and the
+        EU funding programme portal. Updates programme eligibility
+        criteria and available values on a monthly cycle.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        12-category system verification covering all 8 engines,
+        measure library completeness, rebate database freshness,
+        emission factor currency, database connectivity, agent
+        dependency status, preset validation, template integrity,
+        and deployment readiness.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        6-step guided configuration wizard: Facility Type Selection
+        (office / manufacturing / retail / warehouse / healthcare /
+        education / data_center / sme) -> Facility Registration
+        (location, floor area, occupancy, operating hours) -> Energy
+        Data Import (utility bills upload or API connection) ->
+        Scan Scope Configuration (categories, depth, payback threshold)
+        -> Financial Parameters (tariffs, discount rate, currency) ->
+        Reporting Preferences (format, frequency, language).
+      required: false
+
+  # ===========================================================================
+  # Presets - Facility-type specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: office_building
+      name: "Office Building Preset"
+      description: >-
+        Configuration for office buildings with focus on lighting, HVAC
+        scheduling, plug load management, IT power management, and
+        behavioural programmes. Typical EUI 150-300 kWh/m2/yr. Savings
+        potential 15-30%. Priority categories: lighting (LED retrofit,
+        occupancy sensors), HVAC (setpoint optimisation, scheduling),
+        plug loads (timer strips, power management), behavioural
+        (switch-off campaigns, thermostat discipline).
+      facility_type: "OFFICE"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - behavioral_programme
+        - rebate_matcher
+        - savings_verifier
+      file: "config/presets/office_building.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for manufacturing facilities with focus on motors,
+        compressed air, process optimisation, and lighting. Typical EUI
+        200-1000 kWh/m2/yr. Savings potential 10-25%. Priority
+        categories: compressed air (leak repair, pressure reduction),
+        motors (belt tensioning, VSD, right-sizing), process (idle
+        shutdown, batch scheduling), lighting (high-bay LED).
+      facility_type: "MANUFACTURING"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - rebate_matcher
+        - savings_verifier
+      file: "config/presets/manufacturing.yaml"
+
+    - id: retail_store
+      name: "Retail Store Preset"
+      description: >-
+        Configuration for retail environments with focus on lighting,
+        HVAC aligned to trading hours, refrigeration, and signage
+        controls. Typical EUI 200-500 kWh/m2/yr. Savings potential
+        15-35%. Priority categories: lighting (display LED, accent
+        lighting), HVAC (trading hours scheduling), refrigeration
+        (night curtains, anti-sweat controls), controls (signage timers).
+      facility_type: "RETAIL"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - rebate_matcher
+        - savings_verifier
+      file: "config/presets/retail_store.yaml"
+
+    - id: warehouse
+      name: "Warehouse Preset"
+      description: >-
+        Configuration for warehouses and distribution centres with focus
+        on high-bay lighting, HVAC, dock door management, and MHE
+        charging. Typical EUI 50-200 kWh/m2/yr. Savings potential
+        15-30%. Priority categories: lighting (high-bay LED, occupancy
+        sensors), HVAC (destratification, dock seals), motors (conveyor
+        idle mode), building envelope (dock seals, insulation).
+      facility_type: "WAREHOUSE"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - rebate_matcher
+        - savings_verifier
+      file: "config/presets/warehouse.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Configuration for hospitals and clinics with focus on HVAC
+        optimisation (24/7 operation), lighting in non-clinical areas,
+        water heating, and BMS scheduling. Typical EUI 300-700
+        kWh/m2/yr. Savings potential 10-20%. Implementation ease is
+        weighted higher due to clinical constraints and safety
+        requirements.
+      facility_type: "HEALTHCARE"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - behavioral_programme
+        - rebate_matcher
+        - savings_verifier
+      file: "config/presets/healthcare.yaml"
+
+    - id: education
+      name: "Education Preset"
+      description: >-
+        Configuration for schools and universities with focus on HVAC
+        scheduling aligned to timetable, lighting, IT shutdown during
+        holidays, and behavioural awareness programmes. Typical EUI
+        100-350 kWh/m2/yr. Savings potential 15-30%. Behavioural
+        programmes are critical with gamification and energy champion
+        networks for student and staff engagement.
+      facility_type: "EDUCATION"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - behavioral_programme
+        - rebate_matcher
+        - savings_verifier
+      file: "config/presets/education.yaml"
+
+    - id: data_center
+      name: "Data Center Preset"
+      description: >-
+        Configuration for data centres with focus on cooling optimisation,
+        airflow management, UPS efficiency, and IT load management.
+        Typical EUI 1000-5000 kWh/m2/yr. Savings potential 10-25%.
+        Priority categories: HVAC (free cooling setpoint, containment),
+        IT (idle server decommission, blanking panels), controls (UPS
+        eco-mode, temperature setpoint raise).
+      facility_type: "DATA_CENTER"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - rebate_matcher
+        - savings_verifier
+      file: "config/presets/data_center.yaml"
+
+    - id: sme_simplified
+      name: "SME Simplified Preset"
+      description: >-
+        Simplified configuration for small and medium enterprises.
+        Quick scan depth with focus on top 5 measures with shortest
+        payback. No sub-metering required -- utility bills only.
+        Priority profile set to QUICK_IMPLEMENTATION for measures
+        achievable within 30 days. Behavioural programme included
+        for maximum impact with minimum investment.
+      facility_type: "SME"
+      enabled_engines:
+        - facility_scanner
+        - quick_wins_identifier
+        - financial_analyzer
+        - carbon_impact
+        - prioritization
+        - behavioral_programme
+      file: "config/presets/sme_simplified.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - Energy-related MRV agents for carbon impact calculations
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from heating systems (boilers, furnaces, unit heaters)"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions for quick win savings"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 accounting"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts energy data from utility bills and vendor invoices"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises meter data exports and equipment inventories"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to finance systems for energy cost data"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for emission factors and benchmarks"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across utility bills and meter data"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous energy consumption readings"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from utility bills through to savings reports"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution for quick wins pipeline"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates quick wins data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises energy units (kWh, MJ, GJ, m2) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in savings calculations and benchmarks"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links savings calculations to source evidence"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-site operations"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all savings calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors pipeline health and engine performance"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Pack Dependencies
+# ---------------------------------------------------------------------------
+agents_packs:
+  - id: PACK-031
+    name: "Industrial Energy Audit Pack"
+    description: "Deep-dive analysis for manufacturing and industrial quick wins"
+    required: false
+    version: "1.0.0"
+  - id: PACK-032
+    name: "Building Energy Assessment Pack"
+    description: "Deep-dive analysis for building-related quick wins"
+    required: false
+    version: "1.0.0"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 24
+  breakdown:
+    mrv_agents: 4
+    data_agents: 7
+    foundation_agents: 8
+    pack_dependencies: 2
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: pack033_quick_wins
+  migrations:
+    - id: "V246__pack033_quick_wins_001"
+      description: "Core quick wins schema, facility profiles, and scan configuration"
+    - id: "V247__pack033_quick_wins_002"
+      description: "Measure library, action categories, and measure templates"
+    - id: "V248__pack033_quick_wins_003"
+      description: "Financial analysis tables (NPV, IRR, payback, lifecycle cost)"
+    - id: "V249__pack033_quick_wins_004"
+      description: "Carbon impact tables (emission factors, MACC, SBTi tracking)"
+    - id: "V250__pack033_quick_wins_005"
+      description: "Prioritisation scoring tables and ranking history"
+    - id: "V251__pack033_quick_wins_006"
+      description: "Behavioural programme tables (campaigns, engagement, metrics)"
+    - id: "V252__pack033_quick_wins_007"
+      description: "Rebate and incentive programme tables"
+    - id: "V253__pack033_quick_wins_008"
+      description: "Implementation tracking tables (status, Gantt, budget)"
+    - id: "V254__pack033_quick_wins_009"
+      description: "Savings verification tables (M&V, pre/post, persistence)"
+    - id: "V255__pack033_quick_wins_010"
+      description: "Views, indexes, RLS policies, and seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  facility_scanning:
+    max_facilities: 500
+    target_duration_per_facility_minutes: 5
+    utility_bill_processing_per_bill_ms: 200
+    eui_benchmark_calc_ms: 50
+  measure_identification:
+    max_measures_per_facility: 200
+    savings_calculation_per_measure_ms: 100
+    target_duration_minutes: 10
+  financial_analysis:
+    npv_irr_calc_per_measure_ms: 50
+    sensitivity_analysis_per_measure_ms: 200
+    target_duration_minutes: 5
+  carbon_analysis:
+    emission_calc_per_measure_ms: 30
+    macc_generation_ms: 500
+    target_duration_minutes: 3
+  prioritization:
+    scoring_per_measure_ms: 20
+    ranking_per_portfolio_ms: 200
+    target_duration_minutes: 2
+  savings_verification:
+    regression_per_meter_ms: 200
+    pre_post_comparison_per_measure_ms: 100
+    target_duration_minutes: 10
+  cache_hit_ratio_target: 0.80
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+  required_roles:
+    - energy_manager
+    - facility_manager
+    - sustainability_officer
+    - engineer
+    - viewer
+    - admin
+  audit_events:
+    - "quick_wins.scan.started"
+    - "quick_wins.scan.completed"
+    - "quick_wins.measure.identified"
+    - "quick_wins.measure.approved"
+    - "quick_wins.measure.implemented"
+    - "quick_wins.measure.verified"
+    - "quick_wins.report.generated"
+    - "quick_wins.report.exported"
+    - "quick_wins.config.modified"
+    - "quick_wins.preset.loaded"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_utility_bills.json"
+    - "tests/fixtures/sample_equipment_inventory.json"
+    - "tests/fixtures/sample_measure_library.json"
+
+# -----------------------------------------------------------------------------
+# Compliance
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "EU_EED"
+      name: "EU Energy Efficiency Directive"
+      coverage: "Article 8 quick wins identification"
+    - id: "ISO_50001"
+      name: "ISO 50001:2018"
+      coverage: "Continual improvement evidence, action plan tracking"
+    - id: "ASHRAE_14"
+      name: "ASHRAE Guideline 14"
+      coverage: "Savings measurement and verification methodology"
+    - id: "IPMVP"
+      name: "IPMVP Core Concepts"
+      coverage: "M&V Option A and Option C for quick wins"
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      coverage: "Scope 1+2 carbon impact from energy savings"
+    - id: "SBTi"
+      name: "Science Based Targets initiative"
+      coverage: "Carbon savings tracking against reduction pathway"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 100
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 10
+    recommended_connections: 30
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_emission_factor_database
+    - verify_measure_library
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+    new:
+      - "V246__pack033_quick_wins_001"
+      - "V247__pack033_quick_wins_002"
+      - "V248__pack033_quick_wins_003"
+      - "V249__pack033_quick_wins_004"
+      - "V250__pack033_quick_wins_005"
+      - "V251__pack033_quick_wins_006"
+      - "V252__pack033_quick_wins_007"
+      - "V253__pack033_quick_wins_008"
+      - "V254__pack033_quick_wins_009"
+      - "V255__pack033_quick_wins_010"
+
+  post_install:
+    - seed_measure_library
+    - seed_emission_factors
+    - seed_rebate_programmes
+    - seed_eui_benchmarks
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: QuickWinsScannerEngine
+    file: engines/quick_wins_scanner_engine.py
+    description: "80+ actions across 15 categories with building profile scanning"
+  - name: PaybackCalculatorEngine
+    file: engines/payback_calculator_engine.py
+    description: "NPV, IRR, ROI, LCOE, discounted payback financial analysis"
+  - name: EnergySavingsEstimatorEngine
+    file: engines/energy_savings_estimator_engine.py
+    description: "ASHRAE 14 uncertainty quantification with interactive effects"
+  - name: CarbonReductionEngine
+    file: engines/carbon_reduction_engine.py
+    description: "GHG Protocol scopes, SBTi alignment, carbon price monetisation"
+  - name: ImplementationPrioritizerEngine
+    file: engines/implementation_prioritizer_engine.py
+    description: "MCDA ranking, Pareto frontier, dependency graph analysis"
+  - name: BehavioralChangeEngine
+    file: engines/behavioral_change_engine.py
+    description: "Rogers diffusion modeling, persistence tracking, gamification"
+  - name: UtilityRebateEngine
+    file: engines/utility_rebate_engine.py
+    description: "100+ utility program matching, rebate calculation, eligibility"
+  - name: QuickWinsReportingEngine
+    file: engines/quick_wins_reporting_engine.py
+    description: "IPMVP verification, dashboards, multi-format export"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: FacilityScanWorkflow
+    file: workflows/facility_scan_workflow.py
+    description: "4-phase facility scan with registration and quick-win scanning"
+  - name: PrioritizationWorkflow
+    file: workflows/prioritization_workflow.py
+    description: "3-phase financial analysis, carbon assessment, and MCDA ranking"
+  - name: ImplementationPlanningWorkflow
+    file: workflows/implementation_planning_workflow.py
+    description: "4-phase planning with sequencing, rebates, and behavioral programs"
+  - name: ProgressTrackingWorkflow
+    file: workflows/progress_tracking_workflow.py
+    description: "3-phase tracking with IPMVP savings verification and variance analysis"
+  - name: ReportingWorkflow
+    file: workflows/reporting_workflow.py
+    description: "3-phase reporting with aggregation and multi-format generation"
+  - name: FullAssessmentWorkflow
+    file: workflows/full_assessment_workflow.py
+    description: "6-phase end-to-end assessment pipeline from scan through reporting"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: QuickWinsScanReportTemplate
+    file: templates/quick_wins_scan_report.py
+    description: "Facility scan results report with identified quick wins"
+  - name: PrioritizedActionsReportTemplate
+    file: templates/prioritized_actions_report.py
+    description: "Ranked actions report with MCDA scores"
+  - name: PaybackAnalysisReportTemplate
+    file: templates/payback_analysis_report.py
+    description: "Financial analysis report for quick wins"
+  - name: CarbonReductionReportTemplate
+    file: templates/carbon_reduction_report.py
+    description: "Emissions reduction impact report"
+  - name: ImplementationPlanReportTemplate
+    file: templates/implementation_plan_report.py
+    description: "Implementation roadmap with timeline and budget"
+  - name: ProgressDashboardTemplate
+    file: templates/progress_dashboard.py
+    description: "Progress tracking dashboard for implemented measures"
+  - name: ExecutiveSummaryReportTemplate
+    file: templates/executive_summary_report.py
+    description: "C-suite executive summary report"
+  - name: RebateOpportunitiesReportTemplate
+    file: templates/rebate_opportunities_report.py
+    description: "Utility rebate and incentive opportunities report"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: QuickWinsOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "10-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVQuickWinsBridge
+    file: integrations/mrv_quickwins_bridge.py
+    description: "Routes quick win savings data to MRV agents for avoided emissions"
+  - name: DataQuickWinsBridge
+    file: integrations/data_quickwins_bridge.py
+    description: "Routes data intake to DATA agents for equipment and utility data"
+  - name: Pack031Bridge
+    file: integrations/pack031_bridge.py
+    description: "Imports energy audit results and baselines from PACK-031"
+  - name: Pack032Bridge
+    file: integrations/pack032_bridge.py
+    description: "Imports building assessment results and zone data from PACK-032"
+  - name: UtilityRebateBridge
+    file: integrations/utility_rebate_bridge.py
+    description: "Utility rebate program search, application, and status tracking"
+  - name: BMSDataBridge
+    file: integrations/bms_data_bridge.py
+    description: "BACnet/Modbus/OPC-UA data adapters and meter reading ingestion"
+  - name: WeatherBridge
+    file: integrations/weather_bridge.py
+    description: "HDD/CDD calculation, TMY data, weather-normalized consumption"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "15-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided facility configuration with 8 facility presets"
+  - name: AlertBridge
+    file: integrations/alert_bridge.py
+    description: "Multi-channel notification and alert management"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: office_building
+    file: config/presets/office_building.yaml
+    description: "Corporate HQ, multi-tenant, co-working spaces"
+  - name: manufacturing
+    file: config/presets/manufacturing.yaml
+    description: "Discrete, batch, and light industrial manufacturing"
+  - name: retail_store
+    file: config/presets/retail_store.yaml
+    description: "Supermarkets, department stores, specialty retail"
+  - name: warehouse
+    file: config/presets/warehouse.yaml
+    description: "Ambient, cold storage, distribution centres"
+  - name: healthcare
+    file: config/presets/healthcare.yaml
+    description: "Hospitals, clinics, care homes"
+  - name: education
+    file: config/presets/education.yaml
+    description: "Schools, universities, campuses"
+  - name: data_center
+    file: config/presets/data_center.yaml
+    description: "Enterprise, colocation, server rooms"
+  - name: sme_simplified
+    file: config/presets/sme_simplified.yaml
+    description: "Simplified scan for small-medium enterprises"

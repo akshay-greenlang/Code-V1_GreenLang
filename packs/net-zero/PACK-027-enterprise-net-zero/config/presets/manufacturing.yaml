@@ -1,0 +1,333 @@
+# =============================================================================
+# PACK-027 Enterprise Net Zero Pack - Manufacturing Enterprise Preset
+# =============================================================================
+# Sector-specific configuration for large manufacturing and industrial
+# enterprises. Emissions profile is Scope 1-dominant (35% S1, 25% S2, 40% S3)
+# due to process emissions, stationary combustion, and high electricity demand
+# for production. SDA pathway applicable for cement, steel, aluminium, and
+# chemicals divisions. EU ETS and CBAM exposure are material considerations.
+#
+# Sector: Manufacturing & Industrial (diversified industrials)
+# Consolidation: Financial control (complex subsidiary structures)
+# Data quality: Level 1 target (+/-3% accuracy)
+# SBTi pathway: MIXED (ACA general + SDA for applicable divisions)
+# Key S3 categories: Cat 1 (materials), Cat 2 (capital goods), Cat 3 (fuel),
+#                     Cat 4 (upstream transport), Cat 11 (use-phase), Cat 12 (EoL)
+#
+# Target organizations:
+#   - Siemens, BASF, 3M, Honeywell, ABB, Schneider Electric
+#   - Large process manufacturers (cement, steel, chemicals, glass)
+#   - Diversified industrial conglomerates
+#   - Precision engineering and heavy equipment manufacturers
+#
+# Key decarbonization levers:
+#   - Process electrification (replace gas-fired with electric)
+#   - Green hydrogen fuel switching (steel, chemicals)
+#   - Carbon capture and storage (CCS/CCUS for process emissions)
+#   - Energy efficiency at scale (IE5 motors, VSD drives)
+#   - Renewable PPAs (100% RE for electricity)
+#   - Supplier engagement (Cat 1/2 material suppliers)
+#   - Circular economy (waste heat recovery, material reuse)
+#
+# Regulatory exposure:
+#   - EU ETS for covered installations (cement, chemicals, steel)
+#   - EU CBAM for imported goods (steel, aluminium, cement, fertilizers)
+#   - CSRD/ESRS E1 climate change disclosure
+#   - SEC Climate Rule (if US-listed)
+#   - ISO 14064-1 verification
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "MANUFACTURING"
+  region: "GLOBAL"
+  headquarters_country: "DE"
+  operating_countries: []
+  entity_count: 50
+  facility_count: 120
+  fiscal_year_end: "12-31"
+  erp_system: "SAP_S4HANA"
+  erp_secondary: "ORACLE_ERP_CLOUD"
+  is_large_accelerated_filer: false
+  csrd_in_scope: true
+
+# --- Multi-Entity Consolidation ---
+consolidation:
+  approach: "FINANCIAL_CONTROL"
+  entity_count: 50
+  include_joint_ventures: true
+  include_associates: false
+  intercompany_elimination: true
+  base_year_recalculation_threshold_pct: 5.0
+  mid_year_acquisition_prorata: true
+  reporting_currency: "EUR"
+  alignment_with_financial_reporting: true
+
+# --- Data Quality (Level 1 target, +/-3% accuracy) ---
+data_quality:
+  target_tier: "LEVEL_1"
+  minimum_tier: "LEVEL_4"
+  accuracy_target_pct: 3.0
+  data_completeness_target_pct: 95.0
+  emission_factor_sources:
+    - "DEFRA_2024"
+    - "EPA_2024"
+    - "IPCC_AR6"
+    - "ecoinvent_3.10"
+    - "ADEME_2024"
+  require_supplier_specific_data: true
+  supplier_specific_threshold_count: 50
+  allow_spend_based_fallback: true
+  data_improvement_plan_enabled: true
+  dq_monitoring_frequency: "MONTHLY"
+
+# --- Scope Configuration (All 15 S3 categories, process emissions critical) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_agents:
+    - "MRV-001"  # Stationary combustion (boilers, furnaces)
+    - "MRV-002"  # Refrigerants (industrial cooling)
+    - "MRV-003"  # Mobile combustion (fleet)
+    - "MRV-004"  # Process emissions (cement, chemicals, metals)
+    - "MRV-005"  # Fugitive emissions
+    - "MRV-006"  # Land use (if applicable)
+    - "MRV-007"  # Waste treatment (on-site)
+    - "MRV-008"  # Agricultural (if applicable)
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope2_agents:
+    - "MRV-009"
+    - "MRV-010"
+    - "MRV-011"
+    - "MRV-012"
+    - "MRV-013"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  scope3_priority_categories: [1, 2, 3, 4, 11, 12]
+  scope3_default_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "supplier_specific"
+    cat_2: "average_data"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_5: "activity_based"
+    cat_6: "activity_based"
+    cat_7: "hybrid"
+    cat_8: "average_data"
+    cat_9: "activity_based"
+    cat_10: "average_data"
+    cat_11: "activity_based"
+    cat_12: "average_data"
+    cat_13: "average_data"
+    cat_14: "activity_based"
+    cat_15: "spend_based"
+    default: "hybrid"
+  scope3_materiality_threshold_pct: 1.0
+  scope3_total_exclusion_max_pct: 5.0
+  gases_included: ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
+
+# --- SBTi Target (MIXED: ACA + SDA for applicable sectors) ---
+target:
+  sbti_pathway: "MIXED"
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_scope1_2_reduction_pct: 42.0
+  near_term_scope3_reduction_pct: 25.0
+  long_term_reduction_pct: 90.0
+  scope1_2_coverage_pct: 95.0
+  scope3_near_term_coverage_pct: 67.0
+  scope3_long_term_coverage_pct: 90.0
+  sda_sectors:
+    - "CEMENT"
+    - "IRON_STEEL"
+    - "ALUMINIUM"
+    - "CHEMICALS"
+  flag_enabled: false
+  flag_commodities: []
+  sbti_submission_planned: true
+  sbti_committed: true
+  sbti_target_validated: false
+  five_year_review_schedule: true
+
+# --- Scenario Modeling (Monte Carlo 10K runs) ---
+scenarios:
+  enabled: true
+  scenarios:
+    - "AGGRESSIVE_1_5C"
+    - "MODERATE_2C"
+    - "CONSERVATIVE_BAU"
+  monte_carlo_runs: 10000
+  confidence_intervals: [10, 25, 50, 75, 90]
+  sensitivity_method: "sobol"
+  technology_focus:
+    - "electrification"
+    - "hydrogen"
+    - "ccs"
+    - "energy_efficiency"
+    - "renewable_energy"
+  stranded_asset_analysis: true
+  custom_scenario_enabled: true
+
+# --- Carbon Pricing (Shadow + ETS + CBAM) ---
+carbon_pricing:
+  enabled: true
+  approach: "HYBRID"
+  price_usd_per_tco2e: 100.0
+  price_escalation_pct_per_year: 5.0
+  price_scenario: "MEDIUM"
+  apply_to_capex: true
+  apply_to_bu_allocation: true
+  cbam_enabled: true
+  ets_enabled: true
+  carbon_adjusted_financials: true
+
+# --- Scope 4 Avoided Emissions ---
+scope4:
+  enabled: false
+  methodology: "WBCSD"
+  product_categories: []
+  baseline_scenario: "market_average"
+  include_rebound_effects: true
+  attribution_methodology: "proportional"
+
+# --- Supply Chain (Tier 1-4 mapping, 50K+ suppliers) ---
+supply_chain:
+  enabled: true
+  tier_depth: 4
+  tier1_critical_count: 50
+  tier2_strategic_count: 200
+  tier3_managed_count: 1000
+  cdp_supply_chain_integration: true
+  ecovadis_integration: true
+  wbcsd_pact_integration: true
+  engagement_program_enabled: true
+  sbti_cascade_target: true
+  commodity_tracking: []
+
+# --- External Assurance (Limited, transitioning to reasonable) ---
+assurance:
+  level: "LIMITED"
+  standard: "ISAE_3410"
+  scope_of_assurance:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  workpaper_generation: true
+  sample_selection_automated: true
+  management_assertion_template: true
+  target_auditor_hours: 80
+  reasonable_assurance_timeline_year: 2028
+
+# --- Financial Integration (P&L, CBAM, ETS, Taxonomy) ---
+financial_integration:
+  enabled: true
+  carbon_adjusted_pnl: true
+  carbon_balance_sheet: true
+  ebitda_carbon_intensity: true
+  product_level_footprint: true
+  eu_taxonomy_alignment: true
+  esrs_e1_8_disclosure: true
+  esrs_e1_9_disclosure: true
+  green_bond_screening: false
+  stranded_asset_assessment: true
+
+# --- Reporting (Full 10-template suite, 8 frameworks) ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+    - "HTML"
+    - "JSON"
+    - "MARKDOWN"
+  templates:
+    - "ghg_inventory_report"
+    - "sbti_target_submission"
+    - "cdp_climate_response"
+    - "tcfd_report"
+    - "executive_dashboard"
+    - "supply_chain_heatmap"
+    - "scenario_comparison"
+    - "assurance_statement"
+    - "board_climate_report"
+    - "regulatory_filings"
+  regulatory_frameworks:
+    - "GHG_PROTOCOL"
+    - "SBTI"
+    - "CDP"
+    - "TCFD_ISSB"
+    - "CSRD_ESRS"
+    - "ISO_14064"
+    - "EU_TAXONOMY"
+    - "SEC_CLIMATE"
+  language: "en"
+  secondary_languages: ["de", "fr"]
+  review_workflow_enabled: true
+  watermark_draft: true
+  board_reporting_frequency: "QUARTERLY"
+
+# --- Performance (Enterprise-scale: 16GB, 16 threads) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 7200
+  max_concurrent_calcs: 16
+  timeout_seconds: 300
+  batch_size: 5000
+  memory_limit_mb: 16384
+  monte_carlo_parallelism: 8
+  entity_parallel_processing: true
+  lightweight_mode: false
+
+# --- Audit Trail (7-year, SHA-256, immutable) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  immutable_log: true
+
+# --- Scorecard (Comprehensive 12-dimension assessment) ---
+scorecard:
+  enabled: true
+  assessment_mode: "COMPREHENSIVE"
+  dimensions:
+    - "governance_oversight"
+    - "baseline_completeness"
+    - "target_ambition"
+    - "scope3_coverage"
+    - "data_quality"
+    - "reduction_progress"
+    - "supply_chain_engagement"
+    - "scenario_resilience"
+    - "assurance_readiness"
+    - "regulatory_compliance"
+    - "financial_integration"
+    - "stakeholder_communication"
+  benchmark_enabled: true
+  peer_group: "SECTOR_AND_SCALE"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_production"
+    - "scope3_data_quality_score"
+    - "yoy_reduction_rate"
+    - "sbti_criteria_compliance"
+    - "supplier_engagement_rate"
+    - "renewable_electricity_pct"
+    - "assurance_coverage_pct"
+    - "ets_compliance_status"
+    - "cbam_exposure_trend"
+    - "carbon_price_coverage"
+  target_years: [2025, 2027, 2030, 2035, 2040, 2045, 2050]
+  tpi_alignment_check: true

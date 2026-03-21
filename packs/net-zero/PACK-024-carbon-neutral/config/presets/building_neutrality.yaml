@@ -1,0 +1,251 @@
+# =============================================================================
+# PACK-024 Carbon Neutral Pack - Building Neutrality Preset
+# =============================================================================
+# Building operations carbon neutrality covering energy consumption (HVAC,
+# lighting, plug loads), on-site combustion, refrigerant leakage, water,
+# waste, and tenant/occupant operations. Aligned with CRREM carbon risk
+# assessment, GRESB ESG benchmarking, LEED Zero Carbon, and NABERS Carbon
+# Neutral frameworks. Supports both individual buildings and multi-building
+# portfolios.
+#
+# Typical use cases:
+#   - Commercial office buildings seeking carbon-neutral certification
+#   - Retail shopping centres and mixed-use developments
+#   - Industrial/logistics facilities
+#   - Residential multi-family buildings
+#   - University campuses and public buildings
+#   - REIT/property fund portfolio-level neutrality
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+neutrality_type: "BUILDING"
+boundary_scope: "BUILDING_OPERATIONS"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+building_name: ""
+building_type: "commercial_office"
+gross_floor_area_sqm: 10000.0
+
+# --- Scope Configuration ---
+scope_boundaries:
+  scope1:
+    included: true
+    coverage_pct: 100.0
+    consolidation: "building_boundary"
+    sources:
+      - "on_site_natural_gas"
+      - "on_site_diesel_generators"
+      - "refrigerant_leakage"
+      - "on_site_vehicles"
+  scope2:
+    included: true
+    coverage_pct: 100.0
+    methods:
+      - "location_based"
+      - "market_based"
+    preferred_method: "market_based"
+    sources:
+      - "purchased_electricity"
+      - "district_heating"
+      - "district_cooling"
+  scope3:
+    included: true
+    coverage_pct: 50.0
+    categories: [1, 3, 5, 6, 7, 13]
+    materiality_threshold_pct: 2.0
+    de_minimis_pct: 5.0
+    building_specific_sources:
+      - "tenant_electricity"
+      - "tenant_gas"
+      - "commuting"
+      - "waste_disposal"
+      - "water_supply"
+      - "construction_materials"
+
+# --- Building-Specific Parameters ---
+building_parameters:
+  type: "commercial_office"
+  year_built: 2010
+  energy_rating: "B"
+  occupancy_rate_pct: 85.0
+  operating_hours_per_week: 60
+  hvac_type: "central_air"
+  lighting_type: "led_mix"
+  renewable_on_site_kwp: 0
+  green_electricity_pct: 50.0
+  water_consumption_m3_per_year: 5000
+  waste_tonnes_per_year: 50
+  crrem_pathway_aligned: true
+  crrem_target_intensity_kgco2_per_sqm: 15.0
+  nabers_star_rating: null
+  leed_certification: null
+
+# --- Engines Configuration ---
+engines:
+  footprint_quantification:
+    enabled: true
+    consolidation_approach: "building_boundary"
+    include_biogenic_co2: false
+    uncertainty_assessment: true
+    data_quality_scoring: true
+    gwp_source: "IPCC_AR6"
+    gwp_timeframe: 100
+    materiality_threshold_pct: 2.0
+    building_specific:
+      energy_modelling: true
+      sub_metering_tracking: true
+      weather_normalization: true
+      occupancy_normalization: true
+  carbon_management_plan:
+    enabled: true
+    planning_horizon_years: 5
+    reduction_first_strategy: true
+    min_reduction_before_offset_pct: 50.0
+    internal_carbon_price_eur: 80.0
+    max_offset_reliance_pct: 50.0
+    annual_reduction_target_pct: 4.0
+    building_interventions:
+      - "hvac_upgrade"
+      - "led_lighting_retrofit"
+      - "building_fabric_insulation"
+      - "smart_building_controls"
+      - "on_site_solar"
+      - "green_electricity_ppa"
+      - "heat_pump_installation"
+  credit_quality:
+    enabled: true
+    min_quality_score: 60
+    icvcm_ccp_compliance: false
+    preferred_standards:
+      - "gold_standard"
+      - "verra_vcs"
+    min_additionality_score: 6
+    min_permanence_score: 6
+    require_sdg_contribution: false
+  portfolio_optimization:
+    enabled: true
+    max_nature_based_pct: 50.0
+    max_avoidance_pct: 60.0
+    min_removal_pct: 15.0
+    diversification_min_types: 2
+    vintage_max_age_years: 5
+    geographic_diversification: false
+    budget_constraint_enabled: true
+  registry_retirement:
+    enabled: true
+    auto_retirement: false
+    retirement_timing: "within_reporting_period"
+    supported_registries:
+      - "gold_standard"
+      - "verra"
+    serial_number_tracking: true
+    double_counting_prevention: true
+  neutralization_balance:
+    enabled: true
+    balance_method: "annual"
+    allow_forward_credits: false
+    buffer_pool_pct: 5.0
+    shortfall_action: "purchase_additional"
+    surplus_carryover: false
+    verification_frequency: "annual"
+  claims_substantiation:
+    enabled: true
+    claim_type: "carbon_neutral_building"
+    standard: "PAS_2060"
+    pas2060_compliance: true
+    vcmi_claims_code: false
+    public_disclosure_required: true
+    third_party_verification: true
+    claim_period: "annual"
+  verification_package:
+    enabled: true
+    assurance_level: "limited"
+    standard: "ISAE_3410"
+    third_party_verifier: true
+    evidence_completeness_target_pct: 90.0
+    documentation_format: "PDF"
+  annual_cycle:
+    enabled: true
+    cycle_start_month: 1
+    cycle_end_month: 12
+    milestone_frequency: "quarterly"
+    progress_reporting: true
+    recertification_reminder_days: 90
+    continuous_improvement_tracking: true
+  permanence_risk:
+    enabled: true
+    risk_assessment_frequency: "annual"
+    buffer_contribution_pct: 10.0
+    reversal_monitoring: false
+    replacement_trigger_threshold_pct: 10.0
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  carbon_price_eur_per_tco2e: 80.0
+  reporting_currency: "EUR"
+  credit_budget_annual_eur: 50000.0
+  credit_price_range:
+    min_eur: 10.0
+    max_eur: 80.0
+    avg_eur: 25.0
+  capex_retrofit_budget_eur: 500000.0
+  payback_period_max_years: 10
+
+# --- Data Quality ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "sub_metered"
+    - "utility_bills"
+    - "building_management_system"
+    - "default_factors"
+  emission_factor_source: "DEFRA_2024"
+  grid_factor_update_frequency: "annual"
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2027
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  sha256_provenance: true
+  retention_years: 10
+
+# --- Multi-Building ---
+multi_building:
+  enabled: false
+  max_buildings: 50
+  portfolio_consolidation: "sum"
+  gresb_reporting: true
+  crrem_portfolio_alignment: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+  include_iso14068_mapping: true
+  include_pas2060_mapping: true
+  include_crrem_mapping: true
+  include_gresb_mapping: true
+  language: "en"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 500
+  memory_limit_mb: 2048

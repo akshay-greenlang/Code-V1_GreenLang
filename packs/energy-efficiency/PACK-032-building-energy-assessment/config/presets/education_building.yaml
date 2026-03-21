@@ -1,0 +1,182 @@
+# =============================================================================
+# PACK-032 Building Energy Assessment - Education Building Preset
+# =============================================================================
+# Schools and university buildings: term-time occupancy (typically 190-200
+# school days, or 30-week university terms). Typical 500-15,000 m2 GIA.
+# Focus on heating (dominant load), lighting, ventilation for IAQ,
+# and thermal comfort. Typical EUI: 100-250 kWh/m2/yr,
+# target <100 kWh/m2/yr.
+#
+# Typical use cases:
+#   - Primary schools
+#   - Secondary schools
+#   - Sixth form and FE colleges
+#   - University teaching buildings and laboratories
+# =============================================================================
+
+# --- Building Details ---
+building_name: ""
+building_address: ""
+client_name: ""
+building_type: "EDUCATION_SECONDARY"
+building_age: "1965_1982"
+climate_zone: "CENTRAL_MARITIME"
+country: "GB"
+assessment_level: "STANDARD"
+certification_target: "BREEAM_VERY_GOOD"
+reporting_year: 2025
+
+# --- Building Characteristics ---
+number_of_floors: 3
+floor_to_ceiling_height_m: 3.0
+occupancy_pattern: "SCHOOL_HOURS"
+operating_hours_per_year: 1900
+ownership_type: "PUBLIC_SECTOR"
+primary_heating_fuel: "NATURAL_GAS"
+
+# --- Envelope ---
+envelope:
+  wall_u_target: 0.26
+  roof_u_target: 0.18
+  floor_u_target: 0.22
+  window_u_target: 1.4
+  window_g_value_target: 0.50
+  airtightness_target_m3_h_m2: 5.0
+  thermal_bridge_method: "DEFAULT_UPLIFT"
+  thermal_bridge_uplift_pct: 15.0
+  condensation_risk_check: true
+  overheating_assessment: true
+
+# --- HVAC ---
+hvac:
+  heating_system_type: "gas_boiler"
+  cooling_system_type: "none"
+  ventilation_type: "MIXED_MODE"
+  heat_recovery_enabled: true
+  heat_recovery_efficiency_pct: 65.0
+  target_heating_cop: 0.92
+  target_cooling_seer: 4.0
+  boiler_efficiency_target_pct: 92.0
+  ahu_optimization: true
+  free_cooling_assessment: false
+  bms_optimization: true
+  zone_control_assessment: true
+  demand_controlled_ventilation: true
+  vsd_on_pumps_fans: true
+  pipe_insulation_assessment: true
+
+# --- Lighting ---
+lighting:
+  lpd_target_w_m2: 8.0
+  control_type: "COMBINED_OCCUPANCY_DAYLIGHT"
+  daylight_factor_target: 3.0
+  led_retrofit_analysis: true
+  outdoor_lighting: true
+  lux_level_measurement: true
+  parasitic_lighting_load: true
+
+# --- DHW ---
+dhw:
+  system_type: "gas_boiler"
+  solar_thermal_enabled: false
+  legionella_temp_c: 60.0
+  distribution_loss_assessment: true
+  secondary_return_enabled: false
+
+# --- Renewables ---
+renewable:
+  solar_pv_enabled: true
+  pv_capacity_kwp: 30.0
+  pv_yield_kwh_per_kwp: 850.0
+  heat_pump_enabled: false
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  benchmark_standard: "CIBSE_TM46"
+  reference_eui_kwh_m2: 100
+  peer_group_size: 15
+  dec_rating_enabled: true
+  asset_rating_enabled: true
+  percentile_tracking: true
+  gap_to_best_practice: true
+  trend_analysis_years: 3
+  kpi_set:
+    - "eui_kwh_m2_yr"
+    - "heating_kwh_m2_yr"
+    - "electricity_kwh_m2_yr"
+    - "gas_kwh_m2_yr"
+    - "carbon_kgco2_m2_yr"
+    - "epc_rating"
+
+# --- Retrofit ---
+retrofit:
+  budget_eur: 350000
+  retrofit_ambition: "COST_OPTIMAL"
+  discount_rate_pct: 3.5
+  energy_price_escalation_pct: 2.5
+  study_period_years: 25
+  carbon_price_eur_per_tonne: 85.0
+  fabric_first_approach: true
+  include_grants_subsidies: true
+  max_payback_years: 12.0
+  enable_staged_retrofit: true
+
+# --- Indoor Environment (ventilation and thermal comfort critical for learning) ---
+indoor_environment:
+  ieq_category: "CATEGORY_II"
+  thermal_comfort_method: "ADAPTIVE"
+  target_co2_ppm: 800
+  target_temperature_heating_c: 20.0
+  target_temperature_cooling_c: 25.0
+  daylighting_assessment: true
+  acoustic_assessment: true
+  overheating_hours_threshold: 40
+
+# --- Carbon ---
+carbon:
+  grid_emission_factor_kg_per_kwh: 0.233
+  gas_emission_factor_kg_per_kwh: 0.204
+  include_embodied: false
+  grid_decarbonisation_enabled: true
+
+# --- Compliance ---
+compliance:
+  epbd_country: "GB"
+  epc_methodology: "SBEM"
+  mees_enabled: false
+  dec_required: true
+  eed_public_body: true
+
+# --- Report ---
+report:
+  language: "en"
+  currency: "GBP"
+  include_executive_summary: true
+  include_financial_analysis: true
+  include_retrofit_roadmap: true
+  include_epc_simulation: true
+  include_carbon_trajectory: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  bms_enabled: true
+  bms_protocol: "BACNET"
+  weather_source: "met_office"
+  epc_register_lookup: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+  measure_tracking: true
+  epc_lodgement_record: true

@@ -1,0 +1,200 @@
+# =============================================================================
+# PACK-032 Building Energy Assessment - Mixed-Use Development Preset
+# =============================================================================
+# Mixed-use developments: retail ground floor, office/residential upper
+# floors. Typical 2,000-50,000 m2 GIA. Focus on zone separation,
+# shared plant systems, tenant allocation, and sub-metering strategy.
+# Typical EUI: 150-350 kWh/m2/yr (varies by use mix).
+#
+# Typical use cases:
+#   - Urban mixed-use (retail + residential)
+#   - Commercial mixed-use (retail + office)
+#   - Town centre regeneration schemes
+#   - Build-to-rent with ground floor commercial
+# =============================================================================
+
+# --- Building Details ---
+building_name: ""
+building_address: ""
+client_name: ""
+building_type: "MIXED_USE"
+building_age: "2007_2013"
+climate_zone: "CENTRAL_MARITIME"
+country: "GB"
+assessment_level: "STANDARD"
+certification_target: "BREEAM_VERY_GOOD"
+reporting_year: 2025
+
+# --- Building Characteristics ---
+number_of_floors: 10
+number_of_basements: 1
+floor_to_ceiling_height_m: 2.8
+occupancy_pattern: "DOUBLE_SHIFT"
+operating_hours_per_year: 5000
+ownership_type: "MULTI_TENANT"
+primary_heating_fuel: "NATURAL_GAS"
+
+# --- Envelope ---
+envelope:
+  wall_u_target: 0.22
+  roof_u_target: 0.16
+  floor_u_target: 0.20
+  window_u_target: 1.2
+  window_g_value_target: 0.40
+  airtightness_target_m3_h_m2: 4.0
+  thermal_bridge_method: "TABULATED_PSI"
+  condensation_risk_check: true
+  overheating_assessment: true
+
+# --- HVAC ---
+hvac:
+  heating_system_type: "gas_boiler"
+  cooling_system_type: "vrf"
+  ventilation_type: "MECHANICAL_SUPPLY_EXTRACT"
+  heat_recovery_enabled: true
+  heat_recovery_efficiency_pct: 75.0
+  target_heating_cop: 0.92
+  target_cooling_seer: 4.5
+  boiler_efficiency_target_pct: 92.0
+  ahu_optimization: true
+  free_cooling_assessment: true
+  bms_optimization: true
+  zone_control_assessment: true
+  demand_controlled_ventilation: true
+  vsd_on_pumps_fans: true
+  pipe_insulation_assessment: true
+
+# --- Lighting ---
+lighting:
+  lpd_target_w_m2: 8.0
+  control_type: "COMBINED_OCCUPANCY_DAYLIGHT"
+  daylight_factor_target: 2.0
+  led_retrofit_analysis: true
+  outdoor_lighting: true
+  lux_level_measurement: true
+  parasitic_lighting_load: true
+  display_lighting: true
+
+# --- DHW ---
+dhw:
+  system_type: "gas_boiler"
+  solar_thermal_enabled: true
+  solar_thermal_contribution_pct: 15.0
+  legionella_temp_c: 60.0
+  distribution_loss_assessment: true
+  secondary_return_enabled: true
+
+# --- Renewables ---
+renewable:
+  solar_pv_enabled: true
+  pv_capacity_kwp: 80.0
+  pv_yield_kwh_per_kwp: 850.0
+  solar_thermal_enabled: true
+  collector_area_m2: 25.0
+  heat_pump_enabled: false
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  benchmark_standard: "CIBSE_TM46"
+  reference_eui_kwh_m2: 130
+  peer_group_size: 8
+  dec_rating_enabled: true
+  asset_rating_enabled: true
+  percentile_tracking: true
+  gap_to_best_practice: true
+  trend_analysis_years: 3
+  kpi_set:
+    - "eui_kwh_m2_yr"
+    - "heating_kwh_m2_yr"
+    - "cooling_kwh_m2_yr"
+    - "electricity_kwh_m2_yr"
+    - "gas_kwh_m2_yr"
+    - "carbon_kgco2_m2_yr"
+    - "epc_rating"
+    - "eui_by_zone_type"
+
+# --- Retrofit ---
+retrofit:
+  budget_eur: 1200000
+  retrofit_ambition: "COST_OPTIMAL"
+  discount_rate_pct: 3.5
+  energy_price_escalation_pct: 2.5
+  study_period_years: 30
+  carbon_price_eur_per_tonne: 85.0
+  fabric_first_approach: true
+  max_payback_years: 12.0
+  enable_staged_retrofit: true
+  measure_interaction_modelling: true
+
+# --- Indoor Environment ---
+indoor_environment:
+  ieq_category: "CATEGORY_II"
+  thermal_comfort_method: "PMV_PPD"
+  target_co2_ppm: 800
+  target_temperature_heating_c: 21.0
+  target_temperature_cooling_c: 24.0
+  daylighting_assessment: true
+  overheating_hours_threshold: 35
+
+# --- Carbon ---
+carbon:
+  grid_emission_factor_kg_per_kwh: 0.233
+  gas_emission_factor_kg_per_kwh: 0.204
+  include_embodied: true
+  grid_decarbonisation_enabled: true
+
+# --- Compliance ---
+compliance:
+  epbd_country: "GB"
+  epc_methodology: "SBEM"
+  mees_enabled: true
+  mees_minimum_rating: "E"
+  dec_required: false
+  epbd_renovation_passport: true
+
+# --- Report ---
+report:
+  language: "en"
+  currency: "GBP"
+  include_executive_summary: true
+  include_financial_analysis: true
+  include_retrofit_roadmap: true
+  include_epc_simulation: true
+  include_carbon_trajectory: true
+  output_formats:
+    - "PDF"
+    - "XLSX"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  bms_enabled: true
+  bms_protocol: "BACNET"
+  weather_source: "met_office"
+  epc_register_lookup: true
+  utility_data_api: true
+
+# --- Security (tenant isolation critical) ---
+security:
+  roles:
+    - "energy_assessor"
+    - "building_manager"
+    - "sustainability_officer"
+    - "property_owner"
+    - "tenant"
+    - "viewer"
+    - "admin"
+  tenant_data_isolation: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true
+  measure_tracking: true
+  epc_lodgement_record: true

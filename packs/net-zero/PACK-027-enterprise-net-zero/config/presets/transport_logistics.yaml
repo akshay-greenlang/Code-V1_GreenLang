@@ -1,0 +1,334 @@
+# =============================================================================
+# PACK-027 Enterprise Net Zero Pack - Transport & Logistics Preset
+# =============================================================================
+# Sector-specific configuration for large transport, aviation, shipping, and
+# logistics enterprises. Scope 1 dominant (50%) from fleet mobile combustion
+# (road, sea, air). SDA pathway is mandatory for transport sub-sectors
+# (aviation, maritime, road transport). Fleet electrification, sustainable
+# aviation fuel (SAF), and alternative marine fuels are the primary levers.
+#
+# Sector: Transport, Aviation, Shipping, Logistics, Fleet Operators
+# Consolidation: Operational control (fleet-heavy operations)
+# Data quality: Level 1 target (+/-3% accuracy)
+# SBTi pathway: SDA (mandatory for transport sectors)
+# Key S3 categories: Cat 3 (fuel & energy WTT), Cat 1 (procurement),
+#                     Cat 4 (upstream transport), Cat 9 (downstream transport)
+#
+# Target organizations:
+#   - Maersk, MSC, CMA CGM (shipping)
+#   - DHL, FedEx, UPS, XPO Logistics (logistics)
+#   - Ryanair, Delta Air Lines, Lufthansa, IAG (aviation)
+#   - DB Schenker, Kuehne+Nagel, DSV (freight)
+#   - Uber, Lyft (ride-hailing / fleet)
+#
+# Key decarbonization levers:
+#   - Fleet electrification (road: BEV trucks and vans)
+#   - Sustainable aviation fuel (SAF: 10-50% blend by 2030)
+#   - Alternative marine fuels (e-methanol, ammonia, green hydrogen)
+#   - Modal shift (road to rail, air to sea where feasible)
+#   - Route optimization and load efficiency
+#   - Last-mile EV delivery (urban logistics)
+#   - Eco-driving training and telematics
+#   - Aerodynamic improvements and tire optimization
+#
+# Regulatory exposure:
+#   - EU ETS for aviation (EU ETS2 for road transport from 2027)
+#   - IMO Carbon Intensity Indicator (CII) for shipping
+#   - CORSIA (Carbon Offsetting for International Aviation)
+#   - EU FuelEU Maritime and ReFuelEU Aviation
+#   - CSRD/ESRS E1 climate
+#   - SEC Climate Rule, California SB 253
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "TRANSPORT_LOGISTICS"
+  region: "GLOBAL"
+  headquarters_country: "DK"
+  operating_countries: []
+  entity_count: 60
+  facility_count: 300
+  fiscal_year_end: "12-31"
+  erp_system: "SAP_S4HANA"
+  is_large_accelerated_filer: false
+  csrd_in_scope: true
+
+# --- Multi-Entity Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  entity_count: 60
+  include_joint_ventures: true
+  include_associates: false
+  intercompany_elimination: true
+  base_year_recalculation_threshold_pct: 5.0
+  mid_year_acquisition_prorata: true
+  reporting_currency: "EUR"
+  alignment_with_financial_reporting: true
+
+# --- Data Quality (Telematics-grade for fleet) ---
+data_quality:
+  target_tier: "LEVEL_1"
+  minimum_tier: "LEVEL_3"
+  accuracy_target_pct: 3.0
+  data_completeness_target_pct: 95.0
+  emission_factor_sources:
+    - "DEFRA_2024"
+    - "EPA_2024"
+    - "IPCC_AR6"
+    - "IMO_2023"
+    - "ICAO_2024"
+    - "ecoinvent_3.10"
+  require_supplier_specific_data: true
+  supplier_specific_threshold_count: 30
+  allow_spend_based_fallback: true
+  data_improvement_plan_enabled: true
+  dq_monitoring_frequency: "WEEKLY"
+
+# --- Scope Configuration (Mobile combustion dominant) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_agents:
+    - "MRV-001"  # Stationary combustion (depots, warehouses)
+    - "MRV-002"  # Refrigerants (reefer containers/trucks)
+    - "MRV-003"  # Mobile combustion (fleet: trucks, ships, aircraft)
+    - "MRV-005"  # Fugitive emissions (fuel handling)
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope2_agents:
+    - "MRV-009"
+    - "MRV-010"
+    - "MRV-011"
+    - "MRV-012"
+    - "MRV-013"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  scope3_priority_categories: [3, 1, 4, 9]
+  scope3_default_method: "ACTIVITY_BASED"
+  scope3_category_methods:
+    cat_1: "hybrid"
+    cat_2: "average_data"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_5: "activity_based"
+    cat_6: "activity_based"
+    cat_7: "hybrid"
+    cat_8: "average_data"
+    cat_9: "activity_based"
+    cat_10: "spend_based"
+    cat_11: "spend_based"
+    cat_12: "spend_based"
+    cat_13: "average_data"
+    cat_14: "activity_based"
+    cat_15: "spend_based"
+    default: "activity_based"
+  scope3_materiality_threshold_pct: 1.0
+  scope3_total_exclusion_max_pct: 5.0
+  gases_included: ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
+
+# --- SBTi Target (SDA mandatory for transport sub-sectors) ---
+target:
+  sbti_pathway: "SDA"
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_scope1_2_reduction_pct: 42.0
+  near_term_scope3_reduction_pct: 25.0
+  long_term_reduction_pct: 90.0
+  scope1_2_coverage_pct: 95.0
+  scope3_near_term_coverage_pct: 67.0
+  scope3_long_term_coverage_pct: 90.0
+  sda_sectors:
+    - "ROAD_TRANSPORT"
+    - "MARITIME_SHIPPING"
+    - "AVIATION"
+  flag_enabled: false
+  flag_commodities: []
+  sbti_submission_planned: true
+  sbti_committed: true
+  sbti_target_validated: false
+  five_year_review_schedule: true
+
+# --- Scenario Modeling (Fleet transition + fuel scenarios) ---
+scenarios:
+  enabled: true
+  scenarios:
+    - "AGGRESSIVE_1_5C"
+    - "MODERATE_2C"
+    - "CONSERVATIVE_BAU"
+  monte_carlo_runs: 10000
+  confidence_intervals: [10, 25, 50, 75, 90]
+  sensitivity_method: "sobol"
+  technology_focus:
+    - "electrification"
+    - "sustainable_aviation_fuel"
+    - "alternative_marine_fuels"
+    - "hydrogen"
+    - "modal_shift"
+    - "route_optimization"
+  stranded_asset_analysis: true
+  custom_scenario_enabled: true
+
+# --- Carbon Pricing (Fuel price sensitivity) ---
+carbon_pricing:
+  enabled: true
+  approach: "HYBRID"
+  price_usd_per_tco2e: 80.0
+  price_escalation_pct_per_year: 6.0
+  price_scenario: "MEDIUM"
+  apply_to_capex: true
+  apply_to_bu_allocation: true
+  cbam_enabled: false
+  ets_enabled: true
+  carbon_adjusted_financials: true
+
+# --- Scope 4 Avoided Emissions (Efficient logistics vs. alternative) ---
+scope4:
+  enabled: true
+  methodology: "WBCSD"
+  product_categories:
+    - "intermodal_shift"
+    - "route_optimization_services"
+    - "ev_last_mile"
+  baseline_scenario: "market_average"
+  include_rebound_effects: true
+  attribution_methodology: "proportional"
+
+# --- Supply Chain (Fuel suppliers, carriers, depots) ---
+supply_chain:
+  enabled: true
+  tier_depth: 2
+  tier1_critical_count: 30
+  tier2_strategic_count: 100
+  tier3_managed_count: 500
+  cdp_supply_chain_integration: true
+  ecovadis_integration: false
+  wbcsd_pact_integration: false
+  engagement_program_enabled: true
+  sbti_cascade_target: true
+  commodity_tracking: []
+
+# --- External Assurance ---
+assurance:
+  level: "LIMITED"
+  standard: "ISAE_3410"
+  scope_of_assurance:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  workpaper_generation: true
+  sample_selection_automated: true
+  management_assertion_template: true
+  target_auditor_hours: 100
+  reasonable_assurance_timeline_year: 2028
+
+# --- Financial Integration (Fuel cost overlay, ETS) ---
+financial_integration:
+  enabled: true
+  carbon_adjusted_pnl: true
+  carbon_balance_sheet: true
+  ebitda_carbon_intensity: true
+  product_level_footprint: false
+  eu_taxonomy_alignment: true
+  esrs_e1_8_disclosure: true
+  esrs_e1_9_disclosure: true
+  green_bond_screening: true
+  stranded_asset_assessment: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+    - "HTML"
+    - "JSON"
+    - "MARKDOWN"
+  templates:
+    - "ghg_inventory_report"
+    - "sbti_target_submission"
+    - "cdp_climate_response"
+    - "tcfd_report"
+    - "executive_dashboard"
+    - "supply_chain_heatmap"
+    - "scenario_comparison"
+    - "assurance_statement"
+    - "board_climate_report"
+    - "regulatory_filings"
+  regulatory_frameworks:
+    - "GHG_PROTOCOL"
+    - "SBTI"
+    - "CDP"
+    - "TCFD_ISSB"
+    - "CSRD_ESRS"
+    - "ISO_14064"
+    - "EU_TAXONOMY"
+  language: "en"
+  secondary_languages: ["da", "de"]
+  review_workflow_enabled: true
+  watermark_draft: true
+  board_reporting_frequency: "QUARTERLY"
+
+# --- Performance (Fleet telematics throughput) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 24
+  timeout_seconds: 300
+  batch_size: 10000
+  memory_limit_mb: 16384
+  monte_carlo_parallelism: 8
+  entity_parallel_processing: true
+  lightweight_mode: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  immutable_log: true
+
+# --- Scorecard (Transport KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "COMPREHENSIVE"
+  dimensions:
+    - "governance_oversight"
+    - "baseline_completeness"
+    - "target_ambition"
+    - "scope3_coverage"
+    - "data_quality"
+    - "reduction_progress"
+    - "supply_chain_engagement"
+    - "scenario_resilience"
+    - "assurance_readiness"
+    - "regulatory_compliance"
+    - "financial_integration"
+    - "stakeholder_communication"
+  benchmark_enabled: true
+  peer_group: "SECTOR_AND_SCALE"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_tkm"
+    - "fleet_ev_pct"
+    - "saf_blend_pct"
+    - "alternative_fuel_adoption"
+    - "modal_shift_pct"
+    - "yoy_reduction_rate"
+    - "sbti_criteria_compliance"
+    - "ets_compliance_position"
+    - "imo_cii_rating"
+    - "assurance_coverage_pct"
+    - "carbon_price_coverage"
+  target_years: [2025, 2027, 2030, 2035, 2040, 2045, 2050]
+  tpi_alignment_check: true

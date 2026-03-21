@@ -1,0 +1,220 @@
+# =============================================================================
+# PACK-026 SME Net Zero Pack - Retail SME Preset
+# =============================================================================
+# Sector-specific configuration for retail SMEs including small shops, chains,
+# e-commerce operations, and consumer-facing businesses. Emissions profile is
+# S3-dominant (80%): Category 1 (purchased goods for resale), Category 4
+# (upstream transport/delivery), Category 9 (downstream distribution/packaging).
+# Store electricity (S2) is the main operational emissions source (~12%).
+# Refrigeration (S1) is significant for food retail (~8%).
+#
+# Sector: Retail shops, small chains, e-commerce
+# Data tier: SILVER (basic activity data)
+# Scope focus: S2 (store electricity) + S3 (Cat 1, 4, 9 packaging)
+# Emissions profile: 20% S1+2, 80% S3
+# Quick wins: LED lighting, refrigeration efficiency, packaging reduction
+# Certification: SME Climate Hub + Carbon Trust
+#
+# Key actions:
+#   - LED lighting rollout across all stores
+#   - Refrigeration system upgrade (natural refrigerants)
+#   - Packaging reduction and sustainable alternatives
+#   - Renewable electricity procurement for stores
+#   - Store energy optimization (smart controls, HVAC)
+#   - Supplier engagement (top 20 suppliers by spend)
+#   - Transport/delivery optimization
+#   - Customer-facing sustainability initiatives
+#
+# Typical use cases:
+#   - Independent high-street shops and boutiques
+#   - Small supermarkets and convenience stores
+#   - Fashion and apparel retailers (1-10 stores)
+#   - Electronics and tech retailers
+#   - Home goods and furniture shops
+#   - Health food and organic retailers
+#   - Pet supply shops
+#   - E-commerce businesses (warehousing + delivery)
+#   - Pharmacy and beauty product retailers
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sme_size: "SMALL"
+  sector: "RETAIL"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  accounting_software: "QUICKBOOKS"
+  number_of_sites: 3
+  has_fleet: false
+  has_production_facility: false
+
+# --- Data Quality (SILVER: Basic activity data) ---
+data_quality:
+  tier: "SILVER"
+  allow_industry_averages: true
+  allow_spend_based_estimation: true
+  require_utility_bills: true
+  require_supplier_data: false
+  data_completeness_target_pct: 65.0
+  emission_factor_source: "DEFRA_2024"
+  data_improvement_plan: true
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  base_year_recalculation_threshold_pct: 10.0
+  include_all_sites: true
+
+# --- Scope Configuration (S3-dominant: Cat 1, 4, 9 packaging) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_estimation_method: "activity_based"
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 4, 9]
+  scope3_method: "SPEND_BASED"
+  scope3_category_methods:
+    cat_1: "spend_based"
+    cat_4: "spend_based"
+    cat_9: "spend_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 5.0
+  scope3_optional: false
+
+# --- Target Setting (42% by 2030 - SBTi SME route) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_reduction_pct: 42.0
+  long_term_reduction_pct: 90.0
+  annual_linear_reduction_pct: 4.2
+  sbti_sme_route: true
+  sbti_submission_planned: false
+  sme_climate_hub_commitment: true
+
+# --- Reduction Actions (Store + supply chain focus) ---
+reduction:
+  max_actions: 8
+  planning_horizon_years: 3
+  budget_range_min_eur: 5000.0
+  budget_range_max_eur: 25000.0
+  include_quick_wins: true
+  quick_win_max_count: 5
+  include_renewable_procurement: true
+  include_energy_efficiency: true
+  include_supplier_engagement: true
+  include_fleet_electrification: false
+  include_process_optimization: false
+  include_behavioral_change: true
+  include_macc_analysis: false
+  carbon_price_eur_per_tco2e: 50.0
+  discount_rate_pct: 7.0
+  scenario_count: 2
+
+# --- Grant Preferences (Retail energy programs, circular economy) ---
+grant:
+  enabled: true
+  preferred_categories:
+    - "RETAIL_ENERGY"
+    - "CIRCULAR_ECONOMY"
+    - "ENERGY_EFFICIENCY"
+    - "NATIONAL_PROGRAM"
+    - "LOCAL_PROGRAM"
+  max_application_complexity: "MEDIUM"
+  region_focus: "NATIONAL"
+  sector_specific: true
+  include_tax_incentives: true
+  include_green_loans: true
+  budget_match_required: false
+
+# --- Certification (SME Climate Hub + Carbon Trust) ---
+certification:
+  primary_pathway: "SME_CLIMATE_HUB"
+  secondary_pathway: "CARBON_TRUST"
+  auto_recommend: true
+  readiness_assessment: true
+  max_certification_budget_eur: 5000.0
+  max_time_months: 6
+
+# --- Reporting (PDF + Excel, all 3 templates) ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+  templates:
+    - "net_zero_summary"
+    - "action_plan"
+    - "annual_progress"
+  include_cdp_mapping: false
+  include_sbti_mapping: true
+  include_sme_climate_hub_mapping: true
+  language: "en"
+  review_workflow_enabled: false
+  watermark_draft: true
+  include_grant_recommendations: true
+  include_certification_roadmap: true
+
+# --- Performance (Standard: 1GB, <20 sec) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 1800
+  max_concurrent_calcs: 2
+  timeout_seconds: 20
+  batch_size: 250
+  memory_limit_mb: 1024
+  lightweight_mode: true
+
+# --- Audit Trail (3-year, standard) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 3
+  external_audit_export: false
+
+# --- Verification (Third-party light) ---
+verification:
+  level: "THIRD_PARTY_LIGHT"
+  frequency: "ANNUAL"
+  scope_of_verification:
+    - "scope_1"
+    - "scope_2"
+  include_scope3_in_verification: false
+
+# --- Scorecard (Quick assessment, retail-relevant KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "QUICK"
+  dimensions:
+    - "baseline_completeness"
+    - "target_ambition"
+    - "reduction_progress"
+    - "data_quality"
+    - "certification_readiness"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_per_store"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+    - "data_quality_score"
+    - "supplier_engagement_rate"
+    - "packaging_reduction_pct"
+  target_years: [2025, 2028, 2030, 2050]

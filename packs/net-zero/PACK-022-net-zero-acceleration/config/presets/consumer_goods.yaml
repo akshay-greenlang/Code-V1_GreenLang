@@ -1,0 +1,178 @@
+# =============================================================================
+# PACK-022 Net Zero Acceleration Pack - Consumer Goods Preset
+# =============================================================================
+# Configuration for FMCG, retail, and consumer goods organizations with
+# supply chain focus. Scope 3 Category 1 (purchased goods and services)
+# represents 60-80% of total footprint, making supplier engagement the
+# critical lever. ACA pathway. Packaging decarbonization, logistics
+# optimization, and sustainable sourcing are key priorities. Product
+# carbon footprint integration for consumer-facing claims.
+#
+# Typical use cases:
+#   - FMCG companies (food, beverage, personal care)
+#   - Fashion and apparel brands
+#   - Grocery retailers
+#   - E-commerce platforms
+#   - Home and garden products
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "CONSUMER_GOODS"
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- Scenario Modeling ---
+scenario:
+  scenario_types:
+    - "BAU"
+    - "MODERATE"
+    - "AMBITIOUS"
+  monte_carlo_runs: 1000
+  random_seed: 42
+  confidence_interval_pct: 95.0
+  sensitivity_top_n: 10
+  uncertainty_emission_factor_pct: 15.0
+  uncertainty_activity_data_pct: 12.0
+  uncertainty_cost_pct: 18.0
+  parallel_scenarios: true
+  max_custom_scenarios: 5
+
+# --- Pathway (ACA for consumer goods) ---
+pathway:
+  methodology: "ACA"
+  sda_enabled: false
+  sda_sectors: []
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Supplier Engagement (critical for Scope 3) ---
+supplier:
+  enabled: true
+  max_suppliers: 50000
+  tier_thresholds:
+    collaborate: 3.0
+    require: 10.0
+    engage: 30.0
+    inform: 100.0
+  top_supplier_count: 300
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+    - "innovation"
+  batch_size: 5000
+
+# --- Scope 3 ---
+scope3:
+  categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 14]
+  activity_based_categories: [1, 4, 9, 12]
+  supplier_specific_categories: [1]
+  spend_based_categories: [2, 3, 5, 6, 7, 11, 14]
+  materiality_threshold_pct: 1.0
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 8.0
+  carbon_price_eur_per_tco2e: 80.0
+  carbon_price_escalation_pct: 5.0
+  reporting_currency: "EUR"
+  planning_horizon_years: 10
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 9.0
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: false
+  portfolio_weighting: "revenue"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Variance Decomposition ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 10.0
+  top_drivers_count: 10
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: false
+  max_entities: 20
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "brand"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI ---
+vcmi:
+  enabled: true
+  target_tier: "SILVER"
+  credit_quality_min_score: 65
+  max_nature_based_pct: 50.0
+  shift_to_removals_by_year: 2040
+  preferred_registries:
+    - "gold_standard"
+    - "verra"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2028
+  workpaper_format: "ISAE_3000"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10

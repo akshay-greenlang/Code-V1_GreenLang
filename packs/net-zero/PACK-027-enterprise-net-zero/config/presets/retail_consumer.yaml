@@ -1,0 +1,345 @@
+# =============================================================================
+# PACK-027 Enterprise Net Zero Pack - Retail & Consumer Goods Preset
+# =============================================================================
+# Sector-specific configuration for large consumer goods, FMCG, and retail
+# enterprises. Scope 3 dominant (85%) with Cat 1 (raw materials and ingredients)
+# typically 30-50% of total emissions. Use-phase (Cat 11) is significant for
+# energy-using products, and end-of-life (Cat 12) matters for packaging.
+# FLAG targets may be required for companies with agricultural supply chains
+# (palm oil, soy, cocoa, coffee, cotton, dairy).
+#
+# Sector: Consumer Goods (FMCG), Retail Chains, Apparel, Personal Care
+# Consolidation: Financial control (brand holding companies)
+# Data quality: Level 1 target (+/-3% accuracy)
+# SBTi pathway: MIXED (ACA + FLAG for agricultural inputs)
+# Key S3 categories: Cat 1 (raw materials, 30-50%), Cat 4 (inbound logistics),
+#                     Cat 9 (distribution), Cat 11 (product use-phase),
+#                     Cat 12 (end-of-life treatment / packaging)
+#
+# Target organizations:
+#   - Unilever, P&G, Nestle, L'Oreal, Nike, Inditex
+#   - Walmart, Tesco, Carrefour, Amazon (retail)
+#   - Coca-Cola, PepsiCo, Diageo, AB InBev
+#   - LVMH, Kering (luxury goods)
+#
+# Key decarbonization levers:
+#   - Supply chain decarbonization (Cat 1 materials suppliers)
+#   - Product reformulation / lightweighting
+#   - Packaging circularity and recyclability
+#   - FLAG commodity sourcing (deforestation-free)
+#   - Consumer use-phase reduction (energy-efficient products)
+#   - End-of-life design for recycling
+#   - Store energy efficiency and renewable energy
+#   - Last-mile delivery optimization
+#
+# Regulatory exposure:
+#   - CSRD/ESRS E1 + E5 (circular economy likely material)
+#   - EUDR (for forest-risk commodities)
+#   - EU Green Claims Directive
+#   - EU Packaging and Packaging Waste Regulation
+#   - SEC Climate Rule, California SB 253
+#   - CDP Climate Change + CDP Forests
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "CONSUMER_GOODS"
+  region: "GLOBAL"
+  headquarters_country: "GB"
+  operating_countries: []
+  entity_count: 60
+  facility_count: 250
+  fiscal_year_end: "12-31"
+  erp_system: "SAP_S4HANA"
+  erp_secondary: "ORACLE_ERP_CLOUD"
+  is_large_accelerated_filer: true
+  csrd_in_scope: true
+
+# --- Multi-Entity Consolidation ---
+consolidation:
+  approach: "FINANCIAL_CONTROL"
+  entity_count: 60
+  include_joint_ventures: true
+  include_associates: false
+  intercompany_elimination: true
+  base_year_recalculation_threshold_pct: 5.0
+  mid_year_acquisition_prorata: true
+  reporting_currency: "EUR"
+  alignment_with_financial_reporting: true
+
+# --- Data Quality ---
+data_quality:
+  target_tier: "LEVEL_1"
+  minimum_tier: "LEVEL_4"
+  accuracy_target_pct: 3.0
+  data_completeness_target_pct: 95.0
+  emission_factor_sources:
+    - "DEFRA_2024"
+    - "EPA_2024"
+    - "IPCC_AR6"
+    - "ecoinvent_3.10"
+    - "ADEME_2024"
+  require_supplier_specific_data: true
+  supplier_specific_threshold_count: 100
+  allow_spend_based_fallback: true
+  data_improvement_plan_enabled: true
+  dq_monitoring_frequency: "MONTHLY"
+
+# --- Scope Configuration (Supply chain dominant, FLAG applicable) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_agents:
+    - "MRV-001"  # Manufacturing facilities heating
+    - "MRV-002"  # Refrigeration (retail/warehouse)
+    - "MRV-003"  # Distribution fleet
+    - "MRV-007"  # Waste treatment
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope2_agents:
+    - "MRV-009"
+    - "MRV-010"
+    - "MRV-011"
+    - "MRV-012"
+    - "MRV-013"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  scope3_priority_categories: [1, 4, 9, 11, 12]
+  scope3_default_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "supplier_specific"
+    cat_2: "spend_based"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_5: "activity_based"
+    cat_6: "activity_based"
+    cat_7: "hybrid"
+    cat_8: "average_data"
+    cat_9: "activity_based"
+    cat_10: "average_data"
+    cat_11: "activity_based"
+    cat_12: "average_data"
+    cat_13: "average_data"
+    cat_14: "activity_based"
+    cat_15: "spend_based"
+    default: "hybrid"
+  scope3_materiality_threshold_pct: 1.0
+  scope3_total_exclusion_max_pct: 5.0
+  gases_included: ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
+
+# --- SBTi Target (MIXED: ACA + FLAG for agri supply chain) ---
+target:
+  sbti_pathway: "MIXED"
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_scope1_2_reduction_pct: 50.0
+  near_term_scope3_reduction_pct: 30.0
+  long_term_reduction_pct: 90.0
+  scope1_2_coverage_pct: 95.0
+  scope3_near_term_coverage_pct: 67.0
+  scope3_long_term_coverage_pct: 90.0
+  sda_sectors: []
+  flag_enabled: true
+  flag_commodities:
+    - "PALM_OIL"
+    - "SOY"
+    - "COCOA"
+    - "COFFEE"
+    - "COTTON"
+    - "TIMBER"
+  sbti_submission_planned: true
+  sbti_committed: true
+  sbti_target_validated: false
+  five_year_review_schedule: true
+
+# --- Scenario Modeling ---
+scenarios:
+  enabled: true
+  scenarios:
+    - "AGGRESSIVE_1_5C"
+    - "MODERATE_2C"
+    - "CONSERVATIVE_BAU"
+  monte_carlo_runs: 10000
+  confidence_intervals: [10, 25, 50, 75, 90]
+  sensitivity_method: "sobol"
+  technology_focus:
+    - "renewable_energy"
+    - "energy_efficiency"
+    - "sustainable_packaging"
+    - "regenerative_agriculture"
+    - "supply_chain_decarbonization"
+  stranded_asset_analysis: false
+  custom_scenario_enabled: true
+
+# --- Carbon Pricing (Product-level carbon footprint) ---
+carbon_pricing:
+  enabled: true
+  approach: "SHADOW_PRICE"
+  price_usd_per_tco2e: 80.0
+  price_escalation_pct_per_year: 5.0
+  price_scenario: "MEDIUM"
+  apply_to_capex: true
+  apply_to_bu_allocation: true
+  cbam_enabled: false
+  ets_enabled: false
+  carbon_adjusted_financials: true
+
+# --- Scope 4 Avoided Emissions (Eco-innovation products) ---
+scope4:
+  enabled: true
+  methodology: "WBCSD"
+  product_categories:
+    - "eco_innovation_products"
+    - "refurbished_products"
+    - "concentrated_formulations"
+  baseline_scenario: "market_average"
+  include_rebound_effects: true
+  attribution_methodology: "proportional"
+
+# --- Supply Chain (Deep: Tier 1-5 farm-to-shelf) ---
+supply_chain:
+  enabled: true
+  tier_depth: 5
+  tier1_critical_count: 100
+  tier2_strategic_count: 500
+  tier3_managed_count: 2000
+  cdp_supply_chain_integration: true
+  ecovadis_integration: true
+  wbcsd_pact_integration: true
+  engagement_program_enabled: true
+  sbti_cascade_target: true
+  commodity_tracking:
+    - "palm_oil"
+    - "soy"
+    - "cocoa"
+    - "coffee"
+    - "cotton"
+    - "rubber"
+    - "timber"
+
+# --- External Assurance ---
+assurance:
+  level: "LIMITED"
+  standard: "ISAE_3410"
+  scope_of_assurance:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  workpaper_generation: true
+  sample_selection_automated: true
+  management_assertion_template: true
+  target_auditor_hours: 100
+  reasonable_assurance_timeline_year: 2028
+
+# --- Financial Integration ---
+financial_integration:
+  enabled: true
+  carbon_adjusted_pnl: true
+  carbon_balance_sheet: true
+  ebitda_carbon_intensity: true
+  product_level_footprint: true
+  eu_taxonomy_alignment: true
+  esrs_e1_8_disclosure: true
+  esrs_e1_9_disclosure: true
+  green_bond_screening: false
+  stranded_asset_assessment: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+    - "HTML"
+    - "JSON"
+    - "MARKDOWN"
+  templates:
+    - "ghg_inventory_report"
+    - "sbti_target_submission"
+    - "cdp_climate_response"
+    - "tcfd_report"
+    - "executive_dashboard"
+    - "supply_chain_heatmap"
+    - "scenario_comparison"
+    - "assurance_statement"
+    - "board_climate_report"
+    - "regulatory_filings"
+  regulatory_frameworks:
+    - "GHG_PROTOCOL"
+    - "SBTI"
+    - "CDP"
+    - "TCFD_ISSB"
+    - "CSRD_ESRS"
+    - "ISO_14064"
+    - "EU_TAXONOMY"
+    - "SEC_CLIMATE"
+  language: "en"
+  secondary_languages: ["fr", "es", "de"]
+  review_workflow_enabled: true
+  watermark_draft: true
+  board_reporting_frequency: "QUARTERLY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 7200
+  max_concurrent_calcs: 16
+  timeout_seconds: 300
+  batch_size: 5000
+  memory_limit_mb: 16384
+  monte_carlo_parallelism: 8
+  entity_parallel_processing: true
+  lightweight_mode: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+  immutable_log: true
+
+# --- Scorecard (Consumer/Retail KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "COMPREHENSIVE"
+  dimensions:
+    - "governance_oversight"
+    - "baseline_completeness"
+    - "target_ambition"
+    - "scope3_coverage"
+    - "data_quality"
+    - "reduction_progress"
+    - "supply_chain_engagement"
+    - "scenario_resilience"
+    - "assurance_readiness"
+    - "regulatory_compliance"
+    - "financial_integration"
+    - "stakeholder_communication"
+  benchmark_enabled: true
+  peer_group: "SECTOR_AND_SCALE"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "scope3_cat1_intensity"
+    - "supplier_engagement_rate"
+    - "deforestation_free_sourcing_pct"
+    - "packaging_recyclability_pct"
+    - "yoy_reduction_rate"
+    - "sbti_criteria_compliance"
+    - "flag_target_progress"
+    - "product_carbon_footprint_trend"
+    - "assurance_coverage_pct"
+    - "carbon_price_coverage"
+  target_years: [2025, 2027, 2030, 2035, 2040, 2045, 2050]
+  tpi_alignment_check: true

@@ -1,0 +1,238 @@
+# =============================================================================
+# PACK-024 Carbon Neutral Pack - Project Neutrality Preset
+# =============================================================================
+# Project-specific carbon neutrality for construction projects, infrastructure
+# developments, IT deployments, and time-bounded organizational initiatives.
+# Covers project lifecycle phases from design through construction, operation,
+# and decommissioning. Aligned with ISO 14064-2:2019 (project-level GHG
+# quantification), PAS 2080:2023 (carbon management in infrastructure), and
+# PAS 2060:2014 for project carbon neutrality claims.
+#
+# Typical use cases:
+#   - Construction projects (buildings, roads, bridges)
+#   - Infrastructure developments (rail, ports, energy)
+#   - IT system implementations and data center builds
+#   - Mine development and remediation projects
+#   - Major event infrastructure (Olympic/World Cup venues)
+#   - R&D pilot projects with climate commitments
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+neutrality_type: "PROJECT"
+boundary_scope: "PROJECT_SPECIFIC"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+project_name: ""
+project_start_date: "2025-01-01"
+project_end_date: "2027-12-31"
+project_duration_months: 36
+
+# --- Scope Configuration ---
+scope_boundaries:
+  scope1:
+    included: true
+    coverage_pct: 100.0
+    consolidation: "project_boundary"
+    sources:
+      - "construction_equipment_fuel"
+      - "on_site_generators"
+      - "site_vehicles"
+      - "welding_cutting_gases"
+  scope2:
+    included: true
+    coverage_pct: 100.0
+    methods:
+      - "location_based"
+      - "market_based"
+    preferred_method: "location_based"
+    sources:
+      - "temporary_site_power"
+      - "construction_site_lighting"
+      - "site_office_electricity"
+  scope3:
+    included: true
+    coverage_pct: 70.0
+    categories: [1, 2, 3, 4, 5, 6, 7]
+    materiality_threshold_pct: 2.0
+    de_minimis_pct: 5.0
+    project_specific_sources:
+      - "embodied_carbon_materials"
+      - "transport_to_site"
+      - "worker_commuting"
+      - "construction_waste"
+      - "temporary_works"
+      - "decommissioning"
+
+# --- Project-Specific Parameters ---
+project_parameters:
+  project_type: "construction"
+  lifecycle_phase: "construction"
+  total_budget_eur: 50000000.0
+  site_area_sqm: 25000.0
+  worker_count_peak: 200
+  material_tonnage: 10000.0
+  pas2080_modules:
+    - "A1_A3_product_stage"
+    - "A4_transport"
+    - "A5_construction"
+    - "B1_B7_use_stage"
+    - "C1_C4_end_of_life"
+  carbon_budget_tco2e: 5000.0
+  carbon_intensity_target: "kgCO2e/sqm"
+
+# --- Engines Configuration ---
+engines:
+  footprint_quantification:
+    enabled: true
+    consolidation_approach: "project_boundary"
+    include_biogenic_co2: false
+    uncertainty_assessment: true
+    data_quality_scoring: true
+    gwp_source: "IPCC_AR6"
+    gwp_timeframe: 100
+    materiality_threshold_pct: 2.0
+    project_specific:
+      phase_tracking: true
+      progress_based_estimation: true
+      embodied_carbon_tracking: true
+      waste_factor_accounting: true
+  carbon_management_plan:
+    enabled: true
+    planning_horizon_years: 3
+    reduction_first_strategy: true
+    min_reduction_before_offset_pct: 40.0
+    internal_carbon_price_eur: 100.0
+    max_offset_reliance_pct: 60.0
+    annual_reduction_target_pct: 5.0
+    project_interventions:
+      - "low_carbon_materials"
+      - "electric_construction_equipment"
+      - "material_reuse"
+      - "design_optimization"
+      - "local_sourcing"
+      - "renewable_site_power"
+      - "waste_minimization"
+  credit_quality:
+    enabled: true
+    min_quality_score: 60
+    icvcm_ccp_compliance: false
+    preferred_standards:
+      - "gold_standard"
+      - "verra_vcs"
+    min_additionality_score: 6
+    min_permanence_score: 6
+    require_sdg_contribution: true
+  portfolio_optimization:
+    enabled: true
+    max_nature_based_pct: 50.0
+    max_avoidance_pct: 60.0
+    min_removal_pct: 15.0
+    diversification_min_types: 2
+    vintage_max_age_years: 5
+    geographic_diversification: false
+    budget_constraint_enabled: true
+  registry_retirement:
+    enabled: true
+    auto_retirement: false
+    retirement_timing: "project_completion"
+    supported_registries:
+      - "gold_standard"
+      - "verra"
+    serial_number_tracking: true
+    double_counting_prevention: true
+  neutralization_balance:
+    enabled: true
+    balance_method: "project_total"
+    allow_forward_credits: true
+    buffer_pool_pct: 10.0
+    shortfall_action: "purchase_additional"
+    surplus_carryover: false
+    verification_frequency: "project_phase"
+  claims_substantiation:
+    enabled: true
+    claim_type: "carbon_neutral_project"
+    standard: "PAS_2060"
+    pas2060_compliance: true
+    vcmi_claims_code: false
+    public_disclosure_required: true
+    third_party_verification: true
+    claim_period: "project_lifecycle"
+  verification_package:
+    enabled: true
+    assurance_level: "limited"
+    standard: "ISO_14064_2"
+    third_party_verifier: true
+    evidence_completeness_target_pct: 90.0
+    documentation_format: "PDF"
+  annual_cycle:
+    enabled: true
+    cycle_start_month: 1
+    cycle_end_month: 12
+    milestone_frequency: "monthly"
+    progress_reporting: true
+    recertification_reminder_days: 30
+    continuous_improvement_tracking: true
+  permanence_risk:
+    enabled: true
+    risk_assessment_frequency: "per_phase"
+    buffer_contribution_pct: 10.0
+    reversal_monitoring: true
+    replacement_trigger_threshold_pct: 10.0
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  carbon_price_eur_per_tco2e: 100.0
+  reporting_currency: "EUR"
+  credit_budget_total_eur: 250000.0
+  credit_price_range:
+    min_eur: 10.0
+    max_eur: 100.0
+    avg_eur: 30.0
+
+# --- Data Quality ---
+data_quality:
+  target_dqis_score: 3.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "bill_of_quantities"
+    - "contractor_data"
+    - "default_factors"
+  emission_factor_source: "DEFRA_2024"
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  workpaper_format: "ISO_14064_2"
+  methodology_documentation: true
+  calculation_trace: true
+  sha256_provenance: true
+  retention_years: 10
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+  include_iso14068_mapping: true
+  include_pas2060_mapping: true
+  include_pas2080_mapping: true
+  include_iso14064_2_mapping: true
+  language: "en"
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 500
+  memory_limit_mb: 2048

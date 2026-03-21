@@ -1,0 +1,228 @@
+# =============================================================================
+# PACK-030 Net Zero Reporting Pack - TCFD Investor-Grade Preset
+# =============================================================================
+# Configuration optimized for producing high-quality TCFD-aligned disclosures
+# targeting institutional investors and portfolio managers. Prioritizes the
+# 4-pillar TCFD structure (Governance/Strategy/Risk/Metrics), scenario analysis
+# integration, executive-grade PDF rendering, and interactive HTML dashboards.
+#
+# TCFD 4-Pillar Structure:
+#   - Governance: Board oversight and management responsibility for climate
+#   - Strategy: Climate risks, opportunities, and scenario resilience
+#   - Risk Management: Risk identification, assessment, integration processes
+#   - Metrics & Targets: Scope 1/2/3 emissions, climate targets, progress
+#
+# TCFD Recommended Disclosures (11):
+#   - Governance (a): Board oversight of climate risks/opportunities
+#   - Governance (b): Management's role in assessing/managing
+#   - Strategy (a): Climate risks and opportunities identified
+#   - Strategy (b): Impact on organization's business, strategy, financial planning
+#   - Strategy (c): Resilience of strategy under different scenarios
+#   - Risk Management (a): Processes for identifying/assessing climate risks
+#   - Risk Management (b): Processes for managing climate risks
+#   - Risk Management (c): Integration into overall risk management
+#   - Metrics & Targets (a): Metrics used to assess climate risks/opportunities
+#   - Metrics & Targets (b): Scope 1, 2, and 3 GHG emissions
+#   - Metrics & Targets (c): Targets used to manage climate risks/opportunities
+#
+# Typical use cases:
+#   - Annual report TCFD disclosures for listed companies
+#   - Standalone TCFD reports for institutional investors
+#   - Investor relations climate disclosure packages
+#   - Portfolio alignment assessments for asset managers
+#   - Climate risk assessments for banks and insurers
+#
+# Key characteristics:
+#   - TCFD as primary framework with ISSB and CDP secondary
+#   - Executive branding style for investor-grade presentation
+#   - Scenario analysis integration from GL-TCFD-APP
+#   - Interactive HTML dashboards with Chart.js visualizations
+#   - PDF with charts, tables, and hyperlinked citations
+#   - Financial materiality emphasis in all narratives
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+reporting_year: 2025
+baseline_year: 2019
+fiscal_year_end_month: 12
+
+# --- Framework Configuration ---
+frameworks:
+  frameworks_enabled:
+    - "TCFD"
+    - "ISSB"
+    - "CDP"
+  primary_framework: "TCFD"
+  secondary_frameworks:
+    - "ISSB"
+    - "CDP"
+  framework_outputs:
+    - format: "PDF"
+      template: "tcfd_executive_report"
+      enabled: true
+    - format: "HTML"
+      template: "tcfd_interactive_dashboard"
+      enabled: true
+    - format: "JSON"
+      template: "tcfd_api_output"
+      enabled: true
+
+# --- Output Settings ---
+output_formats:
+  - "PDF"
+  - "HTML"
+  - "JSON"
+  - "Excel"
+languages:
+  - "en"
+
+# --- Branding ---
+branding:
+  style: "executive"
+  logo_path: null
+  primary_color: "#1F2937"
+  secondary_color: "#6B7280"
+  font_family: "Georgia, 'Times New Roman', serif"
+  include_charts: true
+  include_toc: true
+  include_page_numbers: true
+  include_headers_footers: true
+  custom_css: null
+
+# --- Data Aggregation ---
+data_aggregation:
+  pack_021_requirement: "required"
+  pack_022_requirement: "recommended"
+  pack_028_requirement: "recommended"
+  pack_029_requirement: "required"
+  gl_sbti_app_requirement: "recommended"
+  gl_cdp_app_requirement: "recommended"
+  gl_tcfd_app_requirement: "required"
+  gl_ghg_app_requirement: "required"
+  auto_reconciliation: true
+  reconciliation_tolerance_pct: 0.5
+  gap_detection_enabled: true
+  lineage_tracking_enabled: true
+  lineage_diagram_format: "svg"
+  completeness_scoring: true
+  parallel_fetching: true
+  fetch_timeout_seconds: 30
+  retry_count: 3
+  circuit_breaker_threshold: 5
+
+# --- Narrative Generation ---
+narrative:
+  narrative_quality: "premium"
+  citation_management_enabled: true
+  citation_format: "footnote"
+  hyperlinked_citations: true
+  consistency_validation_enabled: true
+  consistency_target_pct: 96.0
+  harmonization_suggestions: true
+  human_review_required: true
+  review_workflow_enabled: true
+  max_narrative_length_words: 6000
+
+# --- Translation ---
+translation:
+  languages:
+    - "en"
+  primary_language: "en"
+  translation_service: "native"
+  climate_glossary_enabled: true
+  preserve_citations: true
+  quality_validation_enabled: false
+  quality_target_pct: 98.0
+
+# --- XBRL/iXBRL ---
+xbrl:
+  xbrl_enabled: false
+  sec_taxonomy_version: "2024"
+  csrd_taxonomy_version: "2024"
+  issb_taxonomy_version: "2024"
+  taxonomy_validation_enabled: false
+  ixbrl_enabled: false
+  taxonomy_cache_enabled: false
+  taxonomy_cache_ttl_hours: 168
+  auto_tag_detection: false
+
+# --- Assurance ---
+assurance:
+  assurance_level: "limited"
+  include_evidence_bundle: true
+  include_provenance: true
+  include_lineage_diagrams: true
+  include_methodology_docs: true
+  include_control_matrix: false
+  include_assumption_register: true
+  include_change_log: true
+  evidence_bundle_format: "zip"
+  isae_3410_compliance: true
+  isae_3000_compliance: false
+
+# --- Dashboard ---
+dashboard:
+  executive_dashboard_enabled: true
+  framework_dashboards_enabled: true
+  stakeholder_views_enabled: true
+  default_stakeholder_view: "investor"
+  framework_coverage_heatmap: true
+  deadline_countdown: true
+  drill_down_enabled: true
+  interactive_charts: true
+  responsive_design: true
+  export_to_pdf: true
+  auto_refresh_interval_seconds: 0
+
+# --- Validation ---
+validation:
+  schema_validation_enabled: true
+  completeness_validation_enabled: true
+  consistency_validation_enabled: true
+  consistency_strictness: "standard"
+  quality_scoring_enabled: true
+  minimum_quality_score: 85.0
+  metric_reconciliation: true
+  metric_tolerance_pct: 0.1
+  narrative_spell_check: true
+  narrative_grammar_check: true
+  block_publish_on_critical: true
+
+# --- Notifications ---
+notifications:
+  email_notifications_enabled: true
+  slack_notifications_enabled: false
+  teams_notifications_enabled: false
+  webhook_notifications_enabled: false
+  notification_recipients: []
+  slack_channel: null
+  webhook_url: null
+  deadline_reminders:
+    - 90
+    - 60
+    - 30
+    - 14
+    - 7
+  notify_on_generation: true
+  notify_on_validation_failure: true
+  notify_on_approval: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  cache_hit_ratio_target: 95.0
+  max_concurrent_reports: 6
+  report_generation_timeout_seconds: 10
+  api_response_timeout_ms: 200
+  pdf_render_timeout_seconds: 5
+  parallel_framework_execution: true
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

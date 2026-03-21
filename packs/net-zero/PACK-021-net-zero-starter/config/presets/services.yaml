@@ -1,0 +1,145 @@
+# =============================================================================
+# PACK-021 Net Zero Starter Pack - Services Preset
+# =============================================================================
+# Configuration for professional services organizations with low Scope 1
+# (office heating, small fleet), low Scope 2 (office electricity), and high
+# Scope 3 (category 1 procurement, category 6 business travel, category 7
+# employee commuting). ACA pathway. 7 engines (offset portfolio optional for
+# early-stage). Spend-based Scope 3 as default with targeted activity-based
+# for travel. Shorter planning horizon of 7 years reflecting lower capital
+# intensity.
+#
+# Typical use cases:
+#   - Management consulting firms
+#   - Law firms and professional advisors
+#   - Accounting and audit firms
+#   - IT services and outsourcing
+#   - Financial services offices
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "SERVICES"
+  size: "LARGE"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  erp_system: "NONE"
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  include_joint_ventures: false
+  base_year_recalculation_threshold_pct: 5.0
+
+# --- Scope Configuration (Travel-focused Scope 3) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 5, 6, 7, 8]
+  scope3_method: "SPEND_BASED"
+  scope3_category_methods:
+    cat_1: "spend_based"
+    cat_6: "activity_based"
+    cat_7: "spend_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 2.0
+
+# --- Target Setting (ACA pathway) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  sbti_submission_planned: true
+
+# --- Reduction Actions (7-year horizon, no process optimization) ---
+reduction:
+  max_actions: 50
+  planning_horizon_years: 7
+  include_renewable_procurement: true
+  include_supplier_engagement: true
+  include_fleet_electrification: false
+  include_energy_efficiency: true
+  include_fuel_switching: false
+  include_process_optimization: false
+  include_ccs: false
+  discount_rate_pct: 6.0
+  carbon_price_eur_per_tco2e: 80.0
+  scenario_count: 2
+
+# --- Offset Portfolio (optional for services) ---
+offset:
+  strategy: "COMPENSATION_ONLY"
+  quality_minimum_score: 60
+  max_nature_based_pct: 50.0
+  vcmi_target_claim: "SILVER"
+  preferred_credit_types:
+    - "gold_standard"
+    - "verified_carbon_standard"
+  shift_to_removals_by_year: 2040
+  track_co_benefits: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+  include_cdp_mapping: true
+  include_tcfd_mapping: true
+  include_esrs_mapping: true
+  include_sbti_mapping: true
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 2
+  timeout_seconds: 180
+  batch_size: 500
+  memory_limit_mb: 2048
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  external_audit_export: true
+
+# --- Scorecard ---
+scorecard:
+  enabled: true
+  assessment_mode: "FULL"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+    - "sbti_target_status"
+    - "cdp_score"
+  target_years: [2025, 2030, 2035, 2040, 2050]

@@ -1,0 +1,273 @@
+# =============================================================================
+# PACK-029 Interim Targets Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for NordTech Solutions AB, a fictional mid-size Nordic
+# technology company headquartered in Stockholm, Sweden. The company provides
+# cloud infrastructure, SaaS products, and IT consulting. NordTech has committed
+# to SBTi 1.5C alignment with near-term (2030) and long-term (2050) net-zero
+# targets. As a services company, Scope 3 dominates the footprint (70%),
+# particularly Cat 1 (purchased goods), Cat 11 (use of sold products), and
+# Cat 6 (business travel).
+#
+# Company: NordTech Solutions AB
+# Headquarters: Stockholm, Sweden
+# Revenue: EUR 850 million
+# Employees: 4,500
+# Sector: Technology / IT Services
+# Base Year: 2019
+# Reporting Year: 2024
+# SBTi Status: Committed, validation pending (submission Q2 2025)
+#
+# Total Footprint (2019 base year):
+#   Scope 1:      3,200 tCO2e (heating: 2,100; fleet vehicles: 800;
+#                               backup generators: 300)
+#   Scope 2:     12,800 tCO2e (data centers: 9,500; offices: 3,300;
+#                               location-based)
+#   Scope 3:     38,400 tCO2e (Cat 1: 14,200; Cat 2: 3,800; Cat 3: 1,900;
+#                               Cat 4: 1,200; Cat 5: 800; Cat 6: 5,600;
+#                               Cat 7: 3,100; Cat 11: 5,400; Cat 12: 2,400)
+#   Total:       54,400 tCO2e
+#
+# Progress to Date (2024 reporting year):
+#   Scope 1:      2,100 tCO2e (-34% from 2019, heat pump conversion underway)
+#   Scope 2:      6,400 tCO2e (-50% from 2019, 90% renewable PPAs for data centers)
+#   Scope 3:     32,600 tCO2e (-15% from 2019, supplier engagement ongoing)
+#   Total:       41,100 tCO2e (-24.4% from 2019)
+#
+# Assessment: ON TRACK for Scope 1+2 near-term target, AT RISK for Scope 3
+# =============================================================================
+
+# --- Organization ---
+organization_name: "NordTech Solutions AB"
+organization_id: "nt-sol-2019-001"
+
+# --- Temporal Settings ---
+baseline_year: 2019
+current_year: 2024
+reporting_year: 2024
+
+# --- Long-Term Target ---
+long_term_target_year: 2050
+long_term_reduction_pct: 90.0
+net_zero_year: 2050
+sbti_pathway: "1.5C"
+
+# --- 5-Year Interim Target (SBTi Near-Term) ---
+interim_target_5yr:
+  enabled: true
+  target_year: 2030
+  min_reduction_pct: 42.0
+  scope_1_2_reduction_pct: 42.0
+  scope_3_reduction_pct: 25.0
+  label: "SBTi 1.5C near-term target (2030)"
+
+# --- 10-Year Interim Target (Mid-Term Milestone) ---
+interim_target_10yr:
+  enabled: true
+  target_year: 2035
+  min_reduction_pct: 65.0
+  scope_1_2_reduction_pct: 65.0
+  scope_3_reduction_pct: 50.0
+  label: "Mid-term milestone (2035)"
+
+# --- Custom Milestones ---
+custom_milestones:
+  - enabled: true
+    target_year: 2027
+    min_reduction_pct: 30.0
+    scope_1_2_reduction_pct: 35.0
+    scope_3_reduction_pct: 18.0
+    label: "Internal progress checkpoint (2027)"
+  - enabled: true
+    target_year: 2040
+    min_reduction_pct: 80.0
+    scope_1_2_reduction_pct: 85.0
+    scope_3_reduction_pct: 70.0
+    label: "Pre-net-zero acceleration (2040)"
+
+# --- Pathway ---
+pathway_type: "linear"
+annual_reduction_rate: 4.2
+s_curve_inflection_year: null
+milestone_years: null
+milestone_reductions_pct: null
+
+# --- Scope Coverage ---
+scope:
+  scope_1_included: true
+  scope_2_included: true
+  scope_2_method: "market_based"
+  scope_3_included: true
+  scope_3_lag_years: 5
+  scope_3_categories: [1, 2, 3, 4, 5, 6, 7, 11, 12]
+  scope_3_significant_threshold_pct: 40.0
+  scope_3_coverage_pct: 67.0
+  scope_1_coverage_pct: 95.0
+  scope_2_coverage_pct: 95.0
+
+# --- Progress Monitoring ---
+monitoring:
+  monitoring_frequency: "quarterly"
+  variance_tolerance_pct: 10.0
+  performance_scoring_enabled: true
+  amber_threshold_multiplier: 1.0
+  red_threshold_multiplier: 2.0
+  trend_detection_enabled: true
+  trend_window_periods: 4
+  cumulative_tracking_enabled: true
+  year_on_year_comparison: true
+  normalized_tracking: true
+
+# --- Variance Analysis ---
+variance:
+  variance_method: "lmdi"
+  decomposition_levels:
+    - "scope"
+    - "category"
+    - "initiative"
+  root_cause_classification: true
+  root_cause_taxonomy: "standard"
+  materiality_threshold_pct: 2.0
+  historical_comparison_years: 5
+  waterfall_visualization: true
+  attribution_confidence_enabled: true
+
+# --- Trend Extrapolation ---
+extrapolation:
+  extrapolation_method: "exponential_smoothing"
+  forecast_horizon_years: 3
+  confidence_interval: 0.95
+  backtesting_enabled: true
+  backtesting_holdout_years: 2
+  ensemble_enabled: false
+  scenario_adjustment_enabled: true
+  min_data_points: 4
+  outlier_detection: true
+  outlier_z_score_threshold: 2.5
+
+# --- Corrective Actions ---
+corrective_action:
+  corrective_action_trigger: "amber"
+  gap_quantification_enabled: true
+  initiative_optimization: true
+  macc_integration: true
+  macc_carbon_price_usd: 80.0
+  scenario_remodeling: true
+  action_plan_template: true
+  escalation_enabled: true
+  escalation_threshold_periods: 2
+  max_corrective_actions: 20
+  cost_benefit_analysis: true
+  implementation_timeline: true
+
+# --- Carbon Budget ---
+carbon_budget:
+  carbon_budget_enabled: true
+  budget_allocation_method: "linear"
+  budget_overshoot_allowed: false
+  overshoot_compensation_years: 2
+  cumulative_budget_tracking: true
+  budget_reserve_pct: 5.0
+  quarterly_budget_splits: true
+  scope_level_budgets: true
+  facility_level_budgets: false
+  budget_unit: "tCO2e"
+
+# --- SBTi Validation ---
+sbti_validation:
+  sbti_validation_enabled: true
+  sbti_criteria_count: 21
+  sbti_minimum_ambition_check: true
+  sbti_boundary_check: true
+  sbti_timeframe_check: true
+  sbti_recalculation_trigger_pct: 5.0
+  sbti_submission_date: "2025-06-15"
+  sbti_commitment_type: "near_term_and_net_zero"
+  auto_fix_suggestions: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "sbti"
+    - "cdp"
+    - "tcfd"
+    - "esrs"
+    - "gri"
+  reporting_frequency: "annual"
+  public_disclosure_enabled: true
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 10
+  executive_summary_enabled: true
+  benchmark_comparison: true
+
+# --- Alerting ---
+alerting:
+  email_alerts_enabled: true
+  slack_alerts_enabled: true
+  webhook_alerts_enabled: false
+  alert_recipients:
+    - "sustainability@nordtech.se"
+    - "cso@nordtech.se"
+  slack_channel: "#climate-targets"
+  webhook_url: null
+  alert_escalation_enabled: true
+  escalation_recipients:
+    - "ceo@nordtech.se"
+    - "board-secretary@nordtech.se"
+  alert_on_green: false
+  alert_on_amber: true
+  alert_on_red: true
+  digest_frequency: "weekly"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 1000
+  memory_limit_mb: 4096
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"
+
+# =============================================================================
+# Demo Data Notes - NordTech Solutions AB Emissions Profile
+# =============================================================================
+#
+# Year-over-year progression (base year 2019):
+#
+# Year  | Scope 1 | Scope 2 | Scope 3 | Total    | % Reduction
+# ------|---------|---------|---------|----------|------------
+# 2019  |   3,200 |  12,800 |  38,400 |  54,400  |  0.0% (base)
+# 2020  |   2,800 |  11,200 |  34,100 |  48,100  | -11.6% (COVID)
+# 2021  |   3,000 |  10,400 |  36,800 |  50,200  |  -7.7% (rebound)
+# 2022  |   2,600 |   8,800 |  35,200 |  46,600  | -14.3%
+# 2023  |   2,300 |   7,200 |  33,800 |  43,300  | -20.4%
+# 2024  |   2,100 |   6,400 |  32,600 |  41,100  | -24.4%
+#
+# Key reduction initiatives:
+#   - 2020-2022: Office heat pump conversion (3 of 5 offices complete)
+#   - 2021-2023: Data center renewable PPA (90% coverage by 2024)
+#   - 2022-2024: EV fleet transition (60% of company vehicles)
+#   - 2023-2025: Supplier engagement program (top 50 suppliers by emissions)
+#   - 2024-2026: Scope 3 Cat 11 efficiency program (product energy optimization)
+#
+# Performance Assessment (2024):
+#   Scope 1+2 combined: 8,500 tCO2e (46.9% reduction from 2019 base)
+#     -> GREEN: Ahead of 2030 target pace (42% required)
+#   Scope 3: 32,600 tCO2e (15.1% reduction from 2019 base)
+#     -> AMBER: Behind pace for 2035 Scope 3 target (25% required)
+#     -> Key gap: Cat 1 supplier emissions (only -8% from 2019)
+#
+# Carbon Budget Status (2024):
+#   Cumulative budget (2019-2030): 400,000 tCO2e
+#   Cumulative actual (2019-2024): 283,700 tCO2e (70.9% of total budget used)
+#   Remaining budget (2025-2030): 116,300 tCO2e (6 years)
+#   Annual budget remaining: ~19,380 tCO2e/year
+#   Assessment: Within budget but narrowing margin
+# =============================================================================

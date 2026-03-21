@@ -1,0 +1,483 @@
+# =============================================================================
+# PACK-025 Race to Zero Pack - Service Sector Preset
+# =============================================================================
+# Configuration for professional, financial, and technology service
+# organizations with low direct emissions (Scope 1) and high indirect
+# emissions (Scope 3), particularly from purchased goods (Cat 1), business
+# travel (Cat 6), employee commuting (Cat 7), and investments (Cat 15).
+# ACA (Absolute Contraction Approach) pathway appropriate since no SDA
+# sector pathway exists for services. Renewable energy procurement (RE100)
+# and supply chain engagement are primary decarbonization levers. Scope 2
+# reduction via market-based instruments. Office-based operations with
+# building energy efficiency as main Scope 1+2 lever.
+#
+# Target: 50% by 2030, dominant Scope 3
+# Scope 3 prioritization: Cat 1, 6, 7, 15
+# Action plan: Focus on employee engagement, supply chain, purchased goods
+# Partnership: High (supplier programs)
+# Verification: Annual
+#
+# Typical use cases:
+#   - Professional services (consulting, legal, accounting)
+#   - Technology companies (software, SaaS, data centers)
+#   - Financial services (non-GFANZ pathway)
+#   - Media and communications
+#   - Healthcare services
+#   - Education institutions
+#   - Retail services (non-manufacturing)
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+actor_type: "CORPORATE"
+sector: "SERVICES"
+size: "MEDIUM"
+region: "GLOBAL"
+country: ""
+employee_count_range: "250+"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+campaign_join_date: ""
+
+# --- Race to Zero Campaign ---
+campaign:
+  campaign_name: "Race to Zero"
+  campaign_version: "2022"
+  interpretation_guide_version: "June 2022"
+  hleg_report_version: "November 2022"
+  net_zero_target_year: 2050
+  interim_target_year: 2030
+  starting_line_deadline_months: 12
+  annual_reporting_required: true
+  public_disclosure_required: true
+
+# --- Partner Initiative ---
+partner:
+  primary_partner: "SBTi"
+  secondary_partners:
+    - "CDP"
+    - "RE100"
+    - "We Mean Business Coalition"
+    - "The Climate Pledge"
+  reporting_channel: "CDP"
+  partner_requirements_mapped: true
+  cross_partner_synergy: true
+  partner_compliance_tracking: true
+  engagement_level: "HIGH"
+  supplier_program_participation: true
+
+# --- Pledge Configuration ---
+pledge:
+  net_zero_by_2050: true
+  interim_2030_target: true
+  action_plan_commitment: true
+  annual_reporting_commitment: true
+  scope_coverage_full: true
+  governance_endorsement: true
+  public_disclosure: true
+  no_contradictory_actions: true
+
+# --- Starting Line Criteria ---
+starting_line:
+  enabled: true
+  assessment_mode: "FULL"
+  pillars:
+    pledge:
+      sl_p1_net_zero_target: true
+      sl_p2_interim_target: true
+      sl_p3_science_based: true
+      sl_p4_fair_share: true
+      sl_p5_scope_coverage: true
+    plan:
+      sl_a1_action_plan_published: true
+      sl_a2_quantified_actions: true
+      sl_a3_timeline_milestones: true
+      sl_a4_resource_allocation: true
+      sl_a5_sector_alignment: true
+    proceed:
+      sl_r1_immediate_action: true
+      sl_r2_emission_reductions: true
+      sl_r3_investment_commitment: true
+      sl_r4_governance_integration: true
+      sl_r5_no_contradictory_action: true
+    publish:
+      sl_d1_annual_reporting: true
+      sl_d2_emissions_disclosure: true
+      sl_d3_target_progress: true
+      sl_d4_plan_updates: true
+      sl_d5_transparency: true
+  evidence_collection_automated: true
+  gap_remediation_guidance: true
+  compliance_deadline_tracking: true
+  threshold_scores:
+    pledge_minimum_pct: 80.0
+    plan_minimum_pct: 70.0
+    proceed_minimum_pct: 70.0
+    publish_minimum_pct: 80.0
+    overall_minimum_pct: 75.0
+
+# --- Interim Target Validation (ACA for services) ---
+interim_target:
+  minimum_reduction_pct: 42.0
+  preferred_reduction_pct: 50.0
+  baseline_year_minimum: 2015
+  baseline_year_preferred: 2021
+  methodology: "SBTi_ACA"
+  annual_reduction_rate_min_pct: 4.2
+  scope1_coverage_pct: 95.0
+  scope2_coverage_pct: 95.0
+  scope3_coverage_pct: 67.0
+  fair_share_assessment: true
+  scope3_dominant: true
+  pathway_sources:
+    - "IPCC_AR6_WG3"
+    - "IEA_NZE_2023"
+    - "SBTi_1_5C"
+
+# --- Long-Term Target ---
+long_term_target:
+  net_zero_year: 2050
+  residual_emissions_max_pct: 10.0
+  neutralization_required: true
+  neutralization_method: "CARBON_REMOVAL"
+  scope1_reduction_pct: 95.0
+  scope2_reduction_pct: 100.0
+  scope3_reduction_pct: 90.0
+
+# --- Scope 3 Prioritization ---
+scope3_prioritization:
+  enabled: true
+  priority_categories:
+    cat_1:
+      name: "Purchased Goods and Services"
+      priority: "HIGH"
+      typical_share_pct: 40.0
+      engagement_strategy: "SUPPLIER_SPECIFIC"
+      reduction_levers:
+        - "supplier_sbti_targets"
+        - "green_procurement_policy"
+        - "low_carbon_alternatives"
+    cat_6:
+      name: "Business Travel"
+      priority: "HIGH"
+      typical_share_pct: 15.0
+      engagement_strategy: "ACTIVITY_BASED"
+      reduction_levers:
+        - "travel_policy_revision"
+        - "virtual_meeting_first"
+        - "saf_procurement"
+        - "rail_preferred"
+    cat_7:
+      name: "Employee Commuting"
+      priority: "HIGH"
+      typical_share_pct: 10.0
+      engagement_strategy: "ACTIVITY_BASED"
+      reduction_levers:
+        - "remote_work_policy"
+        - "ev_incentives"
+        - "cycling_infrastructure"
+        - "public_transit_subsidies"
+    cat_15:
+      name: "Investments"
+      priority: "MEDIUM"
+      typical_share_pct: 10.0
+      engagement_strategy: "PORTFOLIO_SCREENING"
+      reduction_levers:
+        - "esg_screening"
+        - "divestment_policy"
+        - "green_investment"
+
+# --- Action Plan ---
+action_plan:
+  publication_deadline_months: 12
+  quantified_actions_required: true
+  minimum_actions: 8
+  maximum_actions: 60
+  include_macc_analysis: true
+  include_timeline: true
+  include_milestones: true
+  include_resource_allocation: true
+  include_sector_alignment: true
+  focus_areas:
+    - "employee_engagement"
+    - "supply_chain_decarbonization"
+    - "purchased_goods_optimization"
+  action_categories:
+    - "RENEWABLE_PROCUREMENT"
+    - "ENERGY_EFFICIENCY"
+    - "SUPPLY_CHAIN_ENGAGEMENT"
+    - "TRAVEL_POLICY"
+    - "COMMUTING_INCENTIVES"
+    - "REMOTE_WORK_OPTIMIZATION"
+    - "GREEN_PROCUREMENT"
+    - "DATA_CENTER_EFFICIENCY"
+    - "BUILDING_RETROFIT"
+    - "FLEET_ELECTRIFICATION"
+    - "BEHAVIORAL_CHANGE"
+  planning_horizon_years: 10
+  scenario_count: 3
+  carbon_price_eur_per_tco2e: 65.0
+  discount_rate_pct: 8.0
+  milestones:
+    - year: 2025
+      description: "Scope 3 baseline complete, supplier engagement launched"
+    - year: 2027
+      description: "30% reduction in travel emissions, RE100 progress >50%"
+    - year: 2030
+      description: "50% reduction achieved, top 200 suppliers engaged"
+    - year: 2035
+      description: "70% reduction, supply chain decarbonization maturing"
+    - year: 2040
+      description: "85% reduction, 100% renewable electricity"
+    - year: 2050
+      description: "Net-zero achieved, residual neutralized"
+
+# --- Scope Configuration (Scope 3 dominant - Cat 1, 6, 7, 15) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 5, 6, 7, 8, 13, 15]
+  scope3_materiality_threshold_pct: 1.0
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "supplier_specific"
+    cat_6: "activity_based"
+    cat_7: "activity_based"
+    cat_8: "activity_based"
+    cat_15: "portfolio_screening"
+    default: "spend_based"
+  pcaf_enabled: false
+
+# --- Sector Pathway ---
+sector_pathway:
+  enabled: true
+  auto_classify: true
+  pathway_sources:
+    - "IEA_NZE_2050"
+    - "IPCC_AR6_WG3"
+    - "TPI"
+    - "ACT"
+  benchmark_comparison: true
+  milestone_mapping: true
+  gap_to_benchmark_analysis: true
+  sectors_covered: 10
+  priority_sectors:
+    - "PROFESSIONAL_SERVICES"
+    - "TECHNOLOGY"
+    - "FINANCIAL_SERVICES"
+    - "MEDIA"
+    - "HEALTHCARE"
+  pathway_selection: "ACA"
+
+# --- HLEG Credibility Assessment ---
+hleg:
+  enabled: true
+  assessment_mode: "FULL"
+  recommendations_assessed: 10
+  sub_criteria_count: 45
+  recommendations:
+    r1_net_zero_pledge_quality: true
+    r2_interim_target_ambition: true
+    r3_voluntary_credit_use: true
+    r4_lobbying_alignment: true
+    r5_just_transition: true
+    r6_financial_commitment: true
+    r7_reporting_transparency: true
+    r8_scope_of_pledge: true
+    r9_internal_governance: true
+    r10_fossil_fuel_phaseout: true
+  credibility_rating_scale:
+    - "STRONG"
+    - "ADEQUATE"
+    - "WEAK"
+    - "INSUFFICIENT"
+  minimum_credibility_target: "ADEQUATE"
+  science_based_validation: true
+  governance_maturity_review: true
+  fossil_fuel_exposure_check: false
+  supply_chain_engagement_emphasis: true
+
+# --- Credibility Assessment Weights ---
+credibility_weights:
+  pledge_quality: 0.15
+  target_ambition: 0.12
+  action_plan_robustness: 0.12
+  progress_trajectory: 0.10
+  governance_maturity: 0.10
+  transparency_reporting: 0.10
+  sector_alignment: 0.08
+  partnership_engagement: 0.08
+  offset_integrity: 0.05
+  just_transition: 0.05
+  supply_chain_engagement: 0.05
+  total: 1.00
+  minimum_composite_score: 0.60
+  passing_threshold: "ADEQUATE"
+
+# --- Partnership Engagement (Supplier programs) ---
+partnership:
+  enabled: true
+  engagement_level: "HIGH"
+  max_partners: 8
+  partner_discovery: true
+  collaboration_agreements: true
+  joint_target_setting: false
+  performance_tracking: true
+  impact_reporting: true
+  synergy_analysis: true
+  supplier_program_participation: true
+  supplier_engagement_targets:
+    top_suppliers_engaged: 200
+    supplier_sbti_target_pct: 50.0
+    supplier_disclosure_pct: 70.0
+  partner_initiatives:
+    - "SBTi"
+    - "CDP"
+    - "RE100"
+    - "We Mean Business Coalition"
+    - "The Climate Pledge"
+    - "EP100"
+
+# --- Verification ---
+verification:
+  enabled: true
+  frequency: "ANNUAL"
+  verification_level: "LIMITED"
+  third_party_required: false
+  accepted_standards:
+    - "ISO_14064_3"
+    - "ISAE_3410"
+    - "AA1000AS"
+  verification_scope:
+    - "emissions_inventory"
+    - "scope3_methodology"
+    - "target_progress"
+    - "supplier_engagement_claims"
+  historical_data_review: true
+  site_visits_required: false
+  verification_report_public: true
+
+# --- Offset Strategy ---
+offset_strategy:
+  enabled: true
+  max_offset_pct: 10.0
+  offset_scope: "RESIDUAL_ONLY"
+  eligible_offset_types:
+    - "CARBON_REMOVAL"
+    - "NATURE_BASED_SOLUTIONS"
+    - "DIRECT_AIR_CAPTURE"
+    - "BIOCHAR"
+  excluded_offset_types:
+    - "AVOIDED_DEFORESTATION"
+    - "REDD_UNCERTIFIED"
+  quality_standards:
+    - "VERRA_VCS"
+    - "GOLD_STANDARD"
+    - "PURO_EARTH"
+  permanence_minimum_years: 100
+  additionality_required: true
+  co_benefits_preferred: true
+  vintage_maximum_years: 5
+  price_floor_eur_per_tco2e: 20.0
+  retirement_tracking: true
+  double_counting_prevention: true
+
+# --- Annual Reporting ---
+reporting:
+  enabled: true
+  frequency: "ANNUAL"
+  channels:
+    - "CDP_CLIMATE"
+    - "R2Z_CAMPAIGN"
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_emissions_inventory: true
+  include_target_progress: true
+  include_action_implementation: true
+  include_partnership_engagement: true
+  include_credibility_update: true
+  include_forward_commitments: true
+  include_supply_chain_engagement: true
+  include_offset_usage: true
+  verification_required: true
+  verification_level: "LIMITED"
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+  reporting_format_preferences:
+    primary: "PDF"
+    machine_readable: "JSON"
+    web: "HTML"
+
+# --- Progress Tracking ---
+progress:
+  enabled: true
+  trajectory_assessment: true
+  variance_analysis: true
+  yoy_comparison: true
+  corrective_action_triggers: true
+  on_track_threshold_pct: 5.0
+  alert_threshold_pct: 10.0
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+    - "supplier_engagement_rate"
+    - "travel_emissions_per_employee"
+    - "re100_progress"
+    - "hleg_credibility_rating"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+
+# --- Race Readiness ---
+readiness:
+  enabled: true
+  dimensions:
+    - "pledge_strength"
+    - "starting_line_compliance"
+    - "target_ambition"
+    - "action_plan_quality"
+    - "progress_trajectory"
+    - "sector_alignment"
+    - "partnership_engagement"
+    - "hleg_credibility"
+  composite_scoring: true
+  rag_status: true
+  prioritized_improvements: true
+  readiness_levels:
+    - "CAMPAIGN_READY"
+    - "MOSTLY_READY"
+    - "PARTIALLY_READY"
+    - "SIGNIFICANT_GAPS"
+    - "NOT_READY"
+  minimum_readiness_target: "MOSTLY_READY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 6
+  timeout_seconds: 300
+  batch_size: 1500
+  memory_limit_mb: 4096
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true

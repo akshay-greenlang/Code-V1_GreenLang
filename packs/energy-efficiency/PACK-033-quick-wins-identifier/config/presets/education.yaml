@@ -1,0 +1,104 @@
+# =============================================================================
+# PACK-033 Quick Wins Identifier - Education Preset
+# =============================================================================
+# School and university environment with focus on HVAC scheduling aligned
+# to timetable, lighting in classrooms and corridors, IT shutdown during
+# holidays, and behavioural awareness programmes. EUI benchmark:
+# 100-350 kWh/m2/yr. Key opportunities: heating schedule aligned to
+# timetable, LED in classrooms, IT shutdown policy, behavioural campaigns,
+# boiler reset optimization.
+#
+# Typical use cases:
+#   - Primary and secondary schools
+#   - Colleges and further education
+#   - University campus buildings
+#   - Sports and leisure centres on education estates
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "EDUCATION"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 2000
+
+# --- Scan ---
+scan:
+  depth: "STANDARD"
+  categories:
+    - "HVAC"
+    - "LIGHTING"
+    - "CONTROLS_SCHEDULING"
+    - "IT_EQUIPMENT"
+    - "BEHAVIORAL"
+    - "WATER_HEATING"
+    - "BUILDING_ENVELOPE"
+  max_measures_per_category: 8
+  include_no_cost_measures: true
+  include_low_cost_measures: true
+  include_medium_cost_measures: true
+  max_payback_years: 3.0
+  minimum_annual_savings_eur: 100.0
+  utility_bill_months: 12
+  walkthrough_checklist: true
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.26
+  gas_rate_eur_per_kwh: 0.09
+  discount_rate: 0.06
+  analysis_period_years: 15
+  energy_price_escalation_pct: 3.0
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Prioritization ---
+prioritization:
+  profile: "BALANCED"
+  weight_financial_savings: 0.25
+  weight_payback_period: 0.25
+  weight_carbon_reduction: 0.20
+  weight_implementation_ease: 0.20
+  weight_co_benefits: 0.10
+  top_n_recommendations: 10
+
+# --- Behavioural (CRITICAL for education) ---
+behavioral:
+  enabled: true
+  awareness_campaign: true
+  switch_off_programme: true
+  thermostat_discipline: true
+  energy_champion_network: true
+  gamification: true
+  estimated_savings_pct: 8.0
+
+# --- Rebate ---
+rebate:
+  enabled: true
+  country: "DE"
+  include_federal_programmes: true
+  include_eu_programmes: true
+  include_utility_rebates: true
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  detailed_measure_cards: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

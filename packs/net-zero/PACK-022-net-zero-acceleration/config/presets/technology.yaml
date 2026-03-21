@@ -1,0 +1,180 @@
+# =============================================================================
+# PACK-022 Net Zero Acceleration Pack - Technology Preset
+# =============================================================================
+# Configuration for technology, software, and data center companies. ACA
+# pathway. Data center PUE optimization, cloud efficiency, and RE100
+# renewable electricity procurement as primary levers. Low direct emissions
+# (Scope 1+2). Scope 3 Category 1 (purchased hardware and cloud), Category 2
+# (capital goods), and Category 11 (product use-phase energy) are dominant.
+# Supply chain engagement for hardware and cloud infrastructure providers.
+#
+# Typical use cases:
+#   - Software companies (SaaS, enterprise)
+#   - Cloud infrastructure providers
+#   - Data center operators
+#   - Hardware manufacturers (servers, devices)
+#   - Telecommunications companies
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "TECHNOLOGY"
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- Scenario Modeling ---
+scenario:
+  scenario_types:
+    - "BAU"
+    - "MODERATE"
+    - "AMBITIOUS"
+  monte_carlo_runs: 1000
+  random_seed: 42
+  confidence_interval_pct: 95.0
+  sensitivity_top_n: 10
+  uncertainty_emission_factor_pct: 15.0
+  uncertainty_activity_data_pct: 10.0
+  uncertainty_cost_pct: 15.0
+  parallel_scenarios: true
+  max_custom_scenarios: 5
+
+# --- Pathway (ACA for technology) ---
+pathway:
+  methodology: "ACA"
+  sda_enabled: false
+  sda_sectors: []
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Supplier Engagement ---
+supplier:
+  enabled: true
+  max_suppliers: 15000
+  tier_thresholds:
+    collaborate: 5.0
+    require: 15.0
+    engage: 40.0
+    inform: 100.0
+  top_supplier_count: 100
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+    - "innovation"
+  batch_size: 2000
+
+# --- Scope 3 ---
+scope3:
+  categories: [1, 2, 3, 4, 5, 6, 7, 8, 11, 12]
+  activity_based_categories: [1, 2, 8, 11]
+  supplier_specific_categories: [1]
+  spend_based_categories: [3, 4, 5, 6, 7, 12]
+  materiality_threshold_pct: 1.0
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 7.0
+  carbon_price_eur_per_tco2e: 75.0
+  carbon_price_escalation_pct: 5.0
+  reporting_currency: "EUR"
+  planning_horizon_years: 8
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 9.0
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: false
+  portfolio_weighting: "revenue"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Variance Decomposition ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 10.0
+  top_drivers_count: 10
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: false
+  max_entities: 15
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "product_line"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 70
+  max_nature_based_pct: 45.0
+  shift_to_removals_by_year: 2040
+  preferred_registries:
+    - "gold_standard"
+    - "verra"
+    - "american_carbon_registry"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2028
+  workpaper_format: "ISAE_3000"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10

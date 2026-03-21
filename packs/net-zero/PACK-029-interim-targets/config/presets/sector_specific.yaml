@@ -1,0 +1,226 @@
+# =============================================================================
+# PACK-029 Interim Targets Pack - Sector-Specific Preset
+# =============================================================================
+# Configuration focused on sector pathway integration with PACK-028 for
+# organizations that need interim targets aligned with sector-specific
+# decarbonization pathways, IEA NZE milestones, and technology roadmaps.
+#
+# This preset links interim targets to the SBTi Sectoral Decarbonization
+# Approach (SDA) intensity convergence pathway from PACK-028, enabling
+# sector-appropriate milestone tracking alongside absolute targets.
+#
+# Typical use cases:
+#   - Heavy industry (steel, cement, aluminium) with SDA pathways
+#   - Power generation with gCO2/kWh intensity convergence
+#   - Transport sectors (aviation, shipping, road) with intensity targets
+#   - Organizations with both intensity and absolute targets
+#   - Companies aligning interim targets with IEA NZE sector milestones
+#
+# Key characteristics:
+#   - S-curve pathway (technology adoption driven, typical for SDA sectors)
+#   - Technology roadmap milestone integration from PACK-028
+#   - IEA NZE sector milestone tracking enabled
+#   - Milestone-based pathway with sector-specific checkpoints
+#   - MACC integration at higher carbon price ($120/tCO2e)
+#   - Normalized (intensity) + absolute tracking enabled
+#   - Extended reporting with ESRS E1 for EU compliance
+#
+# Cross-pack integration:
+#   - PACK-028: Sector pathway, MACC curves, technology roadmap, benchmarks
+#   - PACK-021: Base year emissions and long-term net-zero target
+#   - PACK-027: Enterprise-level orchestration and multi-site management
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+organization_id: null
+
+# --- Temporal Settings ---
+baseline_year: 2019
+current_year: 2024
+reporting_year: 2024
+
+# --- Long-Term Target ---
+long_term_target_year: 2050
+long_term_reduction_pct: 90.0
+net_zero_year: 2050
+sbti_pathway: "1.5C"
+
+# --- 5-Year Interim Target ---
+interim_target_5yr:
+  enabled: true
+  target_year: 2030
+  min_reduction_pct: 42.0
+  scope_1_2_reduction_pct: 42.0
+  scope_3_reduction_pct: 25.0
+  label: "SBTi 1.5C sector near-term target (2030)"
+
+# --- 10-Year Interim Target ---
+interim_target_10yr:
+  enabled: true
+  target_year: 2035
+  min_reduction_pct: 65.0
+  scope_1_2_reduction_pct: 65.0
+  scope_3_reduction_pct: 50.0
+  label: "Sector mid-term milestone (2035)"
+
+# --- Custom Milestones (sector technology milestones) ---
+custom_milestones:
+  - enabled: true
+    target_year: 2028
+    min_reduction_pct: 25.0
+    label: "Pre-2030 technology transition checkpoint"
+  - enabled: true
+    target_year: 2040
+    min_reduction_pct: 80.0
+    label: "IEA NZE 2040 sector milestone"
+  - enabled: true
+    target_year: 2045
+    min_reduction_pct: 88.0
+    label: "Pre-net-zero technology completion"
+
+# --- Pathway (S-CURVE for technology-driven sectors) ---
+pathway_type: "s_curve"
+annual_reduction_rate: null
+s_curve_inflection_year: 2035
+milestone_years: null
+milestone_reductions_pct: null
+
+# --- Scope Coverage ---
+scope:
+  scope_1_included: true
+  scope_2_included: true
+  scope_2_method: "market_based"
+  scope_3_included: true
+  scope_3_lag_years: 5
+  scope_3_categories: [1, 2, 3, 4, 5, 6, 7, 11, 12]
+  scope_3_significant_threshold_pct: 40.0
+  scope_3_coverage_pct: 67.0
+  scope_1_coverage_pct: 95.0
+  scope_2_coverage_pct: 95.0
+
+# --- Progress Monitoring ---
+monitoring:
+  monitoring_frequency: "quarterly"
+  variance_tolerance_pct: 12.0
+  performance_scoring_enabled: true
+  amber_threshold_multiplier: 1.0
+  red_threshold_multiplier: 2.0
+  trend_detection_enabled: true
+  trend_window_periods: 4
+  cumulative_tracking_enabled: true
+  year_on_year_comparison: true
+  normalized_tracking: true
+
+# --- Variance Analysis ---
+variance:
+  variance_method: "lmdi"
+  decomposition_levels:
+    - "scope"
+    - "category"
+    - "initiative"
+    - "facility"
+  root_cause_classification: true
+  root_cause_taxonomy: "extended"
+  materiality_threshold_pct: 2.0
+  historical_comparison_years: 3
+  waterfall_visualization: true
+  attribution_confidence_enabled: true
+
+# --- Trend Extrapolation ---
+extrapolation:
+  extrapolation_method: "exponential_smoothing"
+  forecast_horizon_years: 5
+  confidence_interval: 0.95
+  backtesting_enabled: true
+  backtesting_holdout_years: 2
+  ensemble_enabled: false
+  scenario_adjustment_enabled: true
+  min_data_points: 4
+  outlier_detection: true
+  outlier_z_score_threshold: 2.5
+
+# --- Corrective Actions ---
+corrective_action:
+  corrective_action_trigger: "amber"
+  gap_quantification_enabled: true
+  initiative_optimization: true
+  macc_integration: true
+  macc_carbon_price_usd: 120.0
+  scenario_remodeling: true
+  action_plan_template: true
+  escalation_enabled: true
+  escalation_threshold_periods: 2
+  max_corrective_actions: 20
+  cost_benefit_analysis: true
+  implementation_timeline: true
+
+# --- Carbon Budget ---
+carbon_budget:
+  carbon_budget_enabled: true
+  budget_allocation_method: "front_loaded"
+  budget_overshoot_allowed: false
+  overshoot_compensation_years: 3
+  cumulative_budget_tracking: true
+  budget_reserve_pct: 5.0
+  quarterly_budget_splits: true
+  scope_level_budgets: true
+  facility_level_budgets: true
+  budget_unit: "tCO2e"
+
+# --- SBTi Validation ---
+sbti_validation:
+  sbti_validation_enabled: true
+  sbti_criteria_count: 21
+  sbti_minimum_ambition_check: true
+  sbti_boundary_check: true
+  sbti_timeframe_check: true
+  sbti_recalculation_trigger_pct: 5.0
+  sbti_submission_date: null
+  sbti_commitment_type: "near_term_and_net_zero"
+  auto_fix_suggestions: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "sbti"
+    - "cdp"
+    - "tcfd"
+    - "esrs"
+  reporting_frequency: "annual"
+  public_disclosure_enabled: true
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 10
+  executive_summary_enabled: true
+  benchmark_comparison: true
+
+# --- Alerting ---
+alerting:
+  email_alerts_enabled: true
+  slack_alerts_enabled: false
+  webhook_alerts_enabled: false
+  alert_recipients: []
+  slack_channel: null
+  webhook_url: null
+  alert_escalation_enabled: true
+  escalation_recipients: []
+  alert_on_green: false
+  alert_on_amber: true
+  alert_on_red: true
+  digest_frequency: "weekly"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 600
+  batch_size: 1000
+  memory_limit_mb: 8192
+
+# --- Pack Metadata ---
+pack_version: "1.0.0"

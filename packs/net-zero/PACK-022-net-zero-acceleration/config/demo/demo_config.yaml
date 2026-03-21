@@ -1,0 +1,241 @@
+# =============================================================================
+# PACK-022 Net Zero Acceleration Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for GreenSteel Manufacturing AG, a fictional mid-size
+# steel manufacturer headquartered in Essen, Germany. The company operates
+# three plants (Essen blast furnace, Duisburg EAF, Dortmund rolling mill)
+# and is accelerating its net-zero program after receiving SBTi target
+# validation. This configuration demonstrates multi-scenario Monte Carlo
+# analysis, SDA pathway for steel sector, supplier engagement for top 50
+# raw material suppliers, climate CapEx planning, temperature scoring, and
+# VCMI Gold claim preparation with full assurance workpaper generation.
+#
+# Company: GreenSteel Manufacturing AG
+# Headquarters: Essen, Germany
+# Revenue: EUR 2.5 billion
+# Employees: 4,500
+# Plants: 3 (Essen BF, Duisburg EAF, Dortmund Rolling)
+# Base Year: 2021
+# Reporting Year: 2025
+# SBTi Target Status: Validated (near-term 2030, long-term 2050)
+# Total Footprint: ~1,850,000 tCO2e (2021 base year)
+# =============================================================================
+
+# --- Identity ---
+organization_name: "GreenSteel Manufacturing AG"
+sector: "HEAVY_INDUSTRY"
+region: "EU"
+country: "DE"
+nace_code: "C24.10"
+gics_code: "15104050"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- Scenario Modeling ---
+# Three scenarios for board decision-making:
+# BAU: Continue current operations with no additional investment
+# Moderate: Phase out one blast furnace, 30% scrap-based EAF shift
+# Ambitious: Full EAF transition + green hydrogen DRI by 2040
+scenario:
+  scenario_types:
+    - "BAU"
+    - "MODERATE"
+    - "AMBITIOUS"
+  monte_carlo_runs: 1000
+  random_seed: 42
+  confidence_interval_pct: 95.0
+  sensitivity_top_n: 10
+  uncertainty_emission_factor_pct: 10.0
+  uncertainty_activity_data_pct: 8.0
+  uncertainty_cost_pct: 25.0
+  parallel_scenarios: true
+  max_custom_scenarios: 3
+
+# --- Pathway (SDA mandatory for steel) ---
+pathway:
+  methodology: "SDA"
+  sda_enabled: true
+  sda_sectors:
+    - "STEEL"
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Supplier Engagement ---
+# Top 50 raw material suppliers (iron ore, coking coal, scrap,
+# ferroalloys, refractory materials, lime/flux)
+supplier:
+  enabled: true
+  max_suppliers: 2000
+  tier_thresholds:
+    collaborate: 3.0
+    require: 12.0
+    engage: 35.0
+    inform: 100.0
+  top_supplier_count: 50
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+    - "innovation"
+  batch_size: 500
+
+# --- Scope 3 (all 15 categories) ---
+scope3:
+  categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  activity_based_categories: [1, 3, 4, 5, 11]
+  supplier_specific_categories: [1]
+  spend_based_categories: [2, 6, 7, 8, 9, 10, 12, 13, 14, 15]
+  materiality_threshold_pct: 0.5
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Climate Finance ---
+# EUR 800M total CapEx budget for decarbonization over 15 years
+# Key investments: EAF conversion (EUR 500M), green hydrogen DRI
+# pilot (EUR 150M), waste heat recovery (EUR 50M), renewable PPAs
+# (EUR 100M OpEx over 15 years)
+finance:
+  enabled: true
+  discount_rate_pct: 10.0
+  carbon_price_eur_per_tco2e: 120.0
+  carbon_price_escalation_pct: 7.0
+  reporting_currency: "EUR"
+  budget_constraint_eur: 800000000.0
+  planning_horizon_years: 15
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 12.0
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+    - "MOTS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: false
+  portfolio_weighting: "revenue"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Variance Decomposition ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 8.0
+  top_drivers_count: 10
+  historical_periods: 12
+
+# --- Multi-Entity (3 plants) ---
+multi_entity:
+  enabled: true
+  max_entities: 10
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "process_route"
+    - "legal_entity"
+  entity_list:
+    - "GreenSteel Essen BF Plant"
+    - "GreenSteel Duisburg EAF Plant"
+    - "GreenSteel Dortmund Rolling Mill"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI (targeting Gold) ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 75
+  max_nature_based_pct: 40.0
+  shift_to_removals_by_year: 2035
+  preferred_registries:
+    - "verra"
+    - "gold_standard"
+    - "american_carbon_registry"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance (limited, progressing to reasonable by 2028) ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2028
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10
+
+# =============================================================================
+# Demo Data - Synthetic Emissions Inventory for 2021 (Base Year)
+# =============================================================================
+# The following comments document the synthetic demo data for GreenSteel:
+#
+# Scope 1 (Total: ~1,200,000 tCO2e)
+#   - Blast furnace process (Essen): 750,000 tCO2e (coke reduction, limestone)
+#   - Electric arc furnace (Duisburg): 80,000 tCO2e (electrode consumption, gas)
+#   - Natural gas heating/annealing: 180,000 tCO2e
+#   - Rolling mill reheating furnace: 120,000 tCO2e
+#   - Coke oven gas flaring: 40,000 tCO2e
+#   - Fugitive emissions: 30,000 tCO2e
+#
+# Scope 2 (Total: ~150,000 tCO2e location-based)
+#   - Grid electricity (all plants): 150,000 tCO2e location-based
+#   - Market-based (30% green PPA): 105,000 tCO2e
+#
+# Scope 3 (Total: ~500,000 tCO2e)
+#   - Cat 1 Purchased goods (iron ore, scrap, alloys): 250,000 tCO2e (50%)
+#   - Cat 2 Capital goods: 30,000 tCO2e (6%)
+#   - Cat 3 Fuel & energy activities: 80,000 tCO2e (16%)
+#   - Cat 4 Upstream transportation: 60,000 tCO2e (12%)
+#   - Cat 5 Waste generated: 25,000 tCO2e (5%)
+#   - Cat 6 Business travel: 5,000 tCO2e (1%)
+#   - Cat 7 Employee commuting: 8,000 tCO2e (2%)
+#   - Cat 9 Downstream transport: 20,000 tCO2e (4%)
+#   - Cat 11 Use of sold products: 15,000 tCO2e (3%)
+#   - Cat 12 End-of-life treatment: 7,000 tCO2e (1%)
+#
+# Total Footprint: ~1,850,000 tCO2e (location-based)
+#                  ~1,805,000 tCO2e (market-based)
+#
+# SDA Intensity (2021 baseline): 1.85 tCO2e / tonne crude steel
+# Production: 1,000,000 tonnes crude steel / year
+# SBTi SDA target: 0.54 tCO2e / tonne crude steel by 2050
+# =============================================================================

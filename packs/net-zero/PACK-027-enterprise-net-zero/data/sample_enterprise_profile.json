@@ -1,0 +1,141 @@
+{
+  "profile_id": "ENTERPRISE-001",
+  "organization_name": "Global Manufacturing Corp",
+  "reporting_year": 2025,
+  "fiscal_year_end": "12-31",
+  "consolidation_method": "financial_control",
+  "headquarters": {
+    "country": "United States",
+    "state": "California",
+    "city": "San Francisco"
+  },
+  "sector": "manufacturing",
+  "industry": "Electronics Manufacturing",
+  "naics_code": "334111",
+  "sic_code": "3571",
+  "employee_count": 12500,
+  "revenue_usd": 2500000000,
+  "baseline_year": 2019,
+  "target_year": 2030,
+  "net_zero_year": 2050,
+  "sbti_status": "targets_set",
+  "sbti_target_type": "absolute",
+  "sbti_pathway": "1.5C",
+  "entities": [
+    {
+      "entity_id": "ENTITY-001",
+      "name": "Parent Company - US Operations",
+      "country": "United States",
+      "ownership_pct": 100,
+      "control_type": "financial_control",
+      "operational_control": true,
+      "employee_count": 5000,
+      "revenue_usd": 1500000000
+    },
+    {
+      "entity_id": "ENTITY-002",
+      "name": "European Subsidiary",
+      "country": "Germany",
+      "ownership_pct": 100,
+      "control_type": "financial_control",
+      "operational_control": true,
+      "employee_count": 3000,
+      "revenue_usd": 600000000
+    },
+    {
+      "entity_id": "ENTITY-003",
+      "name": "Asia-Pacific Operations",
+      "country": "Singapore",
+      "ownership_pct": 100,
+      "control_type": "financial_control",
+      "operational_control": true,
+      "employee_count": 2500,
+      "revenue_usd": 300000000
+    },
+    {
+      "entity_id": "ENTITY-004",
+      "name": "Joint Venture - China",
+      "country": "China",
+      "ownership_pct": 51,
+      "control_type": "financial_control",
+      "operational_control": false,
+      "employee_count": 2000,
+      "revenue_usd": 100000000
+    }
+  ],
+  "baseline_emissions": {
+    "scope1_tco2e": 125000,
+    "scope2_location_based_tco2e": 87500,
+    "scope2_market_based_tco2e": 62500,
+    "scope3_tco2e": 437500,
+    "total_scope123_tco2e": 650000,
+    "scope3_categories": {
+      "cat1_purchased_goods": 187500,
+      "cat2_capital_goods": 62500,
+      "cat3_fuel_energy": 31250,
+      "cat4_upstream_transport": 25000,
+      "cat5_waste": 6250,
+      "cat6_business_travel": 12500,
+      "cat7_commuting": 18750,
+      "cat8_upstream_leased": 0,
+      "cat9_downstream_transport": 31250,
+      "cat10_processing": 12500,
+      "cat11_use_of_sold": 43750,
+      "cat12_end_of_life": 6250,
+      "cat13_downstream_leased": 0,
+      "cat14_franchises": 0,
+      "cat15_investments": 0
+    }
+  },
+  "targets": {
+    "scope12_absolute_reduction_pct": 50.4,
+    "scope12_target_year": 2030,
+    "scope3_reduction_pct": 27.5,
+    "scope3_target_year": 2030,
+    "net_zero_year": 2050
+  },
+  "carbon_pricing": {
+    "enabled": true,
+    "shadow_price_usd_per_tco2e": 75,
+    "methodology": "sbti_aligned",
+    "escalation_rate_pct": 3.5
+  },
+  "supply_chain": {
+    "tier1_suppliers": 250,
+    "tier2_suppliers": 1200,
+    "tier3_suppliers": 5000,
+    "engagement_program_active": true,
+    "supplier_emissions_coverage_pct": 65
+  },
+  "external_assurance": {
+    "enabled": true,
+    "provider": "Deloitte",
+    "standard": "ISO 14064-3:2019",
+    "assurance_level": "limited",
+    "last_assured_year": 2024
+  },
+  "regulatory_filings": {
+    "sec_climate_rule": true,
+    "csrd_esrs": true,
+    "california_sb253": true,
+    "issb_s2": true,
+    "cdp_disclosure": true,
+    "tcfd_alignment": true
+  },
+  "contacts": {
+    "sustainability_lead": {
+      "name": "Jane Smith",
+      "title": "Chief Sustainability Officer",
+      "email": "jane.smith@globalmanufacturing.com",
+      "phone": "+1-415-555-0100"
+    },
+    "finance_lead": {
+      "name": "John Doe",
+      "title": "CFO",
+      "email": "john.doe@globalmanufacturing.com",
+      "phone": "+1-415-555-0101"
+    }
+  },
+  "created_at": "2025-01-15T10:00:00Z",
+  "updated_at": "2025-03-18T14:30:00Z"
+}

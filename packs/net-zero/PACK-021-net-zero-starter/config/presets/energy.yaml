@@ -1,0 +1,153 @@
+# =============================================================================
+# PACK-021 Net Zero Starter Pack - Energy Preset
+# =============================================================================
+# Configuration for energy sector organizations with very high Scope 1
+# emissions from combustion (power generation, refining) and fugitive sources
+# (methane leaks, venting, flaring). SDA pathway mandatory for power
+# generation sector. FLAG pathway if biomass or bioenergy operations are
+# material. All 8 engines enabled. Activity-based Scope 3 for categories
+# 3 (fuel/energy), 11 (use of sold products - downstream combustion), and
+# 15 (investments). Long planning horizon of 15 years reflecting
+# capital-intensive asset replacement cycles in the energy sector.
+#
+# Typical use cases:
+#   - Electric utilities (thermal and renewable)
+#   - Oil and gas companies (upstream, midstream, downstream)
+#   - Integrated energy companies
+#   - District heating providers
+#   - Renewable energy developers
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sector: "ENERGY"
+  size: "ENTERPRISE"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  erp_system: "SAP"
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  include_joint_ventures: true
+  base_year_recalculation_threshold_pct: 5.0
+
+# --- Scope Configuration (Scope 1 dominant, activity-based) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 15]
+  scope3_method: "ACTIVITY_BASED"
+  scope3_category_methods:
+    cat_1: "activity_based"
+    cat_3: "activity_based"
+    cat_4: "activity_based"
+    cat_11: "activity_based"
+    cat_15: "activity_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 0.5
+
+# --- Target Setting (SDA mandatory for power sector) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "SDA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  sbti_submission_planned: true
+
+# --- Reduction Actions (15-year horizon, CCS enabled) ---
+reduction:
+  max_actions: 150
+  planning_horizon_years: 15
+  include_renewable_procurement: true
+  include_supplier_engagement: true
+  include_fleet_electrification: true
+  include_energy_efficiency: true
+  include_fuel_switching: true
+  include_process_optimization: true
+  include_ccs: true
+  discount_rate_pct: 10.0
+  carbon_price_eur_per_tco2e: 100.0
+  scenario_count: 4
+
+# --- Offset Portfolio (full strategy for energy) ---
+offset:
+  strategy: "BOTH"
+  quality_minimum_score: 70
+  max_nature_based_pct: 40.0
+  vcmi_target_claim: "GOLD"
+  preferred_credit_types:
+    - "gold_standard"
+    - "verified_carbon_standard"
+    - "american_carbon_registry"
+  shift_to_removals_by_year: 2035
+  track_co_benefits: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+  include_cdp_mapping: true
+  include_tcfd_mapping: true
+  include_esrs_mapping: true
+  include_sbti_mapping: true
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 8
+  timeout_seconds: 600
+  batch_size: 2000
+  memory_limit_mb: 8192
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 15
+  external_audit_export: true
+
+# --- Scorecard ---
+scorecard:
+  enabled: true
+  assessment_mode: "FULL"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "cagr_reduction_rate"
+    - "renewable_electricity_pct"
+    - "supplier_engagement_rate"
+    - "sbti_target_status"
+    - "cdp_score"
+    - "offset_portfolio_quality"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]

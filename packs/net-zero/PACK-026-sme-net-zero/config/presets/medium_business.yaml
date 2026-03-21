@@ -1,0 +1,214 @@
+# =============================================================================
+# PACK-026 SME Net Zero Pack - Medium Business Preset
+# =============================================================================
+# Configuration for medium enterprises (50-249 employees, EUR 10-50M revenue).
+# Uses GOLD data quality tier with detailed bills and supplier questionnaires.
+# Scope 1+2 fully measured from metered data, Scope 3 detailed for Categories
+# 1-7 (purchased goods, capital goods, fuel/energy, upstream transport, waste,
+# business travel, employee commuting). ACA pathway with 50% reduction target
+# by 2030 (full 1.5C pathway). Top 10 actions with MACC analysis.
+#
+# Budget: EUR 20,000-100,000 total
+# Grant focus: EU/national strategic programs
+# Certification: ISO 14001 + Carbon Trust
+# Verification: Third-party (full audit)
+# Processing: Full mode, 2GB memory, <30 sec processing
+#
+# Typical use cases:
+#   - Mid-size manufacturers (50-200 employees)
+#   - Professional services firms (consulting, engineering, IT)
+#   - Regional retail chains (10-50 locations)
+#   - Mid-size logistics companies (50+ vehicle fleet)
+#   - Growing SaaS/tech companies (100-249 employees)
+#   - Mid-size construction companies
+#   - Food processing and distribution companies
+#   - Healthcare facilities and clinics
+#   - Companies preparing for CSRD scope expansion
+# =============================================================================
+
+# --- Temporal Settings ---
+reporting_year: 2025
+base_year: 2024
+pack_version: "1.0.0"
+
+# --- Organization ---
+organization:
+  name: ""
+  sme_size: "MEDIUM"
+  sector: "OTHER"
+  region: "EU"
+  country: "DE"
+  fiscal_year_end: "12-31"
+  accounting_software: "SAP_BUSINESS_ONE"
+  number_of_sites: 5
+  has_fleet: true
+  has_production_facility: false
+
+# --- Data Quality (GOLD: Detailed bills + questionnaires) ---
+data_quality:
+  tier: "GOLD"
+  allow_industry_averages: false
+  allow_spend_based_estimation: true
+  require_utility_bills: true
+  require_supplier_data: true
+  data_completeness_target_pct: 85.0
+  emission_factor_source: "DEFRA_2024"
+  data_improvement_plan: true
+
+# --- Boundary ---
+boundary:
+  method: "OPERATIONAL_CONTROL"
+  reporting_currency: "EUR"
+  base_year_recalculation_threshold_pct: 5.0
+  include_all_sites: true
+
+# --- Scope Configuration (S1+2 measured, S3 detailed Cat 1-7) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope1_estimation_method: "activity_based"
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 4, 5, 6, 7]
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    cat_1: "hybrid"
+    cat_2: "spend_based"
+    cat_3: "activity_based"
+    cat_4: "spend_based"
+    cat_5: "activity_based"
+    cat_6: "activity_based"
+    cat_7: "spend_based"
+    default: "spend_based"
+  scope3_materiality_threshold_pct: 2.0
+  scope3_optional: false
+
+# --- Target Setting (50% by 2030 - full 1.5C pathway) ---
+target:
+  ambition_level: "CELSIUS_1_5"
+  pathway_type: "ACA"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  near_term_reduction_pct: 50.0
+  long_term_reduction_pct: 90.0
+  annual_linear_reduction_pct: 4.2
+  sbti_sme_route: true
+  sbti_submission_planned: true
+  sme_climate_hub_commitment: true
+
+# --- Reduction Actions (Top 10 actions, MACC analysis, EUR 20K-100K) ---
+reduction:
+  max_actions: 10
+  planning_horizon_years: 5
+  budget_range_min_eur: 20000.0
+  budget_range_max_eur: 100000.0
+  include_quick_wins: true
+  quick_win_max_count: 5
+  include_renewable_procurement: true
+  include_energy_efficiency: true
+  include_supplier_engagement: true
+  include_fleet_electrification: true
+  include_process_optimization: false
+  include_behavioral_change: true
+  include_macc_analysis: true
+  carbon_price_eur_per_tco2e: 80.0
+  discount_rate_pct: 7.0
+  scenario_count: 3
+
+# --- Grant Preferences (EU/national strategic programs) ---
+grant:
+  enabled: true
+  preferred_categories:
+    - "EU_PROGRAM"
+    - "NATIONAL_PROGRAM"
+    - "SECTOR_SPECIFIC"
+    - "ENERGY_EFFICIENCY"
+    - "INNOVATION"
+  max_application_complexity: "HIGH"
+  region_focus: "EU"
+  sector_specific: true
+  include_tax_incentives: true
+  include_green_loans: true
+  budget_match_required: false
+
+# --- Certification (ISO 14001 + Carbon Trust) ---
+certification:
+  primary_pathway: "ISO_14001"
+  secondary_pathway: "CARBON_TRUST"
+  auto_recommend: true
+  readiness_assessment: true
+  max_certification_budget_eur: 25000.0
+  max_time_months: 12
+
+# --- Reporting (PDF + Excel, all 3 templates) ---
+reporting:
+  formats:
+    - "PDF"
+    - "EXCEL"
+  templates:
+    - "net_zero_summary"
+    - "action_plan"
+    - "annual_progress"
+  include_cdp_mapping: false
+  include_sbti_mapping: true
+  include_sme_climate_hub_mapping: true
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+  include_grant_recommendations: true
+  include_certification_roadmap: true
+
+# --- Performance (Full: 2GB, <30 sec) ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 30
+  batch_size: 500
+  memory_limit_mb: 2048
+  lightweight_mode: false
+
+# --- Audit Trail (5-year, with external export) ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5
+  external_audit_export: true
+
+# --- Verification (Third-party full audit) ---
+verification:
+  level: "THIRD_PARTY_FULL"
+  frequency: "ANNUAL"
+  scope_of_verification:
+    - "scope_1"
+    - "scope_2"
+    - "scope_3"
+  include_scope3_in_verification: true
+
+# --- Scorecard (Quick assessment, full KPIs) ---
+scorecard:
+  enabled: true
+  assessment_mode: "QUICK"
+  dimensions:
+    - "baseline_completeness"
+    - "target_ambition"
+    - "reduction_progress"
+    - "data_quality"
+    - "certification_readiness"
+  benchmark_enabled: true
+  peer_group: "SECTOR"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "emission_intensity_revenue"
+    - "emission_intensity_employee"
+    - "scope3_coverage_pct"
+    - "yoy_reduction_rate"
+    - "renewable_electricity_pct"
+    - "supplier_engagement_rate"
+    - "data_quality_score"
+  target_years: [2025, 2027, 2030, 2040, 2050]

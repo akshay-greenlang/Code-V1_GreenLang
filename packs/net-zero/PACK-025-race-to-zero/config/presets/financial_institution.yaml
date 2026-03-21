@@ -1,0 +1,518 @@
+# =============================================================================
+# PACK-025 Race to Zero Pack - Financial Institution Preset
+# =============================================================================
+# Configuration for banks, insurance companies, and asset managers joining
+# Race to Zero through the Glasgow Financial Alliance for Net Zero (GFANZ).
+# PCAF-based financed emissions methodology for Scope 3 Category 15
+# (investments). Portfolio-level temperature scoring using WATS/TETS/MOTS
+# aggregation methods. Very low direct emissions (Scope 1+2), dominant
+# financed and insured emissions (Scope 3 Cat 15). GFANZ transition plan
+# framework for sector-specific portfolio alignment. HLEG assessment with
+# emphasis on fossil fuel financing and portfolio decarbonization.
+#
+# Target: Portfolio alignment to 1.5C pathway
+# FINZ methodology: Enabled
+# Sectoral targets: 8 financed emission sectors
+# PCAF data quality scoring: Enabled
+# Partnership: High (supply chain finance programs)
+# Verification: Quarterly for portfolio tracking
+#
+# Typical use cases:
+#   - Commercial and investment banks (lending portfolio)
+#   - Insurance companies (general, life, reinsurance)
+#   - Asset management firms (equity and fixed income portfolios)
+#   - Development finance institutions (DFIs)
+#   - Private equity and venture capital (fund-level)
+#   - Pension funds and sovereign wealth funds
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+actor_type: "FINANCIAL_INSTITUTION"
+sector: "FINANCIAL_SERVICES"
+size: "LARGE"
+region: "GLOBAL"
+country: ""
+employee_count_range: "500+"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+campaign_join_date: ""
+
+# --- Race to Zero Campaign ---
+campaign:
+  campaign_name: "Race to Zero"
+  campaign_version: "2022"
+  interpretation_guide_version: "June 2022"
+  hleg_report_version: "November 2022"
+  net_zero_target_year: 2050
+  interim_target_year: 2030
+  starting_line_deadline_months: 12
+  annual_reporting_required: true
+  public_disclosure_required: true
+
+# --- Partner Initiative (GFANZ primary) ---
+partner:
+  primary_partner: "GFANZ"
+  secondary_partners:
+    - "SBTi_FI"
+    - "CDP"
+    - "Net-Zero Banking Alliance"
+    - "Net-Zero Asset Owner Alliance"
+    - "Net-Zero Insurance Alliance"
+    - "Net-Zero Asset Managers Initiative"
+  reporting_channel: "GFANZ"
+  partner_requirements_mapped: true
+  cross_partner_synergy: true
+  partner_compliance_tracking: true
+  engagement_level: "HIGH"
+  supply_chain_finance_programs: true
+
+# --- Pledge Configuration ---
+pledge:
+  net_zero_by_2050: true
+  interim_2030_target: true
+  action_plan_commitment: true
+  annual_reporting_commitment: true
+  scope_coverage_full: true
+  governance_endorsement: true
+  public_disclosure: true
+  no_contradictory_actions: true
+  portfolio_alignment_commitment: true
+  financed_emissions_disclosure: true
+
+# --- Starting Line Criteria ---
+starting_line:
+  enabled: true
+  assessment_mode: "FULL"
+  pillars:
+    pledge:
+      sl_p1_net_zero_target: true
+      sl_p2_interim_target: true
+      sl_p3_science_based: true
+      sl_p4_fair_share: true
+      sl_p5_scope_coverage: true
+    plan:
+      sl_a1_action_plan_published: true
+      sl_a2_quantified_actions: true
+      sl_a3_timeline_milestones: true
+      sl_a4_resource_allocation: true
+      sl_a5_sector_alignment: true
+    proceed:
+      sl_r1_immediate_action: true
+      sl_r2_emission_reductions: true
+      sl_r3_investment_commitment: true
+      sl_r4_governance_integration: true
+      sl_r5_no_contradictory_action: true
+    publish:
+      sl_d1_annual_reporting: true
+      sl_d2_emissions_disclosure: true
+      sl_d3_target_progress: true
+      sl_d4_plan_updates: true
+      sl_d5_transparency: true
+  evidence_collection_automated: true
+  gap_remediation_guidance: true
+  compliance_deadline_tracking: true
+  threshold_scores:
+    pledge_minimum_pct: 80.0
+    plan_minimum_pct: 75.0
+    proceed_minimum_pct: 75.0
+    publish_minimum_pct: 85.0
+    overall_minimum_pct: 80.0
+
+# --- Interim Target Validation (Portfolio-level) ---
+interim_target:
+  minimum_reduction_pct: 42.0
+  preferred_reduction_pct: 50.0
+  baseline_year_minimum: 2015
+  baseline_year_preferred: 2019
+  methodology: "SBTi_FI"
+  finz_methodology_enabled: true
+  annual_reduction_rate_min_pct: 4.2
+  scope1_coverage_pct: 95.0
+  scope2_coverage_pct: 95.0
+  scope3_coverage_pct: 67.0
+  fair_share_assessment: true
+  portfolio_targets: true
+  portfolio_alignment_methodology: "PACTA"
+  temperature_rating_target_celsius: 1.5
+  pathway_sources:
+    - "IPCC_AR6_WG3"
+    - "IEA_NZE_2023"
+    - "GFANZ_SECTOR_PATHWAYS"
+
+# --- Long-Term Target ---
+long_term_target:
+  net_zero_year: 2050
+  residual_emissions_max_pct: 10.0
+  neutralization_required: true
+  neutralization_method: "CARBON_REMOVAL"
+  operational_reduction_pct: 90.0
+  financed_emissions_reduction_pct: 90.0
+  portfolio_temperature_target_celsius: 1.5
+
+# --- Sectoral Targets (8 financed emission sectors) ---
+sectoral_targets:
+  enabled: true
+  sectors:
+    power_generation:
+      pathway: "IEA_NZE_2050"
+      intensity_metric: "gCO2e_per_kWh"
+      target_2030: 138.0
+      target_2050: 0.0
+    oil_and_gas:
+      pathway: "IEA_NZE_2050"
+      intensity_metric: "gCO2e_per_MJ"
+      target_2030_reduction_pct: 30.0
+      target_2050: "PHASE_OUT"
+    steel:
+      pathway: "MPP_STEEL"
+      intensity_metric: "tCO2e_per_tonne_steel"
+      target_2030: 1.2
+      target_2050: 0.05
+    cement:
+      pathway: "MPP_CEMENT"
+      intensity_metric: "tCO2e_per_tonne_cement"
+      target_2030: 0.47
+      target_2050: 0.06
+    aviation:
+      pathway: "MPP_AVIATION"
+      intensity_metric: "gCO2e_per_pkm"
+      target_2030: 72.0
+      target_2050: 0.0
+    shipping:
+      pathway: "MPP_SHIPPING"
+      intensity_metric: "gCO2e_per_tkm"
+      target_2030_reduction_pct: 25.0
+      target_2050: 0.0
+    real_estate:
+      pathway: "CRREM"
+      intensity_metric: "kgCO2e_per_sqm"
+      target_2030: 25.0
+      target_2050: 0.0
+    automotive:
+      pathway: "IEA_NZE_2050"
+      intensity_metric: "gCO2e_per_vkm"
+      target_2030: 95.0
+      target_2050: 0.0
+
+# --- PCAF Data Quality Scoring ---
+pcaf:
+  enabled: true
+  data_quality_scoring: true
+  data_quality_scale: [1, 2, 3, 4, 5]
+  target_data_quality_score: 2.5
+  minimum_data_quality_score: 3.5
+  asset_classes:
+    - "listed_equity"
+    - "corporate_bonds"
+    - "business_loans"
+    - "project_finance"
+    - "commercial_real_estate"
+    - "mortgages"
+    - "sovereign_debt"
+  attribution_factor_method: "PCAF_V3"
+  emissions_scope_for_financed: "SCOPE_1_2_3"
+  data_quality_improvement_plan: true
+
+# --- Action Plan (Transition Plan for FIs) ---
+action_plan:
+  publication_deadline_months: 12
+  plan_type: "TRANSITION_PLAN"
+  quantified_actions_required: true
+  minimum_actions: 8
+  maximum_actions: 60
+  include_macc_analysis: false
+  include_timeline: true
+  include_milestones: true
+  include_resource_allocation: true
+  include_sector_alignment: true
+  action_categories:
+    - "PORTFOLIO_DECARBONIZATION"
+    - "CLIENT_ENGAGEMENT"
+    - "SECTOR_EXCLUSION_POLICY"
+    - "GREEN_FINANCE_EXPANSION"
+    - "OPERATIONAL_EMISSIONS"
+    - "FINANCED_EMISSIONS_REDUCTION"
+    - "TRANSITION_FINANCE"
+    - "CLIMATE_RISK_INTEGRATION"
+  planning_horizon_years: 10
+  scenario_count: 3
+  carbon_price_eur_per_tco2e: 75.0
+  discount_rate_pct: 6.0
+  milestones:
+    - year: 2025
+      description: "PCAF baseline complete, sectoral targets published"
+    - year: 2027
+      description: "Portfolio alignment tools deployed, client engagement active"
+    - year: 2030
+      description: "Portfolio 1.5C aligned, sector targets achieved"
+    - year: 2035
+      description: "Green asset ratio >40%, fossil phase-down on track"
+    - year: 2040
+      description: "Portfolio temperature score <1.7C"
+    - year: 2050
+      description: "Net-zero portfolio achieved"
+
+# --- Scope Configuration (Financed emissions dominant) ---
+scope:
+  include_scope1: true
+  include_scope2: true
+  include_scope3: true
+  scope2_methods:
+    - "location_based"
+    - "market_based"
+  scope3_categories: [1, 2, 3, 5, 6, 7, 8, 13, 15]
+  scope3_materiality_threshold_pct: 1.0
+  scope3_method: "HYBRID"
+  scope3_category_methods:
+    cat_15: "pcaf"
+    cat_6: "activity_based"
+    cat_7: "activity_based"
+    default: "spend_based"
+  pcaf_enabled: true
+
+# --- Sector Pathway (Portfolio sectors) ---
+sector_pathway:
+  enabled: true
+  auto_classify: true
+  pathway_sources:
+    - "IEA_NZE_2050"
+    - "IPCC_AR6_WG3"
+    - "TPI"
+    - "GFANZ_SECTOR_PATHWAYS"
+  benchmark_comparison: true
+  milestone_mapping: true
+  gap_to_benchmark_analysis: true
+  portfolio_sector_alignment: true
+  sectors_covered: 25
+  priority_sectors:
+    - "POWER_GENERATION"
+    - "OIL_GAS"
+    - "STEEL"
+    - "CEMENT"
+    - "AVIATION"
+    - "SHIPPING"
+    - "REAL_ESTATE"
+    - "AUTOMOTIVE"
+  pathway_selection: "SECTORAL"
+
+# --- HLEG Credibility Assessment (FI-specific emphasis) ---
+hleg:
+  enabled: true
+  assessment_mode: "FULL"
+  recommendations_assessed: 10
+  sub_criteria_count: 45
+  recommendations:
+    r1_net_zero_pledge_quality: true
+    r2_interim_target_ambition: true
+    r3_voluntary_credit_use: true
+    r4_lobbying_alignment: true
+    r5_just_transition: true
+    r6_financial_commitment: true
+    r7_reporting_transparency: true
+    r8_scope_of_pledge: true
+    r9_internal_governance: true
+    r10_fossil_fuel_phaseout: true
+  credibility_rating_scale:
+    - "STRONG"
+    - "ADEQUATE"
+    - "WEAK"
+    - "INSUFFICIENT"
+  minimum_credibility_target: "ADEQUATE"
+  science_based_validation: true
+  governance_maturity_review: true
+  fossil_fuel_exposure_check: true
+  fossil_fuel_financing_review: true
+  portfolio_transition_assessment: true
+
+# --- Credibility Assessment Weights ---
+credibility_weights:
+  pledge_quality: 0.12
+  target_ambition: 0.12
+  action_plan_robustness: 0.12
+  progress_trajectory: 0.10
+  governance_maturity: 0.10
+  transparency_reporting: 0.10
+  sector_alignment: 0.08
+  partnership_engagement: 0.06
+  offset_integrity: 0.05
+  just_transition: 0.05
+  portfolio_alignment: 0.05
+  fossil_fuel_financing: 0.05
+  total: 1.00
+  minimum_composite_score: 0.65
+  passing_threshold: "ADEQUATE"
+
+# --- Partnership Engagement (FI alliances) ---
+partnership:
+  enabled: true
+  engagement_level: "HIGH"
+  max_partners: 15
+  partner_discovery: true
+  collaboration_agreements: true
+  joint_target_setting: true
+  performance_tracking: true
+  impact_reporting: true
+  synergy_analysis: true
+  supply_chain_finance_programs: true
+  partner_initiatives:
+    - "GFANZ"
+    - "Net-Zero Banking Alliance"
+    - "Net-Zero Asset Owner Alliance"
+    - "Net-Zero Insurance Alliance"
+    - "Net-Zero Asset Managers Initiative"
+    - "SBTi_FI"
+    - "CDP"
+    - "Climate Action 100+"
+    - "PRI"
+
+# --- Verification ---
+verification:
+  enabled: true
+  frequency: "QUARTERLY"
+  portfolio_tracking_frequency: "QUARTERLY"
+  full_verification_frequency: "ANNUAL"
+  verification_level: "LIMITED"
+  third_party_required: true
+  accepted_standards:
+    - "ISO_14064_3"
+    - "ISAE_3410"
+    - "PCAF_VERIFICATION"
+  verification_scope:
+    - "emissions_inventory"
+    - "financed_emissions"
+    - "portfolio_alignment"
+    - "target_progress"
+    - "pcaf_data_quality"
+  historical_data_review: true
+  site_visits_required: false
+  verification_report_public: true
+
+# --- Offset Strategy ---
+offset_strategy:
+  enabled: true
+  max_offset_pct: 10.0
+  offset_scope: "RESIDUAL_ONLY"
+  eligible_offset_types:
+    - "CARBON_REMOVAL"
+    - "NATURE_BASED_SOLUTIONS"
+    - "DIRECT_AIR_CAPTURE"
+    - "BIOCHAR"
+    - "ENHANCED_WEATHERING"
+  excluded_offset_types:
+    - "AVOIDED_DEFORESTATION"
+    - "REDD_UNCERTIFIED"
+  quality_standards:
+    - "VERRA_VCS"
+    - "GOLD_STANDARD"
+    - "PURO_EARTH"
+    - "ISOMETRIC"
+  permanence_minimum_years: 100
+  additionality_required: true
+  co_benefits_preferred: true
+  vintage_maximum_years: 5
+  price_floor_eur_per_tco2e: 25.0
+  retirement_tracking: true
+  double_counting_prevention: true
+
+# --- Annual Reporting ---
+reporting:
+  enabled: true
+  frequency: "ANNUAL"
+  channels:
+    - "GFANZ"
+    - "CDP_CLIMATE"
+    - "R2Z_CAMPAIGN"
+  formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+    - "XBRL"
+  include_emissions_inventory: true
+  include_target_progress: true
+  include_action_implementation: true
+  include_partnership_engagement: true
+  include_credibility_update: true
+  include_forward_commitments: true
+  include_portfolio_alignment: true
+  include_financed_emissions: true
+  include_offset_usage: true
+  verification_required: true
+  verification_level: "LIMITED"
+  language: "en"
+  review_workflow_enabled: true
+  watermark_draft: true
+  reporting_format_preferences:
+    primary: "PDF"
+    machine_readable: "JSON"
+    regulatory: "XBRL"
+    web: "HTML"
+
+# --- Progress Tracking ---
+progress:
+  enabled: true
+  trajectory_assessment: true
+  variance_analysis: true
+  yoy_comparison: true
+  corrective_action_triggers: true
+  on_track_threshold_pct: 5.0
+  alert_threshold_pct: 10.0
+  portfolio_temperature_tracking: true
+  portfolio_aggregation_method: "WATS"
+  kpi_set:
+    - "absolute_emissions_trajectory"
+    - "financed_emissions_intensity"
+    - "portfolio_temperature_score"
+    - "scope3_cat15_coverage_pct"
+    - "yoy_reduction_rate"
+    - "green_asset_ratio_pct"
+    - "fossil_fuel_exposure_pct"
+    - "sector_alignment_score"
+    - "pcaf_data_quality_score"
+    - "hleg_credibility_rating"
+  target_years: [2025, 2030, 2035, 2040, 2045, 2050]
+
+# --- Race Readiness ---
+readiness:
+  enabled: true
+  dimensions:
+    - "pledge_strength"
+    - "starting_line_compliance"
+    - "target_ambition"
+    - "action_plan_quality"
+    - "progress_trajectory"
+    - "sector_alignment"
+    - "partnership_engagement"
+    - "hleg_credibility"
+  composite_scoring: true
+  rag_status: true
+  prioritized_improvements: true
+  readiness_levels:
+    - "CAMPAIGN_READY"
+    - "MOSTLY_READY"
+    - "PARTIALLY_READY"
+    - "SIGNIFICANT_GAPS"
+    - "NOT_READY"
+  minimum_readiness_target: "MOSTLY_READY"
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 8
+  timeout_seconds: 600
+  batch_size: 2000
+  memory_limit_mb: 8192
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  external_audit_export: true

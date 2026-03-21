@@ -1,0 +1,172 @@
+# =============================================================================
+# PACK-028 Sector Pathway Pack - Buildings Preset
+# =============================================================================
+# Configuration for commercial and residential buildings sector with SBTi SDA
+# pathway. Intensity metric: kgCO2/m2/year. Linear convergence model reflects
+# steady retrofit and heat pump deployment. Key transitions: deep envelope
+# retrofit, heat pump rollout, district heating, on-site renewables, building
+# automation systems, and phase-out of fossil heating by 2035-2040.
+#
+# Typical use cases:
+#   - Commercial real estate portfolios (offices, retail, logistics)
+#   - Residential housing associations and developers
+#   - REITs with direct building operations
+#   - Property management companies
+#   - Social housing providers
+#   - Hospitality (hotels, conference centers)
+#
+# Key sector characteristics:
+#   - CRREM pathway alignment for EU buildings
+#   - Scope 1+2 dominance (heating + electricity)
+#   - Long building lifetimes (50-100 years)
+#   - Deep retrofit vs. shallow retrofit trade-offs
+#   - Heat pump deployment as primary lever (COP 3-5)
+#   - EU Energy Performance of Buildings Directive (EPBD)
+#   - National building codes driving minimum standards
+# =============================================================================
+
+# --- Organization ---
+organization_name: ""
+primary_sector: "BUILDINGS_COMMERCIAL"
+secondary_sectors:
+  - "BUILDINGS_RESIDENTIAL"
+region: "EU"
+country: "DE"
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2019
+pack_version: "1.0.0"
+
+# --- SBTi SDA ---
+sbti_sda:
+  sbti_sda_enabled: true
+  sbti_sector_category: "BUILDINGS_COMMERCIAL"
+  sbti_pathway: "CELSIUS_1_5"
+  sbti_target_year: 2030
+  sbti_net_zero_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  sbti_submission_planned: true
+  flag_pathway_enabled: false
+
+# --- IEA NZE ---
+iea_nze:
+  iea_nze_enabled: true
+  iea_scenario: "NZE"
+  iea_region: "EU"
+  iea_milestone_tracking: true
+  iea_technology_outlook: true
+
+# --- IPCC AR6 ---
+ipcc:
+  ipcc_pathway: "C1"
+  ipcc_overshoot: "no"
+  ipcc_gwp_metric: "GWP100"
+
+# --- Intensity ---
+intensity:
+  baseline_intensity: 0.0
+  baseline_year: 2019
+  intensity_metric: "kgCO2/m2/year"
+  intensity_boundary: "scope_1_2"
+  production_unit: "m2"
+  production_forecast_enabled: true
+  production_growth_rate_pct: 1.0
+
+# --- Convergence ---
+convergence:
+  convergence_model: "linear"
+  convergence_rate: 0.05
+  catch_up_period: 10
+  inflection_year: null
+  step_years: null
+  step_reductions_pct: null
+
+# --- Technology Roadmap ---
+technology:
+  technology_roadmap_enabled: true
+  trl_threshold: 8
+  capex_phasing: "linear"
+  planning_horizon_years: 15
+  critical_materials_risk: true
+  dependency_analysis: true
+  iea_milestone_mapping: true
+  max_parallel_transitions: 4
+  s_curve_adoption: true
+
+# --- MACC ---
+macc:
+  macc_enabled: true
+  carbon_price_floor: 50.0
+  carbon_price_ceiling: 180.0
+  abatement_potential_target: 0.85
+  lever_interaction_modeling: true
+  implementation_sequencing: true
+  discount_rate_pct: 7.0
+  max_levers: 35
+  include_negative_cost: true
+
+# --- Benchmarking ---
+benchmark:
+  benchmark_peer_enabled: true
+  benchmark_leader_enabled: true
+  benchmark_iea_enabled: true
+  peer_selection: "auto"
+  leader_percentile: 10
+  peer_group_size: 30
+  sbti_validated_only: false
+  regulatory_benchmarks:
+    - "SBTi_SDA"
+    - "CRREM"
+    - "EU_EPBD"
+    - "IEA_NZE"
+  benchmark_dimensions:
+    - "intensity_rank"
+    - "reduction_rate"
+    - "heat_pump_coverage"
+    - "retrofit_depth"
+    - "renewable_heat_share"
+    - "epc_rating_distribution"
+    - "target_ambition"
+    - "pathway_gap"
+
+# --- Scenarios ---
+scenarios:
+  scenarios_enabled:
+    - "NZE"
+    - "WB2C"
+    - "2C"
+  scenario_sensitivity: true
+  carbon_price_sensitivity: true
+  technology_sensitivity: true
+  monte_carlo_runs: 1000
+  confidence_interval_pct: 90.0
+  risk_return_analysis: true
+  optimal_pathway_recommendation: true
+
+# --- Reporting ---
+reporting:
+  reporting_frameworks:
+    - "SBTi"
+    - "CDP"
+    - "TCFD"
+    - "ESRS"
+    - "GRI"
+  reporting_frequency: "quarterly"
+  assurance_level: "limited"
+  sha256_provenance: true
+  calculation_trace: true
+  assumption_register: true
+  data_lineage_enabled: true
+  retention_years: 7
+
+# --- Performance ---
+performance:
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  max_concurrent_calcs: 4
+  timeout_seconds: 300
+  batch_size: 2000
+  memory_limit_mb: 4096

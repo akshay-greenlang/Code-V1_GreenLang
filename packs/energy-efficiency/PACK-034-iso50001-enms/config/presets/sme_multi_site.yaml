@@ -1,0 +1,114 @@
+# =============================================================================
+# PACK-034 ISO 50001 EnMS - SME Multi-Site Preset
+# =============================================================================
+# Simplified EnMS scope for small-medium enterprises with 2-5 sites.
+# Budget-conscious implementation with portfolio-level reporting and
+# utility-bill-only data collection. EUI benchmark: 100-400 kWh/m2/yr.
+# Focus: streamlined ISO 50001 compliance with minimal overhead,
+# simple mean or single-variable baselines, area-normalised EnPIs.
+#
+# Typical use cases:
+#   - Small offices with 2-5 branches
+#   - SME manufacturers with workshop and office
+#   - Professional services firms with regional offices
+#   - Small retail or hospitality chains
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "SME_MULTI_SITE"
+enms_maturity: "PLANNING"
+country: "DE"
+reporting_year: 2026
+operating_hours_per_year: 2500
+
+# --- SEU ---
+seu:
+  cumulative_threshold_pct: 80.0
+  individual_threshold_pct: 10.0
+  min_consumers: 3
+  include_categories:
+    - "HVAC"
+    - "LIGHTING"
+    - "IT_EQUIPMENT"
+    - "WATER_HEATING"
+  review_frequency: "ANNUAL"
+  include_relevant_variables: true
+  track_personnel: false
+
+# --- Baseline ---
+baseline:
+  model_preference: "AUTO"
+  min_data_months: 12
+  max_cv_rmse: 30.0
+  min_r_squared: 0.65
+  significance_level: 0.05
+  outlier_method: "IQR"
+  auto_adjust: false
+
+# --- EnPI ---
+enpi:
+  enpi_types:
+    - "ABSOLUTE"
+    - "INTENSITY"
+  normalization_method: "AREA"
+  target_improvement_pct: 2.0
+  track_by_seu: false
+  benchmark_enabled: true
+
+# --- CUSUM ---
+cusum:
+  method: "TABULAR"
+  alert_threshold: 2.5
+  monitoring_interval: "MONTHLY"
+  seasonal_adjustment: "NONE"
+
+# --- Degree Day ---
+degree_day:
+  heating_base_celsius: 15.5
+  cooling_base_celsius: 18.3
+  optimize_base_temp: false
+  normalization_basis: "LONG_TERM_AVERAGE"
+
+# --- Compliance ---
+compliance:
+  assessment_frequency: "ANNUAL"
+  auto_gap_analysis: true
+  nc_closure_days: 120
+  surveillance_reminder_days: 45
+  internal_audit_frequency: "ANNUAL"
+  management_review_frequency: "ANNUAL"
+
+# --- Monitoring ---
+monitoring:
+  granularity: "MONTHLY"
+  data_retention_months: 36
+  quality_threshold: 0.90
+  auto_alerts: true
+
+# --- Action Plan ---
+action_plan:
+  max_payback_years: 3.0
+  discount_rate: 0.10
+  analysis_period_years: 5
+  verification_method: "OPTION_C"
+  electricity_rate_eur_per_kwh: 0.32
+  gas_rate_eur_per_kwh: 0.11
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  output_formats:
+    - "MARKDOWN"
+  include_charts: true
+  include_recommendations: true
+  management_review_template: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  retention_days: 1825

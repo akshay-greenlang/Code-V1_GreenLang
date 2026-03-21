@@ -1,0 +1,258 @@
+# =============================================================================
+# PACK-023 SBTi Alignment Pack - Technology Preset
+# =============================================================================
+# Configuration for technology, software, and data center companies with ACA
+# pathway. RE100 renewable procurement, data center PUE optimization, and
+# cloud efficiency as primary levers. Low direct emissions. Scope 3 Cat 1
+# (purchased hardware/cloud), Cat 2 (capital goods), and Cat 11 (product
+# use-phase energy) dominant. Supports software-as-a-service (SaaS),
+# data centers, semiconductor manufacturers, and cloud infrastructure
+# providers.
+#
+# Typical use cases:
+#   - Software as a service (SaaS) companies
+#   - Cloud infrastructure and data center providers
+#   - Semiconductor manufacturers
+#   - Hardware manufacturers
+#   - IT hardware vendors and integrators
+#   - Digital platform and internet companies
+# =============================================================================
+
+# --- Identity ---
+organization_name: ""
+sector: "TECHNOLOGY"
+sector_code: "NACE_J62_J63"
+gics_sector: "4540_5010_5020"
+region: "EU"
+country: ""
+
+# --- Temporal ---
+reporting_year: 2025
+base_year: 2021
+pack_version: "1.0.0"
+
+# --- SBTi Engines Configuration ---
+engines:
+  target_setting:
+    enabled: true
+    ambition_level: "CELSIUS_1_5"
+    scope_priorities:
+      scope1: 0.95
+      scope2: 0.95
+      scope3: 0.67
+  criteria_validation:
+    enabled: true
+    near_term_criteria: ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", "C22", "C23", "C24", "C25", "C26", "C27", "C28"]
+    net_zero_criteria: ["NZ-C1", "NZ-C2", "NZ-C3", "NZ-C4", "NZ-C5", "NZ-C6", "NZ-C7", "NZ-C8", "NZ-C9", "NZ-C10", "NZ-C11", "NZ-C12", "NZ-C13", "NZ-C14"]
+  scope3_screening:
+    enabled: true
+    materiality_trigger_pct: 40.0
+    coverage_near_term_pct: 67.0
+    coverage_long_term_pct: 90.0
+    categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12]
+  sda_sector:
+    enabled: false
+    sda_applicable: false
+    sda_sectors: []
+  flag_assessment:
+    enabled: false
+    flag_applicable: false
+  temperature_rating:
+    enabled: true
+    aggregation_methods:
+      - "WATS"
+      - "TETS"
+      - "MOTS"
+    default_score_celsius: 3.2
+    include_scope3: true
+  progress_tracking:
+    enabled: true
+    review_cycle_years: 5
+    recalculation_trigger_threshold_pct: 5.0
+  recalculation:
+    enabled: true
+    trigger_types:
+      - "acquisition"
+      - "divestiture"
+      - "merger"
+      - "methodology_change"
+      - "data_center_addition"
+      - "cloud_migration"
+  fi_portfolio:
+    enabled: false
+    fi_applicable: false
+  submission_readiness:
+    enabled: true
+    readiness_dimensions: 5
+
+# --- Pathway Configuration (ACA Default) ---
+pathway:
+  methodology: "ACA"
+  sda_enabled: false
+  sda_sectors: []
+  sda_base_year: 2021
+  sda_target_year: 2050
+  ambition_level: "CELSIUS_1_5"
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  coverage_scope1_pct: 95.0
+  coverage_scope2_pct: 95.0
+  coverage_scope3_pct: 67.0
+  flag_pathway_enabled: false
+  aca_annual_reduction_rate_pct: 4.2
+  re100_membership_enabled: true
+  iea_benchmark_source: "IEA_NZE_2023"
+  sbti_submission_planned: true
+
+# --- Scope 3 Configuration (Hardware & Cloud Dominant) ---
+scope3:
+  categories: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12]
+  activity_based_categories: [1, 11]
+  supplier_specific_categories: [1]
+  spend_based_categories: [2, 3, 4, 5, 6, 7, 9, 12]
+  materiality_threshold_pct: 0.5
+  target_dqis_score: 2
+  pcaf_enabled: false
+  pcaf_asset_classes: []
+
+# --- Supplier Engagement ---
+supplier:
+  enabled: true
+  max_suppliers: 3000
+  tier_thresholds:
+    collaborate: 4.0
+    require: 10.0
+    engage: 30.0
+    inform: 100.0
+  top_supplier_count: 70
+  data_collection_frequency: "annual"
+  sbti_target_tracking: true
+  cdp_supply_chain_enabled: true
+  engagement_scoring_dimensions:
+    - "data_quality"
+    - "renewable_energy_adoption"
+    - "target_ambition"
+    - "reduction_progress"
+    - "responsiveness"
+  batch_size: 2000
+
+# --- Climate Finance ---
+finance:
+  enabled: true
+  discount_rate_pct: 7.5
+  carbon_price_eur_per_tco2e: 85.0
+  carbon_price_escalation_pct: 5.5
+  reporting_currency: "EUR"
+  planning_horizon_years: 10
+  green_bond_screening: true
+  taxonomy_alignment: true
+  finance_instruments:
+    - "CAPEX_ALLOCATION"
+    - "OPEX_ALLOCATION"
+    - "GREEN_BOND"
+    - "SUSTAINABILITY_LINKED_BOND"
+    - "INTERNAL_CARBON_PRICE"
+  wacc_pct: 8.5
+
+# --- Temperature Scoring ---
+temperature:
+  enabled: true
+  aggregation_methods:
+    - "WATS"
+    - "TETS"
+    - "MOTS"
+  default_score_celsius: 3.2
+  include_scope3_in_score: true
+  portfolio_scoring: false
+  portfolio_weighting: "revenue"
+  time_frames:
+    - "short"
+    - "mid"
+    - "long"
+
+# --- Decomposition & Variance ---
+decomposition:
+  enabled: true
+  method: "LMDI"
+  decomposition_effects:
+    - "structural"
+    - "activity"
+    - "intensity"
+    - "cloud_efficiency"
+  forecast_periods: 4
+  forecast_confidence_pct: 90.0
+  alert_threshold_pct: 8.0
+  top_drivers_count: 10
+  historical_periods: 12
+
+# --- Multi-Entity ---
+multi_entity:
+  enabled: true
+  max_entities: 50
+  consolidation_method: "OPERATIONAL_CONTROL"
+  intercompany_elimination: true
+  reporting_hierarchies:
+    - "geographic"
+    - "business_unit"
+    - "data_center"
+    - "legal_entity"
+  ownership_threshold_pct: 20.0
+
+# --- VCMI & Carbon Removal ---
+vcmi:
+  enabled: true
+  target_tier: "GOLD"
+  credit_quality_min_score: 75
+  max_nature_based_pct: 35.0
+  shift_to_removals_by_year: 2035
+  preferred_registries:
+    - "verra"
+    - "gold_standard"
+    - "american_carbon_registry"
+  track_co_benefits: true
+  evidence_auto_collection: true
+
+# --- Assurance ---
+assurance:
+  enabled: true
+  assurance_level: "LIMITED"
+  target_assurance_level: "REASONABLE"
+  progression_year: 2027
+  workpaper_format: "ISAE_3410"
+  methodology_documentation: true
+  calculation_trace: true
+  data_lineage_maps: true
+  control_evidence: true
+  sha256_provenance: true
+  assumption_register: true
+  retention_years: 10
+
+# --- Data Quality Targets ---
+data_quality:
+  target_dqis_score: 2.0
+  acceptable_data_sources:
+    - "primary_measured"
+    - "supplier_reported"
+    - "default_factors"
+  data_center_energy_tracking_granularity: "facility_level"
+  cloud_provider_emissions_reporting_required: true
+  hardware_lifecycle_assessment_scope: "manufacturing_to_disposal"
+
+# --- Sector-Specific Parameters ---
+sector_parameters:
+  re100_membership_status: "committed_or_member"
+  renewable_energy_procurement_target_pct_2030: 100
+  renewable_energy_procurement_target_pct_2050: 100
+  data_center_pue_optimization_target: 1.2
+  data_center_cooling_efficiency_programs: true
+  cloud_provider_renewable_energy_requirement: true
+  hardware_supplier_energy_efficiency_requirements: true
+  product_use_phase_energy_optimization: true
+  software_efficiency_code_optimization_programs: true
+  api_efficiency_monitoring_enabled: true
+  employee_commuting_remote_work_programs: true
+  business_travel_virtual_meeting_alternatives: true
+  office_energy_efficiency_programs: true
+  circular_economy_hardware_recycling_programs: true
+  supply_chain_green_procurement_standard: true
+  supplier_renewable_energy_procurement_requirement: true
