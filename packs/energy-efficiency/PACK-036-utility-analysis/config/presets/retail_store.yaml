@@ -1,0 +1,123 @@
+# =============================================================================
+# PACK-036 Utility Analysis - Retail Store Preset
+# =============================================================================
+# Retail store environment with focus on multi-site portfolio rate comparison,
+# lighting-dominated consumption, and extended operating hours. EUI benchmark:
+# 200-400 kWh/m2/yr electricity. Demand charges typically represent 20-35%
+# of the electric bill. Key opportunities: portfolio-wide rate negotiation,
+# lighting schedule optimization, demand consistency across sites,
+# seasonal promotion impact quantification.
+#
+# Typical use cases:
+#   - Standalone retail stores and showrooms
+#   - Multi-site chain store portfolios
+#   - Shopping centre anchor tenants
+#   - Supermarkets and grocery stores
+# =============================================================================
+
+# --- Facility ---
+facility:
+  facility_type: "RETAIL"
+  operating_hours_per_week: 70.0
+  occupancy_pct: 75.0
+  currency: "EUR"
+
+# --- Commodities ---
+commodities:
+  - commodity_type: "ELECTRICITY"
+    enabled: true
+    unit: "kWh"
+  - commodity_type: "NATURAL_GAS"
+    enabled: true
+    unit: "therms"
+
+# --- Analysis Depth ---
+analysis_depth: "STANDARD"
+reporting_year: 2026
+
+# --- Bill Audit ---
+bill_audit:
+  enabled: true
+  anomaly_threshold_std_dev: 2.0
+  max_estimated_reads: 2
+  period_gap_days: 35
+  tax_tolerance_pct: 0.5
+  check_rate_consistency: true
+  check_meter_read_sequence: true
+  lookback_months: 24
+
+# --- Rate Optimization ---
+rate_optimization:
+  enabled: true
+  include_tou: true
+  include_demand_ratchet: true
+  include_real_time_pricing: false
+  include_green_tariffs: false
+  min_savings_threshold_eur: 300.0
+  compare_max_tariffs: 10
+  include_contract_terms: true
+  peak_shaving_analysis: false
+
+# --- Demand ---
+demand:
+  enabled: true
+  interval_resolution_minutes: 15
+  peak_threshold_pct: 90.0
+  power_factor_target: 0.95
+  load_factor_tracking: true
+  coincident_peak_analysis: false
+  ratchet_period_months: 12
+  peak_event_count: 10
+
+# --- Budget ---
+budget:
+  enabled: true
+  forecast_horizon_months: 12
+  method: "HISTORICAL_TREND"
+  rate_escalation_pct: 3.5
+  confidence_levels: [0.80, 0.90]
+  weather_normalize: true
+  base_year_months: 12
+  include_demand_budget: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  standards: ["ENERGY_STAR", "CIBSE_TM46"]
+  peer_group_building_type: "Retail"
+  weather_normalize: true
+  include_eui: true
+  include_cost_intensity: true
+  include_carbon_intensity: true
+  percentile_target: 25
+  normalize_by_occupancy: false
+
+# --- Reporting ---
+reporting:
+  formats: ["MARKDOWN", "HTML"]
+  frequency: "MONTHLY"
+  include_executive_summary: true
+  include_benchmarks: true
+  include_carbon: true
+  include_budget_variance: true
+  include_rate_analysis: true
+  include_demand_profile: false
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+  include_scope_1: true
+  include_scope_2: true
+  track_carbon_trend: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5

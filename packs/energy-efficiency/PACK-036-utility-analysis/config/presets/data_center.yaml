@@ -1,0 +1,127 @@
+# =============================================================================
+# PACK-036 Utility Analysis - Data Center Preset
+# =============================================================================
+# Data centre and server room environment with focus on high-density
+# electricity loads, PUE-correlated utility tracking, cooling efficiency
+# vs ambient temperature, and procurement optimization for flat demand
+# profiles. EUI benchmark: 500-2000 kWh/m2/yr electricity. Demand is
+# typically very flat (load factor > 0.85). Demand charges represent
+# 15-25% of the electric bill. Key opportunities: flat-load procurement
+# strategies, PUE-linked utility cost allocation, renewable energy
+# procurement, UPS efficiency monitoring.
+#
+# Typical use cases:
+#   - Enterprise data centres
+#   - Colocation facilities
+#   - Server rooms within office buildings
+#   - Edge computing sites
+# =============================================================================
+
+# --- Facility ---
+facility:
+  facility_type: "DATA_CENTER"
+  operating_hours_per_week: 168.0
+  occupancy_pct: 100.0
+  currency: "EUR"
+
+# --- Commodities ---
+commodities:
+  - commodity_type: "ELECTRICITY"
+    enabled: true
+    unit: "kWh"
+  - commodity_type: "CHILLED_WATER"
+    enabled: false
+    unit: "ton-hr"
+
+# --- Analysis Depth ---
+analysis_depth: "COMPREHENSIVE"
+reporting_year: 2026
+
+# --- Bill Audit ---
+bill_audit:
+  enabled: true
+  anomaly_threshold_std_dev: 1.5
+  max_estimated_reads: 0
+  period_gap_days: 32
+  tax_tolerance_pct: 0.3
+  check_rate_consistency: true
+  check_meter_read_sequence: true
+  lookback_months: 24
+
+# --- Rate Optimization ---
+rate_optimization:
+  enabled: true
+  include_tou: false
+  include_demand_ratchet: false
+  include_real_time_pricing: true
+  include_green_tariffs: true
+  min_savings_threshold_eur: 2000.0
+  compare_max_tariffs: 15
+  include_contract_terms: true
+  peak_shaving_analysis: false
+
+# --- Demand ---
+demand:
+  enabled: true
+  interval_resolution_minutes: 5
+  peak_threshold_pct: 98.0
+  power_factor_target: 0.98
+  load_factor_tracking: true
+  coincident_peak_analysis: true
+  ratchet_period_months: 12
+  peak_event_count: 20
+
+# --- Budget ---
+budget:
+  enabled: true
+  forecast_horizon_months: 24
+  method: "ENSEMBLE"
+  monte_carlo_iterations: 5000
+  rate_escalation_pct: 3.0
+  confidence_levels: [0.80, 0.90, 0.95, 0.99]
+  weather_normalize: false
+  base_year_months: 12
+  include_demand_budget: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  standards: ["ASHRAE_100", "EN_50600"]
+  peer_group_building_type: "DataCenter"
+  weather_normalize: false
+  include_eui: true
+  include_cost_intensity: true
+  include_carbon_intensity: true
+  percentile_target: 25
+
+# --- Reporting ---
+reporting:
+  formats: ["MARKDOWN", "HTML", "JSON"]
+  frequency: "MONTHLY"
+  include_executive_summary: true
+  include_benchmarks: true
+  include_carbon: true
+  include_budget_variance: true
+  include_rate_analysis: true
+  include_demand_profile: true
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+  include_scope_1: false
+  include_scope_2: true
+  market_based_accounting: true
+  track_carbon_trend: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  bill_image_retention: true

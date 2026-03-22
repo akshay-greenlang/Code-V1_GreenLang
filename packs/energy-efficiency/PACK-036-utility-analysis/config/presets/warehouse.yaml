@@ -1,0 +1,122 @@
+# =============================================================================
+# PACK-036 Utility Analysis - Warehouse Preset
+# =============================================================================
+# Warehouse and distribution centre environment with focus on simple rate
+# structure optimization, lighting load timing, and seasonal demand variation.
+# EUI benchmark: 50-150 kWh/m2/yr electricity, 20-80 kWh/m2/yr gas. Demand
+# charges typically represent 15-30% of the electric bill. Key opportunities:
+# simple flat-rate vs TOU comparison, high-bay lighting schedule optimization,
+# dock door energy loss quantification, forklift charging load scheduling.
+#
+# Typical use cases:
+#   - Distribution centres and fulfilment warehouses
+#   - Cold storage and refrigerated warehouses
+#   - Cross-docking facilities
+#   - Industrial storage and staging areas
+# =============================================================================
+
+# --- Facility ---
+facility:
+  facility_type: "WAREHOUSE"
+  operating_hours_per_week: 80.0
+  occupancy_pct: 60.0
+  currency: "EUR"
+
+# --- Commodities ---
+commodities:
+  - commodity_type: "ELECTRICITY"
+    enabled: true
+    unit: "kWh"
+  - commodity_type: "NATURAL_GAS"
+    enabled: true
+    unit: "therms"
+
+# --- Analysis Depth ---
+analysis_depth: "QUICK"
+reporting_year: 2026
+
+# --- Bill Audit ---
+bill_audit:
+  enabled: true
+  anomaly_threshold_std_dev: 2.0
+  max_estimated_reads: 2
+  period_gap_days: 35
+  tax_tolerance_pct: 0.5
+  check_rate_consistency: true
+  check_meter_read_sequence: true
+  lookback_months: 12
+
+# --- Rate Optimization ---
+rate_optimization:
+  enabled: true
+  include_tou: true
+  include_demand_ratchet: false
+  include_real_time_pricing: false
+  include_green_tariffs: false
+  min_savings_threshold_eur: 300.0
+  compare_max_tariffs: 5
+  include_contract_terms: true
+  peak_shaving_analysis: false
+
+# --- Demand ---
+demand:
+  enabled: true
+  interval_resolution_minutes: 15
+  peak_threshold_pct: 90.0
+  power_factor_target: 0.92
+  load_factor_tracking: true
+  coincident_peak_analysis: false
+  ratchet_period_months: 12
+  peak_event_count: 5
+
+# --- Budget ---
+budget:
+  enabled: true
+  forecast_horizon_months: 12
+  method: "HISTORICAL_TREND"
+  rate_escalation_pct: 3.0
+  confidence_levels: [0.80, 0.90]
+  weather_normalize: true
+  base_year_months: 12
+  include_demand_budget: false
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  standards: ["ENERGY_STAR"]
+  peer_group_building_type: "Warehouse"
+  weather_normalize: true
+  include_eui: true
+  include_cost_intensity: true
+  include_carbon_intensity: false
+  percentile_target: 50
+
+# --- Reporting ---
+reporting:
+  formats: ["MARKDOWN"]
+  frequency: "QUARTERLY"
+  include_executive_summary: true
+  include_benchmarks: true
+  include_carbon: false
+  include_budget_variance: true
+  include_rate_analysis: true
+  include_demand_profile: false
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+  include_scope_1: true
+  include_scope_2: true
+  track_carbon_trend: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5

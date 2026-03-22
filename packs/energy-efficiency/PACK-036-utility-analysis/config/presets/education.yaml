@@ -1,0 +1,127 @@
+# =============================================================================
+# PACK-036 Utility Analysis - Education Preset
+# =============================================================================
+# School and university environment with focus on seasonal occupancy patterns,
+# term-time vs holiday rate optimization, and weather normalization for
+# year-over-year comparison. EUI benchmark: 100-250 kWh/m2/yr electricity,
+# 80-200 kWh/m2/yr gas. Demand charges typically represent 20-35% of the
+# electric bill. Key opportunities: seasonal rate structure optimization,
+# vacation shutdown verification, campus-wide portfolio management,
+# weather-normalized trend analysis.
+#
+# Typical use cases:
+#   - Primary and secondary schools
+#   - Universities and colleges
+#   - Research institutions
+#   - Student accommodation complexes
+# =============================================================================
+
+# --- Facility ---
+facility:
+  facility_type: "EDUCATION"
+  operating_hours_per_week: 55.0
+  occupancy_pct: 65.0
+  currency: "EUR"
+
+# --- Commodities ---
+commodities:
+  - commodity_type: "ELECTRICITY"
+    enabled: true
+    unit: "kWh"
+  - commodity_type: "NATURAL_GAS"
+    enabled: true
+    unit: "therms"
+  - commodity_type: "WATER"
+    enabled: true
+    unit: "m3"
+
+# --- Analysis Depth ---
+analysis_depth: "STANDARD"
+reporting_year: 2026
+
+# --- Bill Audit ---
+bill_audit:
+  enabled: true
+  anomaly_threshold_std_dev: 2.0
+  max_estimated_reads: 2
+  period_gap_days: 35
+  tax_tolerance_pct: 0.5
+  check_rate_consistency: true
+  check_meter_read_sequence: true
+  lookback_months: 24
+
+# --- Rate Optimization ---
+rate_optimization:
+  enabled: true
+  include_tou: true
+  include_demand_ratchet: true
+  include_real_time_pricing: false
+  include_green_tariffs: true
+  min_savings_threshold_eur: 500.0
+  compare_max_tariffs: 8
+  include_contract_terms: true
+  peak_shaving_analysis: false
+
+# --- Demand ---
+demand:
+  enabled: true
+  interval_resolution_minutes: 15
+  peak_threshold_pct: 90.0
+  power_factor_target: 0.93
+  load_factor_tracking: true
+  coincident_peak_analysis: false
+  ratchet_period_months: 12
+  peak_event_count: 10
+
+# --- Budget ---
+budget:
+  enabled: true
+  forecast_horizon_months: 12
+  method: "REGRESSION"
+  rate_escalation_pct: 3.0
+  confidence_levels: [0.80, 0.90, 0.95]
+  weather_normalize: true
+  base_year_months: 24
+  include_demand_budget: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  standards: ["CIBSE_TM46", "ENERGY_STAR"]
+  peer_group_building_type: "Education"
+  weather_normalize: true
+  include_eui: true
+  include_cost_intensity: true
+  include_carbon_intensity: true
+  percentile_target: 25
+  normalize_by_occupancy: true
+
+# --- Reporting ---
+reporting:
+  formats: ["MARKDOWN", "HTML"]
+  frequency: "QUARTERLY"
+  include_executive_summary: true
+  include_benchmarks: true
+  include_carbon: true
+  include_budget_variance: true
+  include_rate_analysis: true
+  include_demand_profile: false
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+  include_scope_1: true
+  include_scope_2: true
+  track_carbon_trend: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5

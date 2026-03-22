@@ -1,0 +1,114 @@
+# =============================================================================
+# PACK-036 Utility Analysis Pack - Demo Configuration
+# =============================================================================
+# Demo configuration for EcoTech Industries GmbH, a fictional mid-sized
+# German office building operator assessing utility cost optimization
+# opportunities at their Frankfurt headquarters.
+#
+# Company: EcoTech Industries GmbH
+# Headquarters: Frankfurt, Germany
+# Employees: 320
+# Facility: Commercial office tower (6,500 m2, 8 floors)
+# Annual Electricity: ~780 MWh, demand peak ~350 kW
+# Annual Gas: ~250 MWh (heating)
+# Annual Utility Cost: ~EUR 230,000
+# Reporting Year: 2026
+# =============================================================================
+
+# --- Facility ---
+facility:
+  facility_id: "ECO-FRA-001"
+  name: "EcoTech Frankfurt HQ"
+  facility_type: "OFFICE"
+  address: "Mainzer Landstrasse 100, 60327 Frankfurt am Main, Germany"
+  gross_floor_area_m2: 6500.0
+  occupancy_pct: 82.0
+  operating_hours_per_week: 55.0
+  num_workers: 320
+  year_built: 2008
+  climate_zone: "4A"
+  latitude: 50.1109
+  longitude: 8.6821
+  utility_territory: "Mainova AG"
+  currency: "EUR"
+
+# --- Commodities ---
+commodities:
+  - commodity_type: "ELECTRICITY"
+    enabled: true
+    unit: "kWh"
+    rate_per_unit: 0.29
+    demand_rate_per_kw: 12.50
+    annual_consumption: 780000.0
+    utility_account_number: "MNV-2024-88421"
+    meter_ids: ["DE-FRA-E001", "DE-FRA-E002"]
+  - commodity_type: "NATURAL_GAS"
+    enabled: true
+    unit: "kWh"
+    rate_per_unit: 0.095
+    annual_consumption: 250000.0
+    utility_account_number: "MNV-2024-88422"
+    meter_ids: ["DE-FRA-G001"]
+
+# --- Analysis ---
+analysis_depth: "STANDARD"
+reporting_year: 2026
+
+# --- Bill Audit ---
+bill_audit:
+  enabled: true
+  anomaly_threshold_std_dev: 2.0
+  lookback_months: 24
+
+# --- Rate Optimization ---
+rate_optimization:
+  enabled: true
+  include_tou: true
+  include_demand_ratchet: true
+  min_savings_threshold_eur: 500.0
+
+# --- Demand ---
+demand:
+  enabled: true
+  interval_resolution_minutes: 15
+  peak_threshold_pct: 90.0
+  power_factor_target: 0.95
+
+# --- Budget ---
+budget:
+  enabled: true
+  forecast_horizon_months: 12
+  method: "REGRESSION"
+  rate_escalation_pct: 4.0
+  weather_normalize: true
+
+# --- Benchmark ---
+benchmark:
+  enabled: true
+  standards: ["ENERGY_STAR", "CIBSE_TM46"]
+  peer_group_building_type: "Office"
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.38
+  gas_emission_factor_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Reporting ---
+reporting:
+  formats: ["MARKDOWN", "HTML"]
+  frequency: "MONTHLY"
+  include_executive_summary: true
+  include_benchmarks: true
+  include_carbon: true
+  output_language: "de"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7

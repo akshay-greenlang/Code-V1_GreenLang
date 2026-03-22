@@ -1,0 +1,1716 @@
+# =============================================================================
+# PACK-036: Utility Analysis Pack
+# GreenLang Energy Efficiency Pack for Comprehensive Utility Cost and Usage Analysis
+# =============================================================================
+# This pack provides a comprehensive utility analysis platform for parsing,
+# analysing, benchmarking, and optimising utility costs and consumption across
+# commercial and industrial facilities. It covers the full utility management
+# lifecycle from bill parsing and rate structure analysis through demand
+# management, cost allocation, budget forecasting, procurement intelligence,
+# utility benchmarking, regulatory charge optimisation, weather normalisation,
+# and executive reporting.
+#
+# Utility costs represent one of the largest controllable operating expenses
+# for commercial and industrial organisations. Without systematic analysis
+# of utility bills, rate structures, demand profiles, and procurement options,
+# organisations routinely overpay by 5-15% through billing errors, suboptimal
+# rate structures, poor demand management, and missed procurement opportunities.
+# This pack enables facility managers, energy managers, procurement teams, and
+# finance departments to gain complete visibility into utility spend, identify
+# savings opportunities, forecast budgets accurately, and make data-driven
+# procurement decisions.
+#
+# Key Capabilities:
+#   - Utility bill parsing (automated extraction from PDF, CSV, Excel, and EDI
+#     formats for electricity, natural gas, water, steam, and chilled water
+#     bills with line-item disaggregation of energy charges, demand charges,
+#     fixed charges, taxes, surcharges, and regulatory fees)
+#   - Rate structure analysis (tariff modelling for TOU, CPP, RTP, demand
+#     ratchet, declining block, interruptible, and standby rate structures
+#     with optimal rate identification and switching recommendations)
+#   - Demand analysis (peak demand profiling, load factor calculation,
+#     coincident vs. non-coincident peak, demand ratchet exposure, load
+#     duration curves, and demand response opportunity identification)
+#   - Cost allocation (departmental, tenant, process-level, and project-level
+#     cost allocation using sub-metering, floor area proration, and activity-
+#     based costing with chargeback report generation)
+#   - Budget forecasting (12-36 month utility budget projections using
+#     historical consumption, weather normalisation, rate escalation,
+#     planned efficiency measures, and occupancy changes with Monte Carlo
+#     uncertainty quantification)
+#   - Procurement intelligence (market price tracking, contract analysis,
+#     RFP generation, supplier comparison, hedging strategy evaluation,
+#     renewable PPA assessment, and green tariff analysis)
+#   - Utility benchmarking (cost per unit area, cost per unit production,
+#     unit rate comparison across facilities and periods, peer cost
+#     benchmarking against published datasets)
+#   - Regulatory charge optimisation (analysis of transmission, distribution,
+#     capacity, renewable obligation, and carbon charges with identification
+#     of exemption eligibility and charge reduction strategies)
+#   - Weather normalisation (degree-day regression for weather-adjusted
+#     consumption and cost trending, enabling fair period-over-period and
+#     site-over-site comparisons)
+#   - Comprehensive reporting (executive dashboards, variance analysis,
+#     savings tracking, and regulatory compliance documentation)
+#
+# Regulatory References:
+#   - EED: Directive (EU) 2023/1791 (Energy Efficiency Directive - recast,
+#     Article 10a metering and billing, Article 11 cost information)
+#   - ISO 50001:2018 (Energy Management Systems - energy procurement,
+#     monitoring, and analysis requirements)
+#   - ISO 50006:2014 (Measuring energy performance using energy baselines
+#     and energy performance indicators - EnPI normalisation)
+#   - ASHRAE Guideline 14-2014 (Measurement of Energy, Demand, and Water
+#     Savings - utility bill analysis methodology)
+#   - ENERGY STAR Portfolio Manager (utility cost benchmarking)
+#   - CIBSE TM46:2008 (UK energy benchmarks including utility cost context)
+#   - EU Taxonomy Regulation 2020/852 (Substantial contribution criteria
+#     for energy efficiency investments informed by utility analysis)
+#
+# Facility Types Supported:
+#   - Office buildings (corporate HQ, multi-tenant, co-working)
+#   - Manufacturing (discrete, batch, process, light industrial)
+#   - Retail (supermarkets, department stores, specialty retail)
+#   - Warehouses (ambient, cold storage, distribution centres)
+#   - Healthcare (hospitals, clinics, care homes)
+#   - Education (schools, universities, campuses)
+#   - Data centres (enterprise, colocation, server rooms)
+#   - Multi-site portfolios (heterogeneous building stock)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-22)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-036-utility-analysis
+  version: "1.0.0"
+  display_name: "Utility Analysis Pack"
+  description: >-
+    GreenLang deployment pack for comprehensive utility cost and consumption
+    analysis across commercial and industrial facilities. Includes 10 engines
+    for automated utility bill parsing (PDF, CSV, Excel, EDI with line-item
+    disaggregation), rate structure analysis (TOU, CPP, RTP, demand ratchet,
+    declining block), demand profiling (peak demand, load factor, demand
+    response opportunities), cost allocation (departmental, tenant, process-
+    level chargeback), budget forecasting (12-36 month projections with Monte
+    Carlo uncertainty), procurement intelligence (market tracking, RFP
+    generation, PPA assessment, hedging strategy), utility benchmarking (cost
+    per m2, unit rate comparison, peer benchmarking), regulatory charge
+    optimisation (transmission, distribution, capacity, carbon charge
+    analysis with exemption identification), weather normalisation (degree-
+    day regression for fair period and site comparison), and executive
+    reporting (dashboards, variance analysis, savings tracking). Supports
+    office buildings, manufacturing, retail, warehouses, healthcare,
+    education, data centres, and multi-site portfolios with tailored presets.
+    Bridges to PACK-031 (Industrial Energy Audit), PACK-032 (Building Energy
+    Assessment), PACK-033 (Quick Wins Identifier), and PACK-035 (Energy
+    Benchmark) for deeper analysis. Bundles relevant MRV agents for emission
+    cost correlation and data intake/quality agents for bill processing.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-22"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/utility-analysis"
+  changelog_url: "https://docs.greenlang.io/packs/utility-analysis/changelog"
+
+  tags:
+    - utility-analysis
+    - utility-bill
+    - bill-parsing
+    - rate-structure
+    - demand-analysis
+    - cost-allocation
+    - budget-forecasting
+    - procurement
+    - utility-benchmark
+    - regulatory-charges
+    - weather-normalisation
+    - energy-cost
+    - demand-management
+    - load-factor
+    - tariff-analysis
+    - energy-procurement
+    - chargeback
+    - variance-analysis
+    - office-building
+    - manufacturing
+    - retail
+    - warehouse
+    - healthcare
+    - education
+    - data-center
+    - multi-site
+
+  regulation:
+    primary:
+      name: "EU Energy Efficiency Directive (EED)"
+      reference: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        The recast EED includes provisions for metering and billing
+        (Article 10a) requiring that energy consumers receive accurate,
+        timely, and understandable billing information. Article 11
+        mandates cost-related information to support informed decision-
+        making on energy efficiency investments. Utility analysis
+        directly supports these requirements by providing granular
+        cost disaggregation, rate structure transparency, and savings
+        quantification to justify efficiency measures.
+    secondary:
+      - name: "ISO 50001:2018 Energy Management Systems"
+        reference: "ISO 50001:2018"
+        effective_date: "2018-08-21"
+      - name: "ISO 50006:2014 Energy Performance Indicators"
+        reference: "ISO 50006:2014"
+        effective_date: "2014-12-15"
+      - name: "ASHRAE Guideline 14 - Measurement of Energy Savings"
+        reference: "ASHRAE 14-2014"
+        effective_date: "2014-01-01"
+      - name: "ENERGY STAR Portfolio Manager"
+        reference: "US EPA ENERGY STAR"
+        effective_date: "1999-01-01"
+      - name: "CIBSE TM46:2008 Energy Benchmarks"
+        reference: "CIBSE TM46:2008"
+        effective_date: "2008-01-01"
+      - name: "EU Taxonomy Regulation"
+        reference: "Regulation (EU) 2020/852"
+        effective_date: "2020-07-12"
+
+  compliance_references:
+    - id: "EED"
+      name: "EU Energy Efficiency Directive (recast)"
+      regulation: "Directive (EU) 2023/1791"
+      effective_date: "2023-10-10"
+      description: >-
+        Utility analysis supports EED Article 10a compliance by providing
+        accurate, granular utility cost and consumption data to end users.
+        Article 11 requires energy distributors and retailers to provide
+        cost-related information that enables consumers to compare offers
+        and make informed decisions. This pack automates bill parsing,
+        rate comparison, and cost benchmarking to fulfill these
+        obligations. Additionally, the budget forecasting and savings
+        tracking capabilities support EED Article 8 energy audit
+        requirements by quantifying the financial case for efficiency
+        measures.
+
+    - id: "ISO_50001"
+      name: "ISO 50001:2018 Energy Management Systems"
+      regulation: "ISO 50001:2018"
+      effective_date: "2018-08-21"
+      description: >-
+        ISO 50001 requires organisations to monitor, measure, analyse,
+        and evaluate energy performance including energy procurement
+        (Clause 8.3). Utility analysis provides the detailed cost and
+        consumption data needed for energy review (Clause 6.3), energy
+        baseline establishment (Clause 6.5), and energy performance
+        indicator definition (Clause 6.4). The procurement intelligence
+        engine supports energy purchasing specifications per ISO 50001
+        Clause 8.3.
+
+    - id: "ISO_50006"
+      name: "ISO 50006:2014 Energy Performance Indicators"
+      regulation: "ISO 50006:2014"
+      effective_date: "2014-12-15"
+      description: >-
+        ISO 50006 provides methodology for measuring energy performance
+        using energy baselines and energy performance indicators. Utility
+        analysis implements ISO 50006 regression models for weather
+        normalisation and production normalisation, enabling accurate
+        period-over-period performance comparison independent of weather
+        and operational variations. The cost allocation engine supports
+        EnPI definition at sub-facility level.
+
+    - id: "ASHRAE_14"
+      name: "ASHRAE Guideline 14 - Measurement of Energy Savings"
+      regulation: "ASHRAE 14-2014"
+      effective_date: "2014-01-01"
+      description: >-
+        ASHRAE Guideline 14 provides methodology for utility bill
+        analysis as a savings measurement technique (Option C - Whole
+        Building). This pack implements ASHRAE 14 utility bill analysis
+        methods including weather normalisation using degree-day
+        regression, baseline model development, and savings
+        quantification with uncertainty bounds. The weather
+        normalisation engine uses ASHRAE 14 fit criteria (CV(RMSE)
+        and NMBE thresholds) for model validation.
+
+    - id: "ENERGY_STAR"
+      name: "ENERGY STAR Portfolio Manager"
+      regulation: "US EPA ENERGY STAR"
+      effective_date: "1999-01-01"
+      description: >-
+        ENERGY STAR Portfolio Manager provides standardised utility
+        cost benchmarking for commercial buildings. This pack integrates
+        utility cost data with ENERGY STAR benchmarking by providing
+        normalised cost per unit area metrics compatible with Portfolio
+        Manager property types and operating characteristics.
+
+    - id: "CIBSE_TM46"
+      name: "CIBSE TM46:2008 Energy Benchmarks"
+      regulation: "CIBSE TM46:2008"
+      effective_date: "2008-01-01"
+      description: >-
+        CIBSE TM46 provides UK building energy benchmarks by type,
+        including typical and good practice EUI values. This pack
+        uses CIBSE TM46 benchmarks as cost benchmarking context by
+        converting energy benchmarks to cost benchmarks using
+        applicable tariff rates, enabling cost-normalised peer
+        comparison.
+
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Regulation"
+      regulation: "Regulation (EU) 2020/852"
+      effective_date: "2020-07-12"
+      description: >-
+        The EU Taxonomy defines criteria for environmentally
+        sustainable economic activities. Energy efficiency investments
+        identified through utility analysis (rate optimisation, demand
+        management, procurement of renewables) may qualify as
+        substantial contributions to climate change mitigation.
+        The budget forecasting and savings tracking capabilities
+        provide the financial evidence required for Taxonomy-aligned
+        reporting of energy efficiency expenditures.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 utility analysis engines)
+  # ===========================================================================
+  engines:
+    - id: utility_bill_parser
+      name: "Utility Bill Parser Engine"
+      description: >-
+        Parses and normalises utility bills from multiple formats and
+        utility types. Supports PDF (via OCR and structured extraction),
+        CSV, Excel, and EDI (810/867) formats. Handles electricity,
+        natural gas, water, steam, and chilled water bills. Disaggregates
+        each bill into line-item components: energy charges (volumetric
+        kWh, therms, CCF), demand charges (kW, kVA), fixed/customer
+        charges, taxes (federal, state, local, VAT), surcharges (fuel
+        adjustment, purchased gas adjustment), regulatory fees (renewable
+        portfolio standard, system benefit charge, public purpose
+        programmes), and credits (net metering, demand response, power
+        factor). Validates parsed data against physical constraints
+        (non-negative consumption, reasonable unit rates, billing period
+        continuity) and flags billing errors (estimated reads, duplicate
+        charges, rate misapplication, meter multiplier errors). Supports
+        multi-meter accounts with meter hierarchy aggregation.
+        Zero-hallucination: bill values from document extraction,
+        validation from physical constraints, no LLM in any
+        calculation path.
+      class: "UtilityBillParserEngine"
+      file: "engines/utility_bill_parser_engine.py"
+      required: true
+
+    - id: rate_structure_analyzer
+      name: "Rate Structure Analyzer Engine"
+      description: >-
+        Models and analyses utility rate structures to identify optimal
+        tariff selection and switching opportunities. Supports rate
+        types: flat rate, time-of-use (TOU with on-peak, mid-peak,
+        off-peak periods), critical peak pricing (CPP), real-time
+        pricing (RTP), demand ratchet (rolling 12-month peak demand),
+        declining block (volumetric tiers), interruptible/curtailable,
+        standby/backup, and green/renewable tariffs. Performs bill
+        recalculation under alternative rate structures to identify
+        potential savings from rate switching. Models demand ratchet
+        exposure and quantifies cost of peak demand events. Tracks
+        rate change notifications and regulatory proceedings that
+        may affect future costs. Calculates blended unit rate
+        (total cost / total consumption) for simplified benchmarking.
+        Supports multi-jurisdiction rate databases with automatic
+        rate schedule updates from utility tariff filings.
+        Zero-hallucination: rate modelling from published tariff
+        schedules, bill recalculation from deterministic formulas,
+        no LLM.
+      class: "RateStructureAnalyzerEngine"
+      file: "engines/rate_structure_analyzer_engine.py"
+      required: true
+
+    - id: demand_analysis
+      name: "Demand Analysis Engine"
+      description: >-
+        Analyses electrical demand profiles to identify peak demand
+        reduction and demand management opportunities. Calculates
+        peak demand (kW/kVA), load factor (average demand / peak
+        demand), power factor (kW/kVA ratio), coincident peak
+        (facility demand at time of utility system peak), and
+        non-coincident peak (facility maximum regardless of system
+        peak). Generates load duration curves showing percentage of
+        time at each demand level. Identifies demand ratchet exposure
+        (months where billed demand exceeds actual demand due to
+        ratchet clause). Analyses demand patterns: daily load shape,
+        weekly variation, seasonal peak shifts, and weekend/holiday
+        base load. Identifies demand response programme eligibility
+        and quantifies potential demand response revenue. Calculates
+        demand charge contribution to total cost and marginal cost
+        of demand reduction. Models impact of load shifting, peak
+        shaving (battery, thermal storage), and load curtailment
+        on demand charges.
+        Zero-hallucination: demand metrics from interval meter data,
+        load curves from time series analysis, no LLM.
+      class: "DemandAnalysisEngine"
+      file: "engines/demand_analysis_engine.py"
+      required: true
+
+    - id: cost_allocation
+      name: "Cost Allocation Engine"
+      description: >-
+        Allocates utility costs to departments, tenants, processes,
+        cost centres, and projects using multiple allocation methods.
+        SUB-METERED: direct allocation from sub-meter readings with
+        tenant/department meter mapping. FLOOR_AREA: proportional
+        allocation based on gross floor area (GFA) or net lettable
+        area (NLA) with common area factor. ACTIVITY_BASED: allocation
+        based on equipment inventories, operating hours, and nameplate
+        ratings. HYBRID: combination of sub-metered (where available)
+        and estimated (where not), with clear demarcation of metered
+        vs. estimated costs. Handles shared services allocation
+        (HVAC common areas, exterior lighting, elevators, car parks).
+        Generates chargeback invoices with configurable markup and
+        administrative fee. Supports multi-currency for international
+        portfolios. Tracks allocation accuracy by comparing sub-metered
+        sums against main meter readings (reconciliation tolerance
+        check). Produces audit-ready allocation reports with methodology
+        documentation.
+        Zero-hallucination: allocations from meter data and area
+        proportions, reconciliation from arithmetic, no LLM.
+      class: "CostAllocationEngine"
+      file: "engines/cost_allocation_engine.py"
+      required: true
+
+    - id: budget_forecasting
+      name: "Budget Forecasting Engine"
+      description: >-
+        Generates 12-36 month utility budget forecasts using multiple
+        modelling approaches. HISTORICAL_TREND: extrapolation from
+        12-36 months of historical consumption with linear or
+        exponential trend fitting. WEATHER_ADJUSTED: degree-day
+        regression model applied to TMY (Typical Meteorological Year)
+        or long-term average weather for weather-normalised forecast.
+        SCENARIO_BASED: adjustments for planned changes (efficiency
+        measures, occupancy changes, area additions/reductions, process
+        changes, electrification). RATE_ESCALATION: applies configurable
+        annual rate escalation (flat rate, percentage, indexed to
+        market) to consumption forecast. MONTE_CARLO: uncertainty
+        quantification using 1000+ simulation iterations varying
+        weather, consumption, and rate inputs to generate P10/P50/P90
+        budget confidence intervals. Produces monthly and annual
+        budget projections with variance analysis against prior year
+        and budget. Supports multi-utility (electricity, gas, water)
+        and multi-site portfolio budget aggregation.
+        Zero-hallucination: forecasts from regression models and
+        statistical simulation, no LLM.
+      class: "BudgetForecastingEngine"
+      file: "engines/budget_forecasting_engine.py"
+      required: true
+
+    - id: procurement_intelligence
+      name: "Procurement Intelligence Engine"
+      description: >-
+        Provides market intelligence and decision support for utility
+        procurement. MARKET_TRACKING: monitors wholesale electricity
+        and natural gas market prices (day-ahead, forward curves,
+        basis differentials) from public market data sources. CONTRACT
+        _ANALYSIS: evaluates existing supply contracts for term,
+        pricing structure (fixed, indexed, block-and-index, collar),
+        renewal dates, auto-renewal clauses, and termination fees.
+        RFP_GENERATION: creates standardised Request for Proposal
+        documents for competitive utility procurement with usage
+        profiles, load shapes, and requirements specifications.
+        SUPPLIER_COMPARISON: side-by-side comparison of supplier
+        offers normalised to consistent terms (total cost, unit rate,
+        green content, contract flexibility). HEDGING_STRATEGY:
+        evaluates fixed vs. floating vs. hybrid procurement strategies
+        using historical price volatility and forward curves.
+        RENEWABLE_PPA: assesses Power Purchase Agreement opportunities
+        including virtual PPA (VPPA) financial settlement analysis,
+        physical PPA delivery assessment, and green tariff comparison.
+        GREEN_TARIFF: analyses available green/renewable tariff options
+        with cost premium quantification and carbon reduction impact.
+        Zero-hallucination: market data from published sources,
+        contract evaluation from financial formulas, no LLM in pricing.
+      class: "ProcurementIntelligenceEngine"
+      file: "engines/procurement_intelligence_engine.py"
+      required: true
+
+    - id: utility_benchmark
+      name: "Utility Benchmark Engine"
+      description: >-
+        Benchmarks utility costs and consumption against peers,
+        published standards, and historical performance. COST_PER_AREA:
+        total utility cost per m2 (or ft2) of gross floor area,
+        broken down by utility type (electricity, gas, water). COST
+        _PER_PRODUCTION: utility cost per unit of production output
+        for manufacturing facilities. UNIT_RATE: blended unit rate
+        (cost per kWh, cost per therm, cost per m3) comparison across
+        facilities, periods, and suppliers. PEER_COMPARISON: benchmarks
+        against published cost datasets (BOMA, IFMA, CIBSE TM46 cost
+        equivalents, ENERGY STAR cost data). CROSS_SITE: ranks
+        facilities within a portfolio by cost efficiency metrics
+        with normalisation for building type, climate zone, and
+        operating hours. TEMPORAL: year-over-year and month-over-month
+        cost trend analysis with weather-normalised adjustment.
+        Identifies cost outliers using IQR and Z-score methods.
+        Calculates savings potential as gap between current cost
+        and benchmark target (median or top quartile).
+        Zero-hallucination: benchmarks from published datasets,
+        rankings from deterministic sorting, no LLM.
+      class: "UtilityBenchmarkEngine"
+      file: "engines/utility_benchmark_engine.py"
+      required: true
+
+    - id: regulatory_charge_optimizer
+      name: "Regulatory Charge Optimizer Engine"
+      description: >-
+        Analyses and optimises regulatory and non-commodity charges
+        on utility bills. CHARGE_DISAGGREGATION: separates commodity
+        (energy) charges from non-commodity charges including
+        transmission (TNUoS, transmission access), distribution
+        (DUoS, distribution use of system), capacity (TRIAD,
+        distribution capacity), renewable obligation (RO, FiT levy,
+        CfD levy, RPS), carbon (EU ETS passthrough, carbon tax,
+        RGGI), system charges (balancing, ancillary services), and
+        policy charges (ECO, WHD, capacity market). EXEMPTION
+        _ELIGIBILITY: assesses eligibility for charge reductions
+        and exemptions based on energy intensity, sector classification
+        (EII - Energy Intensive Industries), self-generation, and
+        demand-side participation. REDUCTION_STRATEGIES: identifies
+        strategies to reduce non-commodity charges through peak
+        avoidance (TRIAD management), power factor correction (kVAr
+        charge avoidance), demand response participation, and on-site
+        generation optimisation. Calculates potential savings from
+        each optimisation strategy with implementation cost and
+        payback period.
+        Zero-hallucination: charge analysis from bill data, exemption
+        criteria from published regulations, no LLM.
+      class: "RegulatoryChargeOptimizerEngine"
+      file: "engines/regulatory_charge_optimizer_engine.py"
+      required: true
+
+    - id: weather_normalisation
+      name: "Weather Normalisation Engine"
+      description: >-
+        Normalises utility consumption and costs for weather effects
+        to enable fair period-over-period and site-over-site comparisons.
+        Supports 2-parameter (simple linear HDD or CDD), 3-parameter
+        change-point (heating-only or cooling-only with base load),
+        4-parameter (heating and cooling with base load), and 5-parameter
+        (heating and cooling with separate change points and base load)
+        degree-day regression models. Calculates Heating Degree Days
+        (HDD) and Cooling Degree Days (CDD) from weather station data
+        with configurable balance point temperatures. Normalises to
+        TMY (Typical Meteorological Year) or long-term (30-year)
+        average weather for consistent comparison. Provides model
+        quality metrics: R-squared, CV(RMSE), NMBE per ASHRAE
+        Guideline 14 fit criteria (CV(RMSE) less than 15% for monthly,
+        less than 25% for daily; NMBE less than 5%). Supports multi-
+        fuel normalisation (electricity and gas independently).
+        Automated model selection using AICc and cross-validation.
+        Weather data sourced from NOAA, Meteostat, Open-Meteo, and
+        national meteorological services.
+        Zero-hallucination: regression from scipy/numpy, weather data
+        from published meteorological datasets, no LLM.
+      class: "WeatherNormalizationEngine"
+      file: "engines/weather_normalization_engine.py"
+      required: true
+
+    - id: utility_reporting
+      name: "Utility Reporting Engine"
+      description: >-
+        Generates comprehensive utility analysis reports combining
+        outputs from all other engines into formatted deliverables.
+        Report types: EXECUTIVE_DASHBOARD (KPIs, cost trends, savings
+        summary, alerts), BILL_AUDIT_REPORT (billing errors, rate
+        misapplications, estimated read flags, overcharge recovery),
+        RATE_COMPARISON (alternative rate analysis, switching savings,
+        optimal rate recommendation), DEMAND_PROFILE (peak demand
+        analysis, load factor, demand charge breakdown, DR opportunities),
+        COST_ALLOCATION (departmental chargeback, tenant invoices,
+        reconciliation summary), BUDGET_FORECAST (monthly projections,
+        P10/P50/P90 bands, variance analysis), PROCUREMENT_BRIEF
+        (market analysis, contract status, RFP specifications),
+        BENCHMARK_REPORT (peer comparison, portfolio ranking, cost
+        outlier identification), SAVINGS_TRACKER (implemented savings,
+        verified vs. estimated, cumulative benefit). Output formats:
+        Markdown, HTML (with interactive Plotly charts), JSON, PDF.
+        All reports include SHA-256 provenance hash for audit trail.
+        Zero-hallucination: report content from engine outputs,
+        charts from Plotly, no LLM-generated numbers.
+      class: "UtilityReportingEngine"
+      file: "engines/utility_reporting_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 utility analysis workflows)
+  # ===========================================================================
+  workflows:
+    - id: bill_audit
+      name: "Bill Audit Workflow"
+      description: >-
+        4-phase workflow for systematic utility bill auditing: Phase 1 -
+        Bill Collection (import utility bills from PDF, CSV, Excel, or
+        EDI sources for 12-36 months across all utility types and meters)
+        -> Phase 2 - Bill Parsing and Validation (extract line items,
+        validate against physical constraints, detect estimated reads,
+        flag billing anomalies and potential errors) -> Phase 3 -
+        Rate Verification (verify applied rate schedule against
+        published tariff, recalculate bills under correct rate, quantify
+        overcharges and undercharges) -> Phase 4 - Audit Report
+        Generation (summarise billing errors, calculate total
+        overcharge recovery potential, generate refund request
+        documentation with supporting evidence).
+      schedule: "monthly"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: rate_optimisation
+      name: "Rate Optimisation Workflow"
+      description: >-
+        3-phase workflow for utility rate optimisation: Phase 1 -
+        Usage Profile Analysis (analyse 12+ months of consumption and
+        demand data, determine load shape, calculate load factor, assess
+        TOU period alignment) -> Phase 2 - Rate Modelling (recalculate
+        historical bills under all available rate structures including
+        TOU, CPP, RTP, declining block, interruptible, and green
+        tariffs) -> Phase 3 - Recommendation Report (rank rate options
+        by total cost, generate switching recommendation with projected
+        annual savings, risk assessment for variable-rate options, and
+        implementation steps for rate change request).
+      schedule: "annual"
+      estimated_duration_minutes: 45
+      phases: 3
+
+    - id: demand_management
+      name: "Demand Management Workflow"
+      description: >-
+        4-phase workflow for demand analysis and management: Phase 1 -
+        Demand Profiling (analyse interval data for peak demand
+        patterns, load factor, coincident peak timing, seasonal peak
+        variation) -> Phase 2 - Demand Charge Analysis (quantify
+        demand charge contribution to total cost, model demand ratchet
+        exposure, identify demand events driving peak) -> Phase 3 -
+        Reduction Strategy Modelling (model impact of load shifting,
+        peak shaving via battery/thermal storage, load curtailment,
+        and demand response participation on demand charges) ->
+        Phase 4 - Demand Action Plan (prioritised demand reduction
+        strategies with savings quantification, implementation cost,
+        payback period, and demand response programme enrollment
+        guidance).
+      schedule: "quarterly"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: cost_allocation
+      name: "Cost Allocation Workflow"
+      description: >-
+        3-phase workflow for utility cost allocation: Phase 1 -
+        Meter Mapping (configure meter hierarchy, map sub-meters
+        to departments/tenants/processes, define allocation method
+        per unmetered area) -> Phase 2 - Allocation Calculation
+        (apply sub-metered allocation where available, proportional
+        allocation where not, common area distribution, and
+        reconciliation check against main meter) -> Phase 3 -
+        Chargeback Generation (produce departmental/tenant cost
+        allocation reports, generate chargeback invoices with line-
+        item detail, and variance analysis against prior period).
+      schedule: "monthly"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: budget_planning
+      name: "Budget Planning Workflow"
+      description: >-
+        4-phase workflow for utility budget development: Phase 1 -
+        Historical Analysis (analyse 24-36 months of consumption and
+        cost history, identify trends, seasonality, and anomalies) ->
+        Phase 2 - Baseline Forecast (generate weather-normalised
+        consumption forecast using degree-day regression applied to
+        TMY weather data) -> Phase 3 - Scenario Adjustments (apply
+        adjustments for planned efficiency measures, occupancy changes,
+        area additions, rate changes, and escalation factors) ->
+        Phase 4 - Budget Finalisation (generate monthly budget
+        projections with P10/P50/P90 confidence intervals from Monte
+        Carlo simulation, produce budget submission package with
+        assumptions documentation and variance analysis).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: procurement_analysis
+      name: "Procurement Analysis Workflow"
+      description: >-
+        4-phase workflow for utility procurement: Phase 1 - Contract
+        Review (assess current supply contracts for term, pricing,
+        renewal dates, flexibility, and termination provisions) ->
+        Phase 2 - Market Analysis (review wholesale market conditions,
+        forward curves, price volatility, and competitive supply
+        landscape) -> Phase 3 - Strategy Evaluation (model fixed vs.
+        floating vs. hybrid procurement strategies, evaluate PPA and
+        green tariff options, assess hedging approaches) -> Phase 4 -
+        Procurement Package (generate RFP specifications with usage
+        profiles and load shapes, supplier comparison matrix, and
+        procurement recommendation report with risk assessment).
+      schedule: "annual"
+      estimated_duration_minutes: 90
+      phases: 4
+
+    - id: benchmark_analysis
+      name: "Benchmark Analysis Workflow"
+      description: >-
+        3-phase workflow for utility cost benchmarking: Phase 1 -
+        Cost Normalisation (calculate cost per m2, cost per unit
+        production, blended unit rates, weather-normalised cost
+        metrics across all facilities and periods) -> Phase 2 -
+        Peer Comparison (benchmark normalised costs against published
+        datasets, internal portfolio ranking, and year-over-year
+        trend analysis with outlier identification) -> Phase 3 -
+        Opportunity Assessment (quantify savings potential from
+        gap-to-median and gap-to-best-practice, link to specific
+        improvement actions from rate optimisation, demand management,
+        and procurement).
+      schedule: "quarterly"
+      estimated_duration_minutes: 45
+      phases: 3
+
+    - id: full_utility_analysis
+      name: "Full Utility Analysis Workflow"
+      description: >-
+        8-phase end-to-end utility analysis orchestrating all engines:
+        Phase 1 - Data Collection and Bill Parsing -> Phase 2 - Bill
+        Audit and Validation -> Phase 3 - Rate Structure Analysis and
+        Optimisation -> Phase 4 - Demand Profiling and Management ->
+        Phase 5 - Cost Allocation and Chargeback -> Phase 6 - Budget
+        Forecasting with Weather Normalisation -> Phase 7 - Procurement
+        Intelligence and Benchmarking -> Phase 8 - Comprehensive Report
+        Generation with executive dashboard, savings summary, and
+        action plan.
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 8
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 utility analysis templates)
+  # ===========================================================================
+  templates:
+    - id: bill_audit_report
+      display_name: "Bill Audit Report"
+      description: >-
+        Utility bill audit report with billing error identification,
+        rate misapplication detection, estimated read flags, duplicate
+        charge detection, overcharge quantification, and refund request
+        documentation with supporting evidence for utility provider
+        submission.
+      format: "html"
+      template_file: "templates/bill_audit_report.jinja2"
+      enabled: true
+
+    - id: rate_comparison_report
+      display_name: "Rate Comparison Report"
+      description: >-
+        Rate structure comparison report with bill recalculation under
+        alternative tariffs, optimal rate identification, projected
+        annual savings from rate switching, risk assessment for
+        variable-rate options, and implementation guidance.
+      format: "html"
+      template_file: "templates/rate_comparison_report.jinja2"
+      enabled: true
+
+    - id: demand_profile_report
+      display_name: "Demand Profile Report"
+      description: >-
+        Demand analysis report with peak demand trends, load factor
+        history, load duration curves, demand charge breakdown,
+        demand ratchet exposure analysis, and demand response
+        opportunity quantification with revenue estimates.
+      format: "html"
+      template_file: "templates/demand_profile_report.jinja2"
+      enabled: true
+
+    - id: cost_allocation_report
+      display_name: "Cost Allocation Report"
+      description: >-
+        Departmental/tenant cost allocation report with sub-metered
+        and estimated allocation breakdown, common area distribution,
+        reconciliation summary, chargeback invoices, and period-over-
+        period variance analysis.
+      format: "html"
+      template_file: "templates/cost_allocation_report.jinja2"
+      enabled: true
+
+    - id: budget_forecast_report
+      display_name: "Budget Forecast Report"
+      description: >-
+        Utility budget forecast report with monthly projections,
+        P10/P50/P90 confidence intervals, weather-normalised baseline,
+        scenario adjustments documentation, rate escalation assumptions,
+        variance analysis against prior year and budget.
+      format: "html"
+      template_file: "templates/budget_forecast_report.jinja2"
+      enabled: true
+
+    - id: procurement_strategy_report
+      display_name: "Procurement Strategy Report"
+      description: >-
+        Procurement intelligence report with market price analysis,
+        contract status summary, RFP specifications, supplier
+        comparison matrix, hedging strategy evaluation, PPA
+        assessment, and procurement recommendation with risk analysis.
+      format: "html"
+      template_file: "templates/procurement_strategy_report.jinja2"
+      enabled: true
+
+    - id: benchmark_report
+      display_name: "Benchmark Report"
+      description: >-
+        Utility cost benchmark report with cost per m2, unit rate
+        comparison, peer benchmarking results, portfolio ranking,
+        outlier identification, year-over-year trend analysis, and
+        savings potential quantification.
+      format: "html"
+      template_file: "templates/benchmark_report.jinja2"
+      enabled: true
+
+    - id: regulatory_charge_report
+      display_name: "Regulatory Charge Report"
+      description: >-
+        Regulatory and non-commodity charge analysis report with
+        charge disaggregation, exemption eligibility assessment,
+        TRIAD management strategy, power factor correction
+        opportunities, and charge reduction savings quantification.
+      format: "html"
+      template_file: "templates/regulatory_charge_report.jinja2"
+      enabled: true
+
+    - id: executive_dashboard
+      display_name: "Executive Dashboard"
+      description: >-
+        C-suite executive utility dashboard with KPIs (total cost,
+        cost per m2, unit rate trends, budget variance), savings
+        summary (implemented and pipeline), alert status, portfolio
+        overview, procurement timeline, and strategic
+        recommendations for board-level reporting.
+      format: "html"
+      template_file: "templates/executive_dashboard.jinja2"
+      enabled: true
+
+    - id: utility_savings_report
+      display_name: "Utility Savings Report"
+      description: >-
+        Savings tracking report with implemented savings by category
+        (rate optimisation, demand management, bill error recovery,
+        procurement savings, regulatory charge reduction), verified
+        vs. estimated savings comparison, cumulative savings curve,
+        and ROI on utility analysis investment.
+      format: "html"
+      template_file: "templates/utility_savings_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration and
+        Preset Loading -> Data Acquisition (utility bills, meter data,
+        weather data, market data) -> Bill Parsing and Validation ->
+        Rate Structure Analysis -> Demand Profiling -> Cost Allocation
+        -> Budget Forecasting -> Procurement and Benchmarking -> Report
+        Generation. Orchestrates all 10 engines with parallel execution
+        where possible (e.g., rate analysis and demand analysis run in
+        parallel after bill parsing) and dependency management (bill
+        parsing must complete before all downstream engines).
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Routes utility data to MRV agents for emission-cost correlation
+        analysis. Connects AGENT-MRV-001 (Scope 1 stationary combustion
+        for gas utility costs), AGENT-MRV-009/010 (Scope 2 location/
+        market-based for electricity costs), and AGENT-MRV-013 (dual
+        reporting reconciliation). Maps utility consumption to emission
+        factors for carbon cost attribution and EU ETS passthrough
+        charge validation.
+      required: true
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Routes data intake to DATA agents for utility bill processing.
+        Connects AGENT-DATA-001 (PDF bill extraction), AGENT-DATA-002
+        (Excel/CSV meter data normalisation), AGENT-DATA-003 (ERP
+        finance data for cost centre mapping), AGENT-DATA-010 (data
+        quality profiling for bill validation), AGENT-DATA-013 (outlier
+        detection for anomalous consumption), and AGENT-DATA-014 (time
+        series gap filling for interval data).
+      required: true
+
+    - id: pack031_bridge
+      name: "PACK-031 Industrial Energy Audit Bridge"
+      description: >-
+        Bridges to PACK-031 for industrial facility utility context.
+        Imports energy audit baselines, equipment efficiency data,
+        and process energy breakdown to support production-normalised
+        cost allocation and industrial tariff optimisation.
+      required: false
+
+    - id: pack032_bridge
+      name: "PACK-032 Building Energy Assessment Bridge"
+      description: >-
+        Bridges to PACK-032 for building utility context. Imports
+        building assessment results, zone profiles, and HVAC system
+        data to support end-use cost allocation and building-specific
+        rate optimisation recommendations.
+      required: false
+
+    - id: pack033_bridge
+      name: "PACK-033 Quick Wins Identifier Bridge"
+      description: >-
+        Bridges to PACK-033 for savings verification context. Imports
+        quick win implementation status and verified savings data to
+        validate budget forecast adjustments and update savings
+        tracking reports.
+      required: false
+
+    - id: utility_provider_bridge
+      name: "Utility Provider Bridge"
+      description: >-
+        Connects to utility provider systems for automated bill
+        retrieval, rate schedule downloads, and account management.
+        Supports Green Button (ESPI/CMD) data standard, utility
+        web portal scraping, and direct API integration with major
+        utility data aggregators. Retrieves interval meter data
+        (15-minute, 30-minute, hourly) for demand analysis and
+        monthly billing data for cost analysis.
+      required: false
+
+    - id: weather_bridge
+      name: "Weather Service Bridge"
+      description: >-
+        Connects to weather data APIs for degree-day calculation,
+        TMY dataset retrieval, and real-time weather station data.
+        Supports NOAA, Meteostat, Open-Meteo, and national
+        meteorological services. Calculates HDD and CDD at
+        configurable balance points. Caches weather data locally
+        for offline operation and reproducible analysis.
+      required: true
+
+    - id: market_data_bridge
+      name: "Market Data Bridge"
+      description: >-
+        Connects to wholesale energy market data sources for
+        procurement intelligence. Retrieves day-ahead prices,
+        forward curves (monthly, quarterly, annual), basis
+        differentials, and capacity prices from public market
+        data providers (ICE, CME, EPEX SPOT, NBP, TTF). Tracks
+        renewable energy certificate prices (RECs, GOs, I-RECs)
+        and carbon prices (EU ETS, RGGI, voluntary). Caches market
+        data with configurable refresh intervals.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        16-category system health verification covering all 10
+        engines, bill parsing format support, rate database
+        completeness, weather data connectivity, market data
+        freshness, emission factor currency, database connectivity,
+        agent dependency status, preset validation, template
+        integrity, and deployment readiness.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration wizard: Facility Type Selection
+        (office / manufacturing / retail / warehouse / healthcare /
+        education / data_center / multi_site) -> Facility Registration
+        (location, floor area, operating hours, utility accounts) ->
+        Utility Account Configuration (meters, utilities, rate
+        schedules, billing cycles) -> Bill Import Setup (PDF upload,
+        CSV mapping, API connection, EDI configuration) -> Cost
+        Allocation Setup (sub-meter mapping, department/tenant
+        structure, allocation methods) -> Budget Parameters (fiscal
+        year, escalation rates, planned changes) -> Procurement
+        Configuration (contract details, market region, procurement
+        strategy) -> Reporting Preferences (format, frequency,
+        recipients, language).
+      required: false
+
+    - id: alert_bridge
+      name: "Alert Bridge"
+      description: >-
+        Multi-channel notification and alert management for utility
+        analysis events. Triggers alerts for: billing errors detected,
+        consumption anomalies, demand threshold exceedance, budget
+        variance beyond tolerance, contract renewal approaching,
+        rate change notification, and market price movement beyond
+        threshold. Supports email, SMS, Slack, Microsoft Teams,
+        webhook, and in-app notification channels.
+      required: false
+
+  # ===========================================================================
+  # Presets - Facility-type specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: office_building
+      name: "Office Building Preset"
+      description: >-
+        Configuration for office buildings with focus on electricity
+        and gas cost optimisation, TOU rate analysis, HVAC demand
+        management, tenant cost allocation, and lighting/plug load
+        cost attribution. Typical utility cost EUR 20-60/m2/yr.
+        Priority areas: rate optimisation (TOU alignment), demand
+        management (HVAC scheduling), tenant chargeback (NLA-based),
+        and behavioural energy cost reduction.
+      facility_type: "OFFICE"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - procurement_intelligence
+        - utility_benchmark
+        - regulatory_charge_optimizer
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/office_building.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for manufacturing facilities with focus on
+        demand charge optimisation, production-normalised cost
+        analysis, process energy cost allocation, interruptible
+        rate evaluation, and energy-intensive industry exemption
+        assessment. Typical utility cost EUR 30-150/m2/yr.
+        Priority areas: demand management (peak shaving, load
+        shifting), production cost allocation (activity-based),
+        EII exemptions, and procurement strategy (block purchasing).
+      facility_type: "MANUFACTURING"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - procurement_intelligence
+        - utility_benchmark
+        - regulatory_charge_optimizer
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/manufacturing.yaml"
+
+    - id: retail_store
+      name: "Retail Store Preset"
+      description: >-
+        Configuration for retail environments with focus on trading
+        hours cost alignment, refrigeration demand management,
+        multi-site portfolio benchmarking, and seasonal cost
+        variation analysis. Typical utility cost EUR 25-80/m2/yr.
+        Priority areas: TOU alignment with trading hours, portfolio
+        cost ranking across store estate, refrigeration demand
+        optimisation, and seasonal budget forecasting.
+      facility_type: "RETAIL"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - procurement_intelligence
+        - utility_benchmark
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/retail_store.yaml"
+
+    - id: warehouse
+      name: "Warehouse Preset"
+      description: >-
+        Configuration for warehouses and distribution centres with
+        focus on high-bay lighting cost, HVAC seasonal cost variation,
+        cold storage electricity cost analysis, and distribution
+        network cost benchmarking. Typical utility cost EUR 10-40
+        /m2/yr. Priority areas: demand management (cold storage
+        compressors), flat rate vs. TOU comparison, weather-
+        normalised cost trending, and portfolio ranking.
+      facility_type: "WAREHOUSE"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - utility_benchmark
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/warehouse.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Configuration for hospitals and clinics with focus on 24/7
+        operation cost analysis, standby/backup power cost assessment,
+        steam and chilled water billing, departmental cost allocation
+        (clinical, non-clinical, support), and critical load demand
+        management. Typical utility cost EUR 40-100/m2/yr.
+        Priority areas: steam and chilled water cost verification,
+        departmental cost allocation for clinical budgeting, demand
+        management for non-critical loads, and green tariff assessment
+        for sustainability targets.
+      facility_type: "HEALTHCARE"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - procurement_intelligence
+        - utility_benchmark
+        - regulatory_charge_optimizer
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/healthcare.yaml"
+
+    - id: education
+      name: "Education Preset"
+      description: >-
+        Configuration for schools and universities with focus on
+        term-time vs. holiday cost analysis, building-by-building
+        cost allocation across campus, seasonal budget variation,
+        and public sector procurement compliance. Typical utility
+        cost EUR 15-50/m2/yr. Priority areas: holiday shutdown
+        cost analysis, campus building benchmarking, term-time
+        demand management, and SALIX/public sector funding
+        alignment for efficiency investments.
+      facility_type: "EDUCATION"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - utility_benchmark
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/education.yaml"
+
+    - id: data_center
+      name: "Data Center Preset"
+      description: >-
+        Configuration for data centres with focus on high-demand
+        electricity cost analysis, UPS efficiency cost impact,
+        cooling cost attribution, PUE-based cost normalisation,
+        and interruptible rate evaluation for non-critical loads.
+        Typical utility cost EUR 100-500/m2/yr. Priority areas:
+        demand charge optimisation (flat load shape benefits),
+        cooling cost attribution (IT vs. facility), renewable
+        PPA assessment for 100% renewable targets, and regulatory
+        charge management for high-consumption sites.
+      facility_type: "DATA_CENTER"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - procurement_intelligence
+        - utility_benchmark
+        - regulatory_charge_optimizer
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/data_center.yaml"
+
+    - id: multi_site_portfolio
+      name: "Multi-Site Portfolio Preset"
+      description: >-
+        Configuration for multi-site portfolios with heterogeneous
+        building types. Applies facility-type-specific analysis per
+        site, consolidates procurement across the portfolio for
+        volume discounts, generates cross-site cost benchmarking
+        with normalisation for building type and climate zone, and
+        produces portfolio-level budget aggregation with drill-down
+        capability. Supports 1-1000+ facilities.
+      facility_type: "MULTI_SITE"
+      enabled_engines:
+        - utility_bill_parser
+        - rate_structure_analyzer
+        - demand_analysis
+        - cost_allocation
+        - budget_forecasting
+        - procurement_intelligence
+        - utility_benchmark
+        - regulatory_charge_optimizer
+        - weather_normalisation
+        - utility_reporting
+      file: "config/presets/multi_site_portfolio.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - Energy-related MRV agents for emission-cost correlation
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Calculates emissions from gas utility consumption for carbon cost attribution"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based electricity emissions for carbon cost correlation"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based electricity emissions (PPAs, GOs, green tariffs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 for procurement decisions"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts utility bill data from PDF invoices via OCR and structured extraction"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises meter data exports, billing summaries, and rate schedules"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to finance systems for cost centre mapping and AP data"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections (utility providers, market data, weather)"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across utility bills and interval meter data"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous consumption readings and billing data outliers"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills gaps in interval meter time series for continuous demand analysis"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from utility bills through to analysis reports"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Validates utility data against billing rules and physical constraints"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution for utility analysis pipeline"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates utility analysis data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises energy units (kWh, therms, CCF, GJ, m3) and currency references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in budget forecasts, rate models, and normalisation"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links rate schedules, market data, and benchmarks to source evidence"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-site and multi-tenant operations"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all utility calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors pipeline health and engine performance"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Pack Dependencies
+# ---------------------------------------------------------------------------
+agents_packs:
+  - id: PACK-031
+    name: "Industrial Energy Audit Pack"
+    description: "Industrial energy baselines and process energy data for cost allocation context"
+    required: false
+    version: "1.0.0"
+  - id: PACK-032
+    name: "Building Energy Assessment Pack"
+    description: "Building assessment data and zone profiles for end-use cost attribution"
+    required: false
+    version: "1.0.0"
+  - id: PACK-033
+    name: "Quick Wins Identifier Pack"
+    description: "Quick win savings data for budget forecast adjustments and savings verification"
+    required: false
+    version: "1.0.0"
+  - id: PACK-035
+    name: "Energy Benchmark Pack"
+    description: "EUI benchmarks and weather normalisation models for cost benchmarking context"
+    required: false
+    version: "1.0.0"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 28
+  breakdown:
+    mrv_agents: 4
+    data_agents: 9
+    foundation_agents: 8
+    pack_dependencies: 4
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: pack036_utility_analysis
+  migrations:
+    - id: "V276__pack036_utility_analysis_001"
+      description: "Core utility analysis schema, facility profiles, and utility account configuration"
+    - id: "V277__pack036_utility_analysis_002"
+      description: "Bill parsing tables (bills, line items, meters, validation flags, error log)"
+    - id: "V278__pack036_utility_analysis_003"
+      description: "Rate structure tables (tariffs, TOU periods, demand ratchets, rate schedules)"
+    - id: "V279__pack036_utility_analysis_004"
+      description: "Demand analysis tables (interval data, peaks, load factors, DR programmes)"
+    - id: "V280__pack036_utility_analysis_005"
+      description: "Cost allocation tables (meter mapping, allocations, chargeback, reconciliation)"
+    - id: "V281__pack036_utility_analysis_006"
+      description: "Budget forecasting tables (forecasts, scenarios, Monte Carlo results, variances)"
+    - id: "V282__pack036_utility_analysis_007"
+      description: "Procurement tables (contracts, market data, RFPs, supplier comparisons, PPAs)"
+    - id: "V283__pack036_utility_analysis_008"
+      description: "Benchmark tables (cost metrics, peer datasets, portfolio rankings, outliers)"
+    - id: "V284__pack036_utility_analysis_009"
+      description: "Regulatory charge tables (charge components, exemptions, reduction strategies)"
+    - id: "V285__pack036_utility_analysis_010"
+      description: "Views, indexes, RLS policies, rate schedule seed data, and benchmark datasets"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  bill_parsing:
+    max_bills_per_batch: 10000
+    parsing_per_bill_ms: 500
+    validation_per_bill_ms: 100
+    line_item_extraction_ms: 200
+    target_duration_minutes: 10
+  rate_analysis:
+    rate_modelling_per_tariff_ms: 200
+    bill_recalculation_per_bill_ms: 100
+    optimal_rate_comparison_ms: 500
+    target_duration_minutes: 5
+  demand_analysis:
+    interval_processing_per_month_ms: 300
+    load_duration_curve_ms: 200
+    demand_response_modelling_ms: 500
+    target_duration_minutes: 5
+  cost_allocation:
+    allocation_per_department_ms: 50
+    reconciliation_per_meter_ms: 100
+    chargeback_generation_ms: 200
+    target_duration_minutes: 3
+  budget_forecasting:
+    regression_per_facility_ms: 500
+    monte_carlo_1000_iterations_ms: 2000
+    scenario_adjustment_ms: 100
+    target_duration_minutes: 10
+  procurement:
+    market_data_refresh_ms: 1000
+    contract_analysis_ms: 200
+    rfp_generation_ms: 500
+    target_duration_minutes: 5
+  benchmarking:
+    cost_normalisation_per_facility_ms: 100
+    peer_comparison_ms: 200
+    portfolio_ranking_ms: 500
+    target_duration_minutes: 3
+  report_generation:
+    markdown_per_facility_ms: 200
+    html_per_facility_ms: 500
+    chart_generation_per_chart_ms: 300
+    target_duration_minutes: 5
+  cache_hit_ratio_target: 0.85
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level and portfolio-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+    - FINANCIAL
+  required_roles:
+    - energy_manager
+    - facility_manager
+    - finance_manager
+    - procurement_manager
+    - sustainability_officer
+    - viewer
+    - admin
+  audit_events:
+    - "utility.bill.parsed"
+    - "utility.bill.validated"
+    - "utility.bill.error_detected"
+    - "utility.rate.analysed"
+    - "utility.rate.switch_recommended"
+    - "utility.demand.profiled"
+    - "utility.cost.allocated"
+    - "utility.budget.forecasted"
+    - "utility.procurement.analysed"
+    - "utility.benchmark.completed"
+    - "utility.report.generated"
+    - "utility.report.exported"
+    - "utility.config.modified"
+    - "utility.preset.loaded"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_utility_bills.json"
+    - "tests/fixtures/sample_interval_data.json"
+    - "tests/fixtures/sample_rate_schedules.json"
+    - "tests/fixtures/sample_weather_data.json"
+    - "tests/fixtures/sample_market_data.json"
+
+# -----------------------------------------------------------------------------
+# Compliance
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "EU_EED"
+      name: "EU Energy Efficiency Directive"
+      coverage: "Article 10a metering and billing, Article 11 cost information"
+    - id: "ISO_50001"
+      name: "ISO 50001:2018"
+      coverage: "Energy procurement, monitoring, analysis, and evaluation"
+    - id: "ISO_50006"
+      name: "ISO 50006:2014"
+      coverage: "Energy performance indicators, regression normalisation"
+    - id: "ASHRAE_14"
+      name: "ASHRAE Guideline 14"
+      coverage: "Utility bill analysis methodology, weather normalisation"
+    - id: "ENERGY_STAR"
+      name: "ENERGY STAR Portfolio Manager"
+      coverage: "Utility cost benchmarking and property scoring"
+    - id: "CIBSE_TM46"
+      name: "CIBSE TM46:2008"
+      coverage: "UK building energy and cost benchmarks by type"
+    - id: "EU_TAXONOMY"
+      name: "EU Taxonomy Regulation 2020/852"
+      coverage: "Energy efficiency investment classification and reporting"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "statsmodels>=0.14"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 100
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 10
+    recommended_connections: 30
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_rate_schedule_database
+    - verify_weather_data_access
+    - verify_emission_factor_database
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+    new:
+      - "V276__pack036_utility_analysis_001"
+      - "V277__pack036_utility_analysis_002"
+      - "V278__pack036_utility_analysis_003"
+      - "V279__pack036_utility_analysis_004"
+      - "V280__pack036_utility_analysis_005"
+      - "V281__pack036_utility_analysis_006"
+      - "V282__pack036_utility_analysis_007"
+      - "V283__pack036_utility_analysis_008"
+      - "V284__pack036_utility_analysis_009"
+      - "V285__pack036_utility_analysis_010"
+
+  post_install:
+    - seed_rate_schedules
+    - seed_regulatory_charges
+    - seed_benchmark_datasets
+    - seed_emission_factors
+    - seed_market_data_sources
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: UtilityBillParserEngine
+    file: engines/utility_bill_parser_engine.py
+    description: "PDF/CSV/Excel/EDI bill parsing with line-item disaggregation and validation"
+  - name: RateStructureAnalyzerEngine
+    file: engines/rate_structure_analyzer_engine.py
+    description: "TOU/CPP/RTP/demand ratchet rate modelling with optimal tariff identification"
+  - name: DemandAnalysisEngine
+    file: engines/demand_analysis_engine.py
+    description: "Peak demand profiling, load factor, load duration curves, DR opportunities"
+  - name: CostAllocationEngine
+    file: engines/cost_allocation_engine.py
+    description: "Sub-metered, floor area, and activity-based cost allocation with chargeback"
+  - name: BudgetForecastingEngine
+    file: engines/budget_forecasting_engine.py
+    description: "12-36 month forecasting with degree-day regression and Monte Carlo uncertainty"
+  - name: ProcurementIntelligenceEngine
+    file: engines/procurement_intelligence_engine.py
+    description: "Market tracking, contract analysis, RFP generation, PPA/hedging evaluation"
+  - name: UtilityBenchmarkEngine
+    file: engines/utility_benchmark_engine.py
+    description: "Cost per m2, unit rate comparison, peer benchmarking, portfolio ranking"
+  - name: RegulatoryChargeOptimizerEngine
+    file: engines/regulatory_charge_optimizer_engine.py
+    description: "Non-commodity charge analysis, exemption eligibility, TRIAD management"
+  - name: WeatherNormalizationEngine
+    file: engines/weather_normalization_engine.py
+    description: "2P-5P degree-day regression, TMY normalisation, ASHRAE 14 fit criteria"
+  - name: UtilityReportingEngine
+    file: engines/utility_reporting_engine.py
+    description: "Multi-format report generation with Plotly charts and SHA-256 provenance"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: BillAuditWorkflow
+    file: workflows/bill_audit_workflow.py
+    description: "4-phase bill collection, parsing, rate verification, and audit reporting"
+  - name: RateOptimizationWorkflow
+    file: workflows/rate_optimization_workflow.py
+    description: "3-phase usage profiling, rate modelling, and switching recommendation"
+  - name: DemandManagementWorkflow
+    file: workflows/demand_management_workflow.py
+    description: "4-phase demand profiling, charge analysis, strategy modelling, and action plan"
+  - name: CostAllocationWorkflow
+    file: workflows/cost_allocation_workflow.py
+    description: "3-phase meter mapping, allocation calculation, and chargeback generation"
+  - name: BudgetPlanningWorkflow
+    file: workflows/budget_planning_workflow.py
+    description: "4-phase historical analysis, baseline forecast, scenario adjustment, and finalisation"
+  - name: ProcurementAnalysisWorkflow
+    file: workflows/procurement_analysis_workflow.py
+    description: "4-phase contract review, market analysis, strategy evaluation, and RFP generation"
+  - name: BenchmarkAnalysisWorkflow
+    file: workflows/benchmark_analysis_workflow.py
+    description: "3-phase cost normalisation, peer comparison, and opportunity assessment"
+  - name: FullUtilityAnalysisWorkflow
+    file: workflows/full_utility_analysis_workflow.py
+    description: "8-phase end-to-end utility analysis pipeline from bill parsing through reporting"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: BillAuditReportTemplate
+    file: templates/bill_audit_report.py
+    description: "Billing error identification and overcharge recovery report"
+  - name: RateComparisonReportTemplate
+    file: templates/rate_comparison_report.py
+    description: "Alternative rate structure comparison and switching recommendation"
+  - name: DemandProfileReportTemplate
+    file: templates/demand_profile_report.py
+    description: "Peak demand analysis, load factor, and demand charge breakdown"
+  - name: CostAllocationReportTemplate
+    file: templates/cost_allocation_report.py
+    description: "Departmental/tenant cost allocation and chargeback report"
+  - name: BudgetForecastReportTemplate
+    file: templates/budget_forecast_report.py
+    description: "Monthly budget projections with P10/P50/P90 confidence intervals"
+  - name: ProcurementStrategyReportTemplate
+    file: templates/procurement_strategy_report.py
+    description: "Market analysis, contract review, and procurement recommendation"
+  - name: BenchmarkReportTemplate
+    file: templates/benchmark_report.py
+    description: "Utility cost benchmarking and portfolio ranking report"
+  - name: RegulatoryChargeReportTemplate
+    file: templates/regulatory_charge_report.py
+    description: "Non-commodity charge analysis and exemption eligibility report"
+  - name: ExecutiveDashboardTemplate
+    file: templates/executive_dashboard.py
+    description: "C-suite utility KPI dashboard with savings summary and alerts"
+  - name: UtilitySavingsReportTemplate
+    file: templates/utility_savings_report.py
+    description: "Implemented savings tracking with verified vs. estimated comparison"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: UtilityAnalysisOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "10-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVUtilityBridge
+    file: integrations/mrv_bridge.py
+    description: "Routes utility data to MRV agents for emission-cost correlation"
+  - name: DataUtilityBridge
+    file: integrations/data_bridge.py
+    description: "Routes data intake to DATA agents for bill processing and meter data"
+  - name: Pack031Bridge
+    file: integrations/pack031_bridge.py
+    description: "Imports energy audit baselines and process data from PACK-031"
+  - name: Pack032Bridge
+    file: integrations/pack032_bridge.py
+    description: "Imports building assessment results and zone profiles from PACK-032"
+  - name: Pack033Bridge
+    file: integrations/pack033_bridge.py
+    description: "Imports quick win savings data and verification results from PACK-033"
+  - name: UtilityProviderBridge
+    file: integrations/utility_provider_bridge.py
+    description: "Green Button/ESPI data retrieval and utility portal integration"
+  - name: WeatherBridge
+    file: integrations/weather_bridge.py
+    description: "HDD/CDD calculation, TMY data, weather-normalized consumption"
+  - name: MarketDataBridge
+    file: integrations/market_data_bridge.py
+    description: "Wholesale energy market prices, forward curves, carbon prices"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "16-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided facility and utility account configuration"
+  - name: AlertBridge
+    file: integrations/alert_bridge.py
+    description: "Multi-channel notification for billing errors, anomalies, and alerts"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: office_building
+    file: config/presets/office_building.yaml
+    description: "Corporate HQ, multi-tenant, co-working spaces"
+  - name: manufacturing
+    file: config/presets/manufacturing.yaml
+    description: "Discrete, batch, process, and light industrial manufacturing"
+  - name: retail_store
+    file: config/presets/retail_store.yaml
+    description: "Supermarkets, department stores, specialty retail"
+  - name: warehouse
+    file: config/presets/warehouse.yaml
+    description: "Ambient, cold storage, distribution centres"
+  - name: healthcare
+    file: config/presets/healthcare.yaml
+    description: "Hospitals, clinics, care homes"
+  - name: education
+    file: config/presets/education.yaml
+    description: "Schools, universities, campuses"
+  - name: data_center
+    file: config/presets/data_center.yaml
+    description: "Enterprise, colocation, server rooms"
+  - name: multi_site_portfolio
+    file: config/presets/multi_site_portfolio.yaml
+    description: "Heterogeneous multi-site portfolios with 1-1000+ facilities"
