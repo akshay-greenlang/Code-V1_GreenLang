@@ -1,0 +1,184 @@
+<?xml version="1.0" ?>
+<CBAMReport xmlns="urn:cbam:transitional:v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+  <Header>
+    <GeneratedAt>2026-03-22T17:09:25.011128Z</GeneratedAt>
+    <ReportType>TRANSITIONAL_QUARTERLY</ReportType>
+    <SchemaVersion>1.0.0</SchemaVersion>
+  </Header>
+  <Declarant>
+    <Name>EuroSteel Imports GmbH</Name>
+    <EORINumber>DE987654321098765</EORINumber>
+    <Address>
+      <Street>Stahlweg 42</Street>
+      <City>Hamburg</City>
+      <PostalCode>20457</PostalCode>
+      <Country>DE</Country>
+    </Address>
+    <Contact>
+      <Name>Anna Schmidt</Name>
+      <Email>anna.schmidt@eurosteel-imports.de</Email>
+      <Phone>+49 40 98765432</Phone>
+    </Contact>
+  </Declarant>
+  <ReportingPeriod>
+    <Quarter>Q1</Quarter>
+    <Year>2025</Year>
+    <StartDate>2025-01-01</StartDate>
+    <EndDate>2025-03-31</EndDate>
+  </ReportingPeriod>
+  <ImportedGoods>
+    <Good>
+      <CNCode>72061000</CNCode>
+      <CountryOfOrigin>CN</CountryOfOrigin>
+      <TotalQuantityTonnes>125.00</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>231.25</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>52.50</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>283.75</TotalEmissionsTCO2e>
+        <WeightedIntensity>2.27</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>default_values</MethodUsed>
+      <LineCount>2</LineCount>
+    </Good>
+    <Good>
+      <CNCode>72082500</CNCode>
+      <CountryOfOrigin>IN</CountryOfOrigin>
+      <TotalQuantityTonnes>205.75</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>380.64</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>86.42</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>467.06</TotalEmissionsTCO2e>
+        <WeightedIntensity>2.27</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>supplier_specific</MethodUsed>
+      <LineCount>2</LineCount>
+    </Good>
+    <Good>
+      <CNCode>72082700</CNCode>
+      <CountryOfOrigin>TR</CountryOfOrigin>
+      <TotalQuantityTonnes>45.00</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>74.25</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>15.75</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>90.00</TotalEmissionsTCO2e>
+        <WeightedIntensity>2.00</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>default_values</MethodUsed>
+      <LineCount>1</LineCount>
+    </Good>
+    <Good>
+      <CNCode>73011000</CNCode>
+      <CountryOfOrigin>CN</CountryOfOrigin>
+      <TotalQuantityTonnes>30.00</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>55.50</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>12.60</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>68.10</TotalEmissionsTCO2e>
+        <WeightedIntensity>2.27</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>default_values</MethodUsed>
+      <LineCount>1</LineCount>
+    </Good>
+    <Good>
+      <CNCode>76011000</CNCode>
+      <CountryOfOrigin>AE</CountryOfOrigin>
+      <TotalQuantityTonnes>150.00</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>1275.00</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>315.00</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>1590.00</TotalEmissionsTCO2e>
+        <WeightedIntensity>10.60</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>supplier_specific</MethodUsed>
+      <LineCount>1</LineCount>
+    </Good>
+    <Good>
+      <CNCode>76011000</CNCode>
+      <CountryOfOrigin>RU</CountryOfOrigin>
+      <TotalQuantityTonnes>200.00</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>1300.00</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>960.00</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>2260.00</TotalEmissionsTCO2e>
+        <WeightedIntensity>11.30</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>default_values</MethodUsed>
+      <LineCount>1</LineCount>
+    </Good>
+    <Good>
+      <CNCode>76012000</CNCode>
+      <CountryOfOrigin>CN</CountryOfOrigin>
+      <TotalQuantityTonnes>80.00</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>576.00</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>424.00</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>1000.00</TotalEmissionsTCO2e>
+        <WeightedIntensity>12.50</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>default_values</MethodUsed>
+      <LineCount>1</LineCount>
+    </Good>
+    <Good>
+      <CNCode>76020000</CNCode>
+      <CountryOfOrigin>IN</CountryOfOrigin>
+      <TotalQuantityTonnes>25.00</TotalQuantityTonnes>
+      <Emissions>
+        <DirectEmissionsTCO2e>170.00</DirectEmissionsTCO2e>
+        <IndirectEmissionsTCO2e>137.50</IndirectEmissionsTCO2e>
+        <TotalEmissionsTCO2e>307.50</TotalEmissionsTCO2e>
+        <WeightedIntensity>12.30</WeightedIntensity>
+      </Emissions>
+      <MethodUsed>default_values</MethodUsed>
+      <LineCount>1</LineCount>
+    </Good>
+  </ImportedGoods>
+  <Summary>
+    <TotalLines>10</TotalLines>
+    <TotalDirectEmissionsTCO2e>4062.64</TotalDirectEmissionsTCO2e>
+    <TotalIndirectEmissionsTCO2e>2003.77</TotalIndirectEmissionsTCO2e>
+    <TotalEmissionsTCO2e>6066.41</TotalEmissionsTCO2e>
+    <MethodBreakdown>
+      <LinesWithSupplierDirectData>3</LinesWithSupplierDirectData>
+      <LinesWithSupplierIndirectData>3</LinesWithSupplierIndirectData>
+      <LinesUsingDefaults>7</LinesUsingDefaults>
+      <DefaultUsagePercent>70.0</DefaultUsagePercent>
+    </MethodBreakdown>
+    <Assumptions>
+      <Assumption>
+        <Type>default_factor</Type>
+        <Description>Used default direct emission factor for steel from China</Description>
+        <Rationale>No supplier-specific direct emissions data provided</Rationale>
+        <AppliesTo>IMP-2025-001,IMP-2025-002,IMP-2025-006</AppliesTo>
+        <FactorRef>EF-STEEL-CN-2024.1.0</FactorRef>
+      </Assumption>
+      <Assumption>
+        <Type>default_factor</Type>
+        <Description>Used default direct emission factor for steel from Turkey</Description>
+        <Rationale>No supplier-specific direct emissions data provided</Rationale>
+        <AppliesTo>IMP-2025-005</AppliesTo>
+        <FactorRef>EF-STEEL-TR-2024.1.0</FactorRef>
+      </Assumption>
+      <Assumption>
+        <Type>default_factor</Type>
+        <Description>Used default direct emission factor for aluminum from Russia</Description>
+        <Rationale>No supplier-specific direct emissions data provided</Rationale>
+        <AppliesTo>IMP-2025-007</AppliesTo>
+        <FactorRef>EF-ALUMINUM-RU-2024.1.0</FactorRef>
+      </Assumption>
+      <Assumption>
+        <Type>default_factor</Type>
+        <Description>Used default direct emission factor for aluminum from China</Description>
+        <Rationale>No supplier-specific direct emissions data provided</Rationale>
+        <AppliesTo>IMP-2025-009</AppliesTo>
+        <FactorRef>EF-ALUMINUM-CN-2024.1.0</FactorRef>
+      </Assumption>
+      <Assumption>
+        <Type>default_factor</Type>
+        <Description>Used default direct emission factor for aluminum from India</Description>
+        <Rationale>No supplier-specific direct emissions data provided</Rationale>
+        <AppliesTo>IMP-2025-010</AppliesTo>
+        <FactorRef>EF-ALUMINUM-IN-2024.1.0</FactorRef>
+      </Assumption>
+    </Assumptions>
+  </Summary>
+</CBAMReport>

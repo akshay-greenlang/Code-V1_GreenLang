@@ -1,25 +1,39 @@
-name: example-pipeline
-version: 1
-description: A minimal pipeline that performs basic calculations
+api_version: glip/v1
+kind: Pipeline
+metadata:
+  name: example-pipeline
+  version: "1.0.0"
+  description: A minimal pipeline that performs basic calculations
+
+parameters: []
 
 steps:
   - name: calculate-sum
     agent: calc
-    action: add
+    description: Calculate the initial sum
     inputs:
       a: 10
       b: 20
+    outputs:
+      - result
 
   - name: multiply-result
     agent: calc
-    action: multiply
+    description: Multiply previous result
     inputs:
       a: ${steps.calculate-sum.outputs.result}
       b: 2
+    outputs:
+      - result
 
   - name: final-output
     agent: calc
-    action: subtract
+    description: Compute final value
     inputs:
       a: ${steps.multiply-result.outputs.result}
       b: 5
+    outputs:
+      - result
+
+outputs:
+  result: ${steps.final-output.outputs.result}

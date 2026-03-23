@@ -1,0 +1,54 @@
+{
+  "artifact_version": "1.0",
+  "generated_at_utc": "2026-03-23T08:18:33Z",
+  "scope": "CBAM flagship MVP acceptance gate",
+  "verdict": "GO",
+  "checklist": {
+    "cli_help_available": {
+      "status": "PASS",
+      "command": "python -m greenlang.cli.main --help",
+      "exit_code": 0
+    },
+    "run_help_available": {
+      "status": "PASS",
+      "command": "python -m greenlang.cli.main run --help",
+      "exit_code": 0
+    },
+    "cli_cbam_happy_path": {
+      "status": "PASS",
+      "command": "python -m greenlang.cli.main run cbam <sample_config> <sample_imports> <output_dir>",
+      "exit_code": 0,
+      "output_dir": "c:/Users/aksha/Code-V1_GreenLang/tmp_mvp_release_run"
+    },
+    "cli_nonzero_on_invalid_cbam_usage": {
+      "status": "PASS",
+      "command": "python -m greenlang.cli.main run cbam",
+      "exit_code": 2
+    },
+    "test_suite_cbam_mvp": {
+      "status": "PASS",
+      "command": "pytest -q c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tests",
+      "result": "9 passed"
+    },
+    "determinism_two_run_hash_match": {
+      "status": "PASS",
+      "result": {
+        "run1_success": true,
+        "run2_success": true,
+        "same_fileset": true,
+        "diff_count": 0,
+        "run1_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run1",
+        "run2_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run2"
+      }
+    },
+    "web_health_endpoint": {
+      "status": "PASS",
+      "command": "GET http://127.0.0.1:8000/health",
+      "status_code": 200
+    }
+  },
+  "notes": [
+    "Web export gating now consumes PipelineResult.can_export as source of truth.",
+    "CBAM blocked-export non-zero path is implemented (exit_code=4) but was not triggered by sample fixtures used in this gate run."
+  ]
+}

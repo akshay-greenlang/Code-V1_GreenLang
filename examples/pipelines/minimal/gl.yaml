@@ -1,11 +1,21 @@
-name: minimal-pipeline
-version: 1
-description: The simplest possible GreenLang pipeline
+api_version: glip/v1
+kind: Pipeline
+metadata:
+  name: minimal-pipeline
+  version: "1.0.0"
+  description: The simplest possible GreenLang pipeline
+
+parameters: []
 
 steps:
   - name: simple-calculation
     agent: calc
-    action: add
+    description: Add two constants
     inputs:
       a: 1
       b: 2
+    outputs:
+      - result
+
+outputs:
+  result: ${steps.simple-calculation.outputs.result}

@@ -70,6 +70,7 @@ class CBAMXMLGenerator:
         calc_result: CalculationResult,
         config: CBAMConfig,
         validate: bool = True,
+        generated_at: Optional[datetime] = None,
     ) -> str:
         """
         Generate CBAM XML report.
@@ -82,7 +83,7 @@ class CBAMXMLGenerator:
         Returns:
             XML string
         """
-        self.generated_at = datetime.utcnow()
+        self.generated_at = generated_at or datetime.utcnow()
 
         # Create root element
         root = ET.Element("CBAMReport")

@@ -1,0 +1,163 @@
+# =============================================================================
+# PACK-037 Demand Response - Warehouse/Cold Storage Preset
+# =============================================================================
+# Warehouses and cold storage facilities with significant thermal mass in
+# refrigerated spaces for DR ride-through. Lighting shed in unoccupied zones,
+# dock equipment deferral, conveyor idle-mode. Typical peak demand 200-5000 kW.
+# Curtailment potential: 15-35% of peak. Cold chain temperature compliance is
+# a hard constraint -- HACCP and food safety limits are never exceeded.
+#
+# Typical use cases:
+#   - Frozen food distribution centres (-18C to -25C)
+#   - Chilled produce and dairy warehouses (0C to 4C)
+#   - Ambient warehouse and logistics hubs
+#   - Cold chain pharmaceutical storage (2C to 8C)
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "WAREHOUSE_COLD"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 6000
+
+# --- DR Parameters ---
+dr_parameters:
+  min_curtailment_kw: 100
+  max_event_duration_hours: 4
+  max_events_per_season: 25
+  min_notification_minutes: 60
+  notification_preferences:
+    channels:
+      - "EMAIL"
+      - "SMS"
+      - "BMS_SIGNAL"
+      - "SCADA_SIGNAL"
+    escalation_minutes: 10
+  comfort_constraints:
+    max_temperature_rise_c: 5.0
+    max_humidity_deviation_pct: 15
+    min_lighting_level_pct: 30
+    noise_limit_db: 80
+  operational_constraints:
+    max_frozen_zone_rise_c: 3.0
+    max_chilled_zone_rise_c: 2.0
+    max_pharma_zone_rise_c: 1.0
+    exclude_blast_freezers: true
+    pre_cool_before_event: true
+    pre_cool_setpoint_offset_c: -3.0
+
+# --- Load Categories ---
+load_categories:
+  hvac:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SETPOINT_RAISE"
+  lighting:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "ZONE_SHED"
+  plug_loads:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "CIRCUIT_SHED"
+  ev_charging:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "DEFERRAL"
+  it_equipment:
+    included: false
+    default_criticality: "CRITICAL"
+  refrigeration:
+    included: true
+    default_criticality: "ESSENTIAL"
+    curtailment_strategy: "PRE_COOL_COAST"
+  motors_drives:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "VSD_REDUCTION"
+  process_loads:
+    included: false
+    default_criticality: "CRITICAL"
+  dock_equipment:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SCHEDULE_SHIFT"
+
+# --- Program Preferences ---
+program_preferences:
+  preferred_types:
+    - "CAPACITY"
+    - "EMERGENCY"
+    - "ECONOMIC"
+  risk_tolerance: "LOW"
+  minimum_revenue_eur_per_year: 10000
+  preferred_isos:
+    - "PJM"
+    - "MISO"
+    - "ERCOT"
+
+# --- Baseline Preferences ---
+baseline_preferences:
+  preferred_methodology: "HIGH_4_OF_5"
+  optimization_aggressiveness: "MODERATE"
+  adjustment_factor_enabled: true
+
+# --- Dispatch Weights ---
+dispatch_weights:
+  operational_disruption: 0.40
+  comfort_deviation: 0.10
+  rebound_effect: 0.25
+  target_shortfall: 0.25
+
+# --- DER Configuration ---
+der_configuration:
+  battery_bess:
+    enabled: false
+  solar_pv:
+    enabled: false
+  backup_generator:
+    enabled: true
+    max_runtime_hours: 4
+    fuel_type: "DIESEL"
+    max_capacity_kw: 750
+  ev_v2b:
+    enabled: false
+  thermal_storage:
+    enabled: true
+    type: "REFRIGERATION_MASS"
+    pre_cool_duration_minutes: 90
+    coast_duration_minutes: 180
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.10
+  demand_charge_eur_per_kw: 14.00
+  discount_rate: 0.08
+  analysis_period_years: 10
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.42
+  marginal_emission_factor_kgco2_per_kwh: 0.70
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "CSV"
+  executive_summary: true
+  settlement_reports: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 7

@@ -1,0 +1,160 @@
+# =============================================================================
+# PACK-037 Demand Response - Education/Campus Preset
+# =============================================================================
+# Schools, universities, and campus facilities with strong scheduling-based
+# DR potential. Known academic calendar enables predictable availability.
+# Summer months offer highest curtailment (60-80% of building unoccupied).
+# HVAC setback, lighting shed, IT lab shutdown, and EV charger deferral.
+# Typical peak demand 200-5000 kW. Curtailment potential: 15-30% of peak
+# (up to 50% during summer recess).
+#
+# Typical use cases:
+#   - K-12 school districts
+#   - College and university campus buildings
+#   - Research laboratory buildings (non-critical labs)
+#   - Sports and recreation centres on campus
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "EDUCATION_CAMPUS"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 2200
+
+# --- DR Parameters ---
+dr_parameters:
+  min_curtailment_kw: 50
+  max_event_duration_hours: 4
+  max_events_per_season: 30
+  min_notification_minutes: 30
+  notification_preferences:
+    channels:
+      - "EMAIL"
+      - "SMS"
+      - "BMS_SIGNAL"
+    escalation_minutes: 15
+  comfort_constraints:
+    max_temperature_rise_c: 3.0
+    max_humidity_deviation_pct: 10
+    min_lighting_level_pct: 50
+    noise_limit_db: 50
+  operational_constraints:
+    exclude_exam_rooms_during_exams: true
+    exclude_research_labs: true
+    exclude_data_closets: true
+    summer_enhanced_curtailment: true
+    summer_max_curtailment_pct: 50
+
+# --- Load Categories ---
+load_categories:
+  hvac:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SETPOINT_RAISE"
+  lighting:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "ZONE_SHED"
+  plug_loads:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "CIRCUIT_SHED"
+  ev_charging:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "DEFERRAL"
+  it_equipment:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "LAB_SHUTDOWN"
+    scope: "NON_RESEARCH_LABS"
+  refrigeration:
+    included: false
+    default_criticality: "ESSENTIAL"
+  motors_drives:
+    included: false
+    default_criticality: "ESSENTIAL"
+  process_loads:
+    included: false
+    default_criticality: "CRITICAL"
+  sports_recreation:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "FULL_SHED"
+
+# --- Program Preferences ---
+program_preferences:
+  preferred_types:
+    - "CAPACITY"
+    - "ECONOMIC"
+    - "DEMAND_CHARGE_MANAGEMENT"
+  risk_tolerance: "MODERATE"
+  minimum_revenue_eur_per_year: 5000
+  preferred_isos:
+    - "PJM"
+    - "ISO_NE"
+    - "NYISO"
+
+# --- Baseline Preferences ---
+baseline_preferences:
+  preferred_methodology: "HIGH_4_OF_5"
+  optimization_aggressiveness: "MODERATE"
+  adjustment_factor_enabled: true
+
+# --- Dispatch Weights ---
+dispatch_weights:
+  operational_disruption: 0.30
+  comfort_deviation: 0.25
+  rebound_effect: 0.15
+  target_shortfall: 0.30
+
+# --- DER Configuration ---
+der_configuration:
+  battery_bess:
+    enabled: false
+  solar_pv:
+    enabled: true
+    capacity_kw: 200
+    behind_the_meter: true
+  backup_generator:
+    enabled: false
+  ev_v2b:
+    enabled: true
+    max_vehicles: 10
+    min_departure_soc_pct: 50
+  thermal_storage:
+    enabled: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.12
+  demand_charge_eur_per_kw: 10.00
+  discount_rate: 0.06
+  analysis_period_years: 15
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  marginal_emission_factor_kgco2_per_kwh: 0.65
+  carbon_price_eur_per_tco2: 85.0
+  sbti_alignment_tracking: true
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  settlement_reports: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

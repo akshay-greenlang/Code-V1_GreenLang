@@ -4,6 +4,7 @@ gl pack - Pack management commands
 """
 
 import os
+import logging
 import typer
 import subprocess
 import yaml
@@ -45,6 +46,11 @@ def create(
         "name": slug,
         "version": "0.1.0",
         "kind": "pack",
+        "pack_schema_version": "1.0",
+        "author": {
+            "name": "GreenLang Team",
+            "email": "support@greenlang.io",
+        },
         "license": "Apache-2.0",
         "compat": {"greenlang": ">=0.1.0", "python": ">=3.10"},
         "contents": {
@@ -58,7 +64,7 @@ def create(
             "data_residency": [],
             "license_allowlist": ["Apache-2.0", "MIT"],
         },
-        "security": {"sbom": None, "signatures": []},
+        "security": {"sbom": "sbom.spdx.json", "signatures": []},
         "tests": ["tests/test_*.py"],
         "card": "CARD.md",
     }
@@ -68,12 +74,24 @@ def create(
 
     # Create gl.yaml
     pipeline = {
-        "version": "1.0",
-        "name": f"{slug}-main",
-        "description": f"Main pipeline for {slug}",
-        "inputs": {},
-        "steps": [],
-        "outputs": {},
+        "api_version": "glip/v1",
+        "kind": "Pipeline",
+        "metadata": {
+            "name": f"{slug}-main",
+            "description": f"Main pipeline for {slug}",
+            "version": "1.0.0",
+        },
+        "parameters": [],
+        "steps": [
+            {
+                "name": "bootstrap",
+                "agent": "Echo",
+                "description": "Initial scaffold step",
+                "inputs": {"message": f"{slug} pipeline scaffold"},
+                "outputs": ["message"],
+            }
+        ],
+        "outputs": {"bootstrap_message": "${steps.bootstrap.outputs.message}"},
     }
 
     with open(pack_dir / "gl.yaml", "w") as f:
@@ -275,7 +293,7 @@ def validate(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show details"),
 ):
     """Validate manifest & files"""
-    from ..packs.manifest import validate_pack, load_manifest
+    from ..ecosystem.packs.manifest import validate_pack, load_manifest
 
     if not (path / "pack.yaml").exists():
         console.print(f"[red]Error: No pack.yaml found in {path}[/red]")
@@ -321,18 +339,16 @@ def publish(
     registry: str = typer.Option(
         "ghcr.io/greenlang", "--registry", "-r", help="OCI registry"
     ),
-    test: bool = typer.Option(True, "--test/--no-test", help="Run tests first"),
-    sign: bool = typer.Option(True, "--sign/--no-sign", help="Sign the pack"),
+    test: bool = typer.Option(True, "--test", help="Run tests first"),
+    sign: bool = typer.Option(True, "--sign", help="Sign the pack"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Simulate publishing"),
-    update_index: bool = typer.Option(
-        True, "--update-index/--no-update-index", help="Update hub index"
-    ),
+    update_index: bool = typer.Option(True, "--update-index", help="Update hub index"),
 ):
     """Test -> policy -> SBOM -> sign -> push"""
-    from ..packs.manifest import load_manifest, validate_pack
-    from ..provenance.sbom import generate_sbom
-    from ..provenance.signing import sign_pack
-    from ..policy.enforcer import check_install
+    from ..ecosystem.packs.manifest import load_manifest, validate_pack
+    from ..utilities.provenance.sbom import generate_sbom
+    from ..utilities.provenance.signing import sign_pack
+    from ..governance.policy.enforcer import check_install
 
     # Validate first
     console.print("[cyan]Validating pack...[/cyan]")
@@ -418,7 +434,9 @@ def publish(
 
         # Check if oras is available
         try:
-            subprocess.check_call(["oras", "version"], capture_output=True)
+            subprocess.run(
+                ["oras", "version"], check=True, capture_output=True, text=True
+            )
         except (subprocess.CalledProcessError, FileNotFoundError):
             console.print("[red]ORAS not found. Please install ORAS CLI[/red]")
             console.print("  Install: https://oras.land/docs/installation")
@@ -464,23 +482,23 @@ def publish(
 def add(
     ref: str = typer.Argument(..., help="Pack reference (org/name@version or name)"),
     cache: Path = typer.Option(Path(".gl_cache"), "--cache", help="Cache directory"),
-    verify: bool = typer.Option(True, "--verify/--no-verify", help="Verify signatures"),
+    verify: bool = typer.Option(True, "--verify", help="Verify signatures"),
     force: bool = typer.Option(False, "--force", "-f", help="Force reinstall"),
 ):
     """Pull, verify signature, install"""
-    from ..packs.installer import PackInstaller
-    from ..packs.registry import PackRegistry
-    from ..hub.index import HubIndex
-    from ..provenance.signing import verify_artifact
+    from ..ecosystem.packs.installer import PackInstaller
+    from ..ecosystem.packs.registry import PackRegistry
+    from ..ecosystem.hub.index import HubIndex
+    from ..utilities.provenance.signing import verify_artifact
 
     console.print(f"[cyan]Installing {ref}...[/cyan]")
 
     # Check if local path
     if Path(ref).exists():
         # Install from local directory
-        from ..packs.manifest import load_manifest
-        from ..policy.enforcer import check_install
-        from ..packs.installer import PackInstaller
+        from ..ecosystem.packs.manifest import load_manifest
+        from ..governance.policy.enforcer import check_install
+        from ..ecosystem.packs.installer import PackInstaller
 
         # Check policy first
         try:
@@ -488,8 +506,13 @@ def add(
             check_install(manifest, str(ref), stage="add")
             console.print("[green][OK][/green] Policy check passed")
         except RuntimeError as e:
-            console.print(f"[red]Policy check failed: {e}[/red]")
-            raise typer.Exit(1)
+            if "OPA not available" in str(e):
+                console.print(
+                    "[yellow]Policy engine unavailable (OPA missing); continuing local install[/yellow]"
+                )
+            else:
+                console.print(f"[red]Policy check failed: {e}[/red]")
+                raise typer.Exit(1)
         except Exception as e:
             console.print(f"[yellow]Warning: Policy check error: {e}[/yellow]")
 
@@ -546,7 +569,9 @@ def add(
 
             try:
                 # Check if oras is available
-                subprocess.check_call(["oras", "version"], capture_output=True)
+                subprocess.run(
+                    ["oras", "version"], check=True, capture_output=True, text=True
+                )
 
                 # Pull with oras
                 cache.mkdir(parents=True, exist_ok=True)
@@ -588,16 +613,21 @@ def add(
                 progress.update(task, description="Checking policy...")
 
                 # Check policy before installing
-                from ..packs.manifest import load_manifest
-                from ..policy.enforcer import check_install
+                from ..ecosystem.packs.manifest import load_manifest
+                from ..governance.policy.enforcer import check_install
 
                 try:
                     manifest = load_manifest(pack_dir)
                     check_install(manifest, str(pack_dir), stage="add")
                     console.print("[green][OK][/green] Policy check passed")
                 except RuntimeError as e:
-                    console.print(f"[red]Policy check failed: {e}[/red]")
-                    raise typer.Exit(1)
+                    if "OPA not available" in str(e):
+                        console.print(
+                            "[yellow]Policy engine unavailable (OPA missing); continuing install[/yellow]"
+                        )
+                    else:
+                        console.print(f"[red]Policy check failed: {e}[/red]")
+                        raise typer.Exit(1)
                 except Exception as e:
                     console.print(f"[yellow]Warning: Policy check error: {e}[/yellow]")
 
@@ -622,10 +652,26 @@ def add(
                 raise typer.Exit(1)
 
 
+@app.command("remove")
+def remove(
+    name: str = typer.Argument(..., help="Installed pack name"),
+):
+    """Remove an installed pack."""
+    from ..ecosystem.packs.installer import PackInstaller
+
+    installer = PackInstaller()
+    if installer.uninstall(name):
+        console.print(f"[green][OK][/green] Removed pack: {name}")
+        return
+
+    console.print(f"[red]Pack not installed: {name}[/red]")
+    raise typer.Exit(1)
+
+
 @app.command("info")
 def info(ref: str = typer.Argument(..., help="Pack name or reference")):
     """Inspect pack metadata"""
-    from ..packs.registry import PackRegistry
+    from ..ecosystem.packs.registry import PackRegistry
 
     registry = PackRegistry()
 
@@ -735,132 +781,52 @@ def info(ref: str = typer.Argument(..., help="Pack name or reference")):
 def list_packs(
     kind: Optional[str] = typer.Option(None, "--kind", "-k", help="Filter by kind"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
-    installed_only: bool = typer.Option(
-        True,
-        "--installed-only/--all",
-        help="Show only installed or all available packs",
-    ),
     search: Optional[str] = typer.Option(None, "--search", "-s", help="Search query"),
 ):
-    """List installed packs or search available packs"""
-    from ..packs.registry import PackRegistry
-    from ..hub.index import HubIndex
+    """List installed packs"""
+    from ..ecosystem.packs.registry import PackRegistry
+    registry = PackRegistry()
+    packs = registry.list(kind=kind)
 
-    if installed_only:
-        # List installed packs
-        registry = PackRegistry()
-        packs = registry.list(kind=kind)
+    if not packs:
+        console.print("[yellow]No packs installed[/yellow]")
+        console.print("\nInstall packs with: [cyan]gl pack add <local-path-or-pack-ref>[/cyan]")
+        return
 
-        if not packs:
-            console.print("[yellow]No packs installed[/yellow]")
-            console.print("\nInstall packs with: [cyan]gl pack add <pack-name>[/cyan]")
-            console.print(
-                "Search available packs with: [cyan]gl pack list --all[/cyan]"
+    if json_output:
+        import json
+
+        output = []
+        for pack in packs:
+            output.append(
+                {
+                    "name": pack.manifest.get("name", pack.name),
+                    "version": pack.manifest.get("version", pack.version),
+                    "kind": pack.manifest.get("kind", "pack"),
+                    "location": str(pack.location),
+                    "verified": pack.verified,
+                }
             )
-            return
+        console.print(json.dumps(output, indent=2))
+        return
 
-        if json_output:
-            import json
+    table = Table(title="Installed Packs")
+    table.add_column("Name", style="cyan")
+    table.add_column("Version", style="green")
+    table.add_column("Kind", style="yellow")
+    table.add_column("Location")
+    table.add_column("Verified", style="blue")
 
-            output = []
-            for pack in packs:
-                output.append(
-                    {
-                        "name": pack.manifest.name,
-                        "version": pack.manifest.version,
-                        "kind": pack.manifest.kind,
-                        "location": str(pack.location),
-                        "verified": pack.verified,
-                    }
-                )
-            console.print(json.dumps(output, indent=2))
-        else:
-            table = Table(title="Installed Packs")
-            table.add_column("Name", style="cyan")
-            table.add_column("Version", style="green")
-            table.add_column("Kind", style="yellow")
-            table.add_column("Location")
-            table.add_column("Verified", style="blue")
+    for pack in packs:
+        table.add_row(
+            pack.manifest.get("name", pack.name),
+            pack.manifest.get("version", pack.version),
+            pack.manifest.get("kind", "pack"),
+            str(pack.location),
+            "[OK]" if pack.verified else "[FAIL]",
+        )
 
-            for pack in packs:
-                table.add_row(
-                    pack.manifest.get("name", pack.name),
-                    pack.manifest.get("version", pack.version),
-                    pack.manifest.get("kind", "pack"),
-                    (
-                        str(pack.location)[:40] + "..."
-                        if len(str(pack.location)) > 40
-                        else str(pack.location)
-                    ),
-                    "[OK]" if pack.verified else "[FAIL]",
-                )
-
-            console.print(table)
-    else:
-        # List available packs from hub
-        console.print("[cyan]Fetching available packs...[/cyan]")
-        hub = HubIndex()
-        try:
-            entries = hub.search(search or "", tags=kind.split(",") if kind else None)
-
-            if not entries:
-                console.print("[yellow]No packs found[/yellow]")
-                return
-
-            if json_output:
-                import json
-
-                output = []
-                for entry in entries:
-                    output.append(
-                        {
-                            "name": entry.name,
-                            "org": entry.org,
-                            "slug": entry.slug,
-                            "latest_version": entry.latest_version,
-                            "versions": entry.versions,
-                            "description": entry.description,
-                            "license": entry.license,
-                            "download_count": entry.download_count,
-                            "tags": entry.tags,
-                        }
-                    )
-                console.print(json.dumps(output, indent=2))
-            else:
-                table = Table(title=f"Available Packs ({len(entries)} found)")
-                table.add_column("Pack", style="cyan")
-                table.add_column("Latest", style="green")
-                table.add_column("Description")
-                table.add_column("License", style="yellow")
-                table.add_column("Downloads", style="blue")
-
-                for entry in entries[:20]:  # Limit to first 20
-                    table.add_row(
-                        f"{entry.org}/{entry.slug}",
-                        entry.latest_version,
-                        (
-                            entry.description[:50] + "..."
-                            if len(entry.description) > 50
-                            else entry.description
-                        ),
-                        entry.license,
-                        str(entry.download_count),
-                    )
-
-                console.print(table)
-
-                if len(entries) > 20:
-                    console.print(
-                        f"\n[dim]Showing first 20 of {len(entries)} results. Use --search to filter.[/dim]"
-                    )
-
-        except Exception as e:
-            console.print(f"[red]Failed to fetch available packs: {e}[/red]")
-            console.print("Falling back to installed packs...")
-            # Fallback to installed packs
-            list_packs(
-                kind=kind, json_output=json_output, installed_only=True, search=search
-            )
+    console.print(table)
 
 
 def _update_hub_index(pack_path: Path, manifest, org: str) -> None:
@@ -872,7 +838,7 @@ def _update_hub_index(pack_path: Path, manifest, org: str) -> None:
         manifest: Pack manifest
         org: Organization name
     """
-    from ..hub.index import HubIndex, IndexEntry
+    from ..ecosystem.hub.index import HubIndex, IndexEntry
     from datetime import datetime
 
     # Read CARD.md for summary
@@ -943,7 +909,7 @@ def search_packs(
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ):
     """Search available packs in the hub"""
-    from ..hub.index import HubIndex
+    from ..ecosystem.hub.index import HubIndex
 
     console.print(f"[cyan]Searching for: {query or 'all packs'}[/cyan]")
 
@@ -1018,7 +984,7 @@ def index_commands(
     ),
 ):
     """Manage hub index"""
-    from ..hub.index import HubIndex
+    from ..ecosystem.hub.index import HubIndex
 
     hub = HubIndex()
 

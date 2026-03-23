@@ -1,0 +1,34 @@
+{
+  "status": "FAIL",
+  "overall_score": 75.0,
+  "can_export": true,
+  "summary": "Policy validation failed with 1 violation(s).",
+  "evaluated_at": "2026-03-22T16:53:42.968516Z",
+  "violations": [
+    {
+      "rule_id": "POL-001",
+      "rule_name": "Default Factor Usage Cap",
+      "severity": "FAIL",
+      "message": "Default factor usage (70.0%) exceeds cap (20.0%)",
+      "affected_lines": [
+        "IMP-2025-001",
+        "IMP-2025-002",
+        "IMP-2025-005",
+        "IMP-2025-006",
+        "IMP-2025-007",
+        "IMP-2025-009",
+        "IMP-2025-010"
+      ],
+      "affected_line_count": 7,
+      "threshold": 20.0,
+      "actual_value": 70.0,
+      "remediation": "Obtain supplier-specific emission data for at least 5 lines to reduce default usage below 20%."
+    }
+  ],
+  "warnings": [],
+  "passed_rules": [
+    "POL-002: Definitive Period Compliance (transitional - relaxed)",
+    "POL-004: Data Completeness",
+    "POL-005: Data Consistency (mixed methods allowed)"
+  ]
+}

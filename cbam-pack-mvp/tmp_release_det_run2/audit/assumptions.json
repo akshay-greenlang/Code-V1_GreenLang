@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-03-29T20:54:04Z",
+  "total_assumptions": 5,
+  "assumptions": [
+    {
+      "type": "default_factor",
+      "description": "Used default direct emission factor for steel from China",
+      "rationale": "No supplier-specific direct emissions data provided",
+      "applies_to_lines": [
+        "IMP-2025-001",
+        "IMP-2025-002",
+        "IMP-2025-006"
+      ],
+      "line_count": 3,
+      "factor_ref": "EF-STEEL-CN-2024.1.0"
+    },
+    {
+      "type": "default_factor",
+      "description": "Used default direct emission factor for steel from Turkey",
+      "rationale": "No supplier-specific direct emissions data provided",
+      "applies_to_lines": [
+        "IMP-2025-005"
+      ],
+      "line_count": 1,
+      "factor_ref": "EF-STEEL-TR-2024.1.0"
+    },
+    {
+      "type": "default_factor",
+      "description": "Used default direct emission factor for aluminum from Russia",
+      "rationale": "No supplier-specific direct emissions data provided",
+      "applies_to_lines": [
+        "IMP-2025-007"
+      ],
+      "line_count": 1,
+      "factor_ref": "EF-ALUMINUM-RU-2024.1.0"
+    },
+    {
+      "type": "default_factor",
+      "description": "Used default direct emission factor for aluminum from China",
+      "rationale": "No supplier-specific direct emissions data provided",
+      "applies_to_lines": [
+        "IMP-2025-009"
+      ],
+      "line_count": 1,
+      "factor_ref": "EF-ALUMINUM-CN-2024.1.0"
+    },
+    {
+      "type": "default_factor",
+      "description": "Used default direct emission factor for aluminum from India",
+      "rationale": "No supplier-specific direct emissions data provided",
+      "applies_to_lines": [
+        "IMP-2025-010"
+      ],
+      "line_count": 1,
+      "factor_ref": "EF-ALUMINUM-IN-2024.1.0"
+    }
+  ]
+}

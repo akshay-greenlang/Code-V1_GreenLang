@@ -1,0 +1,158 @@
+# =============================================================================
+# PACK-037 Demand Response - Manufacturing Preset
+# =============================================================================
+# Industrial manufacturing facilities with motor VSD control, compressed air
+# pressure reduction, process scheduling flexibility, and HVAC curtailment.
+# Typical peak demand 500-10000 kW. Curtailment potential: 10-30% of peak.
+# Production constraints are paramount -- no impact to product quality or
+# throughput without explicit approval.
+#
+# Typical use cases:
+#   - Discrete and batch manufacturing plants
+#   - CNC machining and metal fabrication facilities
+#   - Electronics assembly and PCB manufacturing
+#   - Automotive component and tier-1 suppliers
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "MANUFACTURING"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 6000
+
+# --- DR Parameters ---
+dr_parameters:
+  min_curtailment_kw: 200
+  max_event_duration_hours: 6
+  max_events_per_season: 20
+  min_notification_minutes: 60
+  notification_preferences:
+    channels:
+      - "EMAIL"
+      - "SMS"
+      - "SCADA_SIGNAL"
+      - "BMS_SIGNAL"
+    escalation_minutes: 10
+  comfort_constraints:
+    max_temperature_rise_c: 4.0
+    max_humidity_deviation_pct: 15
+    min_lighting_level_pct: 60
+    noise_limit_db: 85
+  operational_constraints:
+    exclude_critical_lines: true
+    exclude_quality_labs: true
+    exclude_cleanrooms: true
+    max_production_impact_pct: 0
+    require_production_approval: true
+
+# --- Load Categories ---
+load_categories:
+  hvac:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SETPOINT_RAISE"
+  lighting:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "ZONE_SHED"
+  plug_loads:
+    included: false
+    default_criticality: "SHEDDABLE"
+  ev_charging:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "DEFERRAL"
+  it_equipment:
+    included: false
+    default_criticality: "CRITICAL"
+  refrigeration:
+    included: false
+    default_criticality: "ESSENTIAL"
+  motors_drives:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "VSD_REDUCTION"
+  process_loads:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SCHEDULE_SHIFT"
+  compressed_air:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "PRESSURE_REDUCTION"
+
+# --- Program Preferences ---
+program_preferences:
+  preferred_types:
+    - "CAPACITY"
+    - "EMERGENCY"
+    - "ECONOMIC"
+  risk_tolerance: "LOW"
+  minimum_revenue_eur_per_year: 20000
+  preferred_isos:
+    - "PJM"
+    - "MISO"
+    - "ERCOT"
+
+# --- Baseline Preferences ---
+baseline_preferences:
+  preferred_methodology: "HIGH_5_SIMILAR"
+  optimization_aggressiveness: "CONSERVATIVE"
+  adjustment_factor_enabled: true
+
+# --- Dispatch Weights ---
+dispatch_weights:
+  operational_disruption: 0.45
+  comfort_deviation: 0.10
+  rebound_effect: 0.20
+  target_shortfall: 0.25
+
+# --- DER Configuration ---
+der_configuration:
+  battery_bess:
+    enabled: false
+  solar_pv:
+    enabled: false
+  backup_generator:
+    enabled: true
+    max_runtime_hours: 4
+    fuel_type: "DIESEL"
+    max_capacity_kw: 500
+  ev_v2b:
+    enabled: false
+  thermal_storage:
+    enabled: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.10
+  demand_charge_eur_per_kw: 15.00
+  discount_rate: 0.08
+  analysis_period_years: 10
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.42
+  marginal_emission_factor_kgco2_per_kwh: 0.70
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "CSV"
+  executive_summary: true
+  settlement_reports: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 7

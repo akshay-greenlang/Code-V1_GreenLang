@@ -1,0 +1,168 @@
+# =============================================================================
+# PACK-037 Demand Response - Data Center Preset
+# =============================================================================
+# Data centres and colocation facilities with very limited DR flexibility.
+# Only cooling setpoint adjustments, UPS bypass mode, non-critical lighting,
+# and EV charging deferral are permissible. IT uptime SLAs (99.99%+) are the
+# absolute constraint. Typical peak demand 1000-50000 kW. Curtailment
+# potential: 5-15% of peak via cooling optimisation and UPS efficiency gains.
+# PUE improvement during events can yield meaningful kW reduction.
+#
+# Typical use cases:
+#   - Enterprise data centres (Tier III/IV)
+#   - Colocation and hosting facilities
+#   - Server rooms within office buildings
+#   - Edge computing and telecom sites
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "DATA_CENTER"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 8760
+
+# --- DR Parameters ---
+dr_parameters:
+  min_curtailment_kw: 100
+  max_event_duration_hours: 2
+  max_events_per_season: 10
+  min_notification_minutes: 60
+  notification_preferences:
+    channels:
+      - "EMAIL"
+      - "SMS"
+      - "BMS_SIGNAL"
+      - "DCIM_SIGNAL"
+    escalation_minutes: 5
+  comfort_constraints:
+    max_temperature_rise_c: 3.0
+    max_humidity_deviation_pct: 10
+    min_lighting_level_pct: 30
+    noise_limit_db: 80
+  operational_constraints:
+    exclude_it_compute: true
+    exclude_network_equipment: true
+    exclude_storage_systems: true
+    exclude_ups_critical_bus: true
+    max_pue_increase: 0.15
+    max_inlet_temperature_c: 27.0
+    require_noc_approval: true
+
+# --- Load Categories ---
+load_categories:
+  hvac:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "SETPOINT_RAISE"
+    scope: "CRAH_CRAC_UNITS"
+  lighting:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "ZONE_SHED"
+    scope: "NON_WHITESPACE"
+  plug_loads:
+    included: false
+    default_criticality: "CRITICAL"
+  ev_charging:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "DEFERRAL"
+  it_equipment:
+    included: false
+    default_criticality: "CRITICAL"
+  refrigeration:
+    included: false
+    default_criticality: "CRITICAL"
+  motors_drives:
+    included: false
+    default_criticality: "CRITICAL"
+  process_loads:
+    included: false
+    default_criticality: "CRITICAL"
+  ups_systems:
+    included: true
+    default_criticality: "ESSENTIAL"
+    curtailment_strategy: "ECO_MODE"
+
+# --- Program Preferences ---
+program_preferences:
+  preferred_types:
+    - "ECONOMIC"
+    - "CAPACITY"
+  risk_tolerance: "VERY_LOW"
+  minimum_revenue_eur_per_year: 25000
+  preferred_isos:
+    - "PJM"
+    - "ERCOT"
+    - "CAISO"
+
+# --- Baseline Preferences ---
+baseline_preferences:
+  preferred_methodology: "10_OF_10"
+  optimization_aggressiveness: "CONSERVATIVE"
+  adjustment_factor_enabled: true
+
+# --- Dispatch Weights ---
+dispatch_weights:
+  operational_disruption: 0.55
+  comfort_deviation: 0.05
+  rebound_effect: 0.15
+  target_shortfall: 0.25
+
+# --- DER Configuration ---
+der_configuration:
+  battery_bess:
+    enabled: true
+    capacity_kwh: 2000
+    max_discharge_kw: 500
+    min_soc_pct: 20
+    round_trip_efficiency: 0.92
+  solar_pv:
+    enabled: true
+    capacity_kw: 500
+    behind_the_meter: true
+  backup_generator:
+    enabled: true
+    max_runtime_hours: 4
+    fuel_type: "DIESEL"
+    max_capacity_kw: 5000
+    emergency_only: true
+  ev_v2b:
+    enabled: false
+  thermal_storage:
+    enabled: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.08
+  demand_charge_eur_per_kw: 18.00
+  discount_rate: 0.10
+  analysis_period_years: 7
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.38
+  marginal_emission_factor_kgco2_per_kwh: 0.60
+  carbon_price_eur_per_tco2: 85.0
+  sbti_alignment_tracking: true
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "JSON"
+  executive_summary: true
+  settlement_reports: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 7

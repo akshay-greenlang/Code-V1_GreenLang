@@ -1,0 +1,149 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-03-22T17:17:47.472498Z",
+  "reporting_period": "Q1 2025",
+  "summary": {
+    "total_lines": 10,
+    "lines_with_gaps": 7,
+    "gap_percentage": 70.0,
+    "gaps_by_country": {
+      "CN": 4,
+      "TR": 1,
+      "RU": 1,
+      "IN": 1
+    },
+    "gaps_by_cn_code": {
+      "7206": 2,
+      "7208": 1,
+      "7301": 1,
+      "7601": 2,
+      "7602": 1
+    }
+  },
+  "priority_actions": [
+    "Priority 1: Focus on suppliers from CN (4 lines using defaults)",
+    "Priority 2: Address CN code group 7206xx (2 lines using defaults)",
+    "Overall: Collect supplier emission data for 7 import lines to reduce reliance on default factors"
+  ],
+  "gaps": [
+    {
+      "line_id": "IMP-2025-001",
+      "cn_code": "72061000",
+      "product_description": "Carbon steel ingots - Grade A",
+      "country_of_origin": "CN",
+      "supplier_id": "SUP-CN-001",
+      "missing_fields": [
+        "supplier_direct_emissions",
+        "supplier_indirect_emissions",
+        "installation_id",
+        "supplier_certificate_ref"
+      ],
+      "current_method": "default",
+      "recommended_action": "Request complete emission data from supplier SUP-CN-001",
+      "data_request_template": "Data Request for CBAM Compliance\n\nProduct: Carbon steel ingots - Grade A\nCN Code: 72061000\nCountry: CN\n\nRequired Data:\n  - Direct emission intensity (tCO2e/tonne product)\n  - Indirect emission intensity (tCO2e/tonne product)\n  - Production installation ID (CBAM registry)\n  - Verification certificate reference\n\nPlease provide:\n1. Direct emissions intensity (tCO2e per tonne of product)\n2. Indirect emissions intensity (tCO2e per tonne of product)\n3. Production installation ID (if registered in CBAM registry)\n4. Verification documentation reference"
+    },
+    {
+      "line_id": "IMP-2025-002",
+      "cn_code": "72061000",
+      "product_description": "Carbon steel ingots - Grade B",
+      "country_of_origin": "CN",
+      "supplier_id": "SUP-CN-001",
+      "missing_fields": [
+        "supplier_direct_emissions",
+        "supplier_indirect_emissions",
+        "installation_id",
+        "supplier_certificate_ref"
+      ],
+      "current_method": "default",
+      "recommended_action": "Request complete emission data from supplier SUP-CN-001",
+      "data_request_template": "Data Request for CBAM Compliance\n\nProduct: Carbon steel ingots - Grade B\nCN Code: 72061000\nCountry: CN\n\nRequired Data:\n  - Direct emission intensity (tCO2e/tonne product)\n  - Indirect emission intensity (tCO2e/tonne product)\n  - Production installation ID (CBAM registry)\n  - Verification certificate reference\n\nPlease provide:\n1. Direct emissions intensity (tCO2e per tonne of product)\n2. Indirect emissions intensity (tCO2e per tonne of product)\n3. Production installation ID (if registered in CBAM registry)\n4. Verification documentation reference"
+    },
+    {
+      "line_id": "IMP-2025-005",
+      "cn_code": "72082700",
+      "product_description": "Hot-rolled steel coils 8mm",
+      "country_of_origin": "TR",
+      "supplier_id": "SUP-TR-001",
+      "missing_fields": [
+        "supplier_direct_emissions",
+        "supplier_indirect_emissions",
+        "installation_id",
+        "supplier_certificate_ref"
+      ],
+      "current_method": "default",
+      "recommended_action": "Request complete emission data from supplier SUP-TR-001",
+      "data_request_template": "Data Request for CBAM Compliance\n\nProduct: Hot-rolled steel coils 8mm\nCN Code: 72082700\nCountry: TR\n\nRequired Data:\n  - Direct emission intensity (tCO2e/tonne product)\n  - Indirect emission intensity (tCO2e/tonne product)\n  - Production installation ID (CBAM registry)\n  - Verification certificate reference\n\nPlease provide:\n1. Direct emissions intensity (tCO2e per tonne of product)\n2. Indirect emissions intensity (tCO2e per tonne of product)\n3. Production installation ID (if registered in CBAM registry)\n4. Verification documentation reference"
+    },
+    {
+      "line_id": "IMP-2025-006",
+      "cn_code": "73011000",
+      "product_description": "Steel sheet piling",
+      "country_of_origin": "CN",
+      "supplier_id": "SUP-CN-002",
+      "missing_fields": [
+        "supplier_direct_emissions",
+        "supplier_indirect_emissions",
+        "installation_id",
+        "supplier_certificate_ref"
+      ],
+      "current_method": "default",
+      "recommended_action": "Request complete emission data from supplier SUP-CN-002",
+      "data_request_template": "Data Request for CBAM Compliance\n\nProduct: Steel sheet piling\nCN Code: 73011000\nCountry: CN\n\nRequired Data:\n  - Direct emission intensity (tCO2e/tonne product)\n  - Indirect emission intensity (tCO2e/tonne product)\n  - Production installation ID (CBAM registry)\n  - Verification certificate reference\n\nPlease provide:\n1. Direct emissions intensity (tCO2e per tonne of product)\n2. Indirect emissions intensity (tCO2e per tonne of product)\n3. Production installation ID (if registered in CBAM registry)\n4. Verification documentation reference"
+    },
+    {
+      "line_id": "IMP-2025-007",
+      "cn_code": "76011000",
+      "product_description": "Primary aluminum ingots",
+      "country_of_origin": "RU",
+      "supplier_id": "SUP-RU-001",
+      "missing_fields": [
+        "supplier_direct_emissions",
+        "supplier_indirect_emissions",
+        "installation_id",
+        "supplier_certificate_ref"
+      ],
+      "current_method": "default",
+      "recommended_action": "Request complete emission data from supplier SUP-RU-001",
+      "data_request_template": "Data Request for CBAM Compliance\n\nProduct: Primary aluminum ingots\nCN Code: 76011000\nCountry: RU\n\nRequired Data:\n  - Direct emission intensity (tCO2e/tonne product)\n  - Indirect emission intensity (tCO2e/tonne product)\n  - Production installation ID (CBAM registry)\n  - Verification certificate reference\n\nPlease provide:\n1. Direct emissions intensity (tCO2e per tonne of product)\n2. Indirect emissions intensity (tCO2e per tonne of product)\n3. Production installation ID (if registered in CBAM registry)\n4. Verification documentation reference"
+    },
+    {
+      "line_id": "IMP-2025-009",
+      "cn_code": "76012000",
+      "product_description": "Aluminum alloy ingots",
+      "country_of_origin": "CN",
+      "supplier_id": "SUP-CN-003",
+      "missing_fields": [
+        "supplier_direct_emissions",
+        "supplier_indirect_emissions",
+        "installation_id",
+        "supplier_certificate_ref"
+      ],
+      "current_method": "default",
+      "recommended_action": "Request complete emission data from supplier SUP-CN-003",
+      "data_request_template": "Data Request for CBAM Compliance\n\nProduct: Aluminum alloy ingots\nCN Code: 76012000\nCountry: CN\n\nRequired Data:\n  - Direct emission intensity (tCO2e/tonne product)\n  - Indirect emission intensity (tCO2e/tonne product)\n  - Production installation ID (CBAM registry)\n  - Verification certificate reference\n\nPlease provide:\n1. Direct emissions intensity (tCO2e per tonne of product)\n2. Indirect emissions intensity (tCO2e per tonne of product)\n3. Production installation ID (if registered in CBAM registry)\n4. Verification documentation reference"
+    },
+    {
+      "line_id": "IMP-2025-010",
+      "cn_code": "76020000",
+      "product_description": "Aluminum scrap and waste",
+      "country_of_origin": "IN",
+      "supplier_id": "SUP-IN-002",
+      "missing_fields": [
+        "supplier_direct_emissions",
+        "supplier_indirect_emissions",
+        "installation_id",
+        "supplier_certificate_ref"
+      ],
+      "current_method": "default",
+      "recommended_action": "Request complete emission data from supplier SUP-IN-002",
+      "data_request_template": "Data Request for CBAM Compliance\n\nProduct: Aluminum scrap and waste\nCN Code: 76020000\nCountry: IN\n\nRequired Data:\n  - Direct emission intensity (tCO2e/tonne product)\n  - Indirect emission intensity (tCO2e/tonne product)\n  - Production installation ID (CBAM registry)\n  - Verification certificate reference\n\nPlease provide:\n1. Direct emissions intensity (tCO2e per tonne of product)\n2. Indirect emissions intensity (tCO2e per tonne of product)\n3. Production installation ID (if registered in CBAM registry)\n4. Verification documentation reference"
+    }
+  ],
+  "supplier_data_requirements": {
+    "supplier_id": "Supplier identification number",
+    "installation_id": "Production installation ID (CBAM registry)",
+    "supplier_direct_emissions": "Direct emission intensity (tCO2e/tonne product)",
+    "supplier_indirect_emissions": "Indirect emission intensity (tCO2e/tonne product)",
+    "supplier_certificate_ref": "Verification certificate reference"
+  }
+}

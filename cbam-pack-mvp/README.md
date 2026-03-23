@@ -22,6 +22,9 @@ pip install -e .
 
 # Or with development dependencies
 pip install -e ".[dev]"
+
+# Or with web UI + dev dependencies
+pip install -e ".[web,dev]"
 ```
 
 ## Quick Start
@@ -48,7 +51,7 @@ reporting_period:
   year: 2025
 
 settings:
-  aggregation: "aggregate_by_cn_country"
+  aggregation: "by_product_origin"
 ```
 
 ### 2. Prepare Your Import Ledger
@@ -65,6 +68,9 @@ IMP-002,Q1,2025,76011000,Primary aluminum ingots,RU,120,tonnes
 
 ```bash
 gl-cbam run cbam --config cbam.yaml --imports imports.csv --out ./output/
+
+# Monorepo canonical CLI path (from repository root)
+python -m greenlang.cli.main run cbam cbam.yaml imports.csv ./output/
 ```
 
 ## Output Artifacts
@@ -108,6 +114,12 @@ gl-cbam validate -c <config.yaml> -i <imports.csv>
 gl-cbam version
 ```
 
+### Start Web UI
+
+```bash
+gl-cbam web --host 127.0.0.1 --port 8000
+```
+
 ## Supported CN Codes
 
 | Product Category | CN Prefix | Examples |
@@ -139,7 +151,7 @@ The CBAM Pack implements a 7-agent pipeline:
 
 ## License
 
-Apache 2.0 - See [LICENSE](LICENSE) for details.
+Apache 2.0 - See [LICENSE](../LICENSE) for details.
 
 ## Support
 

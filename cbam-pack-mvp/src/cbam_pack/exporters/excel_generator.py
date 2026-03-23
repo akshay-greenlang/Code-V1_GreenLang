@@ -7,6 +7,9 @@ Generates Excel summary reports for CBAM calculations.
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import re
+import zipfile
+import tempfile
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -47,6 +50,7 @@ class ExcelSummaryGenerator:
         calc_result: CalculationResult,
         config: CBAMConfig,
         output_path: Path,
+        generated_at: Optional[datetime] = None,
     ) -> None:
         """
         Generate Excel summary report.
@@ -57,24 +61,62 @@ class ExcelSummaryGenerator:
             output_path: Path to save the Excel file
         """
         self.wb = Workbook()
+        ts = generated_at or datetime.utcnow()
+        # Keep workbook metadata deterministic when a timestamp is provided.
+        self.wb.properties.created = ts
+        self.wb.properties.modified = ts
 
         # Remove default sheet
         default_sheet = self.wb.active
         self.wb.remove(default_sheet)
 
         # Create sheets
-        self._create_summary_sheet(calc_result, config)
+        self._create_summary_sheet(calc_result, config, generated_at=ts)
         self._create_line_details_sheet(calc_result)
         self._create_aggregated_sheet(calc_result)
         self._create_assumptions_sheet(calc_result)
 
         # Save
         self.wb.save(output_path)
+        self._normalize_core_metadata(output_path, ts)
+
+    def _normalize_core_metadata(self, output_path: Path, ts: datetime) -> None:
+        """
+        openpyxl rewrites core modified timestamp during save; normalize it.
+        """
+        ts_str = ts.strftime("%Y-%m-%dT%H:%M:%SZ")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+            tmp_path = Path(tmp.name)
+
+        try:
+            with zipfile.ZipFile(output_path, "r") as src_zip, zipfile.ZipFile(tmp_path, "w", zipfile.ZIP_DEFLATED) as dst_zip:
+                fixed_dt = (ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second)
+                for item in sorted(src_zip.infolist(), key=lambda i: i.filename):
+                    data = src_zip.read(item.filename)
+                    if item.filename == "docProps/core.xml":
+                        text = data.decode("utf-8")
+                        text = re.sub(
+                            r"(<dcterms:modified[^>]*>)(.*?)(</dcterms:modified>)",
+                            rf"\\1{ts_str}\\3",
+                            text,
+                            flags=re.DOTALL,
+                        )
+                        data = text.encode("utf-8")
+                    normalized_info = zipfile.ZipInfo(filename=item.filename, date_time=fixed_dt)
+                    normalized_info.compress_type = zipfile.ZIP_DEFLATED
+                    normalized_info.external_attr = item.external_attr
+                    normalized_info.create_system = item.create_system
+                    dst_zip.writestr(normalized_info, data)
+            tmp_path.replace(output_path)
+        finally:
+            if tmp_path.exists():
+                tmp_path.unlink(missing_ok=True)
 
     def _create_summary_sheet(
         self,
         calc_result: CalculationResult,
         config: CBAMConfig,
+        generated_at: Optional[datetime] = None,
     ) -> None:
         """Create summary sheet."""
         ws = self.wb.create_sheet("Summary")
@@ -92,7 +134,8 @@ class ExcelSummaryGenerator:
         ws["A5"] = "EORI Number:"
         ws["B5"] = config.declarant.eori_number
         ws["A6"] = "Generated:"
-        ws["B6"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ts = generated_at or datetime.utcnow()
+        ws["B6"] = ts.strftime("%Y-%m-%d %H:%M:%S")
 
         # Statistics
         stats = calc_result.statistics

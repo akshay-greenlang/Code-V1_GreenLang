@@ -1,0 +1,101 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-03-29T20:54:04Z",
+  "inputs": [
+    {
+      "type": "file",
+      "path": "c:\\Users\\aksha\\Code-V1_GreenLang\\cbam-pack-mvp\\examples\\sample_imports.csv",
+      "evidence_copy": "evidence/sample_imports.csv",
+      "sha256": "f11e95b02f996c2e2e085fea178a298a9eb8d2329d8796be79d1766bd70ab5c9",
+      "size_bytes": 1143
+    },
+    {
+      "type": "file",
+      "path": "c:\\Users\\aksha\\Code-V1_GreenLang\\cbam-pack-mvp\\examples\\sample_config.yaml",
+      "evidence_copy": "evidence/sample_config.yaml",
+      "sha256": "1b18d95d50565683ebe2a458283a91b2f7cf6211e41d5d4a7dd667b015817d54",
+      "size_bytes": 480
+    },
+    {
+      "type": "emission_factor_library",
+      "version": "2024.1.0",
+      "source": "GreenLang CBAM Defaults 2024"
+    }
+  ],
+  "transformations": [
+    {
+      "stage": 1,
+      "name": "schema_validation",
+      "description": "Validated input files against CBAM schema",
+      "result": "passed"
+    },
+    {
+      "stage": 2,
+      "name": "unit_normalization",
+      "description": "Normalized all quantities to tonnes",
+      "result": "passed"
+    },
+    {
+      "stage": 3,
+      "name": "factor_lookup",
+      "description": "Retrieved emission factors from library",
+      "result": "passed"
+    },
+    {
+      "stage": 4,
+      "name": "emissions_calculation",
+      "description": "Calculated direct and indirect emissions",
+      "lines_processed": 10,
+      "result": "passed"
+    },
+    {
+      "stage": 5,
+      "name": "aggregation",
+      "description": "Aggregated results by CN code and country",
+      "result": "passed"
+    },
+    {
+      "stage": 6,
+      "name": "xml_generation",
+      "description": "Generated CBAM XML report",
+      "validation": {
+        "valid": true,
+        "status": "PASS",
+        "schema_version": "1.0.0",
+        "schema_date": "2024-10-01",
+        "errors": [],
+        "warnings": []
+      },
+      "result": "passed"
+    },
+    {
+      "stage": 7,
+      "name": "policy_validation",
+      "description": "Evaluated against policy rules",
+      "result": "FAIL"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "xml_report",
+      "filename": "cbam_report.xml",
+      "description": "CBAM transitional quarterly report",
+      "schema_validated": true
+    },
+    {
+      "type": "excel_summary",
+      "filename": "report_summary.xlsx",
+      "description": "Human-readable summary report"
+    },
+    {
+      "type": "audit_bundle",
+      "directory": "audit/",
+      "description": "Complete audit evidence package"
+    },
+    {
+      "type": "evidence_bundle",
+      "directory": "evidence/",
+      "description": "Immutable copies of input files"
+    }
+  ]
+}

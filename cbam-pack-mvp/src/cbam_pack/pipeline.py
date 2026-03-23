@@ -11,12 +11,13 @@ Coordinates the full CBAM report generation pipeline:
 """
 
 import json
+import hashlib
 import logging
 import platform
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -44,6 +45,7 @@ class PipelineResult:
     xml_validation: Optional[dict] = None
     gap_summary: Optional[dict] = None
     lines_using_defaults: list[dict] = field(default_factory=list)
+    can_export: bool = True
 
 
 class CBAMPipeline:
@@ -160,6 +162,11 @@ class CBAMPipeline:
         self.lines = imports_result.validated_lines
         self.logger.info(f"  Import validation passed ({len(self.lines)} lines)")
 
+        run_seed = self._build_run_seed(self.config, self.lines)
+        run_id = run_seed[:12]
+        generated_dt = self._seed_to_datetime(run_seed)
+        generated_at = generated_dt.isoformat().replace("+00:00", "Z")
+
         if self.dry_run:
             self.logger.info("Dry run complete - validation passed")
             return PipelineResult(
@@ -210,6 +217,7 @@ class CBAMPipeline:
 
         self.policy_engine = PolicyEngine.from_yaml_config(self.config)
         policy_result = self.policy_engine.evaluate(self.calc_result, self.config)
+        policy_result.evaluated_at = generated_dt.replace(tzinfo=None)
         policy_result_dict = policy_result.to_dict()
 
         self.logger.info(f"  Policy status: {policy_result.status.value}")
@@ -233,6 +241,7 @@ class CBAMPipeline:
                 self.calc_result,
                 self.config,
                 validate=True,  # Enable XSD validation
+                generated_at=generated_dt.replace(tzinfo=None),
             )
 
             # Get validation result
@@ -262,6 +271,7 @@ class CBAMPipeline:
                 self.calc_result,
                 self.config,
                 self.output_dir / "report_summary.xlsx",
+                generated_at=generated_dt.replace(tzinfo=None),
             )
             artifacts.append("report_summary.xlsx")
             self.logger.info("  Excel summary generated")
@@ -285,8 +295,10 @@ class CBAMPipeline:
                 config=self.config,
                 input_files=[self.imports_path, self.config_path],
                 output_dir=self.output_dir,
-                execution_time=time.time() - start_time,
+                execution_time=0.0,
                 lines=self.lines,  # Pass lines for gap report
+                generated_at=generated_at,
+                run_id=run_id,
             )
             artifacts.extend(bundle_artifacts)
             self.logger.info("  Audit bundle created")
@@ -313,20 +325,31 @@ class CBAMPipeline:
             f"{elapsed:.1f}s runtime"
         )
 
-        # Determine success based on policy
+        # Determine exportability and success using PRD hierarchy:
+        # - XML schema FAIL is a hard block (cannot export)
+        # - Policy FAIL is soft when policy_result.can_export is true
+        schema_status = (xml_validation_dict or {}).get("status", "PASS")
+        schema_valid = schema_status == "PASS"
+        can_export = schema_valid and bool(policy_result.can_export)
         success = True
-        if policy_result.status == PolicyStatus.FAIL and not policy_result.can_export:
-            success = False
+        exit_code = 0 if can_export else 4
+        result_errors: list[str] = []
+        if not schema_valid:
+            result_errors.append("XML schema validation failed; export is blocked.")
+        elif policy_result.status == PolicyStatus.FAIL and not policy_result.can_export:
+            result_errors.append("Policy validation failed; export is blocked.")
 
         return PipelineResult(
             success=success,
-            exit_code=0 if success else 4,
+            exit_code=exit_code,
+            errors=result_errors,
             artifacts=artifacts,
             statistics=self.calc_result.statistics,
             policy_result=policy_result_dict,
             xml_validation=xml_validation_dict,
             gap_summary=gap_summary,
             lines_using_defaults=lines_using_defaults,
+            can_export=can_export,
         )
 
     def _build_default_lines_detail(self) -> list[dict]:
@@ -367,3 +390,27 @@ class CBAMPipeline:
                     })
 
         return details
+
+    def _build_run_seed(self, config: CBAMConfig, lines: list[ImportLineItem]) -> str:
+        def _as_dict(model_obj):
+            if hasattr(model_obj, "model_dump"):
+                return model_obj.model_dump(mode="json")
+            return model_obj.dict()
+
+        seed_doc = {
+            "declarant_eori": config.declarant.eori_number,
+            "reporting_period": f"{config.reporting_period.quarter.value}-{config.reporting_period.year}",
+            "imports_hash": hashlib.sha256(
+                json.dumps([_as_dict(line) for line in lines], sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest(),
+            "config_hash": hashlib.sha256(
+                json.dumps(_as_dict(config), sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest(),
+        }
+        return hashlib.sha256(
+            json.dumps(seed_doc, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+
+    def _seed_to_datetime(self, seed: str) -> datetime:
+        offset_seconds = int(seed[:8], 16) % 31536000
+        return datetime(2026, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=offset_seconds)

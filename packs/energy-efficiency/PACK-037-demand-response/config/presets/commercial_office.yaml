@@ -1,0 +1,147 @@
+# =============================================================================
+# PACK-037 Demand Response - Commercial Office Preset
+# =============================================================================
+# Corporate office buildings with HVAC curtailment, lighting dimming, plug
+# load shedding, and EV charger deferral. Typical peak demand 200-2000 kW.
+# Curtailment potential: 15-35% of peak via HVAC setpoint raise, lighting
+# dimming, plug load shedding, and EV charging deferral. Comfort constraints
+# are binding -- occupant satisfaction is a priority.
+#
+# Typical use cases:
+#   - Corporate headquarters and regional offices
+#   - Multi-tenant commercial office towers
+#   - Government and public administration buildings
+#   - Co-working and flexible workspace facilities
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "COMMERCIAL_OFFICE"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 2500
+
+# --- DR Parameters ---
+dr_parameters:
+  min_curtailment_kw: 50
+  max_event_duration_hours: 4
+  max_events_per_season: 30
+  min_notification_minutes: 30
+  notification_preferences:
+    channels:
+      - "EMAIL"
+      - "SMS"
+      - "BMS_SIGNAL"
+    escalation_minutes: 15
+  comfort_constraints:
+    max_temperature_rise_c: 2.0
+    max_humidity_deviation_pct: 10
+    min_lighting_level_pct: 50
+    noise_limit_db: 45
+  operational_constraints:
+    exclude_meeting_rooms: false
+    exclude_executive_floors: true
+    exclude_server_rooms: true
+    max_elevator_reduction_pct: 0
+
+# --- Load Categories ---
+load_categories:
+  hvac:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SETPOINT_RAISE"
+  lighting:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "DIMMING"
+  plug_loads:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "CIRCUIT_SHED"
+  ev_charging:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "DEFERRAL"
+  it_equipment:
+    included: false
+    default_criticality: "CRITICAL"
+  refrigeration:
+    included: false
+    default_criticality: "ESSENTIAL"
+  motors_drives:
+    included: false
+    default_criticality: "ESSENTIAL"
+  process_loads:
+    included: false
+    default_criticality: "CRITICAL"
+
+# --- Program Preferences ---
+program_preferences:
+  preferred_types:
+    - "CAPACITY"
+    - "ECONOMIC"
+    - "DEMAND_CHARGE_MANAGEMENT"
+  risk_tolerance: "MODERATE"
+  minimum_revenue_eur_per_year: 5000
+  preferred_isos:
+    - "PJM"
+    - "NYISO"
+    - "ISO_NE"
+
+# --- Baseline Preferences ---
+baseline_preferences:
+  preferred_methodology: "HIGH_4_OF_5"
+  optimization_aggressiveness: "MODERATE"
+  adjustment_factor_enabled: true
+
+# --- Dispatch Weights ---
+dispatch_weights:
+  operational_disruption: 0.30
+  comfort_deviation: 0.35
+  rebound_effect: 0.15
+  target_shortfall: 0.20
+
+# --- DER Configuration ---
+der_configuration:
+  battery_bess:
+    enabled: false
+  solar_pv:
+    enabled: false
+  backup_generator:
+    enabled: false
+  ev_v2b:
+    enabled: false
+  thermal_storage:
+    enabled: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.14
+  demand_charge_eur_per_kw: 12.00
+  discount_rate: 0.08
+  analysis_period_years: 10
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  marginal_emission_factor_kgco2_per_kwh: 0.65
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  settlement_reports: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

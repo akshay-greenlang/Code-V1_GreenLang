@@ -10,7 +10,7 @@ import json
 import platform
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -52,6 +52,8 @@ class AuditBundleGenerator:
         self.factor_library_version = factor_library_version
         self.xml_validation_result: Optional[dict] = None
         self.policy_result: Optional[dict] = None
+        self._run_id: str = "unknown"
+        self._generated_at: str = "1970-01-01T00:00:00Z"
 
     def set_xml_validation_result(self, result: dict) -> None:
         """Set XML validation result from XML generator."""
@@ -69,6 +71,8 @@ class AuditBundleGenerator:
         output_dir: Path,
         execution_time: float,
         lines: Optional[list[ImportLineItem]] = None,
+        generated_at: Optional[str] = None,
+        run_id: Optional[str] = None,
     ) -> list[str]:
         """
         Generate the complete audit bundle.
@@ -96,6 +100,11 @@ class AuditBundleGenerator:
 
         # Copy input files to evidence folder (immutable copies)
         evidence_hashes = self._copy_evidence_files(input_files, evidence_dir)
+        if generated_at and run_id:
+            self._generated_at = generated_at
+            self._run_id = run_id
+        else:
+            self._initialize_run_context(calc_result, config, evidence_hashes)
         artifacts.append("evidence/")
 
         # Generate claims.json with row pointers
@@ -118,7 +127,13 @@ class AuditBundleGenerator:
             from cbam_pack.audit.gap_report import GapReportGenerator
             gap_gen = GapReportGenerator()
             gap_path = audit_dir / "gap_report.json"
-            gap_gen.generate(calc_result, lines, config, gap_path)
+            gap_gen.generate(
+                calc_result,
+                lines,
+                config,
+                gap_path,
+                generated_at=self._generated_at,
+            )
             artifacts.append("audit/gap_report.json")
 
         # Generate policy_validation.json
@@ -173,7 +188,7 @@ class AuditBundleGenerator:
                     "evidence_path": f"evidence/{file_path.name}",
                     "sha256": file_hash,
                     "size_bytes": file_path.stat().st_size,
-                    "copied_at": datetime.utcnow().isoformat() + "Z",
+                    "copied_at": self._stable_timestamp(file_hash),
                 }
 
         return evidence_hashes
@@ -205,7 +220,7 @@ class AuditBundleGenerator:
 
         # Total emissions claim
         claims.append({
-            "claim_id": f"CLM-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-001",
+            "claim_id": f"CLM-{self._run_id}-001",
             "claim_type": ClaimType.TOTAL_EMISSIONS.value,
             "value": stats.get("total_emissions_tco2e", 0),
             "unit": "tCO2e",
@@ -225,7 +240,7 @@ class AuditBundleGenerator:
 
         # Direct emissions claim
         claims.append({
-            "claim_id": f"CLM-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-002",
+            "claim_id": f"CLM-{self._run_id}-002",
             "claim_type": ClaimType.DIRECT_EMISSIONS.value,
             "value": stats.get("total_direct_emissions_tco2e", 0),
             "unit": "tCO2e",
@@ -238,7 +253,7 @@ class AuditBundleGenerator:
 
         # Indirect emissions claim
         claims.append({
-            "claim_id": f"CLM-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-003",
+            "claim_id": f"CLM-{self._run_id}-003",
             "claim_type": ClaimType.INDIRECT_EMISSIONS.value,
             "value": stats.get("total_indirect_emissions_tco2e", 0),
             "unit": "tCO2e",
@@ -279,7 +294,7 @@ class AuditBundleGenerator:
 
         report = {
             "version": "1.0",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": self._generated_at,
             "summary_claims": claims,
             "line_claims": line_claims,
             "evidence_files": evidence_hashes,
@@ -299,7 +314,7 @@ class AuditBundleGenerator:
         """Generate lineage.json with data provenance."""
         lineage = {
             "version": "1.0",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": self._generated_at,
             "inputs": [],
             "transformations": [],
             "outputs": [],
@@ -408,7 +423,7 @@ class AuditBundleGenerator:
         """Generate assumptions.json with all assumptions made."""
         assumptions_data = {
             "version": "1.0",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": self._generated_at,
             "total_assumptions": len(calc_result.assumptions),
             "assumptions": [],
         }
@@ -450,7 +465,7 @@ class AuditBundleGenerator:
                 "validation_result": self.xml_validation_result or {"status": "not_validated"},
             },
             "execution": {
-                "started_at": (datetime.utcnow()).isoformat() + "Z",
+                "started_at": self._generated_at,
                 "duration_seconds": round(execution_time, 2),
                 "status": "success",
             },
@@ -490,13 +505,13 @@ class AuditBundleGenerator:
         """Generate checksums.json with SHA-256 hashes of all artifacts."""
         checksums = {
             "version": "1.0",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": self._generated_at,
             "algorithm": "SHA-256",
             "files": [],
         }
 
         # Hash all files in output directory (excluding checksums.json itself)
-        for file_path in output_dir.rglob("*"):
+        for file_path in sorted(output_dir.rglob("*"), key=lambda p: str(p)):
             if file_path.is_file() and file_path.name != "checksums.json":
                 rel_path = file_path.relative_to(output_dir)
                 file_hash = self._compute_file_hash(file_path)
@@ -516,3 +531,33 @@ class AuditBundleGenerator:
             for chunk in iter(lambda: f.read(8192), b""):
                 sha256_hash.update(chunk)
         return sha256_hash.hexdigest()
+
+    def _initialize_run_context(
+        self,
+        calc_result: CalculationResult,
+        config: CBAMConfig,
+        evidence_hashes: dict[str, dict],
+    ) -> None:
+        """
+        Build a deterministic run context from inputs and config.
+        This keeps IDs/timestamps stable when inputs stay the same.
+        """
+        seed_doc = {
+            "declarant_eori": config.declarant.eori_number,
+            "reporting_period": f"{config.reporting_period.quarter.value}-{config.reporting_period.year}",
+            "total_lines": calc_result.statistics.get("total_lines", 0),
+            "total_emissions_tco2e": calc_result.statistics.get("total_emissions_tco2e", 0),
+            "evidence_hashes": {
+                k: v.get("sha256", "") for k, v in sorted(evidence_hashes.items())
+            },
+        }
+        seed_hash = hashlib.sha256(
+            json.dumps(seed_doc, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        self._run_id = seed_hash[:12]
+        self._generated_at = self._stable_timestamp(seed_hash)
+
+    def _stable_timestamp(self, seed: str) -> str:
+        offset_seconds = int(seed[:8], 16) % 31536000
+        base = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        return (base + timedelta(seconds=offset_seconds)).isoformat().replace("+00:00", "Z")

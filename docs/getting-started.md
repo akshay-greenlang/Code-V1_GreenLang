@@ -65,27 +65,26 @@ outputs:
 ### 3. Run the Pipeline
 
 ```bash
-# Run locally
+# Run locally (pipeline only)
 gl run pipeline.yaml
 
-# Run with verbose output
-gl run pipeline.yaml --verbose
+# Run with explicit input file and output directory
+gl run pipeline.yaml input.json out
 
-# Run in Docker (isolated)
-gl run pipeline.yaml --runner docker
+# Run CBAM MVP flow (from monorepo root)
+gl run cbam cbam.yaml imports.csv out
 ```
 
 ### 4. View Results
 
 ```bash
-# List recent runs
-gl run list
+# Check generated output files
+ls out/
 
-# View run details
-gl run info <run-id>
-
-# Check output files
-ls output/
+# CBAM artifacts are written under:
+# out/cbam_report.xml
+# out/report_summary.xlsx
+# out/audit/
 ```
 
 ## Core Concepts
@@ -179,10 +178,10 @@ steps:
       limit: ${{ inputs.params.max_records }}
 ```
 
-Run with parameters:
+Run with an input file:
 
 ```bash
-gl run pipeline.yaml --param environment=staging --param max_records=500
+gl run pipeline.yaml input.json out
 ```
 
 ### File Handling
@@ -314,24 +313,16 @@ steps:
 ### Enable Debug Logging
 
 ```bash
-# Set log level
-export GREENLANG_LOG_LEVEL=DEBUG
-
-# Run with debug output
-gl run pipeline.yaml --debug
-
-# Save logs to file
-gl run pipeline.yaml --log-file debug.log
+# Run and capture console logs
+gl run pipeline.yaml input.json out
 ```
 
 ### Inspect Execution
 
 ```bash
-# View step outputs
-gl run inspect <run-id> --step <step-id>
-
-# Export run data
-gl run export <run-id> --format json > run-data.json
+# Inspect generated artifacts
+ls out/
+ls out/audit/
 ```
 
 ## Common Patterns
@@ -396,8 +387,8 @@ steps:
 
 ```bash
 # Built-in help
-gl help
-gl help run
+gl --help
+gl run --help
 
 # Check system status
 gl doctor

@@ -129,7 +129,7 @@ class HubIndex:
         for url in self.index_urls:
             try:
                 logger.info(f"Fetching index from {url}")
-                from greenlang.security.network import (
+                from greenlang.governance.security.network import (
                     create_secure_session,
                     validate_url,
                 )

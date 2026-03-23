@@ -69,6 +69,7 @@ class GapReportGenerator:
         lines: list[ImportLineItem],
         config: CBAMConfig,
         output_path: Path,
+        generated_at: Optional[str] = None,
     ) -> dict:
         """
         Generate comprehensive gap report.
@@ -152,7 +153,7 @@ class GapReportGenerator:
         # Build report
         report = {
             "version": "1.0",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": generated_at or (datetime.utcnow().isoformat() + "Z"),
             "reporting_period": f"{config.reporting_period.quarter.value} {config.reporting_period.year}",
             "summary": {
                 "total_lines": summary.total_lines,

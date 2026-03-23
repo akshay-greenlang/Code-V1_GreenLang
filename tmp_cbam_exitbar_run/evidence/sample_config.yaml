@@ -1,0 +1,22 @@
+# Sample CBAM Configuration
+# GreenLang CBAM Pack - Example for Q1 2025
+
+declarant:
+  name: "EuroSteel Imports GmbH"
+  eori_number: "DE987654321098765"
+  address:
+    street: "Stahlweg 42"
+    city: "Hamburg"
+    postal_code: "20457"
+    country: "DE"
+  contact:
+    name: "Anna Schmidt"
+    email: "anna.schmidt@eurosteel-imports.de"
+    phone: "+49 40 98765432"
+
+reporting_period:
+  quarter: "Q1"
+  year: 2025
+
+settings:
+  aggregation: "by_product_origin"

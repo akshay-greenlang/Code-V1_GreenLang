@@ -1,0 +1,1260 @@
+# =============================================================================
+# PACK-037: Demand Response Pack
+# GreenLang Energy Efficiency Pack for Demand Response & Load Flexibility
+# =============================================================================
+# This pack provides a comprehensive demand response management solution
+# covering load flexibility assessment, DR program matching and enrollment,
+# customer baseline load (CBL) simulation, dispatch optimization, real-time
+# event management, DER/battery/thermal coordination, performance tracking,
+# revenue optimization, carbon impact quantification, and settlement
+# verification.
+#
+# Demand response enables facilities to monetize load flexibility by
+# curtailing, shifting, or reshaping electricity consumption in response
+# to grid signals, price signals, and program dispatch. This pack supports
+# 200+ DR programs across US ISOs (PJM, ERCOT, CAISO, ISO-NE, NYISO,
+# MISO, SPP), EU aggregator markets, and UK National Grid flexibility
+# services.
+#
+# Key Capabilities:
+#   - Load flexibility assessment (criticality classification, curtailment
+#     capacity, response time, rebound characterization)
+#   - DR program matching (200+ programs, revenue projection, portfolio
+#     optimization with stacking analysis)
+#   - Customer baseline load simulation (8 methodologies: High 4 of 5,
+#     10 of 10, High 5 Similar, 10CP, Deemed Profile, Type I Regression,
+#     EU Standard, Custom Regression)
+#   - Dispatch optimization (multi-objective LP: curtailment target,
+#     comfort constraints, operational impact, rebound minimization)
+#   - Real-time event management (5-phase lifecycle: notification,
+#     preparation, execution, termination, assessment)
+#   - DER coordination (battery BESS, solar PV, backup generator, EV
+#     charger V2B, thermal storage, CHP orchestration)
+#   - Performance tracking (event compliance, settlement verification,
+#     trend detection, degradation alerts)
+#   - Revenue optimization (capacity, energy, ancillary, demand charge
+#     savings, price arbitrage, ROI, what-if analysis)
+#   - Carbon impact (marginal emission factors, Scope 2 per GHG Protocol,
+#     SBTi contribution, CSRD/ESRS E1 reporting)
+#   - Settlement documentation (program-specific baseline, performance
+#     verification, revenue reconciliation)
+#
+# Regulatory References:
+#   - EU Electricity Market Design Regulation (EU) 2024/1747
+#   - EU Energy Efficiency Directive (EU) 2023/1791
+#   - FERC Order 2222 (DER aggregation in wholesale markets)
+#   - FERC Order 745 (DR compensation at LMP)
+#   - OpenADR 2.0b (Automated Demand Response protocol)
+#   - ISO 50001:2018 (Energy management systems)
+#   - GHG Protocol Corporate Standard (Scope 2 emissions)
+#   - SBTi Corporate Net-Zero Standard
+#
+# Facility Types Supported:
+#   - Commercial offices (HVAC, lighting, plug loads, EV)
+#   - Manufacturing (motors, compressed air, process scheduling)
+#   - Retail/grocery (HVAC, refrigeration thermal mass, lighting)
+#   - Warehouses/cold storage (refrigeration, lighting, dock equipment)
+#   - Healthcare (non-clinical HVAC, admin lighting, kitchen/laundry)
+#   - Education/campus (HVAC, lighting, IT labs, EV charging)
+#   - Data centers (cooling setpoint, UPS bypass, EV charging)
+#   - Microgrid/DER-rich (full DER orchestration, islanding)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-23)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-037-demand-response
+  version: "1.0.0"
+  display_name: "Demand Response Pack"
+  description: >-
+    GreenLang deployment pack for comprehensive demand response management
+    including load flexibility assessment, DR program matching against 200+
+    programs, customer baseline load simulation with 8 methodologies,
+    multi-objective dispatch optimization, real-time event management,
+    DER/battery/thermal coordination, performance tracking with settlement
+    verification, revenue optimization across capacity/energy/ancillary
+    streams, and carbon impact quantification using marginal emission
+    factors. Supports commercial offices, manufacturing, retail, warehouses,
+    healthcare, education, data centers, and microgrid facilities with
+    tailored presets. Bridges to MRV agents for Scope 2 emissions, DATA
+    agents for meter and billing data, PACK-036 for utility rate analysis,
+    and PACK-033 for DR-enabling quick wins.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-23"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/demand-response"
+  changelog_url: "https://docs.greenlang.io/packs/demand-response/changelog"
+
+  tags:
+    - demand-response
+    - load-flexibility
+    - dr-program
+    - curtailment
+    - baseline-load
+    - dispatch-optimization
+    - event-management
+    - der-coordination
+    - battery-storage
+    - solar-pv
+    - ev-charging
+    - thermal-storage
+    - revenue-optimization
+    - carbon-impact
+    - marginal-emissions
+    - openADR
+    - grid-flexibility
+    - energy-efficiency
+    - settlement
+    - performance-tracking
+
+  regulation:
+    primary:
+      name: "EU Electricity Market Design Regulation"
+      reference: "Regulation (EU) 2024/1747"
+      effective_date: "2024-07-01"
+      description: >-
+        The EU Electricity Market Design Regulation mandates demand
+        response participation rights (Article 17) and requires
+        aggregator market access (Article 40). This pack enables
+        facilities to comply with demand-side flexibility requirements
+        and participate in EU flexibility markets.
+    secondary:
+      - name: "EU Energy Efficiency Directive (EED)"
+        reference: "Directive (EU) 2023/1791"
+        effective_date: "2023-10-10"
+      - name: "FERC Order 2222"
+        reference: "18 CFR Parts 35, 271"
+        effective_date: "2020-09-17"
+      - name: "FERC Order 745"
+        reference: "18 CFR Part 35"
+        effective_date: "2011-03-15"
+      - name: "OpenADR 2.0b"
+        reference: "OpenADR Alliance"
+        effective_date: "2015-07-01"
+      - name: "ISO 50001:2018 Energy Management Systems"
+        reference: "ISO 50001:2018"
+        effective_date: "2018-08-21"
+      - name: "GHG Protocol Corporate Standard"
+        reference: "GHG Protocol (revised 2015)"
+        effective_date: "2015-01-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi v1.1"
+        effective_date: "2023-01-01"
+
+  compliance_references:
+    - id: "EU_EMDR"
+      name: "EU Electricity Market Design Regulation"
+      regulation: "Regulation (EU) 2024/1747"
+      effective_date: "2024-07-01"
+      description: >-
+        Mandates demand response participation rights and aggregator
+        market access. This pack enables automated DR participation
+        in EU flexibility markets with program enrollment, event
+        management, and settlement verification.
+
+    - id: "FERC_2222"
+      name: "FERC Order 2222"
+      regulation: "18 CFR Parts 35, 271"
+      effective_date: "2020-09-17"
+      description: >-
+        Enables DER aggregation participation in US wholesale markets.
+        This pack supports aggregated DR portfolio management across
+        multiple facilities with coordinated dispatch and settlement.
+
+    - id: "FERC_745"
+      name: "FERC Order 745"
+      regulation: "18 CFR Part 35"
+      effective_date: "2011-03-15"
+      description: >-
+        Requires ISOs/RTOs to compensate DR at LMP when cost-effective.
+        This pack calculates DR revenue at LMP and supports program
+        enrollment across all US ISOs/RTOs.
+
+    - id: "OpenADR"
+      name: "OpenADR 2.0b"
+      regulation: "OpenADR Alliance"
+      effective_date: "2015-07-01"
+      description: >-
+        Standard communication protocol for automated demand response.
+        This pack supports OpenADR 2.0b signal reception, parsing,
+        and automated response execution.
+
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol (revised 2015)"
+      effective_date: "2015-01-01"
+      description: >-
+        Scope 2 emission reduction from DR events quantified using
+        marginal emission factors. This pack calculates event-specific
+        carbon benefits with both location-based and market-based
+        accounting per GHG Protocol Scope 2 Guidance.
+
+    - id: "SBTi"
+      name: "Science Based Targets initiative"
+      regulation: "SBTi Corporate Net-Zero Standard v1.1"
+      effective_date: "2023-01-01"
+      description: >-
+        DR carbon reductions contribute to science-based targets.
+        This pack tracks marginal emission reductions from DR events
+        against SBTi reduction pathways.
+
+# -----------------------------------------------------------------------------
+# Components
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 DR engines)
+  # ===========================================================================
+  engines:
+    - id: load_flexibility
+      name: "Load Flexibility Assessment Engine"
+      description: >-
+        Systematic assessment of all facility loads for DR flexibility.
+        Categorizes loads by criticality (critical/essential/deferrable/
+        sheddable/flexible), calculates curtailment capacity by
+        notification time and duration, scores flexibility across 7
+        factors. Builds a complete load flexibility register.
+        Zero-hallucination: all assessments from equipment specifications
+        and metered data, no LLM.
+      class: "LoadFlexibilityEngine"
+      file: "engines/load_flexibility_engine.py"
+      required: true
+
+    - id: dr_program
+      name: "DR Program Matching Engine"
+      description: >-
+        Matches facility flexibility to 200+ DR programs worldwide.
+        Covers US ISOs, EU aggregator markets, UK flexibility services.
+        Calculates expected revenue, penalty risk, and optimal program
+        portfolio with stacking analysis.
+        Zero-hallucination: program data from published program guides,
+        revenue from formulaic calculation, no LLM.
+      class: "DRProgramEngine"
+      file: "engines/dr_program_engine.py"
+      required: true
+
+    - id: baseline
+      name: "Customer Baseline Load Engine"
+      description: >-
+        Simulates CBL using 8 industry-standard methodologies.
+        Calculates baselines from historical interval data, applies
+        adjustment factors, simulates outcomes, identifies optimization
+        opportunities within program rules.
+        Zero-hallucination: baseline from published methodologies and
+        interval meter data, no LLM.
+      class: "BaselineEngine"
+      file: "engines/baseline_engine.py"
+      required: true
+
+    - id: dispatch_optimizer
+      name: "Dispatch Optimization Engine"
+      description: >-
+        Multi-objective optimization for DR event dispatch. Minimizes
+        disruption, comfort deviation, and rebound while meeting
+        curtailment target. Uses scipy LP for deterministic solutions.
+        Zero-hallucination: optimization from linear programming, no LLM.
+      class: "DispatchOptimizerEngine"
+      file: "engines/dispatch_optimizer_engine.py"
+      required: true
+
+    - id: event_manager
+      name: "Event Manager Engine"
+      description: >-
+        Real-time DR event lifecycle management across 5 phases:
+        notification, preparation, execution, termination, assessment.
+        Manages load control commands with millisecond timestamps.
+        Zero-hallucination: event tracking from metered data, no LLM.
+      class: "EventManagerEngine"
+      file: "engines/event_manager_engine.py"
+      required: true
+
+    - id: der_coordinator
+      name: "DER Coordinator Engine"
+      description: >-
+        Coordinates distributed energy resources for DR events: BESS,
+        solar PV, backup generators, EV chargers, thermal storage, CHP.
+        Optimizes combined DER dispatch within asset constraints.
+        Zero-hallucination: DER dispatch from asset specs and SOC, no LLM.
+      class: "DERCoordinatorEngine"
+      file: "engines/der_coordinator_engine.py"
+      required: false
+
+    - id: performance_tracker
+      name: "Performance Tracker Engine"
+      description: >-
+        Tracks DR event performance against program requirements.
+        Calculates compliance, revenue earned, penalties incurred,
+        and performance trends with degradation detection.
+        Zero-hallucination: performance from meter vs baseline, no LLM.
+      class: "PerformanceTrackerEngine"
+      file: "engines/performance_tracker_engine.py"
+      required: true
+
+    - id: revenue_optimizer
+      name: "Revenue Optimizer Engine"
+      description: >-
+        Optimizes DR revenue across capacity, energy, ancillary,
+        demand charge, and arbitrage streams. Calculates ROI, what-if
+        scenarios, and optimal program portfolio allocation.
+        Zero-hallucination: revenue from tariff and program data, no LLM.
+      class: "RevenueOptimizerEngine"
+      file: "engines/revenue_optimizer_engine.py"
+      required: true
+
+    - id: carbon_impact
+      name: "Carbon Impact Engine"
+      description: >-
+        Calculates carbon impact of DR using marginal emission factors.
+        Peak-period curtailment avoids 2-3x more emissions than average
+        grid displacement. Scope 2 per GHG Protocol, SBTi tracking.
+        Zero-hallucination: carbon from published marginal EFs, no LLM.
+      class: "CarbonImpactEngine"
+      file: "engines/carbon_impact_engine.py"
+      required: true
+
+    - id: dr_reporting
+      name: "DR Reporting Engine"
+      description: >-
+        Aggregates DR results into 8 dashboard panels and 7 report
+        types. Settlement-grade documentation for program administrators.
+        Multi-format export (MD, HTML, PDF, JSON, CSV).
+        Zero-hallucination: reports from aggregated engine outputs, no LLM.
+      class: "DRReportingEngine"
+      file: "engines/dr_reporting_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 DR workflows)
+  # ===========================================================================
+  workflows:
+    - id: flexibility_assessment
+      name: "Flexibility Assessment Workflow"
+      description: >-
+        4-phase workflow: LoadInventory -> FlexibilityScoring ->
+        CurtailmentCapacity -> FlexibilityReport. Systematic load
+        assessment from inventory through curtailment quantification.
+      schedule: "on_demand"
+      estimated_duration_minutes: 60
+      phases: 4
+
+    - id: program_enrollment
+      name: "Program Enrollment Workflow"
+      description: >-
+        4-phase workflow: ProgramMatching -> RevenueProjection ->
+        EnrollmentDocumentation -> CommitmentRegistration. DR program
+        selection, revenue analysis, and enrollment preparation.
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: event_preparation
+      name: "Event Preparation Workflow"
+      description: >-
+        3-phase workflow: EventNotification -> DispatchOptimization ->
+        PreConditioningActivation. Event preparation from signal receipt
+        through pre-event optimization.
+      schedule: "on_event"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: event_execution
+      name: "Event Execution Workflow"
+      description: >-
+        4-phase workflow: LoadCurtailment -> RealTimeMonitoring ->
+        PerformanceVerification -> LoadRestoration. Real-time event
+        management from curtailment through restoration.
+      schedule: "on_event"
+      estimated_duration_minutes: 480
+      phases: 4
+
+    - id: settlement
+      name: "Settlement Workflow"
+      description: >-
+        3-phase workflow: BaselineCalculation -> PerformanceMeasurement ->
+        RevenueSettlement. Post-event settlement with baseline comparison.
+      schedule: "post_event"
+      estimated_duration_minutes: 30
+      phases: 3
+
+    - id: der_optimization
+      name: "DER Optimization Workflow"
+      description: >-
+        3-phase workflow: AssetInventory -> DispatchStrategy ->
+        CoordinatedResponse. DER coordination for DR events.
+      schedule: "on_event"
+      estimated_duration_minutes: 15
+      phases: 3
+
+    - id: reporting
+      name: "Reporting Workflow"
+      description: >-
+        3-phase workflow: DataAggregation -> ReportGeneration ->
+        DistributionDelivery. Report and dashboard generation.
+      schedule: "monthly"
+      estimated_duration_minutes: 15
+      phases: 3
+
+    - id: full_dr_lifecycle
+      name: "Full DR Lifecycle Workflow"
+      description: >-
+        8-phase master workflow: FlexibilityAssessment -> ProgramSelection ->
+        Enrollment -> EventPreparation -> EventExecution -> Settlement ->
+        CarbonQuantification -> Reporting.
+      schedule: "on_demand"
+      estimated_duration_minutes: 1440
+      phases: 8
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 DR templates)
+  # ===========================================================================
+  templates:
+    - id: flexibility_profile
+      display_name: "Flexibility Profile Report"
+      description: >-
+        Load flexibility assessment showing all loads categorized by
+        curtailability, total curtailment capacity by notification time
+        and duration.
+      format: "html"
+      template_file: "templates/flexibility_profile_report.jinja2"
+      enabled: true
+
+    - id: program_analysis
+      display_name: "Program Analysis Report"
+      description: >-
+        DR program comparison with eligibility, revenue projections,
+        penalty risk, and enrollment recommendations.
+      format: "html"
+      template_file: "templates/program_analysis_report.jinja2"
+      enabled: true
+
+    - id: baseline_analysis
+      display_name: "Baseline Analysis Report"
+      description: >-
+        CBL methodology comparison showing projected baseline under
+        each methodology with optimization opportunities.
+      format: "html"
+      template_file: "templates/baseline_analysis_report.jinja2"
+      enabled: true
+
+    - id: dispatch_plan
+      display_name: "Dispatch Plan Report"
+      description: >-
+        Load curtailment sequence for DR events with timing, kW
+        reduction, DER dispatch, and pre-conditioning schedule.
+      format: "html"
+      template_file: "templates/dispatch_plan_report.jinja2"
+      enabled: true
+
+    - id: event_performance
+      display_name: "Event Performance Report"
+      description: >-
+        Post-event analysis with actual vs baseline curtailment,
+        revenue earned, penalties, and lessons learned.
+      format: "html"
+      template_file: "templates/event_performance_report.jinja2"
+      enabled: true
+
+    - id: revenue_dashboard
+      display_name: "Revenue Dashboard"
+      description: >-
+        Revenue tracking across all programs with capacity, energy,
+        and ancillary payment breakdowns.
+      format: "html"
+      template_file: "templates/revenue_dashboard.jinja2"
+      enabled: true
+
+    - id: carbon_impact
+      display_name: "Carbon Impact Report"
+      description: >-
+        Carbon benefits of DR using marginal emission factors with
+        SBTi alignment and CSRD reporting.
+      format: "html"
+      template_file: "templates/carbon_impact_report.jinja2"
+      enabled: true
+
+    - id: der_performance
+      display_name: "DER Performance Report"
+      description: >-
+        DER asset performance during DR events: battery SOC, solar
+        contribution, EV flexibility, thermal storage utilization.
+      format: "html"
+      template_file: "templates/der_performance_report.jinja2"
+      enabled: true
+
+    - id: executive_summary
+      display_name: "Executive Summary Report"
+      description: >-
+        C-suite summary with total DR revenue, carbon impact, program
+        compliance, and strategic recommendations.
+      format: "html"
+      template_file: "templates/executive_summary_report.jinja2"
+      enabled: true
+
+    - id: settlement_verification
+      display_name: "Settlement Verification Report"
+      description: >-
+        Settlement-grade documentation for program administrators with
+        baseline calculations, meter data, performance verification.
+      format: "html"
+      template_file: "templates/settlement_verification_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        12-phase master pipeline with DAG dependency resolution,
+        SHA-256 provenance chain, and phase-level caching.
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Routes to MRV agents for Scope 2 emissions from DR curtailment.
+      required: true
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Routes to DATA agents for meter data, billing, and quality.
+      required: true
+
+    - id: grid_signal_bridge
+      name: "Grid Signal Bridge"
+      description: >-
+        OpenADR 2.0b, ISO/RTO dispatch, price signals, grid carbon.
+      required: true
+
+    - id: bms_control_bridge
+      name: "BMS Control Bridge"
+      description: >-
+        BMS read/write for automated DR load control.
+      required: false
+
+    - id: meter_data_bridge
+      name: "Meter Data Bridge"
+      description: >-
+        AMI integration for 15-minute interval data.
+      required: true
+
+    - id: der_asset_bridge
+      name: "DER Asset Bridge"
+      description: >-
+        Battery, solar, EV, generator, thermal storage communication.
+      required: false
+
+    - id: pack036_bridge
+      name: "PACK-036 Utility Analysis Bridge"
+      description: >-
+        Utility rate structures and demand charge data.
+      required: false
+
+    - id: pack033_bridge
+      name: "PACK-033 Quick Wins Bridge"
+      description: >-
+        DR-enabling quick win measures integration.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        20-category system verification.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        9-step guided DR configuration.
+      required: false
+
+    - id: alert_bridge
+      name: "Alert Bridge"
+      description: >-
+        Multi-channel DR event alerting and notifications.
+      required: false
+
+  # ===========================================================================
+  # Presets - Facility-type specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: commercial_office
+      name: "Commercial Office Preset"
+      description: >-
+        DR configuration for commercial offices: HVAC curtailment,
+        lighting dimming, plug load shedding, EV deferral.
+        Typical curtailment 15-35% of peak. Comfort constraints apply.
+      facility_type: "COMMERCIAL_OFFICE"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/commercial_office.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        DR configuration for manufacturing: motor VSD, compressed air,
+        process scheduling, HVAC. Typical curtailment 10-30%.
+        Production constraints apply.
+      facility_type: "MANUFACTURING"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/manufacturing.yaml"
+
+    - id: retail_grocery
+      name: "Retail/Grocery Preset"
+      description: >-
+        DR configuration for retail with refrigeration thermal mass.
+        Typical curtailment 10-25%.
+      facility_type: "RETAIL_GROCERY"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/retail_grocery.yaml"
+
+    - id: warehouse_cold
+      name: "Warehouse/Cold Storage Preset"
+      description: >-
+        DR configuration for cold storage with significant thermal mass.
+        Typical curtailment 15-35%.
+      facility_type: "WAREHOUSE_COLD"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/warehouse_cold.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Conservative DR for healthcare with clinical exclusions.
+        Typical curtailment 5-15%.
+      facility_type: "HEALTHCARE"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/healthcare.yaml"
+
+    - id: education_campus
+      name: "Education/Campus Preset"
+      description: >-
+        DR for education with known occupancy patterns and summer
+        availability. Typical curtailment 15-30%.
+      facility_type: "EDUCATION_CAMPUS"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/education_campus.yaml"
+
+    - id: data_center
+      name: "Data Center Preset"
+      description: >-
+        DR for data centers with IT uptime constraints.
+        Typical curtailment 5-15%.
+      facility_type: "DATA_CENTER"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/data_center.yaml"
+
+    - id: microgrid_der
+      name: "Microgrid/DER-Rich Preset"
+      description: >-
+        Full DER orchestration preset with battery, solar, EV V2B,
+        thermal storage. Typical curtailment 30-80% via DER dispatch.
+      facility_type: "MICROGRID_DER"
+      enabled_engines:
+        - load_flexibility
+        - dr_program
+        - baseline
+        - dispatch_optimizer
+        - event_manager
+        - der_coordinator
+        - performance_tracker
+        - revenue_optimizer
+        - carbon_impact
+        - dr_reporting
+      file: "config/presets/microgrid_der.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Location-based electricity emission factors for DR curtailment"
+      path: "greenlang/agents/mrv/scope2_location_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Market-based electricity emission factors (PPAs, GOs, RECs)"
+      path: "greenlang/agents/mrv/scope2_market_based/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation"
+      description: "Reconciles location-based and market-based Scope 2 accounting"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts data from utility bills and program documentation"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises meter interval data exports"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to finance systems for energy cost and DR revenue data"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for grid signals and emission factors"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across meter interval data"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous meter readings and consumption spikes"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills gaps in interval meter data for baseline calculation"
+    required: true
+  - id: AGENT-DATA-015
+    name: "Cross-Source Reconciliation"
+    description: "Reconciles meter data against billing data"
+    required: false
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from meter through settlement"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates agent execution for DR pipeline"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates DR data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises energy units (kW, kWh, MWh, MW) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in baseline and revenue calculations"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links calculations to program documentation and regulatory sources"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-facility DR operations"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all baseline and revenue calculations are reproducible"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors pipeline health and engine performance"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Pack Dependencies
+# ---------------------------------------------------------------------------
+agents_packs:
+  - id: PACK-033
+    name: "Quick Wins Identifier Pack"
+    description: "DR-enabling quick wins (BMS controls, scheduling, load management)"
+    required: false
+    version: "1.0.0"
+  - id: PACK-036
+    name: "Utility Analysis Pack"
+    description: "Utility rate structures and demand charge analysis"
+    required: false
+    version: "1.0.0"
+
+# -----------------------------------------------------------------------------
+# Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 25
+  breakdown:
+    mrv_agents: 3
+    data_agents: 9
+    foundation_agents: 8
+    pack_dependencies: 2
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: pack037_demand_response
+  migrations:
+    - id: "V286__pack037_demand_response_001"
+      description: "Core DR schema: facility profiles, load inventory, flexibility assessments"
+    - id: "V287__pack037_demand_response_002"
+      description: "DR program database: 200+ programs, compensation, requirements"
+    - id: "V288__pack037_demand_response_003"
+      description: "Baseline calculation tables: 8 methodologies, interval data, adjustments"
+    - id: "V289__pack037_demand_response_004"
+      description: "Dispatch optimization tables: curtailment plans, load control sequences"
+    - id: "V290__pack037_demand_response_005"
+      description: "Event management tables: events, phases, commands, performance"
+    - id: "V291__pack037_demand_response_006"
+      description: "DER coordination tables: asset registry, dispatch, SOC tracking"
+    - id: "V292__pack037_demand_response_007"
+      description: "Performance tracking tables: compliance, trends, alerts"
+    - id: "V293__pack037_demand_response_008"
+      description: "Revenue tables: streams, forecasts, settlements, ROI"
+    - id: "V294__pack037_demand_response_009"
+      description: "Carbon impact tables: marginal EFs, event carbon, annual summaries"
+    - id: "V295__pack037_demand_response_010"
+      description: "Views, indexes, RLS policies, seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  load_flexibility:
+    max_loads: 500
+    assessment_per_load_ms: 100
+    target_duration_minutes: 15
+  program_matching:
+    max_programs: 200
+    matching_per_program_ms: 50
+    target_duration_seconds: 30
+  baseline_calculation:
+    interval_data_months: 12
+    per_methodology_seconds: 60
+    target_duration_minutes: 8
+  dispatch_optimization:
+    max_loads: 100
+    optimization_seconds: 30
+    target_duration_minutes: 2
+  event_management:
+    response_latency_seconds: 300
+    monitoring_interval_seconds: 60
+    target_uptime_pct: 99.95
+  der_coordination:
+    max_assets: 50
+    dispatch_seconds: 10
+    target_duration_minutes: 1
+  revenue_calculation:
+    annual_calculation_seconds: 10
+    what_if_per_scenario_ms: 500
+  carbon_calculation:
+    per_event_ms: 200
+    annual_summary_seconds: 5
+  cache_hit_ratio_target: 0.80
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with facility-level and program-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+    - RESTRICTED
+  required_roles:
+    - dr_manager
+    - energy_manager
+    - facility_manager
+    - der_operator
+    - sustainability_officer
+    - viewer
+    - admin
+  audit_events:
+    - "dr.flexibility.assessed"
+    - "dr.program.enrolled"
+    - "dr.event.received"
+    - "dr.event.dispatched"
+    - "dr.event.completed"
+    - "dr.settlement.calculated"
+    - "dr.revenue.reconciled"
+    - "dr.report.generated"
+    - "dr.config.modified"
+    - "dr.der.dispatched"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_interval_data.json"
+    - "tests/fixtures/sample_load_inventory.json"
+    - "tests/fixtures/sample_dr_programs.json"
+    - "tests/fixtures/sample_der_assets.json"
+    - "tests/fixtures/sample_events.json"
+
+# -----------------------------------------------------------------------------
+# Compliance
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "EU_EMDR"
+      name: "EU Electricity Market Design Regulation"
+      coverage: "Article 17 demand response rights, Article 40 aggregator access"
+    - id: "FERC_2222"
+      name: "FERC Order 2222"
+      coverage: "DER aggregation in wholesale markets"
+    - id: "FERC_745"
+      name: "FERC Order 745"
+      coverage: "DR compensation at LMP"
+    - id: "OpenADR"
+      name: "OpenADR 2.0b"
+      coverage: "Automated DR signal exchange"
+    - id: "ISO_50001"
+      name: "ISO 50001:2018"
+      coverage: "Demand response in energy management"
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      coverage: "Scope 2 emission reduction from DR events"
+    - id: "SBTi"
+      name: "Science Based Targets initiative"
+      coverage: "DR carbon reduction contribution to targets"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+    - "pulp>=2.7"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 100
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 10
+    recommended_connections: 30
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_emission_factor_database
+    - verify_dr_program_database
+
+  database_migrations:
+    inherited:
+      - "V001-V006"
+      - "V007-V008"
+      - "V009-V010"
+      - "V019-V020"
+      - "V021-V030"
+      - "V031-V050"
+      - "V051-V081"
+    new:
+      - "V286__pack037_demand_response_001"
+      - "V287__pack037_demand_response_002"
+      - "V288__pack037_demand_response_003"
+      - "V289__pack037_demand_response_004"
+      - "V290__pack037_demand_response_005"
+      - "V291__pack037_demand_response_006"
+      - "V292__pack037_demand_response_007"
+      - "V293__pack037_demand_response_008"
+      - "V294__pack037_demand_response_009"
+      - "V295__pack037_demand_response_010"
+
+  post_install:
+    - seed_dr_program_database
+    - seed_marginal_emission_factors
+    - seed_baseline_methodologies
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: LoadFlexibilityEngine
+    file: engines/load_flexibility_engine.py
+    description: "Load categorization, flexibility scoring, curtailment capacity"
+  - name: DRProgramEngine
+    file: engines/dr_program_engine.py
+    description: "200+ DR programs, matching, revenue projection, portfolio optimization"
+  - name: BaselineEngine
+    file: engines/baseline_engine.py
+    description: "8 CBL methodologies, interval data, adjustment, optimization"
+  - name: DispatchOptimizerEngine
+    file: engines/dispatch_optimizer_engine.py
+    description: "Multi-objective LP dispatch, curtailment sequencing"
+  - name: EventManagerEngine
+    file: engines/event_manager_engine.py
+    description: "5-phase event lifecycle, load control, performance tracking"
+  - name: DERCoordinatorEngine
+    file: engines/der_coordinator_engine.py
+    description: "Battery/solar/EV/thermal/generator coordination"
+  - name: PerformanceTrackerEngine
+    file: engines/performance_tracker_engine.py
+    description: "Event compliance, settlement verification, trend detection"
+  - name: RevenueOptimizerEngine
+    file: engines/revenue_optimizer_engine.py
+    description: "Multi-stream revenue, ROI, what-if, portfolio optimization"
+  - name: CarbonImpactEngine
+    file: engines/carbon_impact_engine.py
+    description: "Marginal EFs, event carbon, SBTi, GHG Protocol Scope 2"
+  - name: DRReportingEngine
+    file: engines/dr_reporting_engine.py
+    description: "8 dashboard panels, 7 report types, settlement documentation"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: FlexibilityAssessmentWorkflow
+    file: workflows/flexibility_assessment_workflow.py
+    description: "4-phase load flexibility assessment pipeline"
+  - name: ProgramEnrollmentWorkflow
+    file: workflows/program_enrollment_workflow.py
+    description: "4-phase DR program selection and enrollment"
+  - name: EventPreparationWorkflow
+    file: workflows/event_preparation_workflow.py
+    description: "3-phase event preparation and dispatch optimization"
+  - name: EventExecutionWorkflow
+    file: workflows/event_execution_workflow.py
+    description: "4-phase real-time event management"
+  - name: SettlementWorkflow
+    file: workflows/settlement_workflow.py
+    description: "3-phase post-event baseline and revenue settlement"
+  - name: DEROptimizationWorkflow
+    file: workflows/der_optimization_workflow.py
+    description: "3-phase DER coordination for DR events"
+  - name: ReportingWorkflow
+    file: workflows/reporting_workflow.py
+    description: "3-phase report generation and distribution"
+  - name: FullDRLifecycleWorkflow
+    file: workflows/full_dr_lifecycle_workflow.py
+    description: "8-phase complete DR lifecycle pipeline"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: FlexibilityProfileReportTemplate
+    file: templates/flexibility_profile_report.py
+    description: "Load flexibility assessment and curtailment capacity report"
+  - name: ProgramAnalysisReportTemplate
+    file: templates/program_analysis_report.py
+    description: "DR program comparison and enrollment recommendation"
+  - name: BaselineAnalysisReportTemplate
+    file: templates/baseline_analysis_report.py
+    description: "CBL methodology comparison and optimization report"
+  - name: DispatchPlanReportTemplate
+    file: templates/dispatch_plan_report.py
+    description: "Load curtailment sequence and DER dispatch plan"
+  - name: EventPerformanceReportTemplate
+    file: templates/event_performance_report.py
+    description: "Post-event performance analysis report"
+  - name: RevenueDashboardTemplate
+    file: templates/revenue_dashboard.py
+    description: "Multi-program revenue tracking dashboard"
+  - name: CarbonImpactReportTemplate
+    file: templates/carbon_impact_report.py
+    description: "Marginal emission carbon benefits report"
+  - name: DERPerformanceReportTemplate
+    file: templates/der_performance_report.py
+    description: "DER asset performance during DR events"
+  - name: ExecutiveSummaryReportTemplate
+    file: templates/executive_summary_report.py
+    description: "C-suite DR summary with revenue and carbon impact"
+  - name: SettlementVerificationReportTemplate
+    file: templates/settlement_verification_report.py
+    description: "Settlement-grade verification documentation"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: DROrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "12-phase pipeline with DAG dependency resolution"
+  - name: MRVDRBridge
+    file: integrations/mrv_bridge.py
+    description: "MRV agents for Scope 2 emissions from DR curtailment"
+  - name: DataDRBridge
+    file: integrations/data_bridge.py
+    description: "DATA agents for meter and billing data"
+  - name: GridSignalBridge
+    file: integrations/grid_signal_bridge.py
+    description: "OpenADR, ISO/RTO dispatch, price and carbon signals"
+  - name: BMSControlBridge
+    file: integrations/bms_control_bridge.py
+    description: "BACnet/Modbus/OPC-UA load control interface"
+  - name: MeterDataBridge
+    file: integrations/meter_data_bridge.py
+    description: "AMI integration for interval meter data"
+  - name: DERAssetBridge
+    file: integrations/der_asset_bridge.py
+    description: "Battery/solar/EV/generator/thermal communication"
+  - name: Pack036Bridge
+    file: integrations/pack036_bridge.py
+    description: "Utility rate structures from PACK-036"
+  - name: Pack033Bridge
+    file: integrations/pack033_bridge.py
+    description: "DR-enabling quick wins from PACK-033"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "20-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "9-step guided DR configuration"
+  - name: AlertBridge
+    file: integrations/alert_bridge.py
+    description: "Multi-channel DR event alerting"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: commercial_office
+    file: config/presets/commercial_office.yaml
+    description: "Corporate offices with HVAC, lighting, plug load DR"
+  - name: manufacturing
+    file: config/presets/manufacturing.yaml
+    description: "Manufacturing with motor, compressed air, process DR"
+  - name: retail_grocery
+    file: config/presets/retail_grocery.yaml
+    description: "Retail/grocery with refrigeration thermal mass DR"
+  - name: warehouse_cold
+    file: config/presets/warehouse_cold.yaml
+    description: "Cold storage with thermal mass ride-through DR"
+  - name: healthcare
+    file: config/presets/healthcare.yaml
+    description: "Healthcare with clinical exclusions DR"
+  - name: education_campus
+    file: config/presets/education_campus.yaml
+    description: "Education with scheduling-based DR"
+  - name: data_center
+    file: config/presets/data_center.yaml
+    description: "Data center with cooling setpoint DR"
+  - name: microgrid_der
+    file: config/presets/microgrid_der.yaml
+    description: "Microgrid with full DER orchestration"

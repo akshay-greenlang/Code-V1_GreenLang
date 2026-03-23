@@ -105,12 +105,17 @@ def run_pack(
         click.echo(f"  Lines processed: {result.statistics.get('total_lines', 0)}")
         click.echo(f"  Total emissions: {result.statistics.get('total_emissions_tco2e', 0):.2f} tCO2e")
         click.echo(f"  Default factor usage: {result.statistics.get('default_usage_percent', 0):.1f}%")
+        click.echo(f"  Can export: {'Yes' if result.can_export else 'No'}")
         click.echo()
         click.echo(f"Output directory: {out}")
         click.echo("Generated artifacts:")
         for artifact in result.artifacts:
             click.echo(f"  - {artifact}")
-        sys.exit(0)
+        if result.errors:
+            click.echo()
+            for warning in result.errors:
+                click.echo(click.style(warning, fg="yellow"), err=False)
+        sys.exit(result.exit_code)
     else:
         click.echo(click.style("FAILED", fg="red", bold=True))
         click.echo()

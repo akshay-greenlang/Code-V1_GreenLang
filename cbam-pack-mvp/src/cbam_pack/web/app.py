@@ -16,6 +16,7 @@ import os
 import shutil
 import tempfile
 import zipfile
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -29,6 +30,9 @@ import yaml
 
 from cbam_pack import __version__
 from cbam_pack.pipeline import CBAMPipeline, PipelineResult
+from cbam_pack.models import CBAMConfig
+
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 
 
 def create_app() -> FastAPI:
@@ -43,6 +47,7 @@ def create_app() -> FastAPI:
     # Store for processing results
     app.state.results = {}
     app.state.output_dirs = {}
+    app.state.session_meta = {}
 
     @app.get("/", response_class=HTMLResponse)
     async def home(request: Request):
@@ -64,16 +69,28 @@ def create_app() -> FastAPI:
         output_dir.mkdir()
 
         try:
-            # Save uploaded files
-            config_path = Path(temp_dir) / config_file.filename
-            imports_path = Path(temp_dir) / imports_file.filename
+            # Save uploaded files safely.
+            config_name = Path(config_file.filename or "").name
+            imports_name = Path(imports_file.filename or "").name
+            if not config_name or not imports_name:
+                raise ValueError("Invalid uploaded filename")
+
+            config_path = (Path(temp_dir) / config_name).resolve()
+            imports_path = (Path(temp_dir) / imports_name).resolve()
+            temp_root = Path(temp_dir).resolve()
+            if temp_root not in config_path.parents or temp_root not in imports_path.parents:
+                raise ValueError("Upload filename contains invalid path segments")
 
             with open(config_path, "wb") as f:
                 content = await config_file.read()
+                if len(content) > MAX_UPLOAD_BYTES:
+                    raise ValueError("Config file exceeds upload size limit")
                 f.write(content)
 
             with open(imports_path, "wb") as f:
                 content = await imports_file.read()
+                if len(content) > MAX_UPLOAD_BYTES:
+                    raise ValueError("Imports file exceeds upload size limit")
                 f.write(content)
 
             # Run pipeline
@@ -88,7 +105,7 @@ def create_app() -> FastAPI:
             result = pipeline.run()
 
             # Generate session ID
-            session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+            session_id = uuid.uuid4().hex
 
             # Store result and output directory
             app.state.results[session_id] = result
@@ -119,8 +136,7 @@ def create_app() -> FastAPI:
             if result.lines_using_defaults:
                 response_data["lines_using_defaults"] = result.lines_using_defaults
 
-            # Build compliance status based on BOTH schema and policy validation
-            # CTO Rule: Schema FAIL = hard block, Policy FAIL = soft (draft allowed)
+            # Build compliance status from pipeline-computed exportability.
             xml_val = result.xml_validation or {}
             schema_status = xml_val.get("status", "PASS")
             schema_valid = schema_status == "PASS"
@@ -128,29 +144,27 @@ def create_app() -> FastAPI:
             policy = result.policy_result or {}
             policy_status = policy.get("status", "PASS")
             default_usage = result.statistics.get("default_usage_percent", 0)
+            can_export = bool(result.can_export)
 
-            # Determine overall compliance status
-            # Schema validation FAIL → Can Export: NO (hard block)
-            # Policy validation FAIL → Can Export: YES (draft allowed)
-            if not schema_valid:
+            if not can_export and not schema_valid:
                 compliance_status = "schema_fail"
                 compliance_message = "XML Schema Validation FAILED. Report cannot be uploaded to registry. Fix schema errors first."
-                can_export = False
                 export_label = "INVALID - Cannot Export"
+            elif not can_export and policy_status == "FAIL":
+                compliance_status = "policy_fail"
+                compliance_message = "Policy validation failed and export is blocked by policy configuration."
+                export_label = "Policy Block - Cannot Export"
             elif policy_status == "PASS":
                 compliance_status = "compliant"
                 compliance_message = "All validations passed. Report is compliant and ready for submission."
-                can_export = True
                 export_label = "Ready for Submission"
             elif policy_status == "WARN":
                 compliance_status = "warning"
                 compliance_message = f"Report generated with warnings. Default factor usage: {default_usage:.1f}%. Export as draft allowed."
-                can_export = True
                 export_label = "Draft - Review Warnings"
             else:  # policy FAIL
                 compliance_status = "policy_fail"
-                compliance_message = "Policy validation failed. Export allowed as draft but NOT COMPLIANT. Review violations before submission."
-                can_export = True  # Policy fail = soft fail, draft export allowed
+                compliance_message = "Policy validation failed. Export allowed as draft but NOT COMPLIANT."
                 export_label = "Draft - NOT COMPLIANT"
 
             response_data["compliance"] = {
@@ -163,6 +177,10 @@ def create_app() -> FastAPI:
                 "can_export": can_export,
                 "export_label": export_label,
             }
+            app.state.session_meta[session_id] = {
+                "can_export": can_export,
+                "block_reason": (result.errors[0] if result.errors else "Export is blocked for this session."),
+            }
 
             return response_data
 
@@ -171,7 +189,7 @@ def create_app() -> FastAPI:
             shutil.rmtree(temp_dir, ignore_errors=True)
             return {
                 "success": False,
-                "errors": [str(e)],
+                "errors": ["Processing failed. Please validate inputs and try again."],
                 "statistics": {},
                 "artifacts": [],
             }
@@ -182,6 +200,12 @@ def create_app() -> FastAPI:
 
         if session_id not in app.state.output_dirs:
             raise HTTPException(status_code=404, detail="Session not found")
+        session_meta = app.state.session_meta.get(session_id, {})
+        if not session_meta.get("can_export", False):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Export blocked: {session_meta.get('block_reason', 'Export is blocked for this session.')}",
+            )
 
         output_dir = app.state.output_dirs[session_id]
 
@@ -210,9 +234,19 @@ def create_app() -> FastAPI:
 
         if session_id not in app.state.output_dirs:
             raise HTTPException(status_code=404, detail="Session not found")
+        session_meta = app.state.session_meta.get(session_id, {})
+        if not session_meta.get("can_export", False):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Export blocked: {session_meta.get('block_reason', 'Export is blocked for this session.')}",
+            )
 
         output_dir = app.state.output_dirs[session_id]
-        file_path = output_dir / filename
+        output_root = Path(output_dir).resolve()
+        file_path = (output_root / filename).resolve()
+
+        if output_root not in file_path.parents and file_path != output_root:
+            raise HTTPException(status_code=400, detail="Invalid file path")
 
         if not file_path.exists():
             raise HTTPException(status_code=404, detail="File not found")
@@ -228,7 +262,13 @@ def create_app() -> FastAPI:
         """Preview config file after upload to verify YAML mapping."""
         try:
             content = await config_file.read()
+            if len(content) > MAX_UPLOAD_BYTES:
+                return {
+                    "success": False,
+                    "error": "Config file exceeds upload size limit",
+                }
             config_data = yaml.safe_load(content.decode('utf-8'))
+            CBAMConfig.model_validate(config_data)
 
             # Extract preview data
             declarant = config_data.get('declarant', {})
@@ -251,6 +291,7 @@ def create_app() -> FastAPI:
                 } if representative else None,
                 "mode": config_data.get('mode', 'transitional'),
                 "settings": config_data.get('settings', {}),
+                "validation": {"valid": True, "errors": []},
             }
 
             return preview
@@ -261,6 +302,13 @@ def create_app() -> FastAPI:
                 "error": f"Invalid YAML: {str(e)}",
             }
         except Exception as e:
+            # Include pydantic details when available to guide fixes.
+            if hasattr(e, "errors"):
+                return {
+                    "success": False,
+                    "error": "Config validation failed",
+                    "validation": {"valid": False, "errors": e.errors()},
+                }
             return {
                 "success": False,
                 "error": f"Error parsing config: {str(e)}",
@@ -1034,8 +1082,8 @@ def get_home_html() -> str:
                         break;
                     case 'policy_fail':
                         statusIcon = '&#9888;';
-                        statusText = 'Policy Failed (Draft OK)';
-                        badgeClass = 'warning';
+                        statusText = compliance.can_export ? 'Policy Failed (Draft OK)' : 'Policy Failed (Blocked)';
+                        badgeClass = compliance.can_export ? 'warning' : 'error';
                         break;
                     default:
                         statusIcon = '&#10007;';
@@ -1061,7 +1109,7 @@ def get_home_html() -> str:
                 const downloadAllBtn = document.getElementById('downloadAllBtn');
                 if (!compliance.can_export) {
                     downloadAllBtn.disabled = true;
-                    downloadAllBtn.innerHTML = '&#128683; Download Blocked - Fix Schema Errors First';
+                    downloadAllBtn.innerHTML = '&#128683; Download Blocked - Resolve Compliance Blockers';
                     downloadAllBtn.style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
                     downloadAllBtn.style.cursor = 'not-allowed';
                 } else if (compliance.status === 'policy_fail' || compliance.status === 'warning') {
@@ -1140,7 +1188,7 @@ def get_home_html() -> str:
                     </div>
                     <div class="validation-detail">
                         Schema: ${compliance.schema_valid ? 'Valid' : 'INVALID (hard fail)'}<br>
-                        Policy: ${compliance.policy_status || 'N/A'} (soft - draft allowed)<br>
+                        Policy: ${compliance.policy_status || 'N/A'} (${compliance.can_export ? 'draft allowed' : 'export blocked'})<br>
                         <strong>Status: ${compliance.export_label || 'Unknown'}</strong>
                     </div>
                 </div>
@@ -1281,7 +1329,7 @@ def get_home_html() -> str:
 
 
 # Run function for CLI
-def run_web_server(host: str = "0.0.0.0", port: int = 8000):
+def run_web_server(host: str = "127.0.0.1", port: int = 8000):
     """Run the web server."""
     import uvicorn
     app = create_app()

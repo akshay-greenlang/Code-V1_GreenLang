@@ -41,6 +41,29 @@ Yet the tooling landscape is fragmented: point solutions that cover one regulati
 
 In 6 months of intensive development, we've built a production-grade platform with **100+ specialized AI agents**, **10 compliance applications**, **128 database migrations**, and **21,931+ automated tests**. Here's what exists today:
 
+### MVP Quick Start (CBAM Flagship Loop)
+
+Use one of these supported paths:
+
+```bash
+# Option A: Monorepo canonical CLI path
+python -m greenlang.cli.main run cbam "cbam-pack-mvp/examples/sample_config.yaml" "cbam-pack-mvp/examples/sample_imports.csv" out
+
+# Option B: Standalone CBAM CLI
+cd cbam-pack-mvp
+pip install -e ".[web,dev]"
+gl-cbam run cbam --config examples/sample_config.yaml --imports examples/sample_imports.csv --out ./out
+
+# Optional: launch web UI
+gl-cbam web --host 127.0.0.1 --port 8000
+```
+
+CBAM outputs are generated in the selected output directory:
+- `cbam_report.xml`
+- `report_summary.xlsx`
+- `audit/*` (claims, lineage, assumptions, policy validation, run manifest, checksums)
+- `evidence/*` (immutable copies of inputs)
+
 ### Infrastructure Layer (10 Components - All Production Ready)
 
 The foundation that everything runs on:

@@ -6,13 +6,71 @@ GreenLang CLI
 Unified CLI for GreenLang infrastructure platform.
 """
 
+import json
+import inspect
 import typer
 from pathlib import Path
 from typing import Optional
 from rich.console import Console
+from click.core import Parameter
+from typer.core import TyperArgument, TyperOption
 
 # Fallback version constant
 FALLBACK_VERSION = "0.3.0"
+
+
+def _patch_typer_click_compat() -> None:
+    """
+    Compatibility patch for Typer/Click versions where metavar signatures differ.
+    """
+    arg_sig = inspect.signature(TyperArgument.make_metavar)
+    if "ctx" not in arg_sig.parameters:
+        def _arg_make_metavar(self, ctx=None):
+            if self.metavar is not None:
+                return self.metavar
+            var = (self.name or "").upper()
+            if not self.required:
+                var = f"[{var}]"
+            try:
+                type_var = self.type.get_metavar(param=self, ctx=ctx)
+            except TypeError:
+                type_var = self.type.get_metavar(self)
+            if type_var:
+                var += f":{type_var}"
+            if self.nargs != 1:
+                var += "..."
+            return var
+
+        TyperArgument.make_metavar = _arg_make_metavar
+
+    option_sig = inspect.signature(TyperOption.make_metavar)
+    if "ctx" in option_sig.parameters:
+        _orig_opt_make_metavar = TyperOption.make_metavar
+
+        def _opt_make_metavar(self, ctx=None):
+            if ctx is None:
+                return self.metavar or self.name.upper()
+            return _orig_opt_make_metavar(self, ctx)
+
+        TyperOption.make_metavar = _opt_make_metavar
+
+    param_sig = inspect.signature(Parameter.make_metavar)
+    if "ctx" in param_sig.parameters:
+        _orig_param_make_metavar = Parameter.make_metavar
+
+        def _param_make_metavar(self, ctx=None):
+            if ctx is None:
+                if getattr(self, "metavar", None):
+                    return self.metavar
+                if getattr(self, "name", None):
+                    return self.name.upper()
+                return ""
+            return _orig_param_make_metavar(self, ctx)
+
+        Parameter.make_metavar = _param_make_metavar
+
+
+_patch_typer_click_compat()
 
 # Create the main app
 app = typer.Typer(
@@ -25,25 +83,8 @@ console = Console()
 
 
 @app.callback(invoke_without_command=True)
-def _root(
-    version: bool = typer.Option(False, "--version", help="Show version and exit")
-):
-    """
-    GreenLang - Infrastructure for Climate Intelligence
-    """
-    if version:
-        try:
-            from .._version import __version__
-
-            console.print(f"GreenLang v{__version__}")
-            console.print("Infrastructure for Climate Intelligence")
-            console.print("https://greenlang.in")
-        except ImportError:
-            # Fallback version
-            console.print(f"GreenLang v{FALLBACK_VERSION}")
-            console.print("Infrastructure for Climate Intelligence")
-            console.print("https://greenlang.in")
-        raise typer.Exit(0)
+def _root():
+    """GreenLang - Infrastructure for Climate Intelligence."""
 
 
 @app.command()
@@ -246,44 +287,140 @@ def doctor(
 
 
 # Add sub-applications for pack, init, rag, sbom, generate, decarbonization, rbac, and agent commands
-from .cmd_pack_new import app as pack_app
-from .cmd_init import app as init_app
-from .rag_commands import app as rag_app
-from .cmd_sbom import app as sbom_app
-from .cmd_generate import app as generate_app
-from .cmd_decarbonization import app as decarbonization_app
-from .cmd_rbac import app as rbac_app
-from .cmd_agent import app as agent_app
+def _safe_add_typer(module_name: str, command_name: str, help_text: str) -> None:
+    try:
+        module = __import__(f"{__package__}.{module_name}", fromlist=["app"])
+        app.add_typer(module.app, name=command_name, help=help_text)
+    except Exception as exc:
+        console.print(
+            f"[yellow]Warning:[/yellow] '{command_name}' command unavailable ({exc})"
+        )
 
-app.add_typer(pack_app, name="pack", help="Pack management commands")
-app.add_typer(init_app, name="init", help="Initialize new projects, packs, and agents")
-app.add_typer(rag_app, name="rag", help="RAG (Retrieval-Augmented Generation) commands")
-app.add_typer(sbom_app, name="sbom", help="SBOM generation and verification")
-app.add_typer(generate_app, name="generate", help="Generate agents using LLM-powered code generation")
-app.add_typer(decarbonization_app, name="decarbonization", help="Generate industrial decarbonization roadmaps (Agent #12)")
-app.add_typer(rbac_app, name="rbac", help="Agent-level Role-Based Access Control management")
-app.add_typer(agent_app, name="agent", help="Agent Factory: Create, test, and publish GreenLang agents")
+
+_safe_add_typer("cmd_pack", "pack", "Pack management commands")
 
 
 # Add run command
 @app.command()
 def run(
     pipeline: str = typer.Argument(..., help="Pipeline to run"),
-    input_file: Optional[Path] = typer.Option(None, "--input", "-i", help="Input file"),
-    output_file: Optional[Path] = typer.Option(
-        None, "--output", "-o", help="Output file"
+    input_or_config: Optional[str] = typer.Argument(
+        None, help="Input JSON/YAML file, or CBAM config path when pipeline=cbam"
     ),
+    cbam_imports: Optional[str] = typer.Argument(
+        None, help="CBAM imports CSV/XLSX path when pipeline=cbam"
+    ),
+    output_dir: str = typer.Argument("out", help="Output directory"),
+    audit: bool = typer.Option(False, "--audit", help="Record run in audit ledger"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="CBAM validation-only run"),
 ):
-    """Run a pipeline from a pack"""
-    console.print(f"[cyan]Running pipeline: {pipeline}[/cyan]")
+    """Run a pipeline file/reference or the CBAM MVP flow."""
+    if pipeline.lower() in {"cbam", "cbam-mvp"}:
+        if not input_or_config or not cbam_imports:
+            console.print(
+                "[red]Usage for CBAM: gl run cbam <config.yaml> <imports.csv/xlsx> [output_dir][/red]"
+            )
+            raise typer.Exit(2)
+        config_path = Path(input_or_config)
+        imports_path = Path(cbam_imports)
+        output_path = Path(output_dir)
+        if not config_path.exists() or not imports_path.exists():
+            console.print("[red]CBAM input files not found[/red]")
+            raise typer.Exit(2)
 
-    if input_file and input_file.exists():
-        console.print(f"Input: {input_file}")
+        cbam_src = Path(__file__).resolve().parents[2] / "cbam-pack-mvp" / "src"
+        if str(cbam_src) not in __import__("sys").path:
+            __import__("sys").path.insert(0, str(cbam_src))
 
-    if output_file:
-        console.print(f"Output: {output_file}")
+        try:
+            from cbam_pack.pipeline import CBAMPipeline
+        except Exception as exc:
+            console.print(f"[red]Unable to load CBAM MVP pipeline: {exc}[/red]")
+            raise typer.Exit(1)
 
-    console.print("[green][OK][/green] Pipeline completed")
+        output_path.mkdir(parents=True, exist_ok=True)
+        result = CBAMPipeline(
+            config_path=config_path,
+            imports_path=imports_path,
+            output_dir=output_path,
+            verbose=False,
+            dry_run=dry_run,
+        ).run()
+
+        if result.success and result.exit_code == 0:
+            console.print(f"[green][OK][/green] CBAM run completed. Artifacts: {output_path}")
+            raise typer.Exit(0)
+
+        if result.success and result.exit_code != 0:
+            console.print(
+                f"[yellow]CBAM run completed with export blocked (exit {result.exit_code}).[/yellow]"
+            )
+            for warning in result.errors:
+                console.print(f"[yellow]{warning}[/yellow]")
+            raise typer.Exit(result.exit_code)
+
+        for err in result.errors:
+            console.print(f"[red]{err}[/red]")
+        raise typer.Exit(result.exit_code or 1)
+
+    # Generic GreenLang pipeline execution path.
+    from greenlang.execution.runtime.executor import Executor
+    from greenlang.utilities.provenance.ledger import write_run_ledger, RunLedger
+
+    pipeline_path = Path(pipeline)
+    if not pipeline_path.exists():
+        console.print(f"[red]Pipeline not found: {pipeline}[/red]")
+        raise typer.Exit(1)
+
+    inputs_data = {}
+    if input_or_config:
+        input_path = Path(input_or_config)
+        if not input_path.exists():
+            console.print(f"[red]Input file not found: {input_or_config}[/red]")
+            raise typer.Exit(2)
+        text = input_path.read_text(encoding="utf-8")
+        if input_path.suffix.lower() == ".json":
+            inputs_data = json.loads(text)
+        else:
+            import yaml
+            inputs_data = yaml.safe_load(text) or {}
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    backend = "local"
+    profile = "dev"
+    executor = Executor(backend=backend)
+    result = executor.run(str(pipeline_path), inputs=inputs_data, artifacts_dir=output_path)
+
+    class _Ctx:
+        pass
+
+    ledger_ctx = _Ctx()
+    ledger_ctx.pipeline_spec = {"path": str(pipeline_path)}
+    ledger_ctx.inputs = inputs_data
+    ledger_ctx.config = {"profile": profile}
+    ledger_ctx.artifacts_map = {}
+    ledger_ctx.versions = {"backend": backend}
+    ledger_ctx.backend = backend
+    ledger_ctx.profile = profile
+
+    write_run_ledger(result, ledger_ctx, output_path=output_path / "run.json")
+
+    if audit:
+        ledger = RunLedger()
+        ledger.record_run(
+            pipeline=str(pipeline_path),
+            inputs=inputs_data,
+            outputs=getattr(result, "data", {}),
+            metadata={"backend": backend, "profile": profile, "output_dir": str(output_path)},
+        )
+
+    if getattr(result, "success", False):
+        console.print(f"[green][OK][/green] Pipeline completed. Artifacts: {output_path}")
+        raise typer.Exit(0)
+
+    console.print(f"[red]Pipeline failed: {getattr(result, 'error', 'Unknown error')}[/red]")
+    raise typer.Exit(1)
 
 
 # Add policy command

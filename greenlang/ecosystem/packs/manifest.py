@@ -223,6 +223,9 @@ class PackManifest(BaseModel):
     kind: Literal["pack", "dataset", "connector"] = Field(
         "pack", description="Pack type"
     )
+    pack_schema_version: Literal["1.0"] = Field(
+        "1.0", description="Pack schema version"
+    )
     license: str = Field(..., description="License identifier")
 
     # Now optional fields (was required before)
@@ -258,23 +261,16 @@ class PackManifest(BaseModel):
     @classmethod
     def semver_ok(cls, v: str) -> str:
         """Validate semantic versioning"""
-        # Simple validation for semantic versioning
-        if not v or "." not in v:
+        parts = v.split(".")
+        if len(parts) < 3:
             raise ValueError(
-                "Version must be in semantic versioning format (e.g., 1.0.0)"
+                f"Version must be strict MAJOR.MINOR.PATCH (e.g., 1.0.0): {v}"
             )
 
-        parts = v.split(".")
-        if len(parts) < 2:
-            raise ValueError(f"Version must have at least major.minor: {v}")
-
-        # Check that main parts are numeric
-        for i, part in enumerate(parts[:3]):  # Check major, minor, patch
-            if i < len(parts):
-                # Allow pre-release and build metadata after patch
-                base_part = part.split("-")[0].split("+")[0]
-                if not base_part.isdigit():
-                    raise ValueError(f"Invalid version component '{part}' in: {v}")
+        for i, part in enumerate(parts[:3]):
+            base_part = part.split("-")[0].split("+")[0]
+            if not base_part.isdigit():
+                raise ValueError(f"Invalid version component '{part}' in: {v}")
 
         return v
 
@@ -494,6 +490,7 @@ def create_pack_template(pack_dir: Path, name: str, kind: str = "pack"):
         name=name,
         version="0.1.0",
         kind=kind,
+        pack_schema_version="1.0",
         license="MIT",
         description=f"A {kind} pack for {name}",
         compat=Compat(greenlang=">=0.1", python=">=3.10"),
@@ -544,19 +541,23 @@ Describe what this pack does.
 
     if kind == "pack":
         (pack_dir / "gl.yaml").write_text(
-            f"""version: 0.1
-pipeline:
-  name: "{name} pipeline"
-inputs:
-  params:
-    example: "value"
+            f"""api_version: glip/v1
+kind: Pipeline
+metadata:
+  name: "{name}-pipeline"
+  version: "1.0.0"
+  description: "Pipeline for {name}"
+parameters: []
 steps:
-  - id: step1
+  - name: bootstrap
     agent: ExampleAgent
-    with_:
-      param: ${{input:params.example}}
+    description: "Initial scaffold step"
+    inputs:
+      param: "value"
+    outputs:
+      - result
 outputs:
-  result: ${{ref:step1.data}}
+  result: "${{steps.bootstrap.outputs.result}}"
 """
         )
 

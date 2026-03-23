@@ -1,0 +1,155 @@
+# =============================================================================
+# PACK-037 Demand Response - Retail/Grocery Preset
+# =============================================================================
+# Retail stores and grocery facilities with significant refrigeration thermal
+# mass for pre-cooling, HVAC curtailment aligned to trading hours, lighting
+# dimming, and anti-sweat heater control. Typical peak demand 100-1500 kW.
+# Curtailment potential: 10-25% of peak. Food safety temperature limits are
+# a hard constraint -- no compromise on cold chain integrity.
+#
+# Typical use cases:
+#   - Supermarkets and hypermarkets
+#   - Grocery stores and fresh food retailers
+#   - Shopping centres and malls (common area loads)
+#   - Convenience stores and forecourt shops
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "RETAIL_GROCERY"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 4500
+
+# --- DR Parameters ---
+dr_parameters:
+  min_curtailment_kw: 50
+  max_event_duration_hours: 4
+  max_events_per_season: 25
+  min_notification_minutes: 30
+  notification_preferences:
+    channels:
+      - "EMAIL"
+      - "SMS"
+      - "BMS_SIGNAL"
+    escalation_minutes: 10
+  comfort_constraints:
+    max_temperature_rise_c: 2.0
+    max_humidity_deviation_pct: 8
+    min_lighting_level_pct: 60
+    noise_limit_db: 55
+  operational_constraints:
+    exclude_food_prep_areas: true
+    exclude_pharmacy: true
+    max_case_temperature_rise_c: 2.0
+    max_walk_in_temperature_rise_c: 3.0
+    pre_cool_before_event: true
+
+# --- Load Categories ---
+load_categories:
+  hvac:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SETPOINT_RAISE"
+  lighting:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "DIMMING"
+  plug_loads:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "CIRCUIT_SHED"
+  ev_charging:
+    included: false
+    default_criticality: "DEFERRABLE"
+  it_equipment:
+    included: false
+    default_criticality: "CRITICAL"
+  refrigeration:
+    included: true
+    default_criticality: "ESSENTIAL"
+    curtailment_strategy: "PRE_COOL_COAST"
+  motors_drives:
+    included: false
+    default_criticality: "ESSENTIAL"
+  process_loads:
+    included: false
+    default_criticality: "CRITICAL"
+  anti_sweat_heaters:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "DUTY_CYCLE"
+
+# --- Program Preferences ---
+program_preferences:
+  preferred_types:
+    - "CAPACITY"
+    - "ECONOMIC"
+    - "DEMAND_CHARGE_MANAGEMENT"
+  risk_tolerance: "MODERATE"
+  minimum_revenue_eur_per_year: 3000
+  preferred_isos:
+    - "PJM"
+    - "ISO_NE"
+    - "NYISO"
+
+# --- Baseline Preferences ---
+baseline_preferences:
+  preferred_methodology: "HIGH_4_OF_5"
+  optimization_aggressiveness: "MODERATE"
+  adjustment_factor_enabled: true
+
+# --- Dispatch Weights ---
+dispatch_weights:
+  operational_disruption: 0.35
+  comfort_deviation: 0.25
+  rebound_effect: 0.20
+  target_shortfall: 0.20
+
+# --- DER Configuration ---
+der_configuration:
+  battery_bess:
+    enabled: false
+  solar_pv:
+    enabled: false
+  backup_generator:
+    enabled: false
+  ev_v2b:
+    enabled: false
+  thermal_storage:
+    enabled: true
+    type: "REFRIGERATION_MASS"
+    pre_cool_duration_minutes: 60
+    coast_duration_minutes: 120
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.12
+  demand_charge_eur_per_kw: 10.00
+  discount_rate: 0.08
+  analysis_period_years: 10
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  marginal_emission_factor_kgco2_per_kwh: 0.65
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  settlement_reports: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

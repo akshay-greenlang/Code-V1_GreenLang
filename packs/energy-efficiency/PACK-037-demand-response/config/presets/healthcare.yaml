@@ -1,0 +1,163 @@
+# =============================================================================
+# PACK-037 Demand Response - Healthcare Preset
+# =============================================================================
+# Hospitals and clinical facilities with highly conservative DR strategy.
+# Only non-clinical areas participate: admin HVAC, corridor lighting, kitchen,
+# laundry, car park, and non-essential mechanical loads. Typical peak demand
+# 500-5000 kW. Curtailment potential: 5-15% of peak. Patient safety is an
+# absolute constraint -- clinical areas, operating theatres, ICU, imaging,
+# and life-safety systems are permanently excluded.
+#
+# Typical use cases:
+#   - Acute hospitals and teaching hospitals
+#   - Private clinics and day surgery centres
+#   - Residential care homes and nursing facilities
+#   - Large medical office complexes
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "HEALTHCARE"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 8760
+
+# --- DR Parameters ---
+dr_parameters:
+  min_curtailment_kw: 50
+  max_event_duration_hours: 3
+  max_events_per_season: 15
+  min_notification_minutes: 60
+  notification_preferences:
+    channels:
+      - "EMAIL"
+      - "SMS"
+      - "BMS_SIGNAL"
+      - "PAGER"
+    escalation_minutes: 5
+  comfort_constraints:
+    max_temperature_rise_c: 1.5
+    max_humidity_deviation_pct: 5
+    min_lighting_level_pct: 70
+    noise_limit_db: 40
+  operational_constraints:
+    exclude_clinical_areas: true
+    exclude_operating_theatres: true
+    exclude_icu: true
+    exclude_imaging: true
+    exclude_pharmacy_storage: true
+    exclude_life_safety: true
+    require_facilities_approval: true
+    require_clinical_lead_sign_off: true
+
+# --- Load Categories ---
+load_categories:
+  hvac:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SETPOINT_RAISE"
+    scope: "NON_CLINICAL_ONLY"
+  lighting:
+    included: true
+    default_criticality: "FLEXIBLE"
+    curtailment_strategy: "DIMMING"
+    scope: "CORRIDORS_CARPARK_ADMIN"
+  plug_loads:
+    included: true
+    default_criticality: "SHEDDABLE"
+    curtailment_strategy: "CIRCUIT_SHED"
+    scope: "ADMIN_AREAS_ONLY"
+  ev_charging:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "DEFERRAL"
+  it_equipment:
+    included: false
+    default_criticality: "CRITICAL"
+  refrigeration:
+    included: false
+    default_criticality: "CRITICAL"
+  motors_drives:
+    included: false
+    default_criticality: "CRITICAL"
+  process_loads:
+    included: false
+    default_criticality: "CRITICAL"
+  kitchen_laundry:
+    included: true
+    default_criticality: "DEFERRABLE"
+    curtailment_strategy: "SCHEDULE_SHIFT"
+
+# --- Program Preferences ---
+program_preferences:
+  preferred_types:
+    - "CAPACITY"
+    - "ECONOMIC"
+  risk_tolerance: "VERY_LOW"
+  minimum_revenue_eur_per_year: 3000
+  preferred_isos:
+    - "PJM"
+    - "ISO_NE"
+    - "NYISO"
+
+# --- Baseline Preferences ---
+baseline_preferences:
+  preferred_methodology: "10_OF_10"
+  optimization_aggressiveness: "CONSERVATIVE"
+  adjustment_factor_enabled: true
+
+# --- Dispatch Weights ---
+dispatch_weights:
+  operational_disruption: 0.50
+  comfort_deviation: 0.25
+  rebound_effect: 0.10
+  target_shortfall: 0.15
+
+# --- DER Configuration ---
+der_configuration:
+  battery_bess:
+    enabled: false
+  solar_pv:
+    enabled: false
+  backup_generator:
+    enabled: true
+    max_runtime_hours: 2
+    fuel_type: "DIESEL"
+    max_capacity_kw: 1000
+    clinical_backup_only: true
+  ev_v2b:
+    enabled: false
+  thermal_storage:
+    enabled: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.14
+  demand_charge_eur_per_kw: 12.00
+  discount_rate: 0.06
+  analysis_period_years: 15
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  marginal_emission_factor_kgco2_per_kwh: 0.65
+  carbon_price_eur_per_tco2: 85.0
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  settlement_reports: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 10
