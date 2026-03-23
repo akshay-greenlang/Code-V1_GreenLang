@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenLang CBAM Pack</title>
+    <style>
+        :root {
+            --bg-1: #071027;
+            --bg-2: #0f1f3d;
+            --card: rgba(255, 255, 255, 0.06);
+            --card-border: rgba(255, 255, 255, 0.14);
+            --text-primary: #e8efff;
+            --text-secondary: #a8b6d8;
+            --accent: #42d9b5;
+            --accent-2: #66f2cf;
+            --warn: #fbbf24;
+            --danger: #ef4444;
+            --shadow: 0 24px 60px rgba(2, 8, 23, 0.45);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+            color: var(--text-primary);
+            background:
+                radial-gradient(1200px 700px at 15% -10%, rgba(66, 217, 181, 0.22), transparent 60%),
+                radial-gradient(1000px 600px at 100% 0, rgba(107, 114, 255, 0.25), transparent 65%),
+                linear-gradient(160deg, var(--bg-1), var(--bg-2));
+            min-height: 100vh;
+            padding: 36px 16px;
+        }
+
+        .container {
+            width: min(1120px, 100%);
+            margin: 0 auto;
+        }
+
+        .hero {
+            padding: 28px;
+            border-radius: calc(var(--radius) + 4px);
+            border: 1px solid var(--card-border);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            letter-spacing: 0.2px;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            max-width: 80ch;
+        }
+
+        .hero .meta {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            background: rgba(15, 23, 42, 0.35);
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            margin-bottom: 16px;
+            color: #f6f9ff;
+            letter-spacing: 0.2px;
+        }
+
+        .upload-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .upload-zone {
+            border: 1.5px dashed rgba(102, 242, 207, 0.5);
+            border-radius: 14px;
+            padding: 20px;
+            min-height: 136px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(12, 20, 40, 0.35);
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--accent-2);
+            transform: translateY(-2px);
+            background: rgba(66, 217, 181, 0.12);
+        }
+
+        .upload-zone.has-file {
+            border-color: var(--accent);
+            background: rgba(66, 217, 181, 0.14);
+        }
+
+        .upload-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .upload-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .file-name {
+            margin-top: 10px;
+            color: var(--accent-2);
+            font-size: 0.92rem;
+            word-break: break-word;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            border: 0;
+            width: 100%;
+            margin-top: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #042016;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 13px 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            filter: saturate(1.07);
+        }
+
+        .btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 14px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #22c55e, #2dd4bf);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        #configPreview {
+            display: none;
+            margin-top: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(66, 217, 181, 0.35);
+            background: rgba(66, 217, 181, 0.1);
+            padding: 14px;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin: 16px 0 8px;
+        }
+
+        .stat-card {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(2, 10, 26, 0.35);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-value {
+            color: var(--accent-2);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .validation-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .validation-card {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px;
+        }
+
+        .validation-card h4 {
+            margin-bottom: 10px;
+            color: #f4f7ff;
+        }
+
+        .validation-status {
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 4px 10px;
+            border: 1px solid transparent;
+        }
+
+        .status-badge.pass {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            border-color: rgba(134, 239, 172, 0.35);
+        }
+
+        .status-badge.warn {
+            background: rgba(251, 191, 36, 0.22);
+            color: #fde68a;
+            border-color: rgba(253, 230, 138, 0.35);
+        }
+
+        .status-badge.fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-color: rgba(252, 165, 165, 0.35);
+        }
+
+        .validation-detail {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        .compliance-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+        }
+
+        .compliance-badge.compliant {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            border-color: rgba(134, 239, 172, 0.35);
+        }
+
+        .compliance-badge.warning {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fde68a;
+            border-color: rgba(253, 230, 138, 0.35);
+        }
+
+        .compliance-badge.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-color: rgba(252, 165, 165, 0.35);
+        }
+
+        .drilldown-toggle {
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+            background: rgba(251, 191, 36, 0.12);
+            padding: 12px;
+            cursor: pointer;
+            margin-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drilldown-content {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .drilldown-content.show {
+            display: block;
+        }
+
+        .default-line-item {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 8px;
+        }
+
+        .default-line-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .default-line-id {
+            font-weight: 700;
+            color: var(--accent-2);
+        }
+
+        .default-line-emissions {
+            color: #fde68a;
+        }
+
+        .default-line-details {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.86rem;
+        }
+
+        .missing-fields,
+        .recommended-action {
+            margin-top: 8px;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+
+        .missing-fields {
+            background: rgba(239, 68, 68, 0.13);
+        }
+
+        .missing-field-tag {
+            display: inline-block;
+            margin: 2px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fecaca;
+            font-size: 0.76rem;
+        }
+
+        .recommended-action {
+            background: rgba(66, 217, 181, 0.13);
+            color: #9ff7e3;
+        }
+
+        .artifacts-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .artifacts-list li {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+
+        .download-link {
+            text-decoration: none;
+            border: 1px solid rgba(66, 217, 181, 0.45);
+            color: #b2fff0;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.84rem;
+        }
+
+        .download-link:hover {
+            background: rgba(66, 217, 181, 0.14);
+        }
+
+        .error-list {
+            display: none;
+            margin-top: 14px;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            border-radius: 12px;
+            padding: 14px;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .error-item {
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.35);
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .error-code {
+            color: #fecaca;
+        }
+
+        .violation-item,
+        .warning-item {
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .violation-item {
+            border-left: 3px solid var(--danger);
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        .warning-item {
+            border-left: 3px solid var(--warn);
+            background: rgba(251, 191, 36, 0.12);
+        }
+
+        footer {
+            margin-top: 10px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.86rem;
+        }
+
+        footer a {
+            color: #b2fff0;
+            text-decoration: none;
+        }
+
+        @media (max-width: 960px) {
+            .upload-grid,
+            .validation-grid {
+                grid-template-columns: 1fr;
+            }
+            .stat-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 20px 10px;
+            }
+            .card,
+            .hero {
+                padding: 16px;
+            }
+            .default-line-details {
+                grid-template-columns: 1fr;
+            }
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <h1>GreenLang CBAM Compliance Workspace</h1>
+            <p>Upload your CBAM config and import ledger, run deterministic processing, review compliance status, and download audit-ready artifacts.</p>
+            <div class="meta">
+                <span class="pill">Deterministic Outputs</span>
+                <span class="pill">Policy + Schema Gates</span>
+                <span class="pill">Local-First Processing</span>
+            </div>
+        </section>
+
+        <div class="card">
+            <h2 class="section-title">Upload Inputs</h2>
+            <div class="upload-grid">
+                <div class="upload-zone" id="configZone" onclick="document.getElementById('configFile').click()">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Config File (YAML)</div>
+                    <div class="upload-hint">Drag and drop or click to select</div>
+                    <div class="file-name" id="configFileName"></div>
+                    <input type="file" id="configFile" accept=".yaml,.yml" onchange="handleFileSelect(this, 'config')">
+                </div>
+                <div class="upload-zone" id="importsZone" onclick="document.getElementById('importsFile').click()">
+                    <div class="upload-icon">📊</div>
+                    <div class="upload-text">Import Ledger (CSV/XLSX)</div>
+                    <div class="upload-hint">Drag and drop or click to select</div>
+                    <div class="file-name" id="importsFileName"></div>
+                    <input type="file" id="importsFile" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'imports')">
+                </div>
+            </div>
+
+            <div id="configPreview">
+                <h4 style="margin-bottom: 10px; color: #9ff7e3;">Config Preview</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px;">
+                    <div><div style="font-size: 0.8rem; color: #a8b6d8;">Declarant</div><div id="previewDeclarant">-</div></div>
+                    <div><div style="font-size: 0.8rem; color: #a8b6d8;">EORI Number</div><div id="previewEORI">-</div></div>
+                    <div><div style="font-size: 0.8rem; color: #a8b6d8;">Reporting Period</div><div id="previewPeriod">-</div></div>
+                    <div><div style="font-size: 0.8rem; color: #a8b6d8;">Mode</div><div id="previewMode">-</div></div>
+                </div>
+                <div id="previewRepresentative" style="margin-top: 8px; display: none;">
+                    <div style="font-size: 0.8rem; color: #a8b6d8;">Representative</div>
+                    <div id="previewRepName">-</div>
+                </div>
+                <div id="previewError" style="color: #fecaca; margin-top: 8px; display: none;"></div>
+            </div>
+
+            <button class="btn" id="processBtn" onclick="processFiles()" disabled>Generate Report</button>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="progress-text" id="progressText">Processing...</div>
+            </div>
+        </div>
+
+        <div class="results card" id="resultsCard">
+            <h2 class="section-title">Results & Compliance</h2>
+            <div id="complianceStatus"></div>
+            <div class="validation-grid" id="validationGrid"></div>
+            <div class="stat-grid" id="statsGrid"></div>
+            <div class="drilldown-section" id="drilldownSection" style="display: none;">
+                <div class="drilldown-toggle" onclick="toggleDrilldown()">
+                    <span><strong><span id="defaultLinesCount">0</span></strong> lines using default factors</span>
+                    <span id="drilldownArrow">▼</span>
+                </div>
+                <div class="drilldown-content" id="drilldownContent"></div>
+            </div>
+
+            <div id="policySection"></div>
+            <h3 class="section-title">Generated Artifacts</h3>
+            <ul class="artifacts-list" id="artifactsList"></ul>
+            <button class="btn btn-download-all" id="downloadAllBtn" onclick="downloadAll()">Download All (ZIP)</button>
+
+            <div class="error-list" id="errorList">
+                <h3 style="margin-bottom: 10px;">Errors</h3>
+                <div id="errorItems"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>GreenLang CBAM Pack v__CBAM_VERSION__</p>
+            <p><a href="https://greenlang.in" target="_blank" rel="noopener noreferrer">greenlang.in</a></p>
+        </footer>
+    </div>
+
+    <script>
+        let configFile = null;
+        let importsFile = null;
+        let currentSessionId = null;
+
+        ['configZone', 'importsZone'].forEach(id => {
+            const zone = document.getElementById(id);
+
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('dragover');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    const type = id === 'configZone' ? 'config' : 'imports';
+                    const input = document.getElementById(type === 'config' ? 'configFile' : 'importsFile');
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                    handleFileSelect(input, type);
+                }
+            });
+        });
+
+        async function handleFileSelect(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const zone = document.getElementById(type === 'config' ? 'configZone' : 'importsZone');
+            const nameEl = document.getElementById(type === 'config' ? 'configFileName' : 'importsFileName');
+
+            zone.classList.add('has-file');
+            nameEl.textContent = '✓ ' + file.name;
+
+            if (type === 'config') {
+                configFile = file;
+                await previewConfigFile(file);
+            } else {
+                importsFile = file;
+            }
+
+            updateProcessButton();
+        }
+
+        async function previewConfigFile(file) {
+            const previewSection = document.getElementById('configPreview');
+            const previewError = document.getElementById('previewError');
+
+            try {
+                const formData = new FormData();
+                formData.append('config_file', file);
+                const response = await fetch('/api/preview-config', { method: 'POST', body: formData });
+                const preview = await response.json();
+
+                if (preview.success) {
+                    document.getElementById('previewDeclarant').textContent = preview.declarant.name;
+                    document.getElementById('previewEORI').textContent = preview.declarant.eori_number;
+                    document.getElementById('previewPeriod').textContent = `${preview.reporting_period.quarter} ${preview.reporting_period.year}`;
+                    document.getElementById('previewMode').textContent = preview.mode.charAt(0).toUpperCase() + preview.mode.slice(1);
+
+                    if (preview.representative && preview.representative.name) {
+                        document.getElementById('previewRepName').textContent =
+                            `${preview.representative.name} (${preview.representative.eori_number || 'No EORI'})`;
+                        document.getElementById('previewRepresentative').style.display = 'block';
+                    } else {
+                        document.getElementById('previewRepresentative').style.display = 'none';
+                    }
+
+                    previewError.style.display = 'none';
+                    previewSection.style.display = 'block';
+                } else {
+                    previewError.textContent = preview.error;
+                    previewError.style.display = 'block';
+                    previewSection.style.display = 'block';
+                }
+            } catch (error) {
+                previewError.textContent = 'Failed to preview config: ' + error.message;
+                previewError.style.display = 'block';
+                previewSection.style.display = 'block';
+            }
+        }
+
+        function updateProcessButton() {
+            const btn = document.getElementById('processBtn');
+            btn.disabled = !(configFile && importsFile);
+        }
+
+        async function processFiles() {
+            const btn = document.getElementById('processBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const resultsCard = document.getElementById('resultsCard');
+
+            btn.disabled = true;
+            progressContainer.style.display = 'block';
+            resultsCard.classList.remove('show');
+
+            let progress = 0;
+            const stages = [
+                'Validating inputs...',
+                'Evaluating policy...',
+                'Loading emission factors...',
+                'Calculating emissions...',
+                'Validating XML schema...',
+                'Creating audit bundle...',
+                'Generating gap report...',
+                'Finalizing...'
+            ];
+
+            const progressInterval = setInterval(() => {
+                progress += 12;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = stages[Math.min(Math.floor(progress / 12), stages.length - 1)];
+            }, 300);
+
+            const formData = new FormData();
+            formData.append('config_file', configFile);
+            formData.append('imports_file', importsFile);
+            formData.append('collect_errors', 'true');
+
+            try {
+                const response = await fetch('/api/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressText.textContent = result.success ? 'Complete!' : 'Completed with issues';
+
+                currentSessionId = result.session_id;
+                displayResults(result);
+            } catch (error) {
+                clearInterval(progressInterval);
+                progressText.textContent = 'Error: ' + error.message;
+            }
+
+            btn.disabled = false;
+        }
+
+        function displayResults(result) {
+            const resultsCard = document.getElementById('resultsCard');
+            const complianceStatus = document.getElementById('complianceStatus');
+            const validationGrid = document.getElementById('validationGrid');
+            const statsGrid = document.getElementById('statsGrid');
+            const artifactsList = document.getElementById('artifactsList');
+            const errorList = document.getElementById('errorList');
+            const errorItems = document.getElementById('errorItems');
+            const drilldownSection = document.getElementById('drilldownSection');
+            const policySection = document.getElementById('policySection');
+
+            resultsCard.classList.add('show');
+
+            if (result.success) {
+                const compliance = result.compliance || { status: 'compliant', message: 'Report generated', can_export: true };
+
+                let statusIcon, statusText, badgeClass;
+                switch (compliance.status) {
+                    case 'compliant':
+                        statusIcon = '✓';
+                        statusText = 'Compliant';
+                        badgeClass = 'compliant';
+                        break;
+                    case 'warning':
+                        statusIcon = '⚠';
+                        statusText = 'Review Required';
+                        badgeClass = 'warning';
+                        break;
+                    case 'schema_fail':
+                        statusIcon = '✖';
+                        statusText = 'Schema Fail - Cannot Submit';
+                        badgeClass = 'error';
+                        break;
+                    case 'policy_fail':
+                        statusIcon = '⚠';
+                        statusText = compliance.can_export ? 'Policy Failed (Draft OK)' : 'Policy Failed (Blocked)';
+                        badgeClass = compliance.can_export ? 'warning' : 'error';
+                        break;
+                    default:
+                        statusIcon = '✖';
+                        statusText = 'Error';
+                        badgeClass = 'error';
+                }
+
+                complianceStatus.innerHTML = `
+                    <div class="compliance-badge ${badgeClass}">${statusIcon} ${statusText}</div>
+                    <p style="margin-bottom: 12px; color: #a8b6d8;">${compliance.message}</p>
+                    ${compliance.export_label ? `<div style="margin-bottom: 10px;">
+                        <span style="padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
+                            background: ${compliance.can_export ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'};
+                            color: ${compliance.can_export ? '#86efac' : '#fca5a5'};
+                            border: 1px solid ${compliance.can_export ? 'rgba(134,239,172,0.35)' : 'rgba(252,165,165,0.35)'};">
+                            ${compliance.export_label}
+                        </span>
+                    </div>` : ''}
+                `;
+
+                const downloadAllBtn = document.getElementById('downloadAllBtn');
+                if (!compliance.can_export) {
+                    downloadAllBtn.disabled = true;
+                    downloadAllBtn.innerHTML = 'Download Blocked - Resolve Compliance Blockers';
+                    downloadAllBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                } else if (compliance.status === 'policy_fail' || compliance.status === 'warning') {
+                    downloadAllBtn.disabled = false;
+                    downloadAllBtn.innerHTML = 'Download All (ZIP) - DRAFT';
+                    downloadAllBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                    downloadAllBtn.style.color = '#1e1b16';
+                } else {
+                    downloadAllBtn.disabled = false;
+                    downloadAllBtn.innerHTML = 'Download All (ZIP)';
+                    downloadAllBtn.style.background = 'linear-gradient(135deg, #42d9b5 0%, #66f2cf 100%)';
+                    downloadAllBtn.style.color = '#042016';
+                }
+            } else {
+                complianceStatus.innerHTML = `
+                    <div class="compliance-badge error">✖ Failed</div>
+                    <p style="margin-bottom: 12px; color: #a8b6d8;">Report generation failed. See errors below.</p>
+                `;
+                const downloadAllBtn = document.getElementById('downloadAllBtn');
+                downloadAllBtn.disabled = true;
+                downloadAllBtn.innerHTML = 'Download Not Available';
+                downloadAllBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            }
+
+            let validationHtml = '';
+            const xmlVal = result.xml_validation || {};
+            validationHtml += `
+                <div class="validation-card">
+                    <h4>XML Schema Validation</h4>
+                    <div class="validation-status">
+                        <span class="status-badge ${xmlVal.status === 'PASS' ? 'pass' : xmlVal.status === 'FAIL' ? 'fail' : 'warn'}">
+                            ${xmlVal.status || 'N/A'}
+                        </span>
+                    </div>
+                    <div class="validation-detail">
+                        Schema Version: ${xmlVal.schema_version || 'N/A'}<br>
+                        Schema Date: ${xmlVal.schema_date || 'N/A'}
+                    </div>
+                    ${xmlVal.errors && xmlVal.errors.length > 0 ?
+                        `<div style="color: #fca5a5; margin-top: 8px; font-size: 0.82rem;">
+                            ${xmlVal.errors.map(e => `• ${e}`).join('<br>')}
+                        </div>` : ''}
+                </div>
+            `;
+
+            const policy = result.policy || {};
+            const compliance = result.compliance || {};
+            validationHtml += `
+                <div class="validation-card">
+                    <h4>Policy Validation</h4>
+                    <div class="validation-status">
+                        <span class="status-badge ${policy.status === 'PASS' ? 'pass' : policy.status === 'WARN' ? 'warn' : 'fail'}">
+                            ${policy.status || 'N/A'}
+                        </span>
+                    </div>
+                    <div class="validation-detail">
+                        Score: ${policy.overall_score ? policy.overall_score.toFixed(0) : 'N/A'}/100<br>
+                        Policy Allows Export: ${policy.can_export !== undefined ? (policy.can_export ? 'Yes (Draft)' : 'No') : 'N/A'}<br>
+                        Export Status: ${compliance.export_label || 'Unknown'}
+                    </div>
+                </div>
+            `;
+
+            validationGrid.innerHTML = validationHtml;
+
+            const stats = result.statistics || {};
+            statsGrid.innerHTML = `
+                <div class="stat-card"><div class="stat-value">${stats.total_lines || 0}</div><div class="stat-label">Lines Processed</div></div>
+                <div class="stat-card"><div class="stat-value">${(stats.total_emissions_tco2e || 0).toFixed(2)}</div><div class="stat-label">Total tCO2e</div></div>
+                <div class="stat-card"><div class="stat-value">${(stats.default_usage_percent || 0).toFixed(1)}%</div><div class="stat-label">Default Usage</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.lines_using_defaults || 0}</div><div class="stat-label">Default Lines</div></div>
+            `;
+
+            const defaultLines = result.lines_using_defaults || [];
+            if (defaultLines.length > 0) {
+                drilldownSection.style.display = 'block';
+                document.getElementById('defaultLinesCount').textContent = defaultLines.length;
+
+                let drilldownHtml = '';
+                defaultLines.forEach(line => {
+                    drilldownHtml += `
+                        <div class="default-line-item">
+                            <div class="default-line-header">
+                                <span class="default-line-id">${line.line_id}</span>
+                                <span class="default-line-emissions">${line.total_emissions_tco2e.toFixed(2)} tCO2e</span>
+                            </div>
+                            <div class="default-line-details">
+                                <span>CN Code: ${line.cn_code}</span>
+                                <span>Country: ${line.country_of_origin}</span>
+                                <span>Supplier: ${line.supplier_id || 'Unknown'}</span>
+                            </div>
+                            <div style="color: #a8b6d8; font-size: 0.85rem; margin-top: 8px;">${line.product_description}</div>
+                            ${line.missing_fields && line.missing_fields.length > 0 ? `
+                                <div class="missing-fields">
+                                    <div style="font-weight: 700; margin-bottom: 4px;">Missing Data Fields</div>
+                                    ${line.missing_fields.map(f => `<span class="missing-field-tag">${f}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            <div class="recommended-action">Tip: ${line.recommended_action}</div>
+                        </div>
+                    `;
+                });
+                document.getElementById('drilldownContent').innerHTML = drilldownHtml;
+            } else {
+                drilldownSection.style.display = 'none';
+            }
+
+            let policyHtml = '';
+            if (policy.violations && policy.violations.length > 0) {
+                policyHtml += '<h3 class="section-title" style="color: #fca5a5;">Policy Violations</h3>';
+                policyHtml += '<div class="violation-list">';
+                policy.violations.forEach(v => {
+                    policyHtml += `
+                        <div class="violation-item">
+                            <strong>${v.rule_id}: ${v.rule_name}</strong><br>
+                            <span style="color: #fecaca;">${v.message}</span>
+                            ${v.remediation ? `<br><span style="color: #9ff7e3;">Tip: ${v.remediation}</span>` : ''}
+                        </div>
+                    `;
+                });
+                policyHtml += '</div>';
+            }
+            if (policy.warnings && policy.warnings.length > 0) {
+                policyHtml += '<h3 class="section-title" style="color: #fde68a;">Policy Warnings</h3>';
+                policyHtml += '<div class="violation-list">';
+                policy.warnings.forEach(w => {
+                    policyHtml += `
+                        <div class="warning-item">
+                            <strong>${w.rule_id}: ${w.rule_name}</strong><br>
+                            <span style="color: #fde68a;">${w.message}</span>
+                            ${w.remediation ? `<br><span style="color: #9ff7e3;">Tip: ${w.remediation}</span>` : ''}
+                        </div>
+                    `;
+                });
+                policyHtml += '</div>';
+            }
+            policySection.innerHTML = policyHtml;
+
+            const artifacts = result.artifacts || [];
+            artifactsList.innerHTML = artifacts.map(artifact => `
+                <li>
+                    <span>${artifact}</span>
+                    <a href="/api/download/${currentSessionId}/${artifact}" class="download-link">Download</a>
+                </li>
+            `).join('');
+
+            const errors = result.errors || [];
+            if (errors.length > 0) {
+                errorList.style.display = 'block';
+                errorItems.innerHTML = errors.map(error => `
+                    <div class="error-item">
+                        <span class="error-code">${error}</span>
+                    </div>
+                `).join('');
+            } else {
+                errorList.style.display = 'none';
+            }
+        }
+
+        function toggleDrilldown() {
+            const content = document.getElementById('drilldownContent');
+            const arrow = document.getElementById('drilldownArrow');
+            content.classList.toggle('show');
+            arrow.innerHTML = content.classList.contains('show') ? '▲' : '▼';
+        }
+
+        function downloadAll() {
+            if (currentSessionId) {
+                window.location.href = `/api/download/${currentSessionId}`;
+            }
+        }
+    </script>
+</body>
+</html>

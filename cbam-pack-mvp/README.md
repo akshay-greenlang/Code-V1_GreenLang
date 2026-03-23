@@ -120,6 +120,31 @@ gl-cbam version
 gl-cbam web --host 127.0.0.1 --port 8000
 ```
 
+## Deployment Modes
+
+### Localhost mode (default)
+
+Use for internal development on your own machine:
+
+```bash
+gl-cbam web --host 127.0.0.1 --port 8000
+```
+
+### Pilot mode (network exposed)
+
+When exposing the API beyond localhost, set an API key and include it in requests:
+
+```bash
+# PowerShell
+$env:CBAM_API_KEY="replace-with-strong-token"
+gl-cbam web --host 0.0.0.0 --port 8000
+```
+
+All `/api/*` endpoints enforce:
+- `X-API-Key` validation (when `CBAM_API_KEY` is set)
+- basic per-client rate limiting
+- automatic session TTL cleanup for generated artifacts
+
 ## Supported CN Codes
 
 | Product Category | CN Prefix | Examples |

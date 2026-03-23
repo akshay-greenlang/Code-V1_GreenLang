@@ -1,0 +1,185 @@
+# =============================================================================
+# PACK-039 Energy Monitoring - Multi-Tenant Preset
+# =============================================================================
+# Multi-tenant buildings with per-tenant submetering, interval-based cost
+# allocation, common area energy split, and tenant billing support. Typical
+# floor area 5,000-50,000 m2 with 10-100+ meters. Monitoring priorities:
+# tenant spaces (50-70%), common areas (10-15%), HVAC central plant (15-25%),
+# elevators/parking (5-10%). EnPI: kWh/m2/yr per tenant with occupancy
+# normalisation. Tenant data isolation enforced -- each tenant sees only
+# their own consumption, costs, and benchmarks.
+#
+# Typical use cases:
+#   - Multi-tenant office buildings
+#   - Shared-services business parks
+#   - Mixed-use commercial/retail buildings
+#   - Landlord-managed leased properties
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "MULTI_TENANT"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 3000
+
+# --- Meters ---
+meters:
+  total_meter_count: 40
+  primary_protocol: "MODBUS_TCP"
+  secondary_protocols:
+    - "BACNET_IP"
+    - "PULSE_OUTPUT"
+  polling_interval_seconds: 60
+  energy_types_monitored:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+    - "CHILLED_WATER"
+  virtual_meters_enabled: true
+  virtual_meter_count: 10
+  meter_hierarchy_depth: 4
+  ct_ratio_validation: true
+  automatic_gap_detection: true
+
+# --- Interval Data ---
+interval_data:
+  interval_length: "15_MIN"
+  minimum_data_coverage_pct: 95
+  gap_fill_method: "LINEAR_INTERPOLATION"
+  max_gap_fill_intervals: 4
+  lookback_months: 12
+  outlier_threshold_sigma: 3.0
+  weather_normalization: true
+  heating_base_temp_c: 15.5
+  cooling_base_temp_c: 18.0
+  demand_window_minutes: 15
+
+# --- EnPI ---
+enpi:
+  primary_enpi_type: "INTENSITY_AREA"
+  secondary_enpi_types:
+    - "INTENSITY_OCCUPANCY"
+    - "DEGREE_DAY_NORMALISED"
+  baseline_year: 2024
+  baseline_months: 12
+  normalisation_variables:
+    - "floor_area_m2"
+    - "occupant_count"
+    - "heating_degree_days"
+    - "cooling_degree_days"
+  significance_level: 0.05
+  improvement_target_pct: 3.0
+  cusum_tracking_enabled: true
+  regression_min_r_squared: 0.75
+  auto_baseline_adjustment: false
+
+# --- Anomaly Detection ---
+anomaly_detection:
+  enabled: true
+  primary_method: "STATISTICAL_ZSCORE"
+  secondary_methods:
+    - "ROLLING_BASELINE"
+  sensitivity_sigma: 2.5
+  minimum_deviation_pct: 15
+  evaluation_window_hours: 24
+  suppression_window_hours: 4
+  weekday_weekend_split: true
+  holiday_calendar_enabled: true
+  after_hours_monitoring: true
+  baseload_deviation_pct: 20
+
+# --- Allocation ---
+allocation:
+  enabled: true
+  primary_method: "DIRECT_SUBMETER"
+  fallback_method: "PROPORTIONAL_AREA"
+  common_area_split_method: "PROPORTIONAL_AREA"
+  common_area_pct_cap: 30
+  allocation_frequency: "MONTHLY"
+  include_demand_charges: true
+  demand_charge_method: "COINCIDENT_PEAK"
+  loss_factor_pct: 3.0
+  reconciliation_enabled: true
+  reconciliation_tolerance_pct: 3.0
+
+# --- Budget & Target ---
+budget_target:
+  enabled: true
+  budget_method: "WEATHER_NORMALISED"
+  monthly_distribution: "WEATHER_WEIGHTED"
+  warning_variance_pct: 5
+  critical_variance_pct: 10
+  year_on_year_reduction_target_pct: 3.0
+  rolling_forecast_enabled: true
+  forecast_horizon_months: 3
+  degree_day_adjustment: true
+
+# --- Alarms ---
+alarms:
+  enabled: true
+  channels:
+    - "EMAIL"
+    - "BMS_SIGNAL"
+  default_priority: "MEDIUM"
+  critical_response_minutes: 15
+  high_response_minutes: 60
+  escalation_enabled: true
+  escalation_delay_minutes: 30
+  suppression_window_minutes: 30
+  after_hours_critical_only: true
+  meter_offline_alarm_minutes: 30
+  acknowledgement_required: true
+
+# --- Cost Tracking ---
+cost_tracking:
+  enabled: true
+  electricity_rate_eur_per_kwh: 0.16
+  gas_rate_eur_per_kwh: 0.05
+  chilled_water_rate_eur_per_kwh: 0.09
+  demand_charge_eur_per_kw: 15.00
+  time_of_use_enabled: true
+  peak_rate_multiplier: 1.5
+  off_peak_rate_multiplier: 0.70
+  currency: "EUR"
+  cost_avoidance_tracking: true
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  electricity_ef_kgco2_per_kwh: 0.40
+  gas_ef_kgco2_per_kwh: 0.20
+  chilled_water_ef_kgco2_per_kwh: 0.15
+  carbon_price_eur_per_tco2: 85.0
+  market_based_accounting: false
+  scope1_tracking: true
+  scope2_tracking: true
+  real_time_carbon_intensity: false
+  sbti_alignment_tracking: false
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "PDF"
+  executive_summary: true
+  meter_health_report: true
+  anomaly_report: true
+  budget_variance_report: true
+  cost_allocation_report: true
+  carbon_report: true
+  enpi_dashboard: true
+
+# --- Security ---
+security:
+  tenant_data_isolation: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 7

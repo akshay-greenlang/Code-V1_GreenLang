@@ -1,8 +1,8 @@
 {
-  "artifact_version": "1.0",
-  "generated_at_utc": "2026-03-23T08:18:33Z",
-  "scope": "CBAM flagship MVP acceptance gate",
-  "verdict": "GO",
+  "artifact_version": "2.0",
+  "generated_at_utc": "2026-03-23T09:45:48Z",
+  "scope": "CBAM flagship MVP remediation acceptance gate",
+  "verdict": "GO_FOR_PILOT",
   "checklist": {
     "cli_help_available": {
       "status": "PASS",
@@ -18,7 +18,7 @@
       "status": "PASS",
       "command": "python -m greenlang.cli.main run cbam <sample_config> <sample_imports> <output_dir>",
       "exit_code": 0,
-      "output_dir": "c:/Users/aksha/Code-V1_GreenLang/tmp_mvp_release_run"
+      "output_dir": "c:/Users/aksha/Code-V1_GreenLang/tmp_mvp_release_run_v2"
     },
     "cli_nonzero_on_invalid_cbam_usage": {
       "status": "PASS",
@@ -28,7 +28,7 @@
     "test_suite_cbam_mvp": {
       "status": "PASS",
       "command": "pytest -q c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tests",
-      "result": "9 passed"
+      "result": "15 passed"
     },
     "determinism_two_run_hash_match": {
       "status": "PASS",
@@ -37,18 +37,38 @@
         "run2_success": true,
         "same_fileset": true,
         "diff_count": 0,
-        "run1_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run1",
-        "run2_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run2"
+        "run1_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run3",
+        "run2_dir": "c:/Users/aksha/Code-V1_GreenLang/cbam-pack-mvp/tmp_release_det_run4"
       }
     },
     "web_health_endpoint": {
       "status": "PASS",
       "command": "GET http://127.0.0.1:8000/health",
       "status_code": 200
+    },
+    "security_traversal_upload_rejection": {
+      "status": "PASS",
+      "status_code": 400
+    },
+    "security_oversize_upload_rejection": {
+      "status": "PASS",
+      "status_code": 413
+    },
+    "security_sanitized_yaml_error": {
+      "status": "PASS",
+      "error_message": "Invalid YAML. Please fix file formatting and retry."
+    },
+    "pilot_mode_api_key_enforcement": {
+      "status": "PASS",
+      "missing_key_status": 401,
+      "valid_key_status": 200
     }
   },
   "notes": [
-    "Web export gating now consumes PipelineResult.can_export as source of truth.",
-    "CBAM blocked-export non-zero path is implemented (exit_code=4) but was not triggered by sample fixtures used in this gate run."
+    "Web export gating consumes PipelineResult.can_export as source of truth.",
+    "Upload traversal attempts are explicitly rejected with 400.",
+    "Upload size limit enforcement is verified with 413 response.",
+    "Preview error responses are sanitized for public API safety.",
+    "Pilot mode controls are available via CBAM_API_KEY, rate limiting, and session TTL cleanup."
   ]
 }

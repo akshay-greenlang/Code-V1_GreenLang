@@ -1,0 +1,218 @@
+# =============================================================================
+# PACK-040 Measurement & Verification - ESCO Performance Contract Preset
+# =============================================================================
+# Energy Service Company (ESCO) and Energy Performance Contract (EPC) projects
+# requiring performance guarantee verification over multi-year contract terms
+# (typically 7-20 years). M&V must demonstrate that guaranteed savings are
+# achieved annually. Shared savings models require precise savings calculation
+# for payment determination. Dispute resolution requires transparent, auditable
+# calculation methodology with complete provenance.
+#
+# ESCO-specific requirements:
+#   - Annual savings verification against guarantee
+#   - Multi-year persistence tracking (contract duration)
+#   - Shared savings calculations for payment splits
+#   - Dispute resolution support with transparent calculations
+#   - Cumulative savings tracking for contract compliance
+#   - Independent M&V review provisions
+#   - Re-commissioning triggers for guarantee protection
+#
+# Typical ECMs (bundled):
+#   - Comprehensive HVAC modernization
+#   - LED lighting with controls
+#   - Building automation and EMS
+#   - Envelope improvements
+#   - Central plant optimization
+#   - Motor and drive upgrades
+#
+# IPMVP Approach: Option C whole-facility with comprehensive adjustments.
+# Monthly verification with annual guarantee reconciliation. Multi-year
+# cumulative savings tracking with degradation monitoring.
+# =============================================================================
+
+# --- Project Identification ---
+project_name: ""
+facility_name: ""
+company_name: ""
+facility_type: "ESCO_PERFORMANCE_CONTRACT"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 2500
+ecm_count: 8
+contract_term_years: 15
+
+# --- Baseline Configuration ---
+baseline:
+  baseline_months: 12
+  granularity: "MONTHLY"
+  preferred_model_type: "FOUR_PARAMETER"
+  auto_model_selection: true
+  model_selection_criterion: "CVRMSE"
+  independent_variables:
+    - "outdoor_temperature"
+    - "occupancy"
+  max_cvrmse_pct: 20.0
+  max_nmbe_pct: 5.0
+  min_r_squared: 0.75
+  min_data_coverage_pct: 95.0
+  outlier_removal_method: "STUDENTIZED_RESIDUAL"
+  outlier_threshold: 2.5
+  balance_point_optimization: true
+  heating_balance_point_c: 15.5
+  cooling_balance_point_c: 18.0
+  min_observations: 12
+  durbin_watson_check: true
+  f_test_significance: 0.05
+  t_test_significance: 0.05
+
+# --- Adjustments ---
+adjustments:
+  routine_adjustments_enabled: true
+  non_routine_adjustments_enabled: true
+  weather_normalization: true
+  production_normalization: false
+  occupancy_adjustment: true
+  operating_hours_adjustment: true
+  floor_area_adjustment: true
+  equipment_change_adjustment: true
+  schedule_change_adjustment: true
+  static_factor_adjustment: true
+  normalization_method: "TMY"
+  adjustment_documentation_required: true
+  adjustment_uncertainty_pct: 8.0
+  max_non_routine_adjustments: 15
+
+# --- Savings ---
+savings:
+  primary_savings_type: "AVOIDED"
+  secondary_savings_types:
+    - "NORMALIZED"
+    - "COST"
+    - "CUMULATIVE"
+    - "ANNUALIZED"
+  electricity_rate_per_kwh: 0.12
+  gas_rate_per_kwh: 0.04
+  steam_rate_per_kwh: 0.06
+  chilled_water_rate_per_kwh: 0.08
+  demand_charge_per_kw: 15.0
+  include_demand_savings: true
+  currency: "USD"
+  escalation_rate_pct: 3.0
+  discount_rate_pct: 8.0
+  cumulative_tracking_enabled: true
+  annualization_method: "CALENDAR_MONTH"
+  negative_savings_handling: "ALERT"
+  carbon_savings_tracking: true
+  electricity_ef_kgco2_per_kwh: 0.40
+  gas_ef_kgco2_per_kwh: 0.20
+
+# --- Uncertainty ---
+uncertainty:
+  enabled: true
+  confidence_level_pct: 90.0
+  measurement_uncertainty_enabled: true
+  model_uncertainty_enabled: true
+  sampling_uncertainty_enabled: false
+  max_fractional_savings_uncertainty_pct: 40.0
+  minimum_detectable_savings_pct: 8.0
+  default_meter_accuracy_pct: 0.5
+  ct_pt_error_pct: 0.3
+  calibration_drift_pct_per_year: 0.15
+  propagation_method: "ROOT_SUM_SQUARE"
+
+# --- IPMVP ---
+ipmvp:
+  default_option: "OPTION_C"
+  auto_option_selection: true
+  option_a_stipulated_values_review_months: 12
+  option_b_metering_duration_weeks: 4
+  option_c_min_ecm_share_pct: 10.0
+  option_d_calibration_cvrmse_pct: 15.0
+  option_d_calibration_nmbe_pct: 5.0
+  measurement_boundary_documentation: true
+  interactive_effects_assessment: true
+  compliance_frameworks:
+    - "IPMVP"
+    - "ASHRAE_14"
+    - "ISO_50015"
+  ipmvp_version: "2022"
+
+# --- Metering ---
+metering:
+  default_meter_accuracy: "CLASS_05"
+  calibration_interval_months: 12
+  calibration_standard: "ANSI_C12_20"
+  sampling_enabled: false
+  sampling_confidence_pct: 90.0
+  sampling_precision_pct: 10.0
+  sampling_cv_pct: 25.0
+  min_data_completeness_pct: 95.0
+  max_gap_intervals: 2
+  gap_fill_method: "LINEAR_INTERPOLATION"
+  data_validation_enabled: true
+  negative_value_handling: "REJECT"
+  demand_window_minutes: 15
+
+# --- Persistence ---
+persistence:
+  enabled: true
+  tracking_years: 15
+  degradation_model: "LINEAR"
+  expected_annual_degradation_pct: 3.0
+  alert_threshold_pct: 10.0
+  recommissioning_trigger_pct: 20.0
+  seasonal_pattern_analysis: true
+  persistence_factor_tracking: true
+  minimum_persistence_factor: 0.80
+  trend_analysis_method: "LINEAR_REGRESSION"
+  performance_guarantee_tracking: true
+  guarantee_shortfall_alert: true
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "PDF"
+  mv_plan_report: true
+  baseline_report: true
+  savings_report: true
+  uncertainty_report: true
+  annual_summary: true
+  persistence_report: true
+  compliance_report: true
+  executive_summary: true
+  option_comparison_report: true
+  metering_plan_report: true
+  include_regression_diagnostics: true
+  include_residual_analysis: true
+
+# --- Security ---
+security:
+  data_classification: "CONFIDENTIAL"
+  audit_logging: true
+  pii_redaction: true
+  encryption_at_rest: true
+  tenant_data_isolation: true
+
+# --- Performance ---
+performance:
+  max_ecms_per_project: 50
+  max_baseline_data_points: 1095
+  regression_timeout_seconds: 15
+  savings_calculation_timeout_seconds: 5
+  uncertainty_timeout_seconds: 10
+  report_generation_timeout_seconds: 15
+  cache_ttl_seconds: 600
+  batch_size: 500
+  parallel_engines: 4
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 20

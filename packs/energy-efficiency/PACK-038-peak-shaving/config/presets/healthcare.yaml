@@ -1,0 +1,159 @@
+# =============================================================================
+# PACK-038 Peak Shaving - Healthcare Preset
+# =============================================================================
+# Hospitals and clinical facilities with highly conservative peak shaving
+# strategy. Only non-clinical areas participate: admin HVAC, corridor lighting,
+# laundry, kitchen, and car park. Typical peak demand 1000-5000 kW. Peak
+# drivers: HVAC (40%), medical equipment (25%), lighting (15%), kitchen (10%),
+# other (10%). Target peak reduction: 5-15% (conservative, safety-first).
+# ICU, OR, ER, imaging, and life-safety loads are permanently excluded.
+# Patient safety is the absolute constraint.
+#
+# Typical use cases:
+#   - Acute hospitals and teaching hospitals
+#   - Private clinics and day surgery centres
+#   - Residential care homes and nursing facilities
+#   - Large medical office complexes
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "HEALTHCARE"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 8760
+
+# --- Interval Data ---
+interval_data:
+  interval_length: "15_MIN"
+  minimum_data_coverage_pct: 95
+  peak_window_start_hour: 11
+  peak_window_end_hour: 17
+  lookback_months: 12
+  outlier_threshold_sigma: 3.0
+  weather_normalization: true
+
+# --- Peak Target ---
+peak_target:
+  target_reduction_pct: 10
+  trigger_threshold_pct: 90
+  summer_enhanced: true
+  summer_extra_reduction_pct: 3
+  min_sustained_minutes: 20
+
+# --- Demand Charge ---
+demand_charge:
+  tariff_type: "DEMAND_CHARGE"
+  on_peak_demand_charge_eur_per_kw: 14.00
+  off_peak_demand_charge_eur_per_kw: 5.00
+  on_peak_start_hour: 11
+  on_peak_end_hour: 19
+  critical_peak_pricing_enabled: false
+  incentive_program: "NONE"
+
+# --- BESS ---
+bess:
+  enabled: true
+  capacity_kwh: 1000
+  max_discharge_kw: 500
+  max_charge_kw: 250
+  chemistry: "LFP"
+  min_soc_pct: 20
+  max_soc_pct: 95
+  round_trip_efficiency: 0.92
+  cycles_per_day_limit: 1
+  degradation_tracking: true
+  warranty_cycles: 6000
+  reserve_for_backup_pct: 30
+
+# --- Load Shift ---
+load_shift:
+  pre_cooling_enabled: true
+  pre_cooling_duration_minutes: 45
+  pre_cooling_setpoint_offset_c: -1.5
+  coast_duration_minutes: 60
+  max_temperature_rise_c: 1.5
+  ev_charging_deferral: true
+  production_batch_scheduling: false
+  compressed_air_management: false
+  thermal_mass_ride_through: false
+
+# --- Coincident Peak ---
+cp:
+  enabled: false
+  methodology: "PJM_5CP"
+  cp_season_start_month: 6
+  cp_season_end_month: 9
+  target_reduction_during_cp_pct: 10
+  max_cp_events_per_season: 5
+
+# --- Ratchet ---
+ratchet:
+  enabled: true
+  ratchet_type: "ANNUAL"
+  ratchet_percentage: 80
+  ratchet_lookback_months: 12
+
+# --- Power Factor ---
+power_factor:
+  enabled: true
+  current_power_factor: 0.88
+  target_power_factor: 0.95
+  utility_penalty_threshold: 0.85
+  correction_type: "CAPACITOR_BANK"
+  kva_demand_billing: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.14
+  demand_charge_eur_per_kw: 14.00
+  ratchet_demand_charge_eur_per_kw: 11.00
+  bess_capex_eur_per_kwh: 380
+  bess_annual_opex_pct: 2.5
+  discount_rate: 0.06
+  analysis_period_years: 15
+  energy_price_escalation_pct: 3.0
+  demand_charge_escalation_pct: 2.0
+  include_incentives: false
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  marginal_emission_factor_kgco2_per_kwh: 0.65
+  carbon_price_eur_per_tco2: 85.0
+  sbti_alignment_tracking: false
+  peak_hour_premium_factor: 1.3
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  peak_event_log: true
+  bess_performance_report: true
+  ratchet_exposure_report: true
+
+# --- Alerts ---
+alerts:
+  enabled: true
+  channels:
+    - "EMAIL"
+    - "SMS"
+    - "BMS_SIGNAL"
+    - "PAGER"
+  warning_threshold_pct: 85
+  critical_threshold_pct: 92
+  escalation_minutes: 5
+  suppression_window_minutes: 15
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 10

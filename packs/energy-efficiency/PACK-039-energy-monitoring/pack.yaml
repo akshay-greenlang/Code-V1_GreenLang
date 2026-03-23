@@ -1,0 +1,350 @@
+# =============================================================================
+# PACK-039: Energy Monitoring Pack
+# GreenLang Energy Efficiency Pack for Energy Monitoring & Targeting (M&T)
+# =============================================================================
+# Comprehensive energy monitoring platform covering meter registry management,
+# multi-source data acquisition (Modbus/BACnet/MQTT/OPC-UA/AMI/manual),
+# automated data validation (12 check types per ASHRAE Guideline 14),
+# statistical anomaly detection (CUSUM/EWMA/Z-score/IQR/regression),
+# ISO 50001 EnPI tracking with regression normalization, multi-tenant
+# cost allocation with tariff-aware interval billing, energy budgeting
+# with weather-normalized variance analysis, intelligent alarm management
+# (ISA 18.2 lifecycle), real-time dashboards, and automated reporting.
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-23)
+# =============================================================================
+
+metadata:
+  name: PACK-039-energy-monitoring
+  version: "1.0.0"
+  display_name: "Energy Monitoring Pack"
+  description: >-
+    GreenLang deployment pack for comprehensive energy monitoring and targeting
+    covering meter registry management, multi-protocol data acquisition,
+    automated data validation, statistical anomaly detection, ISO 50001
+    EnPI tracking with regression normalization, multi-tenant cost allocation,
+    energy budgeting with variance analysis, intelligent alarm management,
+    real-time dashboards, and automated report generation.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: proprietary
+  min_greenlang_version: "1.0.0"
+  pack_id: "PACK-039"
+  status: production_ready
+  tags:
+    - energy-monitoring
+    - monitoring-targeting
+    - enpi
+    - iso-50001
+    - submetering
+    - anomaly-detection
+    - cost-allocation
+    - energy-budgeting
+    - alarm-management
+    - data-validation
+
+components:
+  engines:
+    count: 10
+    items:
+      - id: engine_001
+        name: meter_registry_engine
+        file: engines/meter_registry_engine.py
+        class: MeterRegistryEngine
+        description: "Meter asset registry with hierarchy, calibration tracking, virtual meters"
+      - id: engine_002
+        name: data_acquisition_engine
+        file: engines/data_acquisition_engine.py
+        class: DataAcquisitionEngine
+        description: "Multi-protocol data collection with timestamp alignment and normalization"
+      - id: engine_003
+        name: data_validation_engine
+        file: engines/data_validation_engine.py
+        class: DataValidationEngine
+        description: "12-check automated validation with quality scoring per ASHRAE 14"
+      - id: engine_004
+        name: anomaly_detection_engine
+        file: engines/anomaly_detection_engine.py
+        class: AnomalyDetectionEngine
+        description: "CUSUM/EWMA/Z-score/IQR statistical anomaly detection"
+      - id: engine_005
+        name: enpi_engine
+        file: engines/enpi_engine.py
+        class: EnPIEngine
+        description: "ISO 50001 EnPI with regression normalization and CUSUM tracking"
+      - id: engine_006
+        name: cost_allocation_engine
+        file: engines/cost_allocation_engine.py
+        class: CostAllocationEngine
+        description: "Interval-level tariff-aware cost allocation for tenants/departments"
+      - id: engine_007
+        name: budget_engine
+        file: engines/budget_engine.py
+        class: BudgetEngine
+        description: "Energy budgeting with weather-normalized variance analysis"
+      - id: engine_008
+        name: alarm_engine
+        file: engines/alarm_engine.py
+        class: AlarmEngine
+        description: "Intelligent alarm management with ISA 18.2 lifecycle"
+      - id: engine_009
+        name: dashboard_engine
+        file: engines/dashboard_engine.py
+        class: DashboardEngine
+        description: "Real-time dashboard with 8 panels, KPIs, trends, heatmaps"
+      - id: engine_010
+        name: monitoring_reporting_engine
+        file: engines/monitoring_reporting_engine.py
+        class: MonitoringReportingEngine
+        description: "Automated scheduled report generation with multi-format export"
+
+  workflows:
+    count: 8
+    items:
+      - id: workflow_001
+        name: meter_setup_workflow
+        file: workflows/meter_setup_workflow.py
+        class: MeterSetupWorkflow
+        phases: 4
+        description: "MeterRegistration -> ChannelConfig -> HierarchySetup -> Commissioning"
+      - id: workflow_002
+        name: data_collection_workflow
+        file: workflows/data_collection_workflow.py
+        class: DataCollectionWorkflow
+        phases: 4
+        description: "ProtocolConnect -> DataPoll -> Validate -> Store"
+      - id: workflow_003
+        name: anomaly_response_workflow
+        file: workflows/anomaly_response_workflow.py
+        class: AnomalyResponseWorkflow
+        phases: 3
+        description: "Detect -> Investigate -> Resolve"
+      - id: workflow_004
+        name: enpi_tracking_workflow
+        file: workflows/enpi_tracking_workflow.py
+        class: EnPITrackingWorkflow
+        phases: 4
+        description: "DataCollection -> Normalization -> EnPICalc -> PerformanceReview"
+      - id: workflow_005
+        name: cost_allocation_workflow
+        file: workflows/cost_allocation_workflow.py
+        class: CostAllocationWorkflow
+        phases: 3
+        description: "MeterReading -> CostCalc -> BillGeneration"
+      - id: workflow_006
+        name: budget_review_workflow
+        file: workflows/budget_review_workflow.py
+        class: BudgetReviewWorkflow
+        phases: 3
+        description: "BudgetSetup -> VarianceAnalysis -> ForecastUpdate"
+      - id: workflow_007
+        name: reporting_workflow
+        file: workflows/reporting_workflow.py
+        class: ReportingWorkflow
+        phases: 3
+        description: "DataGathering -> ReportGeneration -> Distribution"
+      - id: workflow_008
+        name: full_monitoring_workflow
+        file: workflows/full_monitoring_workflow.py
+        class: FullMonitoringWorkflow
+        phases: 8
+        description: "Master workflow orchestrating all 7 sub-workflows"
+
+  templates:
+    count: 10
+    items:
+      - id: template_001
+        name: meter_inventory_report
+        file: templates/meter_inventory_report.py
+        class: MeterInventoryReportTemplate
+        formats: [markdown, html, json]
+      - id: template_002
+        name: energy_consumption_report
+        file: templates/energy_consumption_report.py
+        class: EnergyConsumptionReportTemplate
+        formats: [markdown, html, json]
+      - id: template_003
+        name: anomaly_report
+        file: templates/anomaly_report.py
+        class: AnomalyReportTemplate
+        formats: [markdown, html, json]
+      - id: template_004
+        name: enpi_performance_report
+        file: templates/enpi_performance_report.py
+        class: EnPIPerformanceReportTemplate
+        formats: [markdown, html, json]
+      - id: template_005
+        name: cost_allocation_report
+        file: templates/cost_allocation_report.py
+        class: CostAllocationReportTemplate
+        formats: [markdown, html, json]
+      - id: template_006
+        name: budget_variance_report
+        file: templates/budget_variance_report.py
+        class: BudgetVarianceReportTemplate
+        formats: [markdown, html, json]
+      - id: template_007
+        name: alarm_summary_report
+        file: templates/alarm_summary_report.py
+        class: AlarmSummaryReportTemplate
+        formats: [markdown, html, json]
+      - id: template_008
+        name: utility_bill_report
+        file: templates/utility_bill_report.py
+        class: UtilityBillReportTemplate
+        formats: [markdown, html, json]
+      - id: template_009
+        name: executive_summary_report
+        file: templates/executive_summary_report.py
+        class: ExecutiveSummaryReportTemplate
+        formats: [markdown, html, json]
+      - id: template_010
+        name: iso50001_compliance_report
+        file: templates/iso50001_compliance_report.py
+        class: ISO50001ComplianceReportTemplate
+        formats: [markdown, html, json]
+
+  integrations:
+    count: 12
+    items:
+      - id: integration_001
+        name: pack_orchestrator
+        file: integrations/pack_orchestrator.py
+        class: MonitoringOrchestrator
+      - id: integration_002
+        name: mrv_bridge
+        file: integrations/mrv_bridge.py
+        class: MRVBridge
+      - id: integration_003
+        name: data_bridge
+        file: integrations/data_bridge.py
+        class: DataBridge
+      - id: integration_004
+        name: meter_protocol_bridge
+        file: integrations/meter_protocol_bridge.py
+        class: MeterProtocolBridge
+      - id: integration_005
+        name: ami_bridge
+        file: integrations/ami_bridge.py
+        class: AMIBridge
+      - id: integration_006
+        name: bms_bridge
+        file: integrations/bms_bridge.py
+        class: BMSBridge
+      - id: integration_007
+        name: iot_sensor_bridge
+        file: integrations/iot_sensor_bridge.py
+        class: IoTSensorBridge
+      - id: integration_008
+        name: pack036_bridge
+        file: integrations/pack036_bridge.py
+        class: Pack036Bridge
+      - id: integration_009
+        name: pack038_bridge
+        file: integrations/pack038_bridge.py
+        class: Pack038Bridge
+      - id: integration_010
+        name: health_check
+        file: integrations/health_check.py
+        class: HealthCheck
+      - id: integration_011
+        name: setup_wizard
+        file: integrations/setup_wizard.py
+        class: SetupWizard
+      - id: integration_012
+        name: alert_bridge
+        file: integrations/alert_bridge.py
+        class: AlertBridge
+
+  presets:
+    count: 8
+    items:
+      - id: preset_001
+        name: commercial_office
+        file: config/presets/commercial_office.yaml
+      - id: preset_002
+        name: manufacturing
+        file: config/presets/manufacturing.yaml
+      - id: preset_003
+        name: retail_chain
+        file: config/presets/retail_chain.yaml
+      - id: preset_004
+        name: hospital
+        file: config/presets/hospital.yaml
+      - id: preset_005
+        name: university_campus
+        file: config/presets/university_campus.yaml
+      - id: preset_006
+        name: data_center
+        file: config/presets/data_center.yaml
+      - id: preset_007
+        name: multi_tenant
+        file: config/presets/multi_tenant.yaml
+      - id: preset_008
+        name: industrial_process
+        file: config/presets/industrial_process.yaml
+
+database:
+  migrations:
+    prefix: "pack039_energy_monitoring"
+    schema: "pack039_energy_monitoring"
+    versions:
+      - version: V306
+        file: V306__pack039_energy_monitoring_001.sql
+        description: "Meter registry and hierarchy"
+      - version: V307
+        file: V307__pack039_energy_monitoring_002.sql
+        description: "Data acquisition and storage"
+      - version: V308
+        file: V308__pack039_energy_monitoring_003.sql
+        description: "Data validation and quality"
+      - version: V309
+        file: V309__pack039_energy_monitoring_004.sql
+        description: "Anomaly detection"
+      - version: V310
+        file: V310__pack039_energy_monitoring_005.sql
+        description: "EnPI tracking"
+      - version: V311
+        file: V311__pack039_energy_monitoring_006.sql
+        description: "Cost allocation"
+      - version: V312
+        file: V312__pack039_energy_monitoring_007.sql
+        description: "Energy budgeting"
+      - version: V313
+        file: V313__pack039_energy_monitoring_008.sql
+        description: "Alarm management"
+      - version: V314
+        file: V314__pack039_energy_monitoring_009.sql
+        description: "Dashboards and reports"
+      - version: V315
+        file: V315__pack039_energy_monitoring_010.sql
+        description: "Views, indexes, audit trail, seed data"
+
+performance:
+  data_validation:
+    max_duration_seconds: 10
+    description: "8,760 intervals validation"
+  anomaly_detection:
+    max_duration_seconds: 5
+    description: "Per meter per day"
+  enpi_calculation:
+    max_duration_seconds: 15
+    description: "Full regression + CUSUM"
+  report_generation:
+    max_duration_seconds: 10
+    description: "Per report"
+
+security:
+  multi_tenant: true
+  rls_enabled: true
+  encryption_at_rest: true
+  provenance_hashing: SHA-256
+  rbac_integration: true
+
+testing:
+  framework: pytest
+  min_coverage_percent: 85
+  estimated_tests: 850
+  estimated_expanded_tests: 1250

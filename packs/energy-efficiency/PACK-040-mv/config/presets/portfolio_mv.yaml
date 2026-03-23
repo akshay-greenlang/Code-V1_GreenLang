@@ -1,0 +1,212 @@
+# =============================================================================
+# PACK-040 Measurement & Verification - Portfolio M&V Preset
+# =============================================================================
+# Statistical sampling-based M&V for large multi-site portfolios (50-500+
+# sites). Rather than performing full M&V on every site, a representative
+# sample of sites is selected using stratified random sampling, full M&V is
+# performed on the sample, and results are extrapolated to the full portfolio
+# with quantified sampling uncertainty. Portfolio-level uncertainty combines
+# model uncertainty, measurement uncertainty, and sampling uncertainty.
+# Quarterly reporting balances timeliness with statistical stability.
+#
+# Portfolio M&V methodology:
+#   - Stratified sampling by climate zone, building type, and ECM type
+#   - Sample size determined by t-distribution (confidence/precision/CV)
+#   - Full Option C M&V on sampled sites
+#   - Results extrapolated to full portfolio with sampling uncertainty
+#   - Portfolio-level FSU includes measurement + model + sampling components
+#
+# Typical use cases:
+#   - Utility demand-side management (DSM) program evaluation
+#   - Corporate portfolio-wide LED or HVAC rollout verification
+#   - ESCO multi-site performance contract verification
+#   - Government portfolio energy reduction mandates
+#
+# IPMVP Approach: Option C on sampled sites with portfolio extrapolation.
+# Quarterly aggregation with annual portfolio reporting.
+# =============================================================================
+
+# --- Project Identification ---
+project_name: ""
+facility_name: ""
+company_name: ""
+facility_type: "PORTFOLIO"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 2500
+ecm_count: 3
+
+# --- Baseline Configuration ---
+baseline:
+  baseline_months: 12
+  granularity: "MONTHLY"
+  preferred_model_type: "OLS"
+  auto_model_selection: true
+  model_selection_criterion: "CVRMSE"
+  independent_variables:
+    - "outdoor_temperature"
+    - "floor_area"
+  max_cvrmse_pct: 25.0
+  max_nmbe_pct: 5.0
+  min_r_squared: 0.60
+  min_data_coverage_pct: 85.0
+  outlier_removal_method: "STUDENTIZED_RESIDUAL"
+  outlier_threshold: 3.0
+  balance_point_optimization: true
+  heating_balance_point_c: 15.5
+  cooling_balance_point_c: 18.0
+  min_observations: 12
+  durbin_watson_check: true
+  f_test_significance: 0.05
+  t_test_significance: 0.10
+
+# --- Adjustments ---
+adjustments:
+  routine_adjustments_enabled: true
+  non_routine_adjustments_enabled: true
+  weather_normalization: true
+  production_normalization: false
+  occupancy_adjustment: false
+  operating_hours_adjustment: true
+  floor_area_adjustment: true
+  equipment_change_adjustment: true
+  schedule_change_adjustment: false
+  static_factor_adjustment: true
+  normalization_method: "TMY"
+  adjustment_documentation_required: true
+  adjustment_uncertainty_pct: 15.0
+  max_non_routine_adjustments: 5
+
+# --- Savings ---
+savings:
+  primary_savings_type: "AVOIDED"
+  secondary_savings_types:
+    - "NORMALIZED"
+    - "COST"
+    - "CUMULATIVE"
+  electricity_rate_per_kwh: 0.11
+  gas_rate_per_kwh: 0.04
+  steam_rate_per_kwh: 0.06
+  chilled_water_rate_per_kwh: 0.08
+  demand_charge_per_kw: 12.0
+  include_demand_savings: false
+  currency: "USD"
+  escalation_rate_pct: 3.0
+  discount_rate_pct: 8.0
+  cumulative_tracking_enabled: true
+  annualization_method: "PROPORTIONAL"
+  negative_savings_handling: "REPORT"
+  carbon_savings_tracking: true
+  electricity_ef_kgco2_per_kwh: 0.40
+  gas_ef_kgco2_per_kwh: 0.20
+
+# --- Uncertainty ---
+uncertainty:
+  enabled: true
+  confidence_level_pct: 90.0
+  measurement_uncertainty_enabled: true
+  model_uncertainty_enabled: true
+  sampling_uncertainty_enabled: true
+  max_fractional_savings_uncertainty_pct: 50.0
+  minimum_detectable_savings_pct: 15.0
+  default_meter_accuracy_pct: 2.0
+  ct_pt_error_pct: 0.5
+  calibration_drift_pct_per_year: 0.3
+  propagation_method: "ROOT_SUM_SQUARE"
+  monte_carlo_iterations: 10000
+
+# --- IPMVP ---
+ipmvp:
+  default_option: "OPTION_C"
+  auto_option_selection: false
+  option_a_stipulated_values_review_months: 12
+  option_b_metering_duration_weeks: 4
+  option_c_min_ecm_share_pct: 10.0
+  option_d_calibration_cvrmse_pct: 15.0
+  option_d_calibration_nmbe_pct: 5.0
+  measurement_boundary_documentation: true
+  interactive_effects_assessment: false
+  compliance_frameworks:
+    - "IPMVP"
+    - "ASHRAE_14"
+  ipmvp_version: "2022"
+
+# --- Metering ---
+metering:
+  default_meter_accuracy: "CLASS_20"
+  calibration_interval_months: 24
+  calibration_standard: "ANSI_C12_20"
+  sampling_enabled: true
+  sampling_confidence_pct: 90.0
+  sampling_precision_pct: 10.0
+  sampling_cv_pct: 30.0
+  min_data_completeness_pct: 85.0
+  max_gap_intervals: 4
+  gap_fill_method: "LINEAR_INTERPOLATION"
+  data_validation_enabled: true
+  negative_value_handling: "FLAG"
+  demand_window_minutes: 30
+
+# --- Persistence ---
+persistence:
+  enabled: true
+  tracking_years: 5
+  degradation_model: "LINEAR"
+  expected_annual_degradation_pct: 5.0
+  alert_threshold_pct: 25.0
+  recommissioning_trigger_pct: 40.0
+  seasonal_pattern_analysis: false
+  persistence_factor_tracking: true
+  minimum_persistence_factor: 0.60
+  trend_analysis_method: "LINEAR_REGRESSION"
+  performance_guarantee_tracking: false
+  guarantee_shortfall_alert: false
+
+# --- Reporting ---
+reporting:
+  frequency: "QUARTERLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "CSV"
+  mv_plan_report: true
+  baseline_report: true
+  savings_report: true
+  uncertainty_report: true
+  annual_summary: true
+  persistence_report: true
+  compliance_report: false
+  executive_summary: true
+  option_comparison_report: false
+  metering_plan_report: true
+  include_regression_diagnostics: false
+  include_residual_analysis: false
+
+# --- Security ---
+security:
+  data_classification: "INTERNAL"
+  audit_logging: true
+  pii_redaction: true
+  encryption_at_rest: true
+  tenant_data_isolation: true
+
+# --- Performance ---
+performance:
+  max_ecms_per_project: 10
+  max_baseline_data_points: 1095
+  regression_timeout_seconds: 15
+  savings_calculation_timeout_seconds: 5
+  uncertainty_timeout_seconds: 20
+  report_generation_timeout_seconds: 15
+  cache_ttl_seconds: 1800
+  batch_size: 1000
+  parallel_engines: 6
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 5

@@ -1,0 +1,167 @@
+# =============================================================================
+# PACK-038 Peak Shaving - Manufacturing Preset
+# =============================================================================
+# Industrial manufacturing facilities with production batch scheduling,
+# compressed air pressure management, motor VSD reduction, and BESS dispatch.
+# Typical peak demand 1000-10000 kW. Peak drivers: motor loads (50%), process
+# (30%), HVAC (15%), lighting (5%). Target peak reduction: 10-20% via
+# production scheduling and compressed air management. Production constraints
+# are paramount -- no impact to product quality or throughput without explicit
+# approval. Ratchet: 80% annual ratchet typical.
+#
+# Typical use cases:
+#   - Discrete and batch manufacturing plants
+#   - CNC machining and metal fabrication facilities
+#   - Electronics assembly and PCB manufacturing
+#   - Automotive component and tier-1 suppliers
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "MANUFACTURING"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 6000
+
+# --- Interval Data ---
+interval_data:
+  interval_length: "15_MIN"
+  minimum_data_coverage_pct: 95
+  peak_window_start_hour: 10
+  peak_window_end_hour: 16
+  lookback_months: 12
+  outlier_threshold_sigma: 2.5
+  weather_normalization: false
+
+# --- Peak Target ---
+peak_target:
+  target_reduction_pct: 15
+  trigger_threshold_pct: 85
+  summer_enhanced: true
+  summer_extra_reduction_pct: 5
+  min_sustained_minutes: 15
+
+# --- Demand Charge ---
+demand_charge:
+  tariff_type: "DEMAND_CHARGE"
+  on_peak_demand_charge_eur_per_kw: 18.00
+  off_peak_demand_charge_eur_per_kw: 6.00
+  on_peak_start_hour: 10
+  on_peak_end_hour: 20
+  critical_peak_pricing_enabled: false
+  incentive_program: "PEAK_REDUCTION"
+
+# --- BESS ---
+bess:
+  enabled: true
+  capacity_kwh: 2000
+  max_discharge_kw: 1000
+  max_charge_kw: 500
+  chemistry: "LFP"
+  min_soc_pct: 10
+  max_soc_pct: 95
+  round_trip_efficiency: 0.92
+  cycles_per_day_limit: 2
+  degradation_tracking: true
+  warranty_cycles: 6000
+  reserve_for_backup_pct: 0
+
+# --- Load Shift ---
+load_shift:
+  pre_cooling_enabled: true
+  pre_cooling_duration_minutes: 45
+  pre_cooling_setpoint_offset_c: -2.0
+  coast_duration_minutes: 90
+  max_temperature_rise_c: 4.0
+  ev_charging_deferral: true
+  production_batch_scheduling: true
+  compressed_air_management: true
+  thermal_mass_ride_through: false
+
+# --- Coincident Peak ---
+cp:
+  enabled: true
+  methodology: "PJM_5CP"
+  alert_lead_time_minutes: 90
+  cp_season_start_month: 6
+  cp_season_end_month: 9
+  target_reduction_during_cp_pct: 20
+  max_cp_events_per_season: 10
+  notification_channels:
+    - "EMAIL"
+    - "SMS"
+    - "SCADA_SIGNAL"
+    - "BMS_SIGNAL"
+  multi_site_coordination: false
+
+# --- Ratchet ---
+ratchet:
+  enabled: true
+  ratchet_type: "ANNUAL"
+  ratchet_percentage: 80
+  ratchet_lookback_months: 12
+
+# --- Power Factor ---
+power_factor:
+  enabled: true
+  current_power_factor: 0.85
+  target_power_factor: 0.95
+  utility_penalty_threshold: 0.90
+  correction_type: "CAPACITOR_BANK"
+  kva_demand_billing: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.10
+  demand_charge_eur_per_kw: 18.00
+  ratchet_demand_charge_eur_per_kw: 14.00
+  bess_capex_eur_per_kwh: 320
+  bess_annual_opex_pct: 2.0
+  discount_rate: 0.08
+  analysis_period_years: 10
+  energy_price_escalation_pct: 3.0
+  demand_charge_escalation_pct: 2.5
+  include_incentives: true
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.42
+  marginal_emission_factor_kgco2_per_kwh: 0.70
+  carbon_price_eur_per_tco2: 85.0
+  sbti_alignment_tracking: false
+  peak_hour_premium_factor: 1.4
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "CSV"
+  executive_summary: true
+  peak_event_log: true
+  bess_performance_report: true
+  ratchet_exposure_report: true
+
+# --- Alerts ---
+alerts:
+  enabled: true
+  channels:
+    - "EMAIL"
+    - "SMS"
+    - "SCADA_SIGNAL"
+    - "BMS_SIGNAL"
+  warning_threshold_pct: 80
+  critical_threshold_pct: 90
+  escalation_minutes: 5
+  suppression_window_minutes: 20
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 7

@@ -32,6 +32,10 @@ def test_gl_run_cbam_generates_artifacts(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert "CBAM run completed" in result.output
+    assert (tmp_path / "cbam_report.xml").exists()
+    assert (tmp_path / "report_summary.xlsx").exists()
+    assert (tmp_path / "audit" / "run_manifest.json").exists()
+    assert (tmp_path / "audit" / "checksums.json").exists()
 
 
 def test_pipeline_reports_xml_validation_status(tmp_path: Path) -> None:

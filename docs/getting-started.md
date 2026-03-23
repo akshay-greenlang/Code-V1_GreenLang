@@ -87,6 +87,20 @@ ls out/
 # out/audit/
 ```
 
+### CBAM Web Mode (Localhost vs Pilot)
+
+```bash
+# Localhost-only (recommended default)
+gl-cbam web --host 127.0.0.1 --port 8000
+
+# Pilot/network mode (set API key before starting)
+# PowerShell:
+$env:CBAM_API_KEY="replace-with-strong-token"
+gl-cbam web --host 0.0.0.0 --port 8000
+```
+
+When `CBAM_API_KEY` is set, `/api/*` requests must include `X-API-Key`.
+
 ## Core Concepts
 
 ### Pipelines

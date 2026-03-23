@@ -1,0 +1,574 @@
+# =============================================================================
+# PACK-038: Peak Shaving Pack
+# GreenLang Energy Efficiency Pack for Peak Demand Management
+# =============================================================================
+# This pack provides a comprehensive peak demand management solution
+# covering load profile analysis, peak identification and attribution,
+# demand charge decomposition, BESS sizing optimization, load shifting,
+# coincident peak (CP) management, ratchet demand analysis, power factor
+# correction, financial modeling, and M&V verification.
+#
+# Peak demand charges constitute 30-70% of commercial/industrial
+# electricity bills. This pack enables facilities to analyze, predict,
+# and reduce peak demand through battery storage, load shifting, CP
+# management, and power factor correction -- delivering 10-40% demand
+# charge reduction with rigorous financial justification.
+#
+# Key Capabilities:
+#   - Load profile analysis (15-min interval data, duration curves,
+#     day-type clustering, seasonal decomposition, anomaly detection)
+#   - Peak identification (billing peaks, weather-correlated peaks,
+#     equipment startup peaks, Monte Carlo simulation)
+#   - Demand charge decomposition (flat/tiered/TOU/CP/ratchet/PF
+#     penalty, marginal value of peak reduction)
+#   - BESS sizing optimization (8,760-hour dispatch simulation,
+#     calendar + cycle degradation, technology comparison, LCOS)
+#   - Load shifting (pre-cooling/heating, production scheduling,
+#     EV charging deferral, thermal storage dispatch)
+#   - Coincident peak management (PJM 5CP, ERCOT 4CP, ISO-NE ICL,
+#     NYISO ICAP, prediction and automated response)
+#   - Ratchet demand analysis (12-month rolling, spike prevention,
+#     financial impact, decay projection)
+#   - Power factor correction (capacitor bank sizing, harmonic
+#     analysis, PF penalty avoidance, infrastructure recovery)
+#   - Financial modeling (NPV, IRR, LCOS, ITC, SGIP, MACRS,
+#     revenue stacking, Monte Carlo risk analysis)
+#   - M&V verification (IPMVP compliant, pre/post comparison,
+#     weather-normalized savings, performance documentation)
+#
+# Regulatory References:
+#   - FERC Order 2222 (DER aggregation in wholesale markets)
+#   - IRS Section 48/48E (Investment Tax Credit for storage)
+#   - California SGIP (Self-Generation Incentive Program)
+#   - IEEE 1547-2018 (DER interconnection standard)
+#   - NFPA 855 (Stationary energy storage installation)
+#   - UL 9540/9540A (Energy storage safety)
+#   - IEC 62933 (Electrical energy storage systems)
+#   - ASHRAE 90.1 (Energy standard, demand management)
+#   - ISO 50001:2018 (Energy management systems)
+#   - IPMVP Core Concepts 2022 (M&V methodology)
+#   - EU Energy Efficiency Directive (EU) 2023/1791
+#   - GHG Protocol Scope 2 Guidance
+#
+# Facility Types Supported:
+#   - Commercial offices (HVAC cooling peaks, plug loads, EV)
+#   - Manufacturing (motor loads, production scheduling, compressed air)
+#   - Retail/grocery (refrigeration, HVAC, food safety constraints)
+#   - Warehouses/cold storage (thermal mass ride-through, HACCP)
+#   - Healthcare (non-clinical loads only, safety-first approach)
+#   - Data centers (cooling optimization, IT loads excluded)
+#   - University campuses (multi-building, seasonal scheduling)
+#   - Mixed-use portfolios (aggregate peak management, VPP)
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-23)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-038-peak-shaving
+  version: "1.0.0"
+  display_name: "Peak Shaving Pack"
+  description: >-
+    GreenLang deployment pack for comprehensive peak demand management
+    including load profile analysis with 15-minute interval data processing,
+    peak identification and attribution, demand charge decomposition across
+    flat/tiered/TOU/CP/ratchet/PF structures, BESS sizing optimization
+    with 8,760-hour dispatch simulation and degradation modeling, load
+    shifting optimization with constraint satisfaction, coincident peak
+    management for PJM/ERCOT/ISO-NE/NYISO, ratchet demand analysis with
+    prevention strategies, power factor correction and harmonic analysis,
+    financial modeling with ITC/SGIP/MACRS incentive capture and revenue
+    stacking, and IPMVP-compliant M&V verification.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: proprietary
+  min_greenlang_version: "1.0.0"
+  pack_id: "PACK-038"
+  status: production_ready
+  tags:
+    - peak-shaving
+    - demand-charges
+    - battery-storage
+    - bess
+    - load-shifting
+    - coincident-peak
+    - power-factor
+    - demand-management
+    - energy-efficiency
+    - ratchet-demand
+
+# -----------------------------------------------------------------------------
+# Components
+# -----------------------------------------------------------------------------
+components:
+  engines:
+    count: 10
+    items:
+      - id: engine_001
+        name: load_profile_engine
+        file: engines/load_profile_engine.py
+        class: LoadProfileEngine
+        description: "15-min interval load profile analysis with duration curves, statistics, day-type clustering, and anomaly detection"
+      - id: engine_002
+        name: peak_identifier_engine
+        file: engines/peak_identifier_engine.py
+        class: PeakIdentifierEngine
+        description: "Peak detection and attribution with weather correlation, startup analysis, Monte Carlo simulation, and avoidability assessment"
+      - id: engine_003
+        name: demand_charge_engine
+        file: engines/demand_charge_engine.py
+        class: DemandChargeEngine
+        description: "Tariff decomposition for flat/tiered/TOU/CP/ratchet/PF charges with marginal value calculation"
+      - id: engine_004
+        name: bess_sizing_engine
+        file: engines/bess_sizing_engine.py
+        class: BESSSizingEngine
+        description: "BESS sizing optimization with 8,760-hour dispatch simulation, degradation modeling, and technology comparison"
+      - id: engine_005
+        name: load_shifting_engine
+        file: engines/load_shifting_engine.py
+        class: LoadShiftingEngine
+        description: "Multi-load shifting optimization with comfort/production constraints and rebound estimation"
+      - id: engine_006
+        name: cp_management_engine
+        file: engines/cp_management_engine.py
+        class: CPManagementEngine
+        description: "Coincident peak prediction and management for PJM 5CP, ERCOT 4CP, ISO-NE ICL, NYISO ICAP"
+      - id: engine_007
+        name: ratchet_analysis_engine
+        file: engines/ratchet_analysis_engine.py
+        class: RatchetAnalysisEngine
+        description: "Ratchet demand analysis with spike identification, financial impact, and prevention planning"
+      - id: engine_008
+        name: power_factor_engine
+        file: engines/power_factor_engine.py
+        class: PowerFactorEngine
+        description: "Power factor analysis with reactive demand, capacitor sizing, harmonic assessment, and penalty calculation"
+      - id: engine_009
+        name: financial_engine
+        file: engines/financial_engine.py
+        class: FinancialEngine
+        description: "Financial modeling with NPV/IRR/LCOS, ITC/SGIP/MACRS incentives, revenue stacking, and Monte Carlo risk"
+      - id: engine_010
+        name: peak_reporting_engine
+        file: engines/peak_reporting_engine.py
+        class: PeakReportingEngine
+        description: "Dashboard and report generation with 8 panels, 7 report types, and multi-format export"
+
+  workflows:
+    count: 8
+    items:
+      - id: workflow_001
+        name: load_analysis_workflow
+        file: workflows/load_analysis_workflow.py
+        class: LoadAnalysisWorkflow
+        phases: 4
+        description: "DataIntake -> ProfileAnalysis -> PeakIdentification -> BaselineEstablishment"
+      - id: workflow_002
+        name: peak_assessment_workflow
+        file: workflows/peak_assessment_workflow.py
+        class: PeakAssessmentWorkflow
+        phases: 4
+        description: "PeakAttribution -> DemandChargeDecomposition -> AvoidabilityAssessment -> StrategyRecommendation"
+      - id: workflow_003
+        name: bess_optimization_workflow
+        file: workflows/bess_optimization_workflow.py
+        class: BESSOptimizationWorkflow
+        phases: 4
+        description: "LoadCharacterization -> TechnologySelection -> DispatchSimulation -> FinancialAnalysis"
+      - id: workflow_004
+        name: load_shift_workflow
+        file: workflows/load_shift_workflow.py
+        class: LoadShiftWorkflow
+        phases: 3
+        description: "LoadInventory -> ConstraintMapping -> ScheduleOptimization"
+      - id: workflow_005
+        name: cp_response_workflow
+        file: workflows/cp_response_workflow.py
+        class: CPResponseWorkflow
+        phases: 3
+        description: "CPPrediction -> ResponsePlanning -> EventExecution"
+      - id: workflow_006
+        name: implementation_workflow
+        file: workflows/implementation_workflow.py
+        class: ImplementationWorkflow
+        phases: 3
+        description: "SolutionDesign -> Procurement -> Commissioning"
+      - id: workflow_007
+        name: verification_workflow
+        file: workflows/verification_workflow.py
+        class: VerificationWorkflow
+        phases: 3
+        description: "BaselineComparison -> SavingsCalculation -> PerformanceReporting"
+      - id: workflow_008
+        name: full_peak_shaving_workflow
+        file: workflows/full_peak_shaving_workflow.py
+        class: FullPeakShavingWorkflow
+        phases: 8
+        description: "Master workflow orchestrating all 7 sub-workflows"
+
+  templates:
+    count: 10
+    items:
+      - id: template_001
+        name: load_profile_report
+        file: templates/load_profile_report.py
+        class: LoadProfileReportTemplate
+        formats: [markdown, html, json]
+        description: "Load profile analysis with duration curve, statistics, day-type patterns"
+      - id: template_002
+        name: peak_analysis_report
+        file: templates/peak_analysis_report.py
+        class: PeakAnalysisReportTemplate
+        formats: [markdown, html, json]
+        description: "Peak identification with ranking, attribution, clustering, avoidability"
+      - id: template_003
+        name: demand_charge_report
+        file: templates/demand_charge_report.py
+        class: DemandChargeReportTemplate
+        formats: [markdown, html, json]
+        description: "Demand charge decomposition with components, marginal values, tariff comparison"
+      - id: template_004
+        name: bess_sizing_report
+        file: templates/bess_sizing_report.py
+        class: BESSSizingReportTemplate
+        formats: [markdown, html, json]
+        description: "BESS optimization with technology comparison, dispatch results, degradation, financials"
+      - id: template_005
+        name: load_shifting_report
+        file: templates/load_shifting_report.py
+        class: LoadShiftingReportTemplate
+        formats: [markdown, html, json]
+        description: "Load shifting plan with inventory, constraints, optimized schedule, rebound"
+      - id: template_006
+        name: cp_management_report
+        file: templates/cp_management_report.py
+        class: CPManagementReportTemplate
+        formats: [markdown, html, json]
+        description: "CP management with prediction, response performance, charge impact, forecast"
+      - id: template_007
+        name: financial_analysis_report
+        file: templates/financial_analysis_report.py
+        class: FinancialAnalysisReportTemplate
+        formats: [markdown, html, json]
+        description: "Financial analysis with NPV/IRR, incentives, revenue stacking, sensitivity"
+      - id: template_008
+        name: power_factor_report
+        file: templates/power_factor_report.py
+        class: PowerFactorReportTemplate
+        formats: [markdown, html, json]
+        description: "Power factor analysis with PF profile, correction sizing, penalties, harmonics"
+      - id: template_009
+        name: executive_summary_report
+        file: templates/executive_summary_report.py
+        class: ExecutiveSummaryReportTemplate
+        formats: [markdown, html, json]
+        description: "C-suite summary with key metrics, savings, ROI, recommended actions"
+      - id: template_010
+        name: verification_report
+        file: templates/verification_report.py
+        class: VerificationReportTemplate
+        formats: [markdown, html, json]
+        description: "M&V verification with baseline comparison, savings verification, IPMVP compliance"
+
+  integrations:
+    count: 12
+    items:
+      - id: integration_001
+        name: pack_orchestrator
+        file: integrations/pack_orchestrator.py
+        class: PeakShavingOrchestrator
+        description: "12-phase DAG pipeline orchestrator with dependency resolution and provenance"
+      - id: integration_002
+        name: mrv_bridge
+        file: integrations/mrv_bridge.py
+        class: MRVBridge
+        description: "MRV agent routing (MRV-009/010/013) for Scope 2 carbon accounting"
+      - id: integration_003
+        name: data_bridge
+        file: integrations/data_bridge.py
+        class: DataBridge
+        description: "DATA agent routing for interval data intake and quality processing"
+      - id: integration_004
+        name: meter_data_bridge
+        file: integrations/meter_data_bridge.py
+        class: MeterDataBridge
+        description: "AMI integration for 15-minute interval data and Green Button parsing"
+      - id: integration_005
+        name: utility_rate_bridge
+        file: integrations/utility_rate_bridge.py
+        class: UtilityRateBridge
+        description: "Tariff data integration from utility rate databases and OpenEI"
+      - id: integration_006
+        name: bess_control_bridge
+        file: integrations/bess_control_bridge.py
+        class: BESSControlBridge
+        description: "Battery management system integration for dispatch and SOC monitoring"
+      - id: integration_007
+        name: bms_bridge
+        file: integrations/bms_bridge.py
+        class: BMSBridge
+        description: "Building Management System integration for load control during peaks"
+      - id: integration_008
+        name: pack036_bridge
+        file: integrations/pack036_bridge.py
+        class: Pack036Bridge
+        description: "PACK-036 Utility Analysis bridge for rate structures and TOU periods"
+      - id: integration_009
+        name: pack037_bridge
+        file: integrations/pack037_bridge.py
+        class: Pack037Bridge
+        description: "PACK-037 Demand Response bridge for DR revenue stacking and event coordination"
+      - id: integration_010
+        name: health_check
+        file: integrations/health_check.py
+        class: HealthCheck
+        description: "20-category system health verification"
+      - id: integration_011
+        name: setup_wizard
+        file: integrations/setup_wizard.py
+        class: SetupWizard
+        description: "9-step guided peak shaving configuration with 8 facility presets"
+      - id: integration_012
+        name: alert_bridge
+        file: integrations/alert_bridge.py
+        class: AlertBridge
+        description: "Multi-channel alerting for peak warnings, CP alerts, BESS notifications"
+
+  presets:
+    count: 8
+    items:
+      - id: preset_001
+        name: commercial_office
+        file: config/presets/commercial_office.yaml
+        description: "Commercial office building (500-2,000 kW peak, HVAC-dominated)"
+      - id: preset_002
+        name: manufacturing
+        file: config/presets/manufacturing.yaml
+        description: "Manufacturing facility (1,000-10,000 kW peak, motor/process loads)"
+      - id: preset_003
+        name: retail_grocery
+        file: config/presets/retail_grocery.yaml
+        description: "Retail and grocery (200-800 kW peak, refrigeration constrained)"
+      - id: preset_004
+        name: warehouse_cold
+        file: config/presets/warehouse_cold.yaml
+        description: "Warehouse and cold storage (500-3,000 kW peak, thermal mass)"
+      - id: preset_005
+        name: healthcare
+        file: config/presets/healthcare.yaml
+        description: "Healthcare facility (1,000-5,000 kW peak, safety-first)"
+      - id: preset_006
+        name: data_center
+        file: config/presets/data_center.yaml
+        description: "Data center (2,000-20,000 kW peak, IT excluded)"
+      - id: preset_007
+        name: university_campus
+        file: config/presets/university_campus.yaml
+        description: "University campus (5,000-30,000 kW peak, multi-building)"
+      - id: preset_008
+        name: mixed_use_portfolio
+        file: config/presets/mixed_use_portfolio.yaml
+        description: "Mixed-use portfolio (10,000-100,000 kW aggregate, VPP)"
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies
+# -----------------------------------------------------------------------------
+agent_dependencies:
+  mrv_agents:
+    - agent_id: MRV-009
+      name: "Location-Based Scope 2"
+      purpose: "Grid average emission factors for peak period carbon"
+    - agent_id: MRV-010
+      name: "Market-Based Scope 2"
+      purpose: "Contractual emission factors for carbon accounting"
+    - agent_id: MRV-013
+      name: "Dual Reporting"
+      purpose: "Combined location + market reporting per GHG Protocol"
+  data_agents:
+    - agent_id: DATA-001
+      name: "PDF Extractor"
+      purpose: "Extract interval data from PDF utility bills"
+    - agent_id: DATA-002
+      name: "Excel/CSV Normalizer"
+      purpose: "Normalize interval data from spreadsheet exports"
+    - agent_id: DATA-003
+      name: "ERP Connector"
+      purpose: "Import energy data from ERP/finance systems"
+    - agent_id: DATA-010
+      name: "Data Quality Profiler"
+      purpose: "Profile interval data quality and completeness"
+    - agent_id: DATA-014
+      name: "Gap Filler"
+      purpose: "Fill gaps in interval data time series"
+    - agent_id: DATA-015
+      name: "Reconciliation"
+      purpose: "Reconcile interval data against utility bills"
+  foundation_agents:
+    - agent_id: FOUND-001
+      name: "Orchestrator"
+      purpose: "DAG-based pipeline orchestration"
+    - agent_id: FOUND-002
+      name: "Schema Validator"
+      purpose: "Input/output schema validation"
+    - agent_id: FOUND-003
+      name: "Unit Normalizer"
+      purpose: "kW/kWh/kVA/kVAR unit conversions"
+    - agent_id: FOUND-004
+      name: "Assumptions Registry"
+      purpose: "Track peak shaving calculation assumptions"
+    - agent_id: FOUND-005
+      name: "Citations"
+      purpose: "Reference IEEE/ASHRAE/FERC/IRS standards"
+    - agent_id: FOUND-008
+      name: "Reproducibility"
+      purpose: "Ensure bit-perfect calculation reproducibility"
+  pack_dependencies:
+    - pack_id: PACK-036
+      name: "Utility Analysis"
+      purpose: "Rate structures, TOU periods, demand charge profiles"
+    - pack_id: PACK-037
+      name: "Demand Response"
+      purpose: "DR revenue stacking, event coordination, baseline sharing"
+
+# -----------------------------------------------------------------------------
+# Database Migrations
+# -----------------------------------------------------------------------------
+database:
+  migrations:
+    prefix: "pack038_peak_shaving"
+    schema: "pack038_peak_shaving"
+    versions:
+      - version: V296
+        file: V296__pack038_peak_shaving_001.sql
+        description: "Load profiles and interval data"
+      - version: V297
+        file: V297__pack038_peak_shaving_002.sql
+        description: "Peak identification and attribution"
+      - version: V298
+        file: V298__pack038_peak_shaving_003.sql
+        description: "Demand charge decomposition"
+      - version: V299
+        file: V299__pack038_peak_shaving_004.sql
+        description: "BESS sizing and dispatch"
+      - version: V300
+        file: V300__pack038_peak_shaving_005.sql
+        description: "Load shifting optimization"
+      - version: V301
+        file: V301__pack038_peak_shaving_006.sql
+        description: "Coincident peak management"
+      - version: V302
+        file: V302__pack038_peak_shaving_007.sql
+        description: "Ratchet demand analysis"
+      - version: V303
+        file: V303__pack038_peak_shaving_008.sql
+        description: "Power factor analysis"
+      - version: V304
+        file: V304__pack038_peak_shaving_009.sql
+        description: "Financial analysis"
+      - version: V305
+        file: V305__pack038_peak_shaving_010.sql
+        description: "Views, indexes, audit trail, seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  load_profile_analysis:
+    max_duration_seconds: 30
+    description: "35,040 intervals (1 year at 15-min)"
+  bess_dispatch_simulation:
+    max_duration_seconds: 60
+    description: "8,760-hour simulation with degradation"
+  cp_prediction:
+    max_duration_seconds: 5
+    description: "Per evaluation window"
+  report_generation:
+    max_duration_seconds: 10
+    description: "Per report in any format"
+
+# -----------------------------------------------------------------------------
+# Security
+# -----------------------------------------------------------------------------
+security:
+  multi_tenant: true
+  rls_enabled: true
+  encryption_at_rest: true
+  provenance_hashing: SHA-256
+  rbac_integration: true
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  framework: pytest
+  test_directory: tests/
+  min_coverage_percent: 85
+  test_files:
+    - tests/test_load_profile_engine.py
+    - tests/test_peak_identifier_engine.py
+    - tests/test_demand_charge_engine.py
+    - tests/test_bess_sizing_engine.py
+    - tests/test_load_shifting_engine.py
+    - tests/test_cp_management_engine.py
+    - tests/test_ratchet_analysis_engine.py
+    - tests/test_power_factor_engine.py
+    - tests/test_financial_engine.py
+    - tests/test_peak_reporting_engine.py
+    - tests/test_workflows.py
+    - tests/test_integrations.py
+  estimated_tests: 850
+  estimated_expanded_tests: 1250
+
+# -----------------------------------------------------------------------------
+# Compliance Frameworks
+# -----------------------------------------------------------------------------
+compliance:
+  standards:
+    - name: "ISO 50001:2018"
+      relevance: "Peak demand as significant energy use"
+    - name: "IPMVP Core Concepts 2022"
+      relevance: "M&V methodology for peak shaving verification"
+    - name: "IEEE 1547-2018"
+      relevance: "DER interconnection for BESS"
+    - name: "ASHRAE 90.1"
+      relevance: "Demand management provisions"
+    - name: "GHG Protocol Scope 2"
+      relevance: "Carbon impact of peak shaving"
+  regulatory:
+    - name: "FERC Order 2222"
+      relevance: "DER aggregation for BESS wholesale participation"
+    - name: "IRS Section 48/48E"
+      relevance: "Investment Tax Credit for battery storage"
+    - name: "California SGIP"
+      relevance: "Storage incentive program"
+    - name: "EU EED 2023/1791"
+      relevance: "Peak demand reduction as efficiency measure"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  python: ">=3.11"
+  dependencies:
+    - pydantic>=2.0
+    - numpy>=1.24
+    - scipy>=1.10
+  optional_dependencies:
+    - matplotlib>=3.7
+    - plotly>=5.14
+
+# -----------------------------------------------------------------------------
+# Installation
+# -----------------------------------------------------------------------------
+installation:
+  install_command: "gl pack install PACK-038-peak-shaving"
+  post_install:
+    - "Apply database migrations V296-V305"
+    - "Configure facility preset via setup wizard"
+    - "Import interval data (minimum 3 months recommended)"
+    - "Configure tariff structure"

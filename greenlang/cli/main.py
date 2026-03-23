@@ -8,6 +8,8 @@ Unified CLI for GreenLang infrastructure platform.
 
 import json
 import inspect
+import os
+import sys
 import typer
 from pathlib import Path
 from typing import Optional
@@ -17,6 +19,15 @@ from typer.core import TyperArgument, TyperOption
 
 # Fallback version constant
 FALLBACK_VERSION = "0.3.0"
+
+
+def _coerce_bool(value: object) -> bool:
+    """Normalize CLI bools that may arrive as strings."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(value)
 
 
 def _patch_typer_click_compat() -> None:
@@ -315,6 +326,9 @@ def run(
     dry_run: bool = typer.Option(False, "--dry-run", help="CBAM validation-only run"),
 ):
     """Run a pipeline file/reference or the CBAM MVP flow."""
+    dry_run = _coerce_bool(dry_run)
+    audit = _coerce_bool(audit)
+
     if pipeline.lower() in {"cbam", "cbam-mvp"}:
         if not input_or_config or not cbam_imports:
             console.print(
@@ -323,20 +337,62 @@ def run(
             raise typer.Exit(2)
         config_path = Path(input_or_config)
         imports_path = Path(cbam_imports)
-        output_path = Path(output_dir)
+        output_path = Path(output_dir).resolve()
         if not config_path.exists() or not imports_path.exists():
             console.print("[red]CBAM input files not found[/red]")
             raise typer.Exit(2)
 
-        cbam_src = Path(__file__).resolve().parents[2] / "cbam-pack-mvp" / "src"
-        if str(cbam_src) not in __import__("sys").path:
-            __import__("sys").path.insert(0, str(cbam_src))
-
         try:
+            # Prefer monorepo source to avoid stale site-package imports.
+            prefer_monorepo = os.environ.get("GL_PREFER_MONOREPO_CBAM", "1").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+            cbam_src = Path(__file__).resolve().parents[2] / "cbam-pack-mvp" / "src"
+            if prefer_monorepo and cbam_src.exists():
+                if str(cbam_src) not in sys.path:
+                    sys.path.insert(0, str(cbam_src))
             from cbam_pack.pipeline import CBAMPipeline
-        except Exception as exc:
-            console.print(f"[red]Unable to load CBAM MVP pipeline: {exc}[/red]")
-            raise typer.Exit(1)
+        except Exception as first_exc:
+            # Fallback for monorepo development can be explicitly disabled in
+            # distribution contexts to avoid hidden sys.path behavior.
+            allow_fallback = os.environ.get("GL_ALLOW_MONOREPO_CBAM_FALLBACK", "1").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+            cbam_src = Path(__file__).resolve().parents[2] / "cbam-pack-mvp" / "src"
+            if allow_fallback and cbam_src.exists():
+                if str(cbam_src) not in sys.path:
+                    sys.path.insert(0, str(cbam_src))
+                try:
+                    from cbam_pack.pipeline import CBAMPipeline
+                except Exception as second_exc:
+                    console.print(
+                        f"[red]Unable to load CBAM MVP pipeline.[/red] "
+                        f"package_error={first_exc}; fallback_error={second_exc}"
+                    )
+                    console.print(
+                        "[yellow]Install CBAM package:[/yellow] "
+                        "pip install -e \"./cbam-pack-mvp[web,dev]\""
+                    )
+                    raise typer.Exit(1)
+            else:
+                console.print(
+                    f"[red]Unable to load CBAM MVP pipeline: {first_exc}[/red]"
+                )
+                console.print(
+                    "[yellow]Install CBAM package:[/yellow] "
+                    "pip install -e \"./cbam-pack-mvp[web,dev]\""
+                )
+                console.print(
+                    "[yellow]Or enable monorepo fallback:[/yellow] "
+                    "set GL_ALLOW_MONOREPO_CBAM_FALLBACK=1"
+                )
+                raise typer.Exit(1)
 
         output_path.mkdir(parents=True, exist_ok=True)
         result = CBAMPipeline(
@@ -346,6 +402,26 @@ def run(
             verbose=False,
             dry_run=dry_run,
         ).run()
+
+        if result.success and not dry_run:
+            required_artifacts = [
+                "cbam_report.xml",
+                "report_summary.xlsx",
+                "audit/run_manifest.json",
+                "audit/checksums.json",
+            ]
+            missing = [
+                artifact
+                for artifact in required_artifacts
+                if not (output_path / artifact).exists()
+            ]
+            if missing:
+                console.print(
+                    "[red]CBAM run reported success but required artifacts are missing.[/red]"
+                )
+                for artifact in missing:
+                    console.print(f"[red]Missing:[/red] {artifact}")
+                raise typer.Exit(5)
 
         if result.success and result.exit_code == 0:
             console.print(f"[green][OK][/green] CBAM run completed. Artifacts: {output_path}")

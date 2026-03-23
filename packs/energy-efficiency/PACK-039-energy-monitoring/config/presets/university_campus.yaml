@@ -1,0 +1,187 @@
+# =============================================================================
+# PACK-039 Energy Monitoring - University Campus Preset
+# =============================================================================
+# University and campus facilities with 50-200 meters, multi-building
+# monitoring, seasonal scheduling awareness, and departmental cost allocation.
+# Typical campus area 50,000-500,000 m2. Monitoring priorities: HVAC (35-45%),
+# research labs (15-25%), lighting (10-15%), dining halls (5-10%), data centres
+# (5-10%), residence halls (10-15%). EnPI: kWh/m2/yr and kWh/student-FTE with
+# academic calendar-aware baselines and seasonal schedule adjustments.
+#
+# Typical use cases:
+#   - University main campuses with multiple buildings
+#   - Research parks and science centres
+#   - Community colleges and vocational schools
+#   - Large school district facilities
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "UNIVERSITY_CAMPUS"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 5000
+
+# --- Meters ---
+meters:
+  total_meter_count: 120
+  primary_protocol: "MODBUS_TCP"
+  secondary_protocols:
+    - "BACNET_IP"
+    - "PULSE_OUTPUT"
+    - "OPC_UA"
+  polling_interval_seconds: 60
+  energy_types_monitored:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+    - "STEAM"
+    - "CHILLED_WATER"
+  virtual_meters_enabled: true
+  virtual_meter_count: 30
+  meter_hierarchy_depth: 5
+  ct_ratio_validation: true
+  automatic_gap_detection: true
+
+# --- Interval Data ---
+interval_data:
+  interval_length: "15_MIN"
+  minimum_data_coverage_pct: 90
+  gap_fill_method: "LINEAR_INTERPOLATION"
+  max_gap_fill_intervals: 4
+  lookback_months: 24
+  outlier_threshold_sigma: 3.0
+  weather_normalization: true
+  heating_base_temp_c: 15.5
+  cooling_base_temp_c: 18.0
+  demand_window_minutes: 15
+
+# --- EnPI ---
+enpi:
+  primary_enpi_type: "INTENSITY_AREA"
+  secondary_enpi_types:
+    - "INTENSITY_OCCUPANCY"
+    - "DEGREE_DAY_NORMALISED"
+    - "CUSUM_BASELINE"
+  baseline_year: 2024
+  baseline_months: 12
+  normalisation_variables:
+    - "floor_area_m2"
+    - "student_fte"
+    - "heating_degree_days"
+    - "cooling_degree_days"
+  significance_level: 0.05
+  improvement_target_pct: 3.0
+  cusum_tracking_enabled: true
+  regression_min_r_squared: 0.75
+  auto_baseline_adjustment: false
+
+# --- Anomaly Detection ---
+anomaly_detection:
+  enabled: true
+  primary_method: "STATISTICAL_ZSCORE"
+  secondary_methods:
+    - "ROLLING_BASELINE"
+    - "REGRESSION_RESIDUAL"
+  sensitivity_sigma: 2.5
+  minimum_deviation_pct: 15
+  evaluation_window_hours: 24
+  suppression_window_hours: 4
+  weekday_weekend_split: true
+  holiday_calendar_enabled: true
+  after_hours_monitoring: true
+  baseload_deviation_pct: 20
+
+# --- Allocation ---
+allocation:
+  enabled: true
+  primary_method: "DIRECT_SUBMETER"
+  fallback_method: "PROPORTIONAL_AREA"
+  common_area_split_method: "PROPORTIONAL_AREA"
+  common_area_pct_cap: 20
+  allocation_frequency: "MONTHLY"
+  include_demand_charges: true
+  demand_charge_method: "COINCIDENT_PEAK"
+  loss_factor_pct: 4.0
+  reconciliation_enabled: true
+  reconciliation_tolerance_pct: 5.0
+
+# --- Budget & Target ---
+budget_target:
+  enabled: true
+  budget_method: "WEATHER_NORMALISED"
+  monthly_distribution: "WEATHER_WEIGHTED"
+  warning_variance_pct: 5
+  critical_variance_pct: 10
+  year_on_year_reduction_target_pct: 3.0
+  rolling_forecast_enabled: true
+  forecast_horizon_months: 6
+  degree_day_adjustment: true
+
+# --- Alarms ---
+alarms:
+  enabled: true
+  channels:
+    - "EMAIL"
+    - "SMS"
+    - "BMS_SIGNAL"
+  default_priority: "MEDIUM"
+  critical_response_minutes: 15
+  high_response_minutes: 60
+  escalation_enabled: true
+  escalation_delay_minutes: 30
+  suppression_window_minutes: 30
+  after_hours_critical_only: true
+  meter_offline_alarm_minutes: 30
+  acknowledgement_required: true
+
+# --- Cost Tracking ---
+cost_tracking:
+  enabled: true
+  electricity_rate_eur_per_kwh: 0.11
+  gas_rate_eur_per_kwh: 0.04
+  steam_rate_eur_per_kwh: 0.06
+  chilled_water_rate_eur_per_kwh: 0.08
+  demand_charge_eur_per_kw: 14.00
+  time_of_use_enabled: true
+  peak_rate_multiplier: 1.4
+  off_peak_rate_multiplier: 0.75
+  currency: "EUR"
+  cost_avoidance_tracking: true
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  electricity_ef_kgco2_per_kwh: 0.40
+  gas_ef_kgco2_per_kwh: 0.20
+  steam_ef_kgco2_per_kwh: 0.25
+  chilled_water_ef_kgco2_per_kwh: 0.15
+  carbon_price_eur_per_tco2: 85.0
+  market_based_accounting: false
+  scope1_tracking: true
+  scope2_tracking: true
+  real_time_carbon_intensity: false
+  sbti_alignment_tracking: true
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "CSV"
+  executive_summary: true
+  meter_health_report: true
+  anomaly_report: true
+  budget_variance_report: true
+  cost_allocation_report: true
+  carbon_report: true
+  enpi_dashboard: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 7

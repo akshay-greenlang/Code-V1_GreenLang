@@ -1,0 +1,349 @@
+# =============================================================================
+# PACK-040: Measurement & Verification (M&V) Pack
+# GreenLang Energy Efficiency Pack for M&V per IPMVP / ASHRAE 14
+# =============================================================================
+# Comprehensive M&V platform covering baseline development with multivariate
+# regression and change-point models (3P/4P/5P/TOWT), routine and non-routine
+# adjustments per IPMVP, ASHRAE Guideline 14 statistical validation (CVRMSE,
+# NMBE, R-squared, t-statistics, F-test), all four IPMVP options (A/B/C/D),
+# fractional savings uncertainty quantification, metering plan management,
+# multi-year persistence tracking with degradation analysis, and automated
+# M&V reporting compliant with ISO 50015, FEMP 4.0, and EU EED Article 7.
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-23)
+# =============================================================================
+
+metadata:
+  name: PACK-040-mv
+  version: "1.0.0"
+  display_name: "M&V Pack"
+  description: >-
+    GreenLang deployment pack for comprehensive Measurement & Verification
+    covering baseline development with multivariate regression and change-point
+    models, routine and non-routine adjustments per IPMVP, ASHRAE Guideline 14
+    statistical validation, all four IPMVP options, fractional savings
+    uncertainty quantification, metering plan management, multi-year persistence
+    tracking, and standards-compliant M&V reporting.
+  category: energy-efficiency
+  tier: professional
+  author: GreenLang Platform Team
+  license: proprietary
+  min_greenlang_version: "1.0.0"
+  pack_id: "PACK-040"
+  status: production_ready
+  tags:
+    - measurement-verification
+    - mv
+    - ipmvp
+    - ashrae-14
+    - baseline-modeling
+    - savings-verification
+    - uncertainty-analysis
+    - persistence-tracking
+    - change-point-regression
+    - iso-50015
+
+components:
+  engines:
+    count: 10
+    items:
+      - id: engine_001
+        name: baseline_engine
+        file: engines/baseline_engine.py
+        class: BaselineEngine
+        description: "Multivariate regression baselines with 3P/4P/5P change-point and TOWT models"
+      - id: engine_002
+        name: adjustment_engine
+        file: engines/adjustment_engine.py
+        class: AdjustmentEngine
+        description: "Routine and non-routine adjustments per IPMVP methodology"
+      - id: engine_003
+        name: savings_engine
+        file: engines/savings_engine.py
+        class: SavingsEngine
+        description: "Avoided energy, normalized savings, and cost savings calculation"
+      - id: engine_004
+        name: uncertainty_engine
+        file: engines/uncertainty_engine.py
+        class: UncertaintyEngine
+        description: "ASHRAE 14 fractional savings uncertainty with measurement/model/sampling"
+      - id: engine_005
+        name: ipmvp_option_engine
+        file: engines/ipmvp_option_engine.py
+        class: IPMVPOptionEngine
+        description: "IPMVP Options A/B/C/D implementation with automated option selection"
+      - id: engine_006
+        name: regression_engine
+        file: engines/regression_engine.py
+        class: RegressionEngine
+        description: "OLS, change-point (3P/4P/5P), TOWT regression with full diagnostics"
+      - id: engine_007
+        name: weather_engine
+        file: engines/weather_engine.py
+        class: WeatherEngine
+        description: "HDD/CDD calculation, balance point optimization, TMY normalization"
+      - id: engine_008
+        name: metering_engine
+        file: engines/metering_engine.py
+        class: MeteringEngine
+        description: "Metering plan development, calibration tracking, sampling protocols"
+      - id: engine_009
+        name: persistence_engine
+        file: engines/persistence_engine.py
+        class: PersistenceEngine
+        description: "Multi-year savings persistence with degradation analysis"
+      - id: engine_010
+        name: mv_reporting_engine
+        file: engines/mv_reporting_engine.py
+        class: MVReportingEngine
+        description: "Automated M&V report generation with compliance checking"
+
+  workflows:
+    count: 8
+    items:
+      - id: workflow_001
+        name: baseline_development_workflow
+        file: workflows/baseline_development_workflow.py
+        class: BaselineDevelopmentWorkflow
+        phases: 4
+        description: "DataCollection -> ModelSelection -> RegressionFitting -> Validation"
+      - id: workflow_002
+        name: mv_plan_workflow
+        file: workflows/mv_plan_workflow.py
+        class: MVPlanWorkflow
+        phases: 4
+        description: "ECMReview -> OptionSelection -> BoundaryDefinition -> MeteringPlan"
+      - id: workflow_003
+        name: option_selection_workflow
+        file: workflows/option_selection_workflow.py
+        class: OptionSelectionWorkflow
+        phases: 3
+        description: "ECMCharacterization -> OptionEvaluation -> RecommendationReport"
+      - id: workflow_004
+        name: post_installation_workflow
+        file: workflows/post_installation_workflow.py
+        class: PostInstallationWorkflow
+        phases: 4
+        description: "InstallVerification -> MeterCommission -> ShortTermTest -> BaselineUpdate"
+      - id: workflow_005
+        name: savings_verification_workflow
+        file: workflows/savings_verification_workflow.py
+        class: SavingsVerificationWorkflow
+        phases: 4
+        description: "DataCollection -> AdjustmentCalc -> SavingsCalc -> UncertaintyAnalysis"
+      - id: workflow_006
+        name: annual_reporting_workflow
+        file: workflows/annual_reporting_workflow.py
+        class: AnnualReportingWorkflow
+        phases: 3
+        description: "DataAggregation -> ComplianceCheck -> ReportGeneration"
+      - id: workflow_007
+        name: persistence_tracking_workflow
+        file: workflows/persistence_tracking_workflow.py
+        class: PersistenceTrackingWorkflow
+        phases: 3
+        description: "PerformanceMonitoring -> DegradationAnalysis -> AlertGeneration"
+      - id: workflow_008
+        name: full_mv_workflow
+        file: workflows/full_mv_workflow.py
+        class: FullMVWorkflow
+        phases: 8
+        description: "Master workflow orchestrating all 7 sub-workflows"
+
+  templates:
+    count: 10
+    items:
+      - id: template_001
+        name: mv_plan_report
+        file: templates/mv_plan_report.py
+        class: MVPlanReportTemplate
+        formats: [markdown, html, json]
+      - id: template_002
+        name: baseline_report
+        file: templates/baseline_report.py
+        class: BaselineReportTemplate
+        formats: [markdown, html, json]
+      - id: template_003
+        name: savings_report
+        file: templates/savings_report.py
+        class: SavingsReportTemplate
+        formats: [markdown, html, json]
+      - id: template_004
+        name: uncertainty_report
+        file: templates/uncertainty_report.py
+        class: UncertaintyReportTemplate
+        formats: [markdown, html, json]
+      - id: template_005
+        name: annual_mv_report
+        file: templates/annual_mv_report.py
+        class: AnnualMVReportTemplate
+        formats: [markdown, html, json]
+      - id: template_006
+        name: option_comparison_report
+        file: templates/option_comparison_report.py
+        class: OptionComparisonReportTemplate
+        formats: [markdown, html, json]
+      - id: template_007
+        name: metering_plan_report
+        file: templates/metering_plan_report.py
+        class: MeteringPlanReportTemplate
+        formats: [markdown, html, json]
+      - id: template_008
+        name: persistence_report
+        file: templates/persistence_report.py
+        class: PersistenceReportTemplate
+        formats: [markdown, html, json]
+      - id: template_009
+        name: executive_summary_report
+        file: templates/executive_summary_report.py
+        class: ExecutiveSummaryReportTemplate
+        formats: [markdown, html, json]
+      - id: template_010
+        name: compliance_report
+        file: templates/compliance_report.py
+        class: ComplianceReportTemplate
+        formats: [markdown, html, json]
+
+  integrations:
+    count: 12
+    items:
+      - id: integration_001
+        name: pack_orchestrator
+        file: integrations/pack_orchestrator.py
+        class: MVOrchestrator
+      - id: integration_002
+        name: mrv_bridge
+        file: integrations/mrv_bridge.py
+        class: MRVBridge
+      - id: integration_003
+        name: data_bridge
+        file: integrations/data_bridge.py
+        class: DataBridge
+      - id: integration_004
+        name: pack031_bridge
+        file: integrations/pack031_bridge.py
+        class: Pack031Bridge
+      - id: integration_005
+        name: pack032_bridge
+        file: integrations/pack032_bridge.py
+        class: Pack032Bridge
+      - id: integration_006
+        name: pack033_bridge
+        file: integrations/pack033_bridge.py
+        class: Pack033Bridge
+      - id: integration_007
+        name: pack039_bridge
+        file: integrations/pack039_bridge.py
+        class: Pack039Bridge
+      - id: integration_008
+        name: weather_service_bridge
+        file: integrations/weather_service_bridge.py
+        class: WeatherServiceBridge
+      - id: integration_009
+        name: utility_data_bridge
+        file: integrations/utility_data_bridge.py
+        class: UtilityDataBridge
+      - id: integration_010
+        name: health_check
+        file: integrations/health_check.py
+        class: HealthCheck
+      - id: integration_011
+        name: setup_wizard
+        file: integrations/setup_wizard.py
+        class: SetupWizard
+      - id: integration_012
+        name: alert_bridge
+        file: integrations/alert_bridge.py
+        class: AlertBridge
+
+  presets:
+    count: 8
+    items:
+      - id: preset_001
+        name: commercial_office
+        file: config/presets/commercial_office.yaml
+      - id: preset_002
+        name: manufacturing
+        file: config/presets/manufacturing.yaml
+      - id: preset_003
+        name: retail_portfolio
+        file: config/presets/retail_portfolio.yaml
+      - id: preset_004
+        name: hospital
+        file: config/presets/hospital.yaml
+      - id: preset_005
+        name: university_campus
+        file: config/presets/university_campus.yaml
+      - id: preset_006
+        name: government_femp
+        file: config/presets/government_femp.yaml
+      - id: preset_007
+        name: esco_performance_contract
+        file: config/presets/esco_performance_contract.yaml
+      - id: preset_008
+        name: portfolio_mv
+        file: config/presets/portfolio_mv.yaml
+
+database:
+  migrations:
+    prefix: "pack040_mv"
+    schema: "pack040_mv"
+    versions:
+      - version: V316
+        file: V316__pack040_mv_001.sql
+        description: "M&V projects, ECM registry, measurement boundaries"
+      - version: V317
+        file: V317__pack040_mv_002.sql
+        description: "Baseline models, regression parameters, model validation"
+      - version: V318
+        file: V318__pack040_mv_003.sql
+        description: "Adjustment records, routine and non-routine"
+      - version: V319
+        file: V319__pack040_mv_004.sql
+        description: "Savings calculations, verified savings, cost savings"
+      - version: V320
+        file: V320__pack040_mv_005.sql
+        description: "Uncertainty analysis, measurement and model errors"
+      - version: V321
+        file: V321__pack040_mv_006.sql
+        description: "IPMVP option records, option selection rationale"
+      - version: V322
+        file: V322__pack040_mv_007.sql
+        description: "Metering plans, calibration records, sampling protocols"
+      - version: V323
+        file: V323__pack040_mv_008.sql
+        description: "Persistence tracking, degradation records, alerts"
+      - version: V324
+        file: V324__pack040_mv_009.sql
+        description: "M&V reports, compliance records, report schedules"
+      - version: V325
+        file: V325__pack040_mv_010.sql
+        description: "Views, indexes, audit trail, seed data"
+
+performance:
+  baseline_regression:
+    max_duration_seconds: 15
+    description: "3 years daily data, 5P model"
+  savings_calculation:
+    max_duration_seconds: 5
+    description: "Per ECM per reporting period"
+  uncertainty_analysis:
+    max_duration_seconds: 10
+    description: "Full ASHRAE 14 propagation"
+  report_generation:
+    max_duration_seconds: 10
+    description: "Per report"
+
+security:
+  multi_tenant: true
+  rls_enabled: true
+  encryption_at_rest: true
+  provenance_hashing: SHA-256
+  rbac_integration: true
+
+testing:
+  framework: pytest
+  min_coverage_percent: 85
+  estimated_tests: 850
+  estimated_expanded_tests: 1250

@@ -1,0 +1,173 @@
+# =============================================================================
+# PACK-039 Energy Monitoring - Retail Chain Preset
+# =============================================================================
+# Retail stores and chain portfolios with 5-15 meters per store, 15-minute
+# intervals, multi-site portfolio monitoring, and refrigeration/HVAC/lighting
+# breakdown. Typical floor area 500-5,000 m2 per store. Monitoring priorities:
+# refrigeration (35-45%), HVAC (25-35%), lighting (15-20%), cooking/baking
+# (5-10%). EnPI: kWh/m2/yr and kWh/trading_hour with weather normalisation.
+# Multi-site ranking and benchmarking across store portfolio.
+#
+# Typical use cases:
+#   - Grocery and supermarket chains
+#   - Fashion and general merchandise retail
+#   - Convenience stores and forecourt shops
+#   - Shopping centre anchor tenants
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "RETAIL_CHAIN"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 4500
+
+# --- Meters ---
+meters:
+  total_meter_count: 10
+  primary_protocol: "MODBUS_TCP"
+  secondary_protocols:
+    - "PULSE_OUTPUT"
+  polling_interval_seconds: 60
+  energy_types_monitored:
+    - "ELECTRICITY"
+    - "NATURAL_GAS"
+  virtual_meters_enabled: true
+  virtual_meter_count: 3
+  meter_hierarchy_depth: 3
+  ct_ratio_validation: true
+  automatic_gap_detection: true
+
+# --- Interval Data ---
+interval_data:
+  interval_length: "15_MIN"
+  minimum_data_coverage_pct: 90
+  gap_fill_method: "LINEAR_INTERPOLATION"
+  max_gap_fill_intervals: 4
+  lookback_months: 12
+  outlier_threshold_sigma: 3.0
+  weather_normalization: true
+  heating_base_temp_c: 15.5
+  cooling_base_temp_c: 18.0
+  demand_window_minutes: 15
+
+# --- EnPI ---
+enpi:
+  primary_enpi_type: "INTENSITY_AREA"
+  secondary_enpi_types:
+    - "DEGREE_DAY_NORMALISED"
+    - "ABSOLUTE"
+  baseline_year: 2024
+  baseline_months: 12
+  normalisation_variables:
+    - "floor_area_m2"
+    - "trading_hours"
+    - "heating_degree_days"
+    - "cooling_degree_days"
+  significance_level: 0.05
+  improvement_target_pct: 3.0
+  cusum_tracking_enabled: true
+  regression_min_r_squared: 0.70
+  auto_baseline_adjustment: false
+
+# --- Anomaly Detection ---
+anomaly_detection:
+  enabled: true
+  primary_method: "ROLLING_BASELINE"
+  secondary_methods:
+    - "STATISTICAL_ZSCORE"
+  sensitivity_sigma: 2.5
+  minimum_deviation_pct: 15
+  evaluation_window_hours: 24
+  suppression_window_hours: 4
+  weekday_weekend_split: true
+  holiday_calendar_enabled: true
+  after_hours_monitoring: true
+  baseload_deviation_pct: 20
+
+# --- Allocation ---
+allocation:
+  enabled: true
+  primary_method: "DIRECT_SUBMETER"
+  fallback_method: "PROPORTIONAL_AREA"
+  common_area_split_method: "PROPORTIONAL_AREA"
+  common_area_pct_cap: 20
+  allocation_frequency: "MONTHLY"
+  include_demand_charges: true
+  demand_charge_method: "PROPORTIONAL"
+  loss_factor_pct: 3.0
+  reconciliation_enabled: true
+  reconciliation_tolerance_pct: 5.0
+
+# --- Budget & Target ---
+budget_target:
+  enabled: true
+  budget_method: "WEATHER_NORMALISED"
+  monthly_distribution: "WEATHER_WEIGHTED"
+  warning_variance_pct: 5
+  critical_variance_pct: 10
+  year_on_year_reduction_target_pct: 3.0
+  rolling_forecast_enabled: true
+  forecast_horizon_months: 3
+  degree_day_adjustment: true
+
+# --- Alarms ---
+alarms:
+  enabled: true
+  channels:
+    - "EMAIL"
+    - "SMS"
+  default_priority: "MEDIUM"
+  critical_response_minutes: 30
+  high_response_minutes: 120
+  escalation_enabled: true
+  escalation_delay_minutes: 60
+  suppression_window_minutes: 60
+  after_hours_critical_only: true
+  meter_offline_alarm_minutes: 60
+  acknowledgement_required: true
+
+# --- Cost Tracking ---
+cost_tracking:
+  enabled: true
+  electricity_rate_eur_per_kwh: 0.15
+  gas_rate_eur_per_kwh: 0.05
+  demand_charge_eur_per_kw: 12.00
+  time_of_use_enabled: false
+  currency: "EUR"
+  cost_avoidance_tracking: true
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  electricity_ef_kgco2_per_kwh: 0.40
+  gas_ef_kgco2_per_kwh: 0.20
+  carbon_price_eur_per_tco2: 85.0
+  market_based_accounting: false
+  scope1_tracking: true
+  scope2_tracking: true
+  real_time_carbon_intensity: false
+  sbti_alignment_tracking: false
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+  executive_summary: true
+  meter_health_report: true
+  anomaly_report: true
+  budget_variance_report: true
+  cost_allocation_report: false
+  carbon_report: true
+  enpi_dashboard: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  retention_years: 5

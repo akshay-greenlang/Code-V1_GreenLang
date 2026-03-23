@@ -1,0 +1,171 @@
+# =============================================================================
+# PACK-038 Peak Shaving - Mixed-Use Portfolio Preset
+# =============================================================================
+# Multi-site real estate portfolios with portfolio-level peak management,
+# virtual power plant coordination, and multi-site coincident peak response.
+# Typical aggregate peak demand 10000-100000 kW. Peak drivers: variable by
+# building type across the portfolio. Strategy: portfolio-level peak
+# management optimises across sites to minimise aggregate demand charges
+# and CP exposure. Distributed BESS assets across sites enable coordinated
+# virtual power plant dispatch.
+#
+# Typical use cases:
+#   - Corporate real estate portfolios (10-100+ sites)
+#   - REITs and property management companies
+#   - Public sector building portfolios (government, military)
+#   - Multi-site retail and hospitality chains
+# =============================================================================
+
+# --- Facility Details ---
+facility_name: ""
+company_name: ""
+facility_type: "MIXED_USE_PORTFOLIO"
+country: "US"
+reporting_year: 2026
+operating_hours_per_year: 4000
+
+# --- Interval Data ---
+interval_data:
+  interval_length: "15_MIN"
+  minimum_data_coverage_pct: 85
+  peak_window_start_hour: 12
+  peak_window_end_hour: 18
+  lookback_months: 12
+  outlier_threshold_sigma: 3.0
+  weather_normalization: true
+
+# --- Peak Target ---
+peak_target:
+  target_reduction_pct: 15
+  trigger_threshold_pct: 85
+  summer_enhanced: true
+  summer_extra_reduction_pct: 5
+  min_sustained_minutes: 15
+
+# --- Demand Charge ---
+demand_charge:
+  tariff_type: "HYBRID"
+  on_peak_demand_charge_eur_per_kw: 16.00
+  off_peak_demand_charge_eur_per_kw: 5.00
+  on_peak_start_hour: 12
+  on_peak_end_hour: 20
+  critical_peak_pricing_enabled: true
+  critical_peak_multiplier: 2.5
+  incentive_program: "CAPACITY_MARKET"
+
+# --- BESS ---
+bess:
+  enabled: true
+  capacity_kwh: 10000
+  max_discharge_kw: 5000
+  max_charge_kw: 2500
+  chemistry: "LFP"
+  min_soc_pct: 10
+  max_soc_pct: 95
+  round_trip_efficiency: 0.92
+  cycles_per_day_limit: 2
+  degradation_tracking: true
+  warranty_cycles: 6000
+  reserve_for_backup_pct: 5
+
+# --- Load Shift ---
+load_shift:
+  pre_cooling_enabled: true
+  pre_cooling_duration_minutes: 60
+  pre_cooling_setpoint_offset_c: -2.0
+  coast_duration_minutes: 120
+  max_temperature_rise_c: 2.5
+  ev_charging_deferral: true
+  production_batch_scheduling: false
+  compressed_air_management: false
+  thermal_mass_ride_through: true
+
+# --- Coincident Peak ---
+cp:
+  enabled: true
+  methodology: "PJM_5CP"
+  alert_lead_time_minutes: 90
+  cp_season_start_month: 6
+  cp_season_end_month: 9
+  target_reduction_during_cp_pct: 20
+  max_cp_events_per_season: 15
+  notification_channels:
+    - "EMAIL"
+    - "SMS"
+    - "BMS_SIGNAL"
+  multi_site_coordination: true
+
+# --- Ratchet ---
+ratchet:
+  enabled: true
+  ratchet_type: "ANNUAL"
+  ratchet_percentage: 75
+  ratchet_lookback_months: 12
+
+# --- Power Factor ---
+power_factor:
+  enabled: true
+  current_power_factor: 0.90
+  target_power_factor: 0.95
+  utility_penalty_threshold: 0.90
+  correction_type: "CAPACITOR_BANK"
+  kva_demand_billing: false
+
+# --- Financial ---
+financial:
+  electricity_rate_eur_per_kwh: 0.14
+  demand_charge_eur_per_kw: 16.00
+  ratchet_demand_charge_eur_per_kw: 13.00
+  bess_capex_eur_per_kwh: 300
+  bess_annual_opex_pct: 2.0
+  discount_rate: 0.08
+  analysis_period_years: 10
+  energy_price_escalation_pct: 3.0
+  demand_charge_escalation_pct: 2.0
+  include_incentives: true
+
+# --- Carbon ---
+carbon:
+  enabled: true
+  grid_emission_factor_kgco2_per_kwh: 0.40
+  marginal_emission_factor_kgco2_per_kwh: 0.65
+  carbon_price_eur_per_tco2: 85.0
+  sbti_alignment_tracking: true
+  market_based_accounting: true
+  peak_hour_premium_factor: 1.3
+
+# --- Reporting ---
+reporting:
+  frequency: "MONTHLY"
+  formats:
+    - "MARKDOWN"
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  executive_summary: true
+  peak_event_log: true
+  bess_performance_report: true
+  cp_performance_report: true
+  ratchet_exposure_report: true
+
+# --- Alerts ---
+alerts:
+  enabled: true
+  channels:
+    - "EMAIL"
+    - "SMS"
+    - "BMS_SIGNAL"
+    - "API_WEBHOOK"
+  warning_threshold_pct: 80
+  critical_threshold_pct: 90
+  escalation_minutes: 5
+  suppression_window_minutes: 20
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7

@@ -13,6 +13,7 @@ Provides file upload, processing, and result visualization with:
 import io
 import json
 import os
+import re
 import shutil
 import tempfile
 import zipfile
@@ -33,6 +34,34 @@ from cbam_pack.pipeline import CBAMPipeline, PipelineResult
 from cbam_pack.models import CBAMConfig
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+RATE_LIMIT_PER_MINUTE = 60
+SESSION_TTL_SECONDS = 60 * 60
+
+
+def _is_suspicious_upload_filename(filename: str) -> bool:
+    if not filename:
+        return True
+    raw = filename.strip()
+    if not raw:
+        return True
+    if ".." in raw:
+        return True
+    if "/" in raw or "\\" in raw:
+        return True
+    if Path(raw).name != raw:
+        return True
+    return False
+
+
+def _sanitize_error_message(message: str) -> str:
+    # Redact local filesystem paths from user-visible API responses.
+    sanitized = re.sub(r"[A-Za-z]:\\[^\s\"']+", "<redacted-path>", message)
+    sanitized = re.sub(r"/(?:tmp|var|home|Users|private)/[^\s\"']+", "<redacted-path>", sanitized)
+    return sanitized
+
+
+def _sanitize_errors(errors: list[str]) -> list[str]:
+    return [_sanitize_error_message(err) for err in errors]
 
 
 def create_app() -> FastAPI:
@@ -48,6 +77,45 @@ def create_app() -> FastAPI:
     app.state.results = {}
     app.state.output_dirs = {}
     app.state.session_meta = {}
+    app.state.rate_limits = {}
+
+    def _require_api_key(request: Request) -> None:
+        expected_api_key = os.getenv("CBAM_API_KEY")
+        if not expected_api_key:
+            return
+        provided_api_key = request.headers.get("x-api-key", "")
+        if provided_api_key != expected_api_key:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+    def _enforce_rate_limit(request: Request) -> None:
+        client_ip = request.client.host if request.client else "unknown"
+        now_ts = datetime.utcnow().timestamp()
+        entry = app.state.rate_limits.get(client_ip)
+        if not entry or (now_ts - entry["window_start_ts"]) >= 60:
+            app.state.rate_limits[client_ip] = {"window_start_ts": now_ts, "count": 1}
+            return
+        entry["count"] += 1
+        if entry["count"] > RATE_LIMIT_PER_MINUTE:
+            raise HTTPException(status_code=429, detail="Too many requests")
+
+    def _prune_expired_sessions() -> None:
+        cutoff_ts = datetime.utcnow().timestamp() - SESSION_TTL_SECONDS
+        for session_id, meta in list(app.state.session_meta.items()):
+            created_at_ts = meta.get("created_at_ts")
+            # Backward compatibility: keep sessions that predate TTL metadata.
+            if created_at_ts is None or created_at_ts >= cutoff_ts:
+                continue
+            output_dir = app.state.output_dirs.pop(session_id, None)
+            app.state.results.pop(session_id, None)
+            app.state.session_meta.pop(session_id, None)
+            if not output_dir:
+                continue
+            output_path = Path(output_dir).resolve()
+            cleanup_root = output_path.parent
+            if cleanup_root.name.startswith("cbam_"):
+                shutil.rmtree(cleanup_root, ignore_errors=True)
+            else:
+                shutil.rmtree(output_path, ignore_errors=True)
 
     @app.get("/", response_class=HTMLResponse)
     async def home(request: Request):
@@ -56,12 +124,16 @@ def create_app() -> FastAPI:
 
     @app.post("/api/process")
     async def process_files(
+        request: Request,
         config_file: UploadFile = File(...),
         imports_file: UploadFile = File(...),
         mode: str = Form(default="transitional"),
         collect_errors: bool = Form(default=True),
     ):
         """Process uploaded files and generate CBAM report."""
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
 
         # Create temporary directory for processing
         temp_dir = tempfile.mkdtemp(prefix="cbam_")
@@ -70,10 +142,12 @@ def create_app() -> FastAPI:
 
         try:
             # Save uploaded files safely.
-            config_name = Path(config_file.filename or "").name
-            imports_name = Path(imports_file.filename or "").name
-            if not config_name or not imports_name:
-                raise ValueError("Invalid uploaded filename")
+            config_raw_name = config_file.filename or ""
+            imports_raw_name = imports_file.filename or ""
+            if _is_suspicious_upload_filename(config_raw_name) or _is_suspicious_upload_filename(imports_raw_name):
+                raise HTTPException(status_code=400, detail="Invalid upload filename")
+            config_name = Path(config_raw_name).name
+            imports_name = Path(imports_raw_name).name
 
             config_path = (Path(temp_dir) / config_name).resolve()
             imports_path = (Path(temp_dir) / imports_name).resolve()
@@ -84,13 +158,13 @@ def create_app() -> FastAPI:
             with open(config_path, "wb") as f:
                 content = await config_file.read()
                 if len(content) > MAX_UPLOAD_BYTES:
-                    raise ValueError("Config file exceeds upload size limit")
+                    raise HTTPException(status_code=413, detail="Config file exceeds upload size limit")
                 f.write(content)
 
             with open(imports_path, "wb") as f:
                 content = await imports_file.read()
                 if len(content) > MAX_UPLOAD_BYTES:
-                    raise ValueError("Imports file exceeds upload size limit")
+                    raise HTTPException(status_code=413, detail="Imports file exceeds upload size limit")
                 f.write(content)
 
             # Run pipeline
@@ -117,7 +191,7 @@ def create_app() -> FastAPI:
                 "session_id": session_id,
                 "statistics": result.statistics,
                 "artifacts": result.artifacts,
-                "errors": result.errors,
+                "errors": _sanitize_errors(result.errors),
             }
 
             # Add policy status
@@ -179,12 +253,20 @@ def create_app() -> FastAPI:
             }
             app.state.session_meta[session_id] = {
                 "can_export": can_export,
-                "block_reason": (result.errors[0] if result.errors else "Export is blocked for this session."),
+                "block_reason": (
+                    _sanitize_error_message(result.errors[0])
+                    if result.errors
+                    else "Export is blocked for this session."
+                ),
+                "created_at_ts": datetime.utcnow().timestamp(),
             }
 
             return response_data
 
-        except Exception as e:
+        except HTTPException:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise
+        except Exception:
             # Clean up on error
             shutil.rmtree(temp_dir, ignore_errors=True)
             return {
@@ -195,8 +277,11 @@ def create_app() -> FastAPI:
             }
 
     @app.get("/api/download/{session_id}")
-    async def download_all(session_id: str):
+    async def download_all(session_id: str, request: Request):
         """Download all artifacts as a ZIP file."""
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
 
         if session_id not in app.state.output_dirs:
             raise HTTPException(status_code=404, detail="Session not found")
@@ -229,8 +314,11 @@ def create_app() -> FastAPI:
         )
 
     @app.get("/api/download/{session_id}/{filename:path}")
-    async def download_file(session_id: str, filename: str):
+    async def download_file(session_id: str, filename: str, request: Request):
         """Download a specific artifact file."""
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
 
         if session_id not in app.state.output_dirs:
             raise HTTPException(status_code=404, detail="Session not found")
@@ -258,8 +346,10 @@ def create_app() -> FastAPI:
         )
 
     @app.post("/api/preview-config")
-    async def preview_config(config_file: UploadFile = File(...)):
+    async def preview_config(request: Request, config_file: UploadFile = File(...)):
         """Preview config file after upload to verify YAML mapping."""
+        _require_api_key(request)
+        _enforce_rate_limit(request)
         try:
             content = await config_file.read()
             if len(content) > MAX_UPLOAD_BYTES:
@@ -296,10 +386,10 @@ def create_app() -> FastAPI:
 
             return preview
 
-        except yaml.YAMLError as e:
+        except yaml.YAMLError:
             return {
                 "success": False,
-                "error": f"Invalid YAML: {str(e)}",
+                "error": "Invalid YAML. Please fix file formatting and retry.",
             }
         except Exception as e:
             # Include pydantic details when available to guide fixes.
@@ -311,7 +401,7 @@ def create_app() -> FastAPI:
                 }
             return {
                 "success": False,
-                "error": f"Error parsing config: {str(e)}",
+                "error": "Config parse failed. Please validate required fields and retry.",
             }
 
     @app.get("/health")
@@ -324,6 +414,11 @@ def create_app() -> FastAPI:
 
 def get_home_html() -> str:
     """Return the main HTML page."""
+    template_path = Path(__file__).with_name("index.html")
+    if template_path.exists():
+        html = template_path.read_text(encoding="utf-8")
+        return html.replace("__CBAM_VERSION__", __version__)
+
     return '''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -924,7 +1019,7 @@ def get_home_html() -> str:
             const nameEl = document.getElementById(type === 'config' ? 'configFileName' : 'importsFileName');
 
             zone.classList.add('has-file');
-            nameEl.textContent = '&#10003; ' + file.name;
+            nameEl.textContent = '✓ ' + file.name;
 
             if (type === 'config') {
                 configFile = file;
