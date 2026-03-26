@@ -42,7 +42,7 @@ fastapi==0.109.2
 uvicorn[standard]==0.27.1
 httpx==0.26.0
 aiohttp==3.9.3
-requests==2.31.0
+requests==2.33.0
 
 # Retry & Reliability
 tenacity==8.2.3
