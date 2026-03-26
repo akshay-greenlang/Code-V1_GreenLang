@@ -83,7 +83,7 @@ dependencies = [
     "starlette~=0.36.3",
     "httpx~=0.26.0",
     "aiohttp~=3.13.3",
-    "requests~=2.31.0",
+    "requests~=2.33.0",
 
     # Template & Document Processing
     "jinja2~=3.1.3",
