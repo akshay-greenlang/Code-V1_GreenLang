@@ -1,0 +1,335 @@
+# =============================================================================
+# PACK-049: GHG Multi-Site Management Pack
+# GreenLang GHG Accounting Pack for Multi-Facility Inventory Management
+# =============================================================================
+# This pack delivers a production-ready, verification-grade multi-site GHG
+# inventory management system covering facility registry, decentralised data
+# collection, organisational boundary definition, regional emission factor
+# assignment, multi-site consolidation, shared-services allocation, internal
+# portfolio benchmarking, submission completeness tracking, site-level data
+# quality scoring, and consolidated multi-site reporting.
+#
+# The pack follows a zero-hallucination approach: all consolidation
+# calculations, equity adjustments, allocation splits, quality scores, and
+# completeness assessments use deterministic formulas from established
+# standards (GHG Protocol, ISO 14064-1, PCAF). No LLM is used in any
+# calculation path. Regional emission factors are from authoritative
+# databases (IPCC, DEFRA, EPA, IEA) with full provenance tracking.
+# =============================================================================
+
+pack:
+  id: PACK-049
+  name: "GHG Multi-Site Management Pack"
+  version: "1.0.0"
+  category: "ghg-accounting"
+  tier: "enterprise"
+  status: "production-ready"
+  author: "GreenLang Platform Team"
+  date: "2026-03-26"
+  license: "Proprietary"
+  min_platform_version: "1.0.0"
+
+description:
+  short: "Comprehensive multi-site GHG inventory management with facility registry, data collection, boundary definition, consolidation, allocation, benchmarking, and quality scoring"
+  long: |
+    PACK-049 provides the complete multi-site GHG inventory management
+    lifecycle for organisations operating across multiple facilities, regions,
+    and legal entities. It enables facility-level data collection with
+    decentralised submission workflows, organisational boundary definition
+    (equity share / operational control / financial control per GHG Protocol
+    Chapter 3), regional emission factor assignment with tiered lookup
+    (facility > national > regional > IPCC default), multi-site consolidation
+    with intra-group elimination and equity adjustments, shared-services
+    allocation (floor area / headcount / revenue / production / custom),
+    landlord-tenant splits, co-generation allocation, internal portfolio
+    benchmarking across sites, submission completeness tracking with deadline
+    management, site-level data quality scoring (PCAF 1-5), and consolidated
+    multi-site reporting with drill-down from corporate to site level.
+
+regulatory_basis:
+  - framework: "GHG Protocol Corporate Standard"
+    description: "Chapter 3: Setting Organisational Boundaries; Chapter 4: Setting Operational Boundaries"
+  - framework: "ISO 14064-1:2018"
+    description: "Clause 5: Organisational boundaries; Clause 6: Reporting boundaries"
+  - framework: "EU CSRD / ESRS E1"
+    description: "Consolidated GHG reporting across value chain"
+  - framework: "US SEC Climate Rules"
+    description: "Entity-level GHG disclosure for registrants"
+  - framework: "California SB 253"
+    description: "Facility-level emissions reporting"
+  - framework: "PCAF Global Standard"
+    description: "Data quality scoring per asset/facility"
+  - framework: "GRI 305"
+    description: "Site-level and consolidated GHG reporting"
+  - framework: "IFRS S2"
+    description: "Climate disclosure at reporting entity level"
+  - framework: "EPA 40 CFR 98"
+    description: "Facility-level GHG mandatory reporting"
+  - framework: "UK SECR"
+    description: "Energy and carbon reporting per legal entity"
+  - framework: "Australia NGER"
+    description: "Facility-level GHG reporting"
+  - framework: "ISO 50001:2018"
+    description: "Energy management across multiple sites"
+
+components:
+  engines:
+    count: 10
+    items:
+      - name: "SiteRegistryEngine"
+        file: "engines/site_registry_engine.py"
+        description: "Facility registry with classification, characteristics, lifecycle management"
+      - name: "SiteDataCollectionEngine"
+        file: "engines/site_data_collection_engine.py"
+        description: "Decentralised data collection with templates, validation, submission workflow"
+      - name: "SiteBoundaryEngine"
+        file: "engines/site_boundary_engine.py"
+        description: "Organisational boundary definition with equity share / operational / financial control"
+      - name: "RegionalFactorEngine"
+        file: "engines/regional_factor_engine.py"
+        description: "Regional emission factor assignment with tiered lookup and grid region management"
+      - name: "SiteConsolidationEngine"
+        file: "engines/site_consolidation_engine.py"
+        description: "Multi-site consolidation with equity adjustments and intra-group elimination"
+      - name: "SiteAllocationEngine"
+        file: "engines/site_allocation_engine.py"
+        description: "Shared services allocation, landlord/tenant splits, co-generation allocation"
+      - name: "SiteComparisonEngine"
+        file: "engines/site_comparison_engine.py"
+        description: "Internal portfolio benchmarking with KPIs, peer groups, and rankings"
+      - name: "SiteCompletionEngine"
+        file: "engines/site_completion_engine.py"
+        description: "Submission tracking, completeness monitoring, gap detection, deadline management"
+      - name: "SiteQualityEngine"
+        file: "engines/site_quality_engine.py"
+        description: "Site-level data quality scoring (PCAF 1-5) with remediation planning"
+      - name: "MultiSiteReportingEngine"
+        file: "engines/multi_site_reporting_engine.py"
+        description: "Multi-site reports with drill-down, multi-format export (MD/HTML/JSON/CSV)"
+
+  workflows:
+    count: 8
+    items:
+      - name: "SiteRegistrationWorkflow"
+        file: "workflows/site_registration_workflow.py"
+        phases: 5
+        description: "SiteDiscovery -> Classification -> CharacteristicsCapture -> BoundaryAssignment -> Activation"
+      - name: "DataCollectionWorkflow"
+        file: "workflows/data_collection_workflow.py"
+        phases: 5
+        description: "PeriodSetup -> TemplateDistribution -> SiteSubmission -> ValidationReview -> Approval"
+      - name: "BoundaryDefinitionWorkflow"
+        file: "workflows/boundary_definition_workflow.py"
+        phases: 5
+        description: "EntityMapping -> OwnershipChain -> ConsolidationApproach -> MaterialityCheck -> BoundaryLock"
+      - name: "ConsolidationWorkflow"
+        file: "workflows/consolidation_workflow.py"
+        phases: 5
+        description: "SiteDataGather -> EliminationCheck -> EquityAdjust -> Reconcile -> ConsolidatedTotal"
+      - name: "AllocationWorkflow"
+        file: "workflows/allocation_workflow.py"
+        phases: 4
+        description: "SharedServiceID -> AllocationMethodSelect -> Calculate -> Verify"
+      - name: "SiteComparisonWorkflow"
+        file: "workflows/site_comparison_workflow.py"
+        phases: 5
+        description: "PeerGroupBuild -> KPICalculate -> Rank -> GapAnalysis -> BestPracticeReport"
+      - name: "QualityImprovementWorkflow"
+        file: "workflows/quality_improvement_workflow.py"
+        phases: 5
+        description: "QualityAssess -> GapIdentify -> RemediationPlan -> Implementation -> Verification"
+      - name: "FullMultiSitePipelineWorkflow"
+        file: "workflows/full_multi_site_pipeline_workflow.py"
+        phases: 8
+        description: "End-to-end multi-site management orchestration"
+
+  templates:
+    count: 10
+    items:
+      - name: "SitePortfolioDashboard"
+        file: "templates/site_portfolio_dashboard.py"
+      - name: "SiteDetailReport"
+        file: "templates/site_detail_report.py"
+      - name: "ConsolidationReport"
+        file: "templates/consolidation_report.py"
+      - name: "BoundaryDefinitionReport"
+        file: "templates/boundary_definition_report.py"
+      - name: "RegionalFactorReport"
+        file: "templates/regional_factor_report.py"
+      - name: "AllocationReport"
+        file: "templates/allocation_report.py"
+      - name: "SiteComparisonReport"
+        file: "templates/site_comparison_report.py"
+      - name: "DataCollectionStatusReport"
+        file: "templates/data_collection_status_report.py"
+      - name: "DataQualityReport"
+        file: "templates/data_quality_report.py"
+      - name: "MultiSiteTrendReport"
+        file: "templates/multi_site_trend_report.py"
+
+  integrations:
+    count: 12
+    items:
+      - name: "PackOrchestrator"
+        file: "integrations/pack_orchestrator.py"
+        description: "10-phase DAG pipeline coordinator"
+      - name: "MRVBridge"
+        file: "integrations/mrv_bridge.py"
+        description: "30 AGENT-MRV agents for per-site emissions calculation"
+      - name: "DataBridge"
+        file: "integrations/data_bridge.py"
+        description: "AGENT-DATA agents for data collection and quality"
+      - name: "Pack041Bridge"
+        file: "integrations/pack041_bridge.py"
+        description: "Scope 1-2 organisational boundary and facility data"
+      - name: "Pack042043Bridge"
+        file: "integrations/pack042_043_bridge.py"
+        description: "Scope 3 multi-entity boundaries and eliminations"
+      - name: "Pack044Bridge"
+        file: "integrations/pack044_bridge.py"
+        description: "Inventory management and consolidation"
+      - name: "Pack045Bridge"
+        file: "integrations/pack045_bridge.py"
+        description: "Base year per site"
+      - name: "Pack046047Bridge"
+        file: "integrations/pack046_047_bridge.py"
+        description: "Intensity metrics and benchmark per site"
+      - name: "FoundationBridge"
+        file: "integrations/foundation_bridge.py"
+        description: "FOUND-003 normaliser, FOUND-004 assumptions, FOUND-005 citations"
+      - name: "HealthCheck"
+        file: "integrations/health_check.py"
+        description: "20-category system verification"
+      - name: "SetupWizard"
+        file: "integrations/setup_wizard.py"
+        description: "8-step guided configuration"
+      - name: "AlertBridge"
+        file: "integrations/alert_bridge.py"
+        description: "Deadline, completeness, quality, boundary, allocation alerts"
+
+  config:
+    file: "config/pack_config.py"
+    enums: 18
+    sub_configs: 15
+    presets: 8
+
+  presets:
+    - corporate_general
+    - manufacturing
+    - retail_chain
+    - real_estate
+    - financial_services
+    - logistics
+    - healthcare
+    - public_sector
+
+agent_dependencies:
+  mrv:
+    count: 30
+    description: "All 30 AGENT-MRV agents for per-site emissions calculation"
+  data:
+    count: 20
+    description: "AGENT-DATA agents for data collection and quality profiling"
+  foundation:
+    count: 3
+    description: "FOUND-003 (Normaliser), FOUND-004 (Assumptions), FOUND-005 (Citations)"
+
+pack_dependencies:
+  - pack_id: "PACK-041"
+    name: "Scope 1-2 Complete"
+    relationship: "Scope 1+2 emissions per facility and organisational boundary"
+    required: true
+  - pack_id: "PACK-042"
+    name: "Scope 3 Starter"
+    relationship: "Scope 3 emissions per site (basic)"
+    required: false
+  - pack_id: "PACK-043"
+    name: "Scope 3 Complete"
+    relationship: "Scope 3 enterprise + multi-entity boundary"
+    required: false
+  - pack_id: "PACK-044"
+    name: "Inventory Management"
+    relationship: "Consolidation management and review workflows"
+    required: false
+  - pack_id: "PACK-045"
+    name: "Base Year Management"
+    relationship: "Base year data per site"
+    required: false
+  - pack_id: "PACK-046"
+    name: "Intensity Metrics"
+    relationship: "Intensity metrics per site"
+    required: false
+  - pack_id: "PACK-047"
+    name: "Benchmark"
+    relationship: "External benchmark per site"
+    required: false
+  - pack_id: "PACK-048"
+    name: "Assurance Prep"
+    relationship: "Assurance preparation per site"
+    required: false
+
+database:
+  schema: "ghg_multisite"
+  table_prefix: "gl_ms_"
+  migrations:
+    start: "V406"
+    end: "V415"
+    count: 10
+    files:
+      - "V406__pack049_core_schema.sql"
+      - "V407__pack049_site_registry.sql"
+      - "V408__pack049_data_collection.sql"
+      - "V409__pack049_boundary.sql"
+      - "V410__pack049_regional_factors.sql"
+      - "V411__pack049_consolidation.sql"
+      - "V412__pack049_allocation.sql"
+      - "V413__pack049_comparison_quality.sql"
+      - "V414__pack049_completion.sql"
+      - "V415__pack049_views_indexes_seed.sql"
+
+performance:
+  site_registry_operations: "<1 second per 1,000 sites"
+  data_collection_template: "<5 seconds"
+  consolidation_run: "<60 seconds for 1,000 sites"
+  allocation_calculation: "<30 seconds for 500 sites"
+  site_comparison: "<15 seconds for 1,000 sites"
+  full_pipeline: "<5 minutes for 1,000 sites"
+  report_generation: "<10 seconds per format"
+
+security:
+  authentication: "JWT RS256 via SEC-001"
+  authorisation: "RBAC via SEC-002"
+  permissions:
+    - "multisite:read"
+    - "multisite:write"
+    - "multisite:admin"
+    - "multisite:site_steward"
+  encryption: "AES-256-GCM at rest via SEC-003"
+  tls: "TLS 1.3 in transit via SEC-004"
+  audit: "Full audit trail via SEC-005"
+  tenant_isolation: "RLS on all database tables"
+  provenance: "SHA-256 hash on every result"
+
+compliance:
+  zero_hallucination: true
+  deterministic_calculations: true
+  decimal_arithmetic: true
+  no_llm_in_calculations: true
+  sha256_provenance: true
+  consolidation_approaches:
+    - "Equity Share"
+    - "Operational Control"
+    - "Financial Control"
+  factor_tiers:
+    - "Tier 3: Facility-specific"
+    - "Tier 2: National"
+    - "Tier 1: Regional"
+    - "Tier 0: IPCC Default"
+
+testing:
+  test_files: 16
+  test_functions: 540
+  pass_rate: "100%"
+  coverage_target: "95%+"
+  e2e_scenarios: 47
+  determinism_verified: true

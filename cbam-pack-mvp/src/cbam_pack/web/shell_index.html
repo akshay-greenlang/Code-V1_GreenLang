@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GreenLang Compliance Workspace</title>
+  <style>
+    :root {
+      --bg-1: #071027;
+      --bg-2: #0f1f3d;
+      --card: rgba(255, 255, 255, 0.06);
+      --card-border: rgba(255, 255, 255, 0.14);
+      --text-primary: #e8efff;
+      --text-secondary: #a8b6d8;
+      --accent: #42d9b5;
+      --accent-2: #66f2cf;
+      --warn: #fbbf24;
+      --danger: #ef4444;
+      --shadow: 0 24px 60px rgba(2, 8, 23, 0.45);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text-primary);
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(66, 217, 181, 0.22), transparent 60%),
+        radial-gradient(1000px 600px at 100% 0, rgba(107, 114, 255, 0.25), transparent 65%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+    }
+
+    .container { width: min(1200px, 100%); margin: 0 auto; padding: 18px 16px 36px; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--card-border);
+      border-radius: calc(var(--radius) + 6px);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brandMark {
+      width: 34px; height: 34px;
+      display: grid; place-items: center;
+      border-radius: 10px;
+      background: rgba(66, 217, 181, 0.12);
+      border: 1px solid rgba(66, 217, 181, 0.25);
+      color: var(--accent-2);
+      font-weight: 800;
+    }
+    .brandText { line-height: 1.2; }
+    .brandText .title { font-weight: 800; letter-spacing: 0.2px; }
+    .brandText .sub { color: var(--text-secondary); font-size: 0.86rem; margin-top: 2px; }
+
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .nav a {
+      text-decoration: none;
+      color: var(--text-primary);
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(12, 20, 40, 0.35);
+      font-size: 0.9rem;
+      font-weight: 700;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .nav a:hover { transform: translateY(-1px); border-color: rgba(102, 242, 207, 0.5); }
+
+    .hero {
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 { font-size: 1.4rem; margin-bottom: 6px; }
+    .hero p { color: var(--text-secondary); max-width: 95ch; }
+    .pillRow { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .pill {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .card h2 { font-size: 1.05rem; margin-bottom: 6px; }
+    .card p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 12px; }
+    .card .meta { color: var(--text-secondary); font-size: 0.84rem; margin-top: 10px; }
+
+    .btn {
+      display: inline-block;
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #042016;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 10px 12px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn.secondary {
+      background: rgba(12, 20, 40, 0.35);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    footer {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.86rem;
+    }
+
+    footer a { color: #b2fff0; text-decoration: none; }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .nav { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brandMark">GL</div>
+        <div class="brandText">
+          <div class="title">GreenLang Compliance Workspace</div>
+          <div class="sub">Multi-app v1 portal for deterministic, audit-ready runs</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/apps/cbam">CBAM</a>
+        <a href="/apps/csrd">CSRD</a>
+        <a href="/apps/vcci">VCCI</a>
+        <a href="/runs">Runs</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>One front door. Three compliance workspaces.</h1>
+      <p>
+        Choose an application to run deterministic processing, review policy/validation outcomes, and download audit-ready artifacts.
+      </p>
+      <div class="pillRow">
+        <span class="pill">Deterministic Outputs</span>
+        <span class="pill">Audit Bundle (manifest + checksums)</span>
+        <span class="pill">Strict Release Evidence Compatible</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>CBAM</h2>
+        <p>Upload CBAM YAML + import ledger to generate registry-ready XML and audit artifacts.</p>
+        <a class="btn" href="/apps/cbam">Open CBAM Workspace</a>
+        <div class="meta">Best supported, web-first workflow.</div>
+      </div>
+      <div class="card">
+        <h2>CSRD</h2>
+        <p>Run the CSRD pipeline via v1 backend adapter and download deterministic report artifacts.</p>
+        <a class="btn" href="/apps/csrd">Open CSRD Workspace</a>
+        <div class="meta">Adapter-driven workspace; pipeline depth may vary by environment.</div>
+      </div>
+      <div class="card">
+        <h2>VCCI</h2>
+        <p>Run Scope 3 inventory generation and retrieve audit artifacts with standardized semantics.</p>
+        <a class="btn" href="/apps/vcci">Open VCCI Workspace</a>
+        <div class="meta">Adapter-driven workspace; requires backend dependencies.</div>
+      </div>
+    </section>
+
+    <footer>
+      <p>GreenLang v1 • Workspace build: __GL_VERSION__</p>
+      <p><a href="https://greenlang.in" target="_blank" rel="noopener noreferrer">greenlang.in</a></p>
+    </footer>
+  </div>
+</body>
+</html>
+

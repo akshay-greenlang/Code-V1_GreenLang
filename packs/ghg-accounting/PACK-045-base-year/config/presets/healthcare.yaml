@@ -1,0 +1,132 @@
+# =============================================================================
+# PACK-045 Base Year Management - Healthcare Preset
+# =============================================================================
+# Hospital systems and healthcare facilities operating 24/7 with emissions
+# normalised to patient-days. Medical gas usage (N2O, desflurane) contributes
+# materially to Scope 1. Base year selection accounts for patient volume
+# variability and pandemic-year exclusions.
+#
+# Typical use cases:
+#   - Acute care hospitals and medical centres
+#   - Healthcare system networks and trusts
+#   - Long-term care and rehabilitation facilities
+#   - Outpatient clinics and ambulatory surgery centres
+#   - University hospital complexes
+#
+# Typical emission profile:
+#   Scope 1: 30-50% of total (boilers, medical gases, backup gen, fleet)
+#   Scope 2: 50-70% of total (electricity for HVAC, imaging, lighting)
+#   Key gases: CO2 (>90%), N2O (anaesthetic), HFCs (refrigerant)
+#   Typical intensity: 100-250 kgCO2e per patient-day
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "healthcare"
+  description: "Hospital systems with 24/7 operations and patient-day normalisation"
+  sector: "HEALTHCARE"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "FIXED"
+  year: 2023
+  selection_method: "REPRESENTATIVE_YEAR"
+  weights:
+    data_completeness: 0.25
+    data_quality: 0.25
+    operational_stability: 0.30
+    regulatory_alignment: 0.20
+  criteria:
+    minimum_data_completeness_pct: 95.0
+    minimum_data_quality_score: 75.0
+    require_verification: false
+    exclude_anomalous_years: true
+    anomaly_threshold_stddev: 2.0
+    exclude_pandemic_years: true
+    pandemic_year_list:
+      - 2020
+      - 2021
+    require_patient_volume_data: true
+    patient_volume_variance_max_pct: 20.0
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 5.0
+  cumulative_threshold_pct: 8.0
+  de_minimis_threshold_tco2e: 200.0
+  patient_day_normalization: true
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: true
+    facility_expansion: true
+    service_line_change: true
+    medical_gas_policy_change: true
+    pandemic_adjustment: true
+  approval_workflow:
+    require_approval: true
+    minimum_approvers: 1
+    auto_approve_below_threshold: true
+    auto_approve_threshold_pct: 2.5
+    notification_recipients:
+      - "sustainability_officer"
+      - "facilities_director"
+      - "cfo"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "INTENSITY"
+  ambition_level: "WELL_BELOW_2C"
+  annual_reduction_rate_pct: 3.5
+  target_year: 2030
+  interim_targets:
+    - year: 2026
+      reduction_pct: 12.0
+    - year: 2028
+      reduction_pct: 25.0
+  sbti_aligned: false
+  intensity_metric: "kgCO2e/patient_day"
+  secondary_intensity_metric: "kgCO2e/m2"
+  healthcare_climate_pledge: true
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "TCFD"
+  formats:
+    - "HTML"
+    - "JSON"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  include_patient_volume_normalization: true
+  include_medical_gas_breakdown: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: false
+  pack_043_scope3_complete_enabled: false
+  erp_connector_enabled: true
+  data_quality_profiler_enabled: true
+  patient_information_system_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 10
+  log_all_recalculations: true
+  log_threshold_assessments: true
+  evidence_attachment: true
+  patient_data_anonymization: true

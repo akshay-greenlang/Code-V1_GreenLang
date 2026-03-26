@@ -1,0 +1,259 @@
+# =============================================================================
+# PACK-043 Scope 3 Complete - Food & Beverage Preset
+# =============================================================================
+# Food and beverage company with agricultural supply chain, FLAG (Forest, Land
+# and Agriculture) pathway alignment, land use change emissions, deforestation-
+# free supply chain commitments, and mass-based allocation for agricultural
+# commodities. Designed for food manufacturers, beverage companies, and
+# agricultural processors.
+#
+# Typical use cases:
+#   - Food manufacturers and processors
+#   - Beverage companies (soft drinks, spirits, dairy)
+#   - Agricultural commodity traders
+#   - Animal protein producers
+#   - Bakery and confectionery companies
+#   - Frozen food and ready meals manufacturers
+#
+# Typical Scope 3 emission profile:
+#   Cat 1 (Purchased Goods):     50-80% (agricultural inputs, ingredients)
+#   Cat 2 (Capital Goods):        1-3%  (processing equipment)
+#   Cat 3 (Fuel & Energy):        2-5%  (WTT, T&D losses)
+#   Cat 4 (Upstream Transport):    5-10% (agricultural logistics, cold chain)
+#   Cat 5 (Waste):                 2-5%  (food waste, packaging waste)
+#   Cat 7 (Employee Commuting):   0.5-2% (factory and office staff)
+#   Cat 9 (Downstream Transport): 2-8%  (distribution, cold chain)
+#   Cat 10 (Processing):          0-15% (customer further processing)
+#   Cat 12 (End-of-Life):         3-10% (food waste at consumer, packaging)
+#
+#   Total Scope 3 typically: 5-20x Scope 1+2
+#   Key: FLAG pathway, LUC, deforestation-free, mass-based allocation
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_focus: "FOOD_BEVERAGE"
+country: "NL"
+reporting_year: 2026
+number_of_entities: 5
+years_of_scope3_reporting: 2
+
+# --- Maturity ---
+maturity:
+  target_level: "LEVEL_4_ADVANCED"
+  current_level: "LEVEL_2_STARTER"
+  upgrade_strategy: "MATERIALITY_FIRST"
+  timeline_months: 24
+  roi_threshold_pct: 12.0
+  milestone_tracking: true
+  auto_upgrade_enabled: false
+
+# --- LCA ---
+lca:
+  enabled: true
+  database: "ECOINVENT"
+  database_version: "3.10"
+  secondary_database: "GABI"
+  product_types:
+    - "agricultural_commodities"
+    - "dairy_products"
+    - "meat_products"
+    - "grains_cereals"
+    - "packaging"
+    - "palm_oil"
+    - "soy"
+    - "cocoa"
+  lifecycle_stages:
+    - "RAW_MATERIAL"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "USE_PHASE"
+    - "END_OF_LIFE"
+  sensitivity_params:
+    emission_factor_variation_pct: 30.0
+    transport_distance_variation_pct: 20.0
+    energy_mix_variation_pct: 10.0
+    allocation_method_variation_pct: 30.0
+  cutoff_threshold_pct: 0.5
+  epd_integration: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  total_entities: 5
+  jv_equity_threshold_pct: 20.0
+  jv_inclusion_method: "proportional"
+  franchise_inclusion: false
+  inter_company_elimination: true
+  entity_level_reporting: true
+
+# --- Scenarios ---
+scenarios:
+  enabled: true
+  scenario_types:
+    - "MACC"
+    - "WHAT_IF"
+    - "SUPPLIER_PROGRAMME"
+    - "TECHNOLOGY_PATHWAY"
+    - "PARIS_ALIGNMENT"
+  macc_max_interventions: 40
+  macc_currency: "EUR"
+  what_if_max_scenarios: 10
+  paris_target_celsius: 1.5
+  paris_pathway_source: "iea_nze_2050"
+  time_horizon_years: 10
+  discount_rate_pct: 5.0
+
+# --- SBTi ---
+sbti:
+  enabled: true
+  base_year: 2022
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  target_type: "SDA"
+  near_term_reduction_pct: 42.0
+  long_term_reduction_pct: 90.0
+  coverage_pct: 75.0
+  flag_enabled: true
+  flag_commodity_groups:
+    - "beef"
+    - "dairy"
+    - "palm_oil"
+    - "soy"
+    - "cocoa"
+    - "timber"
+    - "rubber"
+  supplier_engagement_target_pct: 60.0
+
+# --- Supplier Programme ---
+supplier_programme:
+  enabled: true
+  top_supplier_pct: 80.0
+  top_supplier_count: 100
+  target_reduction_pct: 30.0
+  timeline_years: 5
+  incentive_model: "preferred_status"
+  cdp_supply_chain: true
+  sbti_cascade_enabled: true
+  quarterly_reviews: true
+  data_quality_improvement_target: 1.5
+
+# --- Climate Risk ---
+climate_risk:
+  enabled: true
+  risk_types:
+    - "TRANSITION"
+    - "PHYSICAL"
+    - "OPPORTUNITY"
+  carbon_price_usd_per_tonne: 80.0
+  carbon_price_escalation_pct: 5.0
+  time_horizons_years:
+    - 5
+    - 10
+    - 30
+  scenarios:
+    - "iea_nze_2050"
+    - "iea_aps"
+    - "iea_steps"
+  stranded_asset_analysis: false
+  value_at_risk_enabled: true
+
+# --- Base Year ---
+base_year:
+  base_year: 2022
+  significance_threshold_pct: 5.0
+  recalc_triggers_enabled: true
+  recalc_triggers:
+    - "structural_change"
+    - "methodology_change"
+    - "error_correction"
+    - "boundary_change"
+    - "flag_methodology_update"
+  rolling_base_year: false
+  documentation_required: true
+
+# --- Sector ---
+sector:
+  sector_focus: "FOOD_BEVERAGE"
+  food_flag_enabled: true
+  food_deforestation_free: true
+
+# --- Assurance ---
+assurance:
+  target_level: "LIMITED"
+  isae_3410_compliant: true
+  evidence_requirements:
+    - "methodology_documentation"
+    - "emission_factor_sources"
+    - "data_quality_assessment"
+    - "uncertainty_analysis"
+    - "provenance_hashes"
+    - "assumption_registry"
+    - "double_counting_log"
+    - "calculation_audit_trail"
+    - "flag_pathway_documentation"
+    - "deforestation_free_evidence"
+  verifier_portal_enabled: false
+  materiality_threshold_pct: 5.0
+  min_dqr_for_reasonable: 2.5
+
+# --- Integration ---
+integration:
+  pack042_required: true
+  pack042_pack_id: "PACK-042-scope-3-starter"
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database_bridge: true
+  sbti_api_enabled: false
+  tcfd_issb_bridge: true
+  supplier_portal_enabled: true
+  cdp_supply_chain: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "XLSX"
+    - "PDF"
+  enterprise_dashboard: true
+  dashboard_refresh_minutes: 60
+  investor_grade: true
+  board_summary: true
+  scenario_reporting: true
+  benchmark_comparison: true
+  multi_entity_rollup: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Security ---
+security:
+  rbac_roles:
+    - "scope3_director"
+    - "scope3_manager"
+    - "sustainability_officer"
+    - "procurement_director"
+    - "agricultural_sourcing_manager"
+    - "lca_specialist"
+    - "verifier"
+    - "viewer"
+  supplier_data_isolation: true
+  entity_level_access: true
+  audit_logging: true
+  audit_retention_years: 10
+  pii_redaction: true
+  encryption_at_rest: true
+  data_classification: "CONFIDENTIAL"
+
+# --- Performance ---
+performance:
+  parallel_entities: 5
+  parallel_categories: 10
+  batch_size: 5000
+  cache_ttl_seconds: 7200
+  lca_query_timeout_seconds: 600
+  scenario_computation_timeout_seconds: 1800
+  max_suppliers: 10000
+  max_line_items: 2000000
+  memory_ceiling_mb: 16384
+  monte_carlo_iterations: 10000

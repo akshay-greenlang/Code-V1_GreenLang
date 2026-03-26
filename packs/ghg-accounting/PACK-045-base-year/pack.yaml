@@ -1,0 +1,2164 @@
+# =============================================================================
+# PACK-045: Base Year Management Pack
+# GreenLang GHG Accounting Pack for Complete Base Year Lifecycle Management
+# =============================================================================
+# This pack delivers a production-ready, verification-grade base year
+# management system covering the full lifecycle of GHG base year operations
+# as defined by GHG Protocol Corporate Standard Chapter 5. It orchestrates
+# ten specialised engines -- base year selection, inventory establishment,
+# recalculation policy definition, trigger detection, significance assessment,
+# adjustment calculation, time-series consistency enforcement, target tracking,
+# audit verification, and multi-framework reporting.
+#
+# The pack follows a zero-hallucination approach: all recalculation triggers,
+# significance assessments, and adjustment calculations use deterministic
+# formulas from GHG Protocol Chapter 5, IPCC 2006/2019, and established
+# statistical methodologies. No LLM is used in any calculation path.
+# Significance thresholds, adjustment factors, and recalculation rules are
+# configurable per corporate policy with full provenance tracking.
+#
+# The pack complements and extends the GreenLang GHG accounting suite:
+#   - PACK-041 (Scope 1-2 Complete) provides the emission calculations
+#   - PACK-042 (Scope 3 Starter) provides upstream Scope 3 calculations
+#   - PACK-043 (Scope 3 Complete) provides full value chain calculations
+#   - PACK-044 (GHG Governance) provides policy and approval workflows
+#   - PACK-045 (this pack) provides base year lifecycle management
+#
+# Base year management is a critical element of GHG inventories that ensures
+# meaningful year-on-year comparisons, target tracking integrity, and
+# regulatory compliance. Without proper base year management, structural
+# changes such as mergers, acquisitions, and divestitures can distort
+# emission trends and render reduction targets meaningless.
+#
+# The base year output maps directly to seven regulatory frameworks:
+#   1. GHG Protocol Corporate Standard Chapter 5 (Base Year)
+#   2. ISO 14064-1:2018 (Clause 5.4 - Base Year Selection)
+#   3. EU CSRD / ESRS E1 (E1-4 Climate Targets, E1-5 Actions)
+#   4. CDP Climate Change Questionnaire (C5.1-C5.2 Base Year)
+#   5. SBTi Corporate Net-Zero Standard (Base Year Requirements)
+#   6. US SEC Climate Disclosure Rules (Base Year Disclosure)
+#   7. California SB 253 (Base Year Consistency Requirements)
+#
+# Key Capabilities:
+#   - Base year selection with criteria-based evaluation (data quality,
+#     representative year, availability of records, verification status)
+#   - Complete base year inventory establishment with source-level detail
+#     and full provenance chain back to original activity data
+#   - Recalculation policy definition with configurable significance
+#     thresholds (default 5% of total base year emissions), allowed
+#     triggers, and approval workflow requirements
+#   - Automated trigger detection for structural changes (M&A, divestitures,
+#     outsourcing, insourcing), methodology changes (emission factor
+#     updates, calculation methodology improvements, GWP value changes),
+#     and error discovery (significant errors in historical data)
+#   - Quantitative significance assessment using absolute change, percentage
+#     change, and cumulative impact metrics against policy thresholds
+#   - Pro-rata adjustment calculation for mergers (add acquired emissions
+#     as if owned in base year), divestitures (remove divested emissions),
+#     and outsourcing/insourcing (boundary reclassification)
+#   - Time-series consistency enforcement ensuring all comparison years
+#     use consistent methodology, boundary, and emission factor vintage
+#   - Target tracking with automatic base year adjustment propagation
+#     to absolute and intensity targets, SBTi pathway recalculation,
+#     and target restatement documentation
+#   - Comprehensive audit trail with SHA-256 provenance hashing on every
+#     trigger assessment, significance test, and adjustment calculation
+#   - Multi-framework reporting from a single base year dataset
+#
+# Recalculation Trigger Categories (GHG Protocol Ch. 5):
+#   STRUCTURAL: Acquisitions, divestitures, mergers, spin-offs,
+#     outsourcing, insourcing of emitting activities
+#   METHODOLOGICAL: Emission factor source changes, calculation
+#     methodology updates, GWP assessment report changes,
+#     allocation method changes, improved data availability
+#   ERROR: Discovery of significant errors or omissions in
+#     historical activity data or emission calculations
+#   ORGANIC_GROWTH: NOT a trigger (organic growth and closures
+#     do not require base year recalculation per GHG Protocol)
+#
+# Significance Thresholds:
+#   DEFAULT: 5% of total base year emissions (GHG Protocol recommended)
+#   CONSERVATIVE: 3% of total base year emissions
+#   RELAXED: 10% of total base year emissions
+#   CUMULATIVE: Tracks cumulative impact across multiple triggers
+#
+# Sector Presets:
+#   corporate_office - Office-based organisations (Scope 2 dominant)
+#   manufacturing - Industrial manufacturing (Scope 1 dominant, M&A active)
+#   energy_utility - Power generation and distribution (asset-heavy)
+#   transport_logistics - Fleet and logistics (mobile fleet changes)
+#   food_agriculture - Agricultural operations (land use changes)
+#   real_estate - Property portfolios (portfolio rebalancing)
+#   healthcare - Hospital and healthcare systems (expansion/contraction)
+#   sme_simplified - Simplified base year for small-medium enterprises
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-24)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-045-base-year
+  version: "1.0.0"
+  display_name: "Base Year Management Pack"
+  description: >-
+    GreenLang deployment pack providing comprehensive GHG base year lifecycle
+    management covering selection, inventory establishment, recalculation policy
+    definition, trigger detection, significance assessment, adjustment
+    calculation, time-series consistency enforcement, target tracking, audit
+    verification, and multi-framework reporting. Orchestrates ten specialised
+    engines into a unified pipeline that detects structural changes (mergers,
+    acquisitions, divestitures), methodology changes (emission factor updates,
+    GWP changes), and error discoveries, then assesses their significance
+    against configurable thresholds, calculates pro-rata adjustments, propagates
+    changes to all comparison years and reduction targets, and produces
+    audit-grade documentation for third-party verification. Complements
+    PACK-041 (Scope 1-2), PACK-042 (Scope 3 Starter), PACK-043 (Scope 3
+    Complete), and PACK-044 (GHG Governance) calculation and governance packs.
+    Supports GHG Protocol Corporate Standard Chapter 5, ISO 14064-1, ESRS E1,
+    CDP, SBTi, SEC, and SB 253 base year requirements. Includes sector-specific
+    presets for office, manufacturing, energy, transport, agriculture, real
+    estate, healthcare, and SME organisations.
+  category: ghg-accounting
+  tier: enterprise
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-24"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/base-year-management"
+  changelog_url: "https://docs.greenlang.io/packs/base-year-management/changelog"
+
+  tags:
+    - base-year
+    - recalculation
+    - ghg-protocol-ch5
+    - significance-testing
+    - target-tracking
+    - sbti
+    - time-series
+    - audit-trail
+    - m-and-a
+    - base-year-adjustment
+    - merger-acquisition
+    - divestiture
+    - outsourcing
+    - insourcing
+    - structural-change
+    - methodology-change
+    - error-discovery
+    - pro-rata-adjustment
+    - significance-threshold
+    - cumulative-impact
+    - target-restatement
+    - target-rebasing
+    - ghg-protocol
+    - iso-14064
+    - esrs-e1
+    - csrd
+    - cdp
+    - sbti-base-year
+    - sec-climate
+    - sb-253
+    - time-series-consistency
+    - recalculation-policy
+    - trigger-detection
+    - adjustment-calculation
+    - provenance
+    - verification
+
+  regulation:
+    primary:
+      name: "GHG Protocol Corporate Standard Chapter 5"
+      reference: "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition, 2015) - Chapter 5: Tracking Emissions Over Time"
+      effective_date: "2015-01-01"
+      description: >-
+        Chapter 5 of the GHG Protocol Corporate Standard defines the
+        requirements for base year selection, establishing a fixed or rolling
+        base year, and policies for recalculating the base year inventory when
+        significant structural or methodological changes occur. The standard
+        requires companies to develop a base year recalculation policy that
+        specifies the basis for recalculation, the significance threshold, and
+        the frequency of review. This pack implements the full Chapter 5
+        requirements including: base year selection criteria (data quality,
+        representative year, earliest reliable data), recalculation triggers
+        (acquisitions, divestitures, mergers, outsourcing/insourcing of
+        emitting activities, changes in calculation methodologies, discovery
+        of significant errors), significance thresholds (recommended 5% of
+        base year total), adjustment methodology (pro-rata inclusion of
+        acquired emissions as if owned in base year, exclusion of divested
+        emissions), and documentation requirements for audit trail.
+
+    secondary:
+      - name: "GHG Protocol Scope 2 Guidance"
+        reference: "GHG Protocol Scope 2 Guidance (2015)"
+        effective_date: "2015-01-01"
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018 Clause 5.4"
+        effective_date: "2018-12-01"
+      - name: "EU CSRD / ESRS E1"
+        reference: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+        effective_date: "2024-01-01"
+      - name: "CDP Climate Change Questionnaire"
+        reference: "CDP Climate Change 2026"
+        effective_date: "2026-01-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi v1.1"
+        effective_date: "2023-01-01"
+      - name: "US SEC Climate Disclosure Rules"
+        reference: "SEC Regulation S-K Item 1505"
+        effective_date: "2024-03-06"
+      - name: "California SB 253"
+        reference: "SB 253 Climate Corporate Data Accountability Act"
+        effective_date: "2026-01-01"
+      - name: "IPCC 2006 Guidelines for National GHG Inventories"
+        reference: "IPCC 2006 (2019 Refinement)"
+        effective_date: "2006-01-01"
+
+  compliance_references:
+    - id: "GHG_PROTOCOL_CH5"
+      name: "GHG Protocol Corporate Standard Chapter 5"
+      regulation: "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition) - Chapter 5"
+      effective_date: "2015-01-01"
+      description: >-
+        This pack fully implements Chapter 5 of the GHG Protocol Corporate
+        Standard for tracking emissions over time. It covers base year
+        selection criteria, fixed and rolling base year approaches,
+        recalculation trigger identification (structural changes including
+        mergers, acquisitions, divestitures, outsourcing, and insourcing;
+        methodology changes including emission factor updates, calculation
+        method improvements, and GWP assessment report changes; and discovery
+        of significant errors or omissions), significance assessment against
+        configurable thresholds (default 5% of base year total), pro-rata
+        adjustment calculation for structural changes, and comprehensive
+        documentation of all recalculation events. The pack enforces the GHG
+        Protocol principle that organic growth and decline do not constitute
+        recalculation triggers.
+
+    - id: "ISO_14064_1"
+      name: "ISO 14064-1:2018 Clause 5.4"
+      regulation: "ISO 14064-1:2018"
+      effective_date: "2018-12-01"
+      description: >-
+        Maps base year management to ISO 14064-1:2018 Clause 5.4 which
+        requires organisations to select a historical base year or base year
+        period and define recalculation conditions. The pack supports the
+        ISO requirement for documenting the base year selection rationale,
+        conditions under which recalculation is triggered, and the
+        methodology used for recalculation. Supports both single-year and
+        multi-year (rolling average) base year approaches as permitted by
+        the standard. Produces output structured for ISO 14064-3
+        verification of base year inventory and recalculation events.
+
+    - id: "ESRS_E1"
+      name: "EU CSRD / ESRS E1 Climate Change"
+      regulation: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+      effective_date: "2024-01-01"
+      description: >-
+        Maps base year data to ESRS E1 disclosure requirements: E1-4
+        (targets related to climate change mitigation and adaptation,
+        including base year and target year for GHG reduction targets),
+        E1-5 (energy consumption and mix with base year reference), and
+        supporting datapoints for base year selection rationale, base year
+        emissions by scope, and explanation of any base year recalculations
+        performed during the reporting period. Supports the ESRS requirement
+        to disclose whether the base year is a single year or multi-year
+        average, and whether recalculations have been made for structural
+        changes.
+
+    - id: "CDP_C5"
+      name: "CDP Climate Change Questionnaire C5"
+      regulation: "CDP Climate Change 2026"
+      effective_date: "2026-01-01"
+      description: >-
+        Maps base year data to CDP Climate Change questionnaire section C5
+        (emissions methodology and performance): C5.1 (base year for Scope 1
+        and Scope 2 emissions), C5.2 (base year emissions and recalculation
+        policy), C5.3 (changes to base year during reporting year with
+        explanation). Provides structured data for direct entry into the
+        CDP online response system including base year selection rationale,
+        total base year emissions by scope, recalculation policy description,
+        and details of any recalculations performed.
+
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      regulation: "SBTi Corporate Net-Zero Standard v1.1"
+      effective_date: "2023-01-01"
+      description: >-
+        Implements SBTi base year requirements for target setting and
+        tracking. SBTi requires the base year to be no earlier than 2015
+        for new target submissions and recommends using the most recent
+        year with reliable data. The pack enforces SBTi-specific constraints:
+        base year must cover minimum 95% of Scope 1+2 emissions, structural
+        changes must be reflected within 12 months, and recalculated base
+        year must be submitted to SBTi for target revalidation if the
+        recalculation changes the base year by more than 5%. Tracks
+        absolute and intensity target pathways against recalculated baselines
+        with 4.2% per annum linear reduction for 1.5C alignment.
+
+    - id: "SEC"
+      name: "US SEC Climate Disclosure Rules"
+      regulation: "SEC Regulation S-K Item 1505"
+      effective_date: "2024-03-06"
+      description: >-
+        Maps base year information to SEC climate disclosure requirements
+        under Regulation S-K Item 1505. Supports disclosure of the base
+        year used for tracking Scope 1 and Scope 2 emission trends, the
+        methodology for base year selection, any recalculations performed
+        during the reporting period with explanation of triggers and
+        impact, and the relationship between base year emissions and
+        any publicly stated emission reduction targets. Provides
+        attestation-ready data with full calculation methodology and
+        audit trail documentation.
+
+    - id: "SB_253"
+      name: "California SB 253"
+      regulation: "SB 253 Climate Corporate Data Accountability Act"
+      effective_date: "2026-01-01"
+      description: >-
+        Supports California SB 253 base year consistency requirements for
+        entities with total revenues exceeding USD 1 billion. Ensures
+        annual Scope 1 and Scope 2 reporting uses a consistent base year
+        for trend comparison as required by the Act. Provides base year
+        recalculation documentation meeting third-party assurance
+        requirements including trigger description, significance
+        assessment, adjustment methodology, and before/after comparison.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 base year engines)
+  # ===========================================================================
+  engines:
+    - id: base_year_selection
+      name: "Base Year Selection Engine"
+      description: >-
+        Evaluates and selects the optimal base year for the GHG inventory
+        using a multi-criteria assessment framework. Evaluation criteria
+        include: data quality score (completeness, accuracy, timeliness of
+        activity data and emission factors), representativeness (whether the
+        year reflects normal operations without one-off events such as plant
+        shutdowns, extreme weather, or pandemic effects), availability of
+        records (source documentation availability for third-party
+        verification), verification status (whether the candidate year has
+        been independently verified), and regulatory constraints (SBTi
+        requires base year no earlier than 2015, ESRS requires disclosure
+        of selection rationale). Supports both single-year and multi-year
+        average (rolling 3-year or 5-year) base year approaches. Produces
+        a ranked list of candidate years with composite scores and a
+        recommendation with supporting rationale. Handles multi-entity
+        organisations where different subsidiaries may have different data
+        availability start dates by identifying the earliest year with
+        acceptable coverage across all material entities.
+        Zero-hallucination: criteria scoring from data quality metrics and
+        coverage statistics, no LLM in scoring or selection logic.
+      class: "BaseYearSelectionEngine"
+      file: "engines/base_year_selection_engine.py"
+      required: true
+
+    - id: base_year_inventory
+      name: "Base Year Inventory Engine"
+      description: >-
+        Establishes and stores the base year inventory with complete
+        source-level detail and full provenance chain. Captures the base
+        year emissions at every level of granularity: total inventory,
+        scope level (Scope 1, Scope 2 location-based, Scope 2 market-based,
+        Scope 3 by category), entity level (subsidiary, joint venture,
+        associate), facility level, source category level (stationary
+        combustion, mobile combustion, etc.), individual source level
+        (each boiler, vehicle, meter), and gas level (CO2, CH4, N2O, HFCs,
+        PFCs, SF6, NF3). Stores the complete calculation chain: activity
+        data values with units and source documents, emission factors with
+        source database, vintage, and geographic scope, GWP values with
+        assessment report reference, and consolidation approach with
+        ownership percentages. Maintains a cryptographic provenance hash
+        (SHA-256) linking the base year inventory to the underlying source
+        data, ensuring any subsequent tampering is detectable. Supports
+        versioning of the base year inventory with full audit trail of
+        all modifications.
+        Zero-hallucination: inventory storage and retrieval from calculated
+        values, SHA-256 hashing from standard library, no LLM.
+      class: "BaseYearInventoryEngine"
+      file: "engines/base_year_inventory_engine.py"
+      required: true
+
+    - id: recalculation_policy
+      name: "Recalculation Policy Engine"
+      description: >-
+        Defines, validates, and enforces the organisation's base year
+        recalculation policy per GHG Protocol Chapter 5 requirements.
+        Policy parameters include: significance threshold (percentage of
+        base year total emissions that constitutes a significant change,
+        default 5%, configurable from 1% to 15%), allowed trigger categories
+        (structural changes, methodology changes, error discovery),
+        cumulative impact tracking (whether multiple small changes that
+        individually fall below the threshold but cumulatively exceed it
+        should trigger recalculation), rolling vs fixed approach (fixed
+        base year with recalculation, or rolling 3/5-year average),
+        approval workflow requirements (number of approval levels, required
+        roles), documentation requirements (minimum documentation per
+        trigger type), and review frequency (annual review of policy
+        adequacy). Validates policy against regulatory requirements: SBTi
+        requires maximum 5% threshold, ESRS requires disclosure of policy,
+        GHG Protocol requires documented policy. Produces policy document
+        suitable for external disclosure and verifier review.
+        Zero-hallucination: policy validation from regulatory rules stored
+        in configuration, no LLM in policy enforcement.
+      class: "RecalculationPolicyEngine"
+      file: "engines/recalculation_policy_engine.py"
+      required: true
+
+    - id: recalculation_trigger
+      name: "Recalculation Trigger Engine"
+      description: >-
+        Detects and classifies events that may constitute base year
+        recalculation triggers. Monitors three categories of triggers per
+        GHG Protocol Chapter 5: (1) STRUCTURAL CHANGES - acquisitions
+        (new entities entering the organisational boundary), divestitures
+        (entities leaving the boundary), mergers (combination of entities),
+        spin-offs (separation into independent entities), outsourcing
+        (transfer of emitting activities to third parties), insourcing
+        (assumption of previously outsourced emitting activities); (2)
+        METHODOLOGY CHANGES - emission factor source changes (e.g., switch
+        from DEFRA to EPA), calculation methodology updates (e.g., Tier 1
+        to Tier 2), GWP assessment report changes (e.g., AR5 to AR6),
+        allocation method changes, improved data availability (e.g., switch
+        from estimates to metered data); (3) ERROR DISCOVERY - significant
+        errors found in historical activity data, emission factor
+        misapplication, unit conversion errors, double counting identified,
+        scope misclassification. Explicitly excludes organic growth and
+        decline from triggers per GHG Protocol. Integrates with ERP
+        systems and corporate event feeds for automated detection of M&A
+        events. Produces trigger event records with classification, date,
+        affected entities, estimated impact, and recommended action.
+        Zero-hallucination: trigger classification from event attributes
+        against rule-based criteria, no LLM in trigger detection.
+      class: "RecalculationTriggerEngine"
+      file: "engines/recalculation_trigger_engine.py"
+      required: true
+
+    - id: significance_assessment
+      name: "Significance Assessment Engine"
+      description: >-
+        Quantitatively assesses the significance of detected triggers
+        against the organisation's recalculation policy thresholds.
+        Calculates multiple significance metrics: (1) ABSOLUTE IMPACT -
+        the absolute change in base year emissions (tCO2e) if the trigger
+        were applied retroactively, (2) PERCENTAGE IMPACT - the change as
+        a percentage of total base year emissions, compared against the
+        policy significance threshold, (3) SCOPE-LEVEL IMPACT - the change
+        as a percentage of the affected scope (Scope 1, Scope 2, or
+        specific Scope 3 categories), (4) CUMULATIVE IMPACT - the combined
+        effect of the current trigger plus all previous triggers that
+        individually fell below the threshold but were tracked for
+        cumulative assessment, (5) TARGET IMPACT - the effect on stated
+        reduction targets if the base year is not recalculated. Implements
+        both single-trigger and cumulative-trigger significance tests.
+        Produces significance assessment reports with quantitative metrics,
+        threshold comparison, and determination (SIGNIFICANT triggering
+        recalculation, NOT SIGNIFICANT with documented rationale, or
+        BORDERLINE requiring management review). Handles multi-scope
+        triggers where the impact may be significant for one scope but
+        not another.
+        Zero-hallucination: significance metrics from arithmetic comparison
+        of estimated impact against threshold values, no LLM.
+      class: "SignificanceAssessmentEngine"
+      file: "engines/significance_assessment_engine.py"
+      required: true
+
+    - id: base_year_adjustment
+      name: "Base Year Adjustment Engine"
+      description: >-
+        Calculates the actual base year inventory adjustments for triggers
+        that have been assessed as significant. Implements adjustment
+        methodologies per GHG Protocol Chapter 5: (1) ACQUISITION
+        ADJUSTMENT - adds the acquired entity's emissions to the base year
+        as if the entity had been owned in the base year, using the
+        acquired entity's actual base year emissions if available, or
+        estimating from the first full year of data under the reporting
+        entity's boundary with pro-rata scaling; (2) DIVESTITURE
+        ADJUSTMENT - removes the divested entity's base year emissions
+        from the base year inventory, using the entity's actual base year
+        contribution; (3) MERGER ADJUSTMENT - combines both entities'
+        base year inventories into a new consolidated base year; (4)
+        OUTSOURCING ADJUSTMENT - reclassifies emissions from Scope 1/2
+        to Scope 3 (or vice versa for insourcing) in the base year;
+        (5) METHODOLOGY ADJUSTMENT - recalculates base year emissions
+        using the updated methodology (new emission factors, calculation
+        methods, or GWP values) applied to original activity data; (6)
+        ERROR CORRECTION - corrects the specific error in base year
+        activity data or calculation and recomputes affected emissions.
+        Produces detailed adjustment records showing line-by-line changes
+        with before/after values and adjustment rationale. Maintains full
+        version history of the base year inventory.
+        Zero-hallucination: adjustments from arithmetic operations on
+        stored inventory data, no LLM in any adjustment calculation.
+      class: "BaseYearAdjustmentEngine"
+      file: "engines/base_year_adjustment_engine.py"
+      required: true
+
+    - id: time_series_consistency
+      name: "Time Series Consistency Engine"
+      description: >-
+        Ensures consistency across the full time series from the base year
+        to the current reporting period. Validates that all comparison years
+        use consistent: (1) ORGANISATIONAL BOUNDARY - same consolidation
+        approach and entity coverage across all years, with adjustments
+        for boundary changes reflected in the base year and all
+        intervening years; (2) OPERATIONAL BOUNDARY - same emission source
+        categories included in each year, with new sources added to both
+        current and base year where applicable; (3) METHODOLOGY - same
+        calculation methodology tier and emission factor source applied
+        consistently, or base year recalculated if methodology changes;
+        (4) GWP VALUES - same assessment report (AR4, AR5, or AR6) used
+        for all years in the time series, or all years restated to the
+        new assessment report; (5) SCOPE DEFINITIONS - consistent
+        classification of emissions between Scope 1, Scope 2, and Scope 3
+        across all years. Detects inconsistencies automatically by
+        comparing methodology metadata across years. Generates time-series
+        consistency reports flagging any years with methodology breaks and
+        recommending remediation actions. Supports restatement of
+        intervening years when base year is recalculated to maintain
+        a consistent trend line.
+        Zero-hallucination: consistency validation from metadata comparison
+        and rule-based checks, no LLM.
+      class: "TimeSeriesConsistencyEngine"
+      file: "engines/time_series_consistency_engine.py"
+      required: true
+
+    - id: target_tracking
+      name: "Target Tracking Engine"
+      description: >-
+        Tracks emission reduction targets against the base year and
+        automatically propagates base year adjustments to target pathways.
+        Supports multiple target types: (1) ABSOLUTE TARGETS - fixed
+        reduction in tCO2e from base year (e.g., 42% reduction by 2030),
+        recalculated when base year changes; (2) INTENSITY TARGETS -
+        reduction per activity denominator (e.g., tCO2e/MEUR revenue),
+        base year intensity recalculated when numerator or denominator
+        changes; (3) SBTI TARGETS - tracks against SBTi-required linear
+        reduction pathway (4.2% per annum for 1.5C near-term), recalculates
+        target year absolute value when base year changes; (4) SECTOR
+        TARGETS - sector-specific absolute contraction or intensity
+        convergence targets per SBTi sector pathways. Calculates: current
+        period emissions as percentage of base year, year-on-year reduction
+        rate, cumulative reduction since base year, gap to target pathway,
+        and projected target achievement date. Handles target rebasing
+        when base year adjustments exceed SBTi materiality thresholds
+        (typically 5%), triggering target revalidation notification.
+        Produces target tracking dashboards, progress reports, and
+        gap analysis documents.
+        Zero-hallucination: target tracking from arithmetic comparison of
+        actual emissions against linear/exponential target pathways, no LLM.
+      class: "TargetTrackingEngine"
+      file: "engines/target_tracking_engine.py"
+      required: true
+
+    - id: base_year_audit
+      name: "Base Year Audit Engine"
+      description: >-
+        Provides comprehensive audit trail and verification support for
+        all base year operations. Records every base year event with
+        SHA-256 provenance hashing: base year selection decision (criteria
+        scores, selected year, rationale), initial inventory establishment
+        (source-level detail, calculation chain, provenance hash), policy
+        definition (policy version, parameters, approval), trigger
+        detection (event classification, affected entities, estimated
+        impact), significance assessment (metrics, threshold comparison,
+        determination), adjustment calculation (before/after values,
+        adjustment methodology, line-by-line changes), time-series
+        restatement (years affected, changes per year), and target
+        recalculation (original and restated target values). Supports
+        third-party verification requirements per ISO 14064-3 and ISAE
+        3410 by providing: management assertion on base year inventory
+        completeness and accuracy, methodology documentation for all
+        adjustments, evidence trail linking adjustments to source
+        documents, and version history with full diff capability between
+        any two base year inventory versions. Generates audit-ready
+        reports with cross-references to supporting evidence.
+        Zero-hallucination: audit records from event logging and SHA-256
+        hashing, no LLM.
+      class: "BaseYearAuditEngine"
+      file: "engines/base_year_audit_engine.py"
+      required: true
+
+    - id: base_year_reporting
+      name: "Base Year Reporting Engine"
+      description: >-
+        Generates comprehensive base year management reports in multiple
+        formats for different audiences and regulatory frameworks.
+        Executive summary: base year overview with total emissions by
+        scope, recalculation history summary, target progress, and key
+        changes during the reporting period. Detailed inventory: complete
+        base year inventory at source level with full provenance chain.
+        Recalculation report: trigger description, significance assessment,
+        adjustment detail with before/after comparison, and impact on
+        targets. Policy compliance report: assessment of whether base year
+        management practices conform to GHG Protocol Chapter 5 and other
+        regulatory requirements. Framework-specific outputs: GHG Protocol
+        Chapter 5 disclosure, ISO 14064-1 Clause 5.4 documentation, ESRS
+        E1-4/E1-5 datapoints, CDP C5.1-C5.3 response data, SBTi base
+        year documentation, SEC base year disclosure, and SB 253 base year
+        consistency documentation. Supports output formats: HTML, PDF-ready
+        HTML, JSON, CSV, and structured XBRL-ready data for ESRS digital
+        reporting. Includes data visualisations: emission trend lines with
+        base year adjustments highlighted, before/after waterfall charts,
+        target pathway comparison charts, and time-series consistency
+        heat maps.
+        Zero-hallucination: report content from stored inventory and
+        adjustment data, narrative templates with placeholders, no LLM
+        in data content.
+      class: "BaseYearReportingEngine"
+      file: "engines/base_year_reporting_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 base year workflows)
+  # ===========================================================================
+  workflows:
+    - id: base_year_establishment
+      name: "Base Year Establishment Workflow"
+      description: >-
+        6-phase workflow for establishing the initial base year: Phase 1 -
+        Candidate Evaluation (evaluate candidate years using data quality
+        scores, completeness metrics, representativeness assessment, and
+        verification status across all material entities) -> Phase 2 -
+        Year Selection (select base year based on composite score,
+        regulatory constraints such as SBTi post-2015 requirement, and
+        management preference; document rationale) -> Phase 3 -
+        Inventory Capture (capture the complete base year inventory from
+        PACK-041/042/043 calculation results at source, facility, entity,
+        scope, and gas level with full calculation chain and emission
+        factor citations) -> Phase 4 - Provenance Sealing (compute
+        SHA-256 provenance hashes at every level of the base year
+        inventory hierarchy, creating an immutable audit trail) ->
+        Phase 5 - Policy Definition (define recalculation policy with
+        significance threshold, allowed triggers, cumulative tracking
+        preference, approval workflow, and review frequency) -> Phase 6 -
+        Verification Readiness (generate base year documentation package
+        suitable for third-party verification, including inventory detail,
+        selection rationale, policy document, and evidence register).
+      schedule: "on_demand"
+      estimated_duration_minutes: 360
+      phases: 6
+
+    - id: recalculation_assessment
+      name: "Recalculation Assessment Workflow"
+      description: >-
+        4-phase workflow for assessing whether a detected event triggers
+        base year recalculation: Phase 1 - Event Classification (classify
+        the event as structural change, methodology change, error
+        discovery, or organic growth/decline; if organic growth, terminate
+        workflow with documented NO_RECALCULATION determination) ->
+        Phase 2 - Impact Estimation (estimate the quantitative impact
+        of the event on base year emissions using available data: acquired
+        entity emissions for M&A, emission factor difference for
+        methodology changes, error magnitude for corrections) -> Phase 3 -
+        Significance Testing (compare estimated impact against the
+        organisation's significance threshold; calculate absolute impact,
+        percentage impact, scope-level impact, and cumulative impact;
+        determine SIGNIFICANT, NOT_SIGNIFICANT, or BORDERLINE) -> Phase 4 -
+        Decision Documentation (document the assessment outcome with full
+        quantitative analysis, threshold comparison, determination, and
+        recommended next steps; route SIGNIFICANT triggers to
+        Recalculation Execution Workflow; route BORDERLINE triggers to
+        management review).
+      schedule: "on_demand"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: recalculation_execution
+      name: "Recalculation Execution Workflow"
+      description: >-
+        6-phase workflow for executing base year recalculation: Phase 1 -
+        Pre-Recalculation Snapshot (capture the current base year inventory
+        in full detail as the pre-recalculation version for comparison) ->
+        Phase 2 - Data Preparation (gather the data needed for
+        recalculation: acquired entity historical activity data for M&A,
+        original activity data with new emission factors for methodology
+        changes, corrected activity data for error corrections) ->
+        Phase 3 - Adjustment Calculation (calculate line-by-line
+        adjustments using the appropriate methodology: pro-rata for
+        acquisitions, removal for divestitures, recomputation for
+        methodology changes, correction for errors) -> Phase 4 -
+        Inventory Update (apply adjustments to the base year inventory,
+        update all aggregation levels from source through scope to total,
+        recompute consolidation, update provenance hashes) -> Phase 5 -
+        Time-Series Restatement (propagate adjustments to all intervening
+        years between base year and current period to maintain consistent
+        time series) -> Phase 6 - Target Recalculation (recalculate all
+        absolute and intensity targets against the adjusted base year,
+        update SBTi pathway, generate target restatement documentation).
+      schedule: "on_demand"
+      estimated_duration_minutes: 480
+      phases: 6
+
+    - id: target_rebasing
+      name: "Target Rebasing Workflow"
+      description: >-
+        4-phase workflow for rebasing reduction targets after base year
+        adjustment: Phase 1 - Impact Assessment (calculate the effect of
+        the base year adjustment on each active target: absolute target
+        change in tCO2e, intensity target change per denominator, SBTi
+        pathway shift) -> Phase 2 - Target Restatement (restate each
+        target against the adjusted base year: recalculate target year
+        absolute value, recalculate annual reduction requirement, update
+        linear pathway, compare original vs restated trajectories) ->
+        Phase 3 - SBTi Compliance Check (assess whether the base year
+        change exceeds SBTi materiality thresholds requiring target
+        revalidation; if so, prepare SBTi notification package with
+        original and restated base year, recalculation rationale, and
+        updated target pathway) -> Phase 4 - Stakeholder Communication
+        (generate target restatement communication for board, investors,
+        and external stakeholders explaining the base year change, its
+        impact on targets, and confirmation that reduction ambition is
+        maintained).
+      schedule: "on_demand"
+      estimated_duration_minutes: 180
+      phases: 4
+
+    - id: audit_verification
+      name: "Audit Verification Workflow"
+      description: >-
+        5-phase workflow for preparing base year audit and verification
+        packages: Phase 1 - Evidence Assembly (compile all source
+        documentation for the base year inventory: invoices, meter
+        readings, fuel records, emission factor citations, ownership
+        records for consolidation, and M&A transaction documents) ->
+        Phase 2 - Calculation Reproduction (reproduce all base year
+        calculations from source data using the documented methodology
+        to verify arithmetic accuracy, cross-referencing SHA-256
+        provenance hashes) -> Phase 3 - Adjustment Verification (verify
+        each base year adjustment by reproducing the significance
+        assessment, confirming the adjustment methodology matches the
+        stated policy, and validating before/after figures) -> Phase 4 -
+        Consistency Verification (verify time-series consistency across
+        all years: methodology consistency, boundary consistency, GWP
+        consistency, and scope classification consistency) -> Phase 5 -
+        Package Generation (assemble the verification package per
+        ISO 14064-3 or ISAE 3410: management assertion, base year
+        inventory, recalculation log, evidence register, methodology
+        documentation, and QA/QC checklist).
+      schedule: "annual"
+      estimated_duration_minutes: 480
+      phases: 5
+
+    - id: annual_review
+      name: "Annual Review Workflow"
+      description: >-
+        4-phase workflow for the mandatory annual review of base year
+        and recalculation policy: Phase 1 - Trigger Scan (scan the
+        past 12 months for any events that may constitute recalculation
+        triggers: corporate events from ERP/M&A feeds, emission factor
+        updates published by DEFRA/EPA/IEA, methodology changes adopted,
+        and error discoveries from QA/QC processes) -> Phase 2 -
+        Cumulative Impact Review (review the cumulative impact of all
+        triggers assessed as individually not significant during the
+        year; if cumulative impact exceeds the significance threshold,
+        flag for recalculation) -> Phase 3 - Policy Adequacy Assessment
+        (review whether the current recalculation policy remains
+        adequate: is the threshold appropriate, are trigger categories
+        complete, does the approval workflow function effectively, are
+        documentation standards met) -> Phase 4 - Annual Report
+        (produce the annual base year review report documenting triggers
+        assessed, cumulative impact status, policy review outcome, and
+        any recommended policy updates for management approval).
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: merger_acquisition
+      name: "Merger & Acquisition Workflow"
+      description: >-
+        6-phase workflow specifically for M&A events which represent the
+        most common and complex base year recalculation trigger: Phase 1 -
+        Transaction Identification (identify the M&A transaction details:
+        acquired/divested entity, effective date, ownership percentage,
+        consolidation approach impact, affected facilities and emission
+        sources) -> Phase 2 - Historical Data Collection (collect the
+        target entity's historical GHG inventory for the base year period:
+        activity data by source, emission factors used, methodology tier,
+        and any existing third-party verification) -> Phase 3 - Data
+        Quality Assessment (assess the quality of the acquired entity's
+        historical data: completeness, methodology tier, emission factor
+        vintage, and verification status; identify data gaps requiring
+        estimation) -> Phase 4 - Pro-Rata Calculation (calculate the
+        pro-rata adjustment: for acquisitions, add acquired emissions to
+        base year; for divestitures, remove divested emissions; for
+        partial ownership changes, adjust ownership percentages in base
+        year consolidation) -> Phase 5 - Significance Assessment (assess
+        whether the M&A impact exceeds the significance threshold; if not
+        significant, document and close; if significant, proceed to
+        recalculation) -> Phase 6 - Base Year Update (apply the M&A
+        adjustment to base year, restate time series, recalculate
+        targets, and generate M&A-specific recalculation documentation
+        including transaction details, data sources, estimation methods,
+        and before/after comparison).
+      schedule: "on_demand"
+      estimated_duration_minutes: 600
+      phases: 6
+
+    - id: full_base_year_pipeline
+      name: "Full Base Year Pipeline Workflow"
+      description: >-
+        10-phase end-to-end base year management pipeline: Phase 1 -
+        Health Check (verify all engines, databases, PACK-041/042/043
+        availability, and configuration integrity) -> Phase 2 -
+        Configuration Loading (load base year policy, significance
+        thresholds, sector preset, and custom overrides) -> Phase 3 -
+        Trigger Detection (scan for all potential recalculation triggers
+        from corporate events, methodology changes, and error
+        discoveries over the assessment period) -> Phase 4 - Trigger
+        Classification (classify each detected trigger as structural,
+        methodological, or error; filter out organic growth) -> Phase 5 -
+        Significance Assessment (assess each trigger's impact against
+        policy thresholds, both individually and cumulatively) -> Phase 6 -
+        Adjustment Calculation (for significant triggers, calculate
+        line-by-line base year adjustments using appropriate methodology)
+        -> Phase 7 - Inventory Update (apply all adjustments, update
+        aggregations, recompute provenance hashes) -> Phase 8 -
+        Time-Series Restatement (propagate changes through all
+        comparison years) -> Phase 9 - Target Recalculation (rebase
+        all targets against adjusted base year, assess SBTi
+        revalidation need) -> Phase 10 - Reporting (generate full
+        base year management report suite: executive summary, detailed
+        adjustments, policy compliance, framework-specific outputs,
+        and verification package).
+      schedule: "annual"
+      estimated_duration_minutes: 720
+      phases: 10
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 base year templates)
+  # ===========================================================================
+  templates:
+    - id: base_year_selection_report
+      display_name: "Base Year Selection Report"
+      description: >-
+        Comprehensive report documenting the base year selection process
+        including candidate year evaluation matrix (data quality scores,
+        completeness percentages, representativeness assessment, verification
+        status), composite scoring methodology, selected year with
+        rationale, regulatory constraint compliance (SBTi post-2015
+        check, ESRS disclosure requirements), and management approval
+        record. Includes data quality charts by candidate year and entity
+        coverage heat maps.
+      format: "html"
+      template_file: "templates/base_year_selection_report.jinja2"
+      enabled: true
+
+    - id: inventory_summary_report
+      display_name: "Base Year Inventory Summary Report"
+      description: >-
+        Summary of the base year inventory with total emissions by scope
+        (Scope 1, Scope 2 location-based, Scope 2 market-based, Scope 3
+        by category if available), entity-level breakdown, facility-level
+        breakdown for material entities, gas composition (CO2, CH4, N2O,
+        HFCs, PFCs, SF6, NF3 in CO2e), consolidation approach applied,
+        methodology tier coverage, and data quality indicators. Includes
+        pie charts, bar charts, and Sankey diagrams showing emission flows
+        from source through scope to total.
+      format: "html"
+      template_file: "templates/inventory_summary_report.jinja2"
+      enabled: true
+
+    - id: recalculation_trigger_report
+      display_name: "Recalculation Trigger Report"
+      description: >-
+        Report documenting all detected recalculation triggers during the
+        assessment period. For each trigger: event description, date,
+        trigger category (structural, methodology, error), affected
+        entities and scopes, estimated impact (absolute tCO2e and
+        percentage of base year), significance determination (SIGNIFICANT,
+        NOT_SIGNIFICANT, BORDERLINE), and recommended action. Includes
+        cumulative impact tracking table showing the running total of
+        individually non-significant triggers. Summary statistics:
+        total triggers detected, triggers by category, triggers assessed
+        as significant, and cumulative impact status.
+      format: "html"
+      template_file: "templates/recalculation_trigger_report.jinja2"
+      enabled: true
+
+    - id: adjustment_detail_report
+      display_name: "Base Year Adjustment Detail Report"
+      description: >-
+        Detailed report for each base year adjustment showing: trigger
+        description and significance assessment reference, adjustment
+        methodology applied (pro-rata acquisition, divestiture removal,
+        methodology recomputation, error correction), line-by-line changes
+        at source level with before value, adjustment amount, and after
+        value for each affected emission source, aggregation roll-up
+        showing impact at facility, entity, scope, and total level,
+        waterfall chart showing the components of the adjustment from
+        original to adjusted base year, and provenance trail linking
+        each adjustment to source documentation.
+      format: "html"
+      template_file: "templates/adjustment_detail_report.jinja2"
+      enabled: true
+
+    - id: time_series_dashboard
+      display_name: "Time Series Consistency Dashboard"
+      description: >-
+        Visual dashboard showing the complete emission time series from
+        base year to current period with consistency annotations.
+        Features: multi-year trend line with base year adjustments
+        highlighted (vertical markers showing adjustment events),
+        methodology consistency heat map (years x methodology parameters),
+        boundary consistency matrix (years x entities), GWP version
+        tracker, scope classification consistency checker, and data
+        quality trend over time. Flags any inconsistencies with
+        remediation recommendations.
+      format: "html"
+      template_file: "templates/time_series_dashboard.jinja2"
+      enabled: true
+
+    - id: target_progress_report
+      display_name: "Target Progress Report"
+      description: >-
+        Target tracking report showing progress against all active
+        reduction targets. For each target: target description and type
+        (absolute, intensity, SBTi near-term, SBTi long-term),
+        base year emissions (original and current after any adjustments),
+        target year value, current year emissions, percentage reduction
+        achieved, annual reduction rate, comparison to required linear
+        pathway, gap analysis (ahead/behind target by tCO2e), and
+        projected achievement date at current trajectory. Includes
+        target pathway charts with actual emissions overlay, and
+        impact of any base year adjustments on target values with
+        before/after comparison.
+      format: "html"
+      template_file: "templates/target_progress_report.jinja2"
+      enabled: true
+
+    - id: audit_trail_report
+      display_name: "Audit Trail Report"
+      description: >-
+        Comprehensive audit trail report listing every base year operation
+        in chronological order with full detail. For each event: timestamp,
+        event type (selection, establishment, trigger detection, assessment,
+        adjustment, restatement, target recalculation), actor (user or
+        system), description, affected inventory items, quantitative
+        impact, SHA-256 provenance hash, and cross-reference to supporting
+        evidence. Includes version history of the base year inventory
+        showing all modifications with diff capability between any two
+        versions. Suitable for third-party verification examination.
+      format: "html"
+      template_file: "templates/audit_trail_report.jinja2"
+      enabled: true
+
+    - id: policy_compliance_report
+      display_name: "Base Year Policy Compliance Report"
+      description: >-
+        Assessment of whether base year management practices conform to
+        the documented recalculation policy and regulatory requirements.
+        Checks: all triggers processed within policy timeframes, all
+        significance assessments use correct thresholds, all adjustment
+        methodologies match policy specifications, cumulative impact
+        tracking is current, annual review completed, policy document
+        current and approved. Maps compliance to each framework: GHG
+        Protocol Chapter 5 requirements met, ISO 14064-1 Clause 5.4
+        satisfied, ESRS E1 disclosure datapoints populated, CDP C5
+        responses complete, SBTi base year criteria met. Flags any
+        non-conformances with remediation recommendations.
+      format: "html"
+      template_file: "templates/policy_compliance_report.jinja2"
+      enabled: true
+
+    - id: merger_acquisition_report
+      display_name: "Merger & Acquisition Impact Report"
+      description: >-
+        Specialised report for M&A events documenting the complete
+        impact on the base year inventory. Includes: transaction details
+        (entity name, acquisition/divestiture date, ownership percentage,
+        affected facilities), historical data quality assessment for the
+        acquired/divested entity, pro-rata adjustment calculation with
+        methodology documentation, significance assessment with threshold
+        comparison, before/after base year comparison at total, scope,
+        entity, and facility levels, impact on reduction targets, SBTi
+        revalidation assessment, and restated time series. Includes
+        waterfall charts showing the M&A adjustment contribution and
+        entity ownership diagrams before and after the transaction.
+      format: "html"
+      template_file: "templates/merger_acquisition_report.jinja2"
+      enabled: true
+
+    - id: executive_summary_report
+      display_name: "Base Year Executive Summary"
+      description: >-
+        C-suite executive summary with base year overview, key metrics,
+        and status indicators. Includes: base year year and total
+        emissions by scope, number of recalculation events during the
+        period, most recent adjustment date and impact, cumulative
+        adjustment since original base year establishment, current
+        target progress summary, data quality indicators, and next
+        review date. One-page format with KPI cards, trend sparklines,
+        and traffic-light status indicators for policy compliance,
+        target trajectory, and data quality.
+      format: "html"
+      template_file: "templates/executive_summary_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Base Year Pack Orchestrator"
+      description: >-
+        10-phase master pipeline for base year management: Health Check ->
+        Configuration Loading -> Trigger Detection -> Trigger Classification
+        -> Significance Assessment -> Adjustment Calculation -> Inventory
+        Update -> Time-Series Restatement -> Target Recalculation ->
+        Reporting and Compliance Mapping. Implements DAG-based dependency
+        resolution across the 10 base year engines, sequential execution
+        where order matters (trigger detection before significance
+        assessment, significance assessment before adjustment calculation),
+        and error recovery with partial result preservation. Coordinates
+        with PACK-041/042/043 for emission recalculation and PACK-044
+        for governance approval workflows.
+      required: true
+
+    - id: pack041_bridge
+      name: "PACK-041 Scope 1-2 Bridge"
+      description: >-
+        Bridges to PACK-041 (Scope 1-2 Complete) for accessing base year
+        Scope 1 and Scope 2 inventory data, triggering recalculation of
+        base year emissions using current methodology, and retrieving
+        emission factor and GWP configuration. Used during base year
+        establishment to capture Scope 1+2 inventory, and during
+        recalculation to recompute base year emissions with updated
+        methodology. Reads from PACK-041 engines: InventoryConsolidation,
+        EmissionFactorManagement, GWPConversion, and BoundaryAssessment.
+      required: true
+
+    - id: pack042_bridge
+      name: "PACK-042 Scope 3 Starter Bridge"
+      description: >-
+        Bridges to PACK-042 (Scope 3 Starter) for accessing base year
+        upstream Scope 3 inventory data. Used when base year includes
+        Scope 3 categories (Category 1-8). Supports base year
+        recalculation for Scope 3 triggers such as changes in spend
+        classification methodology, emission factor database changes,
+        or supplier data improvements. Optional dependency: base year
+        management operates without Scope 3 data if PACK-042 is not
+        deployed, but tracks Scope 3 base year if available.
+      required: false
+
+    - id: pack043_bridge
+      name: "PACK-043 Scope 3 Complete Bridge"
+      description: >-
+        Bridges to PACK-043 (Scope 3 Complete) for accessing full value
+        chain base year inventory data across all 15 Scope 3 categories.
+        Supports enterprise-tier base year management where reduction
+        targets cover Scope 3 (required by SBTi for companies where
+        Scope 3 exceeds 40% of total emissions). Handles complex
+        recalculation scenarios such as supplier methodology changes
+        affecting Category 1, logistics provider changes affecting
+        Category 4 and 9, and investment portfolio changes affecting
+        Category 15.
+      required: false
+
+    - id: pack044_bridge
+      name: "PACK-044 GHG Governance Bridge"
+      description: >-
+        Bridges to PACK-044 (GHG Governance) for routing base year
+        decisions through the organisation's governance approval workflow.
+        Routes recalculation significance determinations to appropriate
+        approval levels (BORDERLINE triggers to management review,
+        SIGNIFICANT triggers to sustainability committee), policy changes
+        to board-level approval, and target restatements to stakeholder
+        communication workflows. Ensures all base year changes follow
+        the governance framework's approval matrix and documentation
+        standards.
+      required: false
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Direct bridge to all 30 MRV agents (MRV-001 through MRV-030)
+        for triggering emission recalculation at the individual source
+        level during base year adjustment. When a methodology change
+        requires recalculation, routes the original base year activity
+        data to the relevant MRV agent with the updated emission factors
+        or calculation parameters. Supports selective recalculation
+        (only affected sources) and full recalculation (all sources in
+        the affected scope). Collects recalculated emissions and feeds
+        them to the Base Year Adjustment Engine.
+      required: true
+
+    - id: data_bridge
+      name: "Data Agent Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for retrieving historical activity
+        data during base year establishment and recalculation. Routes
+        historical invoices through DATA-001 (PDF extraction), historical
+        meter records through DATA-002 (Excel/CSV normalization), ERP
+        historical data through DATA-003, and emission factor database
+        queries through DATA-004. Uses DATA-010 (Data Quality Profiler)
+        for assessing historical data quality scores during base year
+        candidate evaluation. Uses DATA-018 (Data Lineage Tracker) for
+        maintaining the provenance chain from source documents through
+        to base year inventory figures.
+      required: true
+
+    - id: foundation_bridge
+      name: "Foundation Agent Bridge"
+      description: >-
+        Connects to AGENT-FOUND agents for core platform services.
+        FOUND-001 (Orchestrator) for DAG-based engine execution,
+        FOUND-002 (Schema Compiler) for validating base year data
+        schemas, FOUND-003 (Unit Normalizer) for ensuring unit
+        consistency across historical data from different periods,
+        FOUND-004 (Assumptions Registry) for tracking assumptions in
+        estimation methods used for acquired entity historical data,
+        FOUND-005 (Citations & Evidence) for linking adjustments to
+        source evidence, FOUND-006 (Access & Policy Guard) for
+        enforcing role-based access to base year modification
+        operations, FOUND-008 (Reproducibility) for SHA-256
+        provenance chain management, FOUND-010 (Observability)
+        for monitoring base year pipeline health and performance.
+      required: true
+
+    - id: erp_connector
+      name: "ERP Connector"
+      description: >-
+        Connects to ERP and corporate systems for automated detection
+        of M&A events, organisational structure changes, and financial
+        data for intensity denominators. Monitors corporate event feeds
+        for: acquisition completions (new entities entering boundary),
+        divestiture completions (entities leaving boundary), corporate
+        restructuring (entity mergers, spin-offs), outsourcing contracts
+        (emitting activities transferred to third parties), and insourcing
+        decisions (previously outsourced activities brought in-house).
+        Retrieves financial data (revenue, headcount, production volumes)
+        for intensity metric recalculation. Supports SAP, Oracle,
+        Microsoft Dynamics, and generic REST/ODBC connectors.
+      required: false
+
+    - id: notification_bridge
+      name: "Notification Bridge"
+      description: >-
+        Multi-channel notification for base year management events.
+        Trigger alerts: new recalculation trigger detected, significance
+        assessment completed with determination, adjustment calculated
+        with impact summary. Approval requests: borderline significance
+        determination requiring management review, policy change requiring
+        board approval, target restatement requiring stakeholder
+        communication. Deadline reminders: annual review due, SBTi
+        revalidation deadline, ESRS reporting deadline for base year
+        disclosures. Performance alerts: base year pipeline execution
+        status, data quality degradation in historical data, consistency
+        check failures. Supports email, Slack, Microsoft Teams, and
+        webhook channels.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        12-category system verification for base year operations: all 10
+        base year engines operational, PACK-041 bridge connected and
+        responsive, PACK-042/043 bridges available (if deployed), database
+        connectivity with base year schema tables, historical activity
+        data accessibility, recalculation policy loaded and valid,
+        significance thresholds configured, target definitions loaded,
+        template integrity verified, notification channels configured,
+        audit trail storage operational, and deployment readiness
+        assessment.
+      required: false
+
+    - id: setup_wizard
+      name: "Base Year Setup Wizard"
+      description: >-
+        8-step guided configuration for base year management: Step 1 -
+        Base Year Selection (evaluate candidates, select year, document
+        rationale) -> Step 2 - Inventory Import (import base year
+        inventory from PACK-041/042/043 or manual upload) -> Step 3 -
+        Recalculation Policy (define significance threshold, trigger
+        categories, cumulative tracking, approval levels) -> Step 4 -
+        Target Definition (define absolute and intensity targets with
+        target years, SBTi alignment if applicable) -> Step 5 -
+        Trigger Sources (configure M&A event feeds, ERP connectors,
+        methodology change monitors) -> Step 6 - Notification Setup
+        (configure alert channels and recipients for trigger, approval,
+        and deadline notifications) -> Step 7 - Sector Preset (select
+        and customise sector-specific preset) -> Step 8 - Verification
+        (run health check and validate complete configuration).
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: corporate_office
+      name: "Corporate Office Preset"
+      description: >-
+        Configuration for office-based organisations where base year
+        management is primarily driven by Scope 2 changes and corporate
+        restructuring. Common triggers: office relocations (grid factor
+        changes), outsourcing of facility management, M&A of service
+        companies. Significance threshold: 5% (default). Scope 2
+        emphasis with market-based instrument tracking. Intensity
+        denominators: per employee (FTE) and per m2 of office space.
+        Suitable for financial services, technology, consulting, and
+        professional services firms.
+      sector_type: "OFFICE"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - time_series_consistency
+        - target_tracking
+        - base_year_audit
+        - base_year_reporting
+      file: "config/presets/corporate_office.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for industrial manufacturing with active M&A and
+        significant Scope 1 base year considerations. Common triggers:
+        plant acquisitions and divestitures, process changes affecting
+        emission factors, methodology upgrades from Tier 1 to Tier 2/3
+        as facility-specific data becomes available. Significance
+        threshold: 5% (standard). All adjustment types enabled with
+        emphasis on pro-rata M&A calculations. Intensity denominators:
+        per unit produced, per revenue, per tonne of product.
+      sector_type: "MANUFACTURING"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - time_series_consistency
+        - target_tracking
+        - base_year_audit
+        - base_year_reporting
+      file: "config/presets/manufacturing.yaml"
+
+    - id: energy_utility
+      name: "Energy Utility Preset"
+      description: >-
+        Configuration for power generation and energy distribution
+        utilities with large asset portfolios and frequent asset
+        transactions. Common triggers: power plant acquisitions/
+        divestitures, fuel switching (coal to gas, gas to renewables),
+        grid factor methodology changes, ETS allocation changes.
+        Significance threshold: 3% (conservative, due to large absolute
+        emissions). Enhanced M&A workflow with generation asset-specific
+        adjustments. Intensity denominators: per MWh generated, per
+        revenue, per customer served.
+      sector_type: "ENERGY_UTILITY"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - time_series_consistency
+        - target_tracking
+        - base_year_audit
+        - base_year_reporting
+      file: "config/presets/energy_utility.yaml"
+
+    - id: transport_logistics
+      name: "Transport & Logistics Preset"
+      description: >-
+        Configuration for fleet operators and logistics companies where
+        base year is driven by fleet size changes and operational
+        boundary decisions. Common triggers: fleet acquisitions,
+        subcontracting decisions (outsourcing vs own fleet), methodology
+        change from distance-based to fuel-based calculation, well-to-
+        tank factor updates. Significance threshold: 5% (standard).
+        Fleet-specific adjustment calculations for vehicle acquisitions
+        and disposals. Intensity denominators: per tonne-km, per
+        vehicle-km, per consignment delivered.
+      sector_type: "TRANSPORT_LOGISTICS"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - time_series_consistency
+        - target_tracking
+        - base_year_audit
+        - base_year_reporting
+      file: "config/presets/transport_logistics.yaml"
+
+    - id: food_agriculture
+      name: "Food & Agriculture Preset"
+      description: >-
+        Configuration for agricultural operations and food processing
+        with land use and agricultural emission considerations. Common
+        triggers: farmland acquisitions/divestitures, changes in
+        livestock numbers through acquisition, agricultural methodology
+        updates (IPCC 2019 refinement adoption), land use change
+        calculations update. Significance threshold: 5% (standard).
+        Agricultural-specific adjustment calculations for livestock
+        herd acquisitions and land use changes. Intensity denominators:
+        per tonne of product, per hectare, per unit of livestock.
+      sector_type: "FOOD_AGRICULTURE"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - time_series_consistency
+        - target_tracking
+        - base_year_audit
+        - base_year_reporting
+      file: "config/presets/food_agriculture.yaml"
+
+    - id: real_estate
+      name: "Real Estate Preset"
+      description: >-
+        Configuration for property portfolios and REIT companies with
+        frequent portfolio changes that trigger base year recalculation.
+        Common triggers: building acquisitions and disposals (core
+        business activity requiring frequent recalculation), change in
+        consolidation approach (operational vs financial control boundary
+        for landlord/tenant split), methodology change for estimating
+        tenant consumption. Significance threshold: 10% (relaxed, due
+        to high transaction frequency with individually small impacts,
+        offset by cumulative tracking). Intensity denominators: per m2
+        GLA (gross leasable area), per building, per revenue.
+      sector_type: "REAL_ESTATE"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - time_series_consistency
+        - target_tracking
+        - base_year_audit
+        - base_year_reporting
+      file: "config/presets/real_estate.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Configuration for hospital and healthcare systems with campus
+        expansion and contraction patterns. Common triggers: hospital
+        acquisitions (frequent in healthcare M&A), campus expansion
+        adding new buildings, outsourcing of laundry/catering services,
+        change in medical gas (N2O) accounting methodology. Significance
+        threshold: 5% (standard). Healthcare-specific adjustment
+        calculations for campus-level additions and removals. Intensity
+        denominators: per patient bed-day, per square metre, per
+        revenue, per full-time equivalent.
+      sector_type: "HEALTHCARE"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - time_series_consistency
+        - target_tracking
+        - base_year_audit
+        - base_year_reporting
+      file: "config/presets/healthcare.yaml"
+
+    - id: sme_simplified
+      name: "SME Simplified Preset"
+      description: >-
+        Simplified configuration for small and medium enterprises with
+        limited base year complexity. Common triggers limited to:
+        significant acquisitions or divestitures (if applicable),
+        emission factor source changes, and error corrections.
+        Significance threshold: 10% (relaxed for SMEs). Simplified
+        adjustment calculations with fewer granularity requirements.
+        Reduced documentation requirements while maintaining GHG
+        Protocol Chapter 5 compliance. Annual review only (no
+        continuous trigger monitoring). Intensity denominators:
+        per revenue and per employee only.
+      sector_type: "SME"
+      enabled_engines:
+        - base_year_selection
+        - base_year_inventory
+        - recalculation_policy
+        - recalculation_trigger
+        - significance_assessment
+        - base_year_adjustment
+        - target_tracking
+        - base_year_reporting
+      file: "config/presets/sme_simplified.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 30 MRV agents for base year recalculation
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Recalculates base year stationary combustion emissions with updated methodology"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Mobile Combustion Agent"
+      description: "Recalculates base year mobile combustion emissions with updated methodology"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Process Emissions Agent"
+      description: "Recalculates base year process emissions with updated methodology"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Fugitive Emissions Agent"
+      description: "Recalculates base year fugitive emissions with updated methodology"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Refrigerant & F-Gas Agent"
+      description: "Recalculates base year refrigerant losses with updated GWP values"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Recalculates base year land use emissions for boundary changes"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Recalculates base year waste treatment emissions with updated factors"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Recalculates base year agricultural emissions for herd/land acquisitions"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Recalculates base year location-based Scope 2 with updated grid factors"
+      path: "greenlang/agents/mrv/scope2_location/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Recalculates base year market-based Scope 2 for instrument changes"
+      path: "greenlang/agents/mrv/scope2_market/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam & Heat Purchase Agent"
+      description: "Recalculates base year steam and heat emissions with updated factors"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Recalculates base year cooling emissions with updated factors"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation Agent"
+      description: "Reconciles recalculated location-based and market-based base year Scope 2"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Category 1 Purchased Goods Agent"
+      description: "Recalculates base year Category 1 emissions for methodology changes"
+      path: "greenlang/agents/mrv/scope3_cat1_purchased_goods/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Category 2 Capital Goods Agent"
+      description: "Recalculates base year Category 2 emissions for methodology changes"
+      path: "greenlang/agents/mrv/scope3_cat2_capital_goods/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Category 3 Fuel & Energy Agent"
+      description: "Recalculates base year Category 3 upstream energy emissions"
+      path: "greenlang/agents/mrv/scope3_cat3_fuel_energy/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Category 4 Upstream Transport Agent"
+      description: "Recalculates base year Category 4 upstream transport emissions"
+      path: "greenlang/agents/mrv/scope3_cat4_upstream_transport/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Category 5 Waste Agent"
+      description: "Recalculates base year Category 5 waste emissions"
+      path: "greenlang/agents/mrv/scope3_cat5_waste/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Category 6 Business Travel Agent"
+      description: "Recalculates base year Category 6 business travel emissions"
+      path: "greenlang/agents/mrv/scope3_cat6_business_travel/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Category 7 Employee Commuting Agent"
+      description: "Recalculates base year Category 7 commuting emissions"
+      path: "greenlang/agents/mrv/scope3_cat7_employee_commuting/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Category 8 Upstream Leased Assets Agent"
+      description: "Recalculates base year Category 8 leased asset emissions"
+      path: "greenlang/agents/mrv/scope3_cat8_upstream_leased/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Category 9 Downstream Transport Agent"
+      description: "Recalculates base year Category 9 downstream transport emissions"
+      path: "greenlang/agents/mrv/scope3_cat9_downstream_transport/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Category 10 Processing of Sold Products Agent"
+      description: "Recalculates base year Category 10 processing emissions"
+      path: "greenlang/agents/mrv/scope3_cat10_processing/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Category 11 Use of Sold Products Agent"
+      description: "Recalculates base year Category 11 use phase emissions"
+      path: "greenlang/agents/mrv/scope3_cat11_use/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "Category 12 End-of-Life Treatment Agent"
+      description: "Recalculates base year Category 12 end-of-life emissions"
+      path: "greenlang/agents/mrv/scope3_cat12_end_of_life/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Category 13 Downstream Leased Assets Agent"
+      description: "Recalculates base year Category 13 downstream leased emissions"
+      path: "greenlang/agents/mrv/scope3_cat13_downstream_leased/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Category 14 Franchises Agent"
+      description: "Recalculates base year Category 14 franchise emissions"
+      path: "greenlang/agents/mrv/scope3_cat14_franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Category 15 Investments Agent"
+      description: "Recalculates base year Category 15 investment emissions"
+      path: "greenlang/agents/mrv/scope3_cat15_investments/"
+      required: false
+      version: "1.0.0"
+
+  cross_cutting:
+    - id: AGENT-MRV-029
+      name: "Category Mapper Agent"
+      description: "Maps recalculated emissions to framework-specific categories"
+      path: "greenlang/agents/mrv/category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage Agent"
+      description: "Maintains audit trail for all base year recalculation operations"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts historical activity data from archived invoices and source documents"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises historical meter data exports and activity records for base year"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Retrieves historical financial data for M&A transactions and intensity denominators"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for historical emission factors and grid factors"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Assesses data quality scores for base year candidate year evaluation"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks provenance chain from source documents through to base year inventory"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates 10 base year engines with DAG dependency resolution"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Validates base year inventory data schemas and adjustment records"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises units across historical data from different time periods"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in base year estimations and adjustment calculations"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links base year adjustments to source evidence and M&A documentation"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for base year modification operations"
+    required: true
+  - id: AGENT-FOUND-007
+    name: "Agent Registry & Service Catalog"
+    description: "Manages engine and workflow registration for base year pack"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all base year calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-009
+    name: "QA Test Harness"
+    description: "Validates base year adjustment accuracy through automated test scenarios"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors base year pipeline health and engine performance"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 48
+  breakdown:
+    mrv_agents: 30
+    data_agents: 6
+    foundation_agents: 10
+    pack_dependencies: 4
+  pack_dependencies:
+    - id: PACK-041
+      name: "Scope 1-2 Complete"
+      required: true
+      description: "Provides Scope 1 and Scope 2 emission calculations for base year"
+    - id: PACK-042
+      name: "Scope 3 Starter"
+      required: false
+      description: "Provides Scope 3 Categories 1-8 for base year if deployed"
+    - id: PACK-043
+      name: "Scope 3 Complete"
+      required: false
+      description: "Provides full Scope 3 for enterprise base year management"
+    - id: PACK-044
+      name: "GHG Governance"
+      required: false
+      description: "Provides governance approval workflows for base year decisions"
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: ghg_base_year
+  table_prefix: gl_by_
+  migrations:
+    - id: "V366__pack045_base_year_001"
+      description: "Core base year schema: base years, versions, selection criteria, and candidate evaluations"
+    - id: "V367__pack045_base_year_002"
+      description: "Base year inventory tables: source-level emissions, calculation chains, and provenance hashes"
+    - id: "V368__pack045_base_year_003"
+      description: "Recalculation policy tables: thresholds, trigger categories, approval workflows, and policy versions"
+    - id: "V369__pack045_base_year_004"
+      description: "Trigger detection tables: events, classifications, affected entities, and estimated impacts"
+    - id: "V370__pack045_base_year_005"
+      description: "Significance assessment tables: metrics, threshold comparisons, determinations, and cumulative tracking"
+    - id: "V371__pack045_base_year_006"
+      description: "Adjustment calculation tables: line-by-line changes, before/after values, and methodology records"
+    - id: "V372__pack045_base_year_007"
+      description: "Time series consistency tables: methodology metadata by year, consistency checks, and restatements"
+    - id: "V373__pack045_base_year_008"
+      description: "Target tracking tables: targets, pathways, progress records, rebasing history, and SBTi alignment"
+    - id: "V374__pack045_base_year_009"
+      description: "Audit trail tables: events, provenance hashes, version diffs, evidence links, and verification records"
+    - id: "V375__pack045_base_year_010"
+      description: "Views, indexes, RLS policies, compliance mapping tables, and seed data for base year management"
+
+  tables:
+    - gl_by_base_years
+    - gl_by_base_year_versions
+    - gl_by_selection_criteria
+    - gl_by_candidate_evaluations
+    - gl_by_inventory_sources
+    - gl_by_inventory_emissions
+    - gl_by_inventory_calculation_chains
+    - gl_by_inventory_provenance
+    - gl_by_recalculation_policies
+    - gl_by_policy_versions
+    - gl_by_policy_approvals
+    - gl_by_trigger_events
+    - gl_by_trigger_classifications
+    - gl_by_trigger_affected_entities
+    - gl_by_significance_assessments
+    - gl_by_significance_metrics
+    - gl_by_cumulative_impact_tracking
+    - gl_by_adjustments
+    - gl_by_adjustment_lines
+    - gl_by_adjustment_evidence
+    - gl_by_time_series_metadata
+    - gl_by_consistency_checks
+    - gl_by_restatements
+    - gl_by_targets
+    - gl_by_target_pathways
+    - gl_by_target_progress
+    - gl_by_target_rebasing
+    - gl_by_audit_events
+    - gl_by_audit_provenance
+    - gl_by_version_diffs
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  base_year_selection:
+    max_candidate_years: 20
+    evaluation_per_year_ms: 500
+    total_selection_target_seconds: 15
+  base_year_inventory:
+    max_sources_per_inventory: 50000
+    capture_per_source_ms: 10
+    provenance_hash_per_source_ms: 5
+    total_capture_target_seconds: 600
+  recalculation_policy:
+    policy_validation_ms: 200
+    policy_document_generation_ms: 1000
+  recalculation_trigger:
+    event_classification_per_trigger_ms: 100
+    impact_estimation_per_trigger_ms: 500
+    total_trigger_scan_target_seconds: 30
+  significance_assessment:
+    per_trigger_assessment_ms: 500
+    cumulative_calculation_ms: 200
+    max_significance_assessment_seconds: 5
+  base_year_adjustment:
+    per_line_adjustment_ms: 10
+    aggregation_roll_up_ms: 1000
+    max_recalculation_seconds: 30
+  time_series_consistency:
+    per_year_check_ms: 500
+    restatement_per_year_ms: 2000
+    total_consistency_check_seconds: 15
+  target_tracking:
+    per_target_calculation_ms: 200
+    pathway_recalculation_ms: 500
+    total_target_update_seconds: 10
+  base_year_audit:
+    provenance_hash_verification_ms: 50
+    version_diff_generation_ms: 2000
+    audit_report_generation_ms: 5000
+  reporting:
+    executive_summary_generation_ms: 2000
+    detailed_adjustment_report_ms: 5000
+    policy_compliance_report_ms: 3000
+    framework_report_per_framework_ms: 1000
+    max_report_generation_seconds: 15
+  cache_hit_ratio_target: 0.85
+  memory_ceiling_mb: 4096
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with entity-level and base year operation-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+  required_roles:
+    - base_year_admin
+    - recalculation_manager
+    - auditor
+    - reviewer
+    - viewer
+    - target_owner
+  audit_events:
+    - "base_year.selected"
+    - "base_year.established"
+    - "base_year.version.created"
+    - "base_year.inventory.captured"
+    - "base_year.inventory.updated"
+    - "base_year.provenance.sealed"
+    - "base_year.policy.defined"
+    - "base_year.policy.updated"
+    - "base_year.policy.approved"
+    - "base_year.trigger.detected"
+    - "base_year.trigger.classified"
+    - "base_year.significance.assessed"
+    - "base_year.significance.borderline"
+    - "base_year.significance.overridden"
+    - "base_year.adjustment.calculated"
+    - "base_year.adjustment.approved"
+    - "base_year.adjustment.applied"
+    - "base_year.adjustment.rejected"
+    - "base_year.time_series.checked"
+    - "base_year.time_series.restated"
+    - "base_year.target.recalculated"
+    - "base_year.target.rebased"
+    - "base_year.sbti.revalidation_triggered"
+    - "base_year.report.generated"
+    - "base_year.verification.package.created"
+    - "base_year.annual_review.completed"
+    - "base_year.config.modified"
+    - "base_year.preset.loaded"
+    - "base_year.m_and_a.processed"
+    - "base_year.error_correction.applied"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  target_tests: 900
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_base_year_inventory.json"
+    - "tests/fixtures/sample_acquisition_event.json"
+    - "tests/fixtures/sample_divestiture_event.json"
+    - "tests/fixtures/sample_methodology_change.json"
+    - "tests/fixtures/sample_error_discovery.json"
+    - "tests/fixtures/sample_recalculation_policy.json"
+    - "tests/fixtures/sample_entity_hierarchy.json"
+    - "tests/fixtures/sample_target_definitions.json"
+    - "tests/fixtures/sample_time_series_data.json"
+    - "tests/fixtures/sample_m_and_a_transaction.json"
+
+# -----------------------------------------------------------------------------
+# Compliance Framework Mappings
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "GHG_PROTOCOL_CH5"
+      name: "GHG Protocol Corporate Standard Chapter 5"
+      coverage: "Base year selection, recalculation triggers, significance threshold, adjustment methodology"
+    - id: "ISO_14064_1"
+      name: "ISO 14064-1:2018 Clause 5.4"
+      coverage: "Base year selection, recalculation conditions, documentation requirements"
+    - id: "ESRS_E1"
+      name: "ESRS E1 Climate Change"
+      coverage: "E1-4 base year for targets, E1-5 base year reference, recalculation disclosure"
+    - id: "CDP_C5"
+      name: "CDP Climate Change C5"
+      coverage: "C5.1 base year emissions, C5.2 recalculation policy, C5.3 changes to base year"
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      coverage: "Post-2015 base year, 95% Scope 1+2 coverage, 5% materiality threshold, revalidation"
+    - id: "SEC"
+      name: "US SEC Climate Disclosure"
+      coverage: "Base year disclosure, recalculation explanation, target base year reference"
+    - id: "SB_253"
+      name: "California SB 253"
+      coverage: "Base year consistency for annual reporting, recalculation documentation"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 15
+    recommended_connections: 40
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_pack041_deployed
+    - verify_mrv_agents_available
+    - verify_base_year_schema_ready
+    - verify_historical_data_accessible
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+      - "V326-V335"   # PACK-041 (required dependency)
+    new:
+      - "V366__pack045_base_year_001"
+      - "V367__pack045_base_year_002"
+      - "V368__pack045_base_year_003"
+      - "V369__pack045_base_year_004"
+      - "V370__pack045_base_year_005"
+      - "V371__pack045_base_year_006"
+      - "V372__pack045_base_year_007"
+      - "V373__pack045_base_year_008"
+      - "V374__pack045_base_year_009"
+      - "V375__pack045_base_year_010"
+
+  post_install:
+    - seed_significance_thresholds
+    - seed_trigger_categories
+    - seed_adjustment_methodologies
+    - seed_target_pathway_templates
+    - seed_policy_templates
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: BaseYearSelectionEngine
+    file: engines/base_year_selection_engine.py
+    description: "Multi-criteria base year candidate evaluation and selection"
+  - name: BaseYearInventoryEngine
+    file: engines/base_year_inventory_engine.py
+    description: "Source-level base year inventory capture with SHA-256 provenance"
+  - name: RecalculationPolicyEngine
+    file: engines/recalculation_policy_engine.py
+    description: "Recalculation policy definition, validation, and enforcement"
+  - name: RecalculationTriggerEngine
+    file: engines/recalculation_trigger_engine.py
+    description: "Automated trigger detection for structural, methodology, and error events"
+  - name: SignificanceAssessmentEngine
+    file: engines/significance_assessment_engine.py
+    description: "Quantitative significance testing against policy thresholds"
+  - name: BaseYearAdjustmentEngine
+    file: engines/base_year_adjustment_engine.py
+    description: "Pro-rata and recomputation adjustment calculations with line-by-line detail"
+  - name: TimeSeriesConsistencyEngine
+    file: engines/time_series_consistency_engine.py
+    description: "Time-series consistency validation and restatement across all years"
+  - name: TargetTrackingEngine
+    file: engines/target_tracking_engine.py
+    description: "Target pathway tracking with automatic base year adjustment propagation"
+  - name: BaseYearAuditEngine
+    file: engines/base_year_audit_engine.py
+    description: "Comprehensive audit trail with SHA-256 provenance and version diff"
+  - name: BaseYearReportingEngine
+    file: engines/base_year_reporting_engine.py
+    description: "Multi-format reporting: executive, detailed, compliance, and verification"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: BaseYearEstablishmentWorkflow
+    file: workflows/base_year_establishment_workflow.py
+    description: "6-phase base year establishment from candidate evaluation through verification readiness"
+  - name: RecalculationAssessmentWorkflow
+    file: workflows/recalculation_assessment_workflow.py
+    description: "4-phase trigger assessment with classification, impact estimation, and significance testing"
+  - name: RecalculationExecutionWorkflow
+    file: workflows/recalculation_execution_workflow.py
+    description: "6-phase recalculation execution from snapshot through target recalculation"
+  - name: TargetRebasingWorkflow
+    file: workflows/target_rebasing_workflow.py
+    description: "4-phase target rebasing with SBTi compliance check and stakeholder communication"
+  - name: AuditVerificationWorkflow
+    file: workflows/audit_verification_workflow.py
+    description: "5-phase audit preparation per ISO 14064-3 and ISAE 3410"
+  - name: AnnualReviewWorkflow
+    file: workflows/annual_review_workflow.py
+    description: "4-phase annual review of triggers, cumulative impact, and policy adequacy"
+  - name: MergerAcquisitionWorkflow
+    file: workflows/merger_acquisition_workflow.py
+    description: "6-phase M&A workflow with historical data collection and pro-rata adjustment"
+  - name: FullBaseYearPipelineWorkflow
+    file: workflows/full_base_year_pipeline_workflow.py
+    description: "10-phase end-to-end base year management pipeline"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: BaseYearSelectionReportTemplate
+    file: templates/base_year_selection_report.py
+    description: "Candidate year evaluation matrix with composite scoring and selection rationale"
+  - name: InventorySummaryReportTemplate
+    file: templates/inventory_summary_report.py
+    description: "Base year inventory summary by scope, entity, facility, gas, and methodology"
+  - name: RecalculationTriggerReportTemplate
+    file: templates/recalculation_trigger_report.py
+    description: "Trigger detection report with classification, impact, and cumulative tracking"
+  - name: AdjustmentDetailReportTemplate
+    file: templates/adjustment_detail_report.py
+    description: "Line-by-line adjustment detail with before/after values and waterfall charts"
+  - name: TimeSeriesDashboardTemplate
+    file: templates/time_series_dashboard.py
+    description: "Time-series consistency dashboard with methodology and boundary heat maps"
+  - name: TargetProgressReportTemplate
+    file: templates/target_progress_report.py
+    description: "Target tracking with pathway charts, gap analysis, and projection"
+  - name: AuditTrailReportTemplate
+    file: templates/audit_trail_report.py
+    description: "Chronological audit trail with provenance hashes and version diffs"
+  - name: PolicyComplianceReportTemplate
+    file: templates/policy_compliance_report.py
+    description: "Policy conformance assessment against GHG Protocol Ch. 5 and framework requirements"
+  - name: MergerAcquisitionReportTemplate
+    file: templates/merger_acquisition_report.py
+    description: "M&A-specific recalculation report with transaction details and pro-rata analysis"
+  - name: ExecutiveSummaryReportTemplate
+    file: templates/executive_summary_report.py
+    description: "C-suite base year overview with KPI cards, sparklines, and traffic-light status"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: BaseYearOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "10-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: Pack041Bridge
+    file: integrations/pack041_bridge.py
+    description: "Bridges to PACK-041 for Scope 1-2 base year data and recalculation"
+  - name: Pack042Bridge
+    file: integrations/pack042_bridge.py
+    description: "Bridges to PACK-042 for Scope 3 Starter base year data (optional)"
+  - name: Pack043Bridge
+    file: integrations/pack043_bridge.py
+    description: "Bridges to PACK-043 for Scope 3 Complete base year data (optional)"
+  - name: Pack044Bridge
+    file: integrations/pack044_bridge.py
+    description: "Bridges to PACK-044 for governance approval workflows (recommended)"
+  - name: MRVBridge
+    file: integrations/mrv_bridge.py
+    description: "Routes base year activity data to all 30 MRV agents for recalculation"
+  - name: DataBridge
+    file: integrations/data_bridge.py
+    description: "Connects to DATA agents for historical data retrieval and quality profiling"
+  - name: FoundationBridge
+    file: integrations/foundation_bridge.py
+    description: "Connects to all 10 FOUND agents for platform services"
+  - name: ERPConnector
+    file: integrations/erp_connector.py
+    description: "Automated M&A event detection and financial data retrieval from ERP systems"
+  - name: NotificationBridge
+    file: integrations/notification_bridge.py
+    description: "Multi-channel notification for triggers, approvals, and deadlines"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "12-category system health verification for base year operations"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided configuration for base year management setup"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: corporate_office
+    file: config/presets/corporate_office.yaml
+    description: "Office-based organisations (financial services, technology, consulting)"
+  - name: manufacturing
+    file: config/presets/manufacturing.yaml
+    description: "Industrial manufacturing with active M&A and process changes"
+  - name: energy_utility
+    file: config/presets/energy_utility.yaml
+    description: "Power generation and energy distribution with large asset portfolios"
+  - name: transport_logistics
+    file: config/presets/transport_logistics.yaml
+    description: "Fleet operators and logistics companies with fleet size changes"
+  - name: food_agriculture
+    file: config/presets/food_agriculture.yaml
+    description: "Agricultural operations with land use and livestock acquisitions"
+  - name: real_estate
+    file: config/presets/real_estate.yaml
+    description: "Property portfolios with frequent building transactions"
+  - name: healthcare
+    file: config/presets/healthcare.yaml
+    description: "Hospitals and healthcare systems with campus expansion patterns"
+  - name: sme_simplified
+    file: config/presets/sme_simplified.yaml
+    description: "Simplified base year for small-medium enterprises"

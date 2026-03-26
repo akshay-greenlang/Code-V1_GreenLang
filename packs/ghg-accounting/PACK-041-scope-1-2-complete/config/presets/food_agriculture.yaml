@@ -1,0 +1,156 @@
+# =============================================================================
+# PACK-041 Scope 1-2 Complete - Food & Agriculture Preset
+# =============================================================================
+# Agricultural operations and food processing with significant non-CO2
+# emissions: CH4 from livestock enteric fermentation and manure management,
+# N2O from fertiliser application and agricultural soils, and CO2 from
+# on-site energy combustion and land use change.
+#
+# Typical use cases:
+#   - Dairy and livestock farms
+#   - Crop and grain farms
+#   - Food processing plants (meat, dairy, bakery, beverage)
+#   - Agri-food conglomerates
+#   - Aquaculture operations
+#   - Forestry and plantation companies
+#
+# Typical emission profile:
+#   Scope 1: 70-90% of total (agriculture + combustion dominant)
+#   Scope 2: 10-30% of total (irrigation, cold storage, processing)
+#   Key gases: CO2, CH4, N2O (agriculture-specific gases dominate)
+#   Typical intensity: 1.0-10.0 tCO2e per hectare
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+facility_name: ""
+sector_type: "FOOD_AGRICULTURE"
+country: "DE"
+reporting_year: 2026
+
+# --- Boundary ---
+boundary:
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  significance_threshold_pct: 1.0
+  de_minimis_threshold_pct: 0.5
+  include_biogenic_co2: true
+  include_ets_breakdown: false
+
+# --- Source Completeness ---
+source_completeness:
+  require_all_scope1_categories: false
+  require_dual_reporting: true
+  minimum_source_coverage_pct: 95.0
+  document_exclusions: true
+
+# --- Scope 1 ---
+scope1:
+  stationary_combustion_enabled: true
+  stationary_combustion_tier: "TIER_2"
+  mobile_combustion_enabled: true
+  mobile_combustion_tier: "TIER_2"
+  process_emissions_enabled: true
+  process_emissions_tier: "TIER_1"
+  fugitive_emissions_enabled: false
+  fugitive_emissions_tier: "TIER_1"
+  refrigerant_fgas_enabled: true
+  refrigerant_fgas_tier: "TIER_1"
+  land_use_enabled: true
+  land_use_tier: "TIER_2"
+  waste_treatment_enabled: true
+  waste_treatment_tier: "TIER_1"
+  agricultural_enabled: true
+  agricultural_tier: "TIER_2"
+
+# --- Scope 2 ---
+scope2:
+  dual_reporting: true
+  location_based_enabled: true
+  market_based_enabled: true
+  steam_heat_enabled: false
+  cooling_enabled: true
+  instrument_allocation: true
+  grid_ef_source: "IEA"
+  residual_mix_enabled: true
+  validate_instrument_quality: true
+
+# --- Emission Factors ---
+emission_factors:
+  preferred_sources:
+    - "IPCC"
+    - "DEFRA"
+    - "EPA"
+    - "IEA"
+  gwp_source: "AR5"
+  allow_supplier_factors: true
+  allow_facility_factors: true
+  factor_vintage_max_years: 5
+  auto_update_factors: true
+
+# --- Uncertainty ---
+uncertainty:
+  enabled: true
+  monte_carlo_iterations: 10000
+  confidence_level: 0.95
+  include_activity_data_uncertainty: true
+  include_emission_factor_uncertainty: true
+  sensitivity_analysis: true
+  contribution_analysis: true
+
+# --- Base Year ---
+base_year:
+  year: 2024
+  recalculation_threshold_pct: 5.0
+  auto_detect_triggers: true
+  rolling_base_year: false
+  fixed_base_year: true
+
+# --- Trend Analysis ---
+trend_analysis:
+  enabled: true
+  intensity_metrics:
+    - "tCO2e/tonne_product"
+    - "tCO2e/hectare"
+    - "tCO2e/MEUR_revenue"
+  lmdi_decomposition: true
+  sbti_pathway_comparison: false
+  projection_years: 5
+
+# --- Compliance ---
+compliance:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "ISO_14064"
+  esrs_biogenic_co2: true
+  esrs_ets_percentage: false
+  cdp_country_disaggregation: true
+  cdp_gas_disaggregation: true
+  sec_materiality_threshold: false
+  sbti_target_tracking: false
+  sb253_reporting: false
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  executive_summary: true
+  detailed_inventory: true
+  verification_package: true
+  output_language: "en"
+  include_methodology_notes: true
+  include_emission_factor_register: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  emission_factor_citation: true

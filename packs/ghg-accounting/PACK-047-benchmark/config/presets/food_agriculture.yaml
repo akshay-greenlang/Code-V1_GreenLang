@@ -1,0 +1,159 @@
+# =============================================================================
+# PACK-047 GHG Emissions Benchmark - Food & Agriculture Preset
+# =============================================================================
+# Food and agriculture companies where tCO2e/tonne product is the primary
+# benchmark metric, aligned with the SBTi FLAG (Forest, Land, and Agriculture)
+# Guidance v1.1. Land use change (LUC) emissions are included in the scope
+# alignment. Peer groups are constructed at commodity/sub-sector level with
+# global scope due to the international nature of agricultural supply chains.
+#
+# Typical use cases:
+#   - Food manufacturers and processors
+#   - Agricultural commodity traders
+#   - Dairy producers and cooperatives
+#   - Meat and poultry processors
+#   - Crop and grain producers
+#   - Beverage companies
+#
+# Typical emission profile:
+#   Scope 1: 10-30% (on-farm, processing)
+#   Scope 3 Cat 1 (purchased goods): 50-80% (agricultural inputs)
+#   Key benchmark metric: tCO2e / tonne product
+#   Typical range: 0.3-5.0 tCO2e / tonne (commodity-dependent)
+#   Typical ITR range: 2.0C - 3.5C
+# =============================================================================
+
+# --- Peer Group Construction ---
+peer_group:
+  sector_classification: "GICS_6DIG"
+  size_band: "LARGE"
+  require_same_region: false
+  region_scope: "GLOBAL"
+  min_peers: 5
+  max_peers: 30
+  revenue_tolerance_pct: 75.0
+  require_disclosure_coverage: true
+  min_disclosure_pct: 50.0
+
+# --- Scope Normalisation ---
+normalisation:
+  scope_alignment: "S1_S2_S3"
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  target_gwp: "AR6"
+  currency_normalisation: true
+  target_currency: "EUR"
+  period_alignment: "CALENDAR_YEAR"
+  data_gap_strategy: "INTERPOLATE"
+  biogenic_treatment: "SEPARATE"
+  normalisation_steps:
+    - "SCOPE_ALIGN"
+    - "CONSOLIDATION"
+    - "GWP"
+    - "CURRENCY"
+    - "PERIOD"
+    - "DATA_GAP"
+    - "BIOGENIC"
+
+# --- External Data Sources ---
+external_data:
+  sources:
+    - "CDP"
+  cache_ttl_hours: 168
+  auto_refresh: true
+  cdp_year: 2025
+
+# --- Pathway Alignment ---
+pathway:
+  pathways:
+    - "SBTI_SDA"
+    - "IEA_NZE"
+  primary_scenario: "ONE_POINT_FIVE_C"
+  assessment_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sbti_sector: "food"
+  convergence_year: 2050
+  include_overshoot_analysis: true
+
+# --- Implied Temperature Rise ---
+itr:
+  methods:
+    - "SECTOR_RELATIVE"
+    - "BUDGET_BASED"
+  primary_method: "SECTOR_RELATIVE"
+  budget_start_year: 2020
+  target_horizon_year: 2050
+  include_scope_3: true
+
+# --- Trajectory Benchmarking ---
+trajectory:
+  historical_years: 5
+  projection_years: 10
+  regression_model: "OLS"
+  min_data_points: 3
+  include_confidence_bands: true
+  convergence_test: true
+
+# --- Portfolio Benchmarking ---
+portfolio:
+  waci_enabled: false
+  carbon_footprint_enabled: false
+  pcaf_alignment: false
+
+# --- Data Quality Scoring ---
+data_quality:
+  scoring_method: "PCAF_V3"
+  target_score: 3
+  improvement_roadmap: true
+  staleness_threshold_days: 365
+
+# --- Transition Risk Scoring ---
+transition_risk:
+  categories:
+    - "CARBON_BUDGET"
+    - "REGULATORY"
+    - "COMPETITIVE"
+  carbon_price_scenario: "IEA_NZE"
+  carbon_price_2030_eur: 130.0
+  carbon_price_2050_eur: 250.0
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+  sections:
+    - "executive_summary"
+    - "peer_comparison"
+    - "pathway_alignment"
+    - "implied_temperature_rise"
+    - "trajectory_analysis"
+    - "data_quality"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+
+# --- Disclosure ---
+disclosure:
+  frameworks:
+    - "ESRS"
+    - "CDP"
+    - "TCFD"
+  mandatory_only: false
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "THRESHOLD"
+    - "PATHWAY_DEVIATION"
+    - "DATA_STALENESS"
+  channels:
+    - "EMAIL"
+  pathway_deviation_threshold_pct: 15.0
+  data_staleness_days: 365

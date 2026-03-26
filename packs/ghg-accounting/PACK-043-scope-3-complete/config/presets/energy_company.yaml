@@ -1,0 +1,248 @@
+# =============================================================================
+# PACK-043 Scope 3 Complete - Energy Company Preset
+# =============================================================================
+# Energy sector with Category 3 (upstream fuel production) and Category 11
+# (downstream sold energy use) as dominant Scope 3 categories. Paris alignment
+# scenario analysis critical for transition pathway. Upstream fuel lifecycle
+# modelling and sold energy combustion tracking.
+#
+# Typical use cases:
+#   - Integrated oil and gas majors
+#   - Independent oil and gas producers
+#   - Electricity utilities (thermal generation)
+#   - Natural gas distributors
+#   - Renewable energy companies (upstream supply chain)
+#   - Energy trading companies
+#
+# Typical Scope 3 emission profile:
+#   Cat 1 (Purchased Goods):     10-30% (equipment, services, chemicals)
+#   Cat 2 (Capital Goods):        5-15% (drilling, generation, grid)
+#   Cat 3 (Fuel & Energy):       10-30% (upstream fuel production WTT)
+#   Cat 4 (Upstream Transport):    2-5%  (fuel transport)
+#   Cat 5 (Waste):                 0.5-2% (production waste)
+#   Cat 6 (Business Travel):      0.5-1% (site visits, management)
+#   Cat 9 (Downstream Transport):  1-5%  (fuel distribution)
+#   Cat 11 (Product Use):        30-70% (combustion of sold fuels/energy)
+#   Cat 12 (End-of-Life):         0.5-2% (decommissioning)
+#
+#   Total Scope 3 typically: 0.5-3x Scope 1+2 (but Cat 11 can be massive)
+#   Key: Paris alignment, Cat 3/11 modelling, transition risk, stranded assets
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_focus: "ENERGY"
+country: "NO"
+reporting_year: 2026
+number_of_entities: 15
+years_of_scope3_reporting: 3
+
+# --- Maturity ---
+maturity:
+  target_level: "LEVEL_5_VERIFIED"
+  current_level: "LEVEL_3_INTERMEDIATE"
+  upgrade_strategy: "SECTOR_SPECIFIC"
+  timeline_months: 30
+  roi_threshold_pct: 10.0
+  milestone_tracking: true
+  auto_upgrade_enabled: false
+
+# --- LCA ---
+lca:
+  enabled: true
+  database: "ECOINVENT"
+  database_version: "3.10"
+  product_types:
+    - "fuels"
+    - "chemicals"
+    - "equipment"
+    - "renewable_components"
+  lifecycle_stages:
+    - "RAW_MATERIAL"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "USE_PHASE"
+    - "END_OF_LIFE"
+  sensitivity_params:
+    emission_factor_variation_pct: 15.0
+    transport_distance_variation_pct: 10.0
+    energy_mix_variation_pct: 25.0
+    allocation_method_variation_pct: 20.0
+  cutoff_threshold_pct: 1.0
+  epd_integration: false
+
+# --- Consolidation ---
+consolidation:
+  approach: "EQUITY_SHARE"
+  total_entities: 15
+  jv_equity_threshold_pct: 10.0
+  jv_inclusion_method: "proportional"
+  franchise_inclusion: false
+  inter_company_elimination: true
+  entity_level_reporting: true
+
+# --- Scenarios ---
+scenarios:
+  enabled: true
+  scenario_types:
+    - "MACC"
+    - "WHAT_IF"
+    - "TECHNOLOGY_PATHWAY"
+    - "PARIS_ALIGNMENT"
+  macc_max_interventions: 60
+  macc_currency: "USD"
+  what_if_max_scenarios: 15
+  paris_target_celsius: 1.5
+  paris_pathway_source: "iea_nze_2050"
+  time_horizon_years: 25
+  discount_rate_pct: 8.0
+
+# --- SBTi ---
+sbti:
+  enabled: true
+  base_year: 2020
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  target_type: "SDA"
+  near_term_reduction_pct: 30.0
+  long_term_reduction_pct: 90.0
+  coverage_pct: 80.0
+  flag_enabled: false
+  supplier_engagement_target_pct: 40.0
+
+# --- Supplier Programme ---
+supplier_programme:
+  enabled: true
+  top_supplier_pct: 80.0
+  top_supplier_count: 50
+  target_reduction_pct: 20.0
+  timeline_years: 7
+  incentive_model: "contract_extension"
+  cdp_supply_chain: true
+  sbti_cascade_enabled: true
+  quarterly_reviews: true
+  data_quality_improvement_target: 0.5
+
+# --- Climate Risk ---
+climate_risk:
+  enabled: true
+  risk_types:
+    - "TRANSITION"
+    - "PHYSICAL"
+    - "OPPORTUNITY"
+  carbon_price_usd_per_tonne: 150.0
+  carbon_price_escalation_pct: 8.0
+  time_horizons_years:
+    - 5
+    - 10
+    - 30
+  scenarios:
+    - "iea_nze_2050"
+    - "iea_aps"
+    - "iea_steps"
+    - "ngfs_orderly"
+    - "ngfs_disorderly"
+  stranded_asset_analysis: true
+  value_at_risk_enabled: true
+
+# --- Base Year ---
+base_year:
+  base_year: 2020
+  significance_threshold_pct: 5.0
+  recalc_triggers_enabled: true
+  recalc_triggers:
+    - "structural_change"
+    - "methodology_change"
+    - "error_correction"
+    - "boundary_change"
+    - "divestment_acquisition"
+  rolling_base_year: false
+  documentation_required: true
+
+# --- Sector ---
+sector:
+  sector_focus: "ENERGY"
+  energy_upstream_fuel: true
+  energy_sold_product_use: true
+
+# --- Assurance ---
+assurance:
+  target_level: "REASONABLE"
+  isae_3410_compliant: true
+  evidence_requirements:
+    - "methodology_documentation"
+    - "emission_factor_sources"
+    - "data_quality_assessment"
+    - "uncertainty_analysis"
+    - "provenance_hashes"
+    - "assumption_registry"
+    - "double_counting_log"
+    - "calculation_audit_trail"
+    - "transition_risk_modelling"
+    - "stranded_asset_assessment"
+  verifier_portal_enabled: true
+  materiality_threshold_pct: 3.0
+  min_dqr_for_reasonable: 2.0
+  continuous_monitoring: true
+
+# --- Integration ---
+integration:
+  pack042_required: true
+  pack042_pack_id: "PACK-042-scope-3-starter"
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database_bridge: true
+  sbti_api_enabled: true
+  tcfd_issb_bridge: true
+  supplier_portal_enabled: true
+  cdp_supply_chain: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "XLSX"
+    - "PDF"
+  enterprise_dashboard: true
+  dashboard_refresh_minutes: 60
+  investor_grade: true
+  board_summary: true
+  scenario_reporting: true
+  benchmark_comparison: true
+  multi_entity_rollup: true
+  verifier_data_room: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Security ---
+security:
+  rbac_roles:
+    - "scope3_director"
+    - "scope3_manager"
+    - "sustainability_officer"
+    - "energy_analyst"
+    - "supply_chain_analyst"
+    - "risk_analyst"
+    - "verifier"
+    - "viewer"
+  supplier_data_isolation: true
+  entity_level_access: true
+  audit_logging: true
+  audit_retention_years: 10
+  pii_redaction: true
+  encryption_at_rest: true
+  data_classification: "CONFIDENTIAL"
+
+# --- Performance ---
+performance:
+  parallel_entities: 15
+  parallel_categories: 10
+  batch_size: 5000
+  cache_ttl_seconds: 7200
+  lca_query_timeout_seconds: 600
+  scenario_computation_timeout_seconds: 3600
+  max_suppliers: 5000
+  max_line_items: 1000000
+  memory_ceiling_mb: 32768
+  monte_carlo_iterations: 20000

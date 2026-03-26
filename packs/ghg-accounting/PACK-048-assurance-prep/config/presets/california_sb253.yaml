@@ -1,0 +1,142 @@
+# =============================================================================
+# PACK-048 GHG Assurance Prep - California SB 253 Preset
+# =============================================================================
+# California SB 253 (Climate Corporate Data Accountability Act) assurance
+# preparation for entities with >1B USD annual revenue doing business in
+# California. Covers Scope 1, 2, and 3 emissions with ISO 14064-3 standard
+# and California-specific reporting thresholds and timelines.
+#
+# Typical use cases:
+#   - Corporations with >1B USD revenue doing business in California
+#   - Companies subject to both SB 253 and SB 261
+#   - Technology companies headquartered in California
+#   - Retail and consumer companies with CA operations
+#
+# Typical engagement profile:
+#   Assurance level: Limited (S1+S2 from 2026, S3 from 2027)
+#   Scopes: Scope 1 + Scope 2 + Scope 3
+#   Duration: 12-16 weeks
+#   Typical cost: 50,000 - 150,000 USD
+# =============================================================================
+
+# --- Assurance Engagement ---
+assurance_standard: "ISO_14064_3"
+assurance_level: "LIMITED"
+company_size: "LARGE"
+scopes_in_scope:
+  - "SCOPE_1"
+  - "SCOPE_2"
+  - "SCOPE_3"
+
+# --- Evidence Consolidation ---
+evidence:
+  minimum_quality: "ADEQUATE"
+  require_provenance_hash: true
+  retention_years: 7
+  auto_extract_from_packs: true
+  evidence_format: "STRUCTURED"
+
+# --- Readiness Assessment ---
+readiness:
+  standard: "ISO_14064_3"
+  target_level: "LIMITED"
+  minimum_readiness_score_pct: 70.0
+  include_gap_remediation: true
+  auto_score_from_evidence: true
+
+# --- Calculation Provenance ---
+provenance:
+  verify_all_calculations: true
+  replay_tolerance_pct: 0.01
+  include_input_hashes: true
+  include_intermediate_hashes: true
+  generate_certificate: true
+
+# --- Control Testing ---
+controls:
+  minimum_effectiveness: "PARTIALLY_EFFECTIVE"
+  target_maturity: "LEVEL_3_DEFINED"
+  test_sample_size: 25
+  include_it_general_controls: true
+  walkthroughs_required: true
+  remediation_timeline_days: 90
+
+# --- Verifier Collaboration ---
+verifier:
+  max_query_response_days: 5
+  query_escalation_days: 3
+  finding_response_days: 10
+  enable_collaboration_portal: true
+  auto_evidence_sharing: true
+
+# --- Materiality Assessment ---
+materiality:
+  overall_materiality_pct: 5.0
+  performance_materiality_pct: 65.0
+  clearly_trivial_pct: 5.0
+  scope_specific_enabled: true
+  revision_frequency: "ANNUAL"
+
+# --- Sampling Plan ---
+sampling:
+  primary_method: "MUS"
+  confidence_level_pct: 95.0
+  tolerable_misstatement_pct: 5.0
+  expected_misstatement_pct: 1.0
+  minimum_sample_size: 25
+  stratification_enabled: true
+  stratification_criteria:
+    - "scope"
+    - "category"
+    - "facility"
+
+# --- Regulatory Requirements ---
+regulatory:
+  jurisdictions:
+    - "CALIFORNIA_SB253"
+  company_size: "LARGE"
+  include_upcoming_requirements: true
+  track_effective_dates: true
+  deadline_warning_days: 90
+
+# --- Cost & Timeline ---
+cost_timeline:
+  company_size: "LARGE"
+  assurance_level: "LIMITED"
+  include_scope_3: true
+  multi_jurisdiction: false
+  first_time_engagement: true
+  target_completion_weeks: 14
+  currency: "EUR"
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+  sections:
+    - "executive_summary"
+    - "readiness_assessment"
+    - "evidence_summary"
+    - "control_testing"
+    - "materiality_sampling"
+    - "provenance_verification"
+    - "regulatory_compliance"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "READINESS_GAP"
+    - "CONTROL_FAILURE"
+    - "EVIDENCE_MISSING"
+    - "QUERY_OVERDUE"
+    - "DEADLINE_APPROACHING"
+  channels:
+    - "EMAIL"
+  query_overdue_days: 5
+  evidence_gap_alert: true

@@ -9,7 +9,7 @@ import typer
 import subprocess
 import yaml
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -294,16 +294,59 @@ def validate(
 ):
     """Validate manifest & files"""
     from ..ecosystem.packs.manifest import validate_pack, load_manifest
+    from ..v1.contracts import validate_v1_pack, validate_v1_pipeline
 
     if not (path / "pack.yaml").exists():
         console.print(f"[red]Error: No pack.yaml found in {path}[/red]")
         raise typer.Exit(1)
 
+    def _load_yaml(path_obj: Path) -> dict[str, Any]:
+        with open(path_obj, "r", encoding="utf-8") as handle:
+            loaded = yaml.safe_load(handle) or {}
+            return loaded if isinstance(loaded, dict) else {}
+
+    def _looks_like_v1_contract(pack_data: dict[str, Any]) -> bool:
+        return (
+            pack_data.get("contract_version") == "1.0"
+            and pack_data.get("runtime") == "greenlang-v1"
+            and "entry_pipeline" in pack_data
+        )
+
     console.print(f"[cyan]Validating pack at {path}...[/cyan]")
+    manifest_data = _load_yaml(path / "pack.yaml")
+    auto_mode_v1 = _looks_like_v1_contract(manifest_data)
 
-    is_valid, errors = validate_pack(path)
+    run_v1 = bool(auto_mode_v1)
+    run_legacy = bool(not auto_mode_v1)
 
-    if is_valid:
+    errors: list[str] = []
+
+    if run_legacy:
+        legacy_valid, legacy_errors = validate_pack(path)
+        if not legacy_valid:
+            errors.extend([f"[legacy] {err}" for err in legacy_errors])
+        else:
+            console.print("[green][OK][/green] Legacy pack validation passed")
+
+    if run_v1:
+        v1_pack = validate_v1_pack(path / "pack.yaml")
+        if not v1_pack.ok:
+            errors.extend([f"[v1 pack] {err}" for err in v1_pack.errors])
+        else:
+            console.print("[green][OK][/green] v1 pack contract passed")
+
+        entry_pipeline = manifest_data.get("entry_pipeline", "gl.yaml")
+        v1_pipeline_path = (path / str(entry_pipeline)).resolve()
+        if not v1_pipeline_path.exists():
+            errors.append(f"[v1 pipeline] pipeline file not found: {entry_pipeline}")
+        else:
+            v1_pipeline = validate_v1_pipeline(v1_pipeline_path)
+            if not v1_pipeline.ok:
+                errors.extend([f"[v1 pipeline] {err}" for err in v1_pipeline.errors])
+            else:
+                console.print("[green][OK][/green] v1 pipeline contract passed")
+
+    if not errors:
         console.print("[green][OK][/green] Pack validation passed")
 
         if verbose:

@@ -1,0 +1,22 @@
+contract_version: "1.0"
+app_id: "GL-VCCI-Carbon-APP"
+pipeline_id: "vcci-scope3-core"
+runtime: "greenlang-v1"
+stages:
+  - id: "stage-validate"
+    type: "validate"
+  - id: "stage-compute"
+    type: "compute"
+  - id: "stage-policy"
+    type: "policy"
+  - id: "stage-export"
+    type: "export"
+  - id: "stage-audit"
+    type: "audit"
+runtime_conventions:
+  command: ""
+  success_exit_code: 0
+  blocked_exit_code: 4
+  artifact_contract:
+    - "scope3_inventory.json"
+

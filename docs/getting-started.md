@@ -101,6 +101,18 @@ gl-cbam web --host 0.0.0.0 --port 8000
 
 When `CBAM_API_KEY` is set, `/api/*` requests must include `X-API-Key`.
 
+### Multi-App Web Entry (v1)
+
+The web server now includes a multi-app portal front door:
+
+- `http://127.0.0.1:8000/apps` (CBAM + CSRD + VCCI entry)
+- `http://127.0.0.1:8000/apps/cbam`
+- `http://127.0.0.1:8000/apps/csrd`
+- `http://127.0.0.1:8000/apps/vcci`
+- `http://127.0.0.1:8000/runs`
+
+This does not replace CLI release gates; it provides a unified operational web access layer.
+
 ## Core Concepts
 
 ### Pipelines
@@ -396,6 +408,7 @@ steps:
 - Learn about [Pack System](packs.md)
 - Review [Security Model](SECURITY_MODEL.md)
 - Check out [Examples](../examples/README.md)
+- Validate v1 app set contracts and release gates with [docs/v1/QUICKSTART.md](v1/QUICKSTART.md)
 
 ## Getting Help
 

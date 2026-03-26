@@ -1,0 +1,12 @@
+{
+  "app_id": "GL-CSRD-APP",
+  "artifacts": [
+    "esrs_report.json",
+    "audit/run_manifest.json",
+    "audit/checksums.json"
+  ],
+  "execution_mode": "native",
+  "pipeline_id": "csrd-esrs-core",
+  "status": "ok",
+  "warnings": []
+}

@@ -1,0 +1,133 @@
+# =============================================================================
+# PACK-045 Base Year Management - Food & Agriculture Preset
+# =============================================================================
+# Agricultural and food processing operations with significant biogenic
+# emissions, seasonal variability, and weather-dependent production cycles.
+# Weather normalization is applied to base year to enable fair year-on-year
+# comparison despite varying growing conditions and yields.
+#
+# Typical use cases:
+#   - Crop farming and arable agriculture
+#   - Livestock operations (dairy, beef, poultry)
+#   - Food processing and beverage manufacturing
+#   - Aquaculture and fisheries
+#   - Agricultural cooperatives
+#
+# Typical emission profile:
+#   Scope 1: 60-90% of total (enteric fermentation, manure, soil N2O)
+#   Scope 2: 10-40% of total (irrigation, refrigeration, processing)
+#   Key gases: CO2, CH4 (30-50%), N2O (10-30%)
+#   Typical intensity: 1.0-8.0 tCO2e per tonne product
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "food_agriculture"
+  description: "Agricultural emissions with seasonal variability and weather normalization"
+  sector: "FOOD_AGRICULTURE"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "ROLLING_3YR"
+  rolling_window_years: 3
+  anchor_year: 2024
+  selection_method: "WEATHER_NORMALIZED"
+  weights:
+    data_completeness: 0.20
+    data_quality: 0.20
+    operational_stability: 0.25
+    regulatory_alignment: 0.15
+    weather_normality: 0.20
+  criteria:
+    minimum_data_completeness_pct: 90.0
+    minimum_data_quality_score: 65.0
+    require_verification: false
+    exclude_anomalous_years: true
+    anomaly_threshold_stddev: 2.5
+    require_yield_data: true
+    exclude_drought_years: true
+    exclude_flood_years: true
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 5.0
+  cumulative_threshold_pct: 10.0
+  de_minimis_threshold_tco2e: 100.0
+  weather_normalization_enabled: true
+  normalization_method: "DEGREE_DAY_ADJUSTED"
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: true
+    crop_type_change: true
+    livestock_herd_change: true
+    land_use_change: true
+    irrigation_method_change: true
+  approval_workflow:
+    require_approval: true
+    minimum_approvers: 1
+    auto_approve_below_threshold: true
+    auto_approve_threshold_pct: 3.0
+    notification_recipients:
+      - "sustainability_manager"
+      - "farm_operations_manager"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "INTENSITY"
+  ambition_level: "WELL_BELOW_2C"
+  annual_reduction_rate_pct: 3.0
+  target_year: 2030
+  interim_targets:
+    - year: 2026
+      reduction_pct: 10.0
+    - year: 2028
+      reduction_pct: 20.0
+  sbti_aligned: true
+  intensity_metric: "tCO2e/tonne_product"
+  secondary_intensity_metric: "tCO2e/hectare"
+  sector_pathway: "FLAG"
+  include_land_use_removals: true
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "TCFD"
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  include_seasonal_analysis: true
+  include_weather_normalization_notes: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: true
+  pack_043_scope3_complete_enabled: false
+  erp_connector_enabled: false
+  data_quality_profiler_enabled: true
+  climate_hazard_connector_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 7
+  log_all_recalculations: true
+  log_threshold_assessments: true
+  evidence_attachment: true
+  weather_data_archival: true

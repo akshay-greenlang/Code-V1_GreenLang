@@ -1,0 +1,156 @@
+# =============================================================================
+# PACK-041 Scope 1-2 Complete - Energy Utility Preset
+# =============================================================================
+# Power generation and energy distribution utilities with large-scale Scope 1
+# emissions from fossil fuel combustion, SF6 from electrical switchgear,
+# process emissions (e.g., desulphurisation), and fugitive emissions from
+# gas distribution networks.
+#
+# Typical use cases:
+#   - Coal, gas, and oil-fired power stations
+#   - Combined heat and power (CHP) plants
+#   - Electricity transmission and distribution operators
+#   - Natural gas distribution companies
+#   - District heating network operators
+#
+# Typical emission profile:
+#   Scope 1: 85-99% of total (fuel combustion dominant)
+#   Scope 2: 1-15% of total (plant auxiliaries, offices)
+#   Key gases: CO2, CH4, N2O, SF6
+#   Typical intensity: 0.3-1.0 tCO2e per MWh generated
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+facility_name: ""
+sector_type: "ENERGY_UTILITY"
+country: "DE"
+reporting_year: 2026
+
+# --- Boundary ---
+boundary:
+  consolidation_approach: "EQUITY_SHARE"
+  significance_threshold_pct: 0.5
+  de_minimis_threshold_pct: 0.1
+  include_biogenic_co2: true
+  include_ets_breakdown: true
+
+# --- Source Completeness ---
+source_completeness:
+  require_all_scope1_categories: false
+  require_dual_reporting: true
+  minimum_source_coverage_pct: 99.0
+  document_exclusions: true
+
+# --- Scope 1 ---
+scope1:
+  stationary_combustion_enabled: true
+  stationary_combustion_tier: "TIER_3"
+  mobile_combustion_enabled: true
+  mobile_combustion_tier: "TIER_2"
+  process_emissions_enabled: true
+  process_emissions_tier: "TIER_2"
+  fugitive_emissions_enabled: true
+  fugitive_emissions_tier: "TIER_2"
+  refrigerant_fgas_enabled: true
+  refrigerant_fgas_tier: "TIER_2"
+  land_use_enabled: false
+  land_use_tier: "TIER_1"
+  waste_treatment_enabled: false
+  waste_treatment_tier: "TIER_1"
+  agricultural_enabled: false
+  agricultural_tier: "TIER_1"
+
+# --- Scope 2 ---
+scope2:
+  dual_reporting: true
+  location_based_enabled: true
+  market_based_enabled: true
+  steam_heat_enabled: false
+  cooling_enabled: false
+  instrument_allocation: true
+  grid_ef_source: "IEA"
+  residual_mix_enabled: true
+  validate_instrument_quality: true
+
+# --- Emission Factors ---
+emission_factors:
+  preferred_sources:
+    - "FACILITY"
+    - "IPCC"
+    - "UBA"
+    - "IEA"
+  gwp_source: "AR5"
+  allow_supplier_factors: true
+  allow_facility_factors: true
+  factor_vintage_max_years: 2
+  auto_update_factors: true
+
+# --- Uncertainty ---
+uncertainty:
+  enabled: true
+  monte_carlo_iterations: 10000
+  confidence_level: 0.95
+  include_activity_data_uncertainty: true
+  include_emission_factor_uncertainty: true
+  sensitivity_analysis: true
+  contribution_analysis: true
+
+# --- Base Year ---
+base_year:
+  year: 2024
+  recalculation_threshold_pct: 3.0
+  auto_detect_triggers: true
+  rolling_base_year: false
+  fixed_base_year: true
+
+# --- Trend Analysis ---
+trend_analysis:
+  enabled: true
+  intensity_metrics:
+    - "tCO2e/MWh_generated"
+    - "tCO2e/MEUR_revenue"
+  lmdi_decomposition: true
+  sbti_pathway_comparison: true
+  sbti_annual_reduction_rate: 4.2
+  projection_years: 10
+
+# --- Compliance ---
+compliance:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "ISO_14064"
+    - "SBTI"
+  esrs_biogenic_co2: true
+  esrs_ets_percentage: true
+  cdp_country_disaggregation: true
+  cdp_gas_disaggregation: true
+  sec_materiality_threshold: false
+  sbti_target_tracking: true
+  sb253_reporting: false
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  executive_summary: true
+  detailed_inventory: true
+  verification_package: true
+  output_language: "en"
+  include_methodology_notes: true
+  include_emission_factor_register: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  emission_factor_citation: true

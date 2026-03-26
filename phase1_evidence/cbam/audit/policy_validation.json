@@ -1,0 +1,46 @@
+{
+  "status": "FAIL",
+  "overall_score": 65.0,
+  "can_export": true,
+  "summary": "Policy validation failed with 1 violation(s).",
+  "evaluated_at": "2026-06-16T05:16:45Z",
+  "violations": [
+    {
+      "rule_id": "POL-001",
+      "rule_name": "Default Factor Usage Cap",
+      "severity": "FAIL",
+      "message": "Default factor usage (70.0%) exceeds cap (20.0%)",
+      "affected_lines": [
+        "IMP-2025-001",
+        "IMP-2025-002",
+        "IMP-2025-005",
+        "IMP-2025-006",
+        "IMP-2025-007",
+        "IMP-2025-009",
+        "IMP-2025-010"
+      ],
+      "affected_line_count": 7,
+      "threshold": 20.0,
+      "actual_value": 70.0,
+      "remediation": "Obtain supplier-specific emission data for at least 5 lines to reduce default usage below 20%."
+    }
+  ],
+  "warnings": [
+    {
+      "rule_id": "POL-003",
+      "rule_name": "Authorization Readiness",
+      "severity": "WARN",
+      "message": "Annual quantity (3443.0t) exceeds authorization threshold (50t/year). CBAM authorization will be required in definitive period.",
+      "affected_lines": [],
+      "affected_line_count": 0,
+      "threshold": 50.0,
+      "actual_value": 3443.0,
+      "remediation": "Prepare for CBAM authorized declarant registration. Ensure financial guarantee capacity and establish supplier verification processes."
+    }
+  ],
+  "passed_rules": [
+    "POL-002: Definitive Period Compliance (transitional - relaxed)",
+    "POL-004: Data Completeness",
+    "POL-005: Data Consistency (mixed methods allowed)"
+  ]
+}

@@ -222,6 +222,31 @@ class Settings(BaseModel):
     validation_strictness: ValidationStrictness = ValidationStrictness.STRICT
 
 
+class PolicySettings(BaseModel):
+    """Optional policy overrides for compliance evaluation."""
+    default_usage_cap: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=100.0,
+        description="Maximum default-factor usage percentage for post-Q3 2024 checks.",
+    )
+    block_export_on_fail: bool = Field(
+        default=False,
+        description="Block export when policy status is FAIL.",
+    )
+    default_usage_warn_threshold: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=100.0,
+        description="Warning threshold for default-factor usage percentage.",
+    )
+    authorization_threshold_tonnes: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        description="Annual quantity threshold that triggers authorization readiness warning.",
+    )
+
+
 class CBAMConfig(BaseModel):
     """Complete CBAM pack configuration."""
     version: str = "1.0"
@@ -229,6 +254,7 @@ class CBAMConfig(BaseModel):
     reporting_period: ReportingPeriod
     representative: Optional[Representative] = None
     settings: Settings = Field(default_factory=Settings)
+    policy: Optional[PolicySettings] = None
 
     model_config = {"extra": "forbid"}
 

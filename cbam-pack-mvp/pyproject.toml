@@ -68,6 +68,9 @@ Repository = "https://github.com/greenlang/greenlang"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+cbam_pack = ["schemas/*.xsd"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"

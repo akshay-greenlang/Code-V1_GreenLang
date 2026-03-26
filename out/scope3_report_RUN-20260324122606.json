@@ -1,0 +1,44 @@
+{
+  "run_id": "RUN-20260324122606",
+  "generated_at": "2026-03-24T12:26:07+00:00",
+  "format": "ghg-protocol",
+  "calculation_results": {
+    "categories": {
+      "1": {
+        "emissions_tco2e": 3377.4205930604767,
+        "uncertainty_pct": 15.50021510445334,
+        "data_quality_tier": 2,
+        "llm_enhanced": true,
+        "monte_carlo": true
+      }
+    },
+    "total_emissions": 3377.4205930604767,
+    "total_uncertainty": 15.50021510445334
+  },
+  "analysis_results": {
+    "hotspots": [
+      {
+        "category": 1,
+        "emissions": 3377.4205930604767,
+        "percentage": 100.0,
+        "rank": 1
+      }
+    ],
+    "pareto_80_pct_categories": [
+      1
+    ],
+    "recommendations": [
+      "Focus on top 3 categories for maximum impact",
+      "Engage high-emission suppliers for data quality improvement",
+      "Consider supplier switching scenarios for hotspot categories"
+    ]
+  },
+  "metadata": {
+    "tenant_id": "cli-user",
+    "categories_included": [
+      1
+    ],
+    "total_emissions_tco2e": 3377.4205930604767,
+    "average_uncertainty_pct": 15.50021510445334
+  }
+}

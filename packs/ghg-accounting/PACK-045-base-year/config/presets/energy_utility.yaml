@@ -1,0 +1,131 @@
+# =============================================================================
+# PACK-045 Base Year Management - Energy Utility Preset
+# =============================================================================
+# Power generation and energy distribution utilities with large-scale Scope 1
+# emissions from fossil fuel combustion. Base year is often regulatory-driven
+# (e.g., EU ETS Phase start, national carbon pricing legislation). Stricter
+# thresholds due to the magnitude of absolute emissions.
+#
+# Typical use cases:
+#   - Coal, gas, and oil-fired power stations
+#   - Combined heat and power (CHP) plants
+#   - Electricity transmission and distribution operators
+#   - Natural gas distribution companies
+#   - District heating network operators
+#
+# Typical emission profile:
+#   Scope 1: 85-99% of total (fuel combustion dominant)
+#   Scope 2: 1-15% of total (plant auxiliaries, offices)
+#   Key gases: CO2, CH4, N2O, SF6
+#   Typical intensity: 0.3-1.0 tCO2e per MWh generated
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "energy_utility"
+  description: "Power generation utility with regulatory-driven base year and high Scope 1"
+  sector: "ENERGY_UTILITY"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "FIXED"
+  year: 2019
+  selection_method: "REGULATORY_ALIGNED"
+  regulatory_reference: "EU_ETS_PHASE_4"
+  weights:
+    data_completeness: 0.20
+    data_quality: 0.20
+    operational_stability: 0.15
+    regulatory_alignment: 0.45
+  criteria:
+    minimum_data_completeness_pct: 99.0
+    minimum_data_quality_score: 85.0
+    require_verification: true
+    exclude_anomalous_years: true
+    anomaly_threshold_stddev: 1.5
+    require_cems_data: true
+    require_fuel_analysis: true
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 2.0
+  cumulative_threshold_pct: 3.0
+  de_minimis_threshold_tco2e: 5000.0
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: true
+    fuel_mix_change: true
+    capacity_addition_retirement: true
+    regulatory_mandate: true
+  approval_workflow:
+    require_approval: true
+    minimum_approvers: 2
+    auto_approve_below_threshold: false
+    escalation_threshold_pct: 5.0
+    require_board_approval_above_pct: 15.0
+    notification_recipients:
+      - "sustainability_director"
+      - "regulatory_compliance"
+      - "cfo"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "INTENSITY"
+  ambition_level: "1_5C"
+  annual_reduction_rate_pct: 7.0
+  target_year: 2035
+  interim_targets:
+    - year: 2025
+      reduction_pct: 30.0
+    - year: 2030
+      reduction_pct: 55.0
+  sbti_aligned: true
+  intensity_metric: "tCO2e/MWh_generated"
+  sector_pathway: "POWER_GENERATION"
+  net_zero_target_year: 2050
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "ISO_14064"
+    - "SBTI"
+    - "TCFD"
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  include_regulatory_comparison: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: true
+  pack_043_scope3_complete_enabled: true
+  erp_connector_enabled: true
+  data_quality_profiler_enabled: true
+  ets_registry_connector: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 15
+  log_all_recalculations: true
+  log_threshold_assessments: true
+  evidence_attachment: true
+  third_party_verification: true
+  regulatory_submission_log: true

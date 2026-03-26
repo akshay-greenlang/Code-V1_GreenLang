@@ -1,0 +1,60 @@
+name: CSRD v1 Backend CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "release/**"
+    paths:
+      - "greenlang/cli/**"
+      - "greenlang/v1/**"
+      - "applications/GL-CSRD-APP/CSRD-Reporting-Platform/**"
+      - "tests/v1/**"
+      - ".github/workflows/csrd-v1-backend-ci.yml"
+  pull_request:
+    paths:
+      - "greenlang/cli/**"
+      - "greenlang/v1/**"
+      - "applications/GL-CSRD-APP/CSRD-Reporting-Platform/**"
+      - "tests/v1/**"
+      - ".github/workflows/csrd-v1-backend-ci.yml"
+
+jobs:
+  csrd-v1-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+
+      - name: Contract and policy checks
+        run: |
+          python -m greenlang.cli.main v1 validate-contracts
+          python -m greenlang.cli.main v1 check-policy
+
+      - name: Run strict CSRD backend
+        run: |
+          python -m greenlang.cli.main run csrd applications/GL-CSRD-APP/CSRD-Reporting-Platform/examples/demo_esg_data.csv tmp_csrd_backend
+
+      - name: Verify CSRD artifacts
+        run: |
+          test -f tmp_csrd_backend/esrs_report.json
+          test -f tmp_csrd_backend/audit/run_manifest.json
+          test -f tmp_csrd_backend/audit/checksums.json
+          test -f tmp_csrd_backend/audit/observability_event.json
+
+      - name: Run CSRD strict test lane
+        run: |
+          pytest -q tests/v1/test_full_backends.py tests/v1/test_release_gate.py
+

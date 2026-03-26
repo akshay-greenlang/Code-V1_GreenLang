@@ -1,0 +1,127 @@
+# =============================================================================
+# PACK-045 Base Year Management - Transport & Logistics Preset
+# =============================================================================
+# Fleet operations and logistics companies where mobile combustion dominates
+# Scope 1. Offers a rolling 3-year average base year option to smooth annual
+# variability caused by fleet turnover, route changes, and seasonal demand.
+#
+# Typical use cases:
+#   - Road freight and haulage companies
+#   - Passenger bus and coach operators
+#   - Airlines and aviation service providers
+#   - Shipping and maritime logistics
+#   - Last-mile delivery and courier services
+#
+# Typical emission profile:
+#   Scope 1: 70-95% of total (mobile combustion dominant)
+#   Scope 2: 5-30% of total (warehouses, offices, depots)
+#   Key gases: CO2 (>98%), CH4, N2O (trace)
+#   Typical intensity: 0.05-0.15 tCO2e per tonne-km
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "transport_logistics"
+  description: "Fleet operations with mobile combustion focus and rolling 3-year base year option"
+  sector: "TRANSPORT_LOGISTICS"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "ROLLING_3YR"
+  rolling_window_years: 3
+  anchor_year: 2024
+  selection_method: "ROLLING_AVERAGE"
+  weights:
+    data_completeness: 0.25
+    data_quality: 0.25
+    operational_stability: 0.30
+    regulatory_alignment: 0.20
+  criteria:
+    minimum_data_completeness_pct: 95.0
+    minimum_data_quality_score: 70.0
+    require_verification: false
+    exclude_anomalous_years: true
+    anomaly_threshold_stddev: 2.0
+    require_fleet_register: true
+    require_fuel_records: true
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 5.0
+  cumulative_threshold_pct: 8.0
+  de_minimis_threshold_tco2e: 200.0
+  rolling_recalculation: true
+  rolling_update_frequency: "ANNUAL"
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: true
+    fleet_composition_change: true
+    route_network_change: true
+    fuel_type_transition: true
+  approval_workflow:
+    require_approval: true
+    minimum_approvers: 1
+    auto_approve_below_threshold: true
+    auto_approve_threshold_pct: 3.0
+    notification_recipients:
+      - "sustainability_manager"
+      - "fleet_operations_manager"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "INTENSITY"
+  ambition_level: "WELL_BELOW_2C"
+  annual_reduction_rate_pct: 5.0
+  target_year: 2030
+  interim_targets:
+    - year: 2026
+      reduction_pct: 15.0
+    - year: 2028
+      reduction_pct: 30.0
+  sbti_aligned: true
+  intensity_metric: "tCO2e/tonne_km"
+  secondary_intensity_metric: "tCO2e/vehicle"
+  sector_pathway: "TRANSPORT"
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "TCFD"
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  include_fleet_normalization: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: true
+  pack_043_scope3_complete_enabled: false
+  erp_connector_enabled: true
+  data_quality_profiler_enabled: true
+  fleet_telematics_connector: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 7
+  log_all_recalculations: true
+  log_threshold_assessments: true
+  evidence_attachment: true
+  rolling_window_history: true

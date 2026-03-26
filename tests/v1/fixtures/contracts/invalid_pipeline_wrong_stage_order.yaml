@@ -1,0 +1,22 @@
+contract_version: "1.0"
+app_id: "GL-CBAM-APP"
+pipeline_id: "cbam-quarterly-core"
+runtime: "greenlang-v1"
+stages:
+  - id: "stage-compute"
+    type: "compute"
+  - id: "stage-validate"
+    type: "validate"
+  - id: "stage-policy"
+    type: "policy"
+  - id: "stage-export"
+    type: "export"
+  - id: "stage-audit"
+    type: "audit"
+runtime_conventions:
+  command: "gl run cbam <config.yaml> <imports.csv> <output_dir>"
+  success_exit_code: 0
+  blocked_exit_code: 4
+  artifact_contract:
+    - "cbam_report.xml"
+

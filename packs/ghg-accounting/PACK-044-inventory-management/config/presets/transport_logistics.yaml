@@ -1,0 +1,172 @@
+# =============================================================================
+# PACK-044 GHG Inventory Management - Transport & Logistics Preset
+# =============================================================================
+# Transport and logistics companies with large mobile combustion fleets.
+# Monthly collection of fuel consumption, distance-based activity data, and
+# fleet telematics. Supports road freight, maritime shipping, aviation,
+# rail, and last-mile delivery operations with per-tonne-km intensity.
+#
+# Typical use cases:
+#   - Road freight and haulage companies
+#   - Shipping and maritime logistics
+#   - Airlines and air freight operators
+#   - Rail freight and passenger operators
+#   - Courier, express, and parcel delivery services
+#   - Third-party logistics providers (3PL)
+#
+# Typical inventory profile:
+#   - Hundreds to thousands of vehicles/vessels
+#   - Scope 1: dominant (diesel, HFO, jet fuel, LNG, CNG)
+#   - Scope 2: warehouses, depots, terminals
+#   - Fleet telematics and fuel card integration
+#   - Typical intensity: 0.05-0.20 kgCO2e per tonne-km
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+facility_name: ""
+sector_type: "TRANSPORT_LOGISTICS"
+country: "DE"
+reporting_year: 2026
+
+# --- Inventory Period ---
+inventory_period:
+  period_type: "CALENDAR_YEAR"
+  fiscal_year_end_month: 12
+  lock_after_days: 21
+  auto_create_next_period: true
+
+# --- Data Collection ---
+data_collection:
+  frequency: "MONTHLY"
+  collection_window_days: 14
+  reminder_before_days: 5
+  escalation_after_days: 10
+  auto_send_reminders: true
+  require_evidence_upload: true
+  allow_estimation: true
+  estimation_requires_justification: true
+  fuel_card_integration_enabled: true
+  telematics_integration_enabled: true
+  fleet_management_import: true
+
+# --- Quality Management ---
+quality_management:
+  qaqc_enabled: true
+  automated_checks:
+    - "COMPLETENESS"
+    - "RANGE_CHECK"
+    - "YEAR_ON_YEAR_VARIANCE"
+    - "MONTH_ON_MONTH_VARIANCE"
+    - "UNIT_CONSISTENCY"
+    - "FUEL_EFFICIENCY_CHECK"
+    - "DISTANCE_FUEL_CORRELATION"
+    - "FLEET_SIZE_CONSISTENCY"
+    - "OUTLIER_DETECTION"
+  variance_threshold_pct: 12.0
+  data_quality_score_target: 82.0
+  require_improvement_plan: true
+  improvement_plan_review_frequency: "SEMI_ANNUAL"
+
+# --- Review and Approval ---
+review_approval:
+  review_levels: 2
+  level_1_role: "FLEET_MANAGER"
+  level_2_role: "HEAD_OF_SUSTAINABILITY"
+  require_comments: true
+  auto_approve_below_threshold: false
+  sign_off_required: true
+  parallel_review_allowed: true
+
+# --- Change Management ---
+change_management:
+  require_change_request: true
+  auto_approve_minor_changes: true
+  minor_change_threshold_pct: 2.0
+  impact_assessment_required: true
+  require_recalculation_on_change: true
+
+# --- Versioning ---
+versioning:
+  enabled: true
+  max_versions_per_period: 8
+  snapshot_on_approval: true
+  track_field_changes: true
+  retain_all_versions: true
+  diff_report_enabled: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  multi_entity: true
+  require_subsidiary_sign_off: true
+  inter_company_elimination: false
+  fleet_segment_aggregation: true
+  mode_of_transport_disaggregation: true
+
+# --- Fleet-Specific Configuration ---
+fleet_config:
+  modes_of_transport:
+    - "ROAD_FREIGHT"
+    - "ROAD_PASSENGER"
+    - "MARITIME"
+    - "AVIATION"
+    - "RAIL"
+    - "LAST_MILE"
+  fuel_types:
+    - "DIESEL"
+    - "PETROL"
+    - "CNG"
+    - "LNG"
+    - "HFO"
+    - "JET_A1"
+    - "BIODIESEL"
+    - "ELECTRIC"
+    - "HYDROGEN"
+  intensity_metrics:
+    - "kgCO2e/tonne_km"
+    - "kgCO2e/vehicle_km"
+    - "kgCO2e/litre"
+    - "kgCO2e/TEU_km"
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: true
+  assess_frequency: "ANNUAL"
+  maturity_model: "GHG_PROTOCOL_5_LEVEL"
+  generate_improvement_roadmap: true
+  benchmark_against_peers: true
+  sector_benchmark_source: "GLEC_FRAMEWORK"
+
+# --- Documentation ---
+documentation:
+  methodology_doc_required: true
+  assumption_register: true
+  evidence_retention_years: 7
+  link_to_source_documents: true
+  auto_generate_methodology: true
+  well_to_wheel_documentation: true
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "HTML"
+    - "PDF"
+    - "JSON"
+  executive_summary: true
+  detailed_inventory: true
+  verification_package: true
+  output_language: "en"
+  include_methodology_notes: true
+  include_fleet_intensity: true
+  include_mode_breakdown: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7

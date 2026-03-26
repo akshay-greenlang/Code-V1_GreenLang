@@ -1,0 +1,330 @@
+# =============================================================================
+# PACK-048: GHG Assurance Prep Pack
+# GreenLang GHG Accounting Pack for Third-Party Assurance Preparation
+# =============================================================================
+# This pack delivers a production-ready, verification-grade assurance
+# preparation system covering the complete lifecycle from readiness assessment
+# through verifier collaboration. It provides cross-scope evidence
+# consolidation, calculation provenance chains, control self-assessment,
+# materiality determination, statistical sampling, regulatory requirement
+# mapping, cost/timeline estimation, and multi-framework disclosure reporting.
+#
+# The pack follows a zero-hallucination approach: all readiness scores,
+# materiality calculations, sampling sizes, cost estimates, and provenance
+# chains use deterministic formulas from established standards (ISAE 3410,
+# ISO 14064-3, AA1000AS v3, IPCC, GHG Protocol). No LLM is used in any
+# calculation path. Evidence categorisation and control frameworks align
+# with authoritative assurance standards.
+# =============================================================================
+
+pack:
+  id: PACK-048
+  name: "GHG Assurance Prep Pack"
+  version: "1.0.0"
+  category: "ghg-accounting"
+  tier: "enterprise"
+  status: "production-ready"
+  author: "GreenLang Platform Team"
+  date: "2026-03-26"
+  license: "Proprietary"
+  min_platform_version: "1.0.0"
+
+description:
+  short: "Comprehensive GHG assurance preparation with readiness assessment, evidence consolidation, control testing, verifier collaboration, and regulatory mapping"
+  long: |
+    PACK-048 provides the complete GHG assurance preparation lifecycle for
+    organisations preparing for third-party verification under ISAE 3410,
+    ISO 14064-3, or AA1000AS v3. It enables cross-scope evidence consolidation,
+    pre-verification readiness assessment, SHA-256 calculation provenance chains,
+    COSO/COBIT-aligned control self-assessment, structured verifier collaboration,
+    materiality determination, statistical sampling plans, regulatory requirement
+    mapping across 12 jurisdictions, and engagement cost/timeline estimation.
+
+regulatory_basis:
+  - framework: "ISAE 3410"
+    description: "Assurance Engagements on Greenhouse Gas Statements"
+  - framework: "ISO 14064-3:2019"
+    description: "GHG Specification for Verification and Validation"
+  - framework: "AA1000AS v3"
+    description: "AccountAbility Assurance Standard"
+  - framework: "ISAE 3000 (Revised)"
+    description: "Assurance on Non-Financial Information"
+  - framework: "SSAE 18 / AT-C 105"
+    description: "US Attestation Standards (PCAOB/AICPA)"
+  - framework: "EU CSRD"
+    description: "Corporate Sustainability Reporting Directive - mandatory assurance"
+  - framework: "US SEC Climate Rules"
+    description: "Climate disclosure attestation for accelerated filers"
+  - framework: "California SB 253"
+    description: "Climate Corporate Data Accountability Act - third-party verification"
+  - framework: "GHG Protocol Corporate Standard"
+    description: "Chapter 8 - Quality management and verification"
+  - framework: "COSO/COBIT"
+    description: "Internal control frameworks adapted for GHG data processes"
+
+components:
+  engines:
+    count: 10
+    items:
+      - name: "EvidenceConsolidationEngine"
+        file: "engines/evidence_consolidation_engine.py"
+        description: "Cross-scope (S1+S2+S3) evidence package generation with quality grading"
+      - name: "ReadinessAssessmentEngine"
+        file: "engines/readiness_assessment_engine.py"
+        description: "Standard-specific readiness checklists (ISAE 3410, ISO 14064-3, AA1000AS)"
+      - name: "CalculationProvenanceEngine"
+        file: "engines/calculation_provenance_engine.py"
+        description: "SHA-256 hash-chained calculation audit trails across all scopes"
+      - name: "ControlTestingEngine"
+        file: "engines/control_testing_engine.py"
+        description: "25 standard controls, COSO/COBIT self-assessment, deficiency classification"
+      - name: "VerifierCollaborationEngine"
+        file: "engines/verifier_collaboration_engine.py"
+        description: "IR/query/finding management with SLA tracking and escalation"
+      - name: "MaterialityAssessmentEngine"
+        file: "engines/materiality_assessment_engine.py"
+        description: "Quantitative + qualitative materiality determination"
+      - name: "SamplingPlanEngine"
+        file: "engines/sampling_plan_engine.py"
+        description: "MUS/stratified sampling with population identification"
+      - name: "RegulatoryRequirementEngine"
+        file: "engines/regulatory_requirement_engine.py"
+        description: "12 jurisdiction assurance requirement mapping and gap analysis"
+      - name: "CostTimelineEngine"
+        file: "engines/cost_timeline_engine.py"
+        description: "Engagement scoping, cost estimation, timeline and resource planning"
+      - name: "AssuranceReportingEngine"
+        file: "engines/assurance_reporting_engine.py"
+        description: "Readiness dashboards, evidence indexes, multi-format export"
+
+  workflows:
+    count: 8
+    items:
+      - name: "ReadinessAssessmentWorkflow"
+        file: "workflows/readiness_assessment_workflow.py"
+        phases: 5
+        description: "StandardSelect -> Checklist -> EvidenceCheck -> Score -> GapReport"
+      - name: "EvidenceCollectionWorkflow"
+        file: "workflows/evidence_collection_workflow.py"
+        phases: 5
+        description: "ScopeInventory -> SourceID -> DocCollect -> QualityGrade -> PackageBuild"
+      - name: "ControlTestingWorkflow"
+        file: "workflows/control_testing_workflow.py"
+        phases: 5
+        description: "ControlID -> DesignAssess -> SampleSelect -> TestExec -> DeficiencyReport"
+      - name: "VerifierEngagementWorkflow"
+        file: "workflows/verifier_engagement_workflow.py"
+        phases: 5
+        description: "EngagementScope -> Onboard -> QueryManage -> FindingTrack -> CloseOut"
+      - name: "MaterialitySamplingWorkflow"
+        file: "workflows/materiality_sampling_workflow.py"
+        phases: 5
+        description: "MaterialityCalc -> PopulationID -> Stratify -> SampleSize -> SelectionPlan"
+      - name: "RegulatoryMappingWorkflow"
+        file: "workflows/regulatory_mapping_workflow.py"
+        phases: 4
+        description: "JurisdictionID -> RequirementMap -> GapAnalysis -> CompliancePlan"
+      - name: "CostTimelineWorkflow"
+        file: "workflows/cost_timeline_workflow.py"
+        phases: 5
+        description: "EngagementScope -> CostEstimate -> Timeline -> ResourceAlloc -> Budget"
+      - name: "FullAssurancePrepPipelineWorkflow"
+        file: "workflows/full_assurance_prep_pipeline_workflow.py"
+        phases: 8
+        description: "End-to-end assurance preparation orchestration"
+
+  templates:
+    count: 10
+    items:
+      - name: "AssuranceReadinessDashboard"
+        file: "templates/assurance_readiness_dashboard.py"
+      - name: "EvidencePackageIndex"
+        file: "templates/evidence_package_index.py"
+      - name: "ControlSelfAssessmentReport"
+        file: "templates/control_self_assessment_report.py"
+      - name: "VerifierQueryRegister"
+        file: "templates/verifier_query_register.py"
+      - name: "MaterialityAssessmentReport"
+        file: "templates/materiality_assessment_report.py"
+      - name: "SamplingPlanReport"
+        file: "templates/sampling_plan_report.py"
+      - name: "RegulatoryRequirementReport"
+        file: "templates/regulatory_requirement_report.py"
+      - name: "CostTimelineReport"
+        file: "templates/cost_timeline_report.py"
+      - name: "ISAE3410EvidenceBundle"
+        file: "templates/isae_3410_evidence_bundle.py"
+      - name: "MultiYearAssuranceTrend"
+        file: "templates/multi_year_assurance_trend.py"
+
+  integrations:
+    count: 12
+    items:
+      - name: "PackOrchestrator"
+        file: "integrations/pack_orchestrator.py"
+        description: "10-phase DAG pipeline coordinator"
+      - name: "MRVBridge"
+        file: "integrations/mrv_bridge.py"
+        description: "30 AGENT-MRV agents for calculation provenance extraction"
+      - name: "DataBridge"
+        file: "integrations/data_bridge.py"
+        description: "AGENT-DATA agents for source data evidence"
+      - name: "Pack041Bridge"
+        file: "integrations/pack041_bridge.py"
+        description: "Scope 1+2 emissions and evidence from PACK-041"
+      - name: "Pack042043Bridge"
+        file: "integrations/pack042_043_bridge.py"
+        description: "Scope 3 emissions; leverages PACK-043 AssuranceEngine"
+      - name: "Pack044Bridge"
+        file: "integrations/pack044_bridge.py"
+        description: "Review/approval records and documentation from PACK-044"
+      - name: "Pack045Bridge"
+        file: "integrations/pack045_bridge.py"
+        description: "Base year data and recalculation documentation from PACK-045"
+      - name: "Pack046047Bridge"
+        file: "integrations/pack046_047_bridge.py"
+        description: "Intensity metrics and benchmark context from PACK-046/047"
+      - name: "FoundationBridge"
+        file: "integrations/foundation_bridge.py"
+        description: "FOUND-004 assumptions, FOUND-005 citations, FOUND-008 reproducibility"
+      - name: "HealthCheck"
+        file: "integrations/health_check.py"
+        description: "20-category system verification"
+      - name: "SetupWizard"
+        file: "integrations/setup_wizard.py"
+        description: "8-step guided configuration"
+      - name: "AlertBridge"
+        file: "integrations/alert_bridge.py"
+        description: "Deadline/gap/query/finding/readiness/regulatory alerts"
+
+  config:
+    file: "config/pack_config.py"
+    enums: 18
+    sub_configs: 15
+    presets: 8
+
+  presets:
+    - corporate_general
+    - csrd_limited
+    - csrd_reasonable
+    - sec_attestation
+    - california_sb253
+    - multi_jurisdiction
+    - financial_services
+    - first_time_assurance
+
+agent_dependencies:
+  mrv:
+    count: 30
+    description: "All 30 AGENT-MRV agents for calculation provenance extraction"
+  data:
+    count: 20
+    description: "AGENT-DATA agents for source data evidence collection"
+  foundation:
+    count: 3
+    description: "FOUND-004 (Assumptions), FOUND-005 (Citations), FOUND-008 (Reproducibility)"
+
+pack_dependencies:
+  - pack_id: "PACK-041"
+    name: "Scope 1-2 Complete"
+    relationship: "Scope 1+2 emissions data and evidence"
+    required: true
+  - pack_id: "PACK-042"
+    name: "Scope 3 Starter"
+    relationship: "Scope 3 emissions (basic)"
+    required: false
+  - pack_id: "PACK-043"
+    name: "Scope 3 Complete"
+    relationship: "Scope 3 emissions + existing AssuranceEngine"
+    required: false
+  - pack_id: "PACK-044"
+    name: "Inventory Management"
+    relationship: "Review/approval workflows and documentation"
+    required: false
+  - pack_id: "PACK-045"
+    name: "Base Year Management"
+    relationship: "Base year data and recalculation documentation"
+    required: false
+  - pack_id: "PACK-046"
+    name: "Intensity Metrics"
+    relationship: "Intensity metrics for materiality context"
+    required: false
+  - pack_id: "PACK-047"
+    name: "Benchmark"
+    relationship: "Benchmark context for materiality qualitative factors"
+    required: false
+
+database:
+  schema: "ghg_assurance"
+  table_prefix: "gl_ap_"
+  migrations:
+    start: "V396"
+    end: "V405"
+    count: 10
+    files:
+      - "V396__pack048_core_schema.sql"
+      - "V397__pack048_evidence.sql"
+      - "V398__pack048_readiness.sql"
+      - "V399__pack048_provenance.sql"
+      - "V400__pack048_controls.sql"
+      - "V401__pack048_verifier.sql"
+      - "V402__pack048_materiality_sampling.sql"
+      - "V403__pack048_regulatory.sql"
+      - "V404__pack048_cost_timeline.sql"
+      - "V405__pack048_views_indexes_seed.sql"
+
+performance:
+  evidence_package_generation: "<60 minutes for full S1+S2+S3"
+  readiness_assessment: "<5 minutes per standard"
+  provenance_chain_generation: "<30 seconds per scope"
+  control_self_assessment: "<15 minutes for 25 controls"
+  regulatory_mapping: "<10 seconds for all jurisdictions"
+  full_pipeline: "<90 minutes for complete assurance prep"
+
+security:
+  authentication: "JWT RS256 via SEC-001"
+  authorisation: "RBAC via SEC-002"
+  permissions:
+    - "assurance:read"
+    - "assurance:write"
+    - "assurance:admin"
+    - "assurance:verifier"
+  encryption: "AES-256-GCM at rest via SEC-003"
+  tls: "TLS 1.3 in transit via SEC-004"
+  audit: "Full audit trail via SEC-005"
+  tenant_isolation: "RLS on all database tables"
+  provenance: "SHA-256 hash on every result"
+
+compliance:
+  zero_hallucination: true
+  deterministic_calculations: true
+  decimal_arithmetic: true
+  no_llm_in_calculations: true
+  sha256_provenance: true
+  assurance_standards_supported:
+    - "ISAE 3410"
+    - "ISO 14064-3:2019"
+    - "AA1000AS v3"
+    - "ISAE 3000 (Revised)"
+    - "SSAE 18 / AT-C 105"
+  jurisdictions_mapped:
+    - "EU/EEA (CSRD)"
+    - "US (SEC Climate Rules)"
+    - "California (SB 253)"
+    - "UK (SECR)"
+    - "Singapore (SGX)"
+    - "Japan (SSBJ)"
+    - "Australia (ASRS)"
+    - "South Korea (KSQF)"
+    - "Hong Kong (HKEX)"
+    - "Brazil (CVM)"
+    - "India (BRSR)"
+    - "Canada (CSSB)"
+
+testing:
+  test_files: 18
+  test_functions: 700
+  pass_rate: "100%"
+  coverage_target: "95%+"
+  e2e_scenarios: 102
+  determinism_verified: true

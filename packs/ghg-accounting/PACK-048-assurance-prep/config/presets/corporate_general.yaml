@@ -1,0 +1,135 @@
+# =============================================================================
+# PACK-048 GHG Assurance Prep - Corporate General Preset
+# =============================================================================
+# General corporate assurance preparation for companies seeking ISAE 3410
+# limited assurance on Scope 1 and Scope 2 GHG emissions. Standard control
+# testing scope, single-jurisdiction CSRD compliance, and moderate evidence
+# requirements. Suitable for companies beginning their assurance journey
+# or maintaining ongoing limited assurance engagements.
+#
+# Typical use cases:
+#   - Large European corporates preparing for CSRD limited assurance
+#   - Multi-site manufacturing companies
+#   - Service companies with moderate emission profiles
+#   - Companies maintaining annual assurance engagements
+#   - Organisations with established GHG reporting processes
+#
+# Typical engagement profile:
+#   Assurance level: Limited (ISAE 3410)
+#   Scopes: Scope 1 + Scope 2
+#   Duration: 8-12 weeks
+#   Typical cost: 30,000 - 70,000 EUR
+# =============================================================================
+
+# --- Assurance Engagement ---
+assurance_standard: "ISAE_3410"
+assurance_level: "LIMITED"
+company_size: "LARGE"
+scopes_in_scope:
+  - "SCOPE_1"
+  - "SCOPE_2"
+
+# --- Evidence Consolidation ---
+evidence:
+  minimum_quality: "ADEQUATE"
+  require_provenance_hash: true
+  retention_years: 7
+  auto_extract_from_packs: true
+  evidence_format: "STRUCTURED"
+
+# --- Readiness Assessment ---
+readiness:
+  standard: "ISAE_3410"
+  target_level: "LIMITED"
+  minimum_readiness_score_pct: 70.0
+  include_gap_remediation: true
+  auto_score_from_evidence: true
+
+# --- Calculation Provenance ---
+provenance:
+  verify_all_calculations: true
+  replay_tolerance_pct: 0.01
+  include_input_hashes: true
+  include_intermediate_hashes: true
+  generate_certificate: true
+
+# --- Control Testing ---
+controls:
+  minimum_effectiveness: "PARTIALLY_EFFECTIVE"
+  target_maturity: "LEVEL_3_DEFINED"
+  test_sample_size: 25
+  include_it_general_controls: true
+  walkthroughs_required: true
+  remediation_timeline_days: 90
+
+# --- Verifier Collaboration ---
+verifier:
+  max_query_response_days: 5
+  query_escalation_days: 3
+  finding_response_days: 10
+  enable_collaboration_portal: true
+  auto_evidence_sharing: true
+
+# --- Materiality Assessment ---
+materiality:
+  overall_materiality_pct: 5.0
+  performance_materiality_pct: 65.0
+  clearly_trivial_pct: 5.0
+  scope_specific_enabled: true
+  revision_frequency: "ANNUAL"
+
+# --- Sampling Plan ---
+sampling:
+  primary_method: "MUS"
+  confidence_level_pct: 95.0
+  tolerable_misstatement_pct: 5.0
+  expected_misstatement_pct: 1.0
+  minimum_sample_size: 25
+  stratification_enabled: true
+
+# --- Regulatory Requirements ---
+regulatory:
+  jurisdictions:
+    - "EU_CSRD"
+  company_size: "LARGE"
+  include_upcoming_requirements: true
+  deadline_warning_days: 90
+
+# --- Cost & Timeline ---
+cost_timeline:
+  company_size: "LARGE"
+  assurance_level: "LIMITED"
+  include_scope_3: false
+  multi_jurisdiction: false
+  first_time_engagement: false
+  target_completion_weeks: 12
+  currency: "EUR"
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+  sections:
+    - "executive_summary"
+    - "readiness_assessment"
+    - "evidence_summary"
+    - "control_testing"
+    - "materiality_sampling"
+    - "provenance_verification"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "READINESS_GAP"
+    - "CONTROL_FAILURE"
+    - "EVIDENCE_MISSING"
+    - "DEADLINE_APPROACHING"
+  channels:
+    - "EMAIL"
+  query_overdue_days: 5

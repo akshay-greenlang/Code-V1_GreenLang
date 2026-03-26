@@ -1,0 +1,132 @@
+# =============================================================================
+# PACK-044 GHG Inventory Management - SME Simplified Preset
+# =============================================================================
+# Simplified inventory management for small and medium enterprises (SMEs)
+# with fewer than 250 employees and limited in-house sustainability capacity.
+# Annual data collection, single review level, streamlined QA/QC, and
+# template-driven methodology documentation. Designed to minimise burden
+# while maintaining GHG Protocol compliance.
+#
+# Typical use cases:
+#   - Small professional services firms (10-250 FTE)
+#   - Independent retail shops and restaurant chains
+#   - Small-scale manufacturers and workshops
+#   - Startups and technology scale-ups
+#   - Non-profit organisations and charities
+#   - Local government and community organisations
+#
+# Typical inventory profile:
+#   - 1-3 sites, single country
+#   - Scope 1: natural gas heating (if any), company vehicles
+#   - Scope 2: purchased electricity (often largest source)
+#   - Low data complexity, annual collection sufficient
+#   - Typical total: 50-5,000 tCO2e per year
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+facility_name: ""
+sector_type: "SME"
+country: "GB"
+reporting_year: 2026
+
+# --- Inventory Period ---
+inventory_period:
+  period_type: "CALENDAR_YEAR"
+  fiscal_year_end_month: 12
+  lock_after_days: 60
+  auto_create_next_period: true
+
+# --- Data Collection ---
+data_collection:
+  frequency: "ANNUAL"
+  collection_window_days: 45
+  reminder_before_days: 14
+  escalation_after_days: 30
+  auto_send_reminders: true
+  require_evidence_upload: false
+  allow_estimation: true
+  estimation_requires_justification: false
+  simplified_templates: true
+  guided_data_entry: true
+
+# --- Quality Management ---
+quality_management:
+  qaqc_enabled: true
+  automated_checks:
+    - "COMPLETENESS"
+    - "RANGE_CHECK"
+    - "UNIT_CONSISTENCY"
+  variance_threshold_pct: 25.0
+  data_quality_score_target: 60.0
+  require_improvement_plan: false
+
+# --- Review and Approval ---
+review_approval:
+  review_levels: 1
+  level_1_role: "OWNER_OR_DIRECTOR"
+  require_comments: false
+  auto_approve_below_threshold: true
+  auto_approve_threshold_tco2e: 50.0
+  sign_off_required: true
+
+# --- Change Management ---
+change_management:
+  require_change_request: false
+  auto_approve_minor_changes: true
+  minor_change_threshold_pct: 5.0
+  impact_assessment_required: false
+
+# --- Versioning ---
+versioning:
+  enabled: true
+  max_versions_per_period: 3
+  snapshot_on_approval: true
+  track_field_changes: false
+  retain_all_versions: false
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  multi_entity: false
+  require_subsidiary_sign_off: false
+  inter_company_elimination: false
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: false
+  assess_frequency: "ANNUAL"
+  maturity_model: "GHG_PROTOCOL_5_LEVEL"
+  generate_improvement_roadmap: false
+  benchmark_against_peers: false
+
+# --- Documentation ---
+documentation:
+  methodology_doc_required: false
+  assumption_register: true
+  evidence_retention_years: 5
+  link_to_source_documents: false
+  auto_generate_methodology: true
+  use_simplified_templates: true
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "HTML"
+    - "PDF"
+  executive_summary: true
+  detailed_inventory: false
+  verification_package: false
+  output_language: "en"
+  include_methodology_notes: false
+  simplified_dashboard: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 5

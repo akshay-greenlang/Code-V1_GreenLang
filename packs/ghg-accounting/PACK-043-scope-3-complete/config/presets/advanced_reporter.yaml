@@ -1,0 +1,236 @@
+# =============================================================================
+# PACK-043 Scope 3 Complete - Advanced Reporter Preset
+# =============================================================================
+# Generic advanced reporter with 2+ years of Scope 3 reporting experience,
+# upgrading from PACK-042 Starter to PACK-043 Complete. Balanced enterprise
+# configuration suitable for any sector, designed as a starting point for
+# organisations that want full enterprise capabilities without sector-specific
+# customisation.
+#
+# Typical use cases:
+#   - Organisations upgrading from PACK-042 after 2+ years
+#   - Companies with established Scope 3 processes seeking maturity upgrade
+#   - Organisations preparing for external verification
+#   - Companies setting SBTi targets for the first time
+#   - Groups beginning multi-entity consolidation
+#   - Enterprises adopting TCFD/ISSB scenario analysis
+#
+# Profile:
+#   - Existing Scope 3 inventory covering 10+ categories
+#   - Mix of spend-based and average-data methodology
+#   - Beginning supplier-specific data collection
+#   - Planning first external verification
+#   - Interested in scenario analysis for SBTi pathway
+#   - 2-5 entities in consolidation boundary
+#
+#   Key: Balanced defaults, progressive maturity, sector-neutral
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_focus: "GENERAL"
+country: "DE"
+reporting_year: 2026
+number_of_entities: 3
+years_of_scope3_reporting: 2
+
+# --- Maturity ---
+maturity:
+  target_level: "LEVEL_4_ADVANCED"
+  current_level: "LEVEL_2_STARTER"
+  upgrade_strategy: "ROI_OPTIMIZED"
+  timeline_months: 24
+  roi_threshold_pct: 15.0
+  milestone_tracking: true
+  auto_upgrade_enabled: false
+
+# --- LCA ---
+lca:
+  enabled: true
+  database: "ECOINVENT"
+  database_version: "3.10"
+  product_types:
+    - "raw_materials"
+    - "components"
+    - "packaging"
+    - "fuels"
+  lifecycle_stages:
+    - "RAW_MATERIAL"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "USE_PHASE"
+    - "END_OF_LIFE"
+  sensitivity_params:
+    emission_factor_variation_pct: 20.0
+    transport_distance_variation_pct: 15.0
+    energy_mix_variation_pct: 10.0
+    allocation_method_variation_pct: 25.0
+  cutoff_threshold_pct: 1.0
+  epd_integration: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  total_entities: 3
+  jv_equity_threshold_pct: 20.0
+  jv_inclusion_method: "proportional"
+  franchise_inclusion: false
+  inter_company_elimination: true
+  entity_level_reporting: true
+
+# --- Scenarios ---
+scenarios:
+  enabled: true
+  scenario_types:
+    - "MACC"
+    - "WHAT_IF"
+    - "PARIS_ALIGNMENT"
+  macc_max_interventions: 30
+  macc_currency: "EUR"
+  what_if_max_scenarios: 8
+  paris_target_celsius: 1.5
+  paris_pathway_source: "iea_nze_2050"
+  time_horizon_years: 10
+  discount_rate_pct: 5.0
+
+# --- SBTi ---
+sbti:
+  enabled: true
+  base_year: 2022
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  target_type: "ABSOLUTE_CONTRACTION"
+  near_term_reduction_pct: 42.0
+  long_term_reduction_pct: 90.0
+  coverage_pct: 67.0
+  flag_enabled: false
+  supplier_engagement_target_pct: 40.0
+
+# --- Supplier Programme ---
+supplier_programme:
+  enabled: true
+  top_supplier_pct: 80.0
+  top_supplier_count: 50
+  target_reduction_pct: 25.0
+  timeline_years: 5
+  incentive_model: "preferred_status"
+  cdp_supply_chain: true
+  sbti_cascade_enabled: true
+  quarterly_reviews: true
+  data_quality_improvement_target: 1.0
+
+# --- Climate Risk ---
+climate_risk:
+  enabled: true
+  risk_types:
+    - "TRANSITION"
+    - "PHYSICAL"
+    - "OPPORTUNITY"
+  carbon_price_usd_per_tonne: 75.0
+  carbon_price_escalation_pct: 5.0
+  time_horizons_years:
+    - 5
+    - 10
+    - 30
+  scenarios:
+    - "iea_nze_2050"
+    - "iea_aps"
+    - "iea_steps"
+  stranded_asset_analysis: false
+  value_at_risk_enabled: true
+
+# --- Base Year ---
+base_year:
+  base_year: 2022
+  significance_threshold_pct: 5.0
+  recalc_triggers_enabled: true
+  recalc_triggers:
+    - "structural_change"
+    - "methodology_change"
+    - "error_correction"
+    - "boundary_change"
+    - "outsourcing_insourcing"
+  rolling_base_year: false
+  documentation_required: true
+
+# --- Sector ---
+sector:
+  sector_focus: "GENERAL"
+
+# --- Assurance ---
+assurance:
+  target_level: "LIMITED"
+  isae_3410_compliant: true
+  evidence_requirements:
+    - "methodology_documentation"
+    - "emission_factor_sources"
+    - "data_quality_assessment"
+    - "uncertainty_analysis"
+    - "provenance_hashes"
+    - "assumption_registry"
+    - "double_counting_log"
+    - "calculation_audit_trail"
+  verifier_portal_enabled: false
+  materiality_threshold_pct: 5.0
+  min_dqr_for_reasonable: 2.5
+
+# --- Integration ---
+integration:
+  pack042_required: true
+  pack042_pack_id: "PACK-042-scope-3-starter"
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database_bridge: true
+  sbti_api_enabled: false
+  tcfd_issb_bridge: true
+  supplier_portal_enabled: true
+  cdp_supply_chain: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "XLSX"
+    - "PDF"
+  enterprise_dashboard: true
+  dashboard_refresh_minutes: 60
+  investor_grade: true
+  board_summary: true
+  scenario_reporting: true
+  benchmark_comparison: true
+  multi_entity_rollup: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Security ---
+security:
+  rbac_roles:
+    - "scope3_director"
+    - "scope3_manager"
+    - "sustainability_officer"
+    - "procurement_director"
+    - "supply_chain_analyst"
+    - "lca_specialist"
+    - "verifier"
+    - "viewer"
+  supplier_data_isolation: true
+  entity_level_access: true
+  audit_logging: true
+  audit_retention_years: 10
+  pii_redaction: true
+  encryption_at_rest: true
+  data_classification: "CONFIDENTIAL"
+
+# --- Performance ---
+performance:
+  parallel_entities: 3
+  parallel_categories: 8
+  batch_size: 5000
+  cache_ttl_seconds: 7200
+  lca_query_timeout_seconds: 600
+  scenario_computation_timeout_seconds: 1800
+  max_suppliers: 10000
+  max_line_items: 2000000
+  memory_ceiling_mb: 16384
+  monte_carlo_iterations: 10000

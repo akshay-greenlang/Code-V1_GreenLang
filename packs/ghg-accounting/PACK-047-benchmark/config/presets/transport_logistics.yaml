@@ -1,0 +1,155 @@
+# =============================================================================
+# PACK-047 GHG Emissions Benchmark - Transport & Logistics Preset
+# =============================================================================
+# Transport and logistics companies where gCO2e/tkm (freight) or gCO2e/pkm
+# (passenger) is the primary benchmark metric, aligned with the GLEC
+# Framework. SBTi transport sector SDA provides the convergence pathway.
+# Peer groups are constructed at sub-sector level (road freight, aviation,
+# shipping, rail) with global scope.
+#
+# Typical use cases:
+#   - Road freight and trucking companies
+#   - Airlines and aviation groups
+#   - Shipping and maritime logistics
+#   - Rail freight operators
+#   - Third-party logistics (3PL) providers
+#   - Last-mile delivery services
+#
+# Typical emission profile:
+#   Scope 1: 70-95% of total (fuel combustion)
+#   Key benchmark metric: gCO2e / tkm or gCO2e / pkm
+#   Typical range: 10-100 gCO2e / tkm (mode-dependent)
+#   Typical ITR range: 2.0C - 4.0C
+# =============================================================================
+
+# --- Peer Group Construction ---
+peer_group:
+  sector_classification: "GICS_6DIG"
+  size_band: "LARGE"
+  require_same_region: false
+  region_scope: "GLOBAL"
+  min_peers: 5
+  max_peers: 30
+  revenue_tolerance_pct: 75.0
+  require_disclosure_coverage: true
+  min_disclosure_pct: 50.0
+
+# --- Scope Normalisation ---
+normalisation:
+  scope_alignment: "S1_S2L"
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  target_gwp: "AR6"
+  currency_normalisation: true
+  target_currency: "EUR"
+  period_alignment: "CALENDAR_YEAR"
+  data_gap_strategy: "PREVIOUS_YEAR"
+  biogenic_treatment: "SEPARATE"
+
+# --- External Data Sources ---
+external_data:
+  sources:
+    - "CDP"
+    - "TPI"
+  cache_ttl_hours: 168
+  auto_refresh: true
+  cdp_year: 2025
+  tpi_version: "5.0"
+
+# --- Pathway Alignment ---
+pathway:
+  pathways:
+    - "SBTI_SDA"
+    - "IEA_NZE"
+    - "TPI_CP"
+  primary_scenario: "WELL_BELOW_2C"
+  assessment_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sbti_sector: "transport"
+  convergence_year: 2050
+  include_overshoot_analysis: true
+
+# --- Implied Temperature Rise ---
+itr:
+  methods:
+    - "SECTOR_RELATIVE"
+    - "RATE_OF_REDUCTION"
+  primary_method: "SECTOR_RELATIVE"
+  budget_start_year: 2020
+  target_horizon_year: 2050
+  include_scope_3: false
+
+# --- Trajectory Benchmarking ---
+trajectory:
+  historical_years: 5
+  projection_years: 15
+  regression_model: "OLS"
+  min_data_points: 3
+  include_confidence_bands: true
+  convergence_test: true
+
+# --- Portfolio Benchmarking ---
+portfolio:
+  waci_enabled: false
+  carbon_footprint_enabled: false
+  pcaf_alignment: false
+
+# --- Data Quality Scoring ---
+data_quality:
+  scoring_method: "PCAF_V3"
+  target_score: 2
+  improvement_roadmap: true
+  staleness_threshold_days: 365
+
+# --- Transition Risk Scoring ---
+transition_risk:
+  categories:
+    - "CARBON_BUDGET"
+    - "STRANDING"
+    - "REGULATORY"
+    - "COMPETITIVE"
+  carbon_price_scenario: "IEA_NZE"
+  carbon_price_2030_eur: 130.0
+  carbon_price_2050_eur: 250.0
+  stranding_threshold_year: 2035
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+  sections:
+    - "executive_summary"
+    - "peer_comparison"
+    - "pathway_alignment"
+    - "implied_temperature_rise"
+    - "trajectory_analysis"
+    - "transition_risk"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+
+# --- Disclosure ---
+disclosure:
+  frameworks:
+    - "ESRS"
+    - "CDP"
+    - "TCFD"
+  mandatory_only: false
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "THRESHOLD"
+    - "PATHWAY_DEVIATION"
+    - "DATA_STALENESS"
+  channels:
+    - "EMAIL"
+  pathway_deviation_threshold_pct: 12.0
+  data_staleness_days: 180

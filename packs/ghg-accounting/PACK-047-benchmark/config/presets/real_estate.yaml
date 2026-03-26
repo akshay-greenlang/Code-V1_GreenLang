@@ -1,0 +1,162 @@
+# =============================================================================
+# PACK-047 GHG Emissions Benchmark - Real Estate Preset
+# =============================================================================
+# Real estate portfolios where kgCO2e/m2 is the primary benchmark metric.
+# CRREM decarbonisation pathways provide science-based targets for building
+# types and climate zones. GRESB scores provide peer benchmarking context.
+# Climate zone adjustment (HDD/CDD) is enabled for fair comparison across
+# geographies. Stranding risk assessment is critical for building assets.
+#
+# Typical use cases:
+#   - Commercial office portfolios
+#   - Retail and shopping centres
+#   - Logistics and industrial warehouses
+#   - Mixed-use developments
+#   - Residential rental portfolios
+#
+# Typical emission profile:
+#   Scope 1+2: 80-95% (building operations dominant)
+#   Key benchmark metric: kgCO2e / m2 floor area
+#   Typical range: 10-80 kgCO2e / m2 (building type dependent)
+#   Typical ITR range: 1.5C - 3.0C
+# =============================================================================
+
+# --- Peer Group Construction ---
+peer_group:
+  sector_classification: "GICS_4DIG"
+  size_band: "LARGE"
+  require_same_region: true
+  region_scope: "EU"
+  min_peers: 8
+  max_peers: 40
+  revenue_tolerance_pct: 50.0
+  require_disclosure_coverage: true
+  min_disclosure_pct: 60.0
+
+# --- Scope Normalisation ---
+normalisation:
+  scope_alignment: "S1_S2L"
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  target_gwp: "AR6"
+  currency_normalisation: true
+  target_currency: "EUR"
+  period_alignment: "CALENDAR_YEAR"
+  data_gap_strategy: "INTERPOLATE"
+  biogenic_treatment: "EXCLUDE"
+  climate_zone_adjustment: true
+
+# --- External Data Sources ---
+external_data:
+  sources:
+    - "GRESB"
+    - "CRREM"
+    - "CDP"
+  cache_ttl_hours: 168
+  auto_refresh: true
+  cdp_year: 2025
+  gresb_year: 2025
+  crrem_version: "2.1"
+
+# --- Pathway Alignment ---
+pathway:
+  pathways:
+    - "CRREM"
+    - "SBTI_SDA"
+    - "IEA_NZE"
+  primary_scenario: "ONE_POINT_FIVE_C"
+  assessment_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sbti_sector: "buildings"
+  convergence_year: 2050
+  include_overshoot_analysis: true
+
+# --- Implied Temperature Rise ---
+itr:
+  methods:
+    - "BUDGET_BASED"
+    - "SECTOR_RELATIVE"
+  primary_method: "BUDGET_BASED"
+  budget_start_year: 2020
+  target_horizon_year: 2050
+  include_scope_3: false
+
+# --- Trajectory Benchmarking ---
+trajectory:
+  historical_years: 5
+  projection_years: 15
+  regression_model: "OLS"
+  min_data_points: 3
+  include_confidence_bands: true
+  convergence_test: true
+
+# --- Portfolio Benchmarking ---
+portfolio:
+  waci_enabled: false
+  carbon_footprint_enabled: false
+  pcaf_alignment: false
+
+# --- Data Quality Scoring ---
+data_quality:
+  scoring_method: "PCAF_V3"
+  target_score: 2
+  improvement_roadmap: true
+  staleness_threshold_days: 365
+
+# --- Transition Risk Scoring ---
+transition_risk:
+  categories:
+    - "CARBON_BUDGET"
+    - "STRANDING"
+    - "REGULATORY"
+    - "FINANCIAL"
+  carbon_price_scenario: "EU_ETS"
+  carbon_price_2030_eur: 130.0
+  carbon_price_2050_eur: 250.0
+  stranding_threshold_year: 2030
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+  sections:
+    - "executive_summary"
+    - "peer_comparison"
+    - "pathway_alignment"
+    - "implied_temperature_rise"
+    - "trajectory_analysis"
+    - "transition_risk"
+    - "data_quality"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Disclosure ---
+disclosure:
+  frameworks:
+    - "ESRS"
+    - "CDP"
+    - "TCFD"
+    - "SFDR"
+  mandatory_only: false
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "THRESHOLD"
+    - "PATHWAY_DEVIATION"
+    - "DATA_STALENESS"
+    - "QUALITY_DROP"
+  channels:
+    - "EMAIL"
+  pathway_deviation_threshold_pct: 10.0
+  data_staleness_days: 180

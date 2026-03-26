@@ -1,0 +1,184 @@
+# =============================================================================
+# PACK-046 Intensity Metrics - Power Generation Preset
+# =============================================================================
+# Power generation utilities where the primary intensity metric is grams of
+# CO2 equivalent per kilowatt-hour generated (gCO2/kWh) or tCO2e/MWh. The
+# SBTi power sector SDA pathway provides the science-based target curve.
+# Decomposition separates fuel mix, load factor, and thermal efficiency
+# effects. TPI and CDP provide external benchmarking.
+#
+# Typical use cases:
+#   - Coal, gas, and oil-fired power stations
+#   - Combined heat and power (CHP) plants
+#   - Electricity transmission and distribution operators
+#   - Renewable energy generators (tracking avoided intensity)
+#   - District heating network operators
+#
+# Typical emission profile:
+#   Scope 1: 85-99% of total (fuel combustion dominant)
+#   Scope 2: 1-15% of total (plant auxiliaries, offices)
+#   Key intensity metric: tCO2e / MWh generated
+#   Typical range: 0.05-1.0 tCO2e / MWh
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "power_generation"
+  description: "Power generation with gCO2/kWh, SBTi power sector pathway"
+  sector: "POWER_GENERATION"
+  pack_id: "PACK-046"
+  version: "1.0.0"
+
+# --- Denominator Management ---
+denominator:
+  selected_denominators:
+    - "mwh_generated"
+    - "gwh_generated"
+    - "revenue_meur"
+  primary_denominator: "mwh_generated"
+  validation_rules:
+    require_non_zero: true
+    require_positive: true
+    max_year_over_year_change_pct: 25.0
+    require_same_period: true
+  unit_preferences:
+    currency: "EUR"
+
+# --- Intensity Calculation ---
+intensity_calculation:
+  scope_inclusion: "SCOPE_1_ONLY"
+  decimal_places: 4
+  weighted_average_method: "ACTIVITY_WEIGHTED"
+  null_handling: "EXCLUDE"
+  exclude_negative_denominators: true
+  include_biogenic: false
+  separate_location_market: false
+
+# --- LMDI Decomposition ---
+decomposition:
+  method: "LMDI_I_ADDITIVE"
+  include_activity_effect: true
+  include_structure_effect: true
+  include_intensity_effect: true
+  multi_level: true
+  decomposition_levels:
+    - "fuel_type"
+    - "plant"
+    - "technology"
+  zero_handling: "SMALL_VALUE"
+
+# --- Benchmarking ---
+benchmark:
+  sources:
+    - "CDP"
+    - "TPI"
+  peer_group_criteria:
+    same_sector: true
+    same_region: true
+    revenue_range_pct: 75.0
+    min_peers: 5
+  update_frequency: "ANNUAL"
+  percentile_thresholds:
+    - 10
+    - 25
+    - 50
+    - 75
+    - 90
+
+# --- SBTi SDA Target ---
+target:
+  pathway: "ONE_POINT_FIVE_C"
+  base_year: 2020
+  target_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sector: "power_generation"
+  convergence_approach: "SDA"
+  annual_progress_tracking: true
+  include_scope_3_target: false
+
+# --- Trend Analysis ---
+trend:
+  rolling_window: 5
+  projection_years: 15
+  regression_model: "OLS"
+  significance_level: 0.05
+  min_data_points: 3
+  detect_structural_breaks: true
+
+# --- Scenario Analysis ---
+scenario:
+  scenario_types:
+    - "EFFICIENCY"
+    - "STRUCTURAL"
+    - "METHODOLOGY"
+  monte_carlo_iterations: 10000
+  confidence_levels:
+    - 0.90
+    - 0.95
+    - 0.99
+  growth_rate_assumptions:
+    revenue_annual_pct: 2.0
+    production_annual_pct: 1.5
+  efficiency_improvement_pct: 1.5
+
+# --- Uncertainty ---
+uncertainty:
+  propagation_method: "MONTE_CARLO"
+  confidence_interval: 0.95
+  monte_carlo_iterations: 10000
+  include_denominator_uncertainty: true
+
+# --- Disclosure Mapping ---
+disclosure:
+  frameworks:
+    - "ESRS_E1"
+    - "CDP"
+    - "SBTI"
+    - "TCFD"
+    - "ISO_14064"
+  mandatory_only: false
+  xbrl_taxonomy: "ESRS_2024"
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  sections:
+    - "executive_summary"
+    - "intensity_results"
+    - "trend_analysis"
+    - "decomposition"
+    - "benchmarking"
+    - "target_progress"
+    - "uncertainty"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack042_enabled: false
+  pack043_enabled: true
+  pack044_enabled: true
+  pack045_enabled: true
+  erp_connector_enabled: true
+  benchmark_api_enabled: true
+
+# --- Audit ---
+audit:
+  sha256_provenance: true
+  track_all_changes: true
+  evidence_retention_years: 15
+  log_calculation_inputs: true
+  require_digital_signature: true

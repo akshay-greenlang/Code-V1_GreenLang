@@ -1,0 +1,287 @@
+# =============================================================================
+# PACK-042 Scope 3 Starter - Manufacturing Preset
+# =============================================================================
+# Manufacturing sector with dominant upstream supply chain emissions from
+# purchased raw materials, components, and capital equipment. Category 1
+# (Purchased Goods & Services) typically represents 40-70% of total Scope 3.
+# Significant contributions from Category 4 (upstream transport), Category 11
+# (use of sold products), and Category 12 (end-of-life treatment).
+#
+# Typical use cases:
+#   - Automotive and automotive component manufacturers
+#   - Chemical and pharmaceutical manufacturers
+#   - Metal fabrication and steel processing
+#   - Cement, glass, and ceramics production
+#   - Electronics and semiconductor manufacturing
+#   - Plastics and polymer processing
+#   - Industrial machinery and equipment
+#
+# Typical Scope 3 emission profile:
+#   Cat 1 (Purchased Goods):     40-70% (raw materials, components)
+#   Cat 2 (Capital Goods):        2-8%  (machinery, equipment)
+#   Cat 3 (Fuel & Energy):        3-8%  (WTT, T&D losses)
+#   Cat 4 (Upstream Transport):    5-15% (inbound logistics)
+#   Cat 5 (Waste):                 1-3%  (manufacturing waste)
+#   Cat 6 (Business Travel):      0.5-2% (sales, procurement)
+#   Cat 7 (Employee Commuting):   1-3%  (factory workforce)
+#   Cat 9 (Downstream Transport): 2-8%  (outbound logistics)
+#   Cat 11 (Product Use):         0-30% (if energy-using product)
+#   Cat 12 (End-of-Life):         1-5%  (product disposal)
+#
+#   Total Scope 3 typically: 3-10x Scope 1+2
+#   Key supplier engagement: Top 50 material and component suppliers
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_type: "MANUFACTURING"
+country: "DE"
+reporting_year: 2026
+
+# --- Screening ---
+screening:
+  eeio_model: "EXIOBASE_3"
+  currency: "EUR"
+  base_year: 2024
+  revenue_threshold_eur: 0
+  inflation_adjustment: true
+  include_second_order: false
+
+# --- Spend Classification ---
+spend_classification:
+  code_system: "NAICS"
+  secondary_code_system: "ISIC"
+  confidence_threshold: 0.80
+  manual_review_threshold: 0.60
+  currency: "EUR"
+  inflation_year: 2024
+
+# --- Categories ---
+categories:
+  # Upstream categories (1-8)
+  cat_1:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "spend_data"
+      - "supplier_data"
+      - "lca_databases"
+      - "epd_registry"
+    materiality_threshold_pct: 0.5
+    notes: "Dominant category for manufacturing; prioritise supplier-specific data for top 50 suppliers"
+  cat_2:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "capex_records"
+      - "asset_register"
+      - "supplier_epds"
+    materiality_threshold_pct: 1.0
+    notes: "Capital equipment purchases; depreciation-year allocation"
+  cat_3:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "scope1_fuel_data"
+      - "scope2_electricity_data"
+      - "wtt_factors"
+      - "td_loss_factors"
+    materiality_threshold_pct: 1.0
+    notes: "Requires PACK-041 Scope 1/2 fuel and energy data"
+  cat_4:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "freight_invoices"
+      - "logistics_provider_data"
+      - "bill_of_lading"
+    materiality_threshold_pct: 1.0
+    notes: "Inbound raw material and component transport"
+  cat_5:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "waste_manifests"
+      - "waste_contractor_reports"
+      - "waste_audits"
+    materiality_threshold_pct: 1.0
+    notes: "Manufacturing process waste, packaging waste, hazardous waste"
+  cat_6:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "travel_management_system"
+      - "expense_reports"
+      - "corporate_cards"
+    materiality_threshold_pct: 1.0
+    notes: "Sales and procurement travel"
+  cat_7:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "employee_surveys"
+      - "hr_records"
+      - "national_averages"
+    materiality_threshold_pct: 1.0
+    notes: "Factory and office workforce commuting"
+  cat_8:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "lease_contracts"
+    materiality_threshold_pct: 2.0
+    notes: "Enable if leased warehouses or equipment significant"
+  # Downstream categories (9-15)
+  cat_9:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "distribution_data"
+      - "sales_volumes"
+      - "customer_locations"
+    materiality_threshold_pct: 2.0
+    notes: "Outbound product distribution to customers"
+  cat_10:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "customer_processing_data"
+      - "industry_studies"
+    materiality_threshold_pct: 2.0
+    notes: "Enable if selling intermediate products for further processing"
+  cat_11:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_specs"
+      - "energy_ratings"
+      - "usage_profiles"
+    materiality_threshold_pct: 2.0
+    notes: "Critical for energy-using products (motors, compressors, electronics)"
+  cat_12:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_composition"
+      - "waste_treatment_profiles"
+      - "country_disposal_mix"
+    materiality_threshold_pct: 2.0
+    notes: "Product end-of-life disposal and recycling"
+  cat_13:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "tenant_data"
+    materiality_threshold_pct: 5.0
+  cat_14:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "franchise_reports"
+    materiality_threshold_pct: 5.0
+  cat_15:
+    enabled: false
+    tier: "SPEND_BASED"
+    data_sources:
+      - "portfolio_data"
+    materiality_threshold_pct: 5.0
+
+# --- Double Counting ---
+double_counting:
+  rules_enabled:
+    - "cat1_vs_cat4_transport"
+    - "cat1_vs_cat2_capex"
+    - "cat3_vs_scope12"
+    - "cat4_vs_cat9_transport"
+  allocation_method: "ECONOMIC"
+  conservative_mode: true
+  document_exclusions: true
+  scope12_reference_enabled: true
+
+# --- Hotspot ---
+hotspot:
+  pareto_threshold_pct: 80.0
+  min_categories: 3
+  benchmark_source: "ghg_protocol_sector_guidance"
+  top_n_suppliers: 50
+  include_product_group_analysis: true
+  trend_comparison_years: 3
+
+# --- Supplier Engagement ---
+supplier_engagement:
+  top_percent: 80.0
+  top_n_suppliers: 50
+  reminder_frequency_days: 30
+  quality_target: "LEVEL_2"
+  deadline_days: 90
+  escalation_after_days: 60
+  use_cdp_supply_chain: false
+  questionnaire_template: "ghg_protocol_scope3_supplier"
+
+# --- Data Quality ---
+data_quality:
+  min_dqr: 1.0
+  target_dqr: 3.0
+  quality_weights:
+    technological_representativeness: 0.30
+    temporal_representativeness: 0.20
+    geographical_representativeness: 0.20
+    completeness: 0.15
+    reliability: 0.15
+  improvement_plan_required: true
+  track_dqr_trend: true
+
+# --- Uncertainty ---
+uncertainty:
+  method: "QUALITATIVE"
+  monte_carlo_iterations: 5000
+  confidence_level: 0.95
+  default_spend_uncertainty_pct: 50.0
+  default_average_data_uncertainty_pct: 30.0
+  default_supplier_uncertainty_pct: 10.0
+
+# --- Compliance ---
+compliance:
+  target_frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "ISO_14064"
+  esrs_phase_in_year: 2025
+  sec_safe_harbour: true
+  sb253_scope3_from: 2027
+  pcaf_enabled: false
+  cdp_supply_chain_module: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  frequency: "ANNUAL"
+  include_provenance: true
+  include_appendices: true
+  include_data_quality_matrix: true
+  include_supplier_engagement_status: true
+  include_hotspot_analysis: true
+  include_double_counting_log: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database: "ecoinvent_3.10"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  emission_factor_citation: true
+  supplier_data_versioning: true

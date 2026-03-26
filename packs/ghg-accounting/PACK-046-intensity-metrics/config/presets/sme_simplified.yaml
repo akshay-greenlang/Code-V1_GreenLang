@@ -1,0 +1,159 @@
+# =============================================================================
+# PACK-046 Intensity Metrics - SME Simplified Preset
+# =============================================================================
+# Simplified intensity metrics for small and medium enterprises with limited
+# sustainability resources. Uses only revenue and FTE as denominators, with
+# 5 of 10 engines enabled, no multi-level decomposition, and reduced Monte
+# Carlo iterations to minimise computational cost and configuration burden.
+#
+# Typical use cases:
+#   - Small offices and retail outlets (<250 employees)
+#   - Independent restaurants and hospitality businesses
+#   - Small-scale manufacturing workshops
+#   - Professional services firms
+#   - Startups and growth-stage companies
+#
+# Typical emission profile:
+#   Scope 1: 10-40% of total (gas heating, small fleet)
+#   Scope 2: 60-90% of total (electricity dominant)
+#   Key intensity metric: tCO2e / MEUR revenue or tCO2e / FTE
+#   Typical total: 50-5,000 tCO2e per year
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "sme_simplified"
+  description: "Simplified intensity metrics for SMEs using revenue and FTE denominators only"
+  sector: "SME"
+  pack_id: "PACK-046"
+  version: "1.0.0"
+
+# --- Denominator Management ---
+denominator:
+  selected_denominators:
+    - "revenue_meur"
+    - "fte"
+  primary_denominator: "revenue_meur"
+  validation_rules:
+    require_non_zero: true
+    require_positive: true
+    max_year_over_year_change_pct: 60.0
+    require_same_period: true
+  unit_preferences:
+    currency: "EUR"
+
+# --- Intensity Calculation ---
+intensity_calculation:
+  scope_inclusion: "SCOPE_1_2_LOCATION"
+  decimal_places: 2
+  weighted_average_method: "EQUAL_WEIGHTED"
+  null_handling: "EXCLUDE"
+  exclude_negative_denominators: true
+  include_biogenic: false
+  separate_location_market: false
+
+# --- LMDI Decomposition ---
+decomposition:
+  method: "LMDI_I_ADDITIVE"
+  include_activity_effect: true
+  include_structure_effect: false
+  include_intensity_effect: true
+  multi_level: false
+  decomposition_levels: []
+  zero_handling: "SMALL_VALUE"
+
+# --- Benchmarking ---
+benchmark:
+  sources: []
+  peer_group_criteria:
+    same_sector: true
+    same_region: true
+    min_peers: 3
+  update_frequency: "ANNUAL"
+  percentile_thresholds:
+    - 25
+    - 50
+    - 75
+
+# --- SBTi SDA Target ---
+target:
+  pathway: "WELL_BELOW_2C"
+  base_year: 2022
+  target_years:
+    - 2025
+    - 2030
+  sector: "commercial_buildings"
+  convergence_approach: "ACA"
+  annual_progress_tracking: true
+  include_scope_3_target: false
+
+# --- Trend Analysis ---
+trend:
+  rolling_window: 3
+  projection_years: 3
+  regression_model: "OLS"
+  significance_level: 0.10
+  min_data_points: 2
+  detect_structural_breaks: false
+
+# --- Scenario Analysis ---
+scenario:
+  scenario_types:
+    - "EFFICIENCY"
+    - "GROWTH"
+  monte_carlo_iterations: 1000
+  confidence_levels:
+    - 0.90
+  growth_rate_assumptions:
+    revenue_annual_pct: 8.0
+    headcount_annual_pct: 5.0
+  efficiency_improvement_pct: 2.0
+
+# --- Uncertainty ---
+uncertainty:
+  propagation_method: "ANALYTICAL_GUM"
+  confidence_interval: 0.90
+  monte_carlo_iterations: 1000
+  include_denominator_uncertainty: false
+
+# --- Disclosure Mapping ---
+disclosure:
+  frameworks:
+    - "GRI"
+    - "CDP"
+  mandatory_only: true
+  xbrl_taxonomy: "ESRS_2024"
+  include_methodology_notes: false
+  include_data_quality_notes: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+  sections:
+    - "executive_summary"
+    - "intensity_results"
+    - "trend_analysis"
+  language: "en"
+  include_charts: true
+  include_data_tables: false
+  include_appendices: false
+  decimal_places_display: 1
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack042_enabled: false
+  pack043_enabled: false
+  pack044_enabled: false
+  pack045_enabled: false
+  erp_connector_enabled: false
+  benchmark_api_enabled: false
+
+# --- Audit ---
+audit:
+  sha256_provenance: true
+  track_all_changes: false
+  evidence_retention_years: 5
+  log_calculation_inputs: false

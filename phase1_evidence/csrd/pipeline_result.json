@@ -1,0 +1,1922 @@
+{
+  "pipeline_id": "csrd_pipeline_1774543455",
+  "pipeline_version": "1.0.0",
+  "execution_timestamp": "2026-03-26T16:44:15+00:00",
+  "status": "success",
+  "agent_executions": [
+    {
+      "agent_name": "IntakeAgent",
+      "agent_number": 1,
+      "description": "ESG data ingestion, validation, and quality assessment",
+      "start_time": "2026-03-26T16:44:15+00:00",
+      "end_time": "2026-03-26T16:44:15+00:00",
+      "duration_seconds": 0.0,
+      "input_records": 47,
+      "output_records": 47,
+      "status": "success",
+      "warnings": 47,
+      "errors": 0,
+      "metadata": {
+        "data_quality_score": 82.97872340425532,
+        "completeness": 0,
+        "records_per_second": 0
+      }
+    },
+    {
+      "agent_name": "MaterialityAgent",
+      "agent_number": 2,
+      "description": "AI-powered double materiality assessment (requires human review)",
+      "start_time": "2026-03-26T16:44:15+00:00",
+      "end_time": "2026-03-26T16:44:15+00:00",
+      "duration_seconds": 0.0,
+      "input_records": 47,
+      "output_records": 10,
+      "status": "success",
+      "warnings": 0,
+      "errors": 0,
+      "metadata": {
+        "material_topics_count": 10,
+        "ai_provider": "openai",
+        "requires_human_review": true
+      }
+    },
+    {
+      "agent_name": "CalculatorAgent",
+      "agent_number": 3,
+      "description": "ESRS metrics calculation (100% deterministic, zero hallucination)",
+      "start_time": "2026-03-26T16:44:15+00:00",
+      "end_time": "2026-03-26T16:44:15+00:00",
+      "duration_seconds": 0.0,
+      "input_records": 47,
+      "output_records": 0,
+      "status": "success",
+      "warnings": 0,
+      "errors": 0,
+      "metadata": {
+        "metrics_calculated": 0,
+        "zero_hallucination": true,
+        "deterministic": true,
+        "ms_per_metric": 0.0
+      }
+    },
+    {
+      "agent_name": "AggregatorAgent",
+      "agent_number": 4,
+      "description": "Multi-framework aggregation, benchmarking, and trend analysis",
+      "start_time": "2026-03-26T16:44:15+00:00",
+      "end_time": "2026-03-26T16:44:15+00:00",
+      "duration_seconds": 0.0,
+      "input_records": 0,
+      "output_records": 0,
+      "status": "success",
+      "warnings": 0,
+      "errors": 0,
+      "metadata": {
+        "frameworks_integrated": [],
+        "benchmarks_applied": 0
+      }
+    },
+    {
+      "agent_name": "ReportingAgent",
+      "agent_number": 5,
+      "description": "ESEF-compliant report generation with XBRL tagging",
+      "start_time": "2026-03-26T16:44:15+00:00",
+      "end_time": "2026-03-26T16:44:15+00:00",
+      "duration_seconds": 0.0,
+      "input_records": 0,
+      "output_records": 0,
+      "status": "success",
+      "warnings": 0,
+      "errors": 0,
+      "metadata": {
+        "xbrl_facts_tagged": 0,
+        "esef_compliant": false,
+        "languages": []
+      }
+    },
+    {
+      "agent_name": "AuditAgent",
+      "agent_number": 6,
+      "description": "ESRS compliance validation and external auditor package generation",
+      "start_time": "2026-03-26T16:44:15+00:00",
+      "end_time": "2026-03-26T16:44:15+00:00",
+      "duration_seconds": 0.0,
+      "input_records": 0,
+      "output_records": 0,
+      "status": "success",
+      "warnings": 0,
+      "errors": 0,
+      "metadata": {
+        "compliance_status": "PASS",
+        "rules_checked": 0,
+        "rules_passed": 0,
+        "critical_failures": 0
+      }
+    }
+  ],
+  "performance": {
+    "total_time_seconds": 0.0,
+    "agent_1_intake_seconds": 0.0,
+    "agent_2_materiality_seconds": 0.0,
+    "agent_3_calculator_seconds": 0.0,
+    "agent_4_aggregator_seconds": 0.0,
+    "agent_5_reporting_seconds": 0.0,
+    "agent_6_audit_seconds": 0.0,
+    "records_processed": 47,
+    "records_per_second": 47000000.0,
+    "target_time_minutes": 30.0,
+    "within_target": true
+  },
+  "intake_summary": {
+    "processed_at": "2026-03-26T16:44:15+00:00",
+    "input_file": "C:\\Users\\aksha\\Code-V1_GreenLang\\applications\\GL-CSRD-APP\\CSRD-Reporting-Platform\\examples\\demo_esg_data.csv",
+    "total_records": 47,
+    "valid_records": 47,
+    "invalid_records": 0,
+    "warnings": 47,
+    "outliers_detected": 0,
+    "exact_esrs_matches": 0,
+    "fuzzy_esrs_matches": 7,
+    "unmapped_metrics": 40,
+    "processing_time_seconds": 0.0,
+    "records_per_second": 0,
+    "data_quality_score": 82.97872340425532,
+    "quality_threshold_met": true
+  },
+  "materiality_assessment": {
+    "assessment_metadata": {
+      "assessment_id": "uuid_4856333ddd68b205",
+      "assessment_date": "2026-03-26T16:44:15+00:00",
+      "reporting_period": {
+        "year": 2024
+      },
+      "company_id": "unknown",
+      "version": "v1.0",
+      "status": "draft",
+      "approved_by": null,
+      "approval_date": null,
+      "ai_powered": true,
+      "requires_human_review": true
+    },
+    "methodology": {
+      "framework": "ESRS_1_Double_Materiality",
+      "impact_threshold": 5.0,
+      "financial_threshold": 5.0,
+      "double_materiality_rule": "either_or",
+      "scoring_methodology": {},
+      "stakeholder_engagement": null
+    },
+    "material_topics": [
+      {
+        "topic_id": "E1",
+        "topic_name": "Climate Change",
+        "esrs_standard": "E1",
+        "topic_description": "Climate change mitigation and adaptation",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "E2",
+        "topic_name": "Pollution",
+        "esrs_standard": "E2",
+        "topic_description": "Pollution of air, water and soil",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "E3",
+        "topic_name": "Water and Marine Resources",
+        "esrs_standard": "E3",
+        "topic_description": "Water and marine resources",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "E4",
+        "topic_name": "Biodiversity and Ecosystems",
+        "esrs_standard": "E4",
+        "topic_description": "Biodiversity and ecosystems",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "E5",
+        "topic_name": "Resource Use and Circular Economy",
+        "esrs_standard": "E5",
+        "topic_description": "Resource use and circular economy",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "S1",
+        "topic_name": "Own Workforce",
+        "esrs_standard": "S1",
+        "topic_description": "Own workforce",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "S2",
+        "topic_name": "Workers in the Value Chain",
+        "esrs_standard": "S2",
+        "topic_description": "Workers in the value chain",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "S3",
+        "topic_name": "Affected Communities",
+        "esrs_standard": "S3",
+        "topic_description": "Affected communities",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "S4",
+        "topic_name": "Consumers and End-Users",
+        "esrs_standard": "S4",
+        "topic_description": "Consumers and end-users",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      },
+      {
+        "topic_id": "G1",
+        "topic_name": "Business Conduct",
+        "esrs_standard": "G1",
+        "topic_description": "Business conduct",
+        "impact_materiality": {
+          "severity": 5.0,
+          "scope": 5.0,
+          "irremediability": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "impact_type": [
+            "unknown"
+          ],
+          "affected_stakeholders": [],
+          "time_horizon": "medium_term",
+          "value_chain_stage": []
+        },
+        "financial_materiality": {
+          "magnitude": 5.0,
+          "likelihood": 5.0,
+          "score": 2.5,
+          "is_material": false,
+          "rationale": "Assessment failed - requires manual review",
+          "confidence": 0.0,
+          "effect_type": [
+            "unknown"
+          ],
+          "financial_impact_areas": [],
+          "time_horizon": "medium_term"
+        },
+        "double_material": false,
+        "materiality_conclusion": "not_material",
+        "disclosure_requirements": [],
+        "data_sources": [
+          "AI assessment",
+          "Company context",
+          "Stakeholder input"
+        ],
+        "review_status": "pending_review",
+        "reviewer_comments": null,
+        "human_override": null
+      }
+    ],
+    "stakeholder_perspectives": [
+      {
+        "topic_id": "E1",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "E2",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "E3",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "E4",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "E5",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "S1",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "S2",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "S3",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "S4",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      },
+      {
+        "topic_id": "G1",
+        "stakeholder_groups": [],
+        "key_concerns": [],
+        "consensus_view": null,
+        "divergent_views": [],
+        "participants_count": 0,
+        "confidence": 0.0
+      }
+    ],
+    "materiality_matrix": {
+      "chart_data": [
+        {
+          "topic_id": "E1",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Climate Change"
+        },
+        {
+          "topic_id": "E2",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Pollution"
+        },
+        {
+          "topic_id": "E3",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Water and Marine Resources"
+        },
+        {
+          "topic_id": "E4",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Biodiversity and Ecosystems"
+        },
+        {
+          "topic_id": "E5",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Resource Use and Circular Economy"
+        },
+        {
+          "topic_id": "S1",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Own Workforce"
+        },
+        {
+          "topic_id": "S2",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Workers in the Value Chain"
+        },
+        {
+          "topic_id": "S3",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Affected Communities"
+        },
+        {
+          "topic_id": "S4",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Consumers and End-Users"
+        },
+        {
+          "topic_id": "G1",
+          "x_financial": 2.5,
+          "y_impact": 2.5,
+          "label": "Business Conduct"
+        }
+      ],
+      "quadrants": {
+        "high_impact_high_financial": [],
+        "high_impact_low_financial": [],
+        "low_impact_high_financial": [],
+        "low_impact_low_financial": [
+          "E1",
+          "E2",
+          "E3",
+          "E4",
+          "E5",
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "G1"
+        ]
+      }
+    },
+    "summary_statistics": {
+      "total_topics_assessed": 10,
+      "material_topics_count": 0,
+      "material_from_impact": 0,
+      "material_from_financial": 0,
+      "double_material_count": 0,
+      "esrs_standards_triggered": []
+    },
+    "review_flags": [
+      {
+        "topic_id": "E1",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E1",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E1",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E2",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E2",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E2",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E3",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E3",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E3",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E4",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E4",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E4",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E5",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E5",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "E5",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S1",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S1",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S1",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S2",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S2",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S2",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S3",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S3",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S3",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S4",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S4",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "S4",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "G1",
+        "flag_type": "impact_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "G1",
+        "flag_type": "financial_assessment_failed",
+        "reason": "LLM assessment failed, using fallback",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      },
+      {
+        "topic_id": "G1",
+        "flag_type": "low_confidence",
+        "reason": "Average confidence: 0.00",
+        "timestamp": "2026-03-26T16:44:15+00:00"
+      }
+    ],
+    "ai_metadata": {
+      "llm_provider": "openai",
+      "llm_model": "gpt-4o",
+      "total_llm_calls": 20,
+      "average_confidence": 0.0,
+      "processing_time_seconds": 0.0,
+      "processing_time_minutes": 0.0,
+      "deterministic": false,
+      "zero_hallucination": false,
+      "requires_human_review": true
+    },
+    "limitations_assumptions": [
+      "AI assessments are preliminary and require expert validation",
+      "Materiality is company-specific - AI cannot replace human judgment",
+      "Stakeholder analysis may miss nuanced perspectives",
+      "Financial impact estimates are directional, not precise",
+      "Topic assessments may evolve as business context changes"
+    ],
+    "next_review_date": null
+  },
+  "calculated_metrics": {
+    "metadata": {
+      "calculated_at": "2026-03-26T16:44:15+00:00",
+      "total_metrics_requested": 47,
+      "metrics_calculated": 0,
+      "metrics_failed": 47,
+      "processing_time_seconds": 0.0,
+      "ms_per_metric": 0.0,
+      "zero_hallucination_guarantee": true,
+      "deterministic": true
+    },
+    "calculated_metrics": [],
+    "calculation_errors": [
+      {
+        "metric_code": "E1-1",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E1-1",
+        "formula": "scope1_stationary + scope1_mobile + scope1_process + scope1_fugitive",
+        "missing_inputs": [
+          "scope1_stationary_combustion",
+          "scope1_mobile_combustion",
+          "scope1_process_emissions",
+          "scope1_fugitive_emissions"
+        ]
+      },
+      {
+        "metric_code": "E1-2",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E1-2",
+        "formula": "SUM(electricity[i] * grid_factor[region[i]]) + SUM(heat_steam[j] * heat_factor[region[j]])",
+        "missing_inputs": [
+          "electricity_purchased",
+          "region",
+          "grid_emission_factors",
+          "heat_steam_purchased",
+          "heat_emission_factors"
+        ]
+      },
+      {
+        "metric_code": "E1-3",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E1-3",
+        "formula": "SUM(scope3_category[i]) for i in 1..15",
+        "missing_inputs": [
+          "scope3_cat1_purchased_goods",
+          "scope3_cat2_capital_goods",
+          "scope3_cat3_fuel_energy",
+          "scope3_cat4_upstream_transport",
+          "scope3_cat5_waste",
+          "scope3_cat6_business_travel",
+          "scope3_cat7_employee_commuting",
+          "scope3_cat8_upstream_leased",
+          "scope3_cat9_downstream_transport",
+          "scope3_cat10_processing",
+          "scope3_cat11_use_of_products",
+          "scope3_cat12_end_of_life",
+          "scope3_cat13_downstream_leased",
+          "scope3_cat14_franchises",
+          "scope3_cat15_investments"
+        ]
+      },
+      {
+        "metric_code": "E1-6",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E1-6",
+        "formula": "SUM(source[i]) WHERE source_type IN (solar, wind, hydro, geothermal, biomass)",
+        "missing_inputs": [
+          "energy_consumption_by_source",
+          "source_type"
+        ]
+      },
+      {
+        "metric_code": "E1-7",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E1-7",
+        "formula": "(renewable_energy / total_energy) * 100",
+        "missing_inputs": [
+          "renewable_energy",
+          "total_energy"
+        ]
+      },
+      {
+        "metric_code": "E1-8",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: E1-8",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "E2-1",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: E2-1",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "E2-2",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: E2-2",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "E2-3",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E2-3",
+        "formula": "SUM(concentration[i] * discharge_volume * 1e-6)",
+        "missing_inputs": [
+          "pollutant_concentration",
+          "water_discharge_volume"
+        ]
+      },
+      {
+        "metric_code": "E3-1",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E3-1",
+        "formula": "water_withdrawal - water_discharge",
+        "missing_inputs": [
+          "water_withdrawal",
+          "water_discharge"
+        ]
+      },
+      {
+        "metric_code": "E3-2",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E3-2",
+        "formula": "SUM(consumption[i]) WHERE water_stress_level[location[i]] >= 'high'",
+        "missing_inputs": [
+          "water_consumption_by_location",
+          "location",
+          "water_stress_database"
+        ]
+      },
+      {
+        "metric_code": "E3-3",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E3-3",
+        "formula": "surface + groundwater + seawater + produced + third_party",
+        "missing_inputs": [
+          "surface_water_withdrawal",
+          "groundwater_withdrawal",
+          "seawater_withdrawal",
+          "produced_water",
+          "third_party_water"
+        ]
+      },
+      {
+        "metric_code": "E3-4",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E3-4",
+        "formula": "surface_discharge + groundwater_discharge + seawater_discharge + third_party_discharge",
+        "missing_inputs": [
+          "surface_water_discharge",
+          "groundwater_discharge",
+          "seawater_discharge",
+          "third_party_discharge"
+        ]
+      },
+      {
+        "metric_code": "E4-1",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E4-1",
+        "formula": "COUNT(sites WHERE biodiversity_sensitive == true)",
+        "missing_inputs": [
+          "site_locations",
+          "biodiversity_sensitive_flag"
+        ]
+      },
+      {
+        "metric_code": "E4-2",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E4-2",
+        "formula": "SUM(land_area[i]) by type",
+        "missing_inputs": [
+          "land_area_by_type"
+        ]
+      },
+      {
+        "metric_code": "E5-1",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E5-1",
+        "formula": "hazardous_waste + non_hazardous_waste",
+        "missing_inputs": [
+          "hazardous_waste",
+          "non_hazardous_waste"
+        ]
+      },
+      {
+        "metric_code": "E5-2",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E5-2",
+        "formula": "SUM(hazardous_waste[i]) by type",
+        "missing_inputs": [
+          "hazardous_waste_by_type"
+        ]
+      },
+      {
+        "metric_code": "E5-3",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E5-3",
+        "formula": "SUM(non_hazardous_waste[i]) by type",
+        "missing_inputs": [
+          "non_hazardous_waste_by_type"
+        ]
+      },
+      {
+        "metric_code": "E5-4",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E5-4",
+        "formula": "recycled + reused + composted + anaerobic_digestion + other_recovery",
+        "missing_inputs": [
+          "waste_recycled",
+          "waste_reused",
+          "waste_composted",
+          "waste_anaerobic_digestion",
+          "waste_other_recovery"
+        ]
+      },
+      {
+        "metric_code": "E5-5",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: E5-5",
+        "formula": "(waste_diverted / total_waste) * 100",
+        "missing_inputs": [
+          "waste_diverted",
+          "total_waste"
+        ]
+      },
+      {
+        "metric_code": "S1-1",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-1",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-2",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-2",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-3",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-3",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-4",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-4",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-5",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-5",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-6",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-6",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-7",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-7",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-8",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-8",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-9",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-9",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-10",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-10",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-11",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-11",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S1-12",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S1-12",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S2-1",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: S2-1",
+        "formula": "SUM(supplier_workers[i])",
+        "missing_inputs": [
+          "supplier_workforce_data"
+        ]
+      },
+      {
+        "metric_code": "S2-2",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S2-2",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S2-3",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S2-3",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S3-1",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: S3-1",
+        "formula": "COUNT(communities WHERE impact_identified == true)",
+        "missing_inputs": [
+          "community_impact_assessments"
+        ]
+      },
+      {
+        "metric_code": "S3-2",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S3-2",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S3-3",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S3-3",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S4-2",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S4-2",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "S4-3",
+        "error_code": "E001",
+        "severity": "error",
+        "message": "Formula not found for metric: S4-3",
+        "formula": null,
+        "missing_inputs": null
+      },
+      {
+        "metric_code": "G1-1",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: G1-1",
+        "formula": "COUNT(incidents WHERE type IN ('corruption', 'bribery'))",
+        "missing_inputs": [
+          "incident_log",
+          "incident_type"
+        ]
+      },
+      {
+        "metric_code": "G1-2",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: G1-2",
+        "formula": "(employees_trained / total_employees) * 100",
+        "missing_inputs": [
+          "employees_trained_anticorruption",
+          "total_employees"
+        ]
+      },
+      {
+        "metric_code": "G1-3",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: G1-3",
+        "formula": "(assessed_operations / total_operations) * 100",
+        "missing_inputs": [
+          "operations_corruption_assessed",
+          "total_operations"
+        ]
+      },
+      {
+        "metric_code": "G1-4",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: G1-4",
+        "formula": "SUM(fine_amount[i])",
+        "missing_inputs": [
+          "fines_and_penalties"
+        ]
+      },
+      {
+        "metric_code": "G1-5",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: G1-5",
+        "formula": "lobbying + political_donations + trade_associations",
+        "missing_inputs": [
+          "lobbying_expenditure",
+          "political_donations",
+          "trade_association_fees"
+        ]
+      },
+      {
+        "metric_code": "G1-6",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: G1-6",
+        "formula": "(late_invoices / total_invoices) * 100",
+        "missing_inputs": [
+          "late_invoices",
+          "total_invoices"
+        ]
+      },
+      {
+        "metric_code": "G1-7",
+        "error_code": "E002",
+        "severity": "error",
+        "message": "Calculation failed for metric: G1-7",
+        "formula": "COUNT(reports) in period",
+        "missing_inputs": [
+          "whistleblower_records"
+        ]
+      }
+    ],
+    "provenance": []
+  },
+  "aggregated_data": {
+    "metadata": {
+      "aggregated_at": "2026-03-26T16:44:15+00:00",
+      "total_metrics_processed": 1,
+      "esrs_metrics": 1,
+      "tcfd_metrics_mapped": 0,
+      "gri_metrics_mapped": 0,
+      "sasb_metrics_mapped": 0,
+      "trends_analyzed": 0,
+      "benchmarks_compared": 0,
+      "processing_time_seconds": 0.0,
+      "deterministic": true,
+      "zero_hallucination": true
+    },
+    "aggregated_esg_data": {
+      "company_profile": {
+        "esrs_code": "company_profile",
+        "esrs_name": "company_profile",
+        "primary_value": null,
+        "primary_source": "ESRS",
+        "unit": "",
+        "reporting_period": "",
+        "source_values": {
+          "ESRS": null
+        },
+        "mapping_quality": "direct",
+        "data_quality_score": null,
+        "historical_values": null,
+        "aggregation_timestamp": "2026-03-26T16:44:15+00:00",
+        "provenance": {
+          "source": "ESRS",
+          "original_data": {
+            "company_id": "550e8400-e29b-41d4-a716-446655440000",
+            "legal_name": "Acme Manufacturing EU B.V.",
+            "commercial_name": "Acme EU",
+            "lei_code": "549300ABC123DEF456GH",
+            "country": "NL",
+            "registered_address": {
+              "street": "Industrieweg 42",
+              "city": "Amsterdam",
+              "postal_code": "1043 AB",
+              "country": "NL"
+            },
+            "sector": {
+              "nace_code": "25.11",
+              "nace_description": "Manufacture of metal structures and parts of structures",
+              "industry": "Manufacturing",
+              "sub_industry": "Industrial Metals & Equipment"
+            },
+            "company_size": {
+              "employee_count": 1250,
+              "employee_count_fte": 1250,
+              "size_category": "Large",
+              "revenue_eur": 450000000,
+              "total_assets_eur": 280000000
+            },
+            "reporting_period": {
+              "fiscal_year": 2024,
+              "start_date": "2024-01-01",
+              "end_date": "2024-12-31",
+              "reporting_framework": "CSRD",
+              "first_year_csrd": true
+            },
+            "csrd_applicability": {
+              "csrd_applicable": true,
+              "phase": "Phase 1",
+              "reason": "Large company, >500 employees, previously subject to NFRD",
+              "first_report_due": "2025-04-30"
+            },
+            "stock_listing": {
+              "listed": true,
+              "exchange": "Euronext Amsterdam",
+              "ticker": "ACME.AS",
+              "isin": "NL0000123456"
+            },
+            "subsidiaries": [
+              {
+                "subsidiary_id": "sub-001",
+                "name": "Acme Manufacturing GmbH",
+                "country": "DE",
+                "ownership_percentage": 100,
+                "consolidation_method": "full",
+                "employees": 320,
+                "revenue_eur": 95000000
+              },
+              {
+                "subsidiary_id": "sub-002",
+                "name": "Acme France SAS",
+                "country": "FR",
+                "ownership_percentage": 75,
+                "consolidation_method": "full",
+                "employees": 180,
+                "revenue_eur": 62000000
+              },
+              {
+                "subsidiary_id": "sub-003",
+                "name": "Acme Espa\u00f1a S.L.",
+                "country": "ES",
+                "ownership_percentage": 100,
+                "consolidation_method": "full",
+                "employees": 140,
+                "revenue_eur": 48000000
+              }
+            ],
+            "operations": {
+              "number_of_facilities": 8,
+              "countries_of_operation": [
+                "NL",
+                "DE",
+                "FR",
+                "ES",
+                "BE"
+              ],
+              "value_chain": {
+                "upstream": "Steel suppliers, component manufacturers",
+                "operations": "Metal fabrication, welding, assembly",
+                "downstream": "Construction companies, infrastructure projects"
+              }
+            },
+            "sustainability_governance": {
+              "sustainability_committee": true,
+              "sustainability_officer": {
+                "name": "Jane Smith",
+                "title": "Chief Sustainability Officer",
+                "email": "jane.smith@acme-eu.com",
+                "phone": "+31 20 123 4567"
+              },
+              "board_oversight": true,
+              "esrs_working_group": true
+            },
+            "previous_reporting": {
+              "nfrd_reporting": true,
+              "nfrd_since": 2020,
+              "gri_reporting": true,
+              "gri_version": "GRI 2021",
+              "tcfd_reporting": true,
+              "sasb_reporting": false,
+              "cdp_reporting": true,
+              "cdp_score_climate": "A-"
+            },
+            "external_assurance": {
+              "assurance_required": true,
+              "assurance_level": "limited",
+              "auditor": "KPMG Netherlands",
+              "auditor_contact": "assurance@kpmg.nl"
+            },
+            "contact": {
+              "primary_contact": {
+                "name": "Jane Smith",
+                "title": "Chief Sustainability Officer",
+                "email": "jane.smith@acme-eu.com",
+                "phone": "+31 20 123 4567"
+              },
+              "technical_contact": {
+                "name": "Robert van der Berg",
+                "title": "ESG Data Manager",
+                "email": "robert.vandenberg@acme-eu.com",
+                "phone": "+31 20 123 4568"
+              },
+              "legal_contact": {
+                "name": "Maria de Vries",
+                "title": "General Counsel",
+                "email": "maria.devries@acme-eu.com",
+                "phone": "+31 20 123 4569"
+              }
+            },
+            "data_sources": {
+              "erp_system": "SAP S/4HANA",
+              "hris_system": "Workday",
+              "energy_management": "Schneider Electric EcoStruxure",
+              "environmental_system": "Enablon",
+              "ghg_accounting": "SimaPro + GHG Protocol tools"
+            },
+            "materiality_assessment": {
+              "last_assessment_date": "2024-09-30",
+              "methodology": "ESRS 1 Double Materiality",
+              "stakeholders_consulted": [
+                "Employees",
+                "Investors",
+                "Customers",
+                "Suppliers",
+                "Local communities",
+                "NGOs"
+              ],
+              "next_assessment_due": "2027-09-30"
+            },
+            "metadata": {
+              "created_date": "2024-10-01T10:00:00Z",
+              "last_updated": "2024-12-15T15:30:00Z",
+              "version": "1.2",
+              "data_quality_score": 0.95
+            }
+          }
+        }
+      }
+    },
+    "trend_analysis": [],
+    "gap_analysis": {
+      "total_esrs_required": 60,
+      "total_esrs_covered": 1,
+      "coverage_percentage": 1.7,
+      "coverage_by_framework": {
+        "ESRS": 1,
+        "TCFD": 0,
+        "GRI": 0,
+        "SASB": 0
+      },
+      "missing_esrs_codes": [
+        "E1-6",
+        "ESRS-2 IRO-2",
+        "S3-3",
+        "E2-5",
+        "G1-1",
+        "E1-7",
+        "E1-8",
+        "E4-4",
+        "S3-1",
+        "ESRS-2 SBM-1",
+        "ESRS-2 SBM-2",
+        "E5-4",
+        "G1-5",
+        "E1-2",
+        "E1-3",
+        "ESRS-2 GOV-5",
+        "ESRS-2 GOV-2",
+        "S1-14",
+        "E4-1",
+        "E1-4",
+        "G1-6",
+        "ESRS-2 IRO-1",
+        "G1-4",
+        "E2-4",
+        "ESRS-2 GOV-1",
+        "E2-3",
+        "S2-1",
+        "G1-3",
+        "E1-1",
+        "S1-7",
+        "S4-4",
+        "S1-15",
+        "E3-5",
+        "E2-1",
+        "ESRS-2 GOV-3",
+        "E1-5",
+        "S1-13",
+        "S1-8",
+        "S1-17",
+        "S2-4",
+        "E3-4",
+        "S1-12",
+        "S1-1",
+        "S1-11",
+        "S1-16",
+        "E3-1",
+        "E5-1",
+        "S1-6",
+        "S1-10",
+        "G1-2",
+        "S4-3",
+        "S1-9",
+        "E1-9",
+        "S3-4",
+        "ESRS-2 BP-1",
+        "E5-5",
+        "S4-1",
+        "ESRS-2 GOV-4",
+        "ESRS-2 BP-2",
+        "ESRS-2 SBM-3"
+      ],
+      "partial_mappings": [],
+      "direct_mappings": 1,
+      "high_quality_mappings": 0,
+      "partial_mappings_count": 0,
+      "low_quality_mappings": 0
+    },
+    "benchmark_comparison": [],
+    "aggregation_issues": [
+      {
+        "esrs_code": null,
+        "error_code": "W005",
+        "severity": "info",
+        "message": "No historical data provided - trend analysis unavailable",
+        "source_framework": null,
+        "suggestion": "Provide historical_data parameter for multi-year trend analysis"
+      },
+      {
+        "esrs_code": null,
+        "error_code": "W006",
+        "severity": "warning",
+        "message": "Industry sector not specified - benchmark comparison unavailable",
+        "source_framework": null,
+        "suggestion": "Provide industry_sector parameter for peer benchmarking"
+      }
+    ]
+  },
+  "csrd_report": {
+    "metadata": {
+      "generated_at": "2026-03-26T16:44:15+00:00",
+      "processing_time_seconds": 0.0,
+      "processing_time_minutes": 0.0,
+      "total_xbrl_facts": 0,
+      "narratives_generated": 2,
+      "validation_status": "valid",
+      "validation_errors": 0,
+      "validation_warnings": 0,
+      "language": "en",
+      "locale": "en",
+      "report_title": "Sustainability Statement",
+      "v1_1_modules": {
+        "xbrl": false,
+        "pdf": false,
+        "i18n": false
+      }
+    },
+    "outputs": {
+      "esef_package": {
+        "file_path": "C:\\Users\\aksha\\Code-V1_GreenLang\\phase1_evidence\\csrd\\549300ABC123DEF456GH_2024-12-31_esef.zip",
+        "file_size_bytes": 2672,
+        "package_id": "549300ABC123DEF456GH_2024-12-31",
+        "files": [
+          "549300ABC123DEF456GH-2024-12-31-en.xhtml",
+          "reports/549300ABC123DEF456GH_2024-12-31_report.pdf",
+          "metadata.json",
+          "META-INF/reports/reports.xml"
+        ]
+      },
+      "ixbrl_report": {
+        "file_path": "C:\\Users\\aksha\\Code-V1_GreenLang\\phase1_evidence\\csrd\\549300ABC123DEF456GH-2024-12-31-en.xhtml",
+        "total_facts": 0
+      },
+      "pdf_report": {
+        "file_path": "C:\\Users\\aksha\\Code-V1_GreenLang\\phase1_evidence\\csrd\\549300ABC123DEF456GH_2024-12-31_report.pdf",
+        "generated_at": "2026-03-26T16:44:15+00:00",
+        "company": "Acme Manufacturing EU B.V.",
+        "reporting_period": "2024-01-01 to 2024-12-31",
+        "page_count": 0,
+        "file_size_bytes": 161,
+        "format": "PDF/A-3",
+        "locale": "en"
+      },
+      "narratives": [
+        {
+          "section_id": "governance",
+          "section_title": "Governance Disclosure",
+          "content": "\n        <h2>Governance Disclosure</h2>\n        <p><strong>Note: This section was AI-generated and requires human review.</strong></p>\n\n        <h3>Governance Bodies</h3>\n        <p>The company's sustainability governance structure includes dedicated oversight\n        by the Board of Directors and implementation through management committees.</p>\n\n        <h3>Integration in Strategy</h3>\n        <p>Sustainability considerations are integrated into the company's business strategy\n        and decision-making processes.</p>\n\n        <h3>Policies and Due Diligence</h3>\n        <p>The company has established policies and due diligence processes to address\n        sustainability matters in accordance with ESRS requirements.</p>\n        ",
+          "ai_generated": true,
+          "review_status": "pending",
+          "language": "en",
+          "word_count": 68
+        },
+        {
+          "section_id": "strategy",
+          "section_title": "Strategy Disclosure",
+          "content": "\n        <h2>Strategy Disclosure</h2>\n        <p><strong>Note: This section was AI-generated and requires human review.</strong></p>\n\n        <h3>Material Impacts, Risks and Opportunities</h3>\n        <p>Based on the double materiality assessment, the following sustainability matters\n        have been identified as material for the company.</p>\n\n        <h3>Business Model and Value Chain</h3>\n        <p>The company's business model and value chain have been analyzed to identify\n        sustainability impacts and dependencies.</p>\n\n        <h3>Resilience of Strategy</h3>\n        <p>The company has assessed the resilience of its strategy in relation to\n        sustainability matters and climate-related scenarios.</p>\n        ",
+          "ai_generated": true,
+          "review_status": "pending",
+          "language": "en",
+          "word_count": 75
+        }
+      ]
+    },
+    "xbrl_validation": {
+      "validation_status": "valid",
+      "total_checks": 2,
+      "errors": [],
+      "warnings": [],
+      "error_count": 0,
+      "warning_count": 0
+    },
+    "human_review_required": {
+      "narratives": true,
+      "narrative_sections": [
+        {
+          "section_id": "governance",
+          "section_title": "Governance Disclosure",
+          "review_status": "pending",
+          "word_count": 68
+        },
+        {
+          "section_id": "strategy",
+          "section_title": "Strategy Disclosure",
+          "review_status": "pending",
+          "word_count": 75
+        }
+      ]
+    }
+  },
+  "compliance_audit": {
+    "compliance_report": {
+      "compliance_status": "PASS",
+      "total_rules_checked": 0,
+      "rules_passed": 0,
+      "rules_failed": 0,
+      "rules_warning": 0,
+      "rules_not_applicable": 0,
+      "critical_failures": 0,
+      "major_failures": 0,
+      "minor_failures": 0,
+      "validation_timestamp": "2026-03-26T16:44:15+00:00",
+      "validation_duration_seconds": 0.0
+    },
+    "rule_results": [],
+    "errors": [],
+    "warnings": [],
+    "metadata": {
+      "validated_at": "2026-03-26T16:44:15+00:00",
+      "validation_duration_seconds": 0.0,
+      "total_rules_evaluated": 0,
+      "deterministic": true,
+      "zero_hallucination": true
+    }
+  },
+  "total_data_points_processed": 47,
+  "data_quality_score": 82.97872340425532,
+  "compliance_status": "PASS",
+  "warnings_count": 47,
+  "errors_count": 0,
+  "configuration_used": {
+    "config_path": "C:\\Users\\aksha\\Code-V1_GreenLang\\applications\\GL-CSRD-APP\\CSRD-Reporting-Platform\\config\\csrd_config.yaml",
+    "config_version": "1.1.0",
+    "esrs_regulation": "2023/2772",
+    "esef_regulation": "2019/815"
+  },
+  "environment_info": {
+    "python_version": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+    "platform": "win32"
+  }
+}

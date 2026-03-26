@@ -16,11 +16,15 @@ All agents follow GreenLang framework patterns.
 """
 
 from .intake_agent import IntakeAgent
-from .materiality_agent import MaterialityAgent
 from .calculator_agent import CalculatorAgent
 from .aggregator_agent import AggregatorAgent
 from .reporting_agent import ReportingAgent
 from .audit_agent import AuditAgent
+
+try:
+    from .materiality_agent import MaterialityAgent
+except Exception:  # pragma: no cover - optional AI dependency path
+    MaterialityAgent = None
 
 __all__ = [
     "IntakeAgent",

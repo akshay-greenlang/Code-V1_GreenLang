@@ -1,0 +1,140 @@
+name: GreenLang v1 Platform CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "release/**"
+    paths:
+      - "greenlang/cli/**"
+      - "greenlang/v1/**"
+      - "greenlang/intelligence/**"
+      - "greenlang/security/**"
+      - "greenlang/telemetry/**"
+      - "greenlang/validation/**"
+      - "applications/GL-CBAM-APP/**"
+      - "applications/GL-CSRD-APP/CSRD-Reporting-Platform/**"
+      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/**"
+      - "cbam-pack-mvp/**"
+      - "tests/v1/**"
+      - ".github/workflows/greenlang-v1-platform-ci.yml"
+  pull_request:
+    paths:
+      - "greenlang/cli/**"
+      - "greenlang/v1/**"
+      - "greenlang/intelligence/**"
+      - "greenlang/security/**"
+      - "greenlang/telemetry/**"
+      - "greenlang/validation/**"
+      - "applications/GL-CBAM-APP/**"
+      - "applications/GL-CSRD-APP/CSRD-Reporting-Platform/**"
+      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/**"
+      - "cbam-pack-mvp/**"
+      - "tests/v1/**"
+      - ".github/workflows/greenlang-v1-platform-ci.yml"
+
+jobs:
+  v1-smoke-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+
+      - name: Run fast v1 smoke lane
+        run: |
+          python -m greenlang.cli.main v1 validate-contracts
+          python -m greenlang.cli.main v1 check-policy
+          python -m greenlang.cli.main v1 smoke
+          pytest -q tests/v1/test_contracts.py tests/v1/test_cli_v1.py
+
+  v1-platform-gates:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+
+      - name: Run strict v1 tests
+        run: |
+          pytest -q tests/v1
+          python -m greenlang.cli.main v1 gate
+
+  v1-profile-matrix:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        profile: [cbam, csrd, vcci]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Validate v1 contracts and policy
+        run: |
+          echo "Running profile lane: ${{ matrix.profile }}"
+          python -m greenlang.cli.main v1 validate-contracts
+          python -m greenlang.cli.main v1 check-policy
+          python -m greenlang.cli.main v1 status
+
+      - name: Run profile execution lane
+        run: |
+          mkdir -p "tmp_v1_matrix/${{ matrix.profile }}"
+          if [ "${{ matrix.profile }}" = "cbam" ]; then
+            python -m greenlang.cli.main v1 run-profile cbam cbam-pack-mvp/examples/sample_config.yaml cbam-pack-mvp/examples/sample_imports.csv "tmp_v1_matrix/${{ matrix.profile }}" false
+          elif [ "${{ matrix.profile }}" = "csrd" ]; then
+            python -m greenlang.cli.main v1 run-profile csrd applications/GL-CSRD-APP/CSRD-Reporting-Platform/examples/demo_esg_data.csv - "tmp_v1_matrix/${{ matrix.profile }}" false
+          else
+            python -m greenlang.cli.main v1 run-profile vcci applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/examples/sample_category1_batch.csv - "tmp_v1_matrix/${{ matrix.profile }}" false
+          fi
+
+      - name: Verify profile output exists
+        run: |
+          if [ "${{ matrix.profile }}" = "cbam" ]; then
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/cbam_report.xml"
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/report_summary.xlsx"
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/audit/run_manifest.json"
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/audit/checksums.json"
+          elif [ "${{ matrix.profile }}" = "csrd" ]; then
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/esrs_report.json"
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/audit/run_manifest.json"
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/audit/checksums.json"
+          else
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/scope3_inventory.json"
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/audit/run_manifest.json"
+            test -f "tmp_v1_matrix/${{ matrix.profile }}/audit/checksums.json"
+          fi
+

@@ -1,0 +1,111 @@
+# =============================================================================
+# PACK-045 Base Year Management - Corporate Office Preset
+# =============================================================================
+# Office-based organisations where Scope 2 (purchased electricity) typically
+# dominates the inventory. Base year is fixed to a single calendar year, with
+# a 5% significance threshold for triggering recalculation.
+#
+# Typical use cases:
+#   - Financial services and banking headquarters
+#   - Technology and software companies
+#   - Management consulting and professional services
+#   - Insurance companies and asset managers
+#   - Government and public administration offices
+#
+# Typical emission profile:
+#   Scope 1: 15-40% of total (heating dominant, small refrigerant)
+#   Scope 2: 60-85% of total (electricity dominant)
+#   Key gases: CO2 (>95%), HFCs (refrigerant)
+#   Typical intensity: 1.0-3.0 tCO2e per FTE
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "corporate_office"
+  description: "Office-based organisation with Scope 2 dominant profile and fixed base year"
+  sector: "OFFICE"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "FIXED"
+  year: 2024
+  selection_method: "REPRESENTATIVE_YEAR"
+  weights:
+    data_completeness: 0.35
+    data_quality: 0.30
+    operational_stability: 0.20
+    regulatory_alignment: 0.15
+  criteria:
+    minimum_data_completeness_pct: 95.0
+    minimum_data_quality_score: 70.0
+    require_verification: false
+    exclude_anomalous_years: true
+    anomaly_threshold_stddev: 2.0
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 5.0
+  cumulative_threshold_pct: 10.0
+  de_minimis_threshold_tco2e: 50.0
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: true
+  approval_workflow:
+    require_approval: true
+    minimum_approvers: 1
+    auto_approve_below_threshold: true
+    auto_approve_threshold_pct: 2.0
+    notification_recipients:
+      - "sustainability_manager"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "ABSOLUTE"
+  ambition_level: "WELL_BELOW_2C"
+  annual_reduction_rate_pct: 4.2
+  target_year: 2030
+  interim_targets:
+    - year: 2026
+      reduction_pct: 15.0
+    - year: 2028
+      reduction_pct: 30.0
+  sbti_aligned: false
+  intensity_metric: "tCO2e/FTE"
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+  formats:
+    - "HTML"
+    - "JSON"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: false
+  pack_043_scope3_complete_enabled: false
+  erp_connector_enabled: false
+  data_quality_profiler_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 7
+  log_all_recalculations: true
+  log_threshold_assessments: true
+  evidence_attachment: true

@@ -1,0 +1,12 @@
+{
+  "app_id": "GL-VCCI-Carbon-APP",
+  "artifacts": [
+    "scope3_inventory.json",
+    "audit/run_manifest.json",
+    "audit/checksums.json"
+  ],
+  "execution_mode": "native",
+  "pipeline_id": "vcci-scope3-core",
+  "status": "ok",
+  "warnings": []
+}

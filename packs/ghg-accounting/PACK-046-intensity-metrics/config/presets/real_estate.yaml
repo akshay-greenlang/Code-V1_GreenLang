@@ -1,0 +1,185 @@
+# =============================================================================
+# PACK-046 Intensity Metrics - Real Estate Preset
+# =============================================================================
+# Portfolio-based real estate organisations where emissions are normalised
+# per square metre of gross internal area. CRREM carbon pathways and GRESB
+# benchmarking provide external context. Decomposition is by asset class,
+# geography, and building vintage. Occupancy-adjusted intensities enable
+# fair like-for-like comparison as portfolio composition changes.
+#
+# Typical use cases:
+#   - Commercial real estate investment trusts (REITs)
+#   - Property management companies
+#   - Residential landlords and housing associations
+#   - Mixed-use development portfolios
+#   - Co-working and flexible office space providers
+#
+# Typical emission profile:
+#   Scope 1: 20-40% of total (on-site boilers, emergency generators)
+#   Scope 2: 60-80% of total (electricity, district heating/cooling)
+#   Key intensity metric: kgCO2e / m2
+#   Typical range: 30-80 kgCO2e / m2 / year
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "real_estate"
+  description: "Real estate portfolio with kgCO2e/m2, CRREM pathway, and GRESB benchmarking"
+  sector: "REAL_ESTATE"
+  pack_id: "PACK-046"
+  version: "1.0.0"
+
+# --- Denominator Management ---
+denominator:
+  selected_denominators:
+    - "sqm_floor_area"
+    - "sqm_lettable_area"
+    - "revenue_meur"
+  primary_denominator: "sqm_floor_area"
+  validation_rules:
+    require_non_zero: true
+    require_positive: true
+    max_year_over_year_change_pct: 30.0
+    require_same_period: true
+  unit_preferences:
+    currency: "EUR"
+    area: "m2"
+
+# --- Intensity Calculation ---
+intensity_calculation:
+  scope_inclusion: "SCOPE_1_2_LOCATION"
+  decimal_places: 2
+  weighted_average_method: "ACTIVITY_WEIGHTED"
+  null_handling: "EXCLUDE"
+  exclude_negative_denominators: true
+  include_biogenic: false
+  separate_location_market: true
+
+# --- LMDI Decomposition ---
+decomposition:
+  method: "LMDI_I_ADDITIVE"
+  include_activity_effect: true
+  include_structure_effect: true
+  include_intensity_effect: true
+  multi_level: true
+  decomposition_levels:
+    - "asset_class"
+    - "geography"
+    - "vintage"
+  zero_handling: "SMALL_VALUE"
+
+# --- Benchmarking ---
+benchmark:
+  sources:
+    - "GRESB"
+    - "CRREM"
+    - "CDP"
+  peer_group_criteria:
+    same_sector: true
+    same_region: true
+    revenue_range_pct: 50.0
+    min_peers: 5
+  normalisation_settings:
+    climate_zone_adjust: true
+    occupancy_adjust: true
+    purchasing_power_parity: false
+  update_frequency: "ANNUAL"
+  percentile_thresholds:
+    - 10
+    - 25
+    - 50
+    - 75
+    - 90
+
+# --- SBTi SDA Target ---
+target:
+  pathway: "ONE_POINT_FIVE_C"
+  base_year: 2020
+  target_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sector: "commercial_buildings"
+  convergence_approach: "SDA"
+  annual_progress_tracking: true
+  include_scope_3_target: false
+
+# --- Trend Analysis ---
+trend:
+  rolling_window: 5
+  projection_years: 10
+  regression_model: "OLS"
+  significance_level: 0.05
+  min_data_points: 3
+  detect_structural_breaks: true
+
+# --- Scenario Analysis ---
+scenario:
+  scenario_types:
+    - "EFFICIENCY"
+    - "STRUCTURAL"
+  monte_carlo_iterations: 10000
+  confidence_levels:
+    - 0.90
+    - 0.95
+  growth_rate_assumptions:
+    revenue_annual_pct: 3.0
+  efficiency_improvement_pct: 2.5
+
+# --- Uncertainty ---
+uncertainty:
+  propagation_method: "MONTE_CARLO"
+  confidence_interval: 0.95
+  monte_carlo_iterations: 10000
+  include_denominator_uncertainty: true
+
+# --- Disclosure Mapping ---
+disclosure:
+  frameworks:
+    - "ESRS_E1"
+    - "CDP"
+    - "TCFD"
+    - "GRI"
+  mandatory_only: false
+  xbrl_taxonomy: "ESRS_2024"
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  sections:
+    - "executive_summary"
+    - "intensity_results"
+    - "trend_analysis"
+    - "decomposition"
+    - "benchmarking"
+    - "target_progress"
+    - "uncertainty"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack042_enabled: false
+  pack043_enabled: false
+  pack044_enabled: true
+  pack045_enabled: true
+  erp_connector_enabled: true
+  benchmark_api_enabled: true
+
+# --- Audit ---
+audit:
+  sha256_provenance: true
+  track_all_changes: true
+  evidence_retention_years: 10
+  log_calculation_inputs: true

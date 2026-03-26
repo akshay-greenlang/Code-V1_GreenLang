@@ -24,6 +24,24 @@ class TierType(str, Enum):
     TIER_3 = "tier_3"  # Tertiary data (spend-based, proxies)
 
 
+class LeaseType(str, Enum):
+    """Lease asset classes used by Category 8 calculations."""
+    OFFICE_BUILDING = "office_building"
+    WAREHOUSE = "warehouse"
+    RETAIL_SPACE = "retail_space"
+    MANUFACTURING_FACILITY = "manufacturing_facility"
+    DATA_CENTER = "data_center"
+
+
+class EnergyType(str, Enum):
+    """Energy carrier classes used by Category 8 calculations."""
+    ELECTRICITY = "electricity"
+    NATURAL_GAS = "natural_gas"
+    FUEL_OIL = "fuel_oil"
+    DISTRICT_HEATING = "district_heating"
+    DISTRICT_COOLING = "district_cooling"
+
+
 class TransportMode(str, Enum):
     """Transport modes for Category 4 (ISO 14083)."""
     # Road
@@ -117,6 +135,13 @@ class ProductType(str, Enum):
     CLOUD_SERVICE = "cloud_service"
     SOFTWARE = "software"
     OTHER = "other"
+
+
+class UsagePattern(str, Enum):
+    """Usage intensity pattern for sold-product use phase."""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 
 class MaterialType(str, Enum):

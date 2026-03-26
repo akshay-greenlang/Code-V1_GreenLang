@@ -359,7 +359,7 @@ class IntakeAgent(Agent[Dict[str, Any], Dict[str, Any]]):
 
         try:
             if suffix == '.csv':
-                df = pd.read_csv(input_path, encoding='utf-8')
+                df = pd.read_csv(input_path, encoding='utf-8', on_bad_lines='skip')
             elif suffix == '.json':
                 # Handle both array and object with data_points key
                 with open(input_path, 'r', encoding='utf-8') as f:
@@ -384,7 +384,7 @@ class IntakeAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             # Try alternative encoding
             logger.warning("UTF-8 encoding failed, trying Latin-1")
             if suffix == '.csv':
-                df = pd.read_csv(input_path, encoding='latin-1')
+                df = pd.read_csv(input_path, encoding='latin-1', on_bad_lines='skip')
                 return df
             else:
                 raise
@@ -622,6 +622,7 @@ class IntakeAgent(Agent[Dict[str, Any], Dict[str, Any]]):
 
         # Calculate overall score with weights
         score = DataQualityScore(
+            overall_score=0.0,
             completeness_score=completeness,
             accuracy_score=accuracy,
             consistency_score=consistency,

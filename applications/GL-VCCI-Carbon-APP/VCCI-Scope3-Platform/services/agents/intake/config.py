@@ -152,6 +152,7 @@ class IntakeAgentConfig(BaseModel):
     )
 
     # Feature flags
+    enable_caching: bool = Field(default=True, description="Enable cache manager for intake")
     enable_gap_analysis: bool = Field(default=True, description="Enable gap analysis")
     enable_quality_scoring: bool = Field(default=True, description="Enable quality scoring")
     enable_entity_resolution: bool = Field(default=True, description="Enable entity resolution")

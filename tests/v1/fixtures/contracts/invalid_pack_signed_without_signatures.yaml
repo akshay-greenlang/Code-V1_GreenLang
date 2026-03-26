@@ -1,0 +1,15 @@
+contract_version: "1.0"
+name: "gl-vcci-pack"
+app_id: "GL-VCCI-Carbon-APP"
+version: "1.0.0"
+kind: "pack"
+runtime: "greenlang-v1"
+entry_pipeline: "gl.yaml"
+metadata:
+  owner_team: "team-vcci"
+  support_channel: "#vcci-platform"
+  lifecycle: "candidate"
+security:
+  signed: true
+  signatures: []
+

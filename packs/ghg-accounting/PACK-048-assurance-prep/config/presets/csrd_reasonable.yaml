@@ -1,0 +1,157 @@
+# =============================================================================
+# PACK-048 GHG Assurance Prep - CSRD Reasonable Assurance Preset
+# =============================================================================
+# EU CSRD reasonable assurance configuration for the phased transition from
+# limited to reasonable assurance (effective from 2028). Enhanced control
+# testing, expanded sampling, stricter materiality thresholds, and full
+# evidence requirements for all scopes. Suitable for companies preparing
+# early or transitioning ahead of the mandatory deadline.
+#
+# Typical use cases:
+#   - Companies preparing early for 2028 reasonable assurance mandate
+#   - Large EU-listed companies seeking competitive advantage
+#   - Companies with mature GHG reporting processes
+#   - Groups with existing reasonable assurance on financial statements
+#
+# Typical engagement profile:
+#   Assurance level: Reasonable (ISAE 3410)
+#   Scopes: Scope 1 + Scope 2 + Scope 3 (all material categories)
+#   Duration: 14-20 weeks
+#   Typical cost: 100,000 - 250,000 EUR
+# =============================================================================
+
+# --- Assurance Engagement ---
+assurance_standard: "ISAE_3410"
+assurance_level: "REASONABLE"
+company_size: "LARGE"
+scopes_in_scope:
+  - "SCOPE_1"
+  - "SCOPE_2"
+  - "SCOPE_3"
+
+# --- Evidence Consolidation ---
+evidence:
+  minimum_quality: "GOOD"
+  require_provenance_hash: true
+  retention_years: 10
+  auto_extract_from_packs: true
+  evidence_format: "STRUCTURED"
+  max_evidence_size_mb: 1000
+
+# --- Readiness Assessment ---
+readiness:
+  standard: "ISAE_3410"
+  target_level: "REASONABLE"
+  minimum_readiness_score_pct: 85.0
+  include_gap_remediation: true
+  auto_score_from_evidence: true
+  remediation_priority_threshold: 60.0
+
+# --- Calculation Provenance ---
+provenance:
+  verify_all_calculations: true
+  replay_tolerance_pct: 0.001
+  include_input_hashes: true
+  include_intermediate_hashes: true
+  chain_depth_limit: 200
+  generate_certificate: true
+
+# --- Control Testing ---
+controls:
+  minimum_effectiveness: "EFFECTIVE"
+  target_maturity: "LEVEL_4_MANAGED"
+  test_sample_size: 50
+  include_it_general_controls: true
+  walkthroughs_required: true
+  remediation_timeline_days: 60
+
+# --- Verifier Collaboration ---
+verifier:
+  max_query_response_days: 3
+  query_escalation_days: 2
+  finding_response_days: 7
+  enable_collaboration_portal: true
+  auto_evidence_sharing: true
+  track_verifier_hours: true
+
+# --- Materiality Assessment ---
+materiality:
+  overall_materiality_pct: 3.0
+  performance_materiality_pct: 60.0
+  clearly_trivial_pct: 3.0
+  scope_specific_enabled: true
+  revision_frequency: "QUARTERLY"
+
+# --- Sampling Plan ---
+sampling:
+  primary_method: "MUS"
+  confidence_level_pct: 97.5
+  tolerable_misstatement_pct: 3.0
+  expected_misstatement_pct: 0.5
+  minimum_sample_size: 50
+  stratification_enabled: true
+  stratification_criteria:
+    - "scope"
+    - "category"
+    - "facility"
+    - "gas_type"
+  top_stratum_coverage_pct: 90.0
+
+# --- Regulatory Requirements ---
+regulatory:
+  jurisdictions:
+    - "EU_CSRD"
+  company_size: "LARGE"
+  include_upcoming_requirements: true
+  track_effective_dates: true
+  deadline_warning_days: 120
+
+# --- Cost & Timeline ---
+cost_timeline:
+  company_size: "LARGE"
+  assurance_level: "REASONABLE"
+  include_scope_3: true
+  multi_jurisdiction: false
+  first_time_engagement: false
+  complex_operations: true
+  target_completion_weeks: 16
+  currency: "EUR"
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+    - "XBRL"
+  sections:
+    - "executive_summary"
+    - "readiness_assessment"
+    - "evidence_summary"
+    - "control_testing"
+    - "materiality_sampling"
+    - "provenance_verification"
+    - "regulatory_compliance"
+    - "verifier_collaboration"
+    - "cost_timeline"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "READINESS_GAP"
+    - "CONTROL_FAILURE"
+    - "EVIDENCE_MISSING"
+    - "QUERY_OVERDUE"
+    - "DEADLINE_APPROACHING"
+    - "PROVENANCE_MISMATCH"
+  channels:
+    - "EMAIL"
+    - "SLACK"
+  query_overdue_days: 2
+  evidence_gap_alert: true
+  daily_digest: true

@@ -1,0 +1,60 @@
+name: VCCI v1 Backend CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "release/**"
+    paths:
+      - "greenlang/cli/**"
+      - "greenlang/v1/**"
+      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/**"
+      - "tests/v1/**"
+      - ".github/workflows/vcci-v1-backend-ci.yml"
+  pull_request:
+    paths:
+      - "greenlang/cli/**"
+      - "greenlang/v1/**"
+      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/**"
+      - "tests/v1/**"
+      - ".github/workflows/vcci-v1-backend-ci.yml"
+
+jobs:
+  vcci-v1-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+
+      - name: Contract and policy checks
+        run: |
+          python -m greenlang.cli.main v1 validate-contracts
+          python -m greenlang.cli.main v1 check-policy
+
+      - name: Run strict VCCI backend
+        run: |
+          python -m greenlang.cli.main run vcci applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/examples/sample_category1_batch.csv tmp_vcci_backend
+
+      - name: Verify VCCI artifacts
+        run: |
+          test -f tmp_vcci_backend/scope3_inventory.json
+          test -f tmp_vcci_backend/audit/run_manifest.json
+          test -f tmp_vcci_backend/audit/checksums.json
+          test -f tmp_vcci_backend/audit/observability_event.json
+
+      - name: Run VCCI strict test lane
+        run: |
+          pytest -q tests/v1/test_full_backends.py tests/v1/test_release_gate.py
+

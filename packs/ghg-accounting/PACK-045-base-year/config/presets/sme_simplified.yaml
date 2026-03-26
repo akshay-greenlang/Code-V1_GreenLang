@@ -1,0 +1,111 @@
+# =============================================================================
+# PACK-045 Base Year Management - SME Simplified Preset
+# =============================================================================
+# Simplified base year management for small and medium enterprises with limited
+# sustainability resources. Uses automatic trigger detection, relaxed thresholds,
+# and a minimal approval workflow to reduce administrative burden while still
+# maintaining GHG Protocol compliance.
+#
+# Typical use cases:
+#   - Small offices and retail outlets (<250 employees)
+#   - Independent restaurants and hospitality businesses
+#   - Small-scale manufacturing workshops
+#   - Professional services firms
+#   - Startups and growth-stage companies
+#
+# Typical emission profile:
+#   Scope 1: 10-40% of total (gas heating, small fleet)
+#   Scope 2: 60-90% of total (electricity dominant)
+#   Key gases: CO2 (>99%)
+#   Typical total: 50-5,000 tCO2e per year
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "sme_simplified"
+  description: "Simplified thresholds, auto-detect triggers, minimal approval for SMEs"
+  sector: "SME_GENERAL"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "FIXED"
+  year: 2024
+  selection_method: "MOST_RECENT_COMPLETE"
+  weights:
+    data_completeness: 0.40
+    data_quality: 0.30
+    operational_stability: 0.20
+    regulatory_alignment: 0.10
+  criteria:
+    minimum_data_completeness_pct: 80.0
+    minimum_data_quality_score: 50.0
+    require_verification: false
+    exclude_anomalous_years: false
+    allow_estimated_data: true
+    allow_spend_based_scope3: true
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 10.0
+  cumulative_threshold_pct: 15.0
+  de_minimis_threshold_tco2e: 25.0
+  auto_detect_triggers: true
+  auto_detect_method: "YEAR_OVER_YEAR_VARIANCE"
+  auto_detect_variance_threshold_pct: 20.0
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: false
+  approval_workflow:
+    require_approval: false
+    auto_approve_all: true
+    notification_recipients:
+      - "owner_manager"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "ABSOLUTE"
+  ambition_level: "WELL_BELOW_2C"
+  annual_reduction_rate_pct: 4.2
+  target_year: 2030
+  interim_targets:
+    - year: 2027
+      reduction_pct: 15.0
+  sbti_aligned: false
+  intensity_metric: "tCO2e/FTE"
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+  formats:
+    - "HTML"
+    - "JSON"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  simplified_output: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: false
+  pack_043_scope3_complete_enabled: false
+  erp_connector_enabled: false
+  data_quality_profiler_enabled: false
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 5
+  log_all_recalculations: true
+  log_threshold_assessments: false
+  evidence_attachment: false

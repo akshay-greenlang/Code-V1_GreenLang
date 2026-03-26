@@ -1,0 +1,135 @@
+# =============================================================================
+# PACK-045 Base Year Management - Real Estate Preset
+# =============================================================================
+# Portfolio-based real estate organisations where emissions are tracked per
+# square metre and adjusted for occupancy. Acquisitions and disposals of
+# properties are the primary recalculation trigger. The base year uses a
+# per-sqm intensity baseline to enable like-for-like comparison as the
+# portfolio composition changes over time.
+#
+# Typical use cases:
+#   - Commercial real estate investment trusts (REITs)
+#   - Property management companies
+#   - Residential landlords and housing associations
+#   - Mixed-use development portfolios
+#   - Co-working and flexible office space providers
+#
+# Typical emission profile:
+#   Scope 1: 20-40% of total (on-site boilers, emergency generators)
+#   Scope 2: 60-80% of total (electricity, district heating/cooling)
+#   Key gases: CO2 (>98%), HFCs (building HVAC)
+#   Typical intensity: 30-80 kgCO2e per m2 per year
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "real_estate"
+  description: "Portfolio-based real estate with per-sqm intensity and occupancy-adjusted base year"
+  sector: "REAL_ESTATE"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "FIXED"
+  year: 2024
+  selection_method: "LIKE_FOR_LIKE"
+  weights:
+    data_completeness: 0.30
+    data_quality: 0.25
+    operational_stability: 0.20
+    regulatory_alignment: 0.10
+    portfolio_stability: 0.15
+  criteria:
+    minimum_data_completeness_pct: 90.0
+    minimum_data_quality_score: 70.0
+    require_verification: false
+    exclude_anomalous_years: true
+    anomaly_threshold_stddev: 2.0
+    minimum_occupancy_pct: 50.0
+    require_floor_area_data: true
+    like_for_like_threshold_pct: 75.0
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 5.0
+  cumulative_threshold_pct: 10.0
+  de_minimis_threshold_tco2e: 100.0
+  portfolio_adjustment_method: "PRO_RATA"
+  occupancy_normalization: true
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: true
+    property_acquisition: true
+    property_disposal: true
+    major_refurbishment: true
+    occupancy_model_change: true
+  approval_workflow:
+    require_approval: true
+    minimum_approvers: 1
+    auto_approve_below_threshold: true
+    auto_approve_threshold_pct: 2.5
+    notification_recipients:
+      - "sustainability_manager"
+      - "portfolio_manager"
+      - "asset_management"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "INTENSITY"
+  ambition_level: "1_5C"
+  annual_reduction_rate_pct: 4.0
+  target_year: 2030
+  interim_targets:
+    - year: 2026
+      reduction_pct: 15.0
+    - year: 2028
+      reduction_pct: 30.0
+  sbti_aligned: true
+  intensity_metric: "kgCO2e/m2"
+  secondary_intensity_metric: "tCO2e/MEUR_asset_value"
+  sector_pathway: "COMMERCIAL_BUILDINGS"
+  crrem_pathway_enabled: true
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "TCFD"
+    - "SEC"
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  include_portfolio_composition: true
+  include_like_for_like_analysis: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: true
+  pack_043_scope3_complete_enabled: false
+  erp_connector_enabled: true
+  data_quality_profiler_enabled: true
+  building_management_system_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 10
+  log_all_recalculations: true
+  log_threshold_assessments: true
+  evidence_attachment: true
+  portfolio_change_log: true

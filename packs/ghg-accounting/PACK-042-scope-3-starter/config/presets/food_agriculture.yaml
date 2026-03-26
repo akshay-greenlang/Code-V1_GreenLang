@@ -1,0 +1,285 @@
+# =============================================================================
+# PACK-042 Scope 3 Starter - Food & Agriculture Preset
+# =============================================================================
+# Food and agriculture sector where upstream agricultural supply chain
+# emissions dominate. Category 1 (Purchased Goods & Services) includes
+# agricultural raw materials with high emission intensities from fertiliser,
+# livestock, and land use change. Category 10 (Processing of Sold Products)
+# and Category 12 (End-of-Life / food waste) are also significant.
+#
+# Typical use cases:
+#   - Food processors and packagers
+#   - Beverage companies
+#   - Consumer packaged goods (CPG) food brands
+#   - Agri-food conglomerates
+#   - Animal feed and nutrition companies
+#   - Dairy processors
+#   - Confectionery and bakery producers
+#
+# Typical Scope 3 emission profile:
+#   Cat 1 (Purchased Goods):     50-80% (agricultural inputs, ingredients)
+#   Cat 2 (Capital Goods):        1-3%  (processing equipment)
+#   Cat 3 (Fuel & Energy):        2-5%  (WTT, T&D losses)
+#   Cat 4 (Upstream Transport):    3-10% (ingredient logistics, cold chain)
+#   Cat 5 (Waste):                 1-3%  (processing waste, packaging)
+#   Cat 6 (Business Travel):      0.2-1% (sales, procurement)
+#   Cat 7 (Employee Commuting):   0.5-2% (factory and office staff)
+#   Cat 9 (Downstream Transport): 2-8%  (product distribution, cold chain)
+#   Cat 10 (Processing):          0-10% (customer/retailer processing)
+#   Cat 11 (Product Use):         0-5%  (cooking energy, refrigeration)
+#   Cat 12 (End-of-Life):         3-10% (food waste, packaging disposal)
+#
+#   Total Scope 3 typically: 5-20x Scope 1+2
+#   Key supplier engagement: Top 50 agricultural and ingredient suppliers
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_type: "FOOD_AGRICULTURE"
+country: "DE"
+reporting_year: 2026
+
+# --- Screening ---
+screening:
+  eeio_model: "EXIOBASE_3"
+  currency: "EUR"
+  base_year: 2024
+  revenue_threshold_eur: 0
+  inflation_adjustment: true
+  include_second_order: false
+
+# --- Spend Classification ---
+spend_classification:
+  code_system: "NAICS"
+  secondary_code_system: "HS"
+  confidence_threshold: 0.80
+  manual_review_threshold: 0.60
+  currency: "EUR"
+  inflation_year: 2024
+
+# --- Categories ---
+categories:
+  cat_1:
+    enabled: true
+    tier: "HYBRID"
+    data_sources:
+      - "spend_data"
+      - "supplier_data"
+      - "lca_databases"
+      - "commodity_lca_data"
+      - "fao_emission_factors"
+    materiality_threshold_pct: 0.5
+    notes: "Dominant category; segment by commodity (dairy, meat, grains, oils, packaging)"
+  cat_2:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "capex_records"
+      - "asset_register"
+    materiality_threshold_pct: 2.0
+    notes: "Processing equipment, cold storage installations"
+  cat_3:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "scope1_fuel_data"
+      - "scope2_electricity_data"
+    materiality_threshold_pct: 1.0
+    notes: "WTT factors for processing energy, cold chain electricity"
+  cat_4:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "freight_invoices"
+      - "logistics_provider_data"
+      - "cold_chain_data"
+    materiality_threshold_pct: 1.0
+    notes: "Inbound ingredient logistics including refrigerated transport"
+  cat_5:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "waste_manifests"
+      - "waste_contractor_reports"
+      - "food_waste_audits"
+    materiality_threshold_pct: 1.0
+    notes: "Processing waste, food waste, packaging waste, wastewater"
+  cat_6:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "travel_management_system"
+      - "expense_reports"
+    materiality_threshold_pct: 2.0
+    notes: "Sales and procurement travel"
+  cat_7:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "hr_records"
+      - "national_averages"
+    materiality_threshold_pct: 2.0
+    notes: "Factory and office staff commuting"
+  cat_8:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "lease_contracts"
+    materiality_threshold_pct: 3.0
+  cat_9:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "distribution_data"
+      - "retailer_logistics_data"
+      - "cold_chain_data"
+    materiality_threshold_pct: 1.0
+    notes: "Outbound product distribution to retailers, including cold chain"
+  cat_10:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "customer_processing_data"
+      - "industry_studies"
+      - "retailer_energy_data"
+    materiality_threshold_pct: 2.0
+    notes: "Retailer processing (bakery, deli), consumer cooking"
+  cat_11:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_specs"
+      - "cooking_energy_profiles"
+      - "refrigeration_profiles"
+    materiality_threshold_pct: 2.0
+    notes: "Consumer cooking energy, refrigeration for chilled/frozen products"
+  cat_12:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_composition"
+      - "packaging_data"
+      - "food_waste_rates"
+      - "country_disposal_mix"
+    materiality_threshold_pct: 1.0
+    notes: "Food waste at consumer, packaging disposal, organic waste treatment"
+  cat_13:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "tenant_data"
+    materiality_threshold_pct: 5.0
+  cat_14:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "franchise_reports"
+    materiality_threshold_pct: 5.0
+    notes: "Enable for franchise restaurant or food service models"
+  cat_15:
+    enabled: false
+    tier: "SPEND_BASED"
+    data_sources:
+      - "portfolio_data"
+    materiality_threshold_pct: 5.0
+
+# --- Double Counting ---
+double_counting:
+  rules_enabled:
+    - "cat1_vs_cat4_transport"
+    - "cat1_vs_cat2_capex"
+    - "cat3_vs_scope12"
+    - "cat4_vs_cat9_transport"
+  allocation_method: "MASS"
+  conservative_mode: true
+  document_exclusions: true
+  scope12_reference_enabled: true
+
+# --- Hotspot ---
+hotspot:
+  pareto_threshold_pct: 80.0
+  min_categories: 3
+  benchmark_source: "ghg_protocol_sector_guidance"
+  top_n_suppliers: 50
+  include_product_group_analysis: true
+  trend_comparison_years: 3
+
+# --- Supplier Engagement ---
+supplier_engagement:
+  top_percent: 80.0
+  top_n_suppliers: 50
+  reminder_frequency_days: 30
+  quality_target: "LEVEL_2"
+  deadline_days: 90
+  escalation_after_days: 60
+  use_cdp_supply_chain: false
+  questionnaire_template: "ghg_protocol_scope3_supplier"
+
+# --- Data Quality ---
+data_quality:
+  min_dqr: 1.0
+  target_dqr: 3.0
+  quality_weights:
+    technological_representativeness: 0.30
+    temporal_representativeness: 0.15
+    geographical_representativeness: 0.25
+    completeness: 0.15
+    reliability: 0.15
+  improvement_plan_required: true
+  track_dqr_trend: true
+
+# --- Uncertainty ---
+uncertainty:
+  method: "QUALITATIVE"
+  monte_carlo_iterations: 5000
+  confidence_level: 0.95
+  default_spend_uncertainty_pct: 50.0
+  default_average_data_uncertainty_pct: 30.0
+  default_supplier_uncertainty_pct: 10.0
+
+# --- Compliance ---
+compliance:
+  target_frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "SBTI"
+  esrs_phase_in_year: 2025
+  sbti_target_year: 2030
+  sec_safe_harbour: true
+  sb253_scope3_from: 2027
+  pcaf_enabled: false
+  cdp_supply_chain_module: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  frequency: "ANNUAL"
+  include_provenance: true
+  include_appendices: true
+  include_data_quality_matrix: true
+  include_supplier_engagement_status: true
+  include_hotspot_analysis: true
+  include_double_counting_log: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database: "ecoinvent_3.10"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  emission_factor_citation: true
+  supplier_data_versioning: true

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:cbam:transitional:v1"
+           xmlns:cbam="urn:cbam:transitional:v1"
+           elementFormDefault="qualified">
+  <xs:element name="CBAMReport">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Header" type="cbam:HeaderType"/>
+        <xs:element name="Declarant" type="cbam:DeclarantType"/>
+        <xs:element name="ReportingPeriod" type="cbam:ReportingPeriodType"/>
+        <xs:element name="ImportedGoods" type="cbam:ImportedGoodsType"/>
+        <xs:element name="Summary" type="cbam:SummaryType"/>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

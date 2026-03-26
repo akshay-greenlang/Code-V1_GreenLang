@@ -1,0 +1,242 @@
+# =============================================================================
+# PACK-043 Scope 3 Complete - Retail Chain Preset
+# =============================================================================
+# Retail chain with purchased goods for resale (Cat 1), last-mile logistics
+# (Cat 4/9), packaging lifecycle, product returns, and CDP Supply Chain
+# integration for supplier-specific data. Designed for multi-site retailers
+# with complex inbound/outbound distribution networks.
+#
+# Typical use cases:
+#   - Grocery and supermarket chains
+#   - Department stores and general merchandise
+#   - Fashion and apparel retailers
+#   - Home improvement and DIY chains
+#   - E-commerce platforms with physical fulfilment
+#   - Speciality retailers (electronics, furniture)
+#
+# Typical Scope 3 emission profile:
+#   Cat 1 (Purchased Goods):     60-85% (products for resale)
+#   Cat 2 (Capital Goods):        1-3%  (store fit-outs, equipment)
+#   Cat 3 (Fuel & Energy):        2-5%  (WTT, T&D losses)
+#   Cat 4 (Upstream Transport):    5-15% (supplier-to-DC logistics)
+#   Cat 5 (Waste):                 1-3%  (store waste, packaging)
+#   Cat 6 (Business Travel):      0.5-1% (buying trips)
+#   Cat 7 (Employee Commuting):   1-3%  (store staff)
+#   Cat 9 (Downstream Transport): 3-10% (DC-to-store, home delivery)
+#   Cat 12 (End-of-Life):         1-5%  (product and packaging disposal)
+#
+#   Total Scope 3 typically: 10-50x Scope 1+2
+#   Key: Supplier CDP integration, packaging LCA, last-mile modelling
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_focus: "RETAIL"
+country: "GB"
+reporting_year: 2026
+number_of_entities: 3
+years_of_scope3_reporting: 2
+
+# --- Maturity ---
+maturity:
+  target_level: "LEVEL_4_ADVANCED"
+  current_level: "LEVEL_2_STARTER"
+  upgrade_strategy: "MATERIALITY_FIRST"
+  timeline_months: 24
+  roi_threshold_pct: 15.0
+  milestone_tracking: true
+  auto_upgrade_enabled: false
+
+# --- LCA ---
+lca:
+  enabled: true
+  database: "ECOINVENT"
+  database_version: "3.10"
+  product_types:
+    - "food_products"
+    - "packaging"
+    - "textiles"
+    - "electronics"
+    - "household_goods"
+  lifecycle_stages:
+    - "RAW_MATERIAL"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "END_OF_LIFE"
+  sensitivity_params:
+    emission_factor_variation_pct: 25.0
+    transport_distance_variation_pct: 20.0
+    energy_mix_variation_pct: 10.0
+    allocation_method_variation_pct: 20.0
+  cutoff_threshold_pct: 1.0
+  epd_integration: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  total_entities: 3
+  jv_equity_threshold_pct: 20.0
+  jv_inclusion_method: "proportional"
+  franchise_inclusion: false
+  inter_company_elimination: true
+  entity_level_reporting: true
+
+# --- Scenarios ---
+scenarios:
+  enabled: true
+  scenario_types:
+    - "MACC"
+    - "WHAT_IF"
+    - "SUPPLIER_PROGRAMME"
+    - "PARIS_ALIGNMENT"
+  macc_max_interventions: 40
+  macc_currency: "GBP"
+  what_if_max_scenarios: 8
+  paris_target_celsius: 1.5
+  paris_pathway_source: "iea_nze_2050"
+  time_horizon_years: 10
+  discount_rate_pct: 5.0
+
+# --- SBTi ---
+sbti:
+  enabled: true
+  base_year: 2022
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  target_type: "ABSOLUTE_CONTRACTION"
+  near_term_reduction_pct: 42.0
+  long_term_reduction_pct: 90.0
+  coverage_pct: 70.0
+  flag_enabled: false
+  supplier_engagement_target_pct: 67.0
+
+# --- Supplier Programme ---
+supplier_programme:
+  enabled: true
+  top_supplier_pct: 80.0
+  top_supplier_count: 200
+  target_reduction_pct: 30.0
+  timeline_years: 5
+  incentive_model: "volume_increase"
+  cdp_supply_chain: true
+  sbti_cascade_enabled: true
+  quarterly_reviews: true
+  data_quality_improvement_target: 1.0
+
+# --- Climate Risk ---
+climate_risk:
+  enabled: true
+  risk_types:
+    - "TRANSITION"
+    - "PHYSICAL"
+    - "OPPORTUNITY"
+  carbon_price_usd_per_tonne: 80.0
+  carbon_price_escalation_pct: 5.0
+  time_horizons_years:
+    - 5
+    - 10
+    - 30
+  scenarios:
+    - "iea_nze_2050"
+    - "iea_aps"
+    - "iea_steps"
+  stranded_asset_analysis: false
+  value_at_risk_enabled: true
+
+# --- Base Year ---
+base_year:
+  base_year: 2022
+  significance_threshold_pct: 5.0
+  recalc_triggers_enabled: true
+  recalc_triggers:
+    - "structural_change"
+    - "methodology_change"
+    - "error_correction"
+    - "boundary_change"
+  rolling_base_year: false
+  documentation_required: true
+
+# --- Sector ---
+sector:
+  sector_focus: "RETAIL"
+  retail_last_mile_enabled: true
+  retail_returns_enabled: true
+  retail_packaging_lifecycle: true
+
+# --- Assurance ---
+assurance:
+  target_level: "LIMITED"
+  isae_3410_compliant: true
+  evidence_requirements:
+    - "methodology_documentation"
+    - "emission_factor_sources"
+    - "data_quality_assessment"
+    - "uncertainty_analysis"
+    - "provenance_hashes"
+    - "assumption_registry"
+    - "double_counting_log"
+    - "calculation_audit_trail"
+  verifier_portal_enabled: false
+  materiality_threshold_pct: 5.0
+  min_dqr_for_reasonable: 2.5
+
+# --- Integration ---
+integration:
+  pack042_required: true
+  pack042_pack_id: "PACK-042-scope-3-starter"
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database_bridge: true
+  sbti_api_enabled: false
+  tcfd_issb_bridge: true
+  supplier_portal_enabled: true
+  cdp_supply_chain: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "XLSX"
+    - "PDF"
+  enterprise_dashboard: true
+  dashboard_refresh_minutes: 60
+  investor_grade: true
+  board_summary: true
+  scenario_reporting: true
+  benchmark_comparison: true
+  multi_entity_rollup: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Security ---
+security:
+  rbac_roles:
+    - "scope3_director"
+    - "scope3_manager"
+    - "sustainability_officer"
+    - "procurement_director"
+    - "supply_chain_analyst"
+    - "lca_specialist"
+    - "verifier"
+    - "viewer"
+  supplier_data_isolation: true
+  entity_level_access: true
+  audit_logging: true
+  audit_retention_years: 10
+  pii_redaction: true
+  encryption_at_rest: true
+  data_classification: "CONFIDENTIAL"
+
+# --- Performance ---
+performance:
+  parallel_entities: 3
+  parallel_categories: 8
+  batch_size: 10000
+  cache_ttl_seconds: 7200
+  lca_query_timeout_seconds: 600
+  scenario_computation_timeout_seconds: 1800
+  max_suppliers: 20000
+  max_line_items: 5000000
+  memory_ceiling_mb: 16384
+  monte_carlo_iterations: 10000

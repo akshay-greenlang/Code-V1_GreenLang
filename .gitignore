@@ -170,6 +170,7 @@ grafana_data/
 # Temporary files
 .ruff_cache/
 .benchmarks/
+tmp_*/
 
 # Windows artifacts
 nul

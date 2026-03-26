@@ -1,0 +1,19 @@
+baseline_version: "1.0.0"
+frozen_at_phase: "phase7-release-freeze"
+runtime: "greenlang-v1"
+command_semantics:
+  contract_validation: "gl v1 validate-contracts"
+  policy_validation: "gl v1 check-policy"
+  full_backend_validation: "gl v1 full-backend-checks"
+  release_gate: "gl v1 gate"
+exit_codes:
+  success: 0
+  generic_failure: 1
+  policy_blocked: 4
+  artifact_missing: 5
+required_stage_order:
+  - validate
+  - compute
+  - policy
+  - export
+  - audit

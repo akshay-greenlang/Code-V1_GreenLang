@@ -1,0 +1,286 @@
+# =============================================================================
+# PACK-042 Scope 3 Starter - Financial Services Preset
+# =============================================================================
+# Financial services sector where Category 15 (Investments / financed
+# emissions) dominates Scope 3 and typically represents 100-700x the
+# organisation's own Scope 1+2 emissions. PCAF (Partnership for Carbon
+# Accounting Financials) methodology is the standard for Category 15.
+# Category 1 (purchased services) and Category 6 (business travel) are
+# secondary but meaningful.
+#
+# Typical use cases:
+#   - Universal banks and investment banks
+#   - Asset managers and wealth managers
+#   - Insurance companies
+#   - Pension funds
+#   - Development finance institutions
+#   - Private equity and venture capital
+#   - Mortgage lenders
+#
+# Typical Scope 3 emission profile:
+#   Cat 1 (Purchased Services):    5-15%  (IT, consulting, outsourcing)
+#   Cat 2 (Capital Goods):          1-3%  (IT infrastructure)
+#   Cat 3 (Fuel & Energy):          0.5-2% (WTT, T&D losses)
+#   Cat 5 (Waste):                  0.1-0.5% (office waste)
+#   Cat 6 (Business Travel):        2-8%  (client meetings, conferences)
+#   Cat 7 (Employee Commuting):     1-3%  (office staff)
+#   Cat 8 (Upstream Leases):        0-3%  (leased office space)
+#   Cat 13 (Downstream Leases):     0-5%  (owned property leased out)
+#   Cat 15 (Investments):          70-95% (financed emissions via PCAF)
+#
+#   Total Scope 3 typically: 100-700x Scope 1+2
+#   Key engagement: Top 20 portfolio companies and fund managers
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_type: "FINANCIAL"
+country: "GB"
+reporting_year: 2026
+
+# --- Screening ---
+screening:
+  eeio_model: "EXIOBASE_3"
+  currency: "EUR"
+  base_year: 2024
+  revenue_threshold_eur: 0
+  inflation_adjustment: true
+  include_second_order: false
+
+# --- Spend Classification ---
+spend_classification:
+  code_system: "NAICS"
+  secondary_code_system: "ISIC"
+  confidence_threshold: 0.80
+  manual_review_threshold: 0.60
+  currency: "EUR"
+  inflation_year: 2024
+
+# --- Categories ---
+categories:
+  cat_1:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "spend_data"
+      - "supplier_data"
+      - "outsourcing_contracts"
+    materiality_threshold_pct: 1.0
+    notes: "IT services, consulting, outsourced operations, office supplies"
+  cat_2:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "capex_records"
+      - "asset_register"
+    materiality_threshold_pct: 2.0
+    notes: "IT infrastructure, office fit-outs, ATM networks"
+  cat_3:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "scope1_fuel_data"
+      - "scope2_electricity_data"
+    materiality_threshold_pct: 2.0
+    notes: "WTT and T&D losses for office and data centre electricity"
+  cat_4:
+    enabled: false
+    tier: "SPEND_BASED"
+    data_sources:
+      - "freight_invoices"
+    materiality_threshold_pct: 5.0
+    notes: "Typically immaterial for financial services"
+  cat_5:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "waste_manifests"
+      - "facility_management_data"
+    materiality_threshold_pct: 3.0
+    notes: "Office waste, paper, e-waste"
+  cat_6:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "travel_management_system"
+      - "expense_reports"
+      - "corporate_cards"
+    materiality_threshold_pct: 0.5
+    notes: "Client meetings, conferences, investor roadshows; often significant"
+  cat_7:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "employee_surveys"
+      - "hr_records"
+      - "remote_work_estimates"
+    materiality_threshold_pct: 1.0
+    notes: "Office-based staff commuting; adjust for hybrid work"
+  cat_8:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "lease_contracts"
+      - "energy_bills"
+      - "landlord_data"
+    materiality_threshold_pct: 2.0
+    notes: "Leased office space and data centres"
+  cat_9:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "distribution_data"
+    materiality_threshold_pct: 5.0
+  cat_10:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "customer_processing_data"
+    materiality_threshold_pct: 5.0
+  cat_11:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_specs"
+    materiality_threshold_pct: 5.0
+  cat_12:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_composition"
+    materiality_threshold_pct: 5.0
+  cat_13:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "tenant_data"
+      - "building_benchmarks"
+      - "property_portfolio_data"
+    materiality_threshold_pct: 2.0
+    notes: "Owned commercial property leased to tenants"
+  cat_14:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "franchise_reports"
+    materiality_threshold_pct: 5.0
+  cat_15:
+    enabled: true
+    tier: "HYBRID"
+    data_sources:
+      - "portfolio_data"
+      - "pcaf_database"
+      - "investee_reports"
+      - "bloomberg_data"
+      - "msci_data"
+    materiality_threshold_pct: 0.5
+    notes: "Dominant category; use PCAF methodology across all asset classes"
+
+# --- Double Counting ---
+double_counting:
+  rules_enabled:
+    - "cat1_vs_cat2_capex"
+    - "cat3_vs_scope12"
+    - "cat8_vs_scope12_leases"
+    - "cat13_vs_scope12_leases"
+  allocation_method: "ECONOMIC"
+  conservative_mode: true
+  document_exclusions: true
+  scope12_reference_enabled: true
+
+# --- Hotspot ---
+hotspot:
+  pareto_threshold_pct: 80.0
+  min_categories: 3
+  benchmark_source: "pcaf_sector_guidance"
+  top_n_suppliers: 20
+  include_product_group_analysis: false
+  trend_comparison_years: 3
+
+# --- Supplier Engagement ---
+supplier_engagement:
+  top_percent: 80.0
+  top_n_suppliers: 20
+  reminder_frequency_days: 30
+  quality_target: "LEVEL_2"
+  deadline_days: 120
+  escalation_after_days: 90
+  use_cdp_supply_chain: false
+  questionnaire_template: "pcaf_financed_emissions"
+
+# --- Data Quality ---
+data_quality:
+  min_dqr: 1.0
+  target_dqr: 3.0
+  quality_weights:
+    technological_representativeness: 0.20
+    temporal_representativeness: 0.25
+    geographical_representativeness: 0.15
+    completeness: 0.25
+    reliability: 0.15
+  improvement_plan_required: true
+  track_dqr_trend: true
+
+# --- Uncertainty ---
+uncertainty:
+  method: "QUALITATIVE"
+  monte_carlo_iterations: 5000
+  confidence_level: 0.95
+  default_spend_uncertainty_pct: 50.0
+  default_average_data_uncertainty_pct: 30.0
+  default_supplier_uncertainty_pct: 10.0
+
+# --- Compliance ---
+compliance:
+  target_frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "PCAF"
+    - "SBTI"
+  esrs_phase_in_year: 2025
+  sbti_target_year: 2030
+  sec_safe_harbour: true
+  sb253_scope3_from: 2027
+  pcaf_enabled: true
+  pcaf_asset_classes:
+    - "listed_equity"
+    - "corporate_bonds"
+    - "business_loans"
+    - "project_finance"
+    - "commercial_real_estate"
+    - "mortgages"
+  cdp_supply_chain_module: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  frequency: "ANNUAL"
+  include_provenance: true
+  include_appendices: true
+  include_data_quality_matrix: true
+  include_supplier_engagement_status: true
+  include_hotspot_analysis: true
+  include_double_counting_log: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database: "ecoinvent_3.10"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  emission_factor_citation: true
+  supplier_data_versioning: true

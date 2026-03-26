@@ -33,9 +33,23 @@ from cbam_pack import __version__
 from cbam_pack.pipeline import CBAMPipeline, PipelineResult
 from cbam_pack.models import CBAMConfig
 
+try:
+    from greenlang.v1.backends import run_csrd_backend, run_vcci_backend
+except Exception:
+    # Keep CBAM web usable as a standalone package install.
+    run_csrd_backend = None
+    run_vcci_backend = None
+
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 RATE_LIMIT_PER_MINUTE = 60
 SESSION_TTL_SECONDS = 60 * 60
+GL_SHELL_VERSION = os.getenv("GREENLANG_WEB_VERSION", __version__)
+ALLOW_BACKEND_FALLBACK_DEFAULT = os.getenv("GL_V1_ALLOW_BACKEND_FALLBACK", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 
 def _is_suspicious_upload_filename(filename: str) -> bool:
@@ -62,6 +76,11 @@ def _sanitize_error_message(message: str) -> str:
 
 def _sanitize_errors(errors: list[str]) -> list[str]:
     return [_sanitize_error_message(err) for err in errors]
+
+
+def _is_valid_run_id(run_id: str) -> bool:
+    # Strictly limit v1 run IDs to 32-char lowercase hex UUID string.
+    return bool(re.fullmatch(r"[a-f0-9]{32}", run_id or ""))
 
 
 def create_app() -> FastAPI:
@@ -112,7 +131,7 @@ def create_app() -> FastAPI:
                 continue
             output_path = Path(output_dir).resolve()
             cleanup_root = output_path.parent
-            if cleanup_root.name.startswith("cbam_"):
+            if cleanup_root.name.startswith(("cbam_", "csrd_", "vcci_")):
                 shutil.rmtree(cleanup_root, ignore_errors=True)
             else:
                 shutil.rmtree(output_path, ignore_errors=True)
@@ -120,7 +139,311 @@ def create_app() -> FastAPI:
     @app.get("/", response_class=HTMLResponse)
     async def home(request: Request):
         """Render the main page."""
-        return get_home_html()
+        return _inject_shared_ui_script(get_home_html())
+
+    @app.get("/apps", response_class=HTMLResponse)
+    async def shell_home(request: Request):
+        """Render the multi-app shell home page."""
+        return _inject_shared_ui_script(get_shell_html())
+
+    @app.get("/apps/cbam", response_class=HTMLResponse)
+    async def cbam_workspace(request: Request):
+        """Render CBAM workspace within the shell routing surface."""
+        return _inject_shared_ui_script(get_home_html())
+
+    @app.get("/apps/csrd", response_class=HTMLResponse)
+    async def csrd_workspace(request: Request):
+        """Render CSRD workspace HTML."""
+        return get_csrd_html()
+
+    @app.get("/apps/vcci", response_class=HTMLResponse)
+    async def vcci_workspace(request: Request):
+        """Render VCCI workspace HTML."""
+        return get_vcci_html()
+
+    @app.get("/runs", response_class=HTMLResponse)
+    async def runs_center(request: Request):
+        """Render run center page (simple list)."""
+        return _inject_shared_ui_script(get_runs_html(app))
+
+    @app.get("/ui.js")
+    async def shared_ui_script():
+        """Serve shared workspace UI script."""
+        script_path = Path(__file__).with_name("ui_shared.js")
+        if not script_path.exists():
+            raise HTTPException(status_code=404, detail="Shared UI script not found")
+        return FileResponse(script_path, media_type="application/javascript")
+
+    @app.post("/api/telemetry/client-error")
+    async def client_error_telemetry(request: Request):
+        """Capture non-blocking frontend error telemetry."""
+        try:
+            payload = await request.json()
+        except Exception:
+            payload = {}
+        app.state.results.setdefault("_client_errors", []).append(
+            {
+                "received_at": datetime.utcnow().isoformat() + "Z",
+                "payload": payload if isinstance(payload, dict) else {"raw": str(payload)},
+            }
+        )
+        app.state.results["_client_errors"] = app.state.results["_client_errors"][-250:]
+        return {"ok": True}
+
+    @app.get("/api/v1/runs")
+    async def list_runs(request: Request):
+        """List run records across apps for UI."""
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        runs = []
+        for run_id, meta in app.state.session_meta.items():
+            runs.append(
+                {
+                    "run_id": run_id,
+                    "created_at_ts": meta.get("created_at_ts"),
+                    "app_id": meta.get("app_id"),
+                    "status": meta.get("status"),
+                    "execution_mode": meta.get("execution_mode"),
+                    "success": meta.get("success"),
+                    "artifacts": meta.get("artifacts", []),
+                }
+            )
+        runs.sort(key=lambda item: item.get("created_at_ts") or 0, reverse=True)
+        return {"runs": runs[:200]}
+
+    @app.post("/api/v1/apps/csrd/run")
+    async def run_csrd(request: Request, input_file: UploadFile = File(...)):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        if run_csrd_backend is None:
+            raise HTTPException(
+                status_code=503,
+                detail="CSRD backend integration unavailable in this install",
+            )
+        temp_dir = tempfile.mkdtemp(prefix="csrd_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            raw_name = input_file.filename or ""
+            if _is_suspicious_upload_filename(raw_name):
+                raise HTTPException(status_code=400, detail="Invalid upload filename")
+            input_path = (Path(temp_dir) / Path(raw_name).name).resolve()
+            content = await input_file.read()
+            if len(content) > MAX_UPLOAD_BYTES:
+                raise HTTPException(status_code=413, detail="Input file exceeds upload size limit")
+            input_path.write_bytes(content)
+
+            allow_fallback = os.getenv("GL_V1_ALLOW_BACKEND_FALLBACK", "1" if ALLOW_BACKEND_FALLBACK_DEFAULT else "0").strip().lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+            result = run_csrd_backend(input_path=input_path, output_dir=out_dir, strict=True, allow_fallback=allow_fallback)
+
+            run_id = uuid.uuid4().hex
+            app.state.output_dirs[run_id] = out_dir
+            app.state.session_meta[run_id] = {
+                "app_id": "csrd",
+                "status": "completed" if result.success else "failed",
+                "success": bool(result.success),
+                "execution_mode": "native" if result.native_backend_used else ("fallback" if result.fallback_used else "unknown"),
+                "artifacts": result.artifacts,
+                "created_at_ts": datetime.utcnow().timestamp(),
+                "can_export": bool(result.success),
+            }
+            summary = {}
+            report_path = out_dir / "esrs_report.json"
+            if report_path.exists():
+                try:
+                    summary = json.loads(report_path.read_text(encoding="utf-8"))
+                except Exception:
+                    summary = {"note": "esrs_report.json present but could not be parsed"}
+            return {
+                "run_id": run_id,
+                "app_id": "csrd",
+                "success": bool(result.success),
+                "status": "completed" if result.success else "failed",
+                "execution_mode": app.state.session_meta[run_id]["execution_mode"],
+                "artifacts": result.artifacts,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "summary": summary,
+            }
+        except HTTPException:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise
+        except Exception as exc:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise HTTPException(status_code=500, detail="CSRD processing failed") from exc
+
+    @app.post("/api/v1/apps/vcci/run")
+    async def run_vcci(request: Request, input_file: UploadFile = File(...)):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        if run_vcci_backend is None:
+            raise HTTPException(
+                status_code=503,
+                detail="VCCI backend integration unavailable in this install",
+            )
+        temp_dir = tempfile.mkdtemp(prefix="vcci_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            raw_name = input_file.filename or ""
+            if _is_suspicious_upload_filename(raw_name):
+                raise HTTPException(status_code=400, detail="Invalid upload filename")
+            input_path = (Path(temp_dir) / Path(raw_name).name).resolve()
+            content = await input_file.read()
+            if len(content) > MAX_UPLOAD_BYTES:
+                raise HTTPException(status_code=413, detail="Input file exceeds upload size limit")
+            input_path.write_bytes(content)
+
+            allow_fallback = os.getenv("GL_V1_ALLOW_BACKEND_FALLBACK", "1" if ALLOW_BACKEND_FALLBACK_DEFAULT else "0").strip().lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+            result = run_vcci_backend(input_path=input_path, output_dir=out_dir, strict=True, allow_fallback=allow_fallback)
+
+            run_id = uuid.uuid4().hex
+            app.state.output_dirs[run_id] = out_dir
+            app.state.session_meta[run_id] = {
+                "app_id": "vcci",
+                "status": "completed" if result.success else "failed",
+                "success": bool(result.success),
+                "execution_mode": "native" if result.native_backend_used else ("fallback" if result.fallback_used else "unknown"),
+                "artifacts": result.artifacts,
+                "created_at_ts": datetime.utcnow().timestamp(),
+                "can_export": bool(result.success),
+            }
+            summary = {}
+            inv_path = out_dir / "scope3_inventory.json"
+            if inv_path.exists():
+                try:
+                    summary = json.loads(inv_path.read_text(encoding="utf-8"))
+                except Exception:
+                    summary = {"note": "scope3_inventory.json present but could not be parsed"}
+            return {
+                "run_id": run_id,
+                "app_id": "vcci",
+                "success": bool(result.success),
+                "status": "completed" if result.success else "failed",
+                "execution_mode": app.state.session_meta[run_id]["execution_mode"],
+                "artifacts": result.artifacts,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "summary": summary,
+            }
+        except HTTPException:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise
+        except Exception as exc:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise HTTPException(status_code=500, detail="VCCI processing failed") from exc
+
+    @app.post("/api/v1/apps/csrd/demo-run")
+    async def run_csrd_demo(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        if run_csrd_backend is None:
+            raise HTTPException(status_code=503, detail="CSRD backend integration unavailable in this install")
+        sample_input = _resolve_demo_input("csrd")
+        if sample_input is None:
+            raise HTTPException(status_code=404, detail="CSRD demo input not found")
+        temp_dir = tempfile.mkdtemp(prefix="csrd_demo_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result = run_csrd_backend(input_path=sample_input, output_dir=out_dir, strict=True, allow_fallback=True)
+        run_id = _record_v1_run(
+            app=app,
+            app_id="csrd",
+            out_dir=out_dir,
+            success=bool(result.success),
+            native_backend_used=bool(result.native_backend_used),
+            fallback_used=bool(result.fallback_used),
+            artifacts=result.artifacts,
+        )
+        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+
+    @app.post("/api/v1/apps/vcci/demo-run")
+    async def run_vcci_demo(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        if run_vcci_backend is None:
+            raise HTTPException(status_code=503, detail="VCCI backend integration unavailable in this install")
+        sample_input = _resolve_demo_input("vcci")
+        if sample_input is None:
+            raise HTTPException(status_code=404, detail="VCCI demo input not found")
+        temp_dir = tempfile.mkdtemp(prefix="vcci_demo_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result = run_vcci_backend(input_path=sample_input, output_dir=out_dir, strict=True, allow_fallback=True)
+        run_id = _record_v1_run(
+            app=app,
+            app_id="vcci",
+            out_dir=out_dir,
+            success=bool(result.success),
+            native_backend_used=bool(result.native_backend_used),
+            fallback_used=bool(result.fallback_used),
+            artifacts=result.artifacts,
+        )
+        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+
+    @app.get("/api/v1/runs/{run_id}/artifacts/{artifact_path:path}")
+    async def download_run_artifact(run_id: str, artifact_path: str, request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        if not _is_valid_run_id(run_id):
+            raise HTTPException(status_code=400, detail="Invalid run ID")
+        if run_id not in app.state.output_dirs:
+            raise HTTPException(status_code=404, detail="Run not found")
+        session_meta = app.state.session_meta.get(run_id, {})
+        if not session_meta.get("can_export", True):
+            raise HTTPException(status_code=409, detail="Export blocked for this run")
+        output_dir = app.state.output_dirs[run_id]
+        output_root = Path(output_dir).resolve()
+        file_path = (output_root / artifact_path).resolve()
+        if output_root not in file_path.parents and file_path != output_root:
+            raise HTTPException(status_code=400, detail="Invalid file path")
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        return FileResponse(file_path, filename=file_path.name, media_type="application/octet-stream")
+
+    @app.get("/api/v1/runs/{run_id}/bundle")
+    async def download_run_bundle(run_id: str, request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        if not _is_valid_run_id(run_id):
+            raise HTTPException(status_code=400, detail="Invalid run ID")
+        if run_id not in app.state.output_dirs:
+            raise HTTPException(status_code=404, detail="Run not found")
+        session_meta = app.state.session_meta.get(run_id, {})
+        if not session_meta.get("can_export", True):
+            raise HTTPException(status_code=409, detail="Export blocked for this run")
+        output_dir = app.state.output_dirs[run_id]
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for file_path in Path(output_dir).rglob("*"):
+                if file_path.is_file():
+                    arcname = file_path.relative_to(output_dir)
+                    zip_file.write(file_path, arcname)
+        zip_buffer.seek(0)
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f"attachment; filename=greenlang_run_{run_id}.zip"
+            },
+        )
 
     @app.post("/api/process")
     async def process_files(
@@ -275,6 +598,111 @@ def create_app() -> FastAPI:
                 "statistics": {},
                 "artifacts": [],
             }
+
+    @app.post("/api/v1/apps/cbam/run")
+    async def run_cbam_v1(
+        request: Request,
+        config_file: UploadFile = File(...),
+        imports_file: UploadFile = File(...),
+        mode: str = Form(default="transitional"),
+        collect_errors: bool = Form(default=True),
+    ):
+        """
+        v1-normalized CBAM run endpoint.
+
+        This wraps the existing /api/process response into the cross-app v1 web contract
+        without breaking legacy clients.
+        """
+        payload = await process_files(
+            request=request,
+            config_file=config_file,
+            imports_file=imports_file,
+            mode=mode,
+            collect_errors=collect_errors,
+        )
+        # If legacy process failed hard (no session_id), surface as 500.
+        if not payload.get("success") and not payload.get("session_id"):
+            raise HTTPException(status_code=500, detail="CBAM processing failed")
+
+        run_id = payload.get("session_id") or uuid.uuid4().hex
+        # Ensure the run appears in the run center with normalized metadata.
+        meta = app.state.session_meta.get(run_id, {})
+        meta.update(
+            {
+                "app_id": "cbam",
+                "status": "completed" if payload.get("success") else "failed",
+                "success": bool(payload.get("success")),
+                "execution_mode": "native",
+                "artifacts": payload.get("artifacts", []),
+                "created_at_ts": meta.get("created_at_ts") or datetime.utcnow().timestamp(),
+                "can_export": bool((payload.get("compliance") or {}).get("can_export", True)),
+            }
+        )
+        app.state.session_meta[run_id] = meta
+
+        summary = {
+            "statistics": payload.get("statistics", {}),
+            "compliance": payload.get("compliance"),
+            "xml_validation": payload.get("xml_validation"),
+            "policy": payload.get("policy"),
+            "gap_summary": payload.get("gap_summary"),
+        }
+        return {
+            "run_id": run_id,
+            "app_id": "cbam",
+            "success": bool(payload.get("success")),
+            "status": "completed" if payload.get("success") else "failed",
+            "execution_mode": "native",
+            "artifacts": payload.get("artifacts", []),
+            "warnings": [],
+            "errors": payload.get("errors", []),
+            "summary": summary,
+        }
+
+    @app.post("/api/v1/apps/cbam/demo-run")
+    async def run_cbam_demo_v1(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        package_root = Path(__file__).resolve().parents[3]
+        config_path = package_root / "examples" / "sample_config.yaml"
+        imports_path = package_root / "examples" / "sample_imports.csv"
+        if not config_path.exists() or not imports_path.exists():
+            raise HTTPException(status_code=404, detail="CBAM demo inputs not found")
+        temp_dir = tempfile.mkdtemp(prefix="cbam_demo_")
+        output_dir = Path(temp_dir) / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        pipeline = CBAMPipeline(
+            config_path=config_path,
+            imports_path=imports_path,
+            output_dir=output_dir,
+            verbose=False,
+            dry_run=False,
+        )
+        result = pipeline.run()
+        run_id = uuid.uuid4().hex
+        app.state.results[run_id] = result
+        app.state.output_dirs[run_id] = output_dir
+        app.state.session_meta[run_id] = {
+            "app_id": "cbam",
+            "status": "completed" if result.success else "failed",
+            "success": bool(result.success),
+            "execution_mode": "native",
+            "artifacts": result.artifacts,
+            "created_at_ts": datetime.utcnow().timestamp(),
+            "can_export": bool(result.can_export),
+            "block_reason": (
+                _sanitize_error_message(result.errors[0]) if result.errors else "Export is blocked for this session."
+            ),
+        }
+        return {
+            "ok": True,
+            "run_id": run_id,
+            "app_id": "cbam",
+            "success": bool(result.success),
+            "execution_mode": "native",
+            "artifacts": result.artifacts,
+        }
 
     @app.get("/api/download/{session_id}")
     async def download_all(session_id: str, request: Request):
@@ -1421,6 +1849,143 @@ def get_home_html() -> str:
     </script>
 </body>
 </html>'''
+
+
+def get_shell_html() -> str:
+    """Return the multi-app shell HTML page (static)."""
+    template_path = Path(__file__).with_name("shell_index.html")
+    if template_path.exists():
+        html = template_path.read_text(encoding="utf-8")
+        return html.replace("__GL_VERSION__", GL_SHELL_VERSION)
+    # Minimal fallback so the portal still works if file is missing.
+    return (
+        "<!doctype html><html><head><meta charset='utf-8'/>"
+        "<title>GreenLang Workspace</title></head>"
+        "<body><h1>GreenLang Workspace</h1>"
+        "<p><a href='/apps/cbam'>CBAM</a> | <a href='/apps/csrd'>CSRD</a> | <a href='/apps/vcci'>VCCI</a></p>"
+        "</body></html>"
+    )
+
+
+def _inject_shared_ui_script(html: str) -> str:
+    if not html or "/ui.js" in html:
+        return html
+    marker = "</body>"
+    snippet = '\n  <script src="/ui.js"></script>\n'
+    if marker in html:
+        return html.replace(marker, f"{snippet}{marker}")
+    return html + snippet
+
+
+def _resolve_demo_input(app_id: str) -> Optional[Path]:
+    package_root = Path(__file__).resolve().parents[3]
+    repo_root = package_root.parent
+    if app_id == "csrd":
+        candidate = repo_root / "applications" / "GL-CSRD-APP" / "CSRD-Reporting-Platform" / "examples" / "demo_esg_data.csv"
+    elif app_id == "vcci":
+        candidate = repo_root / "applications" / "GL-VCCI-Carbon-APP" / "VCCI-Scope3-Platform" / "examples" / "sample_category1_batch.csv"
+    else:
+        candidate = package_root / "examples" / "sample_imports.csv"
+    return candidate if candidate.exists() else None
+
+
+def _record_v1_run(app: FastAPI, app_id: str, out_dir: Path, success: bool, native_backend_used: bool, fallback_used: bool, artifacts: list[str]) -> str:
+    run_id = uuid.uuid4().hex
+    app.state.output_dirs[run_id] = out_dir
+    app.state.session_meta[run_id] = {
+        "app_id": app_id,
+        "status": "completed" if success else "failed",
+        "success": bool(success),
+        "execution_mode": "native" if native_backend_used else ("fallback" if fallback_used else "unknown"),
+        "artifacts": artifacts,
+        "created_at_ts": datetime.utcnow().timestamp(),
+        "can_export": bool(success),
+    }
+    return run_id
+
+
+def _read_web_template(filename: str) -> str:
+    path = Path(__file__).with_name(filename)
+    if not path.exists():
+        return ""
+    return path.read_text(encoding="utf-8")
+
+
+def get_csrd_html() -> str:
+    html = _read_web_template("csrd_workspace.html")
+    html = html or "<html><body><h1>CSRD Workspace unavailable</h1></body></html>"
+    return _inject_shared_ui_script(html)
+
+
+def get_vcci_html() -> str:
+    html = _read_web_template("vcci_workspace.html")
+    html = html or "<html><body><h1>VCCI Workspace unavailable</h1></body></html>"
+    return _inject_shared_ui_script(html)
+
+
+def get_runs_html(app: FastAPI) -> str:
+    # Minimal HTML; details pulled via /api/v1/runs.
+    return """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GreenLang Runs</title>
+  <style>
+    body { font-family: Segoe UI, Roboto, Arial, sans-serif; padding: 20px; background: #0b1225; color: #e8efff; }
+    a { color: #66f2cf; text-decoration: none; }
+    .row { border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; padding: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.06); }
+    .timeline { display: grid; gap: 8px; margin: 10px 0; }
+    .timeline-step { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; }
+    .timeline-label { color: #a8b6d8; font-size: 0.82rem; }
+    .timeline-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.12); overflow: hidden; }
+    .timeline-fill { height: 100%; background: linear-gradient(90deg, #42d9b5, #66f2cf); }
+    .muted { color: #a8b6d8; font-size: 0.9rem; }
+    .btn { display: inline-block; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(102,242,207,0.45); color: #b2fff0; }
+  </style>
+</head>
+<body>
+  <h1>Run Center</h1>
+  <p class="muted"><a href="/apps">Back to apps</a></p>
+  <div id="runs"></div>
+  <script>
+    async function loadRuns() {
+      const res = await fetch('/api/v1/runs');
+      const payload = await res.json();
+      const runs = (payload && payload.runs) || [];
+      const root = document.getElementById('runs');
+      if (!runs.length) {
+        root.innerHTML = '<p class=\"muted\">No runs yet.</p>';
+        return;
+      }
+      root.innerHTML = runs.map(r => `
+        <div class=\"row\">
+          <div><strong>${r.app_id || 'unknown'}</strong> • <span class=\"muted\">${r.run_id}</span></div>
+          <div class=\"muted\">status=${r.status} mode=${r.execution_mode} success=${r.success}</div>
+          <div class=\"timeline\">
+            <div class=\"timeline-step\">
+              <div class=\"timeline-label\">Validate</div>
+              <div class=\"timeline-bar\"><div class=\"timeline-fill\" style=\"width:100%\"></div></div>
+            </div>
+            <div class=\"timeline-step\">
+              <div class=\"timeline-label\">Compute</div>
+              <div class=\"timeline-bar\"><div class=\"timeline-fill\" style=\"width:${r.success ? 100 : 70}%\"></div></div>
+            </div>
+            <div class=\"timeline-step\">
+              <div class=\"timeline-label\">Export/Audit</div>
+              <div class=\"timeline-bar\"><div class=\"timeline-fill\" style=\"width:${r.success ? 100 : 40}%\"></div></div>
+            </div>
+          </div>
+          <div style=\"margin-top: 8px;\">
+            <a class=\"btn\" href=\"/api/v1/runs/${r.run_id}/bundle\">Download bundle</a>
+          </div>
+        </div>
+      `).join('');
+    }
+    loadRuns();
+  </script>
+</body>
+</html>"""
 
 
 # Run function for CLI

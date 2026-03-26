@@ -1,0 +1,275 @@
+# =============================================================================
+# PACK-042 Scope 3 Starter - Retail & Distribution Preset
+# =============================================================================
+# Retail and distribution sector where purchased goods for resale dominate
+# Scope 3 emissions. Category 1 (Purchased Goods & Services) typically
+# represents 60-85% of total Scope 3. Logistics categories (Cat 4 inbound,
+# Cat 9 outbound) are also material. Scope 3 commonly 10-50x Scope 1+2.
+#
+# Typical use cases:
+#   - Supermarkets and grocery retailers
+#   - Fashion and apparel retailers
+#   - Electronics and appliance retailers
+#   - E-commerce platforms and fulfilment
+#   - Home improvement and DIY retailers
+#   - Wholesale distributors
+#   - Department stores and general merchandise
+#
+# Typical Scope 3 emission profile:
+#   Cat 1 (Purchased Goods):     60-85% (products for resale)
+#   Cat 2 (Capital Goods):        1-3%  (store fit-out, IT)
+#   Cat 3 (Fuel & Energy):        1-3%  (WTT, T&D losses)
+#   Cat 4 (Upstream Transport):    3-10% (supplier to DC/store)
+#   Cat 5 (Waste):                 0.5-2% (packaging, food waste)
+#   Cat 6 (Business Travel):      0.2-1% (buying trips)
+#   Cat 7 (Employee Commuting):   0.5-2% (store staff)
+#   Cat 9 (Downstream Transport): 2-8%  (home delivery)
+#   Cat 11 (Product Use):         0-10% (appliances, electronics)
+#   Cat 12 (End-of-Life):         1-5%  (packaging, products)
+#
+#   Total Scope 3 typically: 10-50x Scope 1+2
+#   Key supplier engagement: Top 100 product suppliers (by spend)
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_type: "RETAIL"
+country: "DE"
+reporting_year: 2026
+
+# --- Screening ---
+screening:
+  eeio_model: "EXIOBASE_3"
+  currency: "EUR"
+  base_year: 2024
+  revenue_threshold_eur: 0
+  inflation_adjustment: true
+  include_second_order: false
+
+# --- Spend Classification ---
+spend_classification:
+  code_system: "UNSPSC"
+  secondary_code_system: "NAICS"
+  confidence_threshold: 0.80
+  manual_review_threshold: 0.60
+  currency: "EUR"
+  inflation_year: 2024
+
+# --- Categories ---
+categories:
+  cat_1:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "spend_data"
+      - "supplier_data"
+      - "product_category_data"
+      - "private_label_lca"
+    materiality_threshold_pct: 0.5
+    notes: "Dominant category; segment by product category for targeted reduction"
+  cat_2:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "capex_records"
+      - "store_fitout_data"
+    materiality_threshold_pct: 1.0
+    notes: "Store fit-outs, refrigeration equipment, IT infrastructure"
+  cat_3:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "scope1_fuel_data"
+      - "scope2_electricity_data"
+    materiality_threshold_pct: 1.0
+    notes: "WTT and T&D losses for store electricity and transport fuels"
+  cat_4:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "freight_invoices"
+      - "logistics_provider_data"
+      - "dc_receiving_records"
+    materiality_threshold_pct: 1.0
+    notes: "Supplier to distribution centre and distribution centre to store"
+  cat_5:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "waste_manifests"
+      - "waste_contractor_reports"
+    materiality_threshold_pct: 1.0
+    notes: "Packaging waste, food waste (grocery), general waste"
+  cat_6:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "travel_management_system"
+      - "expense_reports"
+    materiality_threshold_pct: 2.0
+    notes: "Buying trips, supplier visits, trade shows"
+  cat_7:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "hr_records"
+      - "national_averages"
+    materiality_threshold_pct: 2.0
+    notes: "Store and warehouse staff commuting"
+  cat_8:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "lease_contracts"
+    materiality_threshold_pct: 3.0
+    notes: "Enable if leased store spaces significant under operational control"
+  cat_9:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "home_delivery_data"
+      - "click_collect_data"
+      - "customer_journey_estimates"
+    materiality_threshold_pct: 1.0
+    notes: "Home delivery, click-and-collect, customer shopping trips (if included)"
+  cat_10:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "customer_processing_data"
+    materiality_threshold_pct: 5.0
+    notes: "Typically not applicable for finished goods retailers"
+  cat_11:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_specs"
+      - "energy_ratings"
+    materiality_threshold_pct: 2.0
+    notes: "Material for electronics, appliances, cooking fuel products"
+  cat_12:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_composition"
+      - "packaging_data"
+      - "country_disposal_mix"
+    materiality_threshold_pct: 2.0
+    notes: "Product and packaging end-of-life disposal"
+  cat_13:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "tenant_data"
+    materiality_threshold_pct: 5.0
+  cat_14:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "franchise_reports"
+    materiality_threshold_pct: 3.0
+    notes: "Enable for franchise-model retailers"
+  cat_15:
+    enabled: false
+    tier: "SPEND_BASED"
+    data_sources:
+      - "portfolio_data"
+    materiality_threshold_pct: 5.0
+
+# --- Double Counting ---
+double_counting:
+  rules_enabled:
+    - "cat1_vs_cat4_transport"
+    - "cat1_vs_cat2_capex"
+    - "cat3_vs_scope12"
+    - "cat4_vs_cat9_transport"
+  allocation_method: "ECONOMIC"
+  conservative_mode: true
+  document_exclusions: true
+  scope12_reference_enabled: true
+
+# --- Hotspot ---
+hotspot:
+  pareto_threshold_pct: 80.0
+  min_categories: 3
+  benchmark_source: "ghg_protocol_sector_guidance"
+  top_n_suppliers: 100
+  include_product_group_analysis: true
+  trend_comparison_years: 3
+
+# --- Supplier Engagement ---
+supplier_engagement:
+  top_percent: 80.0
+  top_n_suppliers: 100
+  reminder_frequency_days: 30
+  quality_target: "LEVEL_3"
+  deadline_days: 90
+  escalation_after_days: 60
+  use_cdp_supply_chain: false
+  questionnaire_template: "ghg_protocol_scope3_supplier"
+
+# --- Data Quality ---
+data_quality:
+  min_dqr: 1.0
+  target_dqr: 3.5
+  quality_weights:
+    technological_representativeness: 0.25
+    temporal_representativeness: 0.20
+    geographical_representativeness: 0.25
+    completeness: 0.15
+    reliability: 0.15
+  improvement_plan_required: true
+  track_dqr_trend: true
+
+# --- Uncertainty ---
+uncertainty:
+  method: "QUALITATIVE"
+  monte_carlo_iterations: 5000
+  confidence_level: 0.95
+  default_spend_uncertainty_pct: 50.0
+  default_average_data_uncertainty_pct: 30.0
+  default_supplier_uncertainty_pct: 10.0
+
+# --- Compliance ---
+compliance:
+  target_frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+  esrs_phase_in_year: 2025
+  sec_safe_harbour: true
+  sb253_scope3_from: 2027
+  pcaf_enabled: false
+  cdp_supply_chain_module: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+  frequency: "ANNUAL"
+  include_provenance: true
+  include_appendices: true
+  include_data_quality_matrix: true
+  include_supplier_engagement_status: true
+  include_hotspot_analysis: true
+  include_double_counting_log: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database: "ecoinvent_3.10"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7
+  emission_factor_citation: true
+  supplier_data_versioning: true

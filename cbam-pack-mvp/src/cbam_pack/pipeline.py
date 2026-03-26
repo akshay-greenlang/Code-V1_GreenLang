@@ -216,7 +216,12 @@ class CBAMPipeline:
         self.logger.info("[3/8] PolicyEngine: Evaluating compliance")
 
         self.policy_engine = PolicyEngine.from_yaml_config(self.config)
-        policy_result = self.policy_engine.evaluate(self.calc_result, self.config)
+        annual_quantity_tonnes = self._compute_annual_quantity_tonnes()
+        policy_result = self.policy_engine.evaluate(
+            self.calc_result,
+            self.config,
+            total_annual_quantity_tonnes=annual_quantity_tonnes,
+        )
         policy_result.evaluated_at = generated_dt.replace(tzinfo=None)
         policy_result_dict = policy_result.to_dict()
 
@@ -390,6 +395,18 @@ class CBAMPipeline:
                     })
 
         return details
+
+    def _compute_annual_quantity_tonnes(self) -> float:
+        """Estimate annualized quantity in tonnes for policy authorization checks."""
+        if not self.lines:
+            return 0.0
+        total_quarter_tonnes = 0.0
+        for line in self.lines:
+            if line.unit.value == "kg":
+                total_quarter_tonnes += float(line.quantity) / 1000.0
+            else:
+                total_quarter_tonnes += float(line.quantity)
+        return total_quarter_tonnes * 4.0
 
     def _build_run_seed(self, config: CBAMConfig, lines: list[ImportLineItem]) -> str:
         def _as_dict(model_obj):

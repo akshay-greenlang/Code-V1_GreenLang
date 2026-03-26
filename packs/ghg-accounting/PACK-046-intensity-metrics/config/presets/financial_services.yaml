@@ -1,0 +1,185 @@
+# =============================================================================
+# PACK-046 Intensity Metrics - Financial Services Preset
+# =============================================================================
+# Financial institutions where financed emissions intensity (tCO2e per MEUR
+# invested or lent) is the primary metric, aligned with the Partnership for
+# Carbon Accounting Financials (PCAF) Global Standard. Decomposition
+# separates asset class allocation, sectoral exposure, and portfolio
+# efficiency effects. CDP and TPI provide external benchmarking.
+#
+# Typical use cases:
+#   - Banks and lending institutions
+#   - Asset managers and investment funds
+#   - Insurance companies (underwriting portfolio)
+#   - Pension funds and sovereign wealth funds
+#   - Development finance institutions
+#
+# Typical emission profile:
+#   Scope 1+2 (operational): <5% of total footprint
+#   Scope 3 Cat 15 (investments): >95% of total footprint
+#   Key intensity metric: tCO2e / MEUR invested (or lent)
+#   Typical range: 5-150 tCO2e / MEUR (portfolio-dependent)
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "financial_services"
+  description: "Financial services with PCAF-aligned tCO2e/MEUR invested, financed emissions"
+  sector: "FINANCIAL_SERVICES"
+  pack_id: "PACK-046"
+  version: "1.0.0"
+
+# --- Denominator Management ---
+denominator:
+  selected_denominators:
+    - "assets_under_management_meur"
+    - "total_lending_meur"
+    - "revenue_meur"
+    - "fte"
+  primary_denominator: "assets_under_management_meur"
+  validation_rules:
+    require_non_zero: true
+    require_positive: true
+    max_year_over_year_change_pct: 40.0
+    require_same_period: true
+  unit_preferences:
+    currency: "EUR"
+
+# --- Intensity Calculation ---
+intensity_calculation:
+  scope_inclusion: "SCOPE_1_2_3"
+  scope_3_categories:
+    - 15
+  decimal_places: 4
+  weighted_average_method: "ACTIVITY_WEIGHTED"
+  null_handling: "EXCLUDE"
+  exclude_negative_denominators: true
+  include_biogenic: false
+  separate_location_market: true
+
+# --- LMDI Decomposition ---
+decomposition:
+  method: "LMDI_I_ADDITIVE"
+  include_activity_effect: true
+  include_structure_effect: true
+  include_intensity_effect: true
+  multi_level: true
+  decomposition_levels:
+    - "asset_class"
+    - "sector_exposure"
+    - "geography"
+  zero_handling: "SMALL_VALUE"
+
+# --- Benchmarking ---
+benchmark:
+  sources:
+    - "CDP"
+    - "TPI"
+  peer_group_criteria:
+    same_sector: true
+    same_region: false
+    revenue_range_pct: 50.0
+    min_peers: 5
+  update_frequency: "ANNUAL"
+  percentile_thresholds:
+    - 10
+    - 25
+    - 50
+    - 75
+    - 90
+
+# --- SBTi SDA Target ---
+target:
+  pathway: "ONE_POINT_FIVE_C"
+  base_year: 2020
+  target_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2050
+  sector: "commercial_buildings"
+  convergence_approach: "ACA"
+  annual_progress_tracking: true
+  include_scope_3_target: true
+
+# --- Trend Analysis ---
+trend:
+  rolling_window: 5
+  projection_years: 10
+  regression_model: "OLS"
+  significance_level: 0.05
+  min_data_points: 3
+  detect_structural_breaks: true
+
+# --- Scenario Analysis ---
+scenario:
+  scenario_types:
+    - "STRUCTURAL"
+    - "GROWTH"
+    - "EFFICIENCY"
+  monte_carlo_iterations: 10000
+  confidence_levels:
+    - 0.90
+    - 0.95
+  growth_rate_assumptions:
+    revenue_annual_pct: 3.0
+    headcount_annual_pct: 1.0
+  efficiency_improvement_pct: 2.0
+
+# --- Uncertainty ---
+uncertainty:
+  propagation_method: "MONTE_CARLO"
+  confidence_interval: 0.95
+  monte_carlo_iterations: 10000
+  include_denominator_uncertainty: true
+
+# --- Disclosure Mapping ---
+disclosure:
+  frameworks:
+    - "CDP"
+    - "TCFD"
+    - "SBTI"
+    - "IFRS_S2"
+    - "ESRS_E1"
+  mandatory_only: false
+  xbrl_taxonomy: "ESRS_2024"
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+  sections:
+    - "executive_summary"
+    - "intensity_results"
+    - "trend_analysis"
+    - "decomposition"
+    - "benchmarking"
+    - "target_progress"
+    - "uncertainty"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack042_enabled: true
+  pack043_enabled: true
+  pack044_enabled: true
+  pack045_enabled: true
+  erp_connector_enabled: false
+  benchmark_api_enabled: true
+
+# --- Audit ---
+audit:
+  sha256_provenance: true
+  track_all_changes: true
+  evidence_retention_years: 10
+  log_calculation_inputs: true
+  require_digital_signature: true

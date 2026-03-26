@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:cbam:transitional:v1"
+           xmlns:cbam="urn:cbam:transitional:v1"
+           elementFormDefault="qualified">
+  <xs:element name="CBAMReport">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Header" type="cbam:HeaderType"/>
+        <xs:element name="Declarant" type="cbam:DeclarantType"/>
+        <xs:element name="ReportingPeriod" type="cbam:ReportingPeriodType"/>
+        <xs:element name="ImportedGoods" type="cbam:ImportedGoodsType"/>
+        <xs:element name="Summary" type="cbam:SummaryType"/>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="HeaderType">
+    <xs:sequence>
+      <xs:element name="GeneratedAt" type="xs:string"/>
+      <xs:element name="ReportType" type="xs:string"/>
+      <xs:element name="SchemaVersion" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DeclarantType">
+    <xs:sequence>
+      <xs:element name="Name" type="xs:string"/>
+      <xs:element name="EORINumber" type="xs:string"/>
+      <xs:element name="Address" type="cbam:AddressType"/>
+      <xs:element name="Contact" type="cbam:ContactType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="Street" type="xs:string"/>
+      <xs:element name="City" type="xs:string"/>
+      <xs:element name="PostalCode" type="xs:string"/>
+      <xs:element name="Country" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ContactType">
+    <xs:sequence>
+      <xs:element name="Name" type="xs:string"/>
+      <xs:element name="Email" type="xs:string"/>
+      <xs:element name="Phone" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ReportingPeriodType">
+    <xs:sequence>
+      <xs:element name="Quarter" type="xs:string"/>
+      <xs:element name="Year" type="xs:integer"/>
+      <xs:element name="StartDate" type="xs:string"/>
+      <xs:element name="EndDate" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ImportedGoodsType">
+    <xs:sequence>
+      <xs:element name="Good" type="cbam:GoodType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="Line" type="cbam:LineType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GoodType">
+    <xs:sequence>
+      <xs:element name="CNCode" type="xs:string"/>
+      <xs:element name="CountryOfOrigin" type="xs:string"/>
+      <xs:element name="TotalQuantityTonnes" type="xs:decimal"/>
+      <xs:element name="Emissions" type="cbam:EmissionsType"/>
+      <xs:element name="MethodUsed" type="xs:string"/>
+      <xs:element name="LineCount" type="xs:integer"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="LineType">
+    <xs:sequence>
+      <xs:element name="LineId" type="xs:string"/>
+      <xs:element name="Emissions" type="cbam:LineEmissionsType"/>
+      <xs:element name="Methods" type="cbam:MethodsType"/>
+      <xs:element name="FactorReferences" type="cbam:FactorReferencesType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EmissionsType">
+    <xs:sequence>
+      <xs:element name="DirectEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="IndirectEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="TotalEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="WeightedIntensity" type="xs:decimal"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="LineEmissionsType">
+    <xs:sequence>
+      <xs:element name="DirectEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="IndirectEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="TotalEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="Intensity" type="xs:decimal"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="MethodsType">
+    <xs:sequence>
+      <xs:element name="DirectMethod" type="xs:string"/>
+      <xs:element name="IndirectMethod" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FactorReferencesType">
+    <xs:sequence>
+      <xs:element name="DirectFactorRef" type="xs:string"/>
+      <xs:element name="IndirectFactorRef" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SummaryType">
+    <xs:sequence>
+      <xs:element name="TotalLines" type="xs:integer"/>
+      <xs:element name="TotalDirectEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="TotalIndirectEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="TotalEmissionsTCO2e" type="xs:decimal"/>
+      <xs:element name="MethodBreakdown" type="cbam:MethodBreakdownType"/>
+      <xs:element name="Assumptions" type="cbam:AssumptionsType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="MethodBreakdownType">
+    <xs:sequence>
+      <xs:element name="LinesWithSupplierDirectData" type="xs:integer"/>
+      <xs:element name="LinesWithSupplierIndirectData" type="xs:integer"/>
+      <xs:element name="LinesUsingDefaults" type="xs:integer"/>
+      <xs:element name="DefaultUsagePercent" type="xs:decimal"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AssumptionsType">
+    <xs:sequence>
+      <xs:element name="Assumption" type="cbam:AssumptionType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AssumptionType">
+    <xs:sequence>
+      <xs:element name="Type" type="xs:string"/>
+      <xs:element name="Description" type="xs:string"/>
+      <xs:element name="Rationale" type="xs:string"/>
+      <xs:element name="AppliesTo" type="xs:string"/>
+      <xs:element name="FactorRef" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

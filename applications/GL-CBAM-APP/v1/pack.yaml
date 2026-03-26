@@ -1,0 +1,16 @@
+contract_version: "1.0"
+name: "gl-cbam-app"
+app_id: "GL-CBAM-APP"
+version: "1.0.0"
+kind: "pack"
+runtime: "greenlang-v1"
+entry_pipeline: "gl.yaml"
+metadata:
+  owner_team: "CBAM Platform Team"
+  support_channel: "cbam@greenlang.io"
+  lifecycle: "supported"
+security:
+  signed: true
+  signatures:
+    - "pack.sig"
+  sbom: "sbom.spdx.json"

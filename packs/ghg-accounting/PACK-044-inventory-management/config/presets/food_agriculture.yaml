@@ -1,0 +1,173 @@
+# =============================================================================
+# PACK-044 GHG Inventory Management - Food & Agriculture Preset
+# =============================================================================
+# Food production and agricultural organisations with significant biogenic
+# emissions (CH4 from enteric fermentation and manure, N2O from soil
+# management and fertiliser application). Seasonal data collection aligned
+# to growing cycles, with specialised QA/QC for non-CO2 greenhouse gases
+# and land-use change tracking.
+#
+# Typical use cases:
+#   - Arable and mixed farming operations
+#   - Livestock and dairy producers
+#   - Food processing and beverage manufacturing
+#   - Agricultural cooperatives and commodity traders
+#   - Aquaculture and fisheries
+#   - Forestry and plantation management
+#
+# Typical inventory profile:
+#   - Dispersed sites: farms, processing plants, cold stores
+#   - Scope 1: CH4 (enteric, manure), N2O (soils, fertiliser), CO2 (fuel)
+#   - Scope 2: refrigeration, irrigation pumps, processing lines
+#   - Seasonal variability: spring planting, harvest, dormant periods
+#   - Typical intensity: 1.0-15.0 kgCO2e per kg product
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+facility_name: ""
+sector_type: "FOOD_AGRICULTURE"
+country: "NZ"
+reporting_year: 2026
+
+# --- Inventory Period ---
+inventory_period:
+  period_type: "CALENDAR_YEAR"
+  fiscal_year_end_month: 6
+  lock_after_days: 30
+  auto_create_next_period: true
+  seasonal_alignment: true
+
+# --- Data Collection ---
+data_collection:
+  frequency: "SEASONAL"
+  collection_periods:
+    - "SPRING"
+    - "SUMMER"
+    - "AUTUMN"
+    - "WINTER"
+  collection_window_days: 30
+  reminder_before_days: 10
+  escalation_after_days: 21
+  auto_send_reminders: true
+  require_evidence_upload: true
+  allow_estimation: true
+  estimation_requires_justification: true
+  farm_management_import: true
+  fertiliser_records_import: true
+
+# --- Quality Management ---
+quality_management:
+  qaqc_enabled: true
+  automated_checks:
+    - "COMPLETENESS"
+    - "RANGE_CHECK"
+    - "YEAR_ON_YEAR_VARIANCE"
+    - "SEASONAL_VARIANCE"
+    - "UNIT_CONSISTENCY"
+    - "HERD_SIZE_CONSISTENCY"
+    - "FERTILISER_APPLICATION_RATE"
+    - "YIELD_CORRELATION"
+    - "LAND_AREA_CONSISTENCY"
+    - "OUTLIER_DETECTION"
+  variance_threshold_pct: 20.0
+  data_quality_score_target: 75.0
+  require_improvement_plan: true
+  improvement_plan_review_frequency: "ANNUAL"
+
+# --- Gas-Specific Tracking ---
+gas_tracking:
+  primary_gases:
+    - "CO2"
+    - "CH4"
+    - "N2O"
+  biogenic_co2_separate: true
+  ch4_sources:
+    - "ENTERIC_FERMENTATION"
+    - "MANURE_MANAGEMENT"
+    - "RICE_CULTIVATION"
+    - "FIELD_BURNING"
+  n2o_sources:
+    - "DIRECT_SOIL_EMISSIONS"
+    - "INDIRECT_VOLATILISATION"
+    - "INDIRECT_LEACHING"
+    - "MANURE_MANAGEMENT"
+  gwp_source: "AR5"
+
+# --- Review and Approval ---
+review_approval:
+  review_levels: 2
+  level_1_role: "FARM_MANAGER"
+  level_2_role: "SUSTAINABILITY_ADVISOR"
+  require_comments: true
+  auto_approve_below_threshold: false
+  sign_off_required: true
+  parallel_review_allowed: true
+
+# --- Change Management ---
+change_management:
+  require_change_request: true
+  auto_approve_minor_changes: true
+  minor_change_threshold_pct: 3.0
+  impact_assessment_required: true
+  require_recalculation_on_change: true
+
+# --- Versioning ---
+versioning:
+  enabled: true
+  max_versions_per_period: 5
+  snapshot_on_approval: true
+  track_field_changes: true
+  retain_all_versions: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  multi_entity: true
+  require_subsidiary_sign_off: true
+  inter_company_elimination: false
+  land_use_aggregation: true
+  product_line_disaggregation: true
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: true
+  assess_frequency: "ANNUAL"
+  maturity_model: "GHG_PROTOCOL_5_LEVEL"
+  generate_improvement_roadmap: true
+  benchmark_against_peers: true
+  sector_benchmark_source: "FAO_GLEAM"
+
+# --- Documentation ---
+documentation:
+  methodology_doc_required: true
+  assumption_register: true
+  evidence_retention_years: 7
+  link_to_source_documents: true
+  auto_generate_methodology: true
+  land_use_change_documentation: true
+  fertiliser_application_records: true
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "HTML"
+    - "PDF"
+    - "JSON"
+  executive_summary: true
+  detailed_inventory: true
+  verification_package: true
+  output_language: "en"
+  include_methodology_notes: true
+  include_gas_disaggregation: true
+  include_land_use_summary: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7

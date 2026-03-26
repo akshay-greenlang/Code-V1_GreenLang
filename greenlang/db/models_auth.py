@@ -71,7 +71,7 @@ class User(Base):
     password_changed_at = Column(DateTime, nullable=True)
 
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
 
     # Relationships
     roles = relationship("UserRole", back_populates="user", cascade="all, delete-orphan")
@@ -113,7 +113,7 @@ class Role(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Metadata for ABAC
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
 
     # Relationships
     parent_role = relationship("Role", remote_side=[id], backref="child_roles")
@@ -322,7 +322,7 @@ class AuditLog(Base):
     session_id = Column(String(36), nullable=True)
 
     # Additional data
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
 
     # Timestamp
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
@@ -371,7 +371,7 @@ class SAMLProvider(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
 
     # Indexes and constraints
     __table_args__ = (
@@ -412,7 +412,7 @@ class OAuthProvider(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
 
     # Indexes and constraints
     __table_args__ = (
@@ -460,7 +460,7 @@ class LDAPConfig(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
 
     def __repr__(self):
         return f"<LDAPConfig(id={self.id}, name={self.name}, server_url={self.server_url})>"

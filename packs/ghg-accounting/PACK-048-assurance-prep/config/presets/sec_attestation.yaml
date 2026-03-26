@@ -1,0 +1,145 @@
+# =============================================================================
+# PACK-048 GHG Assurance Prep - US SEC Attestation Preset
+# =============================================================================
+# US SEC climate disclosure attestation configuration for large accelerated
+# filers. Aligned with SSAE 18 (AICPA) attestation standards and SEC final
+# rules. Scope 1 and Scope 2 attestation with PCAOB-registered verifier
+# requirements and SEC-specific materiality guidance.
+#
+# Typical use cases:
+#   - Large accelerated filers (>700M USD public float)
+#   - Accelerated filers preparing early (75-700M USD public float)
+#   - Dual-listed companies with US reporting obligations
+#   - Companies with PCAOB-registered auditors
+#
+# Typical engagement profile:
+#   Assurance level: Limited (initially), Examination (from 2029)
+#   Scopes: Scope 1 + Scope 2
+#   Duration: 10-16 weeks
+#   Typical cost: 75,000 - 250,000 USD
+# =============================================================================
+
+# --- Assurance Engagement ---
+assurance_standard: "SSAE_18"
+assurance_level: "REVIEW"
+company_size: "LARGE_ACCELERATED_FILER"
+scopes_in_scope:
+  - "SCOPE_1"
+  - "SCOPE_2"
+
+# --- Evidence Consolidation ---
+evidence:
+  minimum_quality: "GOOD"
+  require_provenance_hash: true
+  retention_years: 7
+  auto_extract_from_packs: true
+  evidence_format: "STRUCTURED"
+  max_evidence_size_mb: 750
+
+# --- Readiness Assessment ---
+readiness:
+  standard: "SSAE_18"
+  target_level: "REVIEW"
+  minimum_readiness_score_pct: 80.0
+  include_gap_remediation: true
+  auto_score_from_evidence: true
+  remediation_priority_threshold: 55.0
+
+# --- Calculation Provenance ---
+provenance:
+  verify_all_calculations: true
+  replay_tolerance_pct: 0.01
+  include_input_hashes: true
+  include_intermediate_hashes: true
+  generate_certificate: true
+
+# --- Control Testing ---
+controls:
+  minimum_effectiveness: "EFFECTIVE"
+  target_maturity: "LEVEL_3_DEFINED"
+  test_sample_size: 40
+  include_it_general_controls: true
+  walkthroughs_required: true
+  remediation_timeline_days: 60
+
+# --- Verifier Collaboration ---
+verifier:
+  max_query_response_days: 5
+  query_escalation_days: 3
+  finding_response_days: 10
+  enable_collaboration_portal: true
+  auto_evidence_sharing: true
+  track_verifier_hours: true
+
+# --- Materiality Assessment ---
+materiality:
+  overall_materiality_pct: 5.0
+  performance_materiality_pct: 65.0
+  clearly_trivial_pct: 5.0
+  scope_specific_enabled: true
+  revision_frequency: "ANNUAL"
+
+# --- Sampling Plan ---
+sampling:
+  primary_method: "MUS"
+  confidence_level_pct: 95.0
+  tolerable_misstatement_pct: 5.0
+  expected_misstatement_pct: 1.0
+  minimum_sample_size: 30
+  stratification_enabled: true
+  stratification_criteria:
+    - "scope"
+    - "facility"
+    - "gas_type"
+
+# --- Regulatory Requirements ---
+regulatory:
+  jurisdictions:
+    - "US_SEC"
+  company_size: "LARGE_ACCELERATED_FILER"
+  include_upcoming_requirements: true
+  track_effective_dates: true
+  deadline_warning_days: 120
+
+# --- Cost & Timeline ---
+cost_timeline:
+  company_size: "LARGE_ACCELERATED_FILER"
+  assurance_level: "LIMITED"
+  include_scope_3: false
+  multi_jurisdiction: false
+  first_time_engagement: false
+  target_completion_weeks: 14
+  currency: "EUR"
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+  sections:
+    - "executive_summary"
+    - "readiness_assessment"
+    - "evidence_summary"
+    - "control_testing"
+    - "materiality_sampling"
+    - "provenance_verification"
+    - "regulatory_compliance"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "READINESS_GAP"
+    - "CONTROL_FAILURE"
+    - "EVIDENCE_MISSING"
+    - "QUERY_OVERDUE"
+    - "DEADLINE_APPROACHING"
+  channels:
+    - "EMAIL"
+  query_overdue_days: 3
+  evidence_gap_alert: true

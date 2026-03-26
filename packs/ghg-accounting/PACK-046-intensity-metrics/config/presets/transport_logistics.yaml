@@ -1,0 +1,184 @@
+# =============================================================================
+# PACK-046 Intensity Metrics - Transport & Logistics Preset
+# =============================================================================
+# Transport and logistics operators where tonne-kilometres (tkm) are the
+# primary normalisation denominator following the GLEC Framework. SBTi
+# transport sector SDA pathway defines the science-based target curve.
+# Decomposition separates mode shift, load factor, and fleet efficiency
+# effects across road, rail, maritime, and air segments.
+#
+# Typical use cases:
+#   - Road freight and haulage operators
+#   - Rail freight companies
+#   - Maritime shipping lines
+#   - Air cargo and express delivery services
+#   - Third-party logistics (3PL) providers
+#
+# Typical emission profile:
+#   Scope 1: 70-95% of total (vehicle fuel combustion)
+#   Scope 2: 5-30% of total (warehouse electricity, EV charging)
+#   Key intensity metric: gCO2e / tkm
+#   Typical range: 10-120 gCO2e / tkm (mode-dependent)
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "transport_logistics"
+  description: "Transport and logistics with gCO2e/tkm, GLEC Framework, SBTi transport pathway"
+  sector: "TRANSPORT_LOGISTICS"
+  pack_id: "PACK-046"
+  version: "1.0.0"
+
+# --- Denominator Management ---
+denominator:
+  selected_denominators:
+    - "tkm"
+    - "pkm"
+    - "vehicle_km"
+    - "revenue_meur"
+  primary_denominator: "tkm"
+  validation_rules:
+    require_non_zero: true
+    require_positive: true
+    max_year_over_year_change_pct: 35.0
+    require_same_period: true
+  unit_preferences:
+    currency: "EUR"
+    distance: "km"
+    mass: "tonne"
+
+# --- Intensity Calculation ---
+intensity_calculation:
+  scope_inclusion: "SCOPE_1_2_LOCATION"
+  decimal_places: 2
+  weighted_average_method: "ACTIVITY_WEIGHTED"
+  null_handling: "EXCLUDE"
+  exclude_negative_denominators: true
+  include_biogenic: false
+  separate_location_market: true
+
+# --- LMDI Decomposition ---
+decomposition:
+  method: "LMDI_I_ADDITIVE"
+  include_activity_effect: true
+  include_structure_effect: true
+  include_intensity_effect: true
+  multi_level: true
+  decomposition_levels:
+    - "mode"
+    - "fleet_segment"
+    - "route"
+  zero_handling: "SMALL_VALUE"
+
+# --- Benchmarking ---
+benchmark:
+  sources:
+    - "CDP"
+    - "TPI"
+  peer_group_criteria:
+    same_sector: true
+    same_region: false
+    revenue_range_pct: 50.0
+    min_peers: 5
+  update_frequency: "ANNUAL"
+  percentile_thresholds:
+    - 10
+    - 25
+    - 50
+    - 75
+    - 90
+
+# --- SBTi SDA Target ---
+target:
+  pathway: "WELL_BELOW_2C"
+  base_year: 2020
+  target_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sector: "transport_road_freight"
+  convergence_approach: "SDA"
+  annual_progress_tracking: true
+  include_scope_3_target: false
+
+# --- Trend Analysis ---
+trend:
+  rolling_window: 5
+  projection_years: 10
+  regression_model: "OLS"
+  significance_level: 0.05
+  min_data_points: 3
+  detect_structural_breaks: true
+
+# --- Scenario Analysis ---
+scenario:
+  scenario_types:
+    - "EFFICIENCY"
+    - "STRUCTURAL"
+    - "GROWTH"
+  monte_carlo_iterations: 10000
+  confidence_levels:
+    - 0.90
+    - 0.95
+  growth_rate_assumptions:
+    revenue_annual_pct: 4.0
+    production_annual_pct: 3.5
+  efficiency_improvement_pct: 2.5
+
+# --- Uncertainty ---
+uncertainty:
+  propagation_method: "MONTE_CARLO"
+  confidence_interval: 0.95
+  monte_carlo_iterations: 10000
+  include_denominator_uncertainty: true
+
+# --- Disclosure Mapping ---
+disclosure:
+  frameworks:
+    - "ESRS_E1"
+    - "CDP"
+    - "SBTI"
+    - "GRI"
+    - "ISO_14064"
+  mandatory_only: false
+  xbrl_taxonomy: "ESRS_2024"
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  sections:
+    - "executive_summary"
+    - "intensity_results"
+    - "trend_analysis"
+    - "decomposition"
+    - "benchmarking"
+    - "target_progress"
+    - "uncertainty"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack042_enabled: true
+  pack043_enabled: false
+  pack044_enabled: true
+  pack045_enabled: true
+  erp_connector_enabled: true
+  benchmark_api_enabled: false
+
+# --- Audit ---
+audit:
+  sha256_provenance: true
+  track_all_changes: true
+  evidence_retention_years: 10
+  log_calculation_inputs: true

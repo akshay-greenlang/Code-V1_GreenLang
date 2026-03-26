@@ -1,0 +1,128 @@
+# =============================================================================
+# PACK-044 GHG Inventory Management - Corporate Office Preset
+# =============================================================================
+# Office-based organisations where Scope 2 (purchased electricity) typically
+# dominates the inventory. Data collection is quarterly with two levels of
+# review. Suitable for professional services, financial services, technology
+# companies, and government administration offices.
+#
+# Typical use cases:
+#   - Financial services and banking headquarters
+#   - Technology and software companies
+#   - Management consulting and professional services
+#   - Insurance companies and asset managers
+#   - Government and public administration offices
+#
+# Typical inventory profile:
+#   - 1-5 facilities, single country
+#   - Scope 1: natural gas heating, backup generators, refrigerant
+#   - Scope 2: purchased electricity (dominant source)
+#   - Low complexity, quarterly collection sufficient
+#   - Typical intensity: 1.0-3.0 tCO2e per FTE
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+facility_name: ""
+sector_type: "OFFICE"
+country: "DE"
+reporting_year: 2026
+
+# --- Inventory Period ---
+inventory_period:
+  period_type: "CALENDAR_YEAR"
+  fiscal_year_end_month: 12
+  lock_after_days: 30
+  auto_create_next_period: true
+
+# --- Data Collection ---
+data_collection:
+  frequency: "QUARTERLY"
+  collection_window_days: 21
+  reminder_before_days: 7
+  escalation_after_days: 14
+  auto_send_reminders: true
+  require_evidence_upload: true
+  allow_estimation: true
+  estimation_requires_justification: true
+
+# --- Quality Management ---
+quality_management:
+  qaqc_enabled: true
+  automated_checks:
+    - "COMPLETENESS"
+    - "RANGE_CHECK"
+    - "YEAR_ON_YEAR_VARIANCE"
+    - "UNIT_CONSISTENCY"
+  variance_threshold_pct: 15.0
+  data_quality_score_target: 80.0
+  require_improvement_plan: false
+
+# --- Review and Approval ---
+review_approval:
+  review_levels: 2
+  level_1_role: "FACILITY_MANAGER"
+  level_2_role: "SUSTAINABILITY_LEAD"
+  require_comments: false
+  auto_approve_below_threshold: true
+  auto_approve_threshold_tco2e: 10.0
+  sign_off_required: true
+
+# --- Change Management ---
+change_management:
+  require_change_request: true
+  auto_approve_minor_changes: true
+  minor_change_threshold_pct: 2.0
+  impact_assessment_required: false
+
+# --- Versioning ---
+versioning:
+  enabled: true
+  max_versions_per_period: 5
+  snapshot_on_approval: true
+  track_field_changes: true
+  retain_all_versions: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  multi_entity: false
+  require_subsidiary_sign_off: false
+  inter_company_elimination: false
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: true
+  assess_frequency: "ANNUAL"
+  maturity_model: "GHG_PROTOCOL_5_LEVEL"
+  generate_improvement_roadmap: true
+  benchmark_against_peers: false
+
+# --- Documentation ---
+documentation:
+  methodology_doc_required: true
+  assumption_register: true
+  evidence_retention_years: 7
+  link_to_source_documents: true
+  auto_generate_methodology: true
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "HTML"
+    - "JSON"
+  executive_summary: true
+  detailed_inventory: true
+  verification_package: true
+  output_language: "en"
+  include_methodology_notes: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 7

@@ -1,0 +1,246 @@
+# =============================================================================
+# PACK-043 Scope 3 Complete - Multi-Entity Group Preset
+# =============================================================================
+# Corporate group with 50+ legal entities, joint ventures, franchises, and
+# complex inter-company relationships requiring equity share and operational
+# control consolidation. Designed for conglomerates, holding companies, and
+# multinational groups with diverse business units.
+#
+# Typical use cases:
+#   - Industrial conglomerates with diverse business units
+#   - Holding companies with multiple portfolio companies
+#   - Multinational groups with regional subsidiaries
+#   - Companies with significant JV exposure (oil & gas, mining, real estate)
+#   - Franchise-heavy organisations (F&B, hospitality, retail)
+#   - Private equity portfolio companies rolling up to fund level
+#
+# Consolidation challenges:
+#   - 50+ entities with varying data maturity and availability
+#   - Joint ventures requiring proportional equity share allocation
+#   - Franchise operations with partial control/ownership
+#   - Inter-company transactions creating double-counting risk
+#   - Currency conversion across 20+ operating currencies
+#   - Different reporting calendars across entities
+#   - Entity-level vs group-level methodology decisions
+#
+#   Total Scope 3 typically: varies by portfolio
+#   Key: Entity consolidation, JV thresholds, inter-company elimination
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_focus: "MULTI_ENTITY"
+country: "CH"
+reporting_year: 2026
+number_of_entities: 50
+years_of_scope3_reporting: 2
+
+# --- Maturity ---
+maturity:
+  target_level: "LEVEL_4_ADVANCED"
+  current_level: "LEVEL_2_STARTER"
+  upgrade_strategy: "BUDGET_CONSTRAINED"
+  budget_usd: 2000000
+  timeline_months: 36
+  roi_threshold_pct: 12.0
+  milestone_tracking: true
+  auto_upgrade_enabled: false
+
+# --- LCA ---
+lca:
+  enabled: true
+  database: "ECOINVENT"
+  database_version: "3.10"
+  product_types:
+    - "raw_materials"
+    - "components"
+    - "services"
+    - "fuels"
+  lifecycle_stages:
+    - "RAW_MATERIAL"
+    - "MANUFACTURING"
+    - "DISTRIBUTION"
+    - "USE_PHASE"
+    - "END_OF_LIFE"
+  sensitivity_params:
+    emission_factor_variation_pct: 20.0
+    transport_distance_variation_pct: 15.0
+    energy_mix_variation_pct: 15.0
+    allocation_method_variation_pct: 25.0
+  cutoff_threshold_pct: 1.0
+  epd_integration: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "EQUITY_SHARE"
+  total_entities: 50
+  jv_equity_threshold_pct: 10.0
+  jv_inclusion_method: "proportional"
+  franchise_inclusion: true
+  franchise_threshold_pct: 50.0
+  inter_company_elimination: true
+  entity_level_reporting: true
+
+# --- Scenarios ---
+scenarios:
+  enabled: true
+  scenario_types:
+    - "MACC"
+    - "WHAT_IF"
+    - "PARIS_ALIGNMENT"
+  macc_max_interventions: 100
+  macc_currency: "USD"
+  what_if_max_scenarios: 15
+  paris_target_celsius: 1.5
+  paris_pathway_source: "iea_nze_2050"
+  time_horizon_years: 15
+  discount_rate_pct: 6.0
+
+# --- SBTi ---
+sbti:
+  enabled: true
+  base_year: 2022
+  near_term_target_year: 2030
+  long_term_target_year: 2050
+  target_type: "ABSOLUTE_CONTRACTION"
+  near_term_reduction_pct: 42.0
+  long_term_reduction_pct: 90.0
+  coverage_pct: 67.0
+  flag_enabled: false
+  supplier_engagement_target_pct: 40.0
+
+# --- Supplier Programme ---
+supplier_programme:
+  enabled: true
+  top_supplier_pct: 70.0
+  top_supplier_count: 200
+  target_reduction_pct: 20.0
+  timeline_years: 7
+  incentive_model: "preferred_status"
+  cdp_supply_chain: true
+  sbti_cascade_enabled: true
+  quarterly_reviews: true
+  data_quality_improvement_target: 0.5
+
+# --- Climate Risk ---
+climate_risk:
+  enabled: true
+  risk_types:
+    - "TRANSITION"
+    - "PHYSICAL"
+    - "OPPORTUNITY"
+  carbon_price_usd_per_tonne: 100.0
+  carbon_price_escalation_pct: 6.0
+  time_horizons_years:
+    - 5
+    - 10
+    - 30
+  scenarios:
+    - "iea_nze_2050"
+    - "iea_aps"
+    - "iea_steps"
+    - "ngfs_orderly"
+    - "ngfs_disorderly"
+  stranded_asset_analysis: false
+  value_at_risk_enabled: true
+
+# --- Base Year ---
+base_year:
+  base_year: 2022
+  significance_threshold_pct: 5.0
+  recalc_triggers_enabled: true
+  recalc_triggers:
+    - "structural_change"
+    - "methodology_change"
+    - "error_correction"
+    - "boundary_change"
+    - "outsourcing_insourcing"
+    - "acquisition_divestiture"
+    - "jv_equity_change"
+  rolling_base_year: false
+  documentation_required: true
+
+# --- Sector ---
+sector:
+  sector_focus: "MULTI_ENTITY"
+
+# --- Assurance ---
+assurance:
+  target_level: "LIMITED"
+  isae_3410_compliant: true
+  evidence_requirements:
+    - "methodology_documentation"
+    - "emission_factor_sources"
+    - "data_quality_assessment"
+    - "uncertainty_analysis"
+    - "provenance_hashes"
+    - "assumption_registry"
+    - "double_counting_log"
+    - "calculation_audit_trail"
+    - "consolidation_methodology"
+    - "inter_company_elimination_log"
+  verifier_portal_enabled: true
+  materiality_threshold_pct: 5.0
+  min_dqr_for_reasonable: 2.5
+
+# --- Integration ---
+integration:
+  pack042_required: true
+  pack042_pack_id: "PACK-042-scope-3-starter"
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database_bridge: true
+  sbti_api_enabled: false
+  tcfd_issb_bridge: true
+  supplier_portal_enabled: true
+  cdp_supply_chain: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "XLSX"
+    - "PDF"
+  enterprise_dashboard: true
+  dashboard_refresh_minutes: 60
+  investor_grade: true
+  board_summary: true
+  scenario_reporting: true
+  benchmark_comparison: true
+  multi_entity_rollup: true
+  verifier_data_room: true
+  output_language: "en"
+  watermark_draft: true
+
+# --- Security ---
+security:
+  rbac_roles:
+    - "group_sustainability_director"
+    - "scope3_director"
+    - "scope3_manager"
+    - "entity_sustainability_manager"
+    - "procurement_director"
+    - "supply_chain_analyst"
+    - "verifier"
+    - "viewer"
+  supplier_data_isolation: true
+  entity_level_access: true
+  audit_logging: true
+  audit_retention_years: 10
+  pii_redaction: true
+  encryption_at_rest: true
+  data_classification: "RESTRICTED"
+
+# --- Performance ---
+performance:
+  parallel_entities: 50
+  parallel_categories: 8
+  batch_size: 5000
+  cache_ttl_seconds: 7200
+  lca_query_timeout_seconds: 600
+  scenario_computation_timeout_seconds: 3600
+  max_suppliers: 50000
+  max_line_items: 10000000
+  memory_ceiling_mb: 65536
+  monte_carlo_iterations: 10000

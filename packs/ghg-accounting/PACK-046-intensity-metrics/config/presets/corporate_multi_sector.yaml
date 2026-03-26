@@ -1,0 +1,181 @@
+# =============================================================================
+# PACK-046 Intensity Metrics - Corporate Multi-Sector Preset
+# =============================================================================
+# Multi-sector conglomerates where revenue is the primary normalisation
+# denominator. LMDI decomposition separates activity, structure, and
+# intensity effects across divisions. CDP and TPI benchmarking provide
+# external context, while ESRS E1-6 and TCFD frame the disclosure output.
+#
+# Typical use cases:
+#   - Diversified industrial conglomerates (e.g., Siemens, GE, 3M)
+#   - Multi-brand consumer goods corporations
+#   - Holding companies with diverse subsidiaries
+#   - Multi-national corporations with mixed sector exposures
+#   - Private equity portfolio-level reporting
+#
+# Typical emission profile:
+#   Scope 1+2: Highly variable across divisions
+#   Scope 3: Often >80% of total, dominated by Cat 1 and Cat 11
+#   Key intensity metric: tCO2e / MEUR revenue
+#   Typical range: 20-200 tCO2e / MEUR (sector-dependent)
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "corporate_multi_sector"
+  description: "Multi-sector conglomerate with revenue-weighted intensity and division decomposition"
+  sector: "MULTI_SECTOR"
+  pack_id: "PACK-046"
+  version: "1.0.0"
+
+# --- Denominator Management ---
+denominator:
+  selected_denominators:
+    - "revenue_meur"
+    - "fte"
+    - "ebitda_meur"
+  primary_denominator: "revenue_meur"
+  validation_rules:
+    require_non_zero: true
+    require_positive: true
+    max_year_over_year_change_pct: 40.0
+    require_same_period: true
+  unit_preferences:
+    currency: "EUR"
+    area: "m2"
+    mass: "tonne"
+
+# --- Intensity Calculation ---
+intensity_calculation:
+  scope_inclusion: "SCOPE_1_2_MARKET"
+  decimal_places: 4
+  weighted_average_method: "REVENUE_WEIGHTED"
+  null_handling: "EXCLUDE"
+  exclude_negative_denominators: true
+  include_biogenic: false
+  separate_location_market: true
+
+# --- LMDI Decomposition ---
+decomposition:
+  method: "LMDI_I_ADDITIVE"
+  include_activity_effect: true
+  include_structure_effect: true
+  include_intensity_effect: true
+  multi_level: true
+  decomposition_levels:
+    - "division"
+    - "business_unit"
+    - "region"
+  zero_handling: "SMALL_VALUE"
+
+# --- Benchmarking ---
+benchmark:
+  sources:
+    - "CDP"
+    - "TPI"
+  peer_group_criteria:
+    same_sector: true
+    same_region: false
+    revenue_range_pct: 50.0
+    min_peers: 5
+  update_frequency: "ANNUAL"
+  percentile_thresholds:
+    - 10
+    - 25
+    - 50
+    - 75
+    - 90
+
+# --- SBTi SDA Target ---
+target:
+  pathway: "ONE_POINT_FIVE_C"
+  base_year: 2020
+  target_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2050
+  sector: "commercial_buildings"
+  convergence_approach: "ACA"
+  annual_progress_tracking: true
+  include_scope_3_target: false
+
+# --- Trend Analysis ---
+trend:
+  rolling_window: 5
+  projection_years: 5
+  regression_model: "OLS"
+  significance_level: 0.05
+  min_data_points: 3
+  detect_structural_breaks: true
+
+# --- Scenario Analysis ---
+scenario:
+  scenario_types:
+    - "EFFICIENCY"
+    - "GROWTH"
+    - "STRUCTURAL"
+  monte_carlo_iterations: 10000
+  confidence_levels:
+    - 0.90
+    - 0.95
+  growth_rate_assumptions:
+    revenue_annual_pct: 5.0
+    headcount_annual_pct: 2.0
+  efficiency_improvement_pct: 2.0
+
+# --- Uncertainty ---
+uncertainty:
+  propagation_method: "MONTE_CARLO"
+  confidence_interval: 0.95
+  monte_carlo_iterations: 10000
+  include_denominator_uncertainty: true
+
+# --- Disclosure Mapping ---
+disclosure:
+  frameworks:
+    - "ESRS_E1"
+    - "CDP"
+    - "TCFD"
+    - "GRI"
+    - "IFRS_S2"
+  mandatory_only: false
+  xbrl_taxonomy: "ESRS_2024"
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+  sections:
+    - "executive_summary"
+    - "intensity_results"
+    - "trend_analysis"
+    - "decomposition"
+    - "benchmarking"
+    - "target_progress"
+    - "uncertainty"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack042_enabled: true
+  pack043_enabled: false
+  pack044_enabled: true
+  pack045_enabled: true
+  erp_connector_enabled: true
+  benchmark_api_enabled: true
+
+# --- Audit ---
+audit:
+  sha256_provenance: true
+  track_all_changes: true
+  evidence_retention_years: 7
+  log_calculation_inputs: true

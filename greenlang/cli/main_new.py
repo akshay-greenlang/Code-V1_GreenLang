@@ -26,6 +26,10 @@ def _root():
     """
     GreenLang v0.2.0 - Infrastructure for Climate Intelligence
     """
+    console.print(
+        "[yellow]Deprecated CLI surface.[/yellow] "
+        "Use canonical entrypoint: [bold]greenlang.cli.main[/bold]."
+    )
 
 
 @app.command()

@@ -1,0 +1,170 @@
+# =============================================================================
+# PACK-047 GHG Emissions Benchmark - Oil & Gas Preset
+# =============================================================================
+# Oil and gas companies where upstream and downstream scope normalisation
+# is critical for fair benchmarking. IEA NZE pathway alignment is the
+# primary reference for 1.5C compatibility. Stranding risk assessment is
+# paramount given fossil fuel reserve exposure. TPI Carbon Performance
+# provides external benchmarking context.
+#
+# Typical use cases:
+#   - Integrated oil and gas majors
+#   - Upstream exploration and production (E&P)
+#   - Midstream pipeline and LNG operators
+#   - Downstream refining and marketing
+#   - National oil companies (NOCs)
+#   - Oil-field services companies
+#
+# Typical emission profile:
+#   Scope 1+2: 10-30% of total (operational emissions)
+#   Scope 3 Cat 11 (use of sold products): 70-90% of total
+#   Key benchmark metric: kgCO2e / BOE (barrel of oil equivalent)
+#   Typical range: 40-80 kgCO2e / BOE (upstream intensity)
+#   Typical ITR range: 2.5C - 5.0C (high stranding risk)
+# =============================================================================
+
+# --- Peer Group Construction ---
+peer_group:
+  sector_classification: "GICS_6DIG"
+  size_band: "ENTERPRISE"
+  require_same_region: false
+  region_scope: "GLOBAL"
+  min_peers: 8
+  max_peers: 30
+  revenue_tolerance_pct: 75.0
+  require_disclosure_coverage: true
+  min_disclosure_pct: 60.0
+
+# --- Scope Normalisation ---
+normalisation:
+  scope_alignment: "S1_S2_S3"
+  consolidation_approach: "EQUITY_SHARE"
+  target_gwp: "AR6"
+  currency_normalisation: true
+  target_currency: "USD"
+  period_alignment: "CALENDAR_YEAR"
+  data_gap_strategy: "PREVIOUS_YEAR"
+  biogenic_treatment: "EXCLUDE"
+
+# --- External Data Sources ---
+external_data:
+  sources:
+    - "CDP"
+    - "TPI"
+  cache_ttl_hours: 168
+  auto_refresh: true
+  cdp_year: 2025
+  tpi_version: "5.0"
+
+# --- Pathway Alignment ---
+pathway:
+  pathways:
+    - "IEA_NZE"
+    - "TPI_CP"
+    - "IPCC_AR6_C1"
+  primary_scenario: "ONE_POINT_FIVE_C"
+  assessment_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sbti_sector: "custom"
+  convergence_year: 2050
+  include_overshoot_analysis: true
+
+# --- Implied Temperature Rise ---
+itr:
+  methods:
+    - "BUDGET_BASED"
+    - "SECTOR_RELATIVE"
+    - "RATE_OF_REDUCTION"
+  primary_method: "BUDGET_BASED"
+  budget_start_year: 2020
+  target_horizon_year: 2050
+  include_scope_3: true
+
+# --- Trajectory Benchmarking ---
+trajectory:
+  historical_years: 7
+  projection_years: 15
+  regression_model: "ROBUST"
+  min_data_points: 4
+  include_confidence_bands: true
+  convergence_test: true
+
+# --- Portfolio Benchmarking ---
+portfolio:
+  waci_enabled: false
+  carbon_footprint_enabled: false
+  pcaf_alignment: false
+
+# --- Data Quality Scoring ---
+data_quality:
+  scoring_method: "PCAF_V3"
+  target_score: 1
+  improvement_roadmap: true
+  staleness_threshold_days: 365
+
+# --- Transition Risk Scoring ---
+transition_risk:
+  categories:
+    - "CARBON_BUDGET"
+    - "STRANDING"
+    - "REGULATORY"
+    - "COMPETITIVE"
+    - "FINANCIAL"
+  category_weights:
+    CARBON_BUDGET: 0.20
+    STRANDING: 0.30
+    REGULATORY: 0.20
+    COMPETITIVE: 0.15
+    FINANCIAL: 0.15
+  carbon_price_scenario: "IEA_NZE"
+  carbon_price_2030_eur: 130.0
+  carbon_price_2050_eur: 250.0
+  stranding_threshold_year: 2030
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "PDF"
+  sections:
+    - "executive_summary"
+    - "peer_comparison"
+    - "pathway_alignment"
+    - "implied_temperature_rise"
+    - "trajectory_analysis"
+    - "transition_risk"
+    - "data_quality"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Disclosure ---
+disclosure:
+  frameworks:
+    - "ESRS"
+    - "CDP"
+    - "TCFD"
+    - "SEC"
+  mandatory_only: false
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "THRESHOLD"
+    - "PATHWAY_DEVIATION"
+    - "DATA_STALENESS"
+    - "RANK_CHANGE"
+  channels:
+    - "EMAIL"
+    - "SLACK"
+  pathway_deviation_threshold_pct: 8.0
+  data_staleness_days: 180

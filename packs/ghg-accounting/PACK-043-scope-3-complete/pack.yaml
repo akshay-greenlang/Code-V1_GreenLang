@@ -1,0 +1,1648 @@
+# =============================================================================
+# PACK-043: Scope 3 Complete Pack
+# GreenLang Enterprise GHG Accounting Pack for Advanced Scope 3
+# =============================================================================
+# This pack delivers enterprise-grade Scope 3 value chain emissions management
+# with full-maturity capabilities. It builds on PACK-042 (Scope 3 Starter) and
+# adds lifecycle assessment (LCA) integration, SBTi FLAG & sector pathway
+# alignment, MACC and what-if scenario analysis, multi-entity consolidation
+# with equity share / operational / financial control approaches, supplier
+# programme management with incentive models, climate risk quantification
+# (transition, physical, opportunity), base-year recalculation, PCAF financed
+# emissions across six asset classes, ISAE 3410 assurance readiness, and
+# investor-grade enterprise dashboards.
+#
+# The pack follows a zero-hallucination approach: all emission calculations
+# use deterministic formulas from GHG Protocol Scope 3 Standard, LCA databases
+# (ecoinvent, GaBi, ELCD), published EEIO models, PCAF attribution formulas,
+# and SBTi pathway reference tables. No LLM is used in any calculation path.
+# LLM may be used for spend classification (with confidence thresholds) and
+# narrative generation only.
+#
+# Enterprise capabilities beyond PACK-042:
+#   - Maturity progression: Level 1 (Screening) through Level 5 (Verified)
+#   - LCA integration: ecoinvent 3.10, GaBi, ELCD, custom, EPD support
+#   - SBTi targets: Absolute contraction, SDA, economic intensity, FLAG
+#   - Scenario analysis: MACC, what-if, technology pathway, supplier programme,
+#     Paris alignment (IEA NZE, NGFS)
+#   - Multi-entity consolidation: Equity share, operational control, financial
+#     control, JV proportional inclusion, franchise thresholds, inter-company
+#     elimination
+#   - Supplier programme: Target-setting, incentive models (preferred status,
+#     contract extension, volume increase, co-investment, penalty), CDP Supply
+#     Chain, SBTi cascade
+#   - Climate risk: TCFD/ISSB, transition (carbon price, policy, tech, market),
+#     physical (acute, chronic), opportunity, climate VaR, stranded assets
+#   - Base-year recalculation: Significance thresholds, automated triggers,
+#     rolling base year option
+#   - PCAF: Six asset classes (listed equity, corporate bonds, unlisted equity,
+#     project finance, commercial RE, mortgages), PCAF data quality scoring
+#   - Assurance: ISAE 3410 limited and reasonable, verifier data room,
+#     continuous monitoring
+#   - Enterprise reporting: Investor-grade dashboards, board summaries,
+#     scenario reports, benchmark comparisons, multi-entity rollups
+#
+# Scope 3 Categories (15):
+#   Upstream (Cat 1-8):
+#     1. Purchased Goods & Services
+#     2. Capital Goods
+#     3. Fuel- & Energy-Related Activities (not in Scope 1/2)
+#     4. Upstream Transportation & Distribution
+#     5. Waste Generated in Operations
+#     6. Business Travel
+#     7. Employee Commuting
+#     8. Upstream Leased Assets
+#   Downstream (Cat 9-15):
+#     9.  Downstream Transportation & Distribution
+#     10. Processing of Sold Products
+#     11. Use of Sold Products
+#     12. End-of-Life Treatment of Sold Products
+#     13. Downstream Leased Assets
+#     14. Franchises
+#     15. Investments
+#
+# Regulatory Frameworks:
+#   1.  GHG Protocol Corporate Value Chain (Scope 3) Standard (2011)
+#   2.  GHG Protocol Technical Guidance for Calculating Scope 3 (2013)
+#   3.  ISO 14064-1:2018 (Categories 3-6 indirect emissions)
+#   4.  EU CSRD / ESRS E1 (E1-6 para 51, Scope 3 phase-in)
+#   5.  CDP Climate Change Questionnaire (C6.5, C6.7 Scope 3)
+#   6.  SBTi Corporate Net-Zero Standard v1.1 (Scope 3 near-term)
+#   7.  SBTi FLAG Guidance (Forest, Land and Agriculture)
+#   8.  TCFD Recommendations / ISSB IFRS S2 (scenario analysis)
+#   9.  US SEC Climate Disclosure Rules (Scope 3 safe harbour)
+#   10. California SB 253 (Scope 3 from 2027)
+#   11. PCAF Global GHG Accounting Standard v3 (Category 15)
+#   12. ISAE 3410 Assurance Engagements on GHG Statements
+#
+# Sector Presets:
+#   enterprise_manufacturing  - Complex supply chain, circular economy, SDA
+#   financial_institution     - PCAF 6 asset classes, portfolio decarbonisation
+#   retail_chain              - Last-mile logistics, packaging, returns
+#   technology_enterprise     - Cloud footprint, SaaS use-phase, intensity
+#   energy_company            - Upstream fuel, sold energy, Paris alignment
+#   food_beverage             - FLAG, deforestation-free, agricultural supply
+#   multi_entity_group        - 50+ entities, JVs, franchises, consolidation
+#   advanced_reporter         - Generic, balanced, sector-neutral upgrade path
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-24)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-043-scope-3-complete
+  version: "1.0.0"
+  display_name: "Scope 3 Complete Pack"
+  description: >-
+    GreenLang enterprise deployment pack providing full-maturity Scope 3 value
+    chain emissions management. Extends PACK-042 (Scope 3 Starter) with
+    lifecycle assessment (LCA) integration via ecoinvent, GaBi, and ELCD;
+    SBTi FLAG and sector pathway alignment with absolute contraction, SDA,
+    and economic intensity targets; MACC and what-if scenario analysis with
+    Paris alignment and technology pathway modelling; multi-entity
+    consolidation supporting equity share, operational control, and financial
+    control approaches with JV thresholds and inter-company elimination;
+    supplier programme management with incentive models and CDP Supply Chain
+    integration; climate risk quantification per TCFD/ISSB covering
+    transition, physical, and opportunity risks with carbon price modelling;
+    base-year recalculation with significance thresholds and automated
+    triggers; PCAF financed emissions across six asset classes for Category
+    15; ISAE 3410 limited and reasonable assurance readiness with verifier
+    data room; and investor-grade enterprise dashboards with scenario
+    reporting and multi-entity rollups. Maps to 12 regulatory frameworks
+    including GHG Protocol, ISO 14064, ESRS E1, CDP, SBTi, TCFD/ISSB,
+    SEC, SB 253, PCAF, and ISAE 3410.
+  category: ghg-accounting
+  tier: enterprise
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-24"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/scope-3-complete"
+  changelog_url: "https://docs.greenlang.io/packs/scope-3-complete/changelog"
+
+  tags:
+    - ghg-inventory
+    - scope-3
+    - scope-3-complete
+    - enterprise
+    - value-chain
+    - ghg-protocol
+    - scope-3-standard
+    - lca
+    - lifecycle-assessment
+    - ecoinvent
+    - gabi
+    - elcd
+    - epd
+    - sbti
+    - sbti-flag
+    - sbti-sda
+    - science-based-targets
+    - macc
+    - scenario-analysis
+    - paris-alignment
+    - what-if
+    - technology-pathway
+    - multi-entity
+    - consolidation
+    - equity-share
+    - operational-control
+    - financial-control
+    - joint-venture
+    - franchise
+    - supplier-programme
+    - supplier-engagement
+    - cdp-supply-chain
+    - climate-risk
+    - tcfd
+    - issb
+    - transition-risk
+    - physical-risk
+    - carbon-pricing
+    - stranded-assets
+    - climate-var
+    - base-year-recalculation
+    - pcaf
+    - financed-emissions
+    - isae-3410
+    - assurance
+    - verification
+    - verifier-data-room
+    - enterprise-dashboard
+    - investor-grade
+    - maturity-model
+    - circular-economy
+    - deforestation-free
+    - flag-pathway
+    - iso-14064
+    - esrs-e1
+    - csrd
+    - cdp
+    - sec-climate
+    - sb-253
+    - uncertainty
+    - monte-carlo
+    - audit-trail
+    - provenance
+
+  regulation:
+    primary:
+      name: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+      reference: "GHG Protocol Corporate Value Chain (Scope 3) Accounting and Reporting Standard (2011)"
+      effective_date: "2011-10-01"
+      description: >-
+        Full implementation of GHG Protocol Scope 3 Standard with enterprise
+        extensions for multi-entity consolidation, LCA integration, SBTi
+        pathway tracking, MACC scenario analysis, and ISAE 3410 assurance.
+
+    secondary:
+      - name: "GHG Protocol Technical Guidance for Calculating Scope 3 Emissions"
+        reference: "GHG Protocol Scope 3 Technical Guidance (2013)"
+        effective_date: "2013-01-01"
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018 (Categories 3-6)"
+        effective_date: "2018-12-01"
+      - name: "EU CSRD / ESRS E1"
+        reference: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+        effective_date: "2024-01-01"
+      - name: "CDP Climate Change Questionnaire"
+        reference: "CDP Climate Change 2026"
+        effective_date: "2026-01-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi v1.1"
+        effective_date: "2023-01-01"
+      - name: "SBTi FLAG Guidance"
+        reference: "SBTi Forest, Land and Agriculture Science Based Target Setting Guidance"
+        effective_date: "2022-09-01"
+      - name: "TCFD Recommendations / ISSB IFRS S2"
+        reference: "TCFD Final Report (2017) / IFRS S2 Climate-related Disclosures (2023)"
+        effective_date: "2017-06-01"
+      - name: "US SEC Climate Disclosure Rules"
+        reference: "SEC Regulation S-K Item 1505"
+        effective_date: "2024-03-06"
+      - name: "California SB 253"
+        reference: "SB 253 Climate Corporate Data Accountability Act"
+        effective_date: "2027-01-01"
+      - name: "PCAF Global GHG Accounting Standard"
+        reference: "PCAF Standard v3"
+        effective_date: "2022-12-01"
+      - name: "ISAE 3410"
+        reference: "ISAE 3410 Assurance Engagements on GHG Statements"
+        effective_date: "2012-09-15"
+      - name: "IPCC 2006 Guidelines"
+        reference: "IPCC 2006 (2019 Refinement)"
+        effective_date: "2006-01-01"
+
+  compliance_references:
+    - id: "GHG_PROTOCOL_SCOPE3"
+      name: "GHG Protocol Scope 3 Standard"
+      regulation: "GHG Protocol Corporate Value Chain (Scope 3) Accounting and Reporting Standard"
+      effective_date: "2011-10-01"
+      description: >-
+        Full Scope 3 Standard implementation with enterprise consolidation,
+        LCA-grade emission factors, and multi-framework output.
+
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      regulation: "SBTi Corporate Net-Zero Standard v1.1"
+      effective_date: "2023-01-01"
+      description: >-
+        SBTi Scope 3 near-term and long-term target tracking with absolute
+        contraction, SDA, and economic intensity methods. FLAG pathway
+        for food, land, and agriculture. Supplier engagement cascade.
+
+    - id: "PCAF"
+      name: "PCAF Global GHG Accounting Standard"
+      regulation: "PCAF Standard v3"
+      effective_date: "2022-12-01"
+      description: >-
+        PCAF methodology for Category 15 financed emissions across six
+        asset classes with attribution factor calculation and PCAF data
+        quality scoring.
+
+    - id: "TCFD_ISSB"
+      name: "TCFD / ISSB IFRS S2"
+      regulation: "TCFD Recommendations (2017) / IFRS S2 (2023)"
+      effective_date: "2017-06-01"
+      description: >-
+        Climate scenario analysis per TCFD/ISSB with transition risk
+        (carbon pricing, policy, technology, market), physical risk
+        (acute, chronic), and opportunity quantification.
+
+    - id: "ISAE_3410"
+      name: "ISAE 3410 Assurance"
+      regulation: "ISAE 3410 Assurance Engagements on GHG Statements"
+      effective_date: "2012-09-15"
+      description: >-
+        Structures Scope 3 outputs for ISAE 3410 limited and reasonable
+        assurance engagements with verifier data room, evidence packages,
+        and continuous monitoring.
+
+    - id: "ESRS_E1"
+      name: "EU CSRD / ESRS E1 Climate Change"
+      regulation: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+      effective_date: "2024-01-01"
+      description: >-
+        ESRS E1-6 para 51 Scope 3 disclosure with upstream/downstream
+        disaggregation, scenario analysis per E1-9, and transition plan.
+
+    - id: "CDP"
+      name: "CDP Climate Change Questionnaire"
+      regulation: "CDP Climate Change 2026"
+      effective_date: "2026-01-01"
+      description: >-
+        CDP C6.5 (Scope 3 by category), C6.7 (methodology), C6.10
+        (verification), and Supply Chain module integration.
+
+    - id: "ISO_14064"
+      name: "ISO 14064-1:2018"
+      regulation: "ISO 14064-1:2018"
+      effective_date: "2018-12-01"
+      description: >-
+        ISO 14064-1 Categories 3-6 indirect emissions quantification
+        with uncertainty assessment per Clause 6.3.
+
+    - id: "SEC"
+      name: "US SEC Climate Disclosure Rules"
+      regulation: "SEC Regulation S-K Item 1505"
+      effective_date: "2024-03-06"
+      description: >-
+        SEC Scope 3 safe harbour provisions with methodology documentation.
+
+    - id: "SB_253"
+      name: "California SB 253"
+      regulation: "SB 253 Climate Corporate Data Accountability Act"
+      effective_date: "2027-01-01"
+      description: >-
+        SB 253 annual Scope 3 reporting from 2027 for large entities.
+
+# -----------------------------------------------------------------------------
+# Prerequisites
+# -----------------------------------------------------------------------------
+prerequisites:
+  required:
+    - id: "PACK-042-scope-3-starter"
+      name: "Scope 3 Starter Pack"
+      version: ">=1.0.0"
+      reason: >-
+        PACK-043 extends PACK-042 and inherits all 10 Scope 3 engines,
+        8 workflows, 10 templates, and 12 integrations. PACK-042 provides
+        the base Scope 3 screening, classification, category calculation,
+        double-counting prevention, hotspot analysis, supplier engagement,
+        data quality assessment, uncertainty analysis, compliance mapping,
+        and reporting capabilities that PACK-043 builds upon.
+
+  recommended:
+    - id: "PACK-041-scope-1-2-complete"
+      name: "Scope 1-2 Complete Pack"
+      version: ">=1.0.0"
+      reason: >-
+        Provides Scope 1/2 data for Category 3 (FERA) calculations,
+        Scope 1+2 totals for ratio analysis and SBTi coverage, and
+        organisational boundary definition for consolidation.
+
+# -----------------------------------------------------------------------------
+# Components - Engines, Workflows, Templates, Integrations, Presets
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Enterprise calculation and processing engines (10 engines)
+  # ===========================================================================
+  engines:
+    - id: maturity_progression
+      name: "Maturity Progression Engine"
+      description: >-
+        Manages Scope 3 maturity level progression from Level 1 (Screening)
+        through Level 5 (Verified). Assesses current maturity across five
+        dimensions: methodology tier distribution, data quality ratings,
+        category coverage, supplier engagement penetration, and assurance
+        readiness. Generates maturity roadmap with milestone tracking,
+        budget allocation per category, and ROI-optimised tier upgrade
+        sequencing. Tracks year-on-year maturity progression and identifies
+        bottlenecks in the upgrade path.
+        Zero-hallucination: maturity scoring from defined rubric, arithmetic
+        milestone calculations, no LLM.
+      class: "MaturityProgressionEngine"
+      file: "engines/maturity_progression_engine.py"
+      required: true
+
+    - id: lca_integration
+      name: "LCA Integration Engine"
+      description: >-
+        Integrates lifecycle assessment databases for product-level emission
+        factors. Connects to ecoinvent 3.10, GaBi, ELCD, and custom LCA
+        databases. Resolves product-level emission factors for Categories
+        1, 2, 10, 11, and 12 by mapping purchased product types to LCA
+        process records. Supports cradle-to-gate, cradle-to-grave, and
+        cradle-to-cradle system boundaries. Applies allocation methods
+        (physical, economic, system expansion). Integrates Environmental
+        Product Declarations (EPDs) when available. Runs sensitivity
+        analysis on key LCA parameters (emission factor variation,
+        transport distance, energy mix, allocation method).
+        Zero-hallucination: LCA factors from published databases with
+        process ID citation, sensitivity from deterministic variation, no LLM.
+      class: "LCAIntegrationEngine"
+      file: "engines/lca_integration_engine.py"
+      required: true
+
+    - id: sbti_pathway
+      name: "SBTi Pathway Alignment Engine"
+      description: >-
+        Tracks progress against SBTi Scope 3 targets using three methods:
+        absolute contraction (total emissions reduction from base year),
+        Sectoral Decarbonisation Approach (sector-specific intensity
+        pathway), and economic intensity (tCO2e per unit of economic
+        output). Calculates annual reduction rate, cumulative progress,
+        coverage percentage, and budget remaining to target. Implements
+        SBTi FLAG guidance for food, land, and agriculture sectors with
+        commodity-specific pathways (beef, dairy, palm oil, soy, timber).
+        Tracks supplier engagement cascade: percentage of suppliers (by
+        emissions) with own SBTi targets.
+        Zero-hallucination: pathway arithmetic from SBTi reference tables,
+        no LLM.
+      class: "SBTiPathwayEngine"
+      file: "engines/sbti_pathway_engine.py"
+      required: true
+
+    - id: scenario_analysis
+      name: "Scenario Analysis Engine"
+      description: >-
+        Provides five scenario analysis capabilities: (1) MACC - Marginal
+        Abatement Cost Curve ranking interventions by cost-effectiveness
+        (EUR/tCO2e abated), with NPV calculation and cumulative reduction
+        curves. (2) What-if - user-defined scenarios modelling the impact
+        of specific changes (supplier switching, mode shift, energy
+        transition). (3) Technology pathway - models technology adoption
+        curves and their Scope 3 impact over time. (4) Supplier programme
+        - models the Scope 3 reduction from supplier engagement at various
+        penetration rates. (5) Paris alignment - assesses whether the
+        current Scope 3 trajectory aligns with 1.5C or 2C pathways
+        using IEA NZE 2050, IEA APS, IEA STEPS, NGFS orderly, and NGFS
+        disorderly scenarios.
+        Zero-hallucination: scenario arithmetic from published pathways,
+        MACC from deterministic cost/benefit, no LLM.
+      class: "ScenarioAnalysisEngine"
+      file: "engines/scenario_analysis_engine.py"
+      required: true
+
+    - id: multi_entity_consolidation
+      name: "Multi-Entity Consolidation Engine"
+      description: >-
+        Consolidates Scope 3 emissions across multiple legal entities
+        in a corporate group. Implements three GHG Protocol approaches:
+        equity share (allocate based on ownership percentage), operational
+        control (100% if operationally controlled), and financial control
+        (100% if financially controlled). Handles joint ventures with
+        proportional equity share allocation above a configurable threshold
+        (default 20%). Supports franchise inclusion with configurable
+        ownership/control thresholds. Performs inter-company emission
+        elimination to prevent double-counting of internal supply chain
+        emissions. Generates entity-level, business-unit-level, and
+        group-level reports. Manages currency conversion across entities.
+        Zero-hallucination: consolidation arithmetic from ownership
+        percentages, no LLM.
+      class: "MultiEntityConsolidationEngine"
+      file: "engines/multi_entity_consolidation_engine.py"
+      required: true
+
+    - id: supplier_programme
+      name: "Supplier Programme Management Engine"
+      description: >-
+        Extends PACK-042 supplier engagement with structured programme
+        management. Enrolls top suppliers (by Scope 3 contribution),
+        sets supplier-level emission reduction targets, manages incentive
+        models (preferred status, contract extension, volume increase,
+        co-investment, penalty), tracks supplier SBTi target adoption
+        per cascade methodology, integrates with CDP Supply Chain module,
+        monitors quarterly progress against targets, generates supplier
+        scorecards with emission reduction, data quality improvement,
+        and engagement metrics. Calculates group-level Scope 3 reduction
+        from supplier programme activities.
+        Zero-hallucination: programme tracking from database records,
+        reduction arithmetic, no LLM.
+      class: "SupplierProgrammeEngine"
+      file: "engines/supplier_programme_engine.py"
+      required: true
+
+    - id: climate_risk
+      name: "Climate Risk Quantification Engine"
+      description: >-
+        Quantifies Scope 3 climate risk per TCFD/ISSB across three
+        dimensions: (1) Transition risk - carbon price impact on supply
+        chain costs, policy risk (CBAM, ETS), technology disruption,
+        market shift. (2) Physical risk - acute (extreme weather events
+        disrupting supply chain) and chronic (sea level rise, water stress
+        affecting sourcing regions). (3) Opportunity - supply chain
+        decarbonisation creating competitive advantage, green product
+        demand. Calculates climate value-at-risk (VaR) for Scope 3
+        exposure. Models carbon price escalation scenarios. Supports
+        stranded asset analysis for investment portfolios (PCAF).
+        Zero-hallucination: risk modelling from deterministic carbon
+        price and scenario parameters, no LLM.
+      class: "ClimateRiskEngine"
+      file: "engines/climate_risk_engine.py"
+      required: true
+
+    - id: base_year_recalculation
+      name: "Base-Year Recalculation Engine"
+      description: >-
+        Implements GHG Protocol base-year recalculation policy for Scope 3.
+        Detects significance triggers: structural change (M&A, divestiture),
+        methodology change (tier upgrade, new emission factors), error
+        correction, boundary change, outsourcing/insourcing, JV equity
+        change. Calculates impact magnitude against significance threshold
+        (default 5%). Performs automated base-year recalculation when
+        threshold exceeded. Supports rolling base year (n-year average)
+        as alternative to fixed base year. Documents all recalculation
+        decisions with rationale for audit trail.
+        Zero-hallucination: recalculation from historical data replay,
+        threshold arithmetic, no LLM.
+      class: "BaseYearRecalculationEngine"
+      file: "engines/base_year_recalculation_engine.py"
+      required: true
+
+    - id: assurance_readiness
+      name: "Assurance Readiness Engine"
+      description: >-
+        Prepares Scope 3 inventory for external assurance per ISAE 3410.
+        Generates verifier evidence packages: methodology documentation,
+        emission factor sources with citations, data quality assessment
+        with DQR scores, uncertainty analysis with confidence intervals,
+        SHA-256 provenance hashes for all outputs, assumption registry
+        with justifications, double-counting prevention log, and full
+        calculation audit trail. Assesses readiness for limited vs
+        reasonable assurance based on data quality, methodology maturity,
+        and evidence completeness. Manages verifier data room access.
+        Supports continuous monitoring between annual assurance cycles.
+        Zero-hallucination: readiness scoring from defined criteria,
+        evidence assembly from audit trail, no LLM.
+      class: "AssuranceReadinessEngine"
+      file: "engines/assurance_readiness_engine.py"
+      required: true
+
+    - id: enterprise_dashboard
+      name: "Enterprise Dashboard Engine"
+      description: >-
+        Generates investor-grade enterprise dashboard data for real-time
+        Scope 3 monitoring. Dashboard sections: executive KPIs (total
+        Scope 3, YoY change, SBTi progress, maturity level), category
+        breakdown (15-category heatmap with trend), scenario dashboard
+        (MACC curves, pathway alignment), supplier programme (engagement
+        coverage, reduction progress, SBTi cascade), multi-entity rollup
+        (entity-level contribution, consolidation view), climate risk
+        (carbon price exposure, VaR), data quality (DQR matrix, trend),
+        and assurance status (readiness score, evidence completeness).
+        Supports configurable refresh interval and role-based views.
+        Zero-hallucination: dashboard from aggregated calculation data,
+        no LLM in data content.
+      class: "EnterpriseDashboardEngine"
+      file: "engines/enterprise_dashboard_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Enterprise orchestration sequences (8 workflows)
+  # ===========================================================================
+  workflows:
+    - id: maturity_assessment
+      name: "Maturity Assessment Workflow"
+      description: >-
+        5-phase maturity assessment: Phase 1 - Current State Analysis
+        (assess methodology tiers, data quality, category coverage,
+        supplier engagement, assurance status) -> Phase 2 - Gap Analysis
+        (compare current vs target maturity across five dimensions) ->
+        Phase 3 - Roadmap Generation (create upgrade plan with milestones,
+        budget allocation, and ROI ranking) -> Phase 4 - Budget Planning
+        (allocate maturity improvement budget across categories and
+        capabilities) -> Phase 5 - Milestone Setting (define quarterly
+        checkpoints for maturity progression tracking).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: lca_product_assessment
+      name: "LCA Product Assessment Workflow"
+      description: >-
+        6-phase LCA integration workflow: Phase 1 - Product Mapping
+        (map purchased product types to LCA process records in ecoinvent/
+        GaBi/ELCD) -> Phase 2 - System Boundary Definition (define
+        lifecycle stages per product group: C2G, C2Gr, C2C) -> Phase 3 -
+        Factor Retrieval (query LCA database for process-level emission
+        factors with provenance) -> Phase 4 - Sensitivity Analysis (run
+        parameter variation on key LCA inputs) -> Phase 5 - EPD
+        Integration (merge available EPDs for product-level factors) ->
+        Phase 6 - Factor Validation (cross-reference LCA factors against
+        EEIO estimates for reasonableness check).
+      schedule: "annual"
+      estimated_duration_minutes: 360
+      phases: 6
+
+    - id: sbti_target_tracking
+      name: "SBTi Target Tracking Workflow"
+      description: >-
+        5-phase SBTi workflow: Phase 1 - Baseline Confirmation (confirm
+        base year emissions, methodology, and SBTi target parameters) ->
+        Phase 2 - Annual Inventory Update (calculate current year Scope 3
+        via PACK-042 pipeline) -> Phase 3 - Progress Calculation (calculate
+        annual reduction rate, cumulative progress, coverage percentage,
+        budget to target) -> Phase 4 - FLAG Assessment (if enabled, assess
+        FLAG commodity progress against FLAG-specific pathway) -> Phase 5 -
+        SBTi Reporting Package (generate SBTi annual disclosure with
+        progress against near-term and long-term targets).
+      schedule: "annual"
+      estimated_duration_minutes: 180
+      phases: 5
+
+    - id: scenario_modelling
+      name: "Scenario Modelling Workflow"
+      description: >-
+        5-phase scenario analysis workflow: Phase 1 - Intervention
+        Inventory (catalogue available emission reduction interventions
+        with cost and abatement potential) -> Phase 2 - MACC Construction
+        (rank interventions by cost-effectiveness, build marginal
+        abatement cost curve) -> Phase 3 - What-If Scenarios (model
+        user-defined scenarios for supply chain changes) -> Phase 4 -
+        Paris Alignment Check (assess trajectory against 1.5C and 2C
+        pathways using IEA/NGFS scenarios) -> Phase 5 - Reporting
+        (generate scenario analysis reports with charts and tables).
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 5
+
+    - id: multi_entity_consolidation
+      name: "Multi-Entity Consolidation Workflow"
+      description: >-
+        6-phase consolidation workflow: Phase 1 - Entity Inventory
+        (catalogue all entities, ownership percentages, control status)
+        -> Phase 2 - Boundary Definition (apply equity share, operational
+        control, or financial control approach) -> Phase 3 - Entity
+        Data Collection (collect entity-level Scope 3 data from PACK-042
+        instances per entity) -> Phase 4 - JV and Franchise Processing
+        (apply proportional allocation for JVs, threshold-based inclusion
+        for franchises) -> Phase 5 - Inter-Company Elimination (identify
+        and eliminate inter-company Scope 3 emissions) -> Phase 6 -
+        Group Consolidation (aggregate to business unit and group level,
+        generate consolidated reports).
+      schedule: "annual"
+      estimated_duration_minutes: 480
+      phases: 6
+
+    - id: supplier_programme_management
+      name: "Supplier Programme Management Workflow"
+      description: >-
+        6-phase supplier programme workflow: Phase 1 - Supplier
+        Prioritisation (rank suppliers by Scope 3 contribution, select
+        programme participants) -> Phase 2 - Target Setting (set
+        supplier-level emission reduction targets per programme timeline)
+        -> Phase 3 - Incentive Assignment (assign incentive model per
+        supplier: preferred status, contract extension, volume increase)
+        -> Phase 4 - Quarterly Review (assess supplier progress against
+        targets, update engagement status) -> Phase 5 - SBTi Cascade
+        Tracking (monitor supplier SBTi target adoption rate) -> Phase 6 -
+        Programme Reporting (generate supplier programme scorecard with
+        aggregate reduction, coverage improvement, and ROI).
+      schedule: "quarterly"
+      estimated_duration_minutes: 180
+      phases: 6
+
+    - id: climate_risk_assessment
+      name: "Climate Risk Assessment Workflow"
+      description: >-
+        5-phase TCFD/ISSB workflow: Phase 1 - Risk Identification
+        (identify transition, physical, and opportunity risks per Scope 3
+        category and supply chain region) -> Phase 2 - Carbon Price
+        Modelling (model carbon price impact on supply chain costs using
+        configured scenarios) -> Phase 3 - Scenario Analysis (run IEA
+        and NGFS scenarios for Scope 3 trajectory) -> Phase 4 - VaR
+        Calculation (calculate climate value-at-risk for total Scope 3
+        exposure) -> Phase 5 - TCFD/ISSB Reporting (generate climate
+        risk disclosure for TCFD/ISSB, including scenario analysis
+        tables and risk matrices).
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 5
+
+    - id: full_enterprise_pipeline
+      name: "Full Enterprise Pipeline Workflow"
+      description: >-
+        16-phase end-to-end enterprise Scope 3 pipeline: Phase 1 -
+        Health Check -> Phase 2 - Configuration Loading -> Phase 3 -
+        Maturity Assessment -> Phase 4 - Entity Data Collection ->
+        Phase 5 - PACK-042 Pipeline Execution (all 12 phases) ->
+        Phase 6 - LCA Integration -> Phase 7 - Multi-Entity
+        Consolidation -> Phase 8 - SBTi Progress Calculation ->
+        Phase 9 - Scenario Analysis -> Phase 10 - Climate Risk
+        Assessment -> Phase 11 - Supplier Programme Review ->
+        Phase 12 - Base-Year Recalculation Check -> Phase 13 -
+        Assurance Readiness Assessment -> Phase 14 - Enterprise
+        Dashboard Generation -> Phase 15 - Multi-Framework Compliance
+        Mapping -> Phase 16 - Report Package Assembly.
+      schedule: "annual"
+      estimated_duration_minutes: 2400
+      phases: 16
+
+  # ===========================================================================
+  # Templates - Enterprise report and output templates (10 templates)
+  # ===========================================================================
+  templates:
+    - id: maturity_roadmap
+      display_name: "Maturity Progression Roadmap"
+      description: >-
+        Visual roadmap showing current maturity level, target level,
+        upgrade milestones, budget allocation per capability, ROI
+        ranking, and timeline. Includes dimension-level scoring
+        (methodology, data quality, coverage, engagement, assurance).
+      format: "html"
+      template_file: "templates/maturity_roadmap.jinja2"
+      enabled: true
+
+    - id: lca_product_report
+      display_name: "LCA Product Assessment Report"
+      description: >-
+        Product-level LCA results showing emission factors per product
+        group, lifecycle stage breakdown, sensitivity analysis results,
+        EPD integration status, and comparison to EEIO estimates.
+      format: "html"
+      template_file: "templates/lca_product_report.jinja2"
+      enabled: true
+
+    - id: sbti_progress_report
+      display_name: "SBTi Progress Report"
+      description: >-
+        SBTi target tracking report showing base year emissions, current
+        year emissions, annual reduction rate, cumulative progress vs
+        target pathway, coverage percentage, FLAG pathway progress (if
+        applicable), and supplier engagement cascade metrics.
+      format: "html"
+      template_file: "templates/sbti_progress_report.jinja2"
+      enabled: true
+
+    - id: scenario_analysis_report
+      display_name: "Scenario Analysis Report"
+      description: >-
+        MACC curves, what-if scenario comparison table, technology
+        pathway adoption curves, supplier programme impact modelling,
+        and Paris alignment trajectory chart with 1.5C and 2C pathways.
+      format: "html"
+      template_file: "templates/scenario_analysis_report.jinja2"
+      enabled: true
+
+    - id: multi_entity_consolidation_report
+      display_name: "Multi-Entity Consolidation Report"
+      description: >-
+        Group-level consolidated Scope 3 report with entity-level
+        breakdown, JV allocation detail, franchise inclusion log,
+        inter-company elimination summary, and business unit rollups.
+      format: "html"
+      template_file: "templates/multi_entity_consolidation_report.jinja2"
+      enabled: true
+
+    - id: supplier_programme_scorecard
+      display_name: "Supplier Programme Scorecard"
+      description: >-
+        Programme-level scorecard showing aggregate emission reduction
+        from engaged suppliers, SBTi cascade adoption rate, data quality
+        improvement, incentive model effectiveness, and ROI per supplier
+        cohort.
+      format: "html"
+      template_file: "templates/supplier_programme_scorecard.jinja2"
+      enabled: true
+
+    - id: climate_risk_report
+      display_name: "Climate Risk Report (TCFD/ISSB)"
+      description: >-
+        TCFD/ISSB climate risk disclosure with transition risk matrix,
+        carbon price impact analysis, physical risk exposure by supply
+        chain region, opportunity identification, climate VaR, and
+        scenario analysis tables (IEA NZE, APS, STEPS, NGFS).
+      format: "html"
+      template_file: "templates/climate_risk_report.jinja2"
+      enabled: true
+
+    - id: assurance_evidence_package
+      display_name: "Assurance Evidence Package"
+      description: >-
+        ISAE 3410 evidence package for verifier review: methodology
+        documentation, emission factor source registry, data quality
+        matrix, uncertainty analysis, provenance hash registry,
+        assumption log, double-counting prevention log, and full
+        calculation audit trail with SHA-256 verification.
+      format: "html"
+      template_file: "templates/assurance_evidence_package.jinja2"
+      enabled: true
+
+    - id: investor_disclosure
+      display_name: "Investor-Grade Disclosure Package"
+      description: >-
+        Comprehensive investor disclosure combining executive summary,
+        Scope 3 inventory (all 15 categories), SBTi progress, scenario
+        analysis, climate risk assessment, supplier programme results,
+        and assurance status. Designed for inclusion in annual reports,
+        sustainability reports, and investor presentations.
+      format: "pdf"
+      template_file: "templates/investor_disclosure.jinja2"
+      enabled: true
+
+    - id: base_year_recalculation_log
+      display_name: "Base-Year Recalculation Log"
+      description: >-
+        Detailed log of all base-year recalculation triggers assessed,
+        significance calculations, recalculation decisions (recalculate
+        or not), recalculated values, and rationale documentation for
+        each decision. Serves as audit evidence per GHG Protocol.
+      format: "html"
+      template_file: "templates/base_year_recalculation_log.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: enterprise_orchestrator
+      name: "Enterprise Pipeline Orchestrator"
+      description: >-
+        16-phase master pipeline orchestrating the full enterprise Scope 3
+        workflow. Inherits PACK-042 12-phase pipeline and extends with
+        maturity assessment, LCA integration, multi-entity consolidation,
+        SBTi tracking, scenario analysis, climate risk, supplier programme,
+        base-year recalculation, and assurance readiness phases. Implements
+        DAG-based dependency resolution with parallel entity processing.
+      required: true
+
+    - id: pack042_bridge
+      name: "PACK-042 Scope 3 Starter Bridge"
+      description: >-
+        Inherits all PACK-042 capabilities: 10 engines (spend screening,
+        spend classification, category calculation, double-counting,
+        hotspot, supplier engagement, data quality, uncertainty, compliance,
+        reporting), 8 workflows, 10 templates, and 12 integrations. Routes
+        core Scope 3 calculations through PACK-042 pipeline and receives
+        category-level results for enterprise processing.
+      required: true
+
+    - id: pack041_bridge
+      name: "PACK-041 Scope 1-2 Data Bridge"
+      description: >-
+        Inherits PACK-042 scope12_bridge and extends with multi-entity
+        Scope 1/2 data aggregation for SBTi coverage ratios and TCFD
+        scenario analysis.
+      required: true
+
+    - id: lca_database_bridge
+      name: "LCA Database Bridge"
+      description: >-
+        Connects to LCA databases: ecoinvent 3.10 (via ecoquery API),
+        GaBi (via ts:navigator), ELCD (via ILCD format), and custom
+        databases (via GreenLang LCA adapter). Retrieves process-level
+        emission factors with full provenance (process ID, system model,
+        geography, temporal validity). Caches frequently accessed factors.
+      required: true
+
+    - id: sbti_api_bridge
+      name: "SBTi API Bridge"
+      description: >-
+        Optional integration with SBTi API for target validation,
+        sector pathway data retrieval, and FLAG commodity pathway
+        reference tables. Supports SBTi target submission workflow.
+      required: false
+
+    - id: tcfd_issb_bridge
+      name: "TCFD/ISSB Scenario Bridge"
+      description: >-
+        Connects to climate scenario data sources: IEA World Energy
+        Outlook (NZE 2050, APS, STEPS), NGFS climate scenarios (orderly,
+        disorderly, hot house), and custom scenarios. Retrieves sector-
+        specific decarbonisation pathways and carbon price trajectories.
+      required: true
+
+    - id: cdp_supply_chain_bridge
+      name: "CDP Supply Chain Bridge"
+      description: >-
+        Integrates with CDP Supply Chain programme for supplier-specific
+        emission data collection. Retrieves supplier CDP Climate Change
+        responses, maps to Scope 3 categories, and tracks supplier
+        SBTi target adoption.
+      required: false
+
+    - id: pcaf_database_bridge
+      name: "PCAF Database Bridge"
+      description: >-
+        Connects to PCAF emission factor database and tools for Category
+        15 financed emissions across six asset classes. Retrieves
+        investee-level emissions data, calculates attribution factors,
+        and produces PCAF data quality scores.
+      required: false
+
+    - id: cloud_carbon_bridge
+      name: "Cloud Carbon Footprint Bridge"
+      description: >-
+        Integrates with cloud provider carbon APIs (AWS Customer Carbon
+        Footprint Tool, Microsoft Sustainability Calculator, Google
+        Cloud Carbon Footprint) for technology sector Cat 1 and Cat 11
+        cloud infrastructure emissions.
+      required: false
+
+    - id: verifier_data_room
+      name: "Verifier Data Room Bridge"
+      description: >-
+        Manages secure verifier access to assurance evidence packages.
+        Provides role-based read-only access to calculation audit trails,
+        provenance hashes, methodology documentation, and supporting
+        evidence. Tracks verifier access and queries for audit.
+      required: false
+
+    - id: health_check
+      name: "Enterprise Health Check"
+      description: >-
+        Extended health check covering PACK-042 health check (18 checks)
+        plus enterprise components: LCA database connectivity, SBTi API
+        status, TCFD scenario data availability, PCAF database status,
+        multi-entity configuration, consolidation boundary validation,
+        assurance readiness score, and maturity level assessment.
+      required: true
+
+    - id: setup_wizard
+      name: "Enterprise Setup Wizard"
+      description: >-
+        14-step guided configuration: PACK-042 Base Config -> Maturity
+        Assessment -> LCA Database Selection -> SBTi Target Parameters ->
+        Scenario Analysis Setup -> Multi-Entity Boundary -> JV/Franchise
+        Thresholds -> Supplier Programme Design -> Climate Risk Parameters
+        -> Base-Year Policy -> PCAF Asset Classes (if financial) ->
+        Assurance Target -> Reporting Configuration -> Preset Customisation.
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific enterprise configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: enterprise_manufacturing
+      name: "Enterprise Manufacturing Preset"
+      description: >-
+        Large manufacturer with complex multi-tier supply chain, circular
+        economy initiatives, LCA integration for product-level emission
+        factors, EPD support, and SBTi SDA pathway alignment. Multi-entity
+        with 5+ production facilities.
+      sector_focus: "MANUFACTURING"
+      file: "config/presets/enterprise_manufacturing.yaml"
+
+    - id: financial_institution
+      name: "Financial Institution Preset"
+      description: >-
+        Bank or insurer with PCAF Category 15 financed emissions across
+        six asset classes, investment portfolio decarbonisation tracking,
+        TCFD scenario analysis with climate VaR, stranded asset analysis,
+        and SBTi Financial Sector guidance.
+      sector_focus: "FINANCIAL_SERVICES"
+      file: "config/presets/financial_institution.yaml"
+
+    - id: retail_chain
+      name: "Retail Chain Preset"
+      description: >-
+        Retail chain with last-mile delivery modelling, packaging lifecycle
+        analysis, product returns emissions, CDP Supply Chain integration
+        for 200+ suppliers, and SBTi supplier engagement cascade.
+      sector_focus: "RETAIL"
+      file: "config/presets/retail_chain.yaml"
+
+    - id: technology_enterprise
+      name: "Technology Enterprise Preset"
+      description: >-
+        Technology company with cloud infrastructure carbon footprint (AWS,
+        Azure, GCP), SaaS product use-phase modelling, hardware lifecycle
+        LCA, and economic intensity SBTi targets.
+      sector_focus: "TECHNOLOGY"
+      file: "config/presets/technology_enterprise.yaml"
+
+    - id: energy_company
+      name: "Energy Company Preset"
+      description: >-
+        Energy sector with Cat 3 (upstream fuel) and Cat 11 (sold energy
+        use) dominant. Paris alignment with IEA NZE pathway, transition
+        risk with carbon price escalation, stranded asset analysis, and
+        SBTi SDA for energy sector.
+      sector_focus: "ENERGY"
+      file: "config/presets/energy_company.yaml"
+
+    - id: food_beverage
+      name: "Food & Beverage Preset"
+      description: >-
+        Food and beverage with agricultural supply chain, SBTi FLAG
+        pathway for seven commodity groups, deforestation-free supply
+        chain tracking, land use change emissions, and mass-based
+        allocation for agricultural commodities.
+      sector_focus: "FOOD_BEVERAGE"
+      file: "config/presets/food_beverage.yaml"
+
+    - id: multi_entity_group
+      name: "Multi-Entity Group Preset"
+      description: >-
+        Corporate group with 50+ entities, joint ventures with proportional
+        equity share, franchise inclusion, inter-company emission
+        elimination, multi-currency consolidation, and entity-level
+        reporting.
+      sector_focus: "MULTI_ENTITY"
+      file: "config/presets/multi_entity_group.yaml"
+
+    - id: advanced_reporter
+      name: "Advanced Reporter Preset"
+      description: >-
+        Generic advanced reporter with 2+ years of Scope 3 experience,
+        upgrading from PACK-042. Balanced enterprise configuration with
+        LCA, SBTi, scenarios, and assurance. Sector-neutral starting point.
+      sector_focus: "GENERAL"
+      file: "config/presets/advanced_reporter.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 17 Scope 3 agents (inherited via PACK-042)
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Scope 3 Category 1 Agent"
+      description: "Purchased Goods & Services with LCA product-level factors"
+      path: "greenlang/agents/mrv/scope3_cat1_purchased_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Scope 3 Category 2 Agent"
+      description: "Capital Goods with LCA and EPD integration"
+      path: "greenlang/agents/mrv/scope3_cat2_capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Scope 3 Category 3 Agent"
+      description: "Fuel- & Energy-Related Activities with PACK-041 integration"
+      path: "greenlang/agents/mrv/scope3_cat3_fuel_energy/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Scope 3 Category 4 Agent"
+      description: "Upstream Transportation & Distribution with logistics modelling"
+      path: "greenlang/agents/mrv/scope3_cat4_upstream_transport/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Scope 3 Category 5 Agent"
+      description: "Waste Generated in Operations"
+      path: "greenlang/agents/mrv/scope3_cat5_waste/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Scope 3 Category 6 Agent"
+      description: "Business Travel"
+      path: "greenlang/agents/mrv/scope3_cat6_business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Scope 3 Category 7 Agent"
+      description: "Employee Commuting"
+      path: "greenlang/agents/mrv/scope3_cat7_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Scope 3 Category 8 Agent"
+      description: "Upstream Leased Assets"
+      path: "greenlang/agents/mrv/scope3_cat8_upstream_leases/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Scope 3 Category 9 Agent"
+      description: "Downstream Transportation & Distribution with last-mile"
+      path: "greenlang/agents/mrv/scope3_cat9_downstream_transport/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Scope 3 Category 10 Agent"
+      description: "Processing of Sold Products"
+      path: "greenlang/agents/mrv/scope3_cat10_processing/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Scope 3 Category 11 Agent"
+      description: "Use of Sold Products with LCA use-phase modelling"
+      path: "greenlang/agents/mrv/scope3_cat11_product_use/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "Scope 3 Category 12 Agent"
+      description: "End-of-Life Treatment with circular economy metrics"
+      path: "greenlang/agents/mrv/scope3_cat12_end_of_life/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Scope 3 Category 13 Agent"
+      description: "Downstream Leased Assets"
+      path: "greenlang/agents/mrv/scope3_cat13_downstream_leases/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Scope 3 Category 14 Agent"
+      description: "Franchises with threshold-based inclusion"
+      path: "greenlang/agents/mrv/scope3_cat14_franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Scope 3 Category 15 Agent"
+      description: "Investments with PCAF six asset classes"
+      path: "greenlang/agents/mrv/scope3_cat15_investments/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper Agent"
+      description: "Cross-category mapping with multi-entity consolidation"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Scope 3 Audit Trail & Lineage Agent"
+      description: "Audit trail with ISAE 3410 evidence packaging"
+      path: "greenlang/agents/mrv/scope3_audit_trail/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises entity-level spend exports and supplier data files"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Multi-entity ERP spend extraction across group entities"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes LCA, PCAF, SBTi, and climate scenario API connections"
+    required: true
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier programme data submissions"
+    required: true
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Multi-entity spend categorisation with LCA product mapping"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Enterprise-grade data quality profiling across entities"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Cross-entity outlier detection for consolidation"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Multi-entity data lineage with consolidation tracing"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "16-phase enterprise pipeline with multi-entity DAG"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Enterprise schema validation with multi-entity support"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Multi-currency, multi-unit normalisation across entities"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Enterprise assumptions with entity-level and group-level tracking"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "LCA, EEIO, PCAF, and SBTi factor citation management"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Entity-level, role-based access with verifier data room"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Enterprise reproducibility with multi-entity provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Enterprise pipeline monitoring with entity-level telemetry"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 33
+  breakdown:
+    mrv_agents: 17
+    data_agents: 8
+    foundation_agents: 8
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+  required_packs:
+    - "PACK-042-scope-3-starter"
+  recommended_packs:
+    - "PACK-041-scope-1-2-complete"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: ghg_accounting_scope3_complete
+  migrations:
+    - id: "V346__pack043_scope3_complete_001"
+      description: "Enterprise schema, maturity configuration, and multi-entity boundary tables"
+    - id: "V347__pack043_scope3_complete_002"
+      description: "LCA integration tables, product mapping, process factors, and EPD records"
+    - id: "V348__pack043_scope3_complete_003"
+      description: "SBTi target tables, pathway tracking, FLAG commodity tables, and progress history"
+    - id: "V349__pack043_scope3_complete_004"
+      description: "Scenario analysis tables: MACC interventions, what-if scenarios, pathway models"
+    - id: "V350__pack043_scope3_complete_005"
+      description: "Multi-entity consolidation tables, JV allocation, franchise inclusion, inter-company elimination"
+    - id: "V351__pack043_scope3_complete_006"
+      description: "Supplier programme tables, targets, incentives, SBTi cascade, quarterly reviews"
+    - id: "V352__pack043_scope3_complete_007"
+      description: "Climate risk tables, carbon price scenarios, physical risk, VaR, stranded assets"
+    - id: "V353__pack043_scope3_complete_008"
+      description: "Base-year recalculation tables, significance triggers, recalculation history"
+    - id: "V354__pack043_scope3_complete_009"
+      description: "Assurance readiness tables, evidence registry, verifier access, ISAE 3410"
+    - id: "V355__pack043_scope3_complete_010"
+      description: "Views, indexes, RLS policies, enterprise dashboard, seed data, PCAF extensions"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  enterprise_pipeline:
+    max_entities: 500
+    consolidation_per_entity_minutes: 2
+    parallel_entities: 50
+    total_pipeline_target_minutes: 240
+  lca_integration:
+    max_product_types: 500
+    factor_retrieval_per_product_ms: 200
+    sensitivity_per_product_ms: 500
+    total_lca_target_minutes: 30
+  sbti_tracking:
+    progress_calculation_per_category_ms: 100
+    flag_per_commodity_ms: 500
+    total_sbti_target_seconds: 30
+  scenario_analysis:
+    macc_per_intervention_ms: 100
+    what_if_per_scenario_seconds: 30
+    paris_alignment_per_pathway_seconds: 60
+    total_scenario_target_minutes: 15
+  consolidation:
+    per_entity_consolidation_seconds: 30
+    inter_company_elimination_ms: 500
+    group_aggregation_seconds: 10
+  supplier_programme:
+    per_supplier_target_ms: 50
+    quarterly_review_per_supplier_ms: 100
+    cascade_tracking_per_supplier_ms: 50
+  climate_risk:
+    carbon_price_per_scenario_seconds: 10
+    var_calculation_seconds: 60
+    total_risk_target_minutes: 10
+  assurance_readiness:
+    evidence_assembly_minutes: 15
+    readiness_scoring_seconds: 30
+  enterprise_dashboard:
+    full_refresh_seconds: 60
+    incremental_refresh_seconds: 10
+  cache_hit_ratio_target: 0.90
+  memory_ceiling_mb: 32768
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with entity-level, category-level, and supplier-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  supplier_data_isolation: true
+  entity_level_access: true
+  verifier_data_room_access: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+    - RESTRICTED
+  required_roles:
+    - scope3_director
+    - scope3_manager
+    - sustainability_officer
+    - procurement_director
+    - supply_chain_analyst
+    - lca_specialist
+    - verifier
+    - viewer
+  audit_events:
+    - "scope3_complete.config.modified"
+    - "scope3_complete.maturity.assessed"
+    - "scope3_complete.maturity.upgraded"
+    - "scope3_complete.lca.factor_retrieved"
+    - "scope3_complete.lca.sensitivity_run"
+    - "scope3_complete.sbti.progress_calculated"
+    - "scope3_complete.sbti.flag_assessed"
+    - "scope3_complete.scenario.macc_generated"
+    - "scope3_complete.scenario.what_if_run"
+    - "scope3_complete.scenario.paris_alignment_checked"
+    - "scope3_complete.consolidation.entity_processed"
+    - "scope3_complete.consolidation.jv_allocated"
+    - "scope3_complete.consolidation.inter_company_eliminated"
+    - "scope3_complete.consolidation.group_aggregated"
+    - "scope3_complete.supplier.programme_updated"
+    - "scope3_complete.supplier.target_set"
+    - "scope3_complete.supplier.incentive_assigned"
+    - "scope3_complete.supplier.cascade_tracked"
+    - "scope3_complete.risk.carbon_price_modelled"
+    - "scope3_complete.risk.var_calculated"
+    - "scope3_complete.base_year.trigger_assessed"
+    - "scope3_complete.base_year.recalculated"
+    - "scope3_complete.assurance.readiness_assessed"
+    - "scope3_complete.assurance.evidence_packaged"
+    - "scope3_complete.assurance.verifier_access_granted"
+    - "scope3_complete.dashboard.refreshed"
+    - "scope3_complete.report.generated"
+    - "scope3_complete.preset.loaded"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_multi_entity_data.json"
+    - "tests/fixtures/sample_lca_factors.json"
+    - "tests/fixtures/sample_sbti_pathway.json"
+    - "tests/fixtures/sample_macc_interventions.json"
+    - "tests/fixtures/sample_climate_scenarios.json"
+    - "tests/fixtures/sample_portfolio_data.json"
+    - "tests/fixtures/sample_supplier_programme.json"
+    - "tests/fixtures/sample_base_year_data.json"
+
+# -----------------------------------------------------------------------------
+# Compliance Framework Mappings
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "GHG_PROTOCOL_SCOPE3"
+      name: "GHG Protocol Scope 3 Standard"
+      coverage: "All 15 categories with enterprise consolidation and LCA factors"
+    - id: "GHG_PROTOCOL_SCOPE3_TECHNICAL"
+      name: "GHG Protocol Scope 3 Technical Guidance"
+      coverage: "Full per-category methodology with LCA and supplier-specific tiers"
+    - id: "ISO_14064"
+      name: "ISO 14064-1:2018"
+      coverage: "Categories 3-6 with multi-entity boundary"
+    - id: "ESRS_E1"
+      name: "ESRS E1 Climate Change"
+      coverage: "E1-6 Scope 3, E1-9 scenario analysis, E1 transition plan"
+    - id: "CDP"
+      name: "CDP Climate Change"
+      coverage: "C6.5, C6.7, C6.10, CDP Supply Chain module"
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      coverage: "Near-term, long-term, FLAG, SDA, supplier engagement cascade"
+    - id: "TCFD_ISSB"
+      name: "TCFD / ISSB IFRS S2"
+      coverage: "Governance, strategy, risk management, metrics and targets, scenario analysis"
+    - id: "SEC"
+      name: "US SEC Climate Disclosure"
+      coverage: "Scope 3 safe harbour with enterprise methodology documentation"
+    - id: "SB_253"
+      name: "California SB 253"
+      coverage: "Scope 3 annual reporting from 2027 with assurance"
+    - id: "PCAF"
+      name: "PCAF Global GHG Accounting Standard"
+      coverage: "Cat 15: 6 asset classes, attribution, data quality, portfolio decarbonisation"
+    - id: "ISAE_3410"
+      name: "ISAE 3410 Assurance"
+      coverage: "Limited and reasonable assurance evidence, verifier data room"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+    - "scikit-learn>=1.3"
+    - "brightway2>=2.4"
+    - "lxml>=4.9"
+    - "reportlab>=4.0"
+    - "weasyprint>=60.0"
+
+  infrastructure:
+    min_cpu_cores: 8
+    min_memory_gb: 16
+    min_storage_gb: 200
+    recommended_cpu_cores: 16
+    recommended_memory_gb: 32
+    recommended_storage_gb: 500
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 50
+    recommended_connections: 100
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_pack042_installed
+    - verify_pack041_installed
+    - verify_lca_database_available
+    - verify_mrv_agents_available
+    - verify_eeio_database
+    - verify_classification_tables
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+      - "V326-V335"   # PACK-041 Scope 1-2 Complete
+      - "V336-V345"   # PACK-042 Scope 3 Starter
+    new:
+      - "V346__pack043_scope3_complete_001"
+      - "V347__pack043_scope3_complete_002"
+      - "V348__pack043_scope3_complete_003"
+      - "V349__pack043_scope3_complete_004"
+      - "V350__pack043_scope3_complete_005"
+      - "V351__pack043_scope3_complete_006"
+      - "V352__pack043_scope3_complete_007"
+      - "V353__pack043_scope3_complete_008"
+      - "V354__pack043_scope3_complete_009"
+      - "V355__pack043_scope3_complete_010"
+
+  post_install:
+    - seed_lca_process_index
+    - seed_sbti_sector_pathways
+    - seed_sbti_flag_commodities
+    - seed_climate_scenario_data
+    - seed_pcaf_asset_class_data
+    - seed_carbon_price_trajectories
+    - seed_maturity_scoring_rubric
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: MaturityProgressionEngine
+    file: engines/maturity_progression_engine.py
+    description: "Level 1-5 maturity assessment and progression roadmap"
+  - name: LCAIntegrationEngine
+    file: engines/lca_integration_engine.py
+    description: "ecoinvent, GaBi, ELCD, EPD integration with sensitivity"
+  - name: SBTiPathwayEngine
+    file: engines/sbti_pathway_engine.py
+    description: "Absolute, SDA, intensity targets with FLAG"
+  - name: ScenarioAnalysisEngine
+    file: engines/scenario_analysis_engine.py
+    description: "MACC, what-if, tech pathway, supplier programme, Paris alignment"
+  - name: MultiEntityConsolidationEngine
+    file: engines/multi_entity_consolidation_engine.py
+    description: "Equity share, operational/financial control, JV, franchise, inter-company"
+  - name: SupplierProgrammeEngine
+    file: engines/supplier_programme_engine.py
+    description: "Target setting, incentive models, CDP, SBTi cascade, quarterly review"
+  - name: ClimateRiskEngine
+    file: engines/climate_risk_engine.py
+    description: "Transition, physical, opportunity risk, carbon VaR, stranded assets"
+  - name: BaseYearRecalculationEngine
+    file: engines/base_year_recalculation_engine.py
+    description: "Significance triggers, automated recalculation, rolling base year"
+  - name: AssuranceReadinessEngine
+    file: engines/assurance_readiness_engine.py
+    description: "ISAE 3410 evidence packaging, readiness scoring, verifier data room"
+  - name: EnterpriseDashboardEngine
+    file: engines/enterprise_dashboard_engine.py
+    description: "Investor-grade dashboard with KPIs, scenarios, risk, assurance"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: MaturityAssessmentWorkflow
+    file: workflows/maturity_assessment_workflow.py
+    description: "5-phase maturity assessment with roadmap and budget"
+  - name: LCAProductAssessmentWorkflow
+    file: workflows/lca_product_assessment_workflow.py
+    description: "6-phase LCA product mapping, factor retrieval, and sensitivity"
+  - name: SBTiTargetTrackingWorkflow
+    file: workflows/sbti_target_tracking_workflow.py
+    description: "5-phase SBTi progress with FLAG and disclosure package"
+  - name: ScenarioModellingWorkflow
+    file: workflows/scenario_modelling_workflow.py
+    description: "5-phase MACC, what-if, and Paris alignment"
+  - name: MultiEntityConsolidationWorkflow
+    file: workflows/multi_entity_consolidation_workflow.py
+    description: "6-phase entity collection, JV allocation, inter-company elimination"
+  - name: SupplierProgrammeManagementWorkflow
+    file: workflows/supplier_programme_management_workflow.py
+    description: "6-phase supplier targets, incentives, cascade, and review"
+  - name: ClimateRiskAssessmentWorkflow
+    file: workflows/climate_risk_assessment_workflow.py
+    description: "5-phase TCFD/ISSB risk, carbon price, VaR, and disclosure"
+  - name: FullEnterprisePipelineWorkflow
+    file: workflows/full_enterprise_pipeline_workflow.py
+    description: "16-phase end-to-end enterprise pipeline"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: MaturityRoadmapTemplate
+    file: templates/maturity_roadmap.py
+    description: "Maturity progression roadmap with milestones and budget"
+  - name: LCAProductReportTemplate
+    file: templates/lca_product_report.py
+    description: "Product-level LCA results with sensitivity and EPD"
+  - name: SBTiProgressReportTemplate
+    file: templates/sbti_progress_report.py
+    description: "SBTi target tracking with FLAG and cascade"
+  - name: ScenarioAnalysisReportTemplate
+    file: templates/scenario_analysis_report.py
+    description: "MACC, what-if, pathway, and Paris alignment"
+  - name: MultiEntityConsolidationReportTemplate
+    file: templates/multi_entity_consolidation_report.py
+    description: "Group consolidated Scope 3 with entity breakdown"
+  - name: SupplierProgrammeScorecardTemplate
+    file: templates/supplier_programme_scorecard.py
+    description: "Programme scorecard with reduction and cascade metrics"
+  - name: ClimateRiskReportTemplate
+    file: templates/climate_risk_report.py
+    description: "TCFD/ISSB risk report with carbon pricing and VaR"
+  - name: AssuranceEvidencePackageTemplate
+    file: templates/assurance_evidence_package.py
+    description: "ISAE 3410 evidence package for verifier"
+  - name: InvestorDisclosureTemplate
+    file: templates/investor_disclosure.py
+    description: "Investor-grade comprehensive disclosure package"
+  - name: BaseYearRecalculationLogTemplate
+    file: templates/base_year_recalculation_log.py
+    description: "Recalculation trigger log and decision documentation"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: EnterprisePipelineOrchestrator
+    file: integrations/enterprise_orchestrator.py
+    description: "16-phase enterprise pipeline with multi-entity DAG"
+  - name: Pack042Bridge
+    file: integrations/pack042_bridge.py
+    description: "PACK-042 inheritance: 10 engines, 8 workflows, 10 templates, 12 integrations"
+  - name: Pack041Bridge
+    file: integrations/pack041_bridge.py
+    description: "PACK-041 Scope 1-2 data with multi-entity aggregation"
+  - name: LCADatabaseBridge
+    file: integrations/lca_database_bridge.py
+    description: "ecoinvent, GaBi, ELCD, custom LCA database connection"
+  - name: SBTiAPIBridge
+    file: integrations/sbti_api_bridge.py
+    description: "SBTi API for target validation and pathway data"
+  - name: TCFDISSBBridge
+    file: integrations/tcfd_issb_bridge.py
+    description: "IEA and NGFS climate scenario data retrieval"
+  - name: CDPSupplyChainBridge
+    file: integrations/cdp_supply_chain_bridge.py
+    description: "CDP Supply Chain supplier emission data integration"
+  - name: PCAFDatabaseBridge
+    file: integrations/pcaf_database_bridge.py
+    description: "PCAF financed emissions database for Cat 15"
+  - name: CloudCarbonBridge
+    file: integrations/cloud_carbon_bridge.py
+    description: "AWS, Azure, GCP cloud carbon footprint APIs"
+  - name: VerifierDataRoom
+    file: integrations/verifier_data_room.py
+    description: "Secure verifier evidence access and audit tracking"
+  - name: EnterpriseHealthCheck
+    file: integrations/health_check.py
+    description: "PACK-042 health check + enterprise component verification"
+  - name: EnterpriseSetupWizard
+    file: integrations/setup_wizard.py
+    description: "14-step enterprise configuration wizard"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: enterprise_manufacturing
+    file: config/presets/enterprise_manufacturing.yaml
+    description: "Manufacturing with LCA, circular economy, SDA, multi-entity"
+  - name: financial_institution
+    file: config/presets/financial_institution.yaml
+    description: "Financial with PCAF 6 classes, portfolio decarbonisation, TCFD"
+  - name: retail_chain
+    file: config/presets/retail_chain.yaml
+    description: "Retail with last-mile, packaging LCA, returns, CDP Supply Chain"
+  - name: technology_enterprise
+    file: config/presets/technology_enterprise.yaml
+    description: "Technology with cloud footprint, SaaS use-phase, intensity targets"
+  - name: energy_company
+    file: config/presets/energy_company.yaml
+    description: "Energy with Cat 3/11, Paris alignment, stranded assets"
+  - name: food_beverage
+    file: config/presets/food_beverage.yaml
+    description: "Food with FLAG, deforestation-free, agricultural LCA"
+  - name: multi_entity_group
+    file: config/presets/multi_entity_group.yaml
+    description: "Group with 50+ entities, JVs, franchises, consolidation"
+  - name: advanced_reporter
+    file: config/presets/advanced_reporter.yaml
+    description: "Generic advanced reporter upgrading from PACK-042"

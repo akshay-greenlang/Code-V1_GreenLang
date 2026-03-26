@@ -1035,21 +1035,27 @@ class AuditAgent:
     def _flatten_rules(self) -> List[Dict[str, Any]]:
         """Flatten all rule categories into single list."""
         all_rules = []
+        def _extend_rule_list(candidate: Any) -> None:
+            if not isinstance(candidate, list):
+                return
+            for item in candidate:
+                if isinstance(item, dict) and item.get("rule_id") and item.get("condition"):
+                    all_rules.append(item)
 
         # ESRS compliance rules
         for key, value in self.compliance_rules.items():
-            if isinstance(value, list) and not key.startswith("_"):
-                all_rules.extend(value)
+            if not key.startswith("_"):
+                _extend_rule_list(value)
 
         # Data quality rules
         for key, value in self.data_quality_rules.items():
-            if isinstance(value, list) and not key.startswith("_"):
-                all_rules.extend(value)
+            if not key.startswith("_"):
+                _extend_rule_list(value)
 
         # XBRL rules
         for key, value in self.xbrl_rules.items():
-            if isinstance(value, list) and not key.startswith("_"):
-                all_rules.extend(value)
+            if not key.startswith("_"):
+                _extend_rule_list(value)
 
         return all_rules
 

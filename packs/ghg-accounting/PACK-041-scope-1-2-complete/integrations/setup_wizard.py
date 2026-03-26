@@ -1,0 +1,506 @@
+# -*- coding: utf-8 -*-
+"""
+SetupWizard - 8-Step GHG Inventory Configuration Wizard for PACK-041
+======================================================================
+
+This module implements an 8-step configuration wizard for setting up
+Scope 1-2 GHG inventory projects. It guides users through organizational
+structure, consolidation approach, source materiality assessment, data
+source connections, emission factor preferences, compliance framework
+selection, base year definition, and reporting preferences.
+
+Wizard Steps (8):
+    1. ORG_STRUCTURE          -- Organization name, boundaries, facilities
+    2. CONSOLIDATION          -- Equity share / financial / operational control
+    3. SOURCE_MATERIALITY     -- Which Scope 1/2 categories are material
+    4. DATA_SOURCES           -- ERP, utility bills, fleet telematics, etc.
+    5. EF_PREFERENCES         -- Emission factor source, GWP table, custom EFs
+    6. FRAMEWORKS             -- GHG Protocol, ISO 14064, CSRD, CDP, etc.
+    7. BASE_YEAR              -- Base year, recalculation triggers
+    8. REPORTING_PREFS        -- Report format, frequency, distribution
+
+Zero-Hallucination:
+    All preset values and default configurations use deterministic
+    lookup tables. No LLM calls in the configuration path.
+
+Author: GreenLang Platform Team
+Date: March 2026
+Pack: PACK-041 Scope 1-2 Complete
+Status: Production Ready
+"""
+
+import hashlib
+import json
+import logging
+import time
+import uuid
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
+
+_MODULE_VERSION: str = "1.0.0"
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _utcnow() -> datetime:
+    """Return current UTC datetime."""
+    return datetime.now(timezone.utc).replace(microsecond=0)
+
+
+def _new_uuid() -> str:
+    """Generate a new UUID4 string."""
+    return str(uuid.uuid4())
+
+
+def _compute_hash(data: Any) -> str:
+    """Compute SHA-256 hash for provenance tracking."""
+    if hasattr(data, "model_dump"):
+        serializable = data.model_dump(mode="json")
+    elif isinstance(data, dict):
+        serializable = data
+    else:
+        serializable = str(data)
+    raw = json.dumps(serializable, sort_keys=True, default=str)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Enums
+# ---------------------------------------------------------------------------
+
+
+class SetupStep(str, Enum):
+    """Names of setup wizard steps in execution order."""
+
+    ORG_STRUCTURE = "org_structure"
+    CONSOLIDATION = "consolidation"
+    SOURCE_MATERIALITY = "source_materiality"
+    DATA_SOURCES = "data_sources"
+    EF_PREFERENCES = "ef_preferences"
+    FRAMEWORKS = "frameworks"
+    BASE_YEAR = "base_year"
+    REPORTING_PREFS = "reporting_prefs"
+
+
+class StepStatus(str, Enum):
+    """Status of a wizard step."""
+
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    SKIPPED = "skipped"
+
+
+class ConsolidationApproach(str, Enum):
+    """GHG Protocol consolidation approaches."""
+
+    EQUITY_SHARE = "equity_share"
+    FINANCIAL_CONTROL = "financial_control"
+    OPERATIONAL_CONTROL = "operational_control"
+
+
+class EFSource(str, Enum):
+    """Emission factor data sources."""
+
+    EPA = "epa"
+    DEFRA = "defra"
+    IPCC = "ipcc"
+    IEA = "iea"
+    EGRID = "egrid"
+    CUSTOM = "custom"
+
+
+class GWPSource(str, Enum):
+    """GWP table sources."""
+
+    AR4 = "AR4"
+    AR5 = "AR5"
+    AR6 = "AR6"
+
+
+# ---------------------------------------------------------------------------
+# Data Models
+# ---------------------------------------------------------------------------
+
+
+class StepState(BaseModel):
+    """State of a single wizard step."""
+
+    step: SetupStep = Field(...)
+    status: StepStatus = Field(default=StepStatus.PENDING)
+    data: Dict[str, Any] = Field(default_factory=dict)
+    validation_errors: List[str] = Field(default_factory=list)
+    completed_at: Optional[datetime] = Field(None)
+
+
+class WizardState(BaseModel):
+    """Complete wizard state."""
+
+    wizard_id: str = Field(default_factory=_new_uuid)
+    current_step: Optional[SetupStep] = Field(None)
+    completed_steps: List[SetupStep] = Field(default_factory=list)
+    skipped_steps: List[SetupStep] = Field(default_factory=list)
+    configuration: Dict[str, Any] = Field(default_factory=dict)
+    progress_pct: float = Field(default=0.0, ge=0.0, le=100.0)
+
+
+class ValidationResult(BaseModel):
+    """Validation result for a wizard step."""
+
+    valid: bool = Field(default=True)
+    errors: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+
+
+class PackConfig(BaseModel):
+    """Final pack configuration generated by the wizard."""
+
+    config_id: str = Field(default_factory=_new_uuid)
+    organization_name: str = Field(default="")
+    consolidation_approach: str = Field(default="operational_control")
+    facilities_count: int = Field(default=0)
+    scope1_categories: List[str] = Field(default_factory=list)
+    scope2_categories: List[str] = Field(default_factory=list)
+    data_sources: List[str] = Field(default_factory=list)
+    ef_source: str = Field(default="epa")
+    gwp_source: str = Field(default="AR5")
+    target_frameworks: List[str] = Field(default_factory=list)
+    base_year: int = Field(default=2019)
+    reporting_year: int = Field(default=2025)
+    report_formats: List[str] = Field(default_factory=list)
+    report_frequency: str = Field(default="annual")
+    provenance_hash: str = Field(default="")
+    timestamp: datetime = Field(default_factory=_utcnow)
+
+
+# ---------------------------------------------------------------------------
+# Step Order and Skippable Steps
+# ---------------------------------------------------------------------------
+
+STEP_ORDER: List[SetupStep] = [
+    SetupStep.ORG_STRUCTURE,
+    SetupStep.CONSOLIDATION,
+    SetupStep.SOURCE_MATERIALITY,
+    SetupStep.DATA_SOURCES,
+    SetupStep.EF_PREFERENCES,
+    SetupStep.FRAMEWORKS,
+    SetupStep.BASE_YEAR,
+    SetupStep.REPORTING_PREFS,
+]
+
+SKIPPABLE_STEPS: set = {
+    SetupStep.EF_PREFERENCES,
+    SetupStep.REPORTING_PREFS,
+}
+
+
+# ---------------------------------------------------------------------------
+# SetupWizard
+# ---------------------------------------------------------------------------
+
+
+class SetupWizard:
+    """8-step GHG inventory configuration wizard.
+
+    Guides users through complete Scope 1-2 inventory setup including
+    organizational boundary, consolidation approach, materiality assessment,
+    data source connections, emission factor preferences, compliance
+    framework selection, base year definition, and reporting preferences.
+
+    Attributes:
+        _steps: Current step states.
+        _config: Accumulated configuration.
+
+    Example:
+        >>> wizard = SetupWizard()
+        >>> state = wizard.start()
+        >>> state = wizard.advance(SetupStep.ORG_STRUCTURE, org_data)
+        >>> config = wizard.generate_config(state)
+    """
+
+    def __init__(self) -> None:
+        """Initialize SetupWizard with 8 pending steps."""
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self._steps: Dict[SetupStep, StepState] = {
+            step: StepState(step=step) for step in STEP_ORDER
+        }
+        self._config: Dict[str, Any] = {}
+        self.logger.info("SetupWizard initialized: %d steps", len(STEP_ORDER))
+
+    # -------------------------------------------------------------------------
+    # Wizard Flow
+    # -------------------------------------------------------------------------
+
+    def start(self) -> WizardState:
+        """Start the setup wizard.
+
+        Returns:
+            WizardState with first step active.
+        """
+        self._steps = {step: StepState(step=step) for step in STEP_ORDER}
+        self._config = {}
+
+        state = WizardState(
+            current_step=STEP_ORDER[0],
+            configuration=self._config,
+        )
+        self.logger.info("Wizard started: first step=%s", STEP_ORDER[0].value)
+        return state
+
+    def advance(
+        self,
+        step: SetupStep,
+        input_data: Dict[str, Any],
+    ) -> WizardState:
+        """Advance the wizard by completing a step.
+
+        Args:
+            step: Step to complete.
+            input_data: Data for the step.
+
+        Returns:
+            Updated WizardState.
+        """
+        # Validate
+        validation = self.validate_step(step, input_data)
+        step_state = self._steps[step]
+
+        if not validation.valid:
+            step_state.status = StepStatus.IN_PROGRESS
+            step_state.validation_errors = validation.errors
+            self.logger.warning(
+                "Step %s validation failed: %d errors", step.value, len(validation.errors)
+            )
+        else:
+            step_state.status = StepStatus.COMPLETED
+            step_state.data = input_data
+            step_state.validation_errors = []
+            step_state.completed_at = _utcnow()
+            self._apply_step_data(step, input_data)
+            self.logger.info("Step %s completed", step.value)
+
+        return self._build_state()
+
+    def validate_step(
+        self,
+        step: SetupStep,
+        data: Dict[str, Any],
+    ) -> ValidationResult:
+        """Validate data for a wizard step.
+
+        Args:
+            step: Step being validated.
+            data: Data to validate.
+
+        Returns:
+            ValidationResult with errors and warnings.
+        """
+        errors: List[str] = []
+        warnings: List[str] = []
+
+        if step == SetupStep.ORG_STRUCTURE:
+            if not data.get("organization_name"):
+                errors.append("Organization name is required")
+            if not data.get("facilities"):
+                warnings.append("No facilities defined, add at least one")
+
+        elif step == SetupStep.CONSOLIDATION:
+            approach = data.get("consolidation_approach", "")
+            valid_approaches = [a.value for a in ConsolidationApproach]
+            if approach and approach not in valid_approaches:
+                errors.append(f"Invalid consolidation approach: {approach}")
+
+        elif step == SetupStep.SOURCE_MATERIALITY:
+            if not data.get("scope1_categories") and not data.get("scope2_categories"):
+                errors.append("At least one emission source category is required")
+
+        elif step == SetupStep.BASE_YEAR:
+            base_year = data.get("base_year", 0)
+            if base_year < 1990 or base_year > 2100:
+                errors.append(f"Base year must be between 1990 and 2100, got {base_year}")
+
+        elif step == SetupStep.FRAMEWORKS:
+            if not data.get("frameworks"):
+                warnings.append("No compliance frameworks selected")
+
+        return ValidationResult(
+            valid=len(errors) == 0,
+            errors=errors,
+            warnings=warnings,
+        )
+
+    def can_skip(self, step: SetupStep) -> bool:
+        """Check if a step can be skipped.
+
+        Args:
+            step: Step to check.
+
+        Returns:
+            True if the step is skippable.
+        """
+        return step in SKIPPABLE_STEPS
+
+    def skip_step(self, step: SetupStep) -> WizardState:
+        """Skip a wizard step.
+
+        Args:
+            step: Step to skip.
+
+        Returns:
+            Updated WizardState.
+
+        Raises:
+            ValueError: If step is not skippable.
+        """
+        if not self.can_skip(step):
+            raise ValueError(f"Step '{step.value}' cannot be skipped")
+
+        self._steps[step].status = StepStatus.SKIPPED
+        self.logger.info("Step %s skipped", step.value)
+        return self._build_state()
+
+    def generate_config(
+        self,
+        state: Optional[WizardState] = None,
+    ) -> PackConfig:
+        """Generate final pack configuration from wizard state.
+
+        Args:
+            state: Wizard state. Uses internal state if None.
+
+        Returns:
+            PackConfig with complete configuration.
+        """
+        start_time = time.monotonic()
+
+        config = PackConfig(
+            organization_name=self._config.get("organization_name", ""),
+            consolidation_approach=self._config.get("consolidation_approach", "operational_control"),
+            facilities_count=len(self._config.get("facilities", [])),
+            scope1_categories=self._config.get("scope1_categories", [
+                "stationary_combustion", "mobile_combustion", "refrigerants"
+            ]),
+            scope2_categories=self._config.get("scope2_categories", [
+                "electricity", "steam", "cooling"
+            ]),
+            data_sources=self._config.get("data_sources", []),
+            ef_source=self._config.get("ef_source", "epa"),
+            gwp_source=self._config.get("gwp_source", "AR5"),
+            target_frameworks=self._config.get("frameworks", ["ghg_protocol"]),
+            base_year=self._config.get("base_year", 2019),
+            reporting_year=self._config.get("reporting_year", 2025),
+            report_formats=self._config.get("report_formats", ["pdf", "excel"]),
+            report_frequency=self._config.get("report_frequency", "annual"),
+        )
+        config.provenance_hash = _compute_hash(config)
+
+        elapsed_ms = (time.monotonic() - start_time) * 1000
+        self.logger.info(
+            "Config generated: org=%s, approach=%s, frameworks=%s (%.1fms)",
+            config.organization_name,
+            config.consolidation_approach,
+            config.target_frameworks,
+            elapsed_ms,
+        )
+        return config
+
+    def get_progress(self) -> Dict[str, Any]:
+        """Get overall wizard progress.
+
+        Returns:
+            Dict with progress information.
+        """
+        completed = sum(1 for s in self._steps.values() if s.status == StepStatus.COMPLETED)
+        skipped = sum(1 for s in self._steps.values() if s.status == StepStatus.SKIPPED)
+        total = len(STEP_ORDER)
+        pct = ((completed + skipped) / total * 100.0) if total > 0 else 0.0
+
+        return {
+            "completed": completed,
+            "skipped": skipped,
+            "pending": total - completed - skipped,
+            "total": total,
+            "progress_pct": round(pct, 1),
+            "current_step": self._get_current_step(),
+        }
+
+    # -------------------------------------------------------------------------
+    # Internal Helpers
+    # -------------------------------------------------------------------------
+
+    def _get_current_step(self) -> Optional[str]:
+        """Get the next pending step."""
+        for step in STEP_ORDER:
+            state = self._steps[step]
+            if state.status in (StepStatus.PENDING, StepStatus.IN_PROGRESS):
+                return step.value
+        return None
+
+    def _build_state(self) -> WizardState:
+        """Build current wizard state."""
+        completed = [s.step for s in self._steps.values() if s.status == StepStatus.COMPLETED]
+        skipped = [s.step for s in self._steps.values() if s.status == StepStatus.SKIPPED]
+        total = len(STEP_ORDER)
+        pct = ((len(completed) + len(skipped)) / total * 100.0) if total > 0 else 0.0
+
+        current = None
+        for step in STEP_ORDER:
+            if self._steps[step].status in (StepStatus.PENDING, StepStatus.IN_PROGRESS):
+                current = step
+                break
+
+        return WizardState(
+            current_step=current,
+            completed_steps=completed,
+            skipped_steps=skipped,
+            configuration=dict(self._config),
+            progress_pct=round(pct, 1),
+        )
+
+    def _apply_step_data(
+        self, step: SetupStep, data: Dict[str, Any]
+    ) -> None:
+        """Apply step data to accumulated configuration.
+
+        Args:
+            step: Completed step.
+            data: Step data to apply.
+        """
+        if step == SetupStep.ORG_STRUCTURE:
+            self._config["organization_name"] = data.get("organization_name", "")
+            self._config["facilities"] = data.get("facilities", [])
+
+        elif step == SetupStep.CONSOLIDATION:
+            self._config["consolidation_approach"] = data.get(
+                "consolidation_approach", "operational_control"
+            )
+
+        elif step == SetupStep.SOURCE_MATERIALITY:
+            self._config["scope1_categories"] = data.get("scope1_categories", [])
+            self._config["scope2_categories"] = data.get("scope2_categories", [])
+
+        elif step == SetupStep.DATA_SOURCES:
+            self._config["data_sources"] = data.get("data_sources", [])
+
+        elif step == SetupStep.EF_PREFERENCES:
+            self._config["ef_source"] = data.get("ef_source", "epa")
+            self._config["gwp_source"] = data.get("gwp_source", "AR5")
+
+        elif step == SetupStep.FRAMEWORKS:
+            self._config["frameworks"] = data.get("frameworks", ["ghg_protocol"])
+
+        elif step == SetupStep.BASE_YEAR:
+            self._config["base_year"] = data.get("base_year", 2019)
+            self._config["reporting_year"] = data.get("reporting_year", 2025)
+
+        elif step == SetupStep.REPORTING_PREFS:
+            self._config["report_formats"] = data.get("report_formats", ["pdf"])
+            self._config["report_frequency"] = data.get("report_frequency", "annual")

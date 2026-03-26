@@ -1,0 +1,25 @@
+{
+  "compliance_report": {
+    "compliance_status": "PASS",
+    "total_rules_checked": 0,
+    "rules_passed": 0,
+    "rules_failed": 0,
+    "rules_warning": 0,
+    "rules_not_applicable": 0,
+    "critical_failures": 0,
+    "major_failures": 0,
+    "minor_failures": 0,
+    "validation_timestamp": "2026-03-24T13:36:08+00:00",
+    "validation_duration_seconds": 0.0
+  },
+  "rule_results": [],
+  "errors": [],
+  "warnings": [],
+  "metadata": {
+    "validated_at": "2026-03-24T13:36:08+00:00",
+    "validation_duration_seconds": 0.0,
+    "total_rules_evaluated": 0,
+    "deterministic": true,
+    "zero_hallucination": true
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "generated_at": "2026-03-24T13:36:08+00:00",
+    "processing_time_seconds": 0.0,
+    "processing_time_minutes": 0.0,
+    "total_xbrl_facts": 0,
+    "narratives_generated": 2,
+    "validation_status": "valid",
+    "validation_errors": 0,
+    "validation_warnings": 0,
+    "language": "en",
+    "locale": "en",
+    "report_title": "Sustainability Statement",
+    "v1_1_modules": {
+      "xbrl": false,
+      "pdf": false,
+      "i18n": false
+    }
+  },
+  "outputs": {
+    "esef_package": {
+      "file_path": "C:\\Users\\aksha\\Code-V1_GreenLang\\out\\549300ABC123DEF456GH_2024-12-31_esef.zip",
+      "file_size_bytes": 2671,
+      "package_id": "549300ABC123DEF456GH_2024-12-31",
+      "files": [
+        "549300ABC123DEF456GH-2024-12-31-en.xhtml",
+        "reports/549300ABC123DEF456GH_2024-12-31_report.pdf",
+        "metadata.json",
+        "META-INF/reports/reports.xml"
+      ]
+    },
+    "ixbrl_report": {
+      "file_path": "C:\\Users\\aksha\\Code-V1_GreenLang\\out\\549300ABC123DEF456GH-2024-12-31-en.xhtml",
+      "total_facts": 0
+    },
+    "pdf_report": {
+      "file_path": "C:\\Users\\aksha\\Code-V1_GreenLang\\out\\549300ABC123DEF456GH_2024-12-31_report.pdf",
+      "generated_at": "2026-03-24T13:36:08+00:00",
+      "company": "Acme Manufacturing EU B.V.",
+      "reporting_period": "2024-01-01 to 2024-12-31",
+      "page_count": 0,
+      "file_size_bytes": 161,
+      "format": "PDF/A-3",
+      "locale": "en"
+    },
+    "narratives": [
+      {
+        "section_id": "governance",
+        "section_title": "Governance Disclosure",
+        "content": "\n        <h2>Governance Disclosure</h2>\n        <p><strong>Note: This section was AI-generated and requires human review.</strong></p>\n\n        <h3>Governance Bodies</h3>\n        <p>The company's sustainability governance structure includes dedicated oversight\n        by the Board of Directors and implementation through management committees.</p>\n\n        <h3>Integration in Strategy</h3>\n        <p>Sustainability considerations are integrated into the company's business strategy\n        and decision-making processes.</p>\n\n        <h3>Policies and Due Diligence</h3>\n        <p>The company has established policies and due diligence processes to address\n        sustainability matters in accordance with ESRS requirements.</p>\n        ",
+        "ai_generated": true,
+        "review_status": "pending",
+        "language": "en",
+        "word_count": 68
+      },
+      {
+        "section_id": "strategy",
+        "section_title": "Strategy Disclosure",
+        "content": "\n        <h2>Strategy Disclosure</h2>\n        <p><strong>Note: This section was AI-generated and requires human review.</strong></p>\n\n        <h3>Material Impacts, Risks and Opportunities</h3>\n        <p>Based on the double materiality assessment, the following sustainability matters\n        have been identified as material for the company.</p>\n\n        <h3>Business Model and Value Chain</h3>\n        <p>The company's business model and value chain have been analyzed to identify\n        sustainability impacts and dependencies.</p>\n\n        <h3>Resilience of Strategy</h3>\n        <p>The company has assessed the resilience of its strategy in relation to\n        sustainability matters and climate-related scenarios.</p>\n        ",
+        "ai_generated": true,
+        "review_status": "pending",
+        "language": "en",
+        "word_count": 75
+      }
+    ]
+  },
+  "xbrl_validation": {
+    "validation_status": "valid",
+    "total_checks": 2,
+    "errors": [],
+    "warnings": [],
+    "error_count": 0,
+    "warning_count": 0
+  },
+  "human_review_required": {
+    "narratives": true,
+    "narrative_sections": [
+      {
+        "section_id": "governance",
+        "section_title": "Governance Disclosure",
+        "review_status": "pending",
+        "word_count": 68
+      },
+      {
+        "section_id": "strategy",
+        "section_title": "Strategy Disclosure",
+        "review_status": "pending",
+        "word_count": 75
+      }
+    ]
+  }
+}

@@ -16,6 +16,7 @@ from typing import Optional
 from rich.console import Console
 from click.core import Parameter
 from typer.core import TyperArgument, TyperOption
+from greenlang.v1.backends import run_csrd_backend, run_vcci_backend
 
 # Fallback version constant
 FALLBACK_VERSION = "0.3.0"
@@ -309,6 +310,7 @@ def _safe_add_typer(module_name: str, command_name: str, help_text: str) -> None
 
 
 _safe_add_typer("cmd_pack", "pack", "Pack management commands")
+_safe_add_typer("cmd_v1", "v1", "GreenLang v1 platformization commands")
 
 
 # Add run command
@@ -329,7 +331,8 @@ def run(
     dry_run = _coerce_bool(dry_run)
     audit = _coerce_bool(audit)
 
-    if pipeline.lower() in {"cbam", "cbam-mvp"}:
+    pipeline_lower = pipeline.lower()
+    if pipeline_lower in {"cbam", "cbam-mvp"}:
         if not input_or_config or not cbam_imports:
             console.print(
                 "[red]Usage for CBAM: gl run cbam <config.yaml> <imports.csv/xlsx> [output_dir][/red]"
@@ -439,6 +442,75 @@ def run(
             console.print(f"[red]{err}[/red]")
         raise typer.Exit(result.exit_code or 1)
 
+    # Canonical v1 app adapters for full backend execution.
+    v1_csrd_pipeline = Path("applications/GL-CSRD-APP/CSRD-Reporting-Platform/v1/gl.yaml").resolve()
+    v1_vcci_pipeline = Path("applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v1/gl.yaml").resolve()
+    requested_pipeline = Path(pipeline).resolve() if Path(pipeline).exists() else None
+    if (
+        pipeline_lower in {"csrd", "vcci"}
+        and cbam_imports not in {None, "", "-"}
+        and output_dir == "out"
+    ):
+        # Positional parsing keeps cbam_imports in slot 3 for all pipelines.
+        # For non-CBAM calls, treat that position as output_dir to preserve
+        # expected CLI ergonomics: gl run <profile> <input> <output_dir>.
+        output_dir = cbam_imports
+    output_path = Path(output_dir).resolve()
+
+    if pipeline_lower == "csrd" or (requested_pipeline and requested_pipeline == v1_csrd_pipeline):
+        if not input_or_config:
+            console.print("[red]Usage for CSRD: gl run csrd <input.csv|json> [output_dir][/red]")
+            raise typer.Exit(2)
+        input_path = Path(input_or_config)
+        if not input_path.exists():
+            console.print(f"[red]CSRD input not found: {input_path}[/red]")
+            raise typer.Exit(2)
+        allow_fallback = os.environ.get("GL_V1_ALLOW_BACKEND_FALLBACK", "0").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        result = run_csrd_backend(
+            input_path=input_path,
+            output_dir=output_path,
+            strict=True,
+            allow_fallback=allow_fallback,
+        )
+        if result.success:
+            console.print(f"[green][OK][/green] CSRD run completed. Artifacts: {output_path}")
+            raise typer.Exit(0)
+        for err in result.errors:
+            console.print(f"[red]{err}[/red]")
+        raise typer.Exit(result.exit_code or 1)
+
+    if pipeline_lower == "vcci" or (requested_pipeline and requested_pipeline == v1_vcci_pipeline):
+        if not input_or_config:
+            console.print("[red]Usage for VCCI: gl run vcci <input.csv|json> [output_dir][/red]")
+            raise typer.Exit(2)
+        input_path = Path(input_or_config)
+        if not input_path.exists():
+            console.print(f"[red]VCCI input not found: {input_path}[/red]")
+            raise typer.Exit(2)
+        allow_fallback = os.environ.get("GL_V1_ALLOW_BACKEND_FALLBACK", "0").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        result = run_vcci_backend(
+            input_path=input_path,
+            output_dir=output_path,
+            strict=True,
+            allow_fallback=allow_fallback,
+        )
+        if result.success:
+            console.print(f"[green][OK][/green] VCCI run completed. Artifacts: {output_path}")
+            raise typer.Exit(0)
+        for err in result.errors:
+            console.print(f"[red]{err}[/red]")
+        raise typer.Exit(result.exit_code or 1)
+
     # Generic GreenLang pipeline execution path.
     from greenlang.execution.runtime.executor import Executor
     from greenlang.utilities.provenance.ledger import write_run_ledger, RunLedger
@@ -461,7 +533,6 @@ def run(
             import yaml
             inputs_data = yaml.safe_load(text) or {}
 
-    output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     backend = "local"
     profile = "dev"

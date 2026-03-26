@@ -1,0 +1,1607 @@
+# =============================================================================
+# PACK-042: Scope 3 Starter Pack
+# GreenLang GHG Accounting Pack for Scope 3 Value Chain Emissions
+# =============================================================================
+# This pack delivers a structured, methodology-driven approach to Scope 3
+# value chain emissions quantification. It guides organisations from initial
+# spend-based screening through to supplier-specific primary data collection
+# across all 15 GHG Protocol Scope 3 categories.
+#
+# The pack follows a zero-hallucination approach: all emission calculations
+# use deterministic formulas from GHG Protocol Scope 3 Standard, EEIO models
+# (EXIOBASE 3, USEEIO 2, GTAP), and published LCA databases. No LLM is used
+# in any calculation path. Spend classification may use LLM-assisted mapping
+# with confidence thresholds, but all numeric calculations are deterministic.
+#
+# Core capabilities:
+#   - Spend-based screening using EEIO models (EXIOBASE 3, USEEIO 2, GTAP)
+#   - Automated spend classification (NAICS, ISIC, UNSPSC, HS, GL account)
+#   - 15-category coverage with per-category methodology tier selection
+#   - Four methodology tiers: spend-based, average-data, supplier-specific, hybrid
+#   - Double-counting prevention across categories and with Scope 1/2
+#   - Hotspot identification with Pareto analysis (80/20 rule)
+#   - Supplier engagement programme with data request tracking
+#   - Data quality assessment per GHG Protocol 5 DQIs
+#   - Uncertainty quantification (Monte Carlo, analytical, qualitative)
+#   - Multi-framework compliance mapping (GHG Protocol, ESRS E1, CDP,
+#     SBTi, SEC, SB 253, ISO 14064, PCAF)
+#   - PCAF methodology for Category 15 financed emissions
+#   - Full audit trail with SHA-256 provenance hashing
+#   - Sector-specific presets for 8 industry sectors
+#
+# Scope 3 Categories (15):
+#   Upstream (Cat 1-8):
+#     1. Purchased Goods & Services
+#     2. Capital Goods
+#     3. Fuel- & Energy-Related Activities (not in Scope 1/2)
+#     4. Upstream Transportation & Distribution
+#     5. Waste Generated in Operations
+#     6. Business Travel
+#     7. Employee Commuting
+#     8. Upstream Leased Assets
+#   Downstream (Cat 9-15):
+#     9.  Downstream Transportation & Distribution
+#     10. Processing of Sold Products
+#     11. Use of Sold Products
+#     12. End-of-Life Treatment of Sold Products
+#     13. Downstream Leased Assets
+#     14. Franchises
+#     15. Investments
+#
+# Regulatory Frameworks:
+#   1. GHG Protocol Corporate Value Chain (Scope 3) Standard (2011)
+#   2. GHG Protocol Technical Guidance for Calculating Scope 3 (2013)
+#   3. ISO 14064-1:2018 (Categories 3-6 indirect emissions)
+#   4. EU CSRD / ESRS E1 (E1-6 para 51, Scope 3 phase-in)
+#   5. CDP Climate Change Questionnaire (C6.5, C6.7 Scope 3)
+#   6. SBTi Corporate Net-Zero Standard v1.1 (Scope 3 near-term)
+#   7. US SEC Climate Disclosure Rules (Scope 3 safe harbour)
+#   8. California SB 253 (Scope 3 from 2027)
+#   9. PCAF Global GHG Accounting Standard (Category 15)
+#
+# Sector Presets:
+#   manufacturing        - Upstream supply chain dominant (Cat 1, Cat 4)
+#   retail               - Purchased goods for resale (Cat 1, Cat 4, Cat 9)
+#   technology           - Hardware, cloud, travel (Cat 1, Cat 6, Cat 11)
+#   financial_services   - Financed emissions via PCAF (Cat 15 dominant)
+#   food_agriculture     - Agricultural supply chain (Cat 1, Cat 10, Cat 12)
+#   energy_utility       - Upstream fuel, sold energy (Cat 3, Cat 11)
+#   transport_logistics  - Subcontracted transport (Cat 4, Cat 9, Cat 11)
+#   sme_simplified       - Top 5 categories only for SMEs
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-24)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-042-scope-3-starter
+  version: "1.0.0"
+  display_name: "Scope 3 Starter Pack"
+  description: >-
+    GreenLang deployment pack providing a structured, methodology-driven
+    approach to Scope 3 value chain emissions quantification across all 15
+    GHG Protocol Scope 3 categories. Guides organisations from spend-based
+    screening through to supplier-specific primary data collection with
+    hotspot identification, double-counting prevention, supplier engagement
+    tracking, and multi-framework compliance mapping. Supports four
+    methodology tiers (spend-based, average-data, supplier-specific, hybrid),
+    three EEIO models (EXIOBASE 3, USEEIO 2, GTAP), five classification
+    systems (NAICS, ISIC, UNSPSC, HS, GL account), and five data quality
+    indicators per GHG Protocol Scope 3 guidance. Maps output to GHG
+    Protocol, ISO 14064-1, ESRS E1, CDP, SBTi, SEC, SB 253, and PCAF.
+    Includes Monte Carlo uncertainty analysis, Pareto-based hotspot
+    identification, supplier engagement programme management, and sector-
+    specific presets for manufacturing, retail, technology, financial
+    services, food and agriculture, energy, transport, and SME organisations.
+  category: ghg-accounting
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-24"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/scope-3-starter"
+  changelog_url: "https://docs.greenlang.io/packs/scope-3-starter/changelog"
+
+  tags:
+    - ghg-inventory
+    - scope-3
+    - value-chain
+    - ghg-protocol
+    - scope-3-standard
+    - eeio
+    - exiobase
+    - useeio
+    - spend-based
+    - supplier-specific
+    - average-data
+    - hybrid-method
+    - purchased-goods
+    - capital-goods
+    - fuel-energy-related
+    - upstream-transport
+    - waste
+    - business-travel
+    - employee-commuting
+    - upstream-leases
+    - downstream-transport
+    - processing-sold
+    - use-of-sold
+    - end-of-life
+    - downstream-leases
+    - franchises
+    - investments
+    - pcaf
+    - financed-emissions
+    - hotspot-analysis
+    - double-counting
+    - supplier-engagement
+    - data-quality
+    - dqi
+    - iso-14064
+    - esrs-e1
+    - csrd
+    - cdp
+    - sbti
+    - sec-climate
+    - sb-253
+    - uncertainty
+    - audit-trail
+    - provenance
+    - naics
+    - isic
+    - unspsc
+    - spend-classification
+
+  regulation:
+    primary:
+      name: "GHG Protocol Corporate Value Chain (Scope 3) Standard"
+      reference: "GHG Protocol Corporate Value Chain (Scope 3) Accounting and Reporting Standard (2011)"
+      effective_date: "2011-10-01"
+      description: >-
+        The GHG Protocol Scope 3 Standard provides requirements and guidance
+        for companies to quantify and report GHG emissions from their value
+        chain activities (Scope 3). It covers all 15 upstream and downstream
+        categories, defines minimum boundary requirements, establishes data
+        quality assessment criteria, and sets reporting requirements. This
+        pack implements the full standard including the Technical Guidance
+        for Calculating Scope 3 Emissions (2013), covering spend-based,
+        average-data, supplier-specific, and hybrid calculation methods.
+
+    secondary:
+      - name: "GHG Protocol Technical Guidance for Calculating Scope 3 Emissions"
+        reference: "GHG Protocol Scope 3 Technical Guidance (2013)"
+        effective_date: "2013-01-01"
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018 (Categories 3-6)"
+        effective_date: "2018-12-01"
+      - name: "EU CSRD / ESRS E1"
+        reference: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+        effective_date: "2024-01-01"
+      - name: "CDP Climate Change Questionnaire"
+        reference: "CDP Climate Change 2026"
+        effective_date: "2026-01-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi v1.1"
+        effective_date: "2023-01-01"
+      - name: "US SEC Climate Disclosure Rules"
+        reference: "SEC Regulation S-K Item 1505"
+        effective_date: "2024-03-06"
+      - name: "California SB 253"
+        reference: "SB 253 Climate Corporate Data Accountability Act"
+        effective_date: "2027-01-01"
+      - name: "PCAF Global GHG Accounting Standard"
+        reference: "PCAF Standard v3"
+        effective_date: "2022-12-01"
+      - name: "IPCC 2006 Guidelines"
+        reference: "IPCC 2006 (2019 Refinement)"
+        effective_date: "2006-01-01"
+
+  compliance_references:
+    - id: "GHG_PROTOCOL_SCOPE3"
+      name: "GHG Protocol Scope 3 Standard"
+      regulation: "GHG Protocol Corporate Value Chain (Scope 3) Accounting and Reporting Standard"
+      effective_date: "2011-10-01"
+      description: >-
+        This pack fully implements the GHG Protocol Scope 3 Standard for
+        all 15 value chain categories. It covers minimum boundary setting
+        per category, data collection guidance for spend-based and activity-
+        based methods, data quality assessment using the five data quality
+        indicators (DQIs: technological, temporal, geographical
+        representativeness, completeness, reliability), allocation and
+        double-counting prevention across categories, uncertainty assessment,
+        and reporting requirements. The screening phase uses EEIO models
+        to identify material categories before detailed quantification.
+
+    - id: "GHG_PROTOCOL_SCOPE3_TECHNICAL"
+      name: "GHG Protocol Scope 3 Technical Guidance"
+      regulation: "GHG Protocol Technical Guidance for Calculating Scope 3 Emissions (2013)"
+      effective_date: "2013-01-01"
+      description: >-
+        Implements the Technical Guidance chapter-by-chapter for each of
+        the 15 categories, covering calculation methods (spend-based,
+        average-data, supplier-specific, hybrid), data sources, emission
+        factors, and sector-specific considerations. Provides step-by-step
+        calculation workflows for each methodology tier.
+
+    - id: "ISO_14064"
+      name: "ISO 14064-1:2018"
+      regulation: "ISO 14064-1:2018"
+      effective_date: "2018-12-01"
+      description: >-
+        Maps Scope 3 inventory to ISO 14064-1:2018 Categories 3 (indirect
+        transportation), 4 (indirect products used by organisation),
+        5 (indirect from use of products), and 6 (indirect from other
+        sources). Supports quantification requirements per Clause 6 and
+        uncertainty assessment per Clause 6.3.
+
+    - id: "ESRS_E1"
+      name: "EU CSRD / ESRS E1 Climate Change"
+      regulation: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+      effective_date: "2024-01-01"
+      description: >-
+        Maps Scope 3 data to ESRS E1-6 paragraph 51 disclosure requirements
+        for Scope 3 emissions. Supports the Scope 3 phase-in provision
+        allowing first-time reporting in the second year (2025 financial year
+        for January 2024 CSRD reporters). Provides disaggregation by Scope 3
+        category and significant upstream/downstream value chain activities.
+
+    - id: "CDP"
+      name: "CDP Climate Change Questionnaire"
+      regulation: "CDP Climate Change 2026"
+      effective_date: "2026-01-01"
+      description: >-
+        Maps Scope 3 to CDP sections C6.5 (Scope 3 total and by category),
+        C6.7 (Scope 3 methodology, data sources, and emission factors), and
+        C6.10 (Scope 3 verification status). Supports CDP Supply Chain
+        module integration for collecting supplier-specific emission data
+        through the CDP platform.
+
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      regulation: "SBTi Corporate Net-Zero Standard v1.1"
+      effective_date: "2023-01-01"
+      description: >-
+        Provides Scope 3 emissions baseline and annual tracking for SBTi
+        near-term target setting. SBTi requires covering at least 67% of
+        total Scope 3 for near-term targets. Calculates year-on-year
+        reduction rate, cumulative progress, and coverage percentage.
+        Supports SBTi supplier engagement target tracking (percentage of
+        suppliers with science-based targets).
+
+    - id: "SEC"
+      name: "US SEC Climate Disclosure Rules"
+      regulation: "SEC Regulation S-K Item 1505"
+      effective_date: "2024-03-06"
+      description: >-
+        Supports SEC Scope 3 safe harbour provisions for good-faith
+        estimates of material Scope 3 categories. Provides methodology
+        documentation suitable for SEC compliance including data sources,
+        assumptions, and estimation methods. Scope 3 disclosure is
+        voluntary under SEC rules but supported for completeness.
+
+    - id: "SB_253"
+      name: "California SB 253"
+      regulation: "SB 253 Climate Corporate Data Accountability Act"
+      effective_date: "2027-01-01"
+      description: >-
+        Supports California SB 253 Scope 3 reporting requirements
+        effective from 2027 for entities with total revenues exceeding
+        USD 1 billion. Provides Scope 3 emissions quantified per GHG
+        Protocol Scope 3 Standard with third-party assurance-ready
+        data packages.
+
+    - id: "PCAF"
+      name: "PCAF Global GHG Accounting Standard"
+      regulation: "PCAF Standard v3"
+      effective_date: "2022-12-01"
+      description: >-
+        Implements PCAF methodology for Category 15 (Investments) covering
+        financed emissions across six asset classes: listed equity,
+        corporate bonds, business loans, project finance, commercial
+        real estate, and mortgages. Calculates attribution factor based
+        on investment/lending amount relative to enterprise value or
+        property value. Produces PCAF data quality score per asset class.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 Scope 3 engines)
+  # ===========================================================================
+  engines:
+    - id: spend_screening
+      name: "Spend-Based Screening Engine"
+      description: >-
+        Performs initial Scope 3 screening using Environmentally-Extended
+        Input-Output (EEIO) models. Maps procurement spend data to industry
+        sectors using NAICS, ISIC, UNSPSC, HS, or GL account codes, applies
+        sector-specific emission intensity factors (kgCO2e/EUR) from the
+        selected EEIO model (EXIOBASE 3, USEEIO 2, or GTAP), and estimates
+        total Scope 3 emissions by category. Applies inflation adjustment
+        to align spend data with EEIO factor reference year. Produces
+        initial category materiality assessment showing estimated emissions
+        per category as percentage of total. Identifies the 80/20 categories
+        that warrant detailed quantification.
+        Zero-hallucination: EEIO factors from published databases with
+        full citation, arithmetic spend-factor multiplication, no LLM
+        in any calculation.
+      class: "SpendScreeningEngine"
+      file: "engines/spend_screening_engine.py"
+      required: true
+
+    - id: spend_classification
+      name: "Spend Classification Engine"
+      description: >-
+        Classifies procurement spend line items into industry sectors for
+        EEIO emission factor application. Supports five classification
+        systems: NAICS (North American Industry Classification System,
+        6-digit), ISIC (International Standard Industrial Classification,
+        4-digit), UNSPSC (United Nations Standard Products and Services
+        Code, 8-digit), HS (Harmonized System, 6-digit commodity codes),
+        and GL account-based mapping. Uses a multi-stage classification
+        pipeline: rule-based pattern matching for known suppliers,
+        keyword-based sector assignment, and LLM-assisted classification
+        for ambiguous items (with confidence scoring). Items below the
+        manual review threshold are flagged for human review. Tracks
+        classification confidence per line item for data quality assessment.
+        Zero-hallucination: classification rules from published code
+        systems; LLM used only for text classification (not numeric),
+        with confidence thresholds.
+      class: "SpendClassificationEngine"
+      file: "engines/spend_classification_engine.py"
+      required: true
+
+    - id: category_calculation
+      name: "Category Calculation Engine"
+      description: >-
+        Core calculation engine for all 15 Scope 3 categories. Implements
+        four methodology tiers per GHG Protocol Technical Guidance:
+        Tier 1 (spend-based: spend * EEIO factor), Tier 2 (average-data:
+        activity data * average emission factor), Tier 3 (supplier-specific:
+        activity data * supplier-specific factor), and Hybrid (combination
+        of spend and physical data). Routes category-specific calculations
+        to the appropriate MRV agent (MRV-014 through MRV-028). Applies
+        allocation factors for shared emissions (e.g., upstream transport
+        embedded in Cat 1 purchase price). Produces category-level results
+        with methodology tier, data quality rating, and uncertainty estimate.
+        Zero-hallucination: all calculations use deterministic formulas
+        from GHG Protocol Technical Guidance chapters, no LLM in numeric
+        calculations.
+      class: "CategoryCalculationEngine"
+      file: "engines/category_calculation_engine.py"
+      required: true
+
+    - id: double_counting_prevention
+      name: "Double-Counting Prevention Engine"
+      description: >-
+        Prevents double-counting of emissions across Scope 3 categories
+        and between Scope 3 and Scope 1/2. Implements seven prevention
+        rules: (1) Cat 1 vs Cat 4 transport allocation (upstream transport
+        may be included in supplier price), (2) Cat 1 vs Cat 2 capital
+        goods boundary (expense vs capitalisation), (3) Cat 3 vs Scope 1/2
+        fuel (upstream WTT not in Scope 1), (4) Cat 4 vs Cat 9 transport
+        direction (upstream vs downstream), (5) Cat 8 vs Scope 1/2 leases
+        (operating vs finance lease boundary), (6) Cat 13 vs Scope 1/2
+        downstream leases, (7) Cat 14 vs Scope 1/2 franchise boundary.
+        Applies allocation methods: physical (mass, volume, area),
+        economic (revenue, cost), energy, or custom. Documents all
+        exclusions with rationale for audit trail.
+        Zero-hallucination: rule-based boundary checks and allocation
+        arithmetic, no LLM.
+      class: "DoubleCountingPreventionEngine"
+      file: "engines/double_counting_prevention_engine.py"
+      required: true
+
+    - id: hotspot_identification
+      name: "Hotspot Identification Engine"
+      description: >-
+        Identifies the categories, suppliers, product groups, and regions
+        that contribute most to total Scope 3 emissions. Applies Pareto
+        analysis (default 80/20 rule) at three levels: category level
+        (which of the 15 categories are material), supplier level (which
+        suppliers within each category contribute most), and product group
+        level (which purchased product groups have highest emission
+        intensity). Generates ranked hotspot lists with cumulative
+        contribution percentages. Compares results against sector
+        benchmarks from GHG Protocol sector guidance. Tracks hotspot
+        evolution over time to measure supplier engagement effectiveness.
+        Zero-hallucination: ranking and Pareto from arithmetic sorting,
+        no LLM.
+      class: "HotspotIdentificationEngine"
+      file: "engines/hotspot_identification_engine.py"
+      required: true
+
+    - id: supplier_engagement_tracker
+      name: "Supplier Engagement Tracker Engine"
+      description: >-
+        Manages the supplier engagement programme for transitioning from
+        spend-based to supplier-specific Scope 3 data. Tracks engagement
+        status per supplier: NOT_STARTED, DATA_REQUESTED, IN_PROGRESS,
+        COMPLETED, OVERDUE. Sends data request reminders at configurable
+        intervals. Monitors data quality of supplier responses against
+        the five DQIs. Tracks the percentage of total Scope 3 emissions
+        covered by supplier-specific data vs spend-based estimates.
+        Calculates coverage improvement trend over reporting years.
+        Supports CDP Supply Chain programme integration. Generates
+        supplier engagement scorecard with response rate, data quality,
+        and coverage metrics.
+        Zero-hallucination: status tracking and percentage calculations
+        from database records, no LLM.
+      class: "SupplierEngagementTrackerEngine"
+      file: "engines/supplier_engagement_tracker_engine.py"
+      required: true
+
+    - id: data_quality_assessment
+      name: "Data Quality Assessment Engine"
+      description: >-
+        Assesses data quality per GHG Protocol Scope 3 guidance using five
+        data quality indicators (DQIs): (1) Technological representativeness
+        (how well the data represents the technology), (2) Temporal
+        representativeness (how recent the data is), (3) Geographical
+        representativeness (how well it matches the geographic scope),
+        (4) Completeness (percentage of relevant data covered),
+        (5) Reliability (verification status and data source type).
+        Calculates weighted Data Quality Rating (DQR) per category and
+        per supplier. Maps DQR scores to data quality levels (Level 1-5).
+        Generates data quality improvement roadmap prioritised by
+        emission magnitude and current quality gap.
+        Zero-hallucination: DQR calculations from defined scoring
+        matrix, no LLM.
+      class: "DataQualityAssessmentEngine"
+      file: "engines/data_quality_assessment_engine.py"
+      required: true
+
+    - id: uncertainty_analysis
+      name: "Uncertainty Analysis Engine"
+      description: >-
+        Quantifies uncertainty in Scope 3 estimates by category and total.
+        Supports three methods: (1) Monte Carlo simulation with configurable
+        iterations (default 5,000) using methodology-specific uncertainty
+        ranges (spend-based +/-50%, average-data +/-30%, supplier-specific
+        +/-10%), (2) Analytical error propagation using IPCC 2006 Vol. 1
+        Ch. 3 formulas, and (3) Qualitative uncertainty classification
+        (High/Medium/Low per category). Produces confidence intervals
+        for each category and total Scope 3. Generates uncertainty
+        contribution analysis showing which categories and data sources
+        contribute most to total uncertainty.
+        Zero-hallucination: Monte Carlo from numpy random distributions,
+        propagation from published formulas, no LLM.
+      class: "UncertaintyAnalysisEngine"
+      file: "engines/uncertainty_analysis_engine.py"
+      required: true
+
+    - id: compliance_mapping
+      name: "Compliance Mapping Engine"
+      description: >-
+        Maps Scope 3 inventory to eight regulatory frameworks from a single
+        dataset. Generates framework-specific output: GHG Protocol Scope 3
+        reporting template (total and by category, methodology per category),
+        ISO 14064-1 Categories 3-6, ESRS E1-6 para 51 Scope 3 datapoints
+        (with phase-in provisions), CDP C6.5 and C6.7 response data, SBTi
+        progress tracking (coverage percentage, reduction rate), SEC safe
+        harbour documentation, SB 253 annual data, and PCAF Category 15
+        output (per asset class with PCAF data quality score). Handles
+        framework-specific requirements: ESRS upstream/downstream split,
+        CDP category-level detail, SBTi 67% coverage minimum.
+        Zero-hallucination: mapping rules from framework documentation,
+        no LLM in data mapping or aggregation.
+      class: "ComplianceMappingEngine"
+      file: "engines/compliance_mapping_engine.py"
+      required: true
+
+    - id: scope3_reporting
+      name: "Scope 3 Reporting Engine"
+      description: >-
+        Generates comprehensive Scope 3 reports in multiple formats.
+        Executive summary: total Scope 3, top categories, year-on-year
+        change, supplier engagement progress, hotspot highlights, and
+        data quality overview. Detailed inventory: category-level
+        breakdown with methodology, data sources, emission factors,
+        data quality ratings, and uncertainty estimates. Hotspot report:
+        Pareto charts, supplier drill-down, product group analysis.
+        Supplier engagement report: engagement status, response rates,
+        data quality scores. Compliance reports: framework-specific
+        output for each configured framework. Supports output formats:
+        HTML, JSON, CSV, and Markdown.
+        Zero-hallucination: report content from calculated inventory data,
+        narrative templates with placeholders, no LLM in data content.
+      class: "Scope3ReportingEngine"
+      file: "engines/scope3_reporting_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 Scope 3 workflows)
+  # ===========================================================================
+  workflows:
+    - id: initial_screening
+      name: "Initial Screening Workflow"
+      description: >-
+        5-phase workflow for initial Scope 3 screening: Phase 1 - Spend
+        Data Collection (extract procurement spend from ERP, classify by
+        supplier and GL account) -> Phase 2 - Spend Classification (map
+        spend line items to NAICS/ISIC sectors using classification engine)
+        -> Phase 3 - EEIO Screening (apply EEIO emission factors to
+        classified spend, estimate emissions per category) -> Phase 4 -
+        Materiality Assessment (rank categories by estimated emissions,
+        identify material categories above threshold) -> Phase 5 -
+        Methodology Planning (assign methodology tier per category,
+        identify data sources, plan supplier engagement for material
+        categories).
+      schedule: "on_demand"
+      estimated_duration_minutes: 240
+      phases: 5
+
+    - id: annual_scope3_inventory
+      name: "Annual Scope 3 Inventory Workflow"
+      description: >-
+        8-phase workflow for complete annual Scope 3 inventory: Phase 1 -
+        Configuration Review (confirm enabled categories, methodology
+        tiers, supplier engagement targets) -> Phase 2 - Data Collection
+        (collect spend data, supplier data, activity data per category)
+        -> Phase 3 - Spend Classification (classify new and updated spend
+        line items) -> Phase 4 - Category Calculation (run all 15 MRV
+        agents with configured methodology) -> Phase 5 - Double-Counting
+        Prevention (apply prevention rules, document exclusions) ->
+        Phase 6 - Data Quality Assessment (score each category on 5 DQIs)
+        -> Phase 7 - Uncertainty Analysis (quantify uncertainty per
+        category and total) -> Phase 8 - Reporting and Compliance
+        (generate reports, map to frameworks, assemble audit trail).
+      schedule: "annual"
+      estimated_duration_minutes: 960
+      phases: 8
+
+    - id: supplier_engagement
+      name: "Supplier Engagement Workflow"
+      description: >-
+        5-phase workflow for supplier data collection: Phase 1 - Supplier
+        Prioritisation (rank suppliers by Scope 3 contribution, select
+        top-N for engagement) -> Phase 2 - Data Request (send data
+        collection questionnaires to prioritised suppliers) -> Phase 3 -
+        Reminder and Escalation (track response status, send reminders,
+        escalate overdue requests to procurement) -> Phase 4 - Data
+        Validation (validate received supplier data against DQI criteria,
+        request clarification for quality issues) -> Phase 5 - Integration
+        (integrate validated supplier data into category calculations,
+        update methodology tier from spend-based to supplier-specific).
+      schedule: "annual"
+      estimated_duration_minutes: 480
+      phases: 5
+
+    - id: hotspot_analysis
+      name: "Hotspot Analysis Workflow"
+      description: >-
+        4-phase workflow for Scope 3 hotspot deep-dive: Phase 1 - Category
+        Ranking (rank categories by emissions magnitude, identify top
+        contributors) -> Phase 2 - Supplier Drill-Down (within material
+        categories, rank suppliers by contribution, identify Pareto
+        suppliers) -> Phase 3 - Product Group Analysis (within Cat 1,
+        segment by product group and map emission intensity) -> Phase 4 -
+        Reduction Opportunity Mapping (identify reduction levers per
+        hotspot: supplier switching, product redesign, mode shift,
+        efficiency improvement).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: data_quality_improvement
+      name: "Data Quality Improvement Workflow"
+      description: >-
+        4-phase workflow for Scope 3 data quality improvement: Phase 1 -
+        Baseline Assessment (score current DQR per category using 5 DQIs)
+        -> Phase 2 - Gap Analysis (compare current DQR to target DQR,
+        identify categories with largest quality gaps) -> Phase 3 -
+        Improvement Planning (define improvement actions: upgrade
+        methodology tier, collect primary data, improve geographic match)
+        -> Phase 4 - Progress Tracking (monitor DQR improvement over
+        time, compare year-on-year quality scores).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: pcaf_financed_emissions
+      name: "PCAF Financed Emissions Workflow"
+      description: >-
+        4-phase workflow for Category 15 financed emissions using PCAF:
+        Phase 1 - Portfolio Mapping (map investments by asset class:
+        listed equity, corporate bonds, business loans, project finance,
+        commercial real estate, mortgages) -> Phase 2 - Attribution
+        Calculation (calculate attribution factor per investment based
+        on outstanding amount and enterprise/property value) -> Phase 3 -
+        Emission Allocation (allocate investee Scope 1+2+3 emissions
+        using attribution factor, source from PCAF database or investee
+        disclosures) -> Phase 4 - Reporting (generate PCAF-compliant
+        report with data quality score per asset class).
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: compliance_disclosure
+      name: "Compliance Disclosure Workflow"
+      description: >-
+        4-phase workflow for regulatory disclosure preparation: Phase 1 -
+        Framework Selection (confirm target frameworks and requirements)
+        -> Phase 2 - Data Mapping (map Scope 3 inventory to framework-
+        specific datapoints) -> Phase 3 - Gap Analysis (identify any
+        missing datapoints or methodological gaps per framework) ->
+        Phase 4 - Disclosure Generation (generate framework-specific
+        reports and data exports for ESRS, CDP, SBTi, SEC, SB 253).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: full_scope3_pipeline
+      name: "Full Scope 3 Pipeline Workflow"
+      description: >-
+        12-phase end-to-end Scope 3 pipeline: Phase 1 - Health Check
+        (verify agents, EEIO databases, LCA databases available) ->
+        Phase 2 - Configuration Loading (load pack config, preset, and
+        overrides) -> Phase 3 - Spend Data Extraction (collect procurement
+        spend from ERP/finance systems) -> Phase 4 - Spend Classification
+        (classify spend line items to industry sectors) -> Phase 5 - EEIO
+        Screening (initial spend-based screening across all categories)
+        -> Phase 6 - Supplier Data Integration (merge supplier-specific
+        data where available) -> Phase 7 - Category Calculation (run
+        MRV-014 through MRV-028 with appropriate methodology tier) ->
+        Phase 8 - Double-Counting Prevention (apply prevention rules) ->
+        Phase 9 - Hotspot Identification (Pareto analysis at category,
+        supplier, product level) -> Phase 10 - Data Quality Assessment
+        (score 5 DQIs per category) -> Phase 11 - Uncertainty Analysis
+        (Monte Carlo or qualitative) -> Phase 12 - Reporting and
+        Compliance Mapping (generate all reports and framework outputs).
+      schedule: "annual"
+      estimated_duration_minutes: 1200
+      phases: 12
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 Scope 3 templates)
+  # ===========================================================================
+  templates:
+    - id: executive_summary
+      display_name: "Scope 3 Executive Summary"
+      description: >-
+        C-suite executive summary with total Scope 3 emissions, emissions
+        by category (upstream and downstream), year-on-year change, top
+        hotspot categories, supplier engagement progress, data quality
+        overview, and compliance status. One-page format with charts.
+      format: "html"
+      template_file: "templates/executive_summary.jinja2"
+      enabled: true
+
+    - id: category_breakdown
+      display_name: "Scope 3 Category Breakdown Report"
+      description: >-
+        Detailed breakdown by all 15 categories with emissions, percentage
+        of total, methodology tier used, data sources, emission factors,
+        data quality rating, uncertainty estimate, and year-on-year change
+        per category. Grouped into upstream (Cat 1-8) and downstream
+        (Cat 9-15) sections.
+      format: "html"
+      template_file: "templates/category_breakdown.jinja2"
+      enabled: true
+
+    - id: hotspot_report
+      display_name: "Hotspot Analysis Report"
+      description: >-
+        Pareto analysis report showing top contributing categories,
+        suppliers, and product groups. Includes cumulative contribution
+        charts, supplier drill-down tables, product group emission
+        intensity heatmaps, and reduction opportunity recommendations.
+      format: "html"
+      template_file: "templates/hotspot_report.jinja2"
+      enabled: true
+
+    - id: supplier_engagement_report
+      display_name: "Supplier Engagement Progress Report"
+      description: >-
+        Supplier engagement programme status showing engagement coverage,
+        response rates, data quality scores by supplier, overdue requests,
+        methodology tier upgrades achieved, and year-on-year coverage
+        improvement trend.
+      format: "html"
+      template_file: "templates/supplier_engagement_report.jinja2"
+      enabled: true
+
+    - id: data_quality_matrix
+      display_name: "Data Quality Matrix Report"
+      description: >-
+        Matrix showing data quality rating (DQR) per category across all
+        five data quality indicators. Includes scoring detail, comparison
+        to target DQR, improvement recommendations, and trend chart
+        showing DQR evolution over reporting years.
+      format: "html"
+      template_file: "templates/data_quality_matrix.jinja2"
+      enabled: true
+
+    - id: compliance_esrs_e1
+      display_name: "ESRS E1 Scope 3 Disclosure Report"
+      description: >-
+        ESRS E1-compliant Scope 3 disclosure report with E1-6 para 51
+        datapoints: total Scope 3, upstream/downstream split, category-
+        level detail, methodology description, data quality assessment,
+        and phase-in status. Structured for direct inclusion in the CSRD
+        sustainability statement.
+      format: "html"
+      template_file: "templates/compliance_esrs_e1.jinja2"
+      enabled: true
+
+    - id: compliance_cdp
+      display_name: "CDP Scope 3 Response Report"
+      description: >-
+        CDP Climate Change questionnaire response data for Scope 3
+        sections: C6.5 (total and by category), C6.7 (methodology and
+        data sources per category), and C6.10 (verification). Ready
+        for direct entry into the CDP online response system.
+      format: "html"
+      template_file: "templates/compliance_cdp.jinja2"
+      enabled: true
+
+    - id: uncertainty_report
+      display_name: "Scope 3 Uncertainty Analysis Report"
+      description: >-
+        Uncertainty analysis showing confidence intervals per category
+        and total Scope 3, uncertainty contribution by category and
+        methodology tier, Monte Carlo distribution histograms (if
+        quantitative method used), and uncertainty reduction
+        recommendations.
+      format: "html"
+      template_file: "templates/uncertainty_report.jinja2"
+      enabled: true
+
+    - id: pcaf_report
+      display_name: "PCAF Financed Emissions Report"
+      description: >-
+        PCAF-compliant financed emissions report for Category 15 showing
+        attribution by asset class, PCAF data quality score per class,
+        total financed emissions, portfolio coverage percentage, and
+        year-on-year trend.
+      format: "html"
+      template_file: "templates/pcaf_report.jinja2"
+      enabled: true
+
+    - id: double_counting_log
+      display_name: "Double-Counting Prevention Log"
+      description: >-
+        Detailed log of all double-counting prevention rules applied,
+        allocation decisions made, emissions excluded or reallocated,
+        rationale for each decision, and net impact on total Scope 3.
+        Serves as audit evidence for verifiers.
+      format: "html"
+      template_file: "templates/double_counting_log.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Scope 3 Pack Orchestrator"
+      description: >-
+        12-phase master pipeline: Health Check -> Configuration Loading ->
+        Spend Extraction -> Spend Classification -> EEIO Screening ->
+        Supplier Data Integration -> Category Calculation (17 agents) ->
+        Double-Counting Prevention -> Hotspot Identification -> Data
+        Quality Assessment -> Uncertainty Analysis -> Reporting and
+        Compliance Mapping. Implements DAG-based dependency resolution
+        across the 17 MRV agents (MRV-014 through MRV-030), parallel
+        execution of independent categories, and error recovery.
+      required: true
+
+    - id: mrv_scope3_bridge
+      name: "MRV Scope 3 Bridge"
+      description: >-
+        Routes category data to all 17 Scope 3 MRV agents (MRV-014
+        through MRV-030) and collects emission results. Manages execution
+        order: upstream categories (Cat 1-8) run first, then downstream
+        categories (Cat 9-15), with category mapper (MRV-029) and audit
+        trail (MRV-030) running last. Independent categories within
+        each group execute in parallel. Normalises output format across
+        all agents for consolidation.
+      required: true
+
+    - id: scope12_bridge
+      name: "Scope 1-2 Data Bridge"
+      description: >-
+        Connects to PACK-041 (Scope 1-2 Complete) for Category 3 (Fuel-
+        & Energy-Related Activities) calculations. Retrieves Scope 1 fuel
+        types and quantities for WTT factor application, and Scope 2
+        electricity consumption for T&D loss calculations. Also provides
+        Scope 1+2 totals for Scope 3 ratio analysis and SBTi coverage
+        assessment.
+      required: true
+
+    - id: data_intake_bridge
+      name: "Data Intake Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for spend and activity data intake.
+        Routes procurement exports through DATA-002 (Excel/CSV
+        normalisation), ERP spend data through DATA-003 (ERP connector),
+        supplier questionnaire responses through DATA-008. Applies data
+        quality profiling via DATA-010 and outlier detection via DATA-013.
+      required: true
+
+    - id: erp_spend_bridge
+      name: "ERP Spend Data Bridge"
+      description: >-
+        Extracts procurement spend data from ERP financial systems for
+        spend-based Scope 3 screening. Supports SAP (MM, SRM, Ariba),
+        Oracle Procurement, Microsoft Dynamics, and generic REST/ODBC
+        connectors. Maps GL accounts, cost centres, and vendor codes
+        to Scope 3 categories and NAICS/ISIC classification.
+      required: false
+
+    - id: eeio_database_bridge
+      name: "EEIO Database Bridge"
+      description: >-
+        Connects to EEIO emission factor databases for spend-based
+        calculations. Integrates with EXIOBASE 3 (multi-regional IO,
+        EU-focused), USEEIO 2 (US EPA), and GTAP (Global Trade Analysis).
+        Maintains local factor cache with version tracking. Handles
+        currency conversion and inflation adjustment.
+      required: true
+
+    - id: lca_database_bridge
+      name: "LCA Database Bridge"
+      description: >-
+        Connects to LCA databases for average-data emission factors.
+        Integrates with ecoinvent 3.10, GaBi, ELCD, and national LCA
+        databases. Provides product-level and sector-level emission
+        factors for categories 1 through 12. Tracks factor provenance
+        and vintage.
+      required: true
+
+    - id: supplier_portal_bridge
+      name: "Supplier Portal Bridge"
+      description: >-
+        Manages supplier data collection portal for primary data
+        gathering. Sends data request questionnaires, receives responses,
+        validates data quality, and integrates validated data into
+        category calculations. Supports CDP Supply Chain module as an
+        alternative channel.
+      required: false
+
+    - id: travel_data_bridge
+      name: "Travel & Expense Data Bridge"
+      description: >-
+        Connects to travel management systems and expense platforms for
+        Category 6 (Business Travel) and Category 7 (Employee Commuting)
+        data. Integrates with Concur, Egencia, TripActions, and generic
+        expense report exports. Maps travel segments to distance-based
+        emission factors by mode (air, rail, road, hotel).
+      required: false
+
+    - id: logistics_data_bridge
+      name: "Logistics Data Bridge"
+      description: >-
+        Connects to logistics platforms and freight calculators for
+        Category 4 and Category 9 transport emissions. Integrates with
+        EcoTransIT, GLEC Framework, and carrier TMS systems. Maps
+        shipment records to emission factors by mode, distance, and
+        payload.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        18-category system verification: all 17 MRV agents operational,
+        EEIO database current, LCA database accessible, ERP connectivity,
+        supplier portal status, PACK-041 integration status, classification
+        engine ready, spend data availability, preset validation, template
+        integrity, and deployment readiness.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        10-step guided configuration: Company Profile -> Sector Selection
+        -> Category Enablement -> Methodology Tier Assignment -> EEIO
+        Model Selection -> Spend Classification Setup -> Supplier
+        Engagement Planning -> Data Quality Targets -> Compliance
+        Framework Selection -> Preset Customisation.
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Manufacturing sector with dominant upstream supply chain. Cat 1
+        (purchased raw materials and components) is typically 40-70% of
+        total Scope 3. Cat 4 (inbound logistics) and Cat 11 (product use
+        phase) are also material. Supplier engagement targets top 50
+        material and component suppliers.
+      sector_type: "MANUFACTURING"
+      file: "config/presets/manufacturing.yaml"
+
+    - id: retail
+      name: "Retail & Distribution Preset"
+      description: >-
+        Retail sector with large purchased goods portfolio. Cat 1
+        (products for resale) typically 60-85% of total Scope 3. Cat 4
+        (supplier-to-store logistics) and Cat 9 (home delivery) are also
+        material. Supplier engagement targets top 100 product suppliers.
+      sector_type: "RETAIL"
+      file: "config/presets/retail.yaml"
+
+    - id: technology
+      name: "Technology & Services Preset"
+      description: >-
+        Technology sector with hardware, cloud services, and business
+        travel as material categories. Cat 1 (hardware and cloud) 30-60%,
+        Cat 6 (business travel) 3-10%, Cat 11 (product energy use) 5-30%.
+        Supplier engagement targets top 30 IT and cloud suppliers.
+      sector_type: "TECHNOLOGY"
+      file: "config/presets/technology.yaml"
+
+    - id: financial_services
+      name: "Financial Services Preset"
+      description: >-
+        Financial sector with Cat 15 (financed emissions) dominant via
+        PCAF methodology. Cat 15 typically 70-95% of total Scope 3.
+        Covers six PCAF asset classes. Secondary categories Cat 1
+        (purchased services) and Cat 6 (travel). Portfolio engagement
+        targets top 20 investees.
+      sector_type: "FINANCIAL"
+      file: "config/presets/financial_services.yaml"
+
+    - id: food_agriculture
+      name: "Food & Agriculture Preset"
+      description: >-
+        Food and agriculture with agricultural supply chain emissions.
+        Cat 1 (agricultural inputs, ingredients) 50-80%, Cat 10
+        (processing by customers) and Cat 12 (food waste at consumer)
+        also material. Allocation method set to mass-based for
+        agricultural commodities.
+      sector_type: "FOOD_AGRICULTURE"
+      file: "config/presets/food_agriculture.yaml"
+
+    - id: energy_utility
+      name: "Energy & Utility Preset"
+      description: >-
+        Energy sector with upstream fuel production (Cat 3) and downstream
+        energy use (Cat 11) as dominant categories. Cat 11 (combustion of
+        sold fuel) is often the single largest emissions category. Uses
+        energy-based allocation method.
+      sector_type: "ENERGY"
+      file: "config/presets/energy_utility.yaml"
+
+    - id: transport_logistics
+      name: "Transport & Logistics Preset"
+      description: >-
+        Transport sector with subcontracted transport (Cat 4, Cat 9)
+        dominant for asset-light operators. Cat 3 (WTT fuel) and Cat 11
+        (vehicle use phase for OEMs) also material. Uses physical
+        (tonne-km) allocation. GLEC Framework integration enabled.
+      sector_type: "TRANSPORT"
+      file: "config/presets/transport_logistics.yaml"
+
+    - id: sme_simplified
+      name: "SME Simplified Preset"
+      description: >-
+        Simplified approach for SMEs covering only the top 5 material
+        categories (typically Cat 1, Cat 3, Cat 5, Cat 6, Cat 7). All
+        spend-based or average-data methodology. Supplier engagement
+        limited to top 10 suppliers. Simplified reporting and no PCAF.
+      sector_type: "SME"
+      file: "config/presets/sme_simplified.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 17 Scope 3 agents
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Scope 3 Category 1 Agent"
+      description: "Purchased Goods & Services: extraction, production, and transport of purchased goods"
+      path: "greenlang/agents/mrv/scope3_cat1_purchased_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-015
+      name: "Scope 3 Category 2 Agent"
+      description: "Capital Goods: extraction, production, and transport of capital equipment"
+      path: "greenlang/agents/mrv/scope3_cat2_capital_goods/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-016
+      name: "Scope 3 Category 3 Agent"
+      description: "Fuel- & Energy-Related Activities: upstream fuel production, T&D losses"
+      path: "greenlang/agents/mrv/scope3_cat3_fuel_energy/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-017
+      name: "Scope 3 Category 4 Agent"
+      description: "Upstream Transportation & Distribution: third-party inbound logistics"
+      path: "greenlang/agents/mrv/scope3_cat4_upstream_transport/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-018
+      name: "Scope 3 Category 5 Agent"
+      description: "Waste Generated in Operations: third-party waste disposal and treatment"
+      path: "greenlang/agents/mrv/scope3_cat5_waste/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-019
+      name: "Scope 3 Category 6 Agent"
+      description: "Business Travel: air, rail, road, and hotel accommodation"
+      path: "greenlang/agents/mrv/scope3_cat6_business_travel/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-020
+      name: "Scope 3 Category 7 Agent"
+      description: "Employee Commuting: home-to-work transportation and remote work"
+      path: "greenlang/agents/mrv/scope3_cat7_commuting/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-021
+      name: "Scope 3 Category 8 Agent"
+      description: "Upstream Leased Assets: leased buildings, vehicles, and equipment"
+      path: "greenlang/agents/mrv/scope3_cat8_upstream_leases/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-022
+      name: "Scope 3 Category 9 Agent"
+      description: "Downstream Transportation & Distribution: outbound logistics to end consumers"
+      path: "greenlang/agents/mrv/scope3_cat9_downstream_transport/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-023
+      name: "Scope 3 Category 10 Agent"
+      description: "Processing of Sold Products: downstream processing by customers"
+      path: "greenlang/agents/mrv/scope3_cat10_processing/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-024
+      name: "Scope 3 Category 11 Agent"
+      description: "Use of Sold Products: energy and fuel consumption during product use"
+      path: "greenlang/agents/mrv/scope3_cat11_product_use/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-025
+      name: "Scope 3 Category 12 Agent"
+      description: "End-of-Life Treatment: waste disposal and recycling of sold products"
+      path: "greenlang/agents/mrv/scope3_cat12_end_of_life/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-026
+      name: "Scope 3 Category 13 Agent"
+      description: "Downstream Leased Assets: operation of assets leased to others"
+      path: "greenlang/agents/mrv/scope3_cat13_downstream_leases/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-027
+      name: "Scope 3 Category 14 Agent"
+      description: "Franchises: operation of franchise outlets"
+      path: "greenlang/agents/mrv/scope3_cat14_franchises/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-028
+      name: "Scope 3 Category 15 Agent"
+      description: "Investments: financed emissions from equity, debt, and project investments"
+      path: "greenlang/agents/mrv/scope3_cat15_investments/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-029
+      name: "Scope 3 Category Mapper Agent"
+      description: "Cross-category mapping, aggregation, and double-counting resolution"
+      path: "greenlang/agents/mrv/scope3_category_mapper/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Scope 3 Audit Trail & Lineage Agent"
+      description: "Audit trail generation, data lineage tracking, and provenance hashing"
+      path: "greenlang/agents/mrv/scope3_audit_trail/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises spend exports, supplier data, and activity data files"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Extracts procurement spend, GL data, and vendor records from ERP"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for EEIO and LCA databases"
+    required: true
+  - id: AGENT-DATA-008
+    name: "Supplier Questionnaire Processor"
+    description: "Processes supplier-returned Scope 3 data questionnaires"
+    required: true
+  - id: AGENT-DATA-009
+    name: "Spend Data Categorizer"
+    description: "Categorises procurement spend into NAICS/ISIC sectors"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across all Scope 3 data sources"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous spend amounts and emission factor outliers"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from spend record to category total"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates 17 Scope 3 MRV agents with DAG dependency resolution"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates Scope 3 data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises currency, mass, distance, and energy units"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in EEIO factor selection and methodology choices"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links EEIO factors, LCA data, and calculations to source evidence"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for spend data and supplier information"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all Scope 3 calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors Scope 3 pipeline health and agent performance"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 33
+  breakdown:
+    mrv_agents: 17
+    data_agents: 8
+    foundation_agents: 8
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: ghg_accounting_scope3
+  migrations:
+    - id: "V336__pack042_scope3_001"
+      description: "Core Scope 3 schema, category configuration, and organisation profile"
+    - id: "V337__pack042_scope3_002"
+      description: "EEIO emission factor tables (EXIOBASE 3, USEEIO 2, GTAP) with sector mapping"
+    - id: "V338__pack042_scope3_003"
+      description: "Spend classification tables, NAICS/ISIC/UNSPSC mapping, and confidence tracking"
+    - id: "V339__pack042_scope3_004"
+      description: "Category calculation tables for all 15 categories with methodology tier tracking"
+    - id: "V340__pack042_scope3_005"
+      description: "Double-counting prevention rules, allocation tables, and exclusion log"
+    - id: "V341__pack042_scope3_006"
+      description: "Supplier engagement tables, data requests, response tracking, and quality scores"
+    - id: "V342__pack042_scope3_007"
+      description: "Data quality assessment tables (5 DQIs), DQR scores, and improvement plans"
+    - id: "V343__pack042_scope3_008"
+      description: "Uncertainty analysis tables (Monte Carlo results, qualitative assessments)"
+    - id: "V344__pack042_scope3_009"
+      description: "PCAF financed emissions tables, portfolio data, attribution factors, asset classes"
+    - id: "V345__pack042_scope3_010"
+      description: "Views, indexes, RLS policies, compliance mapping, hotspot data, and seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  screening:
+    max_spend_line_items: 500000
+    classification_per_item_ms: 10
+    eeio_calculation_per_item_ms: 5
+    total_screening_target_minutes: 30
+  category_calculation:
+    max_categories: 15
+    target_duration_per_category_minutes: 5
+    parallel_categories: 5
+    spend_based_per_item_ms: 5
+    average_data_per_record_ms: 20
+    supplier_specific_per_record_ms: 50
+  supplier_engagement:
+    max_suppliers: 5000
+    engagement_status_update_ms: 50
+    questionnaire_processing_ms: 200
+  hotspot_analysis:
+    pareto_calculation_per_category_ms: 100
+    supplier_ranking_per_supplier_ms: 10
+    total_hotspot_target_seconds: 30
+  data_quality:
+    dqr_assessment_per_category_ms: 200
+    total_dq_assessment_target_seconds: 10
+  uncertainty_analysis:
+    monte_carlo_5k_iterations_seconds: 15
+    qualitative_assessment_per_category_ms: 50
+    total_uncertainty_target_minutes: 5
+  compliance_mapping:
+    framework_mapping_per_framework_ms: 500
+    total_mapping_target_seconds: 10
+  reporting:
+    executive_summary_generation_ms: 2000
+    category_breakdown_generation_ms: 5000
+    hotspot_report_generation_ms: 3000
+  cache_hit_ratio_target: 0.85
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with supplier-level and category-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  supplier_data_isolation: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+  required_roles:
+    - scope3_manager
+    - sustainability_officer
+    - procurement_manager
+    - supply_chain_analyst
+    - data_analyst
+    - supplier_contact
+    - verifier
+    - viewer
+    - admin
+  audit_events:
+    - "scope3.config.modified"
+    - "scope3.screening.completed"
+    - "scope3.spend.classified"
+    - "scope3.category.calculated"
+    - "scope3.double_counting.resolved"
+    - "scope3.hotspot.identified"
+    - "scope3.supplier.engaged"
+    - "scope3.supplier.data_received"
+    - "scope3.data_quality.assessed"
+    - "scope3.uncertainty.analysed"
+    - "scope3.compliance.mapped"
+    - "scope3.report.generated"
+    - "scope3.pcaf.calculated"
+    - "scope3.preset.loaded"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_spend_data.json"
+    - "tests/fixtures/sample_supplier_responses.json"
+    - "tests/fixtures/sample_travel_data.json"
+    - "tests/fixtures/sample_waste_manifests.json"
+    - "tests/fixtures/sample_freight_invoices.json"
+    - "tests/fixtures/sample_employee_survey.json"
+    - "tests/fixtures/sample_portfolio_data.json"
+    - "tests/fixtures/sample_eeio_factors.json"
+
+# -----------------------------------------------------------------------------
+# Compliance Framework Mappings
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "GHG_PROTOCOL_SCOPE3"
+      name: "GHG Protocol Scope 3 Standard"
+      coverage: "All 15 categories, methodology tiers, data quality, reporting"
+    - id: "GHG_PROTOCOL_SCOPE3_TECHNICAL"
+      name: "GHG Protocol Scope 3 Technical Guidance"
+      coverage: "Calculation methods per category, data sources, emission factors"
+    - id: "ISO_14064"
+      name: "ISO 14064-1:2018"
+      coverage: "Categories 3-6: transportation, products, use, other indirect"
+    - id: "ESRS_E1"
+      name: "ESRS E1 Climate Change"
+      coverage: "E1-6 para 51: Scope 3 total, upstream/downstream, category detail"
+    - id: "CDP"
+      name: "CDP Climate Change"
+      coverage: "C6.5 Scope 3 by category, C6.7 methodology, C6.10 verification"
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      coverage: "Scope 3 near-term 67% coverage, reduction tracking, supplier targets"
+    - id: "SEC"
+      name: "US SEC Climate Disclosure"
+      coverage: "Scope 3 safe harbour, methodology documentation, material categories"
+    - id: "SB_253"
+      name: "California SB 253"
+      coverage: "Scope 3 annual reporting from 2027 per GHG Protocol"
+    - id: "PCAF"
+      name: "PCAF Global GHG Accounting Standard"
+      coverage: "Category 15: 6 asset classes, attribution, data quality scoring"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+    - "scikit-learn>=1.3"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 20
+    recommended_connections: 50
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_eeio_database
+    - verify_lca_database
+    - verify_classification_tables
+    - verify_mrv_agents_available
+    - verify_pack041_installed
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+      - "V326-V335"   # PACK-041 Scope 1-2 Complete
+    new:
+      - "V336__pack042_scope3_001"
+      - "V337__pack042_scope3_002"
+      - "V338__pack042_scope3_003"
+      - "V339__pack042_scope3_004"
+      - "V340__pack042_scope3_005"
+      - "V341__pack042_scope3_006"
+      - "V342__pack042_scope3_007"
+      - "V343__pack042_scope3_008"
+      - "V344__pack042_scope3_009"
+      - "V345__pack042_scope3_010"
+
+  post_install:
+    - seed_eeio_factors_exiobase3
+    - seed_eeio_factors_useeio2
+    - seed_naics_classification
+    - seed_isic_classification
+    - seed_unspsc_classification
+    - seed_lca_emission_factors
+    - seed_pcaf_asset_class_data
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: SpendScreeningEngine
+    file: engines/spend_screening_engine.py
+    description: "EEIO spend-based screening with EXIOBASE 3, USEEIO 2, and GTAP"
+  - name: SpendClassificationEngine
+    file: engines/spend_classification_engine.py
+    description: "Multi-system spend classification (NAICS, ISIC, UNSPSC, HS, GL)"
+  - name: CategoryCalculationEngine
+    file: engines/category_calculation_engine.py
+    description: "Four-tier calculation for all 15 categories via 17 MRV agents"
+  - name: DoubleCountingPreventionEngine
+    file: engines/double_counting_prevention_engine.py
+    description: "Seven-rule double-counting prevention with allocation methods"
+  - name: HotspotIdentificationEngine
+    file: engines/hotspot_identification_engine.py
+    description: "Pareto-based hotspot analysis at category, supplier, product level"
+  - name: SupplierEngagementTrackerEngine
+    file: engines/supplier_engagement_tracker_engine.py
+    description: "Supplier engagement programme tracking with CDP integration"
+  - name: DataQualityAssessmentEngine
+    file: engines/data_quality_assessment_engine.py
+    description: "Five-DQI data quality assessment per GHG Protocol Scope 3 guidance"
+  - name: UncertaintyAnalysisEngine
+    file: engines/uncertainty_analysis_engine.py
+    description: "Monte Carlo, analytical, and qualitative uncertainty quantification"
+  - name: ComplianceMappingEngine
+    file: engines/compliance_mapping_engine.py
+    description: "Maps to 9 frameworks: GHG Protocol, ISO, ESRS, CDP, SBTi, SEC, SB 253, PCAF"
+  - name: Scope3ReportingEngine
+    file: engines/scope3_reporting_engine.py
+    description: "Multi-format report generation: executive, category, hotspot, supplier, compliance"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: InitialScreeningWorkflow
+    file: workflows/initial_screening_workflow.py
+    description: "5-phase spend-based screening to identify material categories"
+  - name: AnnualScope3InventoryWorkflow
+    file: workflows/annual_scope3_inventory_workflow.py
+    description: "8-phase annual Scope 3 inventory from data collection through reporting"
+  - name: SupplierEngagementWorkflow
+    file: workflows/supplier_engagement_workflow.py
+    description: "5-phase supplier data collection with prioritisation and validation"
+  - name: HotspotAnalysisWorkflow
+    file: workflows/hotspot_analysis_workflow.py
+    description: "4-phase Pareto drill-down at category, supplier, and product level"
+  - name: DataQualityImprovementWorkflow
+    file: workflows/data_quality_improvement_workflow.py
+    description: "4-phase DQR assessment, gap analysis, and improvement planning"
+  - name: PCAFFinancedEmissionsWorkflow
+    file: workflows/pcaf_financed_emissions_workflow.py
+    description: "4-phase PCAF Category 15 with portfolio mapping and attribution"
+  - name: ComplianceDisclosureWorkflow
+    file: workflows/compliance_disclosure_workflow.py
+    description: "4-phase regulatory disclosure preparation for all target frameworks"
+  - name: FullScope3PipelineWorkflow
+    file: workflows/full_scope3_pipeline_workflow.py
+    description: "12-phase end-to-end pipeline from health check through compliance mapping"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: ExecutiveSummaryTemplate
+    file: templates/executive_summary.py
+    description: "C-suite Scope 3 summary with category totals and engagement progress"
+  - name: CategoryBreakdownTemplate
+    file: templates/category_breakdown.py
+    description: "15-category detail with methodology, DQR, and uncertainty per category"
+  - name: HotspotReportTemplate
+    file: templates/hotspot_report.py
+    description: "Pareto analysis with supplier drill-down and product group heatmaps"
+  - name: SupplierEngagementTemplate
+    file: templates/supplier_engagement_report.py
+    description: "Engagement status, response rates, and coverage improvement trend"
+  - name: DataQualityMatrixTemplate
+    file: templates/data_quality_matrix.py
+    description: "DQR matrix across 5 DQIs with improvement recommendations"
+  - name: ComplianceESRSE1Template
+    file: templates/compliance_esrs_e1.py
+    description: "ESRS E1-6 para 51 Scope 3 disclosure datapoints"
+  - name: ComplianceCDPTemplate
+    file: templates/compliance_cdp.py
+    description: "CDP C6.5 and C6.7 Scope 3 response data"
+  - name: UncertaintyReportTemplate
+    file: templates/uncertainty_report.py
+    description: "Confidence intervals, contribution analysis, and reduction recommendations"
+  - name: PCAFReportTemplate
+    file: templates/pcaf_report.py
+    description: "PCAF financed emissions by asset class with data quality scores"
+  - name: DoubleCountingLogTemplate
+    file: templates/double_counting_log.py
+    description: "Prevention rules applied, allocation decisions, and audit evidence"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: Scope3Orchestrator
+    file: integrations/pack_orchestrator.py
+    description: "12-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVScope3Bridge
+    file: integrations/mrv_scope3_bridge.py
+    description: "Routes data to 17 Scope 3 MRV agents with parallel execution"
+  - name: Scope12DataBridge
+    file: integrations/scope12_bridge.py
+    description: "PACK-041 integration for Cat 3 fuel data and Scope 1+2 totals"
+  - name: DataIntakeBridge
+    file: integrations/data_intake_bridge.py
+    description: "Routes source data to DATA agents for extraction and quality profiling"
+  - name: ERPSpendBridge
+    file: integrations/erp_spend_bridge.py
+    description: "Procurement spend extraction from SAP, Oracle, Dynamics"
+  - name: EEIODatabaseBridge
+    file: integrations/eeio_database_bridge.py
+    description: "EEIO factor database integration (EXIOBASE 3, USEEIO 2, GTAP)"
+  - name: LCADatabaseBridge
+    file: integrations/lca_database_bridge.py
+    description: "LCA database integration (ecoinvent, GaBi, ELCD)"
+  - name: SupplierPortalBridge
+    file: integrations/supplier_portal_bridge.py
+    description: "Supplier data collection portal and CDP Supply Chain integration"
+  - name: TravelDataBridge
+    file: integrations/travel_data_bridge.py
+    description: "Travel and expense system integration for Cat 6 and Cat 7"
+  - name: LogisticsDataBridge
+    file: integrations/logistics_data_bridge.py
+    description: "Logistics platform integration (EcoTransIT, GLEC) for Cat 4 and Cat 9"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "18-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "10-step guided configuration for Scope 3 inventory setup"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: manufacturing
+    file: config/presets/manufacturing.yaml
+    description: "Manufacturing sector (Cat 1, Cat 4, Cat 11 dominant)"
+  - name: retail
+    file: config/presets/retail.yaml
+    description: "Retail and distribution (Cat 1, Cat 4, Cat 9 dominant)"
+  - name: technology
+    file: config/presets/technology.yaml
+    description: "Technology and services (Cat 1, Cat 6, Cat 11 dominant)"
+  - name: financial_services
+    file: config/presets/financial_services.yaml
+    description: "Financial services (Cat 15 dominant via PCAF)"
+  - name: food_agriculture
+    file: config/presets/food_agriculture.yaml
+    description: "Food and agriculture (Cat 1, Cat 10, Cat 12 dominant)"
+  - name: energy_utility
+    file: config/presets/energy_utility.yaml
+    description: "Energy and utilities (Cat 3, Cat 11 dominant)"
+  - name: transport_logistics
+    file: config/presets/transport_logistics.yaml
+    description: "Transport and logistics (Cat 4, Cat 9, Cat 11 dominant)"
+  - name: sme_simplified
+    file: config/presets/sme_simplified.yaml
+    description: "SME simplified (top 5 categories only)"

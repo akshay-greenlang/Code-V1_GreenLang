@@ -1,0 +1,14 @@
+{
+  "app_id": "GL-CSRD-APP",
+  "artifacts": [
+    "esrs_report.json",
+    "audit/run_manifest.json",
+    "audit/checksums.json"
+  ],
+  "execution_mode": "fallback",
+  "pipeline_id": "csrd-esrs-core",
+  "status": "degraded",
+  "warnings": [
+    "csrd native backend unavailable; using deterministic fallback adapter"
+  ]
+}

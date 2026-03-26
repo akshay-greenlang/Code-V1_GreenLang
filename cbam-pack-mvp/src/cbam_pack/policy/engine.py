@@ -134,13 +134,15 @@ class PolicyEngine:
         """
         policy_config = PolicyConfig()
 
-        # Check if config has policy section
-        if hasattr(cbam_config, 'policy'):
-            policy = cbam_config.policy
-            if hasattr(policy, 'default_usage_cap'):
+        policy = cbam_config.policy
+        if policy is not None:
+            if policy.default_usage_cap is not None:
                 policy_config.default_usage_cap_q3_2024_plus = policy.default_usage_cap
-            if hasattr(policy, 'block_export_on_fail'):
-                policy_config.block_export_on_fail = policy.block_export_on_fail
+            if policy.default_usage_warn_threshold is not None:
+                policy_config.default_usage_warn_threshold = policy.default_usage_warn_threshold
+            if policy.authorization_threshold_tonnes is not None:
+                policy_config.authorization_threshold_tonnes = policy.authorization_threshold_tonnes
+            policy_config.block_export_on_fail = policy.block_export_on_fail
 
         return cls(policy_config)
 

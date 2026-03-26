@@ -54,3 +54,20 @@ def test_policy_engine_can_block_export_on_fail() -> None:
     assert allow_export.can_export is True
     assert block_export.status == PolicyStatus.FAIL
     assert block_export.can_export is False
+
+
+def test_policy_engine_reads_policy_from_yaml_config() -> None:
+    config = _sample_config().model_dump()
+    config["policy"] = {
+        "default_usage_cap": 15.0,
+        "default_usage_warn_threshold": 10.0,
+        "authorization_threshold_tonnes": 42.0,
+        "block_export_on_fail": True,
+    }
+    validated = CBAMConfig.model_validate(config)
+    engine = PolicyEngine.from_yaml_config(validated)
+
+    assert engine.config.default_usage_cap_q3_2024_plus == 15.0
+    assert engine.config.default_usage_warn_threshold == 10.0
+    assert engine.config.authorization_threshold_tonnes == 42.0
+    assert engine.config.block_export_on_fail is True

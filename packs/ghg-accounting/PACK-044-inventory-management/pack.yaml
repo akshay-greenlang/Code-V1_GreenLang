@@ -1,0 +1,1741 @@
+# =============================================================================
+# PACK-044: Inventory Management Pack
+# GreenLang GHG Accounting Pack for Complete GHG Inventory Management
+# =============================================================================
+# This pack delivers a production-ready, enterprise-grade GHG inventory
+# management system that orchestrates the full inventory lifecycle -- from
+# period setup and data collection through quality management, change control,
+# review/approval workflows, versioning, consolidation, gap analysis,
+# documentation, and benchmarking.
+#
+# The pack follows a zero-hallucination approach: all inventory calculations
+# use deterministic formulas from GHG Protocol, IPCC 2006/2019, and national
+# inventory methodologies. No LLM is used in any calculation path. Quality
+# checks are rule-based per GHG Protocol Chapter 7. Change management tracks
+# structural, methodological, and error-driven changes with full provenance.
+#
+# The inventory management output supports seven regulatory frameworks:
+#   1. GHG Protocol Corporate Standard (Chapters 4-8, inventory quality)
+#   2. ISO 14064-1:2018 (Clauses 5-9, quality management and improvement)
+#   3. ISO 14064-3:2019 (Validation and verification specifications)
+#   4. EU CSRD / ESRS E1 (E1-6, E1-7, connectivity and assurance)
+#   5. CDP Climate Change Questionnaire (C5 methodology, C10 verification)
+#   6. SBTi Corporate Net-Zero Standard (inventory quality for targets)
+#   7. US SEC Climate Disclosure Rules (attestation-ready data packages)
+#   8. California SB 253 (third-party assurance requirements)
+#
+# Key Capabilities:
+#   - Inventory period management with fiscal year alignment, multi-period
+#     tracking, and configurable reporting calendars (calendar, fiscal,
+#     custom start date)
+#   - Data collection orchestration with source-level tracking, completion
+#     monitoring, reminder scheduling, and data quality scoring
+#   - QA/QC engine implementing GHG Protocol Chapter 7: completeness checks,
+#     consistency checks (YoY variance within expected ranges), accuracy
+#     checks (emission factor validation, unit conversion verification),
+#     and transparency checks (assumptions documented, factors cited)
+#   - Change management for structural changes (acquisitions, divestitures,
+#     mergers), methodological changes (factor updates, tier upgrades),
+#     and error corrections with significance assessment and base year
+#     recalculation trigger evaluation
+#   - Multi-level review and approval workflows: preparer -> reviewer ->
+#     approver -> final sign-off with configurable escalation paths,
+#     comment threads, and approval audit trail
+#   - Inventory versioning with immutable snapshots, version comparison
+#     (diff analysis), rollback capability, and version history tracking
+#   - Consolidation management across multi-entity corporate structures
+#     with equity share, operational control, and financial control
+#     approaches; intra-group elimination; and subsidiary-level reporting
+#   - Gap analysis identifying missing sources, incomplete data periods,
+#     methodology gaps, documentation gaps, and compliance coverage gaps
+#     with prioritised remediation plans
+#   - Automated documentation generation: methodology descriptions,
+#     assumption registers, emission factor registers, calculation
+#     summaries, and verification-ready documentation packages
+#   - Benchmarking against sector peers, industry averages, best-in-class
+#     performers, and historical self-performance with intensity metrics
+#
+# Consolidation Approaches:
+#   EQUITY_SHARE: Proportional consolidation by ownership percentage
+#   OPERATIONAL_CONTROL: 100% of emissions from operations under control
+#   FINANCIAL_CONTROL: 100% of emissions from entities financially controlled
+#
+# Sector Presets:
+#   corporate_office - Office-based organisations (data collection focus)
+#   manufacturing - Industrial manufacturing (multi-source complexity)
+#   energy_utility - Power generation and distribution utilities
+#   transport_logistics - Fleet and logistics operators (mobile data)
+#   food_agriculture - Agricultural operations and food processing
+#   real_estate - Property portfolios and REIT companies
+#   healthcare - Hospital and healthcare systems
+#   sme_simplified - Simplified inventory management for SMEs
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-24)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-044-inventory-management
+  version: "1.0.0"
+  display_name: "Inventory Management Pack"
+  description: >-
+    GreenLang deployment pack providing a complete, enterprise-grade GHG
+    inventory management system. Orchestrates the full inventory lifecycle
+    from period setup through data collection, quality management (QA/QC per
+    GHG Protocol Chapter 7), change management (structural, methodological,
+    error corrections), multi-level review and approval workflows, inventory
+    versioning with immutable snapshots and version comparison, multi-entity
+    consolidation management, gap analysis with prioritised remediation,
+    automated documentation generation (methodology, assumptions, emission
+    factor registers), and sector benchmarking with intensity metrics. Supports
+    equity share, operational control, and financial control consolidation
+    approaches. Maps inventory management processes to GHG Protocol, ISO
+    14064-1, ISO 14064-3, ESRS E1, CDP, SBTi, SEC, and SB 253 requirements.
+    Includes full audit trail with SHA-256 provenance hashing, role-based
+    access control for review workflows, and sector-specific presets for
+    office, manufacturing, energy, transport, agriculture, real estate,
+    healthcare, and SME organisations.
+  category: ghg-accounting
+  tier: enterprise
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-24"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/inventory-management"
+  changelog_url: "https://docs.greenlang.io/packs/inventory-management/changelog"
+
+  tags:
+    - ghg-inventory
+    - inventory-management
+    - qaqc
+    - quality-management
+    - data-collection
+    - change-management
+    - review-approval
+    - versioning
+    - consolidation
+    - gap-analysis
+    - benchmarking
+    - documentation
+    - audit-trail
+    - provenance
+
+  regulation:
+    primary:
+      name: "GHG Protocol Corporate Standard"
+      reference: "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition, 2015)"
+      effective_date: "2015-01-01"
+      description: >-
+        The GHG Protocol Corporate Standard is the most widely used greenhouse
+        gas accounting standard globally. This pack implements the inventory
+        quality management requirements from Chapter 7 (Managing Inventory
+        Quality), including QA/QC procedures, documentation standards, base
+        year management, change management triggers, and continuous improvement
+        processes. It also supports the reporting requirements from Chapter 8
+        and the inventory design principles from Chapter 1 (relevance,
+        completeness, consistency, transparency, accuracy).
+
+    secondary:
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018"
+        effective_date: "2018-12-01"
+      - name: "ISO 14064-3:2019"
+        reference: "ISO 14064-3:2019"
+        effective_date: "2019-04-01"
+      - name: "EU CSRD / ESRS E1"
+        reference: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+        effective_date: "2024-01-01"
+      - name: "CDP Climate Change Questionnaire"
+        reference: "CDP Climate Change 2026"
+        effective_date: "2026-01-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi v1.1"
+        effective_date: "2023-01-01"
+      - name: "US SEC Climate Disclosure Rules"
+        reference: "SEC Regulation S-K Item 1505"
+        effective_date: "2024-03-06"
+      - name: "California SB 253"
+        reference: "SB 253 Climate Corporate Data Accountability Act"
+        effective_date: "2026-01-01"
+
+  compliance_references:
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition)"
+      effective_date: "2015-01-01"
+      description: >-
+        This pack fully implements the GHG Protocol inventory quality
+        management requirements from Chapter 7. It provides QA/QC procedures
+        covering completeness (all identified sources quantified), consistency
+        (year-on-year changes within expected ranges), accuracy (emission
+        factor validation, unit conversion verification, GWP alignment),
+        and transparency (all assumptions documented, all emission factors
+        cited with provenance, all exclusions justified). The review and
+        approval workflow enforces multi-level sign-off per the standard's
+        quality management principles. Change management tracks structural
+        and methodological changes with base year recalculation trigger
+        evaluation.
+
+    - id: "ISO_14064_1"
+      name: "ISO 14064-1:2018"
+      regulation: "ISO 14064-1:2018"
+      effective_date: "2018-12-01"
+      description: >-
+        Maps inventory management processes to ISO 14064-1:2018 Clause 7
+        (GHG inventory quality management) including Clause 7.2 (quality
+        management procedures), Clause 7.3 (uncertainty assessment management),
+        Clause 7.4 (document management and retention), and Clause 9
+        (GHG inventory improvement). The versioning engine supports the
+        documentation requirements of Clause 8 (GHG reporting) and the
+        gap analysis engine addresses Clause 7 improvement objectives.
+
+    - id: "ISO_14064_3"
+      name: "ISO 14064-3:2019"
+      regulation: "ISO 14064-3:2019"
+      effective_date: "2019-04-01"
+      description: >-
+        Supports third-party verification preparation per ISO 14064-3:2019.
+        The documentation engine generates verification-ready packages
+        including methodology descriptions, emission factor registers with
+        full provenance, assumption registers, calculation summaries, and
+        data quality assessments. The review and approval workflow produces
+        the management assertion and internal review evidence required by
+        verification bodies. The versioning engine maintains the immutable
+        inventory snapshots needed for the verification engagement.
+
+    - id: "ESRS_E1"
+      name: "EU CSRD / ESRS E1 Climate Change"
+      regulation: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+      effective_date: "2024-01-01"
+      description: >-
+        Supports ESRS E1 disclosure requirements through structured inventory
+        management. The quality management engine validates data for E1-6
+        (Scope 1) and E1-7 (Scope 2) disclosure completeness. The
+        documentation engine generates ESRS-compliant methodology
+        descriptions including consolidation approach, emission factor
+        sources, GWP values, gases included, and biogenic CO2 treatment.
+        The change management engine tracks material changes requiring
+        disclosure updates. Gap analysis identifies missing ESRS datapoints.
+
+    - id: "CDP"
+      name: "CDP Climate Change Questionnaire"
+      regulation: "CDP Climate Change 2026"
+      effective_date: "2026-01-01"
+      description: >-
+        Supports CDP Climate Change questionnaire preparation through
+        structured inventory management. The quality management engine
+        validates data quality for C5 (emissions methodology), C6 (Scope 1),
+        and C7 (Scope 2) sections. The documentation engine generates
+        methodology descriptions for C5 disclosure. Gap analysis identifies
+        missing CDP response data. The review workflow supports C10
+        (verification status) preparation.
+
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      regulation: "SBTi Corporate Net-Zero Standard v1.1"
+      effective_date: "2023-01-01"
+      description: >-
+        Supports SBTi target tracking through inventory quality management.
+        The benchmarking engine compares inventory performance against SBTi
+        required reduction pathways (4.2% p.a. for 1.5C alignment).
+        The change management engine evaluates whether structural changes
+        require target recalculation per SBTi criteria. The versioning
+        engine maintains the base year and annual snapshots needed for
+        SBTi progress reporting.
+
+    - id: "SEC"
+      name: "US SEC Climate Disclosure Rules"
+      regulation: "SEC Regulation S-K Item 1505"
+      effective_date: "2024-03-06"
+      description: >-
+        Supports SEC climate disclosure through attestation-ready inventory
+        management. The quality management engine implements controls suitable
+        for attestation under SEC requirements. The review and approval
+        workflow provides the internal control evidence needed for SEC
+        filing. The documentation engine generates methodology documentation
+        meeting SEC disclosure standards. The versioning engine provides
+        the data retention and audit trail required for regulatory filings.
+
+    - id: "SB_253"
+      name: "California SB 253"
+      regulation: "SB 253 Climate Corporate Data Accountability Act"
+      effective_date: "2026-01-01"
+      description: >-
+        Supports California SB 253 compliance through structured inventory
+        management with third-party assurance readiness. The quality
+        management engine validates data quality per GHG Protocol standards
+        as required by SB 253. The documentation engine generates the
+        methodology and evidence packages required for third-party
+        assurance engagements. The review workflow supports the annual
+        reporting cycle mandated by SB 253.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 inventory mgmt engines)
+  # ===========================================================================
+  engines:
+    - id: inventory_period
+      name: "Inventory Period Engine"
+      description: >-
+        Manages GHG inventory reporting periods and calendar configuration.
+        Supports calendar year (Jan-Dec), fiscal year (configurable start
+        month), and custom period definitions. Handles multi-period tracking
+        for trend analysis: current reporting period, prior year comparison
+        period, and base year period. Manages period lifecycle states:
+        DRAFT, DATA_COLLECTION, CALCULATION, REVIEW, APPROVED, PUBLISHED,
+        and ARCHIVED. Enforces period lock-down after approval to prevent
+        unauthorised modifications. Calculates period completeness metrics
+        (percentage of sources with data, percentage of facilities reported).
+        Supports interim periods (quarterly, monthly) within the annual
+        reporting cycle for in-year tracking. Generates period summary
+        with key dates, milestones, and status dashboard.
+        Zero-hallucination: date arithmetic and status transitions from
+        deterministic rules, no LLM.
+      class: "InventoryPeriodEngine"
+      file: "engines/inventory_period_engine.py"
+      required: true
+
+    - id: data_collection
+      name: "Data Collection Engine"
+      description: >-
+        Orchestrates activity data collection across all emission sources,
+        facilities, and entities. Tracks collection status at the source-
+        facility-period level with completion percentage, data quality
+        score, and last update timestamp. Manages data collection workflows:
+        assignment of data owners per source and facility, automated
+        reminder scheduling (configurable cadence), escalation paths for
+        overdue submissions, and bulk import from ERP and meter systems.
+        Validates incoming data against expected ranges (based on prior
+        period data and source-specific thresholds). Flags anomalies for
+        review: zero values, negative values, outliers exceeding 3 sigma,
+        and missing mandatory fields. Generates collection progress
+        dashboards by facility, entity, scope, and category. Supports
+        proxy data estimation for missing sources with documented
+        methodology and quality flags.
+        Zero-hallucination: progress calculations from database counts,
+        anomaly detection from statistical thresholds, no LLM.
+      class: "DataCollectionEngine"
+      file: "engines/data_collection_engine.py"
+      required: true
+
+    - id: quality_management
+      name: "Quality Management Engine"
+      description: >-
+        Implements GHG Protocol Chapter 7 quality management procedures
+        with automated QA/QC checks. Completeness checks: all identified
+        sources have quantified emissions, no facility gaps, all gases
+        covered. Consistency checks: year-on-year change within expected
+        range (configurable threshold, default 20%), no unexplained jumps,
+        methodology consistency across periods. Accuracy checks: emission
+        factors from approved sources, correct unit conversion verified,
+        GWP values match configured Assessment Report, arithmetic accuracy
+        (recalculation from source data). Transparency checks: all
+        assumptions documented in registry, all emission factors cited
+        with provenance (source, vintage, geographic scope), all source
+        exclusions justified with documented rationale. Generates QA/QC
+        checklist with PASS/FAIL/WARNING status per check item. Produces
+        issue register with severity (CRITICAL, MAJOR, MINOR, OBSERVATION),
+        assigned owner, and resolution status. Supports custom check rules
+        defined via YAML configuration.
+        Zero-hallucination: rule-based checks from GHG Protocol criteria,
+        variance calculations from arithmetic, no LLM.
+      class: "QualityManagementEngine"
+      file: "engines/quality_management_engine.py"
+      required: true
+
+    - id: change_management
+      name: "Change Management Engine"
+      description: >-
+        Tracks and manages changes to the GHG inventory with full audit
+        trail and base year recalculation trigger evaluation. Three change
+        categories: STRUCTURAL (acquisitions, divestitures, mergers,
+        outsourcing/insourcing, facility openings/closures), METHODOLOGICAL
+        (emission factor source changes, methodology tier upgrades/
+        downgrades, GWP assessment report changes, calculation formula
+        updates), and ERROR_CORRECTION (data entry errors, retroactive
+        invoices, meter recalibration adjustments). Each change record
+        captures: change type, description, effective date, affected
+        scopes/categories/entities, quantitative impact assessment (tCO2e
+        change, percentage of total), significance determination (above/
+        below recalculation threshold, default 5% of total), base year
+        recalculation recommendation, approver, and approval date.
+        Generates change log report for verification bodies showing all
+        changes in the reporting period with impact assessment.
+        Zero-hallucination: significance thresholds from arithmetic
+        comparison, no LLM in impact assessment.
+      class: "ChangeManagementEngine"
+      file: "engines/change_management_engine.py"
+      required: true
+
+    - id: review_approval
+      name: "Review & Approval Engine"
+      description: >-
+        Implements multi-level review and approval workflows for GHG
+        inventory sign-off. Default four-level workflow: PREPARER (data
+        entry and initial calculation) -> REVIEWER (technical review of
+        methodology and calculations) -> APPROVER (management review and
+        sign-off) -> FINAL_SIGNOFF (sustainability officer or CFO final
+        approval). Configurable workflow with custom approval levels,
+        parallel approvers, and conditional routing. Each review stage
+        captures: reviewer identity, review date, review outcome
+        (APPROVED, REJECTED, RETURNED_FOR_REVISION), comments thread,
+        and attached evidence. Supports section-level review: reviewers
+        can approve individual scopes, categories, or facilities
+        independently. Enforces segregation of duties: preparer cannot
+        be reviewer, reviewer cannot be approver. Generates approval
+        audit trail for verification bodies and regulatory filings.
+        Supports deadline tracking with automated reminders and
+        escalation to management for overdue reviews.
+        Zero-hallucination: workflow state machine from deterministic
+        transitions, no LLM.
+      class: "ReviewApprovalEngine"
+      file: "engines/review_approval_engine.py"
+      required: true
+
+    - id: inventory_versioning
+      name: "Inventory Versioning Engine"
+      description: >-
+        Manages immutable inventory snapshots with version comparison and
+        rollback capabilities. Creates versioned snapshots at configurable
+        trigger points: after QA/QC completion, after approval, after
+        publication, and on-demand. Each version captures: complete
+        inventory data (all scopes, categories, entities, facilities),
+        emission factors used with provenance, methodology configuration,
+        QA/QC results, approval status, and SHA-256 integrity hash.
+        Version comparison (diff analysis) shows changes between any two
+        versions at source, category, scope, and total levels with
+        absolute and percentage deltas. Supports rollback to any prior
+        version with documented justification. Maintains version history
+        with creation timestamp, creator, trigger, and description.
+        Generates version comparison reports for audit trail. Enforces
+        version immutability: published versions cannot be modified,
+        only superseded by new versions.
+        Zero-hallucination: diff calculations from arithmetic comparison,
+        hashing from SHA-256, no LLM.
+      class: "InventoryVersioningEngine"
+      file: "engines/inventory_versioning_engine.py"
+      required: true
+
+    - id: consolidation_management
+      name: "Consolidation Management Engine"
+      description: >-
+        Orchestrates multi-entity GHG inventory consolidation across
+        corporate structures. Manages entity hierarchy: parent company,
+        subsidiaries (wholly-owned and partial), joint ventures, and
+        associates with ownership percentage tracking over time. Implements
+        three consolidation approaches per GHG Protocol Chapter 3:
+        equity share (proportional allocation by ownership percentage),
+        operational control (100% from controlled operations), and
+        financial control (100% from financially controlled entities).
+        Handles consolidation complexities: intra-group transfers and
+        eliminations, mid-year acquisitions and divestitures (pro-rata
+        allocation), changes in ownership percentage, and entities with
+        different reporting periods. Produces consolidated inventory at
+        group level with subsidiary-level drill-down. Generates
+        consolidation workpapers showing entity-level contributions,
+        ownership adjustments, and elimination entries.
+        Zero-hallucination: proportional allocation and aggregation
+        from arithmetic, no LLM.
+      class: "ConsolidationManagementEngine"
+      file: "engines/consolidation_management_engine.py"
+      required: true
+
+    - id: gap_analysis
+      name: "Gap Analysis Engine"
+      description: >-
+        Identifies gaps in GHG inventory coverage and generates prioritised
+        remediation plans. Five gap categories: SOURCE_COVERAGE (emission
+        sources not yet quantified across facilities and categories),
+        DATA_COMPLETENESS (reporting periods with missing or incomplete
+        activity data), METHODOLOGY_GAPS (sources using lower-tier
+        methodology than available data supports), DOCUMENTATION_GAPS
+        (missing methodology descriptions, uncited emission factors,
+        undocumented assumptions), and COMPLIANCE_GAPS (framework-specific
+        requirements not met: ESRS datapoints, CDP response fields, SEC
+        disclosure items). For each gap: severity assessment (CRITICAL
+        sources above significance threshold, MAJOR sources 1-5% of total,
+        MINOR sources below 1%, OBSERVATION documentation improvements),
+        estimated impact (tCO2e if quantifiable), remediation action,
+        responsible owner, target resolution date, and effort estimate.
+        Generates gap analysis dashboard with coverage heat maps by
+        facility and category. Tracks remediation progress over time.
+        Zero-hallucination: gap identification from database coverage
+        queries, impact estimation from prior period data, no LLM.
+      class: "GapAnalysisEngine"
+      file: "engines/gap_analysis_engine.py"
+      required: true
+
+    - id: documentation
+      name: "Documentation Engine"
+      description: >-
+        Generates comprehensive inventory documentation for internal use,
+        verification, and regulatory filing. Document types: METHODOLOGY
+        (calculation methodology per source category including formula,
+        emission factor source, activity data source, and uncertainty
+        treatment), ASSUMPTIONS (complete assumption register with
+        assumption description, basis, materiality assessment, and
+        sensitivity), EMISSION_FACTORS (emission factor register with
+        factor value, unit, source, vintage, geographic scope, and
+        applicability), CALCULATION_SUMMARY (source-level calculation
+        walkthrough showing input data, factors applied, intermediate
+        steps, and final result), VERIFICATION_PACKAGE (ISO 14064-3 /
+        ISAE 3410 compliant package: management assertion, inventory
+        report, supporting evidence register, methodology documentation,
+        QA/QC checklist, and uncertainty assessment), and INVENTORY_MANUAL
+        (GHG inventory management plan documenting policies, procedures,
+        roles, responsibilities, and improvement objectives). Supports
+        Jinja2 templates with configurable branding and formatting.
+        Zero-hallucination: document content from inventory data and
+        metadata, template-based generation, no LLM in data content.
+      class: "DocumentationEngine"
+      file: "engines/documentation_engine.py"
+      required: true
+
+    - id: benchmarking
+      name: "Benchmarking Engine"
+      description: >-
+        Compares GHG inventory performance against benchmarks for strategic
+        insights. Benchmark categories: SECTOR_AVERAGE (industry average
+        emissions by sector classification: GICS, NACE, SIC), PEER_GROUP
+        (comparable companies by revenue range, employee count, and
+        geographic footprint), BEST_IN_CLASS (top quartile performers
+        in the sector), HISTORICAL_SELF (year-on-year self-comparison
+        and base year comparison), and TARGET_PATHWAY (comparison against
+        SBTi required trajectory and internal targets). Intensity metrics
+        for benchmarking: tCO2e per million revenue, tCO2e per employee,
+        tCO2e per m2, tCO2e per unit produced, and sector-specific custom
+        metrics. Generates benchmarking scorecards with percentile
+        ranking, gap-to-target analysis, and improvement opportunity
+        identification. Supports custom benchmark datasets imported from
+        CDP, SBTI, or industry publications. Normalises benchmarks for
+        geographic and activity mix differences.
+        Zero-hallucination: benchmarking from statistical comparison
+        against published datasets, no LLM.
+      class: "BenchmarkingEngine"
+      file: "engines/benchmarking_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 inventory mgmt workflows)
+  # ===========================================================================
+  workflows:
+    - id: annual_inventory_management
+      name: "Annual Inventory Management Workflow"
+      description: >-
+        8-phase workflow for complete annual GHG inventory management:
+        Phase 1 - Period Setup (configure reporting period, set milestones,
+        assign data owners) -> Phase 2 - Data Collection (orchestrate
+        activity data collection across all sources and facilities, track
+        completion, send reminders) -> Phase 3 - Quality Checks (run
+        automated QA/QC checks, flag issues, assign resolution owners) ->
+        Phase 4 - Gap Analysis (identify coverage gaps, create remediation
+        plan, prioritise by significance) -> Phase 5 - Consolidation
+        (aggregate across entities using configured consolidation approach)
+        -> Phase 6 - Review & Approval (multi-level review workflow from
+        preparer through final sign-off) -> Phase 7 - Documentation
+        (generate methodology docs, verification package, compliance
+        reports) -> Phase 8 - Publication (create immutable version
+        snapshot, publish to reporting systems, archive period).
+      schedule: "annual"
+      estimated_duration_minutes: 600
+      phases: 8
+
+    - id: quarterly_tracking
+      name: "Quarterly Tracking Workflow"
+      description: >-
+        5-phase workflow for quarterly emissions tracking: Phase 1 - Data
+        Collection (collect quarterly activity data for material sources,
+        estimate missing data) -> Phase 2 - Quick QA/QC (run key quality
+        checks, flag anomalies) -> Phase 3 - Consolidation (update
+        year-to-date totals, compare to prior year quarter) -> Phase 4 -
+        Benchmarking (compare quarterly performance against target
+        trajectory) -> Phase 5 - Dashboard Update (update tracking
+        dashboard, year-end projection, variance analysis).
+      schedule: "quarterly"
+      estimated_duration_minutes: 120
+      phases: 5
+
+    - id: change_management_workflow
+      name: "Change Management Workflow"
+      description: >-
+        5-phase workflow for managing inventory changes: Phase 1 - Change
+        Identification (record change: structural, methodological, or
+        error correction with description and evidence) -> Phase 2 -
+        Impact Assessment (quantify impact on inventory totals, assess
+        significance against threshold) -> Phase 3 - Base Year Evaluation
+        (determine if change triggers base year recalculation per GHG
+        Protocol Chapter 5 policy) -> Phase 4 - Approval (route change
+        through approval workflow with impact documentation) -> Phase 5 -
+        Implementation (apply change to inventory, update version, update
+        documentation and change log).
+      schedule: "on_demand"
+      estimated_duration_minutes: 180
+      phases: 5
+
+    - id: verification_preparation
+      name: "Verification Preparation Workflow"
+      description: >-
+        6-phase workflow for third-party verification preparation: Phase 1 -
+        Documentation Assembly (generate methodology documentation,
+        assumption register, emission factor register) -> Phase 2 -
+        Evidence Compilation (compile supporting evidence: invoices,
+        meter readings, fuel records, contractual instruments) -> Phase 3 -
+        QA/QC Completion (run full QA/QC suite, resolve all critical and
+        major issues) -> Phase 4 - Version Snapshot (create immutable
+        inventory version for verification, generate SHA-256 integrity
+        hash) -> Phase 5 - Package Assembly (assemble verification package
+        per ISO 14064-3 / ISAE 3410: management assertion, inventory
+        report, methodology docs, evidence register, uncertainty assessment)
+        -> Phase 6 - Readiness Review (internal mock verification
+        walkthrough, completeness checklist sign-off).
+      schedule: "annual"
+      estimated_duration_minutes: 480
+      phases: 6
+
+    - id: review_approval_cycle
+      name: "Review & Approval Cycle Workflow"
+      description: >-
+        4-phase workflow for inventory review and approval: Phase 1 -
+        Preparation (preparer completes calculations, runs initial QA/QC,
+        documents methodology) -> Phase 2 - Technical Review (reviewer
+        verifies calculations, checks emission factors, validates
+        methodology, provides comments) -> Phase 3 - Management Approval
+        (approver reviews summary, confirms completeness, checks
+        compliance alignment, approves or returns with comments) ->
+        Phase 4 - Final Sign-off (sustainability officer or CFO final
+        approval, version lock, approval certificate generation).
+      schedule: "annual"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: gap_remediation
+      name: "Gap Remediation Workflow"
+      description: >-
+        4-phase workflow for gap identification and remediation: Phase 1 -
+        Assessment (run gap analysis across all five categories: source
+        coverage, data completeness, methodology, documentation,
+        compliance) -> Phase 2 - Prioritisation (prioritise gaps by
+        severity, significance threshold, and compliance impact, assign
+        owners) -> Phase 3 - Remediation (execute remediation actions:
+        collect missing data, upgrade methodology tier, document
+        assumptions, add missing disclosures) -> Phase 4 - Verification
+        (re-run gap analysis to confirm closure, update coverage metrics,
+        report on improvement).
+      schedule: "quarterly"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: benchmarking_assessment
+      name: "Benchmarking Assessment Workflow"
+      description: >-
+        3-phase workflow for periodic benchmarking: Phase 1 - Data
+        Preparation (extract current inventory metrics, normalise for
+        benchmarking comparison, apply geographic and activity mix
+        adjustments) -> Phase 2 - Benchmark Comparison (compare against
+        sector averages, peer group, best-in-class, historical self,
+        and target pathway; calculate percentile ranking) -> Phase 3 -
+        Insight Generation (generate benchmarking scorecard, identify
+        improvement opportunities, calculate gap-to-target, produce
+        executive briefing).
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 3
+
+    - id: full_management_pipeline
+      name: "Full Management Pipeline Workflow"
+      description: >-
+        12-phase end-to-end inventory management pipeline: Phase 1 -
+        Health Check (verify all engines, databases, and agents available)
+        -> Phase 2 - Period Configuration (set up reporting period,
+        milestones, data owners) -> Phase 3 - Data Collection (orchestrate
+        collection with progress tracking and reminders) -> Phase 4 -
+        Data Validation (run anomaly detection, outlier checks, range
+        validation) -> Phase 5 - Gap Analysis (identify and prioritise
+        coverage gaps) -> Phase 6 - QA/QC (run full quality check suite)
+        -> Phase 7 - Consolidation (multi-entity consolidation) ->
+        Phase 8 - Benchmarking (sector and self comparison) -> Phase 9 -
+        Review & Approval (multi-level review workflow) -> Phase 10 -
+        Documentation (generate all documentation packages) -> Phase 11 -
+        Version Snapshot (create immutable version with integrity hash)
+        -> Phase 12 - Publication (publish reports, archive period).
+      schedule: "annual"
+      estimated_duration_minutes: 720
+      phases: 12
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 inventory mgmt templates)
+  # ===========================================================================
+  templates:
+    - id: inventory_dashboard
+      display_name: "Inventory Management Dashboard"
+      description: >-
+        Real-time inventory management dashboard with period progress
+        tracker, data collection completion by facility and source, QA/QC
+        status summary (pass/fail/warning counts), review workflow status,
+        gap analysis coverage heat map, and key milestone timeline. Provides
+        drill-down from summary KPIs to source-level detail.
+      format: "html"
+      template_file: "templates/inventory_dashboard.jinja2"
+      enabled: true
+
+    - id: qaqc_checklist
+      display_name: "QA/QC Checklist Report"
+      description: >-
+        Comprehensive QA/QC checklist with status per check item (PASS,
+        FAIL, WARNING), issue register with severity classification
+        (CRITICAL, MAJOR, MINOR, OBSERVATION), resolution status and
+        owner, and summary statistics. Follows GHG Protocol Chapter 7
+        quality management structure.
+      format: "html"
+      template_file: "templates/qaqc_checklist.jinja2"
+      enabled: true
+
+    - id: change_log
+      display_name: "Change Log Report"
+      description: >-
+        Complete change log showing all inventory changes during the
+        reporting period: change type (structural, methodological, error
+        correction), description, effective date, quantitative impact
+        (tCO2e change, percentage), significance assessment, base year
+        recalculation determination, and approval record. Suitable for
+        verification body review.
+      format: "html"
+      template_file: "templates/change_log.jinja2"
+      enabled: true
+
+    - id: approval_audit_trail
+      display_name: "Approval Audit Trail Report"
+      description: >-
+        Complete approval workflow audit trail showing all review stages:
+        preparer sign-off, technical reviewer assessment, management
+        approval, and final sign-off. Includes review comments, revision
+        history, approval dates, and segregation of duties verification.
+        Suitable for SEC attestation and ISO 14064-3 verification.
+      format: "html"
+      template_file: "templates/approval_audit_trail.jinja2"
+      enabled: true
+
+    - id: gap_analysis_report
+      display_name: "Gap Analysis Report"
+      description: >-
+        Gap analysis report with coverage heat maps by facility and
+        category, gap inventory by type (source, data, methodology,
+        documentation, compliance), severity-prioritised remediation
+        plan with owners and target dates, and coverage trend showing
+        improvement over time.
+      format: "html"
+      template_file: "templates/gap_analysis_report.jinja2"
+      enabled: true
+
+    - id: version_comparison
+      display_name: "Version Comparison Report"
+      description: >-
+        Side-by-side comparison of two inventory versions showing changes
+        at total, scope, category, and source levels. Includes absolute
+        and percentage deltas, change explanations, and version metadata
+        (creation date, creator, trigger, integrity hash). Supports
+        multi-version timeline view.
+      format: "html"
+      template_file: "templates/version_comparison.jinja2"
+      enabled: true
+
+    - id: consolidation_workpapers
+      display_name: "Consolidation Workpapers"
+      description: >-
+        Consolidation workpapers showing entity-level emissions,
+        ownership percentages, consolidation approach applied, proportional
+        adjustments (equity share), intra-group eliminations, and
+        consolidated group totals. Includes entity hierarchy diagram
+        and subsidiary-level contribution analysis.
+      format: "html"
+      template_file: "templates/consolidation_workpapers.jinja2"
+      enabled: true
+
+    - id: benchmarking_scorecard
+      display_name: "Benchmarking Scorecard"
+      description: >-
+        Benchmarking scorecard with percentile ranking against sector
+        peers, intensity metric comparison (per revenue, per employee,
+        per m2), gap-to-target analysis, year-on-year self-improvement
+        tracking, and improvement opportunity matrix prioritised by
+        impact and feasibility.
+      format: "html"
+      template_file: "templates/benchmarking_scorecard.jinja2"
+      enabled: true
+
+    - id: verification_package
+      display_name: "Verification Package"
+      description: >-
+        Comprehensive verification package for third-party assurance per
+        ISO 14064-3 or ISAE 3410. Includes management assertion letter,
+        inventory report, methodology documentation, emission factor
+        register with provenance, activity data evidence register,
+        assumptions register, QA/QC checklist, change log, approval
+        audit trail, and uncertainty assessment.
+      format: "html"
+      template_file: "templates/verification_package.jinja2"
+      enabled: true
+
+    - id: inventory_manual
+      display_name: "GHG Inventory Manual"
+      description: >-
+        Complete GHG inventory management manual documenting: inventory
+        management plan, organisational and operational boundary policies,
+        data collection procedures, quality management procedures,
+        change management policies, review and approval procedures,
+        roles and responsibilities matrix, reporting calendar and
+        milestones, documentation standards, and continuous improvement
+        objectives.
+      format: "html"
+      template_file: "templates/inventory_manual.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        12-phase master pipeline: Health Check -> Period Configuration ->
+        Data Collection -> Data Validation -> Gap Analysis -> QA/QC ->
+        Consolidation -> Benchmarking -> Review & Approval ->
+        Documentation -> Version Snapshot -> Publication. Implements
+        DAG-based dependency resolution across all 10 engines, parallel
+        execution where possible (e.g., QA/QC and gap analysis in
+        parallel), and error recovery with partial result preservation.
+        Full provenance tracking with SHA-256 hashes at each phase.
+      required: true
+
+    - id: mrv_bridge
+      name: "MRV Agent Bridge"
+      description: >-
+        Connects to all 30 MRV agents (Scope 1, Scope 2, Scope 3) for
+        emission calculation results. Retrieves calculated emissions per
+        source, facility, and entity for consolidation and quality
+        management. Supports both batch and incremental result retrieval.
+        Validates MRV output format and completeness before passing to
+        quality management engine.
+      required: true
+
+    - id: data_intake_bridge
+      name: "Data Intake Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for activity data collection
+        orchestration. Routes collection requests through DATA-001 (PDF
+        extraction), DATA-002 (Excel/CSV normalization), DATA-003 (ERP
+        connector), DATA-004 (API gateway). Applies data quality profiling
+        via DATA-010 and outlier detection via DATA-013 on all incoming
+        activity data. Tracks collection status per source and facility.
+      required: true
+
+    - id: erp_finance_bridge
+      name: "ERP/Finance Bridge"
+      description: >-
+        Connects to ERP and financial systems for automated activity data
+        retrieval supporting data collection engine. Supports SAP, Oracle,
+        Microsoft Dynamics, and generic REST/ODBC connectors. Retrieves
+        fuel purchase records, utility invoices, fleet fuel cards,
+        refrigerant records, and production data for benchmarking metrics.
+      required: false
+
+    - id: scope12_pack_bridge
+      name: "Scope 1-2 Pack Bridge"
+      description: >-
+        Integration bridge to PACK-041 (Scope 1-2 Complete Pack) for
+        accessing consolidated Scope 1 and Scope 2 inventory results.
+        Retrieves emission totals, source-level detail, emission factors
+        used, and methodology configuration for quality management,
+        versioning, and documentation purposes.
+      required: false
+
+    - id: scope3_pack_bridge
+      name: "Scope 3 Pack Bridge"
+      description: >-
+        Integration bridge to PACK-042 (Scope 3 Starter) and PACK-043
+        (Scope 3 Complete) for accessing Scope 3 category results.
+        Retrieves category-level emissions for full inventory
+        consolidation, quality management, and compliance reporting
+        across all three scopes.
+      required: false
+
+    - id: document_store_bridge
+      name: "Document Store Bridge"
+      description: >-
+        Connects to document storage systems (S3, Azure Blob, local
+        filesystem) for storing and retrieving inventory documentation:
+        verification packages, methodology documents, evidence files,
+        and archived inventory snapshots. Supports versioned document
+        storage with metadata tagging and retention policy enforcement.
+      required: true
+
+    - id: notification_bridge
+      name: "Notification Bridge"
+      description: >-
+        Multi-channel notification for inventory management events: data
+        collection reminders, QA/QC issue alerts, review assignment
+        notifications, approval requests, deadline warnings, gap
+        remediation reminders, and period milestone alerts. Supports
+        email, Slack, Teams, and webhook delivery channels.
+      required: false
+
+    - id: benchmark_data_bridge
+      name: "Benchmark Data Bridge"
+      description: >-
+        Connects to external benchmark data sources for sector comparison.
+        Integrates with CDP sector reports, SBTi sector pathway data,
+        industry association publications, and custom benchmark datasets.
+        Maintains local benchmark cache with annual refresh cycle.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        12-category system verification: all 10 engines operational,
+        database connectivity, MRV agent availability, data agent
+        availability, document store accessible, notification channels
+        configured, benchmark data current, preset validation, template
+        integrity, period configuration valid, and deployment readiness.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration: Company Profile (name, sector, size)
+        -> Entity Structure (parent, subsidiaries, ownership percentages)
+        -> Consolidation Approach (equity share, operational control,
+        financial control) -> Reporting Period (calendar year, fiscal
+        year, custom) -> Data Collection Setup (source list, data owners,
+        collection schedule) -> Quality Management Config (QA/QC rules,
+        thresholds, review workflow levels) -> Documentation Preferences
+        (templates, branding, output formats) -> Preset Selection and
+        Customisation.
+      required: false
+
+    - id: alert_bridge
+      name: "Alert Bridge"
+      description: >-
+        Multi-channel alerting for critical inventory management events:
+        period deadline approaching, data collection overdue, QA/QC
+        critical issues found, review stage overdue, base year
+        recalculation trigger detected, compliance gap identified,
+        version integrity check failed, and SBTi trajectory deviation.
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: corporate_office
+      name: "Corporate Office Preset"
+      description: >-
+        Configuration for office-based organisations with straightforward
+        data collection (electricity, gas, company vehicles). Quality
+        checks focused on Scope 2 completeness and meter data accuracy.
+        Review workflow with sustainability team as preparer and CFO
+        as approver. Benchmarking against financial services and
+        technology sector averages. Simplified consolidation for
+        single-entity or small group structures.
+      sector_type: "OFFICE"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - change_management
+        - review_approval
+        - inventory_versioning
+        - consolidation_management
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/corporate_office.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for industrial manufacturing with complex multi-
+        source data collection (process heat, steam, raw materials,
+        refrigerants, waste). Enhanced quality checks for process
+        emission calculations and tier methodology validation. Change
+        management configured for production line changes and capacity
+        additions. Benchmarking against manufacturing sector with
+        intensity per unit produced.
+      sector_type: "MANUFACTURING"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - change_management
+        - review_approval
+        - inventory_versioning
+        - consolidation_management
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/manufacturing.yaml"
+
+    - id: energy_utility
+      name: "Energy Utility Preset"
+      description: >-
+        Configuration for power generation and energy distribution with
+        continuous monitoring data collection (CEMS, fuel flow meters).
+        Enhanced quality checks for large emission sources and ETS
+        compliance. Change management for plant commissioning and
+        decommissioning. Multi-entity consolidation for utility holding
+        companies. Benchmarking against energy sector with intensity
+        per MWh generated.
+      sector_type: "ENERGY_UTILITY"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - change_management
+        - review_approval
+        - inventory_versioning
+        - consolidation_management
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/energy_utility.yaml"
+
+    - id: transport_logistics
+      name: "Transport & Logistics Preset"
+      description: >-
+        Configuration for fleet operators with high-frequency mobile
+        data collection (fuel cards, telematics, fleet management
+        systems). Quality checks focused on fuel consumption anomalies
+        and distance-based emission factor accuracy. Change management
+        for fleet composition changes. Benchmarking with intensity
+        per tonne-km and per vehicle-km.
+      sector_type: "TRANSPORT_LOGISTICS"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - change_management
+        - review_approval
+        - inventory_versioning
+        - consolidation_management
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/transport_logistics.yaml"
+
+    - id: food_agriculture
+      name: "Food & Agriculture Preset"
+      description: >-
+        Configuration for agricultural operations with seasonal data
+        collection patterns (crop cycles, livestock counts, fertiliser
+        application records). Enhanced quality checks for agricultural
+        emission factors (CH4, N2O variability). Change management for
+        land use changes and livestock herd changes. Benchmarking against
+        agriculture sector with intensity per tonne produced.
+      sector_type: "FOOD_AGRICULTURE"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - change_management
+        - review_approval
+        - inventory_versioning
+        - consolidation_management
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/food_agriculture.yaml"
+
+    - id: real_estate
+      name: "Real Estate Preset"
+      description: >-
+        Configuration for property portfolios with building-level data
+        collection (utility meters, sub-meters, tenant data). Quality
+        checks for whole-building vs landlord-controlled boundaries.
+        Change management for property acquisitions and disposals
+        (common in REIT structures). Multi-entity consolidation for
+        fund structures. Benchmarking with intensity per m2 GLA.
+      sector_type: "REAL_ESTATE"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - change_management
+        - review_approval
+        - inventory_versioning
+        - consolidation_management
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/real_estate.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Configuration for hospital and healthcare systems with 24/7
+        operational data collection (utility meters, medical gas records,
+        backup generator logs). Enhanced quality checks for medical gas
+        (N2O anaesthetic) and refrigerant-intensive operations. Change
+        management for facility expansions and equipment upgrades.
+        Benchmarking against healthcare sector with intensity per bed
+        and per patient-day.
+      sector_type: "HEALTHCARE"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - change_management
+        - review_approval
+        - inventory_versioning
+        - consolidation_management
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/healthcare.yaml"
+
+    - id: sme_simplified
+      name: "SME Simplified Preset"
+      description: >-
+        Simplified configuration for small and medium enterprises with
+        minimal data collection (electricity bills, gas bills, company
+        vehicles). Reduced QA/QC checks focused on completeness and
+        basic accuracy. Simplified two-level review workflow (preparer
+        and approver). No consolidation (single entity). Basic
+        benchmarking against SME peer group. Streamlined documentation
+        with simplified templates.
+      sector_type: "SME"
+      enabled_engines:
+        - inventory_period
+        - data_collection
+        - quality_management
+        - review_approval
+        - inventory_versioning
+        - gap_analysis
+        - documentation
+        - benchmarking
+      file: "config/presets/sme_simplified.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - Scope 1, Scope 2, and Scope 3 agents for inventory management
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Emissions from boilers, furnaces, generators, heaters, and other fixed equipment"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Mobile Combustion Agent"
+      description: "Emissions from company-owned vehicles, off-road equipment, and marine vessels"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Process Emissions Agent"
+      description: "Emissions from chemical and physical transformation processes"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Fugitive Emissions Agent"
+      description: "Emissions from intentional and unintentional releases (leaks, venting)"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Refrigerant & F-Gas Agent"
+      description: "Emissions from refrigerant and fluorinated gas losses (HFCs, PFCs, SF6)"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Emissions from on-site land use and land use change"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Emissions from on-site waste incineration, composting, and treatment"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Emissions from on-site livestock, manure management, and crop activities"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based Scope 2 from grid-average emission factors"
+      path: "greenlang/agents/mrv/scope2_location/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based Scope 2 from contractual instruments and residual mix"
+      path: "greenlang/agents/mrv/scope2_market/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam & Heat Purchase Agent"
+      description: "Calculates Scope 2 emissions from purchased steam and heat"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates Scope 2 emissions from purchased cooling and chilled water"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation Agent"
+      description: "Reconciles location-based and market-based Scope 2 with delta analysis"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+  scope_3:
+    - id: AGENT-MRV-014
+      name: "Category 1 Purchased Goods Agent"
+      description: "Scope 3 Category 1 purchased goods and services emissions"
+      path: "greenlang/agents/mrv/scope3_cat1_purchased_goods/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-030
+      name: "Audit Trail & Lineage Agent"
+      description: "Cross-cutting audit trail and data lineage tracking"
+      path: "greenlang/agents/mrv/audit_trail_lineage/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts activity data from fuel invoices, utility bills, and vendor documents"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises meter data exports, fleet fuel records, and refrigerant logs"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to finance systems for fuel purchase and utility cost data"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for emission factors and benchmark data"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across all activity data sources"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous activity data readings (consumption spikes, negative values)"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills gaps in time series activity data with documented estimation methods"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from source documents through to inventory totals"
+    required: true
+  - id: AGENT-DATA-019
+    name: "Validation Rule Engine"
+    description: "Executes configurable validation rules on activity data and inventory results"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates inventory management engines with DAG dependency resolution"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates GHG inventory data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises energy units (kWh, MJ, GJ, litres, m3, tonnes) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in emission calculations and methodology selections"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links emission factors and calculations to source evidence for documentation"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for review workflows and multi-entity operations"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all inventory calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors inventory management pipeline health and engine performance"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 32
+  breakdown:
+    mrv_agents: 15
+    data_agents: 9
+    foundation_agents: 8
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: ghg_inventory_management
+  migrations:
+    - id: "V356__pack044_inventory_mgmt_001"
+      description: "Core inventory management schema, period definitions, and lifecycle states"
+    - id: "V357__pack044_inventory_mgmt_002"
+      description: "Data collection tracking tables, source assignments, and completion metrics"
+    - id: "V358__pack044_inventory_mgmt_003"
+      description: "Quality management tables, QA/QC checks, issue register, and check rules"
+    - id: "V359__pack044_inventory_mgmt_004"
+      description: "Change management tables, change records, impact assessments, and triggers"
+    - id: "V360__pack044_inventory_mgmt_005"
+      description: "Review and approval workflow tables, stages, comments, and audit trail"
+    - id: "V361__pack044_inventory_mgmt_006"
+      description: "Inventory versioning tables, snapshots, version metadata, and integrity hashes"
+    - id: "V362__pack044_inventory_mgmt_007"
+      description: "Consolidation management tables, entity hierarchy, and ownership tracking"
+    - id: "V363__pack044_inventory_mgmt_008"
+      description: "Gap analysis tables, gap records, remediation plans, and coverage metrics"
+    - id: "V364__pack044_inventory_mgmt_009"
+      description: "Documentation tables, document registry, templates, and generation history"
+    - id: "V365__pack044_inventory_mgmt_010"
+      description: "Views, indexes, RLS policies, benchmarking data, and seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  data_collection:
+    max_sources_per_facility: 200
+    max_facilities: 1000
+    collection_status_query_ms: 50
+    progress_dashboard_generation_ms: 500
+    reminder_batch_size: 1000
+    reminder_dispatch_per_batch_ms: 200
+  quality_management:
+    completeness_check_per_source_ms: 10
+    consistency_check_per_source_ms: 20
+    accuracy_check_per_source_ms: 30
+    transparency_check_per_source_ms: 15
+    full_qaqc_suite_per_facility_ms: 500
+    issue_register_generation_ms: 200
+  change_management:
+    impact_assessment_per_change_ms: 100
+    significance_evaluation_ms: 50
+    change_log_generation_ms: 500
+  review_approval:
+    workflow_stage_transition_ms: 50
+    approval_audit_trail_generation_ms: 300
+  versioning:
+    snapshot_creation_per_facility_ms: 100
+    version_comparison_per_source_ms: 10
+    integrity_hash_generation_ms: 200
+    max_snapshot_size_mb: 500
+  consolidation:
+    max_entities: 500
+    consolidation_per_entity_ms: 100
+    total_consolidation_target_seconds: 60
+  gap_analysis:
+    coverage_scan_per_facility_ms: 200
+    remediation_plan_generation_ms: 1000
+  documentation:
+    methodology_doc_generation_ms: 2000
+    verification_package_generation_ms: 10000
+    inventory_manual_generation_ms: 5000
+  benchmarking:
+    sector_comparison_per_metric_ms: 100
+    scorecard_generation_ms: 1000
+  cache_hit_ratio_target: 0.85
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with entity-level, facility-level, and workflow-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+  required_roles:
+    - ghg_manager
+    - sustainability_officer
+    - facility_manager
+    - data_analyst
+    - data_owner
+    - reviewer
+    - approver
+    - verifier
+    - viewer
+    - admin
+  audit_events:
+    - "inventory.period.created"
+    - "inventory.period.state_changed"
+    - "inventory.data.collected"
+    - "inventory.data.validated"
+    - "inventory.qaqc.executed"
+    - "inventory.qaqc.issue_resolved"
+    - "inventory.change.recorded"
+    - "inventory.change.approved"
+    - "inventory.review.submitted"
+    - "inventory.review.completed"
+    - "inventory.approval.granted"
+    - "inventory.approval.rejected"
+    - "inventory.version.created"
+    - "inventory.version.compared"
+    - "inventory.consolidated"
+    - "inventory.gap.identified"
+    - "inventory.gap.remediated"
+    - "inventory.document.generated"
+    - "inventory.benchmark.completed"
+    - "inventory.config.modified"
+    - "inventory.preset.loaded"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_inventory_period.json"
+    - "tests/fixtures/sample_data_collection_status.json"
+    - "tests/fixtures/sample_qaqc_checklist.json"
+    - "tests/fixtures/sample_change_record.json"
+    - "tests/fixtures/sample_review_workflow.json"
+    - "tests/fixtures/sample_inventory_version.json"
+    - "tests/fixtures/sample_entity_hierarchy.json"
+    - "tests/fixtures/sample_gap_analysis.json"
+    - "tests/fixtures/sample_benchmark_data.json"
+
+# -----------------------------------------------------------------------------
+# Compliance Framework Mappings
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      coverage: "Chapter 7: inventory quality management, QA/QC, documentation, improvement"
+    - id: "ISO_14064_1"
+      name: "ISO 14064-1:2018"
+      coverage: "Clauses 7-9: quality management, reporting, improvement"
+    - id: "ISO_14064_3"
+      name: "ISO 14064-3:2019"
+      coverage: "Verification preparation, evidence compilation, management assertion"
+    - id: "ESRS_E1"
+      name: "ESRS E1 Climate Change"
+      coverage: "Data quality for E1-6, E1-7; methodology documentation; assurance readiness"
+    - id: "CDP"
+      name: "CDP Climate Change"
+      coverage: "C5 methodology, C10 verification status, response quality management"
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      coverage: "Inventory quality for target setting, annual tracking, recalculation triggers"
+    - id: "SEC"
+      name: "US SEC Climate Disclosure"
+      coverage: "Attestation-ready data, internal controls, methodology documentation"
+    - id: "SB_253"
+      name: "California SB 253"
+      coverage: "Third-party assurance readiness, data quality, annual reporting cycle"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 15
+    recommended_connections: 40
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_mrv_agents_available
+    - verify_data_agents_available
+    - verify_foundation_agents_available
+    - verify_document_store_accessible
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+      - "V326-V335"   # PACK-041 Scope 1-2 Complete
+      - "V336-V345"   # PACK-042 Scope 3 Starter
+      - "V346-V355"   # PACK-043 Scope 3 Complete
+    new:
+      - "V356__pack044_inventory_mgmt_001"
+      - "V357__pack044_inventory_mgmt_002"
+      - "V358__pack044_inventory_mgmt_003"
+      - "V359__pack044_inventory_mgmt_004"
+      - "V360__pack044_inventory_mgmt_005"
+      - "V361__pack044_inventory_mgmt_006"
+      - "V362__pack044_inventory_mgmt_007"
+      - "V363__pack044_inventory_mgmt_008"
+      - "V364__pack044_inventory_mgmt_009"
+      - "V365__pack044_inventory_mgmt_010"
+
+  post_install:
+    - seed_period_templates
+    - seed_qaqc_check_rules
+    - seed_review_workflow_templates
+    - seed_documentation_templates
+    - seed_benchmark_sector_data
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: InventoryPeriodEngine
+    file: engines/inventory_period_engine.py
+    description: "Reporting period setup, calendar management, and lifecycle state transitions"
+  - name: DataCollectionEngine
+    file: engines/data_collection_engine.py
+    description: "Activity data collection orchestration with progress tracking and reminders"
+  - name: QualityManagementEngine
+    file: engines/quality_management_engine.py
+    description: "GHG Protocol Chapter 7 QA/QC: completeness, consistency, accuracy, transparency"
+  - name: ChangeManagementEngine
+    file: engines/change_management_engine.py
+    description: "Structural, methodological, and error change tracking with significance assessment"
+  - name: ReviewApprovalEngine
+    file: engines/review_approval_engine.py
+    description: "Multi-level review and approval workflow with segregation of duties"
+  - name: InventoryVersioningEngine
+    file: engines/inventory_versioning_engine.py
+    description: "Immutable inventory snapshots with version comparison and integrity hashing"
+  - name: ConsolidationManagementEngine
+    file: engines/consolidation_management_engine.py
+    description: "Multi-entity consolidation with equity share, operational, and financial control"
+  - name: GapAnalysisEngine
+    file: engines/gap_analysis_engine.py
+    description: "Five-category gap identification with prioritised remediation plans"
+  - name: DocumentationEngine
+    file: engines/documentation_engine.py
+    description: "Automated methodology, assumption, and verification package documentation"
+  - name: BenchmarkingEngine
+    file: engines/benchmarking_engine.py
+    description: "Sector and peer benchmarking with intensity metrics and percentile ranking"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: AnnualInventoryManagementWorkflow
+    file: workflows/annual_inventory_management_workflow.py
+    description: "8-phase annual inventory management from period setup through publication"
+  - name: QuarterlyTrackingWorkflow
+    file: workflows/quarterly_tracking_workflow.py
+    description: "5-phase quarterly tracking with QA/QC and benchmarking"
+  - name: ChangeManagementWorkflow
+    file: workflows/change_management_workflow.py
+    description: "5-phase change management with impact assessment and base year evaluation"
+  - name: VerificationPreparationWorkflow
+    file: workflows/verification_preparation_workflow.py
+    description: "6-phase verification preparation per ISO 14064-3 and ISAE 3410"
+  - name: ReviewApprovalCycleWorkflow
+    file: workflows/review_approval_cycle_workflow.py
+    description: "4-phase review and approval cycle from preparation through final sign-off"
+  - name: GapRemediationWorkflow
+    file: workflows/gap_remediation_workflow.py
+    description: "4-phase gap identification and prioritised remediation"
+  - name: BenchmarkingAssessmentWorkflow
+    file: workflows/benchmarking_assessment_workflow.py
+    description: "3-phase benchmarking with data preparation, comparison, and insight generation"
+  - name: FullManagementPipelineWorkflow
+    file: workflows/full_management_pipeline_workflow.py
+    description: "12-phase end-to-end inventory management pipeline"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: InventoryDashboardTemplate
+    file: templates/inventory_dashboard.py
+    description: "Real-time inventory management dashboard with progress and status tracking"
+  - name: QAQCChecklistTemplate
+    file: templates/qaqc_checklist.py
+    description: "QA/QC checklist with issue register and resolution tracking"
+  - name: ChangeLogTemplate
+    file: templates/change_log.py
+    description: "Change log with impact assessment and base year recalculation determination"
+  - name: ApprovalAuditTrailTemplate
+    file: templates/approval_audit_trail.py
+    description: "Approval workflow audit trail for verification and regulatory filing"
+  - name: GapAnalysisReportTemplate
+    file: templates/gap_analysis_report.py
+    description: "Gap analysis with coverage heat maps and remediation plans"
+  - name: VersionComparisonTemplate
+    file: templates/version_comparison.py
+    description: "Side-by-side version comparison with change analysis"
+  - name: ConsolidationWorkpapersTemplate
+    file: templates/consolidation_workpapers.py
+    description: "Consolidation workpapers with entity-level contributions and adjustments"
+  - name: BenchmarkingScorecardTemplate
+    file: templates/benchmarking_scorecard.py
+    description: "Benchmarking scorecard with percentile ranking and improvement opportunities"
+  - name: VerificationPackageTemplate
+    file: templates/verification_package.py
+    description: "ISO 14064-3 / ISAE 3410 verification package"
+  - name: InventoryManualTemplate
+    file: templates/inventory_manual.py
+    description: "GHG inventory management manual with policies and procedures"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: InventoryManagementOrchestrator
+    file: integrations/pack_orchestrator.py
+    description: "12-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVBridge
+    file: integrations/mrv_bridge.py
+    description: "Connects to 30 MRV agents for emission calculation result retrieval"
+  - name: DataIntakeBridge
+    file: integrations/data_intake_bridge.py
+    description: "Routes collection requests to DATA agents for extraction and quality profiling"
+  - name: ERPFinanceBridge
+    file: integrations/erp_finance_bridge.py
+    description: "Automated activity data retrieval from ERP and financial systems"
+  - name: Scope12PackBridge
+    file: integrations/scope12_pack_bridge.py
+    description: "Integration with PACK-041 for Scope 1-2 inventory results"
+  - name: Scope3PackBridge
+    file: integrations/scope3_pack_bridge.py
+    description: "Integration with PACK-042/043 for Scope 3 category results"
+  - name: DocumentStoreBridge
+    file: integrations/document_store_bridge.py
+    description: "Document storage for verification packages and archived inventory snapshots"
+  - name: NotificationBridge
+    file: integrations/notification_bridge.py
+    description: "Multi-channel notification for collection reminders and review alerts"
+  - name: BenchmarkDataBridge
+    file: integrations/benchmark_data_bridge.py
+    description: "External benchmark data integration from CDP, SBTi, and industry publications"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "12-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided configuration for inventory management setup"
+  - name: AlertBridge
+    file: integrations/alert_bridge.py
+    description: "Multi-channel alerting for critical inventory management events"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: corporate_office
+    file: config/presets/corporate_office.yaml
+    description: "Office-based organisations (financial services, technology, consulting)"
+  - name: manufacturing
+    file: config/presets/manufacturing.yaml
+    description: "Industrial manufacturing with multi-source data collection complexity"
+  - name: energy_utility
+    file: config/presets/energy_utility.yaml
+    description: "Power generation and energy distribution utilities"
+  - name: transport_logistics
+    file: config/presets/transport_logistics.yaml
+    description: "Fleet operators and logistics companies (mobile data collection)"
+  - name: food_agriculture
+    file: config/presets/food_agriculture.yaml
+    description: "Agricultural operations and food processing with seasonal patterns"
+  - name: real_estate
+    file: config/presets/real_estate.yaml
+    description: "Property portfolios and REIT companies"
+  - name: healthcare
+    file: config/presets/healthcare.yaml
+    description: "Hospitals and healthcare systems"
+  - name: sme_simplified
+    file: config/presets/sme_simplified.yaml
+    description: "Simplified inventory management for small-medium enterprises"

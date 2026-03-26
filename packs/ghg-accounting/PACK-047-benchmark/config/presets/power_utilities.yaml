@@ -1,0 +1,162 @@
+# =============================================================================
+# PACK-047 GHG Emissions Benchmark - Power & Utilities Preset
+# =============================================================================
+# Power generation and utilities where tCO2e/MWh is the primary benchmark
+# metric. Peer group matching uses GICS 5510 (Utilities) with regional
+# scope for grid-mix comparability. IEA NZE and SBTi power sector SDA
+# provide pathway alignment. TPI Carbon Performance methodology v5.0
+# provides external benchmarking context.
+#
+# Typical use cases:
+#   - Coal, gas, and oil-fired power stations
+#   - Combined heat and power (CHP) plants
+#   - Integrated utilities (generation + distribution)
+#   - Renewable energy generators (avoided intensity tracking)
+#   - District heating network operators
+#
+# Typical emission profile:
+#   Scope 1: 85-99% of total (fuel combustion dominant)
+#   Key benchmark metric: tCO2e / MWh generated
+#   Typical range: 0.05-1.0 tCO2e / MWh
+#   Typical ITR range: 1.5C - 4.0C (highly fuel-mix dependent)
+# =============================================================================
+
+# --- Peer Group Construction ---
+peer_group:
+  sector_classification: "GICS_4DIG"
+  size_band: "ENTERPRISE"
+  require_same_region: true
+  region_scope: "EU"
+  min_peers: 8
+  max_peers: 40
+  revenue_tolerance_pct: 75.0
+  require_disclosure_coverage: true
+  min_disclosure_pct: 70.0
+
+# --- Scope Normalisation ---
+normalisation:
+  scope_alignment: "S1_ONLY"
+  consolidation_approach: "OPERATIONAL_CONTROL"
+  target_gwp: "AR6"
+  currency_normalisation: true
+  target_currency: "EUR"
+  period_alignment: "CALENDAR_YEAR"
+  data_gap_strategy: "INTERPOLATE"
+  biogenic_treatment: "SEPARATE"
+
+# --- External Data Sources ---
+external_data:
+  sources:
+    - "CDP"
+    - "TPI"
+  cache_ttl_hours: 168
+  auto_refresh: true
+  cdp_year: 2025
+  tpi_version: "5.0"
+
+# --- Pathway Alignment ---
+pathway:
+  pathways:
+    - "IEA_NZE"
+    - "SBTI_SDA"
+    - "TPI_CP"
+  primary_scenario: "ONE_POINT_FIVE_C"
+  assessment_years:
+    - 2025
+    - 2030
+    - 2035
+    - 2040
+    - 2050
+  sbti_sector: "power"
+  convergence_year: 2040
+  include_overshoot_analysis: true
+
+# --- Implied Temperature Rise ---
+itr:
+  methods:
+    - "BUDGET_BASED"
+    - "SECTOR_RELATIVE"
+    - "RATE_OF_REDUCTION"
+  primary_method: "SECTOR_RELATIVE"
+  budget_start_year: 2020
+  target_horizon_year: 2050
+  include_scope_3: false
+
+# --- Trajectory Benchmarking ---
+trajectory:
+  historical_years: 7
+  projection_years: 15
+  regression_model: "OLS"
+  min_data_points: 4
+  include_confidence_bands: true
+  convergence_test: true
+
+# --- Portfolio Benchmarking ---
+portfolio:
+  waci_enabled: false
+  carbon_footprint_enabled: false
+  pcaf_alignment: false
+
+# --- Data Quality Scoring ---
+data_quality:
+  scoring_method: "PCAF_V3"
+  target_score: 1
+  improvement_roadmap: true
+  staleness_threshold_days: 365
+
+# --- Transition Risk Scoring ---
+transition_risk:
+  categories:
+    - "CARBON_BUDGET"
+    - "STRANDING"
+    - "REGULATORY"
+    - "COMPETITIVE"
+    - "FINANCIAL"
+  carbon_price_scenario: "EU_ETS"
+  carbon_price_2030_eur: 150.0
+  carbon_price_2050_eur: 300.0
+  stranding_threshold_year: 2035
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  sections:
+    - "executive_summary"
+    - "peer_comparison"
+    - "pathway_alignment"
+    - "implied_temperature_rise"
+    - "trajectory_analysis"
+    - "transition_risk"
+    - "data_quality"
+    - "methodology"
+  language: "en"
+  include_charts: true
+  include_data_tables: true
+  include_appendices: true
+
+# --- Disclosure ---
+disclosure:
+  frameworks:
+    - "ESRS"
+    - "CDP"
+    - "TCFD"
+    - "SEC"
+  mandatory_only: false
+  include_methodology_notes: true
+  include_data_quality_notes: true
+
+# --- Alerts ---
+alerts:
+  alert_types:
+    - "THRESHOLD"
+    - "PATHWAY_DEVIATION"
+    - "DATA_STALENESS"
+    - "RANK_CHANGE"
+  channels:
+    - "EMAIL"
+    - "SLACK"
+  pathway_deviation_threshold_pct: 10.0
+  data_staleness_days: 180

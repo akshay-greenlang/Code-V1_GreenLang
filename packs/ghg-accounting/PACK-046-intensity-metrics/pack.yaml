@@ -1,0 +1,676 @@
+# =============================================================================
+# PACK-046: Intensity Metrics Pack
+# GreenLang GHG Accounting Pack for Comprehensive Intensity Analytics
+# =============================================================================
+# This pack delivers a production-ready, verification-grade intensity metrics
+# system covering the full lifecycle of GHG intensity analysis as required by
+# ESRS E1-6, SBTi Sectoral Decarbonisation Approach (SDA), CDP Climate Change,
+# SEC Climate Disclosure Rules, ISO 14064-1:2018, TCFD, GRI 305-4, and IFRS S2.
+#
+# The pack orchestrates ten specialised engines -- denominator registry,
+# intensity calculation, LMDI decomposition, peer benchmarking, SBTi SDA
+# target pathway, trend analysis, scenario modelling, uncertainty quantification,
+# multi-framework disclosure mapping, and reporting.
+#
+# The pack follows a zero-hallucination approach: all intensity calculations,
+# decomposition analyses, benchmarking comparisons, and target pathway
+# computations use deterministic formulas from established methodologies
+# (Ang 2004/2015 LMDI, SBTi SDA convergence, IPCC uncertainty propagation).
+# No LLM is used in any calculation path. Denominators, emission factors,
+# and benchmark data are from authoritative sources with full provenance.
+#
+# The pack complements and extends the GreenLang GHG accounting suite:
+#   - PACK-041 (Scope 1-2 Complete) provides Scope 1+2 emission calculations
+#   - PACK-042 (Scope 3 Starter) provides upstream Scope 3 calculations
+#   - PACK-043 (Scope 3 Complete) provides full value chain calculations
+#   - PACK-044 (Inventory Management) provides governance and workflows
+#   - PACK-045 (Base Year Management) provides base year lifecycle
+#   - PACK-046 (this pack) provides intensity metrics and analytics
+#
+# Intensity metrics normalise absolute emissions by business activity
+# denominators (revenue, FTE, m2, tonnes produced, MWh generated, etc.)
+# enabling meaningful comparison across time periods, peer organisations,
+# and science-based decarbonisation pathways. Without rigorous intensity
+# analysis, organisations cannot distinguish genuine efficiency gains from
+# cosmetic effects of growth or structural change.
+#
+# The intensity output maps directly to eight regulatory frameworks:
+#   1. ESRS E1-6 (mandatory GHG intensity per net revenue + sector physical)
+#   2. SBTi SDA (Sectoral Decarbonisation Approach intensity pathways)
+#   3. CDP Climate Change C6.10 (revenue intensity) + sector modules
+#   4. SEC Climate Disclosure Rules Item 1504 (intensity if used internally)
+#   5. ISO 14064-1:2018 Clause 9.3 (GHG intensity ratios)
+#   6. TCFD Recommendations (normalised metrics per industry)
+#   7. GRI 305-4 (GHG emissions intensity)
+#   8. IFRS S2 (intensity metrics where material)
+#
+# Key Capabilities:
+#   - Denominator registry with 25+ standard denominators across 12 sectors
+#     with framework alignment scoring and systematic selection guidance
+#   - Core intensity calculation for any scope/denominator/period combination
+#     using Decimal arithmetic with configurable scope inclusion rules
+#   - LMDI decomposition (Ang 2004, 2015) separating emissions changes into
+#     activity effect, structure effect, and intensity effect with exact
+#     closure (no residual) and zero-value handling
+#   - Peer benchmarking against CDP, TPI, GRESB, CRREM with normalisation
+#     for scope, denominator, period, currency, and climate differences
+#   - SBTi SDA target pathway calculation with sector convergence formulae
+#     for all covered sectors (power, steel, cement, aluminium, buildings,
+#     transport, paper, food) with both 1.5C and WB2C pathways
+#   - Multi-year trend analysis with CARR, Mann-Kendall significance test,
+#     Sen's slope, and regression-based projections with confidence bands
+#   - What-if scenario modelling with Monte Carlo simulation (configurable
+#     iterations) for probabilistic intensity projections
+#   - Uncertainty quantification propagating errors from both numerator
+#     (emissions) and denominator (activity data) per IPCC Tier 1/2
+#   - Multi-framework disclosure mapping with completeness checking for
+#     ESRS E1-6, CDP, SEC, SBTi, ISO, TCFD, GRI, IFRS S2
+#   - Comprehensive reporting with executive dashboard, detailed analysis,
+#     decomposition waterfall, benchmark spider, target pathway, scenario
+#     fan charts, and KPI scorecards in MD/HTML/PDF/JSON/CSV/XBRL
+#
+# Decomposition Methodology (LMDI-I Additive, Ang 2004):
+#   Total change:  dE = E_t - E_0
+#   Activity:      dE_act = SUM_i[L(E_i_t, E_i_0) * ln(D_t / D_0)]
+#   Structure:     dE_str = SUM_i[L(E_i_t, E_i_0) * ln(S_i_t / S_i_0)]
+#   Intensity:     dE_int = SUM_i[L(E_i_t, E_i_0) * ln(I_i_t / I_i_0)]
+#   Closure:       dE = dE_act + dE_str + dE_int (exact, no residual)
+#   L(a,b):        Logarithmic mean = (a - b) / (ln(a) - ln(b))
+#
+# SBTi SDA Convergence Formula:
+#   I_target(y) = I_sector_2050 + (I_company_base - I_sector_2050)
+#                 * (2050 - y) / (2050 - base_year)
+#
+# Uncertainty Propagation (IPCC Tier 1):
+#   U_intensity = sqrt(U_emissions^2 + U_denominator^2)
+#   90% CI: I * (1 +/- 1.645 * U / 100)
+#   95% CI: I * (1 +/- 1.960 * U / 100)
+#
+# Standard Denominators (25+):
+#   Financial: Revenue (MEUR), AUM, Lending Portfolio, Insurance Premiums
+#   Headcount: FTE
+#   Area: GLA (m2), Floor Area, Cooled Space
+#   Physical: Production (t), Steel (t), Cement (t clinker), Aluminium (t),
+#     Paper (t), Food (t), Vehicle-km, Tonne-km, Passenger-km, Bed-days,
+#     Units, Customers, Data throughput (TB), Meals, Room-nights
+#   Energy: Electricity generated (MWh)
+#   Agriculture: Hectares
+#
+# Sector Coverage:
+#   Multi-sector conglomerate, Manufacturing, Real Estate (CRREM, GRESB),
+#   Power Generation (SBTi SDA), Transport & Logistics (GLEC),
+#   Financial Services (PCAF), Food & Agriculture (SBTi FLAG),
+#   Healthcare, Education, Data Centre, Retail, SME
+# =============================================================================
+
+# =============================================================================
+# Metadata
+# =============================================================================
+pack_id: PACK-046
+pack_name: "Intensity Metrics Pack"
+pack_slug: "pack-046-intensity-metrics"
+category: "ghg-accounting"
+subcategory: "intensity-analytics"
+version: "1.0.0"
+status: "production_ready"
+tier: "enterprise"
+author: "GreenLang Platform Team"
+date: "2026-03-26"
+license: "Proprietary"
+min_greenlang_version: "1.0.0"
+
+description: |
+  Comprehensive GHG intensity metrics pack providing denominator management,
+  intensity calculation, LMDI decomposition, peer benchmarking, SBTi SDA
+  target pathway tracking, trend analysis, scenario modelling, uncertainty
+  quantification, multi-framework disclosure mapping, and executive reporting.
+  Supports 25+ denominators across 12 sectors with zero-hallucination
+  deterministic calculations and full SHA-256 provenance chain.
+
+tags:
+  - ghg-accounting
+  - intensity-metrics
+  - esrs-e1
+  - sbti-sda
+  - cdp
+  - benchmarking
+  - decomposition
+  - lmdi
+  - scenario-analysis
+  - uncertainty
+  - disclosure
+
+prerequisites:
+  required:
+    - pack_id: PACK-041
+      name: "Scope 1-2 Complete"
+      reason: "Provides Scope 1 and Scope 2 emissions numerator data"
+  optional:
+    - pack_id: PACK-042
+      name: "Scope 3 Starter"
+      reason: "Provides Scope 3 data for Scope 1+2+3 intensity metrics"
+    - pack_id: PACK-043
+      name: "Scope 3 Complete"
+      reason: "Provides full Scope 3 data for enterprise intensity metrics"
+    - pack_id: PACK-044
+      name: "Inventory Management"
+      reason: "Provides inventory governance and period management"
+    - pack_id: PACK-045
+      name: "Base Year Management"
+      reason: "Provides base year data for consistent intensity trending"
+
+# =============================================================================
+# Components
+# =============================================================================
+components:
+  engines:
+    count: 10
+    items:
+      - id: engine_01
+        name: "DenominatorRegistryEngine"
+        file: "engines/denominator_registry_engine.py"
+        description: "Manages 25+ standard denominators with metadata, selection guidance, validation, and unit conversion"
+      - id: engine_02
+        name: "IntensityCalculationEngine"
+        file: "engines/intensity_calculation_engine.py"
+        description: "Core intensity calculation for any scope/denominator/period with Decimal precision and multi-entity consolidation"
+      - id: engine_03
+        name: "DecompositionEngine"
+        file: "engines/decomposition_engine.py"
+        description: "LMDI-I decomposition into activity, structure, and intensity effects with exact closure"
+      - id: engine_04
+        name: "BenchmarkingEngine"
+        file: "engines/benchmarking_engine.py"
+        description: "Peer intensity benchmarking with normalisation and percentile ranking"
+      - id: engine_05
+        name: "TargetPathwayEngine"
+        file: "engines/target_pathway_engine.py"
+        description: "SBTi SDA convergence pathway calculation and target tracking"
+      - id: engine_06
+        name: "TrendAnalysisEngine"
+        file: "engines/trend_analysis_engine.py"
+        description: "Multi-year intensity trend analysis with CARR, Mann-Kendall, and projections"
+      - id: engine_07
+        name: "ScenarioEngine"
+        file: "engines/scenario_engine.py"
+        description: "What-if scenario modelling with Monte Carlo simulation"
+      - id: engine_08
+        name: "UncertaintyEngine"
+        file: "engines/uncertainty_engine.py"
+        description: "IPCC Tier 1/2 uncertainty propagation for intensity metrics"
+      - id: engine_09
+        name: "DisclosureMappingEngine"
+        file: "engines/disclosure_mapping_engine.py"
+        description: "Multi-framework disclosure mapping (ESRS, CDP, SEC, SBTi, ISO, TCFD, GRI, IFRS)"
+      - id: engine_10
+        name: "IntensityReportingEngine"
+        file: "engines/intensity_reporting_engine.py"
+        description: "Report aggregation and generation in MD/HTML/PDF/JSON/CSV/XBRL"
+
+  workflows:
+    count: 8
+    items:
+      - id: workflow_01
+        name: "DenominatorSetupWorkflow"
+        file: "workflows/denominator_setup_workflow.py"
+        phases: 4
+        description: "SectorIdentification -> DenominatorSelection -> DataCollection -> Validation"
+      - id: workflow_02
+        name: "IntensityCalculationWorkflow"
+        file: "workflows/intensity_calculation_workflow.py"
+        phases: 4
+        description: "DataIngestion -> ScopeConfiguration -> IntensityCalculation -> QualityAssurance"
+      - id: workflow_03
+        name: "DecompositionAnalysisWorkflow"
+        file: "workflows/decomposition_analysis_workflow.py"
+        phases: 3
+        description: "PeriodSelection -> LMDIDecomposition -> EffectInterpretation"
+      - id: workflow_04
+        name: "BenchmarkingWorkflow"
+        file: "workflows/benchmarking_workflow.py"
+        phases: 4
+        description: "PeerGroupDefinition -> DataNormalisation -> BenchmarkComparison -> RankingReport"
+      - id: workflow_05
+        name: "TargetSettingWorkflow"
+        file: "workflows/target_setting_workflow.py"
+        phases: 4
+        description: "BaselineCalculation -> PathwaySelection -> TargetCalculation -> ValidationReport"
+      - id: workflow_06
+        name: "ScenarioAnalysisWorkflow"
+        file: "workflows/scenario_analysis_workflow.py"
+        phases: 3
+        description: "ScenarioDefinition -> Simulation -> ProbabilityAssessment"
+      - id: workflow_07
+        name: "DisclosurePreparationWorkflow"
+        file: "workflows/disclosure_preparation_workflow.py"
+        phases: 4
+        description: "MetricAggregation -> FrameworkMapping -> CompletenessCheck -> DisclosurePackage"
+      - id: workflow_08
+        name: "FullIntensityPipelineWorkflow"
+        file: "workflows/full_intensity_pipeline_workflow.py"
+        phases: 8
+        description: "Complete end-to-end intensity analytics pipeline"
+
+  templates:
+    count: 10
+    items:
+      - id: template_01
+        name: "IntensityExecutiveDashboard"
+        file: "templates/intensity_executive_dashboard.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "Executive summary with key metrics, YoY changes, benchmark position, target progress"
+      - id: template_02
+        name: "IntensityDetailedReport"
+        file: "templates/intensity_detailed_report.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "Comprehensive intensity analysis across all scopes, denominators, and periods"
+      - id: template_03
+        name: "DecompositionWaterfall"
+        file: "templates/decomposition_waterfall.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "LMDI decomposition waterfall chart data and analysis"
+      - id: template_04
+        name: "BenchmarkComparison"
+        file: "templates/benchmark_comparison.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "Peer benchmarking report with percentile ranking and gap analysis"
+      - id: template_05
+        name: "TargetPathwayReport"
+        file: "templates/target_pathway_report.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "SBTi SDA target tracking with pathway chart and gap analysis"
+      - id: template_06
+        name: "ScenarioAnalysisReport"
+        file: "templates/scenario_analysis_report.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "Scenario modelling results with Monte Carlo distributions"
+      - id: template_07
+        name: "UncertaintyReport"
+        file: "templates/uncertainty_report.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "Data quality and uncertainty analysis with confidence intervals"
+      - id: template_08
+        name: "ESRSE1IntensityDisclosure"
+        file: "templates/esrs_e1_intensity_disclosure.py"
+        formats: [MD, HTML, PDF, JSON, XBRL]
+        description: "ESRS E1-6 compliant intensity disclosure with mandatory revenue intensity"
+      - id: template_09
+        name: "CDPIntensityDisclosure"
+        file: "templates/cdp_intensity_disclosure.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "CDP C6.10 and sector module intensity data tables"
+      - id: template_10
+        name: "IntensityKPIScorecard"
+        file: "templates/intensity_kpi_scorecard.py"
+        formats: [MD, HTML, PDF, JSON]
+        description: "Traffic-light KPI scorecard for intensity metrics vs targets"
+
+  integrations:
+    count: 12
+    items:
+      - id: integration_01
+        name: "PackOrchestrator"
+        file: "integrations/pack_orchestrator.py"
+        description: "10-phase DAG pipeline with conditional phases and provenance chain"
+      - id: integration_02
+        name: "MRVBridge"
+        file: "integrations/mrv_bridge.py"
+        description: "Routes to 30 AGENT-MRV agents for emissions numerator data"
+      - id: integration_03
+        name: "DataBridge"
+        file: "integrations/data_bridge.py"
+        description: "Routes to AGENT-DATA agents for denominator data"
+      - id: integration_04
+        name: "Pack041Bridge"
+        file: "integrations/pack041_bridge.py"
+        description: "PACK-041 Scope 1-2 emissions retrieval"
+      - id: integration_05
+        name: "Pack042043Bridge"
+        file: "integrations/pack042_043_bridge.py"
+        description: "PACK-042/043 Scope 3 emissions retrieval"
+      - id: integration_06
+        name: "Pack044Bridge"
+        file: "integrations/pack044_bridge.py"
+        description: "PACK-044 Inventory Management period and governance data"
+      - id: integration_07
+        name: "Pack045Bridge"
+        file: "integrations/pack045_bridge.py"
+        description: "PACK-045 Base Year Management historical data"
+      - id: integration_08
+        name: "BenchmarkDataBridge"
+        file: "integrations/benchmark_data_bridge.py"
+        description: "External benchmark data from CDP, TPI, GRESB, CRREM"
+      - id: integration_09
+        name: "SBTiPathwayBridge"
+        file: "integrations/sbti_pathway_bridge.py"
+        description: "SBTi SDA sector pathway data maintenance"
+      - id: integration_10
+        name: "HealthCheck"
+        file: "integrations/health_check.py"
+        description: "20-category system verification"
+      - id: integration_11
+        name: "SetupWizard"
+        file: "integrations/setup_wizard.py"
+        description: "8-step guided configuration wizard"
+      - id: integration_12
+        name: "AlertBridge"
+        file: "integrations/alert_bridge.py"
+        description: "Intensity threshold and deadline alert management"
+
+  presets:
+    count: 8
+    items:
+      - id: preset_01
+        name: "Corporate Multi-Sector"
+        file: "config/presets/corporate_multi_sector.yaml"
+        sector: "MULTI_SECTOR"
+        description: "Revenue denominator primary; decomposition by division; SBTi absolute + intensity"
+      - id: preset_02
+        name: "Manufacturing"
+        file: "config/presets/manufacturing.yaml"
+        sector: "MANUFACTURING"
+        description: "Physical output (tonnes); SBTi SDA pathway; process intensity benchmarking"
+      - id: preset_03
+        name: "Real Estate"
+        file: "config/presets/real_estate.yaml"
+        sector: "REAL_ESTATE"
+        description: "kgCO2e/m2 GLA; CRREM pathway; GRESB benchmarking; like-for-like intensity"
+      - id: preset_04
+        name: "Power Generation"
+        file: "config/presets/power_generation.yaml"
+        sector: "POWER_GENERATION"
+        description: "gCO2/kWh; SBTi power sector pathway; grid intensity benchmarking"
+      - id: preset_05
+        name: "Transport & Logistics"
+        file: "config/presets/transport_logistics.yaml"
+        sector: "TRANSPORT_LOGISTICS"
+        description: "gCO2e/tkm and gCO2e/pkm; GLEC framework; multimodal benchmarking"
+      - id: preset_06
+        name: "Financial Services"
+        file: "config/presets/financial_services.yaml"
+        sector: "FINANCIAL_SERVICES"
+        description: "PCAF financed emissions intensity; asset-class decomposition"
+      - id: preset_07
+        name: "Food & Agriculture"
+        file: "config/presets/food_agriculture.yaml"
+        sector: "FOOD_AGRICULTURE"
+        description: "tCO2e/tonne-product; SBTi FLAG methodology; land-use intensity"
+      - id: preset_08
+        name: "SME Simplified"
+        file: "config/presets/sme_simplified.yaml"
+        sector: "SME"
+        description: "Simplified 5-engine flow; revenue and FTE only; guided walkthrough"
+
+  config:
+    file: "config/pack_config.py"
+    description: "Pydantic v2 configuration with sector-specific defaults and environment overrides"
+
+  demo:
+    file: "config/demo/__init__.py"
+    description: "Demo configuration for testing and evaluation"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+agent_dependencies:
+  foundation:
+    - agent_id: FOUND-001
+      name: "GreenLang Orchestrator"
+      usage: "DAG pipeline execution for 10-phase intensity pipeline"
+    - agent_id: FOUND-002
+      name: "Schema Compiler"
+      usage: "Input/output schema validation for all engines"
+    - agent_id: FOUND-003
+      name: "Unit Normalizer"
+      usage: "Denominator unit conversion and normalisation"
+    - agent_id: FOUND-005
+      name: "Citations Agent"
+      usage: "Regulatory reference linking for disclosure mapping"
+    - agent_id: FOUND-008
+      name: "Reproducibility Agent"
+      usage: "SHA-256 provenance chain verification"
+    - agent_id: FOUND-010
+      name: "Observability Agent"
+      usage: "Metrics, tracing, and logging for engine execution"
+
+  data:
+    - agent_id: DATA-001
+      name: "PDF Extractor"
+      usage: "Extract denominator data from annual reports"
+    - agent_id: DATA-002
+      name: "Excel/CSV Normalizer"
+      usage: "Import denominator data from spreadsheets"
+    - agent_id: DATA-003
+      name: "ERP/Finance Connector"
+      usage: "Revenue, FTE, and production data from ERP systems"
+    - agent_id: DATA-010
+      name: "Data Quality Profiler"
+      usage: "Denominator data quality assessment"
+    - agent_id: DATA-015
+      name: "Cross-Source Reconciliation"
+      usage: "Denominator consistency across multiple sources"
+
+  mrv:
+    - agent_id: MRV-001
+      name: "Stationary Combustion"
+      usage: "Scope 1 stationary combustion emissions"
+    - agent_id: MRV-003
+      name: "Mobile Combustion"
+      usage: "Scope 1 mobile combustion emissions"
+    - agent_id: MRV-009
+      name: "Location-Based Scope 2"
+      usage: "Scope 2 location-based electricity emissions"
+    - agent_id: MRV-010
+      name: "Market-Based Scope 2"
+      usage: "Scope 2 market-based electricity emissions"
+    - agent_id: MRV-014
+      name: "Scope 3 Cat 1"
+      usage: "Scope 3 Category 1 emissions for full value chain intensity"
+    - agent_id: MRV-029
+      name: "Category Mapper"
+      usage: "Scope 3 category classification and mapping"
+    - agent_id: MRV-030
+      name: "Audit Trail"
+      usage: "Emissions audit trail for provenance linking"
+
+# =============================================================================
+# Database Migrations
+# =============================================================================
+database:
+  migrations:
+    - version: V376
+      file: "V376__pack046_core_schema.sql"
+      description: "Core intensity configurations and reporting periods"
+    - version: V377
+      file: "V377__pack046_denominator_registry.sql"
+      description: "Denominator definitions and values storage"
+    - version: V378
+      file: "V378__pack046_intensity_calculations.sql"
+      description: "Calculated intensity metrics and time series"
+    - version: V379
+      file: "V379__pack046_decomposition.sql"
+      description: "LMDI decomposition results and entity contributions"
+    - version: V380
+      file: "V380__pack046_benchmarking.sql"
+      description: "Peer groups, peer data, and benchmark results"
+    - version: V381
+      file: "V381__pack046_targets.sql"
+      description: "SBTi SDA targets, pathways, and progress tracking"
+    - version: V382
+      file: "V382__pack046_scenarios.sql"
+      description: "Scenario definitions, results, and Monte Carlo runs"
+    - version: V383
+      file: "V383__pack046_uncertainty.sql"
+      description: "Uncertainty assessments and data quality logs"
+    - version: V384
+      file: "V384__pack046_disclosures.sql"
+      description: "Disclosure frameworks, field mappings, and packages"
+    - version: V385
+      file: "V385__pack046_views_indexes_seed.sql"
+      description: "Performance views, composite indexes, 25 standard denominators"
+
+# =============================================================================
+# Performance Targets
+# =============================================================================
+performance:
+  single_intensity_calculation_ms: 50
+  full_portfolio_1000_entities_s: 30
+  lmdi_decomposition_50_entities_s: 2
+  monte_carlo_10000_iterations_s: 60
+  full_pipeline_all_phases_min: 30
+  report_generation_all_formats_s: 30
+
+# =============================================================================
+# Security & Access Control
+# =============================================================================
+security:
+  permissions:
+    - resource: "denominator_data"
+      read: ["analyst", "manager", "admin"]
+      write: ["manager", "admin"]
+    - resource: "intensity_calculation"
+      execute: ["analyst", "manager", "admin"]
+    - resource: "target_setting"
+      configure: ["manager", "admin"]
+    - resource: "benchmark_data"
+      read: ["analyst", "manager", "admin"]
+    - resource: "disclosure_package"
+      export: ["manager", "admin"]
+    - resource: "configuration"
+      admin: ["admin"]
+
+# =============================================================================
+# Testing
+# =============================================================================
+testing:
+  total_tests: 850
+  categories:
+    - name: "Unit tests (engines)"
+      count: 400
+      focus: "Individual engine calculations, edge cases, precision"
+    - name: "Unit tests (workflows)"
+      count: 100
+      focus: "Workflow phase transitions, error handling"
+    - name: "Unit tests (templates)"
+      count: 80
+      focus: "Report generation, format correctness"
+    - name: "Unit tests (integrations)"
+      count: 100
+      focus: "Bridge routing, health checks"
+    - name: "Integration tests"
+      count: 120
+      focus: "Multi-engine pipelines, database operations"
+    - name: "E2E tests"
+      count: 50
+      focus: "Full pipeline with realistic data"
+
+# =============================================================================
+# Compliance Framework Mapping
+# =============================================================================
+compliance:
+  frameworks:
+    - name: "ESRS E1 (Climate Change)"
+      reference: "Delegated Regulation 2023/2772"
+      disclosures:
+        - code: "E1-6"
+          name: "Gross Scopes 1, 2, 3 and Total GHG emissions"
+          field: "GHG intensity per net revenue (tCO2e/MEUR)"
+          mandatory: true
+        - code: "E1-6"
+          name: "Sector-specific physical intensity"
+          field: "Sector-dependent (kgCO2e/m2, gCO2/kWh, etc.)"
+          mandatory: true
+          condition: "where applicable per sector ESRS"
+
+    - name: "CDP Climate Change"
+      reference: "CDP 2026 Questionnaire"
+      disclosures:
+        - code: "C6.10"
+          name: "Scope 1+2 emissions intensity"
+          field: "Figure, metric denominator, metric numerator, % change, direction, reason"
+          mandatory: true
+        - code: "Sector modules"
+          name: "Sector-specific physical intensity"
+          field: "Sector-dependent"
+          mandatory: true
+          condition: "sector questionnaire respondents"
+
+    - name: "SEC Climate Disclosure"
+      reference: "Final Rule 33-11275 (2024)"
+      disclosures:
+        - code: "Item 1504"
+          name: "GHG intensity metrics"
+          field: "As used internally by the registrant"
+          mandatory: false
+          condition: "if the registrant uses GHG intensity metrics"
+
+    - name: "SBTi Sectoral Decarbonisation Approach"
+      reference: "SBTi Corporate Manual (2023)"
+      disclosures:
+        - code: "SDA"
+          name: "Sector intensity pathway"
+          field: "Sector-specific physical intensity with convergence targets"
+          mandatory: true
+          condition: "for intensity targets using SDA"
+
+    - name: "ISO 14064-1:2018"
+      reference: "ISO (2018)"
+      disclosures:
+        - code: "Clause 9.3"
+          name: "GHG intensity ratios"
+          field: "Organisation-chosen intensity denominators"
+          mandatory: false
+          condition: "recommended"
+
+    - name: "TCFD Recommendations"
+      reference: "FSB/TCFD (2017)"
+      disclosures:
+        - code: "Metrics"
+          name: "Normalised metrics per industry"
+          field: "Industry-specific intensity measures"
+          mandatory: false
+          condition: "recommended"
+
+    - name: "GRI 305-4"
+      reference: "GRI Standards (2016, updated 2023)"
+      disclosures:
+        - code: "305-4"
+          name: "GHG emissions intensity"
+          field: "Intensity ratio, gases included, scopes"
+          mandatory: false
+          condition: "if material"
+
+    - name: "IFRS S2"
+      reference: "ISSB (2023)"
+      disclosures:
+        - code: "Climate"
+          name: "Intensity metrics"
+          field: "Industry-based intensity metrics"
+          mandatory: false
+          condition: "where material"
+
+# =============================================================================
+# Requirements
+# =============================================================================
+requirements:
+  runtime:
+    python: ">=3.11"
+    packages:
+      - pydantic: ">=2.0"
+      - pyyaml: ">=6.0"
+      - numpy: ">=1.24"
+      - scipy: ">=1.11"
+
+  infrastructure:
+    database: "PostgreSQL >=15 with TimescaleDB"
+    cache: "Redis >=7.0"
+    storage: "S3-compatible for report artifacts"
+
+# =============================================================================
+# Installation
+# =============================================================================
+installation:
+  pack_dir: "packs/ghg-accounting/PACK-046-intensity-metrics"
+  migrations_dir: "deployment/database/migrations/sql"
+  migration_range: "V376-V385"
+  config_env_prefix: "INTENSITY_PACK_"

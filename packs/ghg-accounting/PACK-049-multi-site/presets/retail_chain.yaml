@@ -1,0 +1,60 @@
+# PACK-049 Preset: Retail Chain
+# High site count retail outlets with standardised store format
+
+site_registry:
+  max_sites: 15000
+  facility_types_enabled: ["RETAIL", "WAREHOUSE", "OFFICE"]
+  lifecycle_tracking: true
+  grouping_enabled: true
+
+data_collection:
+  collection_period: MONTHLY
+  data_entry_modes: ["SPREADSHEET_UPLOAD", "API_PUSH", "ERP_CONNECTOR"]
+  validation_strictness: STANDARD
+  estimation_allowed: true
+  reminder_days: [7, 3, 1]
+
+boundary:
+  consolidation_approach: OPERATIONAL_CONTROL
+  materiality_threshold: 0.05
+  de_minimis_threshold: 0.01
+  annual_boundary_lock: true
+
+regional_factor:
+  preferred_tier: TIER_2_NATIONAL
+  default_source: DEFRA
+  grid_factor_update_frequency: ANNUAL
+  climate_zone_enabled: true
+
+consolidation:
+  elimination_enabled: false
+  equity_adjustment_enabled: false
+  completeness_threshold: 0.85
+  reconciliation_tolerance: 0.03
+
+allocation:
+  default_method: FLOOR_AREA
+  shared_services_enabled: true
+  landlord_tenant_enabled: true
+  cogeneration_enabled: false
+
+comparison:
+  default_kpi: EMISSIONS_PER_M2
+  peer_group_min_size: 10
+  percentile_bands: [10, 25, 50, 75, 90]
+  trend_years: 3
+
+completion:
+  completeness_target: 0.90
+  deadline_reminders_days: [7, 3, 1]
+  escalation_enabled: true
+  auto_estimation_enabled: true
+
+quality:
+  minimum_quality_score: 3
+  improvement_tracking_enabled: true
+
+reporting:
+  default_format: HTML
+  drill_down_levels: 4
+  multi_year_enabled: true

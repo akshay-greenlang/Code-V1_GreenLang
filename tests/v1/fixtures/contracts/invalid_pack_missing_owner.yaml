@@ -1,0 +1,16 @@
+contract_version: "1.0"
+name: "gl-csrd-pack"
+app_id: "GL-CSRD-APP"
+version: "1.0.0"
+kind: "pack"
+runtime: "greenlang-v1"
+entry_pipeline: "gl.yaml"
+metadata:
+  owner_team: ""
+  support_channel: "#csrd-platform"
+  lifecycle: "supported"
+security:
+  signed: true
+  signatures:
+    - "pack.sig"
+

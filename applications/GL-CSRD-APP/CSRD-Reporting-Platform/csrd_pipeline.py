@@ -58,6 +58,7 @@ License: MIT
 import argparse
 import json
 import logging
+import os
 import sys
 import time
 from datetime import datetime
@@ -71,11 +72,16 @@ from greenlang.determinism import DeterministicClock
 sys.path.insert(0, str(Path(__file__).parent / "agents"))
 
 from intake_agent import IntakeAgent
-from materiality_agent import MaterialityAgent
 from calculator_agent import CalculatorAgent
 from aggregator_agent import AggregatorAgent
 from reporting_agent import ReportingAgent
 from audit_agent import AuditAgent
+
+try:
+    from materiality_agent import MaterialityAgent, LLMConfig
+except Exception:
+    MaterialityAgent = None
+    LLMConfig = None
 
 # Configure logging
 logging.basicConfig(
@@ -83,6 +89,37 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+class FallbackMaterialityAgent:
+    """Deterministic fallback for environments missing optional AI providers."""
+
+    def __init__(self, **_: Any):
+        self._provider = "fallback"
+
+    def process(self, input_payload: Dict[str, Any]) -> Dict[str, Any]:
+        validated_data = input_payload.get("validated_data", []) or []
+        company_profile = input_payload.get("company_profile", {}) or {}
+        topic = {
+            "topic_id": "fallback-esrs-general",
+            "topic_name": "General ESRS baseline topic",
+            "esrs_standard": "ESRS-ALL",
+            "impact_materiality_score": 0.5,
+            "financial_materiality_score": 0.5,
+            "double_material": True,
+            "rationale": "Fallback deterministic materiality used due unavailable AI provider",
+        }
+        return {
+            "material_topics": [topic],
+            "materiality_matrix": {"threshold": 0.5, "topics_above_threshold": 1},
+            "stakeholder_insights": [],
+            "metadata": {
+                "material_topics_count": 1,
+                "topics_assessed": max(1, len(validated_data)),
+                "llm_provider": self._provider,
+                "company_name": company_profile.get("company_name", "unknown"),
+            },
+        }
 
 
 # ============================================================================
@@ -243,11 +280,31 @@ class CSRDPipeline:
         # Agent 2: Materiality Agent
         logger.info("  [2/6] Initializing MaterialityAgent...")
         materiality_config = self.config['agents']['materiality']
-        self.materiality_agent = MaterialityAgent(
-            llm_provider=materiality_config['llm_provider'],
-            llm_model=materiality_config['llm_model'],
-            temperature=materiality_config['temperature']
-        )
+        if MaterialityAgent is None:
+            allow_optional_fallback = (
+                os.environ.get("GL_CSRD_ALLOW_OPTIONAL_FALLBACK", "0").strip().lower()
+                in {"1", "true", "yes", "on"}
+            )
+            if not allow_optional_fallback:
+                raise RuntimeError(
+                    "MaterialityAgent unavailable in strict mode. "
+                    "Install required intelligence providers or set GL_CSRD_ALLOW_OPTIONAL_FALLBACK=1 for non-release runs."
+                )
+            logger.warning(
+                "MaterialityAgent unavailable; using non-release fallback materiality adapter"
+            )
+            self.materiality_agent = FallbackMaterialityAgent()
+        else:
+            if LLMConfig is None:
+                raise RuntimeError("Materiality LLMConfig unavailable in strict mode")
+            self.materiality_agent = MaterialityAgent(
+                esrs_data_points_path=self._resolve_path('esrs_data_points'),
+                llm_config=LLMConfig(
+                    provider=materiality_config['llm_provider'],
+                    model=materiality_config['llm_model'],
+                    temperature=materiality_config['temperature'],
+                ),
+            )
 
         # Agent 3: Calculator Agent
         logger.info("  [3/6] Initializing CalculatorAgent...")
@@ -267,10 +324,9 @@ class CSRDPipeline:
         logger.info("  [5/6] Initializing ReportingAgent...")
         reporting_config = self.config['agents']['reporting']
         self.reporting_agent = ReportingAgent(
-            esrs_xbrl_taxonomy_path=self._resolve_path('esrs_xbrl_taxonomy'),
-            default_language=reporting_config['default_language'],
-            enable_xbrl=reporting_config['xbrl_generation'],
-            enable_pdf=reporting_config['pdf_generation']
+            xbrl_validation_rules_path=self._resolve_path('xbrl_validation_rules'),
+            taxonomy_mapping={},
+            default_locale=reporting_config['default_language'],
         )
 
         # Agent 6: Audit Agent
@@ -330,7 +386,7 @@ class CSRDPipeline:
         stage1_start = DeterministicClock.now()
 
         try:
-            intake_output = self.intake_agent.process(esg_data_file)
+            intake_output = self.intake_agent.process({"input_file": esg_data_file})
             stage1_status = "success"
         except Exception as e:
             logger.error(f"Stage 1 failed: {e}", exc_info=True)
@@ -388,10 +444,11 @@ class CSRDPipeline:
         stage2_start = DeterministicClock.now()
 
         try:
+            validated_data = intake_output.get("validated_data") or intake_output.get("data_points", [])
             # Prepare input for materiality assessment
             materiality_input = {
                 "company_profile": company_profile,
-                "validated_data": intake_output['validated_data']
+                "validated_data": validated_data
             }
 
             materiality_output = self.materiality_agent.process(materiality_input)
@@ -414,7 +471,7 @@ class CSRDPipeline:
             start_time=stage2_start.isoformat(),
             end_time=stage2_end.isoformat(),
             duration_seconds=round(stage2_time, 3),
-            input_records=len(intake_output.get('validated_data', [])),
+            input_records=len(validated_data),
             output_records=len(material_topics),
             status=stage2_status,
             metadata={
@@ -449,13 +506,17 @@ class CSRDPipeline:
         stage3_start = DeterministicClock.now()
 
         try:
-            # Prepare calculation input with materiality context
+            validated_data = intake_output.get("validated_data") or intake_output.get("data_points", [])
+            metric_codes = [
+                str(item.get("metric_code"))
+                for item in validated_data
+                if isinstance(item, dict) and item.get("metric_code")
+            ]
             calculation_input = {
-                "validated_data": intake_output['validated_data'],
-                "material_topics": material_topics
+                "material_topics": material_topics,
+                "records": validated_data,
             }
-
-            calculated_output = self.calculator_agent.calculate_batch(calculation_input)
+            calculated_output = self.calculator_agent.calculate_batch(metric_codes, calculation_input)
             stage3_status = "success"
         except Exception as e:
             logger.error(f"Stage 3 failed: {e}", exc_info=True)
@@ -474,7 +535,7 @@ class CSRDPipeline:
             start_time=stage3_start.isoformat(),
             end_time=stage3_end.isoformat(),
             duration_seconds=round(stage3_time, 3),
-            input_records=len(intake_output.get('validated_data', [])),
+            input_records=len(validated_data),
             output_records=calculated_output['metadata']['metrics_calculated'],
             status=stage3_status,
             metadata={
@@ -577,7 +638,13 @@ class CSRDPipeline:
                 "calculated_metrics": calculated_output
             }
 
-            report_output = self.reporting_agent.generate_report(report_input)
+            report_output = self.reporting_agent.generate_report(
+                company_profile=report_input["company_profile"],
+                materiality_assessment=report_input["materiality_assessment"],
+                calculated_metrics=report_input["calculated_metrics"],
+                output_dir=output_dir or "output/csrd_reports",
+                language=self.config.get("agents", {}).get("reporting", {}).get("default_language", "en"),
+            )
             stage5_status = "success"
         except Exception as e:
             logger.error(f"Stage 5 failed: {e}", exc_info=True)
@@ -647,8 +714,26 @@ class CSRDPipeline:
             stage6_status = "success"
         except Exception as e:
             logger.error(f"Stage 6 failed: {e}", exc_info=True)
-            stage6_status = "error"
-            raise
+            allow_optional_fallback = (
+                os.environ.get("GL_CSRD_ALLOW_OPTIONAL_FALLBACK", "0").strip().lower()
+                in {"1", "true", "yes", "on"}
+            )
+            if not allow_optional_fallback:
+                raise
+            stage6_status = "warning"
+            audit_output = {
+                "compliance_report": {
+                    "total_rules_checked": 0,
+                    "rules_passed": 0,
+                    "rules_failed": 0,
+                    "rules_warning": 1,
+                    "critical_failures": 0,
+                    "compliance_status": "WARNING",
+                },
+                "warnings": [
+                    "AuditAgent validation unavailable; generated non-release fallback compliance summary"
+                ],
+            }
 
         stage6_end = DeterministicClock.now()
         stage6_time = (stage6_end - stage6_start).total_seconds()
@@ -711,6 +796,7 @@ class CSRDPipeline:
 
         self.stats["pipeline_end"] = DeterministicClock.now()
         pipeline_time = (self.stats["pipeline_end"] - self.stats["pipeline_start"]).total_seconds()
+        safe_pipeline_time = pipeline_time if pipeline_time > 0 else 1e-6
 
         logger.info("=" * 80)
         logger.info("PIPELINE EXECUTION COMPLETE")
@@ -718,12 +804,12 @@ class CSRDPipeline:
         logger.info(f"Total execution time: {pipeline_time:.2f}s ({pipeline_time/60:.1f} minutes)")
         logger.info("")
         logger.info("Agent breakdown:")
-        logger.info(f"  - Stage 1 (Intake):      {stage1_time:6.2f}s ({stage1_time/pipeline_time*100:5.1f}%)")
-        logger.info(f"  - Stage 2 (Materiality): {stage2_time:6.2f}s ({stage2_time/pipeline_time*100:5.1f}%)")
-        logger.info(f"  - Stage 3 (Calculator):  {stage3_time:6.2f}s ({stage3_time/pipeline_time*100:5.1f}%)")
-        logger.info(f"  - Stage 4 (Aggregator):  {stage4_time:6.2f}s ({stage4_time/pipeline_time*100:5.1f}%)")
-        logger.info(f"  - Stage 5 (Reporting):   {stage5_time:6.2f}s ({stage5_time/pipeline_time*100:5.1f}%)")
-        logger.info(f"  - Stage 6 (Audit):       {stage6_time:6.2f}s ({stage6_time/pipeline_time*100:5.1f}%)")
+        logger.info(f"  - Stage 1 (Intake):      {stage1_time:6.2f}s ({stage1_time/safe_pipeline_time*100:5.1f}%)")
+        logger.info(f"  - Stage 2 (Materiality): {stage2_time:6.2f}s ({stage2_time/safe_pipeline_time*100:5.1f}%)")
+        logger.info(f"  - Stage 3 (Calculator):  {stage3_time:6.2f}s ({stage3_time/safe_pipeline_time*100:5.1f}%)")
+        logger.info(f"  - Stage 4 (Aggregator):  {stage4_time:6.2f}s ({stage4_time/safe_pipeline_time*100:5.1f}%)")
+        logger.info(f"  - Stage 5 (Reporting):   {stage5_time:6.2f}s ({stage5_time/safe_pipeline_time*100:5.1f}%)")
+        logger.info(f"  - Stage 6 (Audit):       {stage6_time:6.2f}s ({stage6_time/safe_pipeline_time*100:5.1f}%)")
         logger.info("")
 
         # Performance assessment
@@ -749,7 +835,7 @@ class CSRDPipeline:
             agent_5_reporting_seconds=round(stage5_time, 2),
             agent_6_audit_seconds=round(stage6_time, 2),
             records_processed=intake_output['metadata']['total_records'],
-            records_per_second=round(intake_output['metadata']['total_records'] / pipeline_time, 2),
+            records_per_second=round(intake_output['metadata']['total_records'] / safe_pipeline_time, 2),
             target_time_minutes=target_minutes,
             within_target=within_target
         )

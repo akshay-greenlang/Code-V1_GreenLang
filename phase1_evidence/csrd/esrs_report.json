@@ -1,0 +1,24 @@
+{
+  "app_id": "GL-CSRD-APP",
+  "compliance_audit": {
+    "critical_failures": 0,
+    "rules_checked": 0,
+    "rules_failed": 0,
+    "rules_passed": 0
+  },
+  "compliance_status": "PASS",
+  "esef_package": {
+    "file_count": 4
+  },
+  "pipeline_id": "csrd-esrs-core",
+  "records_processed": 47,
+  "report_metadata": {
+    "locale": "en",
+    "narratives_generated": 2,
+    "total_xbrl_facts": 0,
+    "validation_errors": 0,
+    "validation_status": "valid",
+    "validation_warnings": 0
+  },
+  "status": "success"
+}

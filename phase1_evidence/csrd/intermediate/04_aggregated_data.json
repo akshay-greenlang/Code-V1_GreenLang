@@ -1,0 +1,295 @@
+{
+  "metadata": {
+    "aggregated_at": "2026-03-26T16:44:15+00:00",
+    "total_metrics_processed": 1,
+    "esrs_metrics": 1,
+    "tcfd_metrics_mapped": 0,
+    "gri_metrics_mapped": 0,
+    "sasb_metrics_mapped": 0,
+    "trends_analyzed": 0,
+    "benchmarks_compared": 0,
+    "processing_time_seconds": 0.0,
+    "deterministic": true,
+    "zero_hallucination": true
+  },
+  "aggregated_esg_data": {
+    "company_profile": {
+      "esrs_code": "company_profile",
+      "esrs_name": "company_profile",
+      "primary_value": null,
+      "primary_source": "ESRS",
+      "unit": "",
+      "reporting_period": "",
+      "source_values": {
+        "ESRS": null
+      },
+      "mapping_quality": "direct",
+      "data_quality_score": null,
+      "historical_values": null,
+      "aggregation_timestamp": "2026-03-26T16:44:15+00:00",
+      "provenance": {
+        "source": "ESRS",
+        "original_data": {
+          "company_id": "550e8400-e29b-41d4-a716-446655440000",
+          "legal_name": "Acme Manufacturing EU B.V.",
+          "commercial_name": "Acme EU",
+          "lei_code": "549300ABC123DEF456GH",
+          "country": "NL",
+          "registered_address": {
+            "street": "Industrieweg 42",
+            "city": "Amsterdam",
+            "postal_code": "1043 AB",
+            "country": "NL"
+          },
+          "sector": {
+            "nace_code": "25.11",
+            "nace_description": "Manufacture of metal structures and parts of structures",
+            "industry": "Manufacturing",
+            "sub_industry": "Industrial Metals & Equipment"
+          },
+          "company_size": {
+            "employee_count": 1250,
+            "employee_count_fte": 1250,
+            "size_category": "Large",
+            "revenue_eur": 450000000,
+            "total_assets_eur": 280000000
+          },
+          "reporting_period": {
+            "fiscal_year": 2024,
+            "start_date": "2024-01-01",
+            "end_date": "2024-12-31",
+            "reporting_framework": "CSRD",
+            "first_year_csrd": true
+          },
+          "csrd_applicability": {
+            "csrd_applicable": true,
+            "phase": "Phase 1",
+            "reason": "Large company, >500 employees, previously subject to NFRD",
+            "first_report_due": "2025-04-30"
+          },
+          "stock_listing": {
+            "listed": true,
+            "exchange": "Euronext Amsterdam",
+            "ticker": "ACME.AS",
+            "isin": "NL0000123456"
+          },
+          "subsidiaries": [
+            {
+              "subsidiary_id": "sub-001",
+              "name": "Acme Manufacturing GmbH",
+              "country": "DE",
+              "ownership_percentage": 100,
+              "consolidation_method": "full",
+              "employees": 320,
+              "revenue_eur": 95000000
+            },
+            {
+              "subsidiary_id": "sub-002",
+              "name": "Acme France SAS",
+              "country": "FR",
+              "ownership_percentage": 75,
+              "consolidation_method": "full",
+              "employees": 180,
+              "revenue_eur": 62000000
+            },
+            {
+              "subsidiary_id": "sub-003",
+              "name": "Acme Espa\u00f1a S.L.",
+              "country": "ES",
+              "ownership_percentage": 100,
+              "consolidation_method": "full",
+              "employees": 140,
+              "revenue_eur": 48000000
+            }
+          ],
+          "operations": {
+            "number_of_facilities": 8,
+            "countries_of_operation": [
+              "NL",
+              "DE",
+              "FR",
+              "ES",
+              "BE"
+            ],
+            "value_chain": {
+              "upstream": "Steel suppliers, component manufacturers",
+              "operations": "Metal fabrication, welding, assembly",
+              "downstream": "Construction companies, infrastructure projects"
+            }
+          },
+          "sustainability_governance": {
+            "sustainability_committee": true,
+            "sustainability_officer": {
+              "name": "Jane Smith",
+              "title": "Chief Sustainability Officer",
+              "email": "jane.smith@acme-eu.com",
+              "phone": "+31 20 123 4567"
+            },
+            "board_oversight": true,
+            "esrs_working_group": true
+          },
+          "previous_reporting": {
+            "nfrd_reporting": true,
+            "nfrd_since": 2020,
+            "gri_reporting": true,
+            "gri_version": "GRI 2021",
+            "tcfd_reporting": true,
+            "sasb_reporting": false,
+            "cdp_reporting": true,
+            "cdp_score_climate": "A-"
+          },
+          "external_assurance": {
+            "assurance_required": true,
+            "assurance_level": "limited",
+            "auditor": "KPMG Netherlands",
+            "auditor_contact": "assurance@kpmg.nl"
+          },
+          "contact": {
+            "primary_contact": {
+              "name": "Jane Smith",
+              "title": "Chief Sustainability Officer",
+              "email": "jane.smith@acme-eu.com",
+              "phone": "+31 20 123 4567"
+            },
+            "technical_contact": {
+              "name": "Robert van der Berg",
+              "title": "ESG Data Manager",
+              "email": "robert.vandenberg@acme-eu.com",
+              "phone": "+31 20 123 4568"
+            },
+            "legal_contact": {
+              "name": "Maria de Vries",
+              "title": "General Counsel",
+              "email": "maria.devries@acme-eu.com",
+              "phone": "+31 20 123 4569"
+            }
+          },
+          "data_sources": {
+            "erp_system": "SAP S/4HANA",
+            "hris_system": "Workday",
+            "energy_management": "Schneider Electric EcoStruxure",
+            "environmental_system": "Enablon",
+            "ghg_accounting": "SimaPro + GHG Protocol tools"
+          },
+          "materiality_assessment": {
+            "last_assessment_date": "2024-09-30",
+            "methodology": "ESRS 1 Double Materiality",
+            "stakeholders_consulted": [
+              "Employees",
+              "Investors",
+              "Customers",
+              "Suppliers",
+              "Local communities",
+              "NGOs"
+            ],
+            "next_assessment_due": "2027-09-30"
+          },
+          "metadata": {
+            "created_date": "2024-10-01T10:00:00Z",
+            "last_updated": "2024-12-15T15:30:00Z",
+            "version": "1.2",
+            "data_quality_score": 0.95
+          }
+        }
+      }
+    }
+  },
+  "trend_analysis": [],
+  "gap_analysis": {
+    "total_esrs_required": 60,
+    "total_esrs_covered": 1,
+    "coverage_percentage": 1.7,
+    "coverage_by_framework": {
+      "ESRS": 1,
+      "TCFD": 0,
+      "GRI": 0,
+      "SASB": 0
+    },
+    "missing_esrs_codes": [
+      "E1-6",
+      "ESRS-2 IRO-2",
+      "S3-3",
+      "E2-5",
+      "G1-1",
+      "E1-7",
+      "E1-8",
+      "E4-4",
+      "S3-1",
+      "ESRS-2 SBM-1",
+      "ESRS-2 SBM-2",
+      "E5-4",
+      "G1-5",
+      "E1-2",
+      "E1-3",
+      "ESRS-2 GOV-5",
+      "ESRS-2 GOV-2",
+      "S1-14",
+      "E4-1",
+      "E1-4",
+      "G1-6",
+      "ESRS-2 IRO-1",
+      "G1-4",
+      "E2-4",
+      "ESRS-2 GOV-1",
+      "E2-3",
+      "S2-1",
+      "G1-3",
+      "E1-1",
+      "S1-7",
+      "S4-4",
+      "S1-15",
+      "E3-5",
+      "E2-1",
+      "ESRS-2 GOV-3",
+      "E1-5",
+      "S1-13",
+      "S1-8",
+      "S1-17",
+      "S2-4",
+      "E3-4",
+      "S1-12",
+      "S1-1",
+      "S1-11",
+      "S1-16",
+      "E3-1",
+      "E5-1",
+      "S1-6",
+      "S1-10",
+      "G1-2",
+      "S4-3",
+      "S1-9",
+      "E1-9",
+      "S3-4",
+      "ESRS-2 BP-1",
+      "E5-5",
+      "S4-1",
+      "ESRS-2 GOV-4",
+      "ESRS-2 BP-2",
+      "ESRS-2 SBM-3"
+    ],
+    "partial_mappings": [],
+    "direct_mappings": 1,
+    "high_quality_mappings": 0,
+    "partial_mappings_count": 0,
+    "low_quality_mappings": 0
+  },
+  "benchmark_comparison": [],
+  "aggregation_issues": [
+    {
+      "esrs_code": null,
+      "error_code": "W005",
+      "severity": "info",
+      "message": "No historical data provided - trend analysis unavailable",
+      "source_framework": null,
+      "suggestion": "Provide historical_data parameter for multi-year trend analysis"
+    },
+    {
+      "esrs_code": null,
+      "error_code": "W006",
+      "severity": "warning",
+      "message": "Industry sector not specified - benchmark comparison unavailable",
+      "source_framework": null,
+      "suggestion": "Provide industry_sector parameter for peer benchmarking"
+    }
+  ]
+}

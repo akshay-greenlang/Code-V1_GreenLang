@@ -1,0 +1,328 @@
+# =============================================================================
+# PACK-047: GHG Emissions Benchmark Pack
+# GreenLang GHG Accounting Pack for Comprehensive Emissions Benchmarking
+# =============================================================================
+# This pack delivers a production-ready, verification-grade emissions
+# benchmarking system covering peer group construction, scope normalisation,
+# multi-source external dataset integration, science-based pathway alignment,
+# implied temperature rise (ITR) calculation, trajectory benchmarking,
+# portfolio-level benchmarking (PCAF/WACI), data quality scoring, transition
+# risk assessment, and multi-framework disclosure reporting.
+#
+# The pack follows a zero-hallucination approach: all benchmark calculations,
+# pathway alignments, ITR computations, and risk scores use deterministic
+# formulas from established methodologies (PCAF, SBTi SDA, IPCC AR6 budgets,
+# IEA NZE, TPI Carbon Performance). No LLM is used in any calculation path.
+# Benchmark data is from authoritative sources with full provenance.
+# =============================================================================
+
+pack:
+  id: PACK-047
+  name: "GHG Emissions Benchmark Pack"
+  version: "1.0.0"
+  category: "ghg-accounting"
+  tier: "enterprise"
+  status: "production-ready"
+  author: "GreenLang Platform Team"
+  date: "2026-03-26"
+  license: "Proprietary"
+  min_platform_version: "1.0.0"
+
+description:
+  short: "Comprehensive GHG emissions benchmarking with peer comparison, pathway alignment, ITR, portfolio analytics, and transition risk scoring"
+  long: |
+    PACK-047 provides the complete GHG emissions benchmarking lifecycle for
+    organisations and financial institutions. It enables multi-dimensional peer
+    group construction, scope-aligned normalisation, science-based pathway
+    alignment (IEA NZE, IPCC AR6, SBTi SDA, OECM, TPI, CRREM), implied
+    temperature rise calculation, trajectory benchmarking, PCAF-aligned
+    portfolio aggregation, data quality transparency, and transition risk
+    scoring. Output maps to ESRS, CDP, SFDR, TCFD, SEC, and GRI frameworks.
+
+regulatory_basis:
+  - framework: "ESRS E1-4"
+    description: "Climate change benchmark context and sector comparison"
+  - framework: "SBTi SDA v2.0"
+    description: "Sectoral Decarbonisation Approach pathway benchmarking"
+  - framework: "CDP Climate Change C6/C7"
+    description: "Emissions benchmarking and performance band positioning"
+  - framework: "SFDR PAI 1-3"
+    description: "Portfolio benchmark comparison for financial products"
+  - framework: "TCFD Metrics and Targets"
+    description: "Portfolio alignment and WACI benchmarking"
+  - framework: "PCAF Global Standard"
+    description: "Financed emissions methodology and data quality scoring"
+  - framework: "IEA Net Zero 2050"
+    description: "Sector-specific decarbonisation pathway benchmarks"
+  - framework: "IPCC AR6 WG III"
+    description: "Carbon budget and temperature pathway alignment"
+  - framework: "TPI Carbon Performance"
+    description: "Company-level carbon performance benchmarking by sector"
+  - framework: "CRREM v2"
+    description: "Real estate decarbonisation pathway and stranding risk"
+  - framework: "ISO 14064-1:2018"
+    description: "GHG quantification benchmark context (Clause 9)"
+  - framework: "GRI 305-4"
+    description: "GHG emissions intensity benchmark reporting"
+  - framework: "IFRS S2"
+    description: "Climate-related disclosure benchmark metrics"
+  - framework: "US SEC Climate Rules"
+    description: "Contextual benchmark comparison for climate disclosure"
+
+components:
+  engines:
+    count: 10
+    items:
+      - name: "PeerGroupConstructionEngine"
+        file: "engines/peer_group_construction_engine.py"
+        description: "Multi-dimensional peer group construction with GICS/NACE/ISIC cross-mapping"
+      - name: "ScopeNormalisationEngine"
+        file: "engines/scope_normalisation_engine.py"
+        description: "Scope boundary, GWP version, currency, and period harmonisation"
+      - name: "ExternalDatasetEngine"
+        file: "engines/external_dataset_engine.py"
+        description: "CDP, TPI, GRESB, CRREM, ISS ESG data ingestion and caching"
+      - name: "PathwayAlignmentEngine"
+        file: "engines/pathway_alignment_engine.py"
+        description: "Multi-pathway alignment (IEA, IPCC, SBTi, OECM, TPI, CRREM)"
+      - name: "ImpliedTemperatureRiseEngine"
+        file: "engines/implied_temperature_rise_engine.py"
+        description: "Budget-based, sector-relative, and rate-of-reduction ITR"
+      - name: "TrajectoryBenchmarkingEngine"
+        file: "engines/trajectory_benchmarking_engine.py"
+        description: "Multi-year CARR, convergence, acceleration trajectory analysis"
+      - name: "PortfolioBenchmarkingEngine"
+        file: "engines/portfolio_benchmarking_engine.py"
+        description: "PCAF-aligned WACI, carbon footprint, portfolio aggregation"
+      - name: "DataQualityScoringEngine"
+        file: "engines/data_quality_scoring_engine.py"
+        description: "GHG Protocol quality matrix, PCAF scores, confidence intervals"
+      - name: "TransitionRiskScoringEngine"
+        file: "engines/transition_risk_scoring_engine.py"
+        description: "Carbon budget overshoot, stranding risk, composite transition risk"
+      - name: "BenchmarkReportingEngine"
+        file: "engines/benchmark_reporting_engine.py"
+        description: "League tables, radar charts, pathway graphs, multi-format export"
+
+  workflows:
+    count: 8
+    items:
+      - name: "PeerGroupSetupWorkflow"
+        file: "workflows/peer_group_setup_workflow.py"
+        phases: 5
+        description: "SectorMap -> SizeBand -> GeoWeight -> PeerScore -> Validate"
+      - name: "BenchmarkAssessmentWorkflow"
+        file: "workflows/benchmark_assessment_workflow.py"
+        phases: 5
+        description: "DataIngest -> Normalise -> Compare -> Rank -> Report"
+      - name: "PathwayAlignmentWorkflow"
+        file: "workflows/pathway_alignment_workflow.py"
+        phases: 4
+        description: "PathwayLoad -> Interpolate -> GapAnalysis -> AlignmentScore"
+      - name: "TrajectoryAnalysisWorkflow"
+        file: "workflows/trajectory_analysis_workflow.py"
+        phases: 4
+        description: "TimeSeriesLoad -> CARR -> Convergence -> TrajectoryRank"
+      - name: "PortfolioBenchmarkWorkflow"
+        file: "workflows/portfolio_benchmark_workflow.py"
+        phases: 5
+        description: "HoldingsLoad -> PCAF -> Aggregate -> WACI -> Compare"
+      - name: "TransitionRiskWorkflow"
+        file: "workflows/transition_risk_workflow.py"
+        phases: 5
+        description: "BudgetAlloc -> Stranding -> RegRisk -> CompRisk -> Score"
+      - name: "DisclosurePreparationWorkflow"
+        file: "workflows/disclosure_preparation_workflow.py"
+        phases: 4
+        description: "MetricAgg -> FrameworkMap -> QACheck -> Package"
+      - name: "FullBenchmarkPipelineWorkflow"
+        file: "workflows/full_benchmark_pipeline_workflow.py"
+        phases: 8
+        description: "End-to-end benchmark orchestration across all workflows"
+
+  templates:
+    count: 10
+    items:
+      - name: "BenchmarkExecutiveDashboard"
+        file: "templates/benchmark_executive_dashboard.py"
+      - name: "PeerComparisonReport"
+        file: "templates/peer_comparison_report.py"
+      - name: "PathwayAlignmentReport"
+        file: "templates/pathway_alignment_report.py"
+      - name: "TrajectoryAnalysisReport"
+        file: "templates/trajectory_analysis_report.py"
+      - name: "PortfolioBenchmarkReport"
+        file: "templates/portfolio_benchmark_report.py"
+      - name: "TransitionRiskReport"
+        file: "templates/transition_risk_report.py"
+      - name: "DataQualityReport"
+        file: "templates/data_quality_report.py"
+      - name: "ESRSE1BenchmarkDisclosure"
+        file: "templates/esrs_e1_benchmark_disclosure.py"
+      - name: "CDPClimateBenchmarkSection"
+        file: "templates/cdp_climate_benchmark_section.py"
+      - name: "SFDRPAIBenchmarkReport"
+        file: "templates/sfdr_pai_benchmark_report.py"
+
+  integrations:
+    count: 12
+    items:
+      - name: "PackOrchestrator"
+        file: "integrations/pack_orchestrator.py"
+        description: "10-phase DAG pipeline coordinator"
+      - name: "MRVBridge"
+        file: "integrations/mrv_bridge.py"
+        description: "30 AGENT-MRV agents for emissions data"
+      - name: "DataBridge"
+        file: "integrations/data_bridge.py"
+        description: "AGENT-DATA agents for external data ingestion"
+      - name: "Pack041Bridge"
+        file: "integrations/pack041_bridge.py"
+        description: "Scope 1+2 absolute emissions from PACK-041"
+      - name: "Pack042043Bridge"
+        file: "integrations/pack042_043_bridge.py"
+        description: "Scope 3 emissions from PACK-042/043"
+      - name: "Pack044Bridge"
+        file: "integrations/pack044_bridge.py"
+        description: "Inventory periods from PACK-044"
+      - name: "Pack045Bridge"
+        file: "integrations/pack045_bridge.py"
+        description: "Base year data from PACK-045"
+      - name: "Pack046Bridge"
+        file: "integrations/pack046_bridge.py"
+        description: "Intensity metrics from PACK-046"
+      - name: "ExternalDatasetBridge"
+        file: "integrations/external_dataset_bridge.py"
+        description: "CDP, TPI, GRESB, CRREM, ISS ESG data adapters"
+      - name: "HealthCheck"
+        file: "integrations/health_check.py"
+        description: "20-category system verification"
+      - name: "SetupWizard"
+        file: "integrations/setup_wizard.py"
+        description: "8-step guided configuration"
+      - name: "AlertBridge"
+        file: "integrations/alert_bridge.py"
+        description: "Threshold/deadline/pathway deviation alerts"
+
+  config:
+    file: "config/pack_config.py"
+    enums: 18
+    sub_configs: 15
+    presets: 8
+
+  presets:
+    - corporate_general
+    - power_utilities
+    - heavy_industry
+    - real_estate
+    - financial_services
+    - transport_logistics
+    - oil_gas
+    - food_agriculture
+
+agent_dependencies:
+  mrv:
+    count: 30
+    description: "All 30 AGENT-MRV agents for emissions data retrieval"
+  data:
+    count: 20
+    description: "AGENT-DATA agents for external data ingestion and quality profiling"
+
+pack_dependencies:
+  - pack_id: "PACK-041"
+    name: "Scope 1-2 Complete"
+    relationship: "Scope 1+2 absolute emissions input"
+    required: true
+  - pack_id: "PACK-042"
+    name: "Scope 3 Starter"
+    relationship: "Scope 3 emissions input (basic)"
+    required: false
+  - pack_id: "PACK-043"
+    name: "Scope 3 Complete"
+    relationship: "Scope 3 emissions input (enterprise)"
+    required: false
+  - pack_id: "PACK-044"
+    name: "Inventory Management"
+    relationship: "Reporting period boundaries and governance"
+    required: false
+  - pack_id: "PACK-045"
+    name: "Base Year Management"
+    relationship: "Base year data for trajectory analysis"
+    required: false
+  - pack_id: "PACK-046"
+    name: "Intensity Metrics"
+    relationship: "Intensity metrics for intensity-based benchmarking"
+    required: false
+
+database:
+  schema: "ghg_benchmark"
+  table_prefix: "gl_bm_"
+  migrations:
+    start: "V386"
+    end: "V395"
+    count: 10
+    files:
+      - "V386__pack047_core_schema.sql"
+      - "V387__pack047_peer_groups.sql"
+      - "V388__pack047_normalisation.sql"
+      - "V389__pack047_external_datasets.sql"
+      - "V390__pack047_pathway_alignment.sql"
+      - "V391__pack047_itr.sql"
+      - "V392__pack047_trajectory.sql"
+      - "V393__pack047_portfolio.sql"
+      - "V394__pack047_transition_risk_quality.sql"
+      - "V395__pack047_views_indexes_seed.sql"
+
+performance:
+  peer_group_construction: "<30 sec for 500 peers"
+  scope_normalisation: "<5 sec for 100 peers"
+  pathway_alignment: "<10 sec for 6 pathways, 30-year horizon"
+  itr_calculation: "<15 sec for 1,000-holding portfolio"
+  portfolio_aggregation: "<20 sec for 10,000 holdings"
+  full_pipeline: "<120 sec for 500-peer, 10-year analysis"
+  report_generation: "<10 sec per format"
+
+security:
+  authentication: "JWT RS256 via SEC-001"
+  authorisation: "RBAC via SEC-002"
+  permissions:
+    - "benchmark:read"
+    - "benchmark:write"
+    - "benchmark:admin"
+    - "benchmark:portfolio"
+    - "benchmark:disclosure"
+  encryption: "AES-256-GCM at rest via SEC-003"
+  tls: "TLS 1.3 in transit via SEC-004"
+  audit: "Full audit trail via SEC-005"
+  tenant_isolation: "RLS on all database tables"
+  provenance: "SHA-256 hash on every benchmark result"
+
+compliance:
+  zero_hallucination: true
+  deterministic_calculations: true
+  decimal_arithmetic: true
+  no_llm_in_calculations: true
+  sha256_provenance: true
+  frameworks_supported:
+    - "ESRS E1-4"
+    - "CDP Climate Change"
+    - "SFDR PAI 1-3"
+    - "TCFD Metrics and Targets"
+    - "PCAF Global Standard"
+    - "IEA NZE 2050"
+    - "IPCC AR6 C1/C2/C3"
+    - "SBTi SDA"
+    - "OECM"
+    - "TPI Carbon Performance"
+    - "CRREM v2"
+    - "ISO 14064-1:2018"
+    - "GRI 305-4"
+    - "IFRS S2"
+    - "US SEC Climate Rules"
+
+testing:
+  test_files: 17
+  test_functions: 619
+  coverage_target: "95%+"
+  e2e_scenarios: 90
+  determinism_verified: true

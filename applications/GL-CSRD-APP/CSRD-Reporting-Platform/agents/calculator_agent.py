@@ -37,7 +37,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field
-from greenlang.determinism import FinancialDecimal
+from greenlang.determinism import DeterministicClock, FinancialDecimal
 
 # Configure logging
 logging.basicConfig(

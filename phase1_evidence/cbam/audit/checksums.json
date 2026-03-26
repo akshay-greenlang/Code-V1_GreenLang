@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-06-16T05:16:45Z",
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "path": "audit\\assumptions.json",
+      "sha256": "219a1fa130e3a4b12cdd1f8a0a59edafe55b579181128f3dad1670e6fbc50a58",
+      "size_bytes": 1869
+    },
+    {
+      "path": "audit\\claims.json",
+      "sha256": "cc0f3906c8e86388e6ad1f7076e67069904ffd2a277a92bdaf2f0a05fb1c6eb1",
+      "size_bytes": 9784
+    },
+    {
+      "path": "audit\\gap_report.json",
+      "sha256": "8d9efb1c6c7b2c08e971dff2e4ae16397a1685d8d8dea1de3dd52f99d8dff0c1",
+      "size_bytes": 8876
+    },
+    {
+      "path": "audit\\lineage.json",
+      "sha256": "03493f02979ee79b27762563117e6cde954255e44b66c6788b263d0fcf3f395d",
+      "size_bytes": 2720
+    },
+    {
+      "path": "audit\\policy_validation.json",
+      "sha256": "d034e5e0082992ea81b09b48ac2034c6d57d176c4b35cdeab1a9ee6ad30ccc3e",
+      "size_bytes": 1567
+    },
+    {
+      "path": "audit\\run_manifest.json",
+      "sha256": "bab7721a8c840a6dcb0b90c6a7480c41896ed4985f180a17f2bbed3eb6df7379",
+      "size_bytes": 3550
+    },
+    {
+      "path": "cbam_report.xml",
+      "sha256": "d62568bc26dc3384ce7741849b133ce493eb5001ab0e9d814b545844e1a08db8",
+      "size_bytes": 7502
+    },
+    {
+      "path": "evidence\\sample_config.yaml",
+      "sha256": "1b18d95d50565683ebe2a458283a91b2f7cf6211e41d5d4a7dd667b015817d54",
+      "size_bytes": 480
+    },
+    {
+      "path": "evidence\\sample_imports.csv",
+      "sha256": "f11e95b02f996c2e2e085fea178a298a9eb8d2329d8796be79d1766bd70ab5c9",
+      "size_bytes": 1143
+    },
+    {
+      "path": "report_summary.xlsx",
+      "sha256": "b446802db4c788d7d1eacdd171a39616a984d8bcf187e4d1592ac0fe2e71ac2e",
+      "size_bytes": 8794
+    }
+  ]
+}

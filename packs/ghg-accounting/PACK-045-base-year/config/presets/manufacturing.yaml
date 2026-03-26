@@ -1,0 +1,123 @@
+# =============================================================================
+# PACK-045 Base Year Management - Manufacturing Preset
+# =============================================================================
+# Industrial manufacturing facilities with significant Scope 1 emissions from
+# stationary combustion (process heat, steam generation), process emissions,
+# and potentially fugitive emissions. Base year selected for production stability
+# with a stricter 3% significance threshold.
+#
+# Typical use cases:
+#   - Automotive and automotive component manufacturing
+#   - Chemical and pharmaceutical manufacturing
+#   - Metal fabrication and steel processing
+#   - Cement, glass, and ceramics production
+#   - Electronics and semiconductor manufacturing
+#
+# Typical emission profile:
+#   Scope 1: 50-80% of total (process heat, process emissions dominant)
+#   Scope 2: 20-50% of total (electricity for motors, processes)
+#   Key gases: CO2, CH4, N2O, HFCs (depends on industry)
+#   Typical intensity: 50-500 tCO2e per MEUR revenue
+# =============================================================================
+
+# --- Metadata ---
+metadata:
+  preset_name: "manufacturing"
+  description: "Industrial manufacturing with process emissions and stable production base year"
+  sector: "MANUFACTURING"
+  pack_id: "PACK-045"
+  version: "1.0.0"
+
+# --- Base Year Selection ---
+base_year_selection:
+  type: "FIXED"
+  year: 2024
+  selection_method: "STABLE_PRODUCTION_YEAR"
+  weights:
+    data_completeness: 0.25
+    data_quality: 0.25
+    operational_stability: 0.30
+    regulatory_alignment: 0.20
+  criteria:
+    minimum_data_completeness_pct: 97.0
+    minimum_data_quality_score: 75.0
+    require_verification: true
+    exclude_anomalous_years: true
+    anomaly_threshold_stddev: 1.5
+    production_variance_max_pct: 15.0
+    require_full_scope1_coverage: true
+
+# --- Recalculation Policy ---
+recalculation_policy:
+  significance_threshold_pct: 3.0
+  cumulative_threshold_pct: 5.0
+  de_minimis_threshold_tco2e: 500.0
+  triggers:
+    structural_changes: true
+    methodology_changes: true
+    error_corrections: true
+    outsourcing_insourcing: true
+    acquisition_divestiture: true
+    grid_factor_updates: false
+    gwp_version_change: true
+    production_line_changes: true
+    process_technology_upgrade: true
+  approval_workflow:
+    require_approval: true
+    minimum_approvers: 2
+    auto_approve_below_threshold: false
+    escalation_threshold_pct: 10.0
+    notification_recipients:
+      - "sustainability_manager"
+      - "plant_operations_manager"
+      - "finance_controller"
+
+# --- Target Tracking ---
+target_tracking:
+  target_type: "INTENSITY"
+  ambition_level: "WELL_BELOW_2C"
+  annual_reduction_rate_pct: 4.2
+  target_year: 2030
+  interim_targets:
+    - year: 2026
+      reduction_pct: 12.0
+    - year: 2028
+      reduction_pct: 25.0
+  sbti_aligned: true
+  intensity_metric: "tCO2e/tonne_output"
+  secondary_intensity_metric: "tCO2e/MEUR_revenue"
+
+# --- Reporting ---
+reporting:
+  frameworks:
+    - "GHG_PROTOCOL"
+    - "ESRS_E1"
+    - "CDP"
+    - "ISO_14064"
+  formats:
+    - "HTML"
+    - "JSON"
+    - "CSV"
+  include_base_year_narrative: true
+  include_recalculation_log: true
+  include_trend_chart: true
+  include_production_normalization: true
+  output_language: "en"
+
+# --- Integration ---
+integration:
+  pack_041_scope12_enabled: true
+  pack_042_scope3_starter_enabled: true
+  pack_043_scope3_complete_enabled: false
+  erp_connector_enabled: true
+  data_quality_profiler_enabled: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  retention_years: 10
+  log_all_recalculations: true
+  log_threshold_assessments: true
+  evidence_attachment: true
+  third_party_verification: true

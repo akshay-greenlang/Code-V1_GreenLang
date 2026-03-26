@@ -1,0 +1,1670 @@
+# =============================================================================
+# PACK-041: Scope 1-2 Complete Pack
+# GreenLang GHG Accounting Pack for Complete Scope 1 & Scope 2 GHG Inventory
+# =============================================================================
+# This pack delivers a production-ready, verification-grade GHG inventory for
+# Scope 1 (direct) and Scope 2 (indirect energy) emissions. It orchestrates
+# all 13 MRV agents -- 8 Scope 1 agents covering stationary combustion,
+# mobile combustion, process emissions, fugitive emissions, refrigerant and
+# F-gas losses, land use emissions, waste treatment emissions, and
+# agricultural emissions; plus 5 Scope 2 agents covering location-based
+# electricity, market-based electricity, steam and heat purchase, cooling
+# purchase, and dual-reporting reconciliation.
+#
+# The pack follows a zero-hallucination approach: all emission calculations
+# use deterministic formulas from GHG Protocol, IPCC 2006/2019, and national
+# inventory methodologies. No LLM is used in any calculation path. GWP values
+# are configurable across AR4, AR5, and AR6. Emission factors are sourced
+# from IPCC, DEFRA, EPA, UBA, ADEME, ISPRA, IEA, and supplier-specific
+# databases with full provenance tracking.
+#
+# The inventory output maps directly to seven regulatory frameworks:
+#   1. GHG Protocol Corporate Standard (Chapters 4-8)
+#   2. ISO 14064-1:2018 (Clauses 5.2, 5.3, 6)
+#   3. EU CSRD / ESRS E1 (E1-6 gross Scope 1, E1-7 gross Scope 2)
+#   4. CDP Climate Change Questionnaire (C6.1-C6.5, C7.1-C7.9)
+#   5. SBTi Corporate Net-Zero Standard (Scope 1+2 near-term targets)
+#   6. US SEC Climate Disclosure Rules (Regulation S-K Item 1505)
+#   7. California SB 253 (Scope 1+2 annual reporting from 2026)
+#
+# Key Capabilities:
+#   - Organisational boundary setting (equity share, operational control,
+#     financial control) with consolidation across subsidiaries
+#   - Source completeness assessment with significance thresholds
+#   - Multi-tier methodology support (Tier 1 spend-based through Tier 3
+#     facility-specific measurement) per IPCC 2006 Guidelines
+#   - Emission factor management with multi-source hierarchy and vintage
+#     tracking (IPCC, DEFRA, EPA, UBA, ADEME, ISPRA, IEA, supplier)
+#   - GWP conversion with AR4 (IPCC 2007), AR5 (IPCC 2014), AR6 (IPCC 2021)
+#   - Seven-gas coverage: CO2, CH4, N2O, HFCs, PFCs, SF6, NF3
+#   - Scope 2 dual reporting per GHG Protocol Scope 2 Guidance (2015)
+#   - Instrument-based allocation for contractual instruments (PPAs, RECs,
+#     Guarantees of Origin, green tariffs)
+#   - Base year management with recalculation triggers and threshold rules
+#   - Trend analysis with absolute and intensity metrics (per revenue,
+#     per employee, per m2, per unit produced)
+#   - Monte Carlo uncertainty quantification at source, scope, and total
+#     inventory level
+#   - Full audit trail with SHA-256 provenance hashing on every calculation
+#   - Multi-framework compliance mapping from a single inventory dataset
+#
+# Consolidation Approaches:
+#   EQUITY_SHARE: Proportional consolidation by ownership percentage
+#   OPERATIONAL_CONTROL: 100% of emissions from operations under control
+#   FINANCIAL_CONTROL: 100% of emissions from entities financially controlled
+#
+# Sector Presets:
+#   corporate_office - Office-based organisations (Scope 2 dominant)
+#   manufacturing - Industrial manufacturing (Scope 1 dominant, process)
+#   energy_utility - Power generation and distribution utilities
+#   transport_logistics - Fleet and logistics operators (mobile combustion)
+#   food_agriculture - Agricultural operations and food processing
+#   real_estate - Property portfolios and REIT companies
+#   healthcare - Hospital and healthcare systems
+#   sme_simplified - Simplified inventory for small-medium enterprises
+#
+# Version History:
+#   1.0.0 - Initial release (2026-03-24)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Metadata
+# -----------------------------------------------------------------------------
+metadata:
+  name: PACK-041-scope-1-2-complete
+  version: "1.0.0"
+  display_name: "Scope 1-2 Complete Pack"
+  description: >-
+    GreenLang deployment pack providing a complete, verification-ready Scope 1
+    and Scope 2 GHG inventory. Orchestrates all 13 MRV agents (8 Scope 1 +
+    5 Scope 2) into a unified pipeline producing consolidated emissions,
+    multi-framework compliance reports, and full audit trails. Covers all
+    seven GHG Protocol gases (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3) across
+    stationary combustion, mobile combustion, process emissions, fugitive
+    emissions, refrigerant losses, land use, waste treatment, agricultural
+    emissions, location-based and market-based electricity, steam and heat,
+    cooling purchase, and dual-reporting reconciliation. Supports equity share,
+    operational control, and financial control consolidation. Maps inventory
+    data to GHG Protocol, ISO 14064-1, ESRS E1, CDP, SBTi, SEC, and SB 253.
+    Includes Monte Carlo uncertainty analysis, base year management with
+    recalculation triggers, trend analysis with intensity metrics, and
+    sector-specific presets for office, manufacturing, energy, transport,
+    agriculture, real estate, healthcare, and SME organisations.
+  category: ghg-accounting
+  tier: professional
+  author: GreenLang Platform Team
+  license: Proprietary
+  min_platform_version: "2.0.0"
+  release_date: "2026-03-24"
+  support_tier: enterprise
+  documentation_url: "https://docs.greenlang.io/packs/scope-1-2-complete"
+  changelog_url: "https://docs.greenlang.io/packs/scope-1-2-complete/changelog"
+
+  tags:
+    - ghg-inventory
+    - scope-1
+    - scope-2
+    - ghg-protocol
+    - iso-14064
+    - esrs-e1
+    - csrd
+    - cdp
+    - sbti
+    - sec-climate
+    - sb-253
+    - stationary-combustion
+    - mobile-combustion
+    - process-emissions
+    - fugitive-emissions
+    - refrigerants
+    - f-gas
+    - land-use
+    - waste-treatment
+    - agricultural-emissions
+    - location-based
+    - market-based
+    - dual-reporting
+    - steam-heat
+    - cooling
+    - equity-share
+    - operational-control
+    - financial-control
+    - emission-factors
+    - gwp
+    - uncertainty
+    - base-year
+    - trend-analysis
+    - audit-trail
+    - provenance
+
+  regulation:
+    primary:
+      name: "GHG Protocol Corporate Standard"
+      reference: "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition, 2015)"
+      effective_date: "2015-01-01"
+      description: >-
+        The GHG Protocol Corporate Standard is the most widely used greenhouse
+        gas accounting standard globally. It provides the framework for Scope 1
+        and Scope 2 emission quantification, organisational boundary setting,
+        base year management, and reporting requirements. This pack implements
+        Chapters 3-8 of the Corporate Standard and the Scope 2 Guidance
+        supplement, ensuring complete compliance with dual-reporting
+        requirements, quality criteria for contractual instruments, and
+        inventory quality management principles.
+
+    secondary:
+      - name: "GHG Protocol Scope 2 Guidance"
+        reference: "GHG Protocol Scope 2 Guidance (2015)"
+        effective_date: "2015-01-01"
+      - name: "ISO 14064-1:2018"
+        reference: "ISO 14064-1:2018"
+        effective_date: "2018-12-01"
+      - name: "EU CSRD / ESRS E1"
+        reference: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+        effective_date: "2024-01-01"
+      - name: "CDP Climate Change Questionnaire"
+        reference: "CDP Climate Change 2026"
+        effective_date: "2026-01-01"
+      - name: "SBTi Corporate Net-Zero Standard"
+        reference: "SBTi v1.1"
+        effective_date: "2023-01-01"
+      - name: "US SEC Climate Disclosure Rules"
+        reference: "SEC Regulation S-K Item 1505"
+        effective_date: "2024-03-06"
+      - name: "California SB 253"
+        reference: "SB 253 Climate Corporate Data Accountability Act"
+        effective_date: "2026-01-01"
+      - name: "IPCC 2006 Guidelines for National GHG Inventories"
+        reference: "IPCC 2006 (2019 Refinement)"
+        effective_date: "2006-01-01"
+
+  compliance_references:
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      regulation: "GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition)"
+      effective_date: "2015-01-01"
+      description: >-
+        This pack fully implements the GHG Protocol Corporate Standard for
+        Scope 1 and Scope 2 emissions. It covers organisational boundary
+        setting (equity share, operational control, financial control),
+        operational boundary definition across all seven gases, quantification
+        using IPCC tiered methodology, base year management with structural
+        and methodological recalculation triggers, and reporting per the
+        standard's disclosure requirements. The inventory output directly
+        populates GHG Protocol reporting templates.
+
+    - id: "GHG_PROTOCOL_SCOPE2"
+      name: "GHG Protocol Scope 2 Guidance"
+      regulation: "GHG Protocol Scope 2 Guidance (2015)"
+      effective_date: "2015-01-01"
+      description: >-
+        Implements the Scope 2 Guidance in full, including mandatory dual
+        reporting of both location-based and market-based Scope 2 figures.
+        Supports contractual instrument hierarchy (energy attribute
+        certificates, direct contracts, supplier-specific factors, residual
+        mix factors). Validates instrument quality criteria: contractual
+        relationship, unique claim, vintage match, geographic match, and
+        certificate tracking system registration.
+
+    - id: "ISO_14064"
+      name: "ISO 14064-1:2018"
+      regulation: "ISO 14064-1:2018"
+      effective_date: "2018-12-01"
+      description: >-
+        Maps inventory output to ISO 14064-1:2018 structure including
+        Clause 5.2 (organisational boundaries), Clause 5.3 (reporting
+        boundaries), Clause 6 (quantification of GHG emissions and
+        removals by source category). The uncertainty analysis module
+        supports ISO 14064-1 Clause 6.3 requirements for uncertainty
+        assessment at the individual source and total inventory level.
+
+    - id: "ESRS_E1"
+      name: "EU CSRD / ESRS E1 Climate Change"
+      regulation: "Delegated Regulation (EU) 2023/2772, ESRS E1"
+      effective_date: "2024-01-01"
+      description: >-
+        Maps inventory data to ESRS E1 disclosure requirements: E1-6
+        (gross Scope 1 GHG emissions), E1-7 (gross Scope 2 GHG emissions
+        with location-based and market-based figures), and supporting
+        datapoints for consolidation approach, emission factor sources,
+        GWP values used, gases included, percentage from regulated ETS,
+        and biogenic CO2 breakdown. Supports ESRS 1 Appendix C materiality
+        assessment for climate change topic.
+
+    - id: "CDP"
+      name: "CDP Climate Change Questionnaire"
+      regulation: "CDP Climate Change 2026"
+      effective_date: "2026-01-01"
+      description: >-
+        Maps inventory to CDP Climate Change questionnaire sections:
+        C6.1 (Scope 1 total), C6.2 (Scope 1 by country), C6.3 (Scope 1
+        by GHG type), C6.4 (Scope 1 by activity), C6.5 (methodology and
+        emission factors), C7.1 (Scope 2 location-based), C7.2 (Scope 2
+        market-based), C7.3-C7.5 (Scope 2 by country, activity, and
+        contractual instruments). Supports C5 emissions methodology
+        disclosure and C10 verification status.
+
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      regulation: "SBTi Corporate Net-Zero Standard v1.1"
+      effective_date: "2023-01-01"
+      description: >-
+        Provides the Scope 1+2 emissions baseline and annual tracking
+        required for SBTi near-term target setting and progress monitoring.
+        Supports absolute contraction approach and physical intensity
+        targets. Calculates year-on-year reduction rate and cumulative
+        reduction against the SBTi-required 4.2% per annum linear
+        reduction pathway for 1.5C alignment.
+
+    - id: "SEC"
+      name: "US SEC Climate Disclosure Rules"
+      regulation: "SEC Regulation S-K Item 1505"
+      effective_date: "2024-03-06"
+      description: >-
+        Maps Scope 1 and Scope 2 emissions to SEC climate disclosure
+        requirements under Regulation S-K Item 1505. Supports the
+        materiality-based disclosure threshold, disaggregation by gas
+        type, and exclusion of de minimis sources below the 5%
+        significance threshold. Provides attestation-ready data with
+        full calculation methodology documentation.
+
+    - id: "SB_253"
+      name: "California SB 253"
+      regulation: "SB 253 Climate Corporate Data Accountability Act"
+      effective_date: "2026-01-01"
+      description: >-
+        Supports California SB 253 annual reporting requirements for
+        entities with total revenues exceeding USD 1 billion. Provides
+        Scope 1 and Scope 2 emissions quantified per GHG Protocol
+        Corporate Standard with third-party assurance-ready data
+        packages including methodology notes, emission factor sources,
+        and calculation audit trails.
+
+# -----------------------------------------------------------------------------
+# Components - All GreenLang agents and modules included in this pack
+# -----------------------------------------------------------------------------
+components:
+
+  # ===========================================================================
+  # Engines - Core calculation and processing engines (10 GHG inventory engines)
+  # ===========================================================================
+  engines:
+    - id: inventory_consolidation
+      name: "Inventory Consolidation Engine"
+      description: >-
+        Consolidates emissions from all 13 MRV agents into a unified GHG
+        inventory. Implements three consolidation approaches: equity share
+        (proportional allocation by ownership percentage for each
+        subsidiary, JV, and associate), operational control (100% of
+        emissions from operations where the reporting entity has authority
+        to introduce and implement operating policies), and financial
+        control (100% of emissions from entities where the reporting entity
+        directs financial and operating policies). Handles multi-entity
+        consolidation with elimination of intra-group transfers. Produces
+        consolidated Scope 1 totals by category and gas, and consolidated
+        Scope 2 totals by method (location-based and market-based).
+        Applies significance thresholds for source exclusion with
+        documented rationale per GHG Protocol Chapter 7 completeness
+        requirements. Calculates percentage of total emissions covered
+        by each methodology tier.
+        Zero-hallucination: arithmetic aggregation and proportional
+        allocation, no LLM in any consolidation calculation.
+      class: "InventoryConsolidationEngine"
+      file: "engines/inventory_consolidation_engine.py"
+      required: true
+
+    - id: emission_factor_management
+      name: "Emission Factor Management Engine"
+      description: >-
+        Manages the emission factor hierarchy for all Scope 1 and Scope 2
+        sources. Implements a multi-source hierarchy: facility-specific
+        measured data (Tier 3), supplier-provided factors (Tier 2), and
+        published national/international databases (Tier 1). Supports
+        emission factor sources: IPCC 2006/2019 Refinement, DEFRA/DESNZ
+        UK Government GHG Conversion Factors, US EPA Emission Factors Hub,
+        UBA (German Federal Environment Agency), ADEME (French Agency for
+        Ecological Transition), ISPRA (Italian Institute for Environmental
+        Protection), IEA Emission Factors, and custom supplier-specific
+        factors. Tracks factor vintage (publication year), geographic scope,
+        and applicability conditions. Applies unit conversion automatically
+        (kgCO2e/kWh, kgCO2e/litre, kgCO2e/tonne, kgCO2e/m3). Generates
+        emission factor provenance reports showing source, vintage, and
+        geographic match for each factor used.
+        Zero-hallucination: factor values from published databases with
+        full citation, no LLM in factor selection or application.
+      class: "EmissionFactorManagementEngine"
+      file: "engines/emission_factor_management_engine.py"
+      required: true
+
+    - id: gwp_conversion
+      name: "GWP Conversion Engine"
+      description: >-
+        Converts individual GHG masses to CO2-equivalent using Global
+        Warming Potential (GWP) values from IPCC Assessment Reports.
+        Supports three GWP source configurations: AR4 (IPCC 2007, 100-year
+        GWP used by Kyoto Protocol and some national inventories), AR5
+        (IPCC 2014, 100-year GWP used by GHG Protocol and Paris Agreement
+        reporting), and AR6 (IPCC 2021, 100-year GWP, latest values).
+        Covers all seven Kyoto basket gases: CO2 (GWP=1), CH4 (AR5=28,
+        AR6=27.9), N2O (AR5=265, AR6=273), plus full HFC, PFC, SF6, and
+        NF3 species. Handles gas blends and refrigerant mixtures (e.g.,
+        R-410A = 50% R-32 + 50% R-125). Produces GWP conversion audit
+        trail showing input mass per gas, GWP value applied, source AR,
+        and resulting CO2e.
+        Zero-hallucination: GWP values from published IPCC tables with
+        table and page references, no LLM.
+      class: "GWPConversionEngine"
+      file: "engines/gwp_conversion_engine.py"
+      required: true
+
+    - id: boundary_assessment
+      name: "Boundary Assessment Engine"
+      description: >-
+        Assesses organisational and operational boundaries for the GHG
+        inventory. Organisational boundary: maps legal entity structure,
+        identifies subsidiaries, joint ventures, and associates, assigns
+        consolidation approach per entity. Operational boundary: identifies
+        all Scope 1 emission sources (stationary combustion, mobile
+        combustion, process, fugitive, refrigerant, land use, waste
+        treatment, agricultural) and Scope 2 sources (purchased
+        electricity, steam/heat, cooling) across all facilities and
+        operations. Conducts source completeness assessment: maps each
+        source against the seven gases, identifies sources below
+        significance threshold (default 1% of total), and documents
+        exclusion rationale. Generates boundary documentation suitable
+        for verification (ISO 14064-3) and assurance engagements.
+        Zero-hallucination: boundary mapping from organisational data,
+        threshold arithmetic from summed emissions, no LLM.
+      class: "BoundaryAssessmentEngine"
+      file: "engines/boundary_assessment_engine.py"
+      required: true
+
+    - id: uncertainty_analysis
+      name: "Uncertainty Analysis Engine"
+      description: >-
+        Quantifies uncertainty in the GHG inventory at source, scope, and
+        total inventory level. Implements Monte Carlo simulation with
+        configurable iteration count (default 10,000). Assigns probability
+        distributions to activity data uncertainty (metered = narrow
+        normal, estimated = wider normal, spend-based = lognormal) and
+        emission factor uncertainty (IPCC default ranges by source
+        category). Propagates uncertainty through the calculation chain
+        using error propagation rules (IPCC 2006 Vol. 1 Ch. 3) or full
+        Monte Carlo simulation. Produces 95% confidence intervals for
+        Scope 1 total, Scope 2 location-based, Scope 2 market-based, and
+        combined Scope 1+2. Generates uncertainty contribution analysis
+        showing which sources contribute most to total inventory
+        uncertainty. Supports sensitivity analysis varying emission factors
+        and activity data independently.
+        Zero-hallucination: Monte Carlo from numpy random distributions,
+        propagation from IPCC formulas, no LLM.
+      class: "UncertaintyAnalysisEngine"
+      file: "engines/uncertainty_analysis_engine.py"
+      required: true
+
+    - id: base_year_management
+      name: "Base Year Management Engine"
+      description: >-
+        Manages base year inventory and recalculation triggers per GHG
+        Protocol Chapter 5. Stores the original base year inventory with
+        full source-level detail. Monitors recalculation triggers:
+        structural changes (acquisitions, divestitures, mergers exceeding
+        the significance threshold), methodology changes (emission factor
+        updates, calculation methodology improvements), discovery of
+        significant errors (exceeding the recalculation threshold,
+        typically 5% of base year total). Performs base year recalculation
+        by applying current methodology to historical activity data.
+        Maintains recalculation log with trigger description, date, and
+        impact on base year figures. Generates base year recalculation
+        report with before/after comparison and explanation of changes.
+        Zero-hallucination: threshold comparisons and recalculation from
+        stored activity data, no LLM.
+      class: "BaseYearManagementEngine"
+      file: "engines/base_year_management_engine.py"
+      required: true
+
+    - id: trend_analysis
+      name: "Trend Analysis Engine"
+      description: >-
+        Analyses emission trends across reporting years from the base year
+        to the current period. Calculates absolute emissions trend (total
+        tCO2e by scope and category, year-on-year change, CAGR).
+        Calculates intensity metrics: emissions per revenue (tCO2e/MEUR),
+        per employee (tCO2e/FTE), per floor area (tCO2e/m2), per unit
+        produced (tCO2e/unit), and custom denominators. Decomposes changes
+        using the Kaya identity and LMDI decomposition into activity
+        effect, structure effect, and intensity effect. Generates trend
+        charts and tables for multi-year reporting. Calculates linear
+        reduction rate and compares to SBTi required trajectory (4.2% p.a.
+        for 1.5C). Projects future emissions under business-as-usual and
+        target scenarios.
+        Zero-hallucination: trend calculations from time-series arithmetic,
+        LMDI from published decomposition methodology, no LLM.
+      class: "TrendAnalysisEngine"
+      file: "engines/trend_analysis_engine.py"
+      required: true
+
+    - id: compliance_mapping
+      name: "Compliance Mapping Engine"
+      description: >-
+        Maps the consolidated inventory to seven regulatory frameworks
+        simultaneously from a single dataset. Generates framework-specific
+        output structures: GHG Protocol disclosure template (Scope 1 by
+        category and gas, Scope 2 location and market), ISO 14064-1
+        quantification report (Categories 1-2 per Clause 5.2/5.3),
+        ESRS E1-6 and E1-7 disclosure datapoints, CDP C6/C7 response
+        data, SBTi progress tracking against near-term targets, SEC
+        Item 1505 emission figures with materiality assessment, and
+        SB 253 annual report data. Handles framework-specific requirements:
+        ESRS biogenic CO2 separate disclosure, CDP country-level
+        disaggregation, SEC de minimis threshold, SBTi target pathway
+        comparison.
+        Zero-hallucination: mapping rules from framework documentation,
+        no LLM in data mapping or aggregation.
+      class: "ComplianceMappingEngine"
+      file: "engines/compliance_mapping_engine.py"
+      required: true
+
+    - id: inventory_qaqc
+      name: "Inventory QA/QC Engine"
+      description: >-
+        Implements GHG Protocol Chapter 7 quality management procedures.
+        Performs automated QA/QC checks: completeness check (all identified
+        sources have quantified emissions), consistency check (year-on-year
+        change within expected range, no unexplained jumps exceeding 20%),
+        accuracy check (emission factors from approved sources, correct
+        unit conversion, GWP values match configured AR), transparency
+        check (all assumptions documented, all emission factors cited,
+        all exclusions justified). Generates QA/QC checklist with
+        pass/fail/warning status per check. Flags data quality issues
+        requiring resolution before inventory sign-off. Supports multi-
+        level review workflow (preparer, reviewer, approver).
+        Zero-hallucination: rule-based checks from GHG Protocol quality
+        criteria, no LLM.
+      class: "InventoryQAQCEngine"
+      file: "engines/inventory_qaqc_engine.py"
+      required: true
+
+    - id: inventory_reporting
+      name: "Inventory Reporting Engine"
+      description: >-
+        Generates comprehensive GHG inventory reports in multiple formats.
+        Executive summary: total Scope 1 and Scope 2 emissions, year-on-
+        year change, intensity metrics, key sources, and reduction
+        highlights. Detailed inventory: source-level breakdown by facility,
+        category, gas, and methodology tier with emission factor citations.
+        Compliance reports: framework-specific output for each configured
+        framework (GHG Protocol, ISO 14064, ESRS E1, CDP, SBTi, SEC,
+        SB 253). Verification package: data and methodology documentation
+        suitable for third-party assurance per ISO 14064-3 or ISAE 3410.
+        Supports output formats: HTML, PDF-ready HTML, JSON, CSV, and
+        structured XBRL-ready data for ESRS digital reporting.
+        Zero-hallucination: report content from calculated inventory data,
+        narrative templates with placeholders, no LLM in data content.
+      class: "InventoryReportingEngine"
+      file: "engines/inventory_reporting_engine.py"
+      required: true
+
+  # ===========================================================================
+  # Workflows - Pre-defined orchestration sequences (8 GHG inventory workflows)
+  # ===========================================================================
+  workflows:
+    - id: annual_inventory
+      name: "Annual Inventory Workflow"
+      description: >-
+        6-phase workflow for complete annual GHG inventory: Phase 1 -
+        Boundary Review (confirm organisational boundary, update entity
+        list, review operational boundary for new/changed sources) ->
+        Phase 2 - Data Collection (collect activity data for all Scope 1
+        and Scope 2 sources across all facilities, validate data quality)
+        -> Phase 3 - Emission Calculation (run all 13 MRV agents with
+        configured methodology tier and emission factors) -> Phase 4 -
+        Consolidation (aggregate by entity, facility, scope, category,
+        and gas; apply consolidation approach) -> Phase 5 - QA/QC
+        (automated checks, reviewer sign-off, issue resolution) ->
+        Phase 6 - Reporting (generate executive summary, detailed
+        inventory, compliance reports, verification package).
+      schedule: "annual"
+      estimated_duration_minutes: 480
+      phases: 6
+
+    - id: quarterly_update
+      name: "Quarterly Update Workflow"
+      description: >-
+        4-phase workflow for quarterly emissions tracking: Phase 1 -
+        Data Collection (collect quarterly activity data for material
+        sources, estimate missing data from prior periods) -> Phase 2 -
+        Calculation (run MRV agents for updated sources, annualise for
+        trend comparison) -> Phase 3 - Consolidation (update year-to-date
+        totals, compare to prior year quarter) -> Phase 4 - Dashboard
+        (update tracking dashboard with quarterly figures, variance
+        analysis, year-end projection).
+      schedule: "quarterly"
+      estimated_duration_minutes: 120
+      phases: 4
+
+    - id: base_year_recalculation
+      name: "Base Year Recalculation Workflow"
+      description: >-
+        4-phase workflow for base year recalculation: Phase 1 - Trigger
+        Assessment (identify recalculation trigger: acquisition, divestiture,
+        methodology change, or error discovery; assess significance against
+        threshold) -> Phase 2 - Historical Data Retrieval (retrieve base
+        year activity data, apply current emission factors and methodology)
+        -> Phase 3 - Recalculation (recalculate base year inventory with
+        updated methodology, compare to original) -> Phase 4 -
+        Documentation (generate recalculation report with trigger
+        description, methodology change explanation, before/after
+        comparison, and impact on trend analysis).
+      schedule: "on_demand"
+      estimated_duration_minutes: 240
+      phases: 4
+
+    - id: verification_preparation
+      name: "Verification Preparation Workflow"
+      description: >-
+        5-phase workflow for third-party verification preparation: Phase 1 -
+        Data Compilation (compile all activity data with source
+        documentation: invoices, meter readings, fuel records) -> Phase 2 -
+        Methodology Documentation (document calculation methodology per
+        source, emission factor sources and vintage, GWP values, and
+        assumptions) -> Phase 3 - QA/QC Completion (run full QA/QC check
+        suite, resolve all critical and major issues) -> Phase 4 -
+        Verification Package Assembly (assemble verification pack per
+        ISO 14064-3 or ISAE 3410: management assertion, inventory report,
+        supporting evidence, uncertainty assessment) -> Phase 5 -
+        Readiness Review (internal review of verification package
+        completeness, mock verification walkthrough).
+      schedule: "annual"
+      estimated_duration_minutes: 360
+      phases: 5
+
+    - id: scope2_instrument_review
+      name: "Scope 2 Instrument Review Workflow"
+      description: >-
+        3-phase workflow for reviewing Scope 2 contractual instruments:
+        Phase 1 - Instrument Inventory (catalogue all contractual
+        instruments: PPAs, RECs, GOs, green tariffs, supplier contracts
+        with emission data) -> Phase 2 - Quality Assessment (validate
+        each instrument against GHG Protocol Scope 2 Guidance quality
+        criteria: unique claim, vintage match, geographic scope, tracking
+        system registration) -> Phase 3 - Allocation (allocate instruments
+        to consumption, calculate market-based Scope 2, reconcile with
+        location-based figure, document delta explanation).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 3
+
+    - id: emission_factor_update
+      name: "Emission Factor Update Workflow"
+      description: >-
+        3-phase workflow for annual emission factor updates: Phase 1 -
+        Factor Check (compare current factors against latest published
+        versions: DEFRA annual update, IEA annual release, national
+        registry updates) -> Phase 2 - Impact Assessment (calculate
+        impact of factor changes on inventory: total change in tCO2e,
+        percentage change by scope and category, assessment of whether
+        change constitutes a methodology change triggering base year
+        recalculation) -> Phase 3 - Factor Update (apply updated factors,
+        document changes, update factor provenance records).
+      schedule: "annual"
+      estimated_duration_minutes: 60
+      phases: 3
+
+    - id: source_significance
+      name: "Source Significance Assessment Workflow"
+      description: >-
+        3-phase workflow for assessing source significance: Phase 1 -
+        Source Enumeration (list all identified Scope 1 and Scope 2
+        sources by facility and category) -> Phase 2 - Significance
+        Screening (estimate emissions for each source using Tier 1
+        approach, calculate percentage of estimated total, compare to
+        significance threshold) -> Phase 3 - Methodology Assignment
+        (assign methodology tier based on significance: material sources
+        above threshold use Tier 2/3, immaterial sources below threshold
+        may use Tier 1, document exclusion rationale for sources below
+        de minimis threshold).
+      schedule: "annual"
+      estimated_duration_minutes: 120
+      phases: 3
+
+    - id: full_inventory_pipeline
+      name: "Full Inventory Pipeline Workflow"
+      description: >-
+        10-phase end-to-end inventory pipeline: Phase 1 - Health Check
+        (verify all agents, databases, and emission factors available) ->
+        Phase 2 - Configuration Loading (load pack config, preset, and
+        overrides) -> Phase 3 - Boundary Assessment (organisational and
+        operational boundaries, source significance) -> Phase 4 - Data
+        Acquisition (activity data collection and quality validation) ->
+        Phase 5 - Scope 1 Calculation (run 8 Scope 1 MRV agents) ->
+        Phase 6 - Scope 2 Calculation (run 5 Scope 2 MRV agents) ->
+        Phase 7 - GWP Conversion and Consolidation (apply GWP, aggregate
+        by entity/scope/category/gas) -> Phase 8 - Uncertainty Analysis
+        (Monte Carlo simulation, confidence intervals) -> Phase 9 -
+        QA/QC (automated checks, completeness, consistency) -> Phase 10 -
+        Reporting (executive summary, detailed inventory, compliance
+        mapping, verification package).
+      schedule: "annual"
+      estimated_duration_minutes: 600
+      phases: 10
+
+  # ===========================================================================
+  # Templates - Pre-built report and output templates (10 GHG inventory templates)
+  # ===========================================================================
+  templates:
+    - id: executive_summary
+      display_name: "GHG Inventory Executive Summary"
+      description: >-
+        C-suite executive summary with total Scope 1 and Scope 2
+        emissions (location-based and market-based), year-on-year change
+        (absolute and percentage), key intensity metrics, top five
+        emission sources by magnitude, reduction highlights, and SBTi
+        progress tracker. One-page format with charts and KPI cards.
+      format: "html"
+      template_file: "templates/executive_summary.jinja2"
+      enabled: true
+
+    - id: detailed_inventory
+      display_name: "Detailed GHG Inventory Report"
+      description: >-
+        Comprehensive inventory report with source-level emissions by
+        facility, category, gas, and methodology tier. Includes emission
+        factor citations, activity data sources, calculation methodology
+        description per source, assumptions register, and data quality
+        indicators. Suitable for internal technical review and verifier
+        examination.
+      format: "html"
+      template_file: "templates/detailed_inventory.jinja2"
+      enabled: true
+
+    - id: scope1_breakdown
+      display_name: "Scope 1 Breakdown Report"
+      description: >-
+        Detailed Scope 1 report with emissions by category (stationary
+        combustion, mobile combustion, process, fugitive, refrigerant,
+        land use, waste treatment, agricultural), by gas (CO2, CH4, N2O,
+        HFCs, PFCs, SF6, NF3), by facility, and by methodology tier.
+        Includes pie and bar chart visualisations and category
+        contribution analysis.
+      format: "html"
+      template_file: "templates/scope1_breakdown.jinja2"
+      enabled: true
+
+    - id: scope2_dual_report
+      display_name: "Scope 2 Dual Reporting Report"
+      description: >-
+        Scope 2 report presenting both location-based and market-based
+        figures with reconciliation. Shows electricity consumption by
+        facility, grid emission factors used (location-based), contractual
+        instruments applied (market-based), instrument quality assessment,
+        and location-vs-market delta analysis with explanation.
+      format: "html"
+      template_file: "templates/scope2_dual_report.jinja2"
+      enabled: true
+
+    - id: compliance_esrs_e1
+      display_name: "ESRS E1 Climate Disclosure Report"
+      description: >-
+        ESRS E1-compliant disclosure report with datapoints E1-6 (gross
+        Scope 1), E1-7 (gross Scope 2 location and market), biogenic CO2
+        breakdown, ETS-covered percentage, consolidation approach, gases
+        included, GWP source, emission factor sources, and base year
+        information. Structured for direct inclusion in the CSRD
+        sustainability statement.
+      format: "html"
+      template_file: "templates/compliance_esrs_e1.jinja2"
+      enabled: true
+
+    - id: compliance_cdp
+      display_name: "CDP Climate Response Report"
+      description: >-
+        CDP Climate Change questionnaire response data for sections C5
+        (emissions methodology), C6 (Scope 1 emissions), and C7 (Scope 2
+        emissions). Provides structured data for C6.1 total, C6.2 by
+        country, C6.3 by gas, C6.4 by activity, C7.1 location-based,
+        C7.2 market-based, C7.3-C7.5 breakdowns. Ready for direct
+        entry into the CDP online response system.
+      format: "html"
+      template_file: "templates/compliance_cdp.jinja2"
+      enabled: true
+
+    - id: uncertainty_report
+      display_name: "Uncertainty Analysis Report"
+      description: >-
+        Uncertainty analysis report showing 95% confidence intervals for
+        Scope 1, Scope 2 (location and market), and total inventory.
+        Includes Monte Carlo distribution histograms, source-level
+        uncertainty contribution analysis, sensitivity tornado diagrams,
+        and uncertainty reduction recommendations prioritised by impact.
+      format: "html"
+      template_file: "templates/uncertainty_report.jinja2"
+      enabled: true
+
+    - id: trend_analysis_report
+      display_name: "Trend Analysis Report"
+      description: >-
+        Multi-year trend analysis showing absolute emissions by scope
+        and category, intensity metrics (per revenue, employee, m2, unit),
+        CAGR, year-on-year change decomposition (activity, structure,
+        intensity effects), SBTi pathway comparison, and business-as-
+        usual projection.
+      format: "html"
+      template_file: "templates/trend_analysis.jinja2"
+      enabled: true
+
+    - id: verification_package
+      display_name: "Verification Package"
+      description: >-
+        Comprehensive verification package for third-party assurance per
+        ISO 14064-3 or ISAE 3410. Includes management assertion letter,
+        inventory report, methodology documentation, emission factor
+        register with provenance, activity data evidence register,
+        assumptions register, QA/QC checklist, and uncertainty assessment.
+      format: "html"
+      template_file: "templates/verification_package.jinja2"
+      enabled: true
+
+    - id: base_year_report
+      display_name: "Base Year Report"
+      description: >-
+        Base year inventory report with full source-level detail,
+        recalculation history (trigger, date, impact, before/after),
+        and comparison of current methodology applied to base year data.
+        Includes base year policy documentation and recalculation
+        threshold configuration.
+      format: "html"
+      template_file: "templates/base_year_report.jinja2"
+      enabled: true
+
+  # ===========================================================================
+  # Integrations - Agent wiring and external system bridges (12 integrations)
+  # ===========================================================================
+  integrations:
+    - id: pack_orchestrator
+      name: "Pack Orchestrator"
+      description: >-
+        10-phase master pipeline: Health Check -> Configuration Loading ->
+        Boundary Assessment -> Data Acquisition -> Scope 1 Calculation
+        (8 agents in dependency order) -> Scope 2 Calculation (5 agents
+        with dual reporting) -> GWP Conversion and Consolidation ->
+        Uncertainty Analysis -> QA/QC -> Reporting and Compliance Mapping.
+        Implements DAG-based dependency resolution across the 13 MRV
+        agents, parallel execution where possible (e.g., stationary and
+        mobile combustion in parallel), and error recovery with partial
+        result preservation.
+      required: true
+
+    - id: mrv_scope1_bridge
+      name: "MRV Scope 1 Bridge"
+      description: >-
+        Routes activity data to all 8 Scope 1 MRV agents and collects
+        emission results. Manages agent execution order: stationary
+        combustion and mobile combustion run in parallel, followed by
+        process emissions, fugitive emissions, and refrigerants in
+        parallel, then land use, waste treatment, and agricultural in
+        parallel. Normalises output format across all agents for
+        consolidation.
+      required: true
+
+    - id: mrv_scope2_bridge
+      name: "MRV Scope 2 Bridge"
+      description: >-
+        Routes electricity, steam, heat, and cooling consumption data
+        to Scope 2 MRV agents. Runs location-based and market-based
+        agents in parallel, followed by steam/heat and cooling in
+        parallel, and finally dual reporting reconciliation. Manages
+        contractual instrument allocation across facilities.
+      required: true
+
+    - id: data_intake_bridge
+      name: "Data Intake Bridge"
+      description: >-
+        Connects to AGENT-DATA agents for activity data intake. Routes
+        fuel invoices through DATA-001 (PDF extraction), meter data
+        through DATA-002 (Excel/CSV normalization), ERP financial data
+        through DATA-003, API-sourced emission factors through DATA-004.
+        Applies data quality profiling via DATA-010 and outlier detection
+        via DATA-013 on all incoming activity data.
+      required: true
+
+    - id: erp_finance_bridge
+      name: "ERP/Finance Bridge"
+      description: >-
+        Connects to ERP and financial systems for automated activity data
+        retrieval: fuel purchase records, utility invoices, fleet fuel
+        cards, refrigerant purchase and disposal records, production
+        output data for intensity metrics. Supports SAP, Oracle,
+        Microsoft Dynamics, and generic REST/ODBC connectors.
+      required: false
+
+    - id: emission_factor_bridge
+      name: "Emission Factor Database Bridge"
+      description: >-
+        Connects to emission factor databases for automated factor
+        retrieval and updates. Integrates with DEFRA/DESNZ annual
+        publication, US EPA eGRID, IEA annual factors, and national
+        registry APIs. Maintains local factor cache with vintage tracking
+        and update notifications.
+      required: true
+
+    - id: grid_factor_bridge
+      name: "Grid Emission Factor Bridge"
+      description: >-
+        Retrieves grid-average and marginal emission factors for Scope 2
+        location-based calculations. Supports country-level, regional,
+        and sub-national grid factors. Sources: IEA, eGRID (US), AIB
+        residual mix (EU), DEFRA (UK), UBA (DE), and custom utility-
+        specific factors.
+      required: true
+
+    - id: instrument_registry_bridge
+      name: "Instrument Registry Bridge"
+      description: >-
+        Connects to contractual instrument registries for Scope 2 market-
+        based accounting. Integrates with Guarantee of Origin (GO)
+        registries (AIB Hub, national issuing bodies), REC tracking
+        systems (M-RETS, NEPOOL-GIS, WREGIS, Green-e), and PPA contract
+        management systems. Validates instrument quality criteria per
+        GHG Protocol Scope 2 Guidance.
+      required: false
+
+    - id: weather_data_bridge
+      name: "Weather Data Bridge"
+      description: >-
+        Retrieves weather data for heating and cooling degree day
+        calculations supporting weather-normalised trend analysis.
+        Integrates with NOAA, Meteostat, and national weather services.
+        Calculates HDD and CDD at configurable base temperatures for
+        energy normalisation.
+      required: false
+
+    - id: health_check
+      name: "Health Check"
+      description: >-
+        15-category system verification: all 13 MRV agents operational,
+        emission factor database current, GWP tables loaded, database
+        connectivity, agent dependency status, preset validation,
+        template integrity, instrument registry connectivity, grid
+        factor currency, and deployment readiness.
+      required: false
+
+    - id: setup_wizard
+      name: "Setup Wizard"
+      description: >-
+        8-step guided configuration: Company Profile (name, sector, size)
+        -> Organisational Boundary (consolidation approach, entity list)
+        -> Operational Boundary (Scope 1 sources, Scope 2 sources) ->
+        Emission Factor Configuration (preferred sources, GWP selection)
+        -> Scope 2 Instruments (PPAs, RECs, GOs) -> Base Year Setup
+        (year, recalculation threshold) -> Reporting Configuration
+        (frequency, frameworks, formats) -> Preset Selection and
+        Customisation.
+      required: false
+
+    - id: alert_bridge
+      name: "Alert Bridge"
+      description: >-
+        Multi-channel notification: data quality alerts (missing activity
+        data, outlier detection), emission factor update notifications,
+        base year recalculation triggers, QA/QC check failures, deadline
+        reminders (reporting period close, verification preparation),
+        and SBTi trajectory deviation warnings.
+      required: false
+
+  # ===========================================================================
+  # Presets - Sector-specific configurations (8 presets)
+  # ===========================================================================
+  presets:
+    - id: corporate_office
+      name: "Corporate Office Preset"
+      description: >-
+        Configuration for office-based organisations where Scope 2
+        (purchased electricity) typically dominates the inventory. Scope 1
+        limited to heating (natural gas boilers) and small refrigerant
+        charges in building HVAC. Intensity metrics focused on per
+        employee and per m2. Suitable for financial services, technology,
+        consulting, and professional services firms.
+      sector_type: "OFFICE"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - uncertainty_analysis
+        - base_year_management
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/corporate_office.yaml"
+
+    - id: manufacturing
+      name: "Manufacturing Preset"
+      description: >-
+        Configuration for industrial manufacturing with significant
+        Scope 1 from stationary combustion (process heat, steam
+        generation), process emissions, and potentially fugitive
+        emissions. All Scope 1 categories enabled with higher
+        methodology tiers for material sources. Intensity metrics
+        focused on per unit produced and per revenue.
+      sector_type: "MANUFACTURING"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - uncertainty_analysis
+        - base_year_management
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/manufacturing.yaml"
+
+    - id: energy_utility
+      name: "Energy Utility Preset"
+      description: >-
+        Configuration for power generation and energy distribution
+        utilities with large-scale stationary combustion, process
+        emissions (e.g., CO2 from desulphurisation), and SF6 from
+        electrical switchgear. Typically the largest absolute Scope 1
+        emitters. ETS-covered emissions percentage tracked for ESRS.
+      sector_type: "ENERGY_UTILITY"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - uncertainty_analysis
+        - base_year_management
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/energy_utility.yaml"
+
+    - id: transport_logistics
+      name: "Transport & Logistics Preset"
+      description: >-
+        Configuration for fleet operators and logistics companies where
+        mobile combustion dominates Scope 1. Covers road freight, rail,
+        marine, and aviation fuel. Intensity metrics focused on per
+        tonne-km, per vehicle-km, and per consignment. Well-to-tank
+        factors included for complete lifecycle view.
+      sector_type: "TRANSPORT_LOGISTICS"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - uncertainty_analysis
+        - base_year_management
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/transport_logistics.yaml"
+
+    - id: food_agriculture
+      name: "Food & Agriculture Preset"
+      description: >-
+        Configuration for agricultural operations and food processing
+        with agricultural emissions (livestock, manure, rice cultivation,
+        fertiliser application), land use emissions, and process emissions
+        from food production. CH4 and N2O are significant gases alongside
+        CO2. All Scope 1 categories enabled including agricultural.
+      sector_type: "FOOD_AGRICULTURE"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - uncertainty_analysis
+        - base_year_management
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/food_agriculture.yaml"
+
+    - id: real_estate
+      name: "Real Estate Preset"
+      description: >-
+        Configuration for property portfolios and REIT companies with
+        multiple buildings. Scope 2 dominant from tenant electricity
+        (operational control determines boundary). Scope 1 from central
+        heating plant and refrigerants in HVAC. Consolidation approach
+        is typically operational or financial control. Intensity per m2
+        GLA (gross leasable area) is the primary metric.
+      sector_type: "REAL_ESTATE"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - uncertainty_analysis
+        - base_year_management
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/real_estate.yaml"
+
+    - id: healthcare
+      name: "Healthcare Preset"
+      description: >-
+        Configuration for hospital and healthcare systems with 24/7
+        operation. Significant Scope 1 from large central heating
+        plant, backup generators, medical gas (N2O anaesthetic),
+        refrigerants in extensive HVAC and refrigeration (laboratories,
+        pharmacies). Scope 2 from high electricity consumption for
+        medical equipment, lighting, HVAC, and data systems.
+      sector_type: "HEALTHCARE"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - uncertainty_analysis
+        - base_year_management
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/healthcare.yaml"
+
+    - id: sme_simplified
+      name: "SME Simplified Preset"
+      description: >-
+        Simplified configuration for small and medium enterprises with
+        limited data availability. Scope 1 limited to heating and
+        company vehicles. Scope 2 from electricity only. Tier 1
+        methodology throughout. Simplified uncertainty analysis.
+        Compliance mapping limited to GHG Protocol and optionally
+        SB 253. Annual reporting only with executive summary focus.
+      sector_type: "SME"
+      enabled_engines:
+        - inventory_consolidation
+        - emission_factor_management
+        - gwp_conversion
+        - boundary_assessment
+        - trend_analysis
+        - compliance_mapping
+        - inventory_qaqc
+        - inventory_reporting
+      file: "config/presets/sme_simplified.yaml"
+
+# =============================================================================
+# Agent Dependencies
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MRV Agents - All 13 Scope 1 and Scope 2 agents
+# ---------------------------------------------------------------------------
+agents_mrv:
+  scope_1:
+    - id: AGENT-MRV-001
+      name: "Stationary Combustion Agent"
+      description: "Emissions from boilers, furnaces, generators, heaters, and other fixed equipment"
+      path: "greenlang/agents/mrv/stationary_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-002
+      name: "Mobile Combustion Agent"
+      description: "Emissions from company-owned vehicles, off-road equipment, and marine vessels"
+      path: "greenlang/agents/mrv/mobile_combustion/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-003
+      name: "Process Emissions Agent"
+      description: "Emissions from chemical and physical transformation processes"
+      path: "greenlang/agents/mrv/process_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-004
+      name: "Fugitive Emissions Agent"
+      description: "Emissions from intentional and unintentional releases (leaks, venting)"
+      path: "greenlang/agents/mrv/fugitive_emissions/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-005
+      name: "Refrigerant & F-Gas Agent"
+      description: "Emissions from refrigerant and fluorinated gas losses (HFCs, PFCs, SF6)"
+      path: "greenlang/agents/mrv/refrigerants_fgas/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-006
+      name: "Land Use Emissions Agent"
+      description: "Emissions from on-site land use and land use change"
+      path: "greenlang/agents/mrv/land_use_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-007
+      name: "Waste Treatment Emissions Agent"
+      description: "Emissions from on-site waste incineration, composting, and treatment"
+      path: "greenlang/agents/mrv/waste_treatment_emissions/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-008
+      name: "Agricultural Emissions Agent"
+      description: "Emissions from on-site livestock, manure management, and crop activities"
+      path: "greenlang/agents/mrv/agricultural_emissions/"
+      required: false
+      version: "1.0.0"
+
+  scope_2:
+    - id: AGENT-MRV-009
+      name: "Scope 2 Location-Based Agent"
+      description: "Calculates location-based Scope 2 from grid-average emission factors"
+      path: "greenlang/agents/mrv/scope2_location/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-010
+      name: "Scope 2 Market-Based Agent"
+      description: "Calculates market-based Scope 2 from contractual instruments and residual mix"
+      path: "greenlang/agents/mrv/scope2_market/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-011
+      name: "Steam & Heat Purchase Agent"
+      description: "Calculates Scope 2 emissions from purchased steam and heat"
+      path: "greenlang/agents/mrv/steam_heat_purchase/"
+      required: true
+      version: "1.0.0"
+    - id: AGENT-MRV-012
+      name: "Cooling Purchase Agent"
+      description: "Calculates Scope 2 emissions from purchased cooling and chilled water"
+      path: "greenlang/agents/mrv/cooling_purchase/"
+      required: false
+      version: "1.0.0"
+    - id: AGENT-MRV-013
+      name: "Dual Reporting Reconciliation Agent"
+      description: "Reconciles location-based and market-based Scope 2 with delta analysis"
+      path: "greenlang/agents/mrv/dual_reporting_reconciliation/"
+      required: true
+      version: "1.0.0"
+
+# ---------------------------------------------------------------------------
+# Data Agents - Supporting data intake and quality agents
+# ---------------------------------------------------------------------------
+agents_data:
+  - id: AGENT-DATA-001
+    name: "PDF & Invoice Extractor"
+    description: "Extracts activity data from fuel invoices, utility bills, and vendor documents"
+    required: true
+  - id: AGENT-DATA-002
+    name: "Excel/CSV Normalizer"
+    description: "Normalises meter data exports, fleet fuel records, and refrigerant logs"
+    required: true
+  - id: AGENT-DATA-003
+    name: "ERP/Finance Connector"
+    description: "Connects to finance systems for fuel purchase and utility cost data"
+    required: false
+  - id: AGENT-DATA-004
+    name: "API Gateway Agent"
+    description: "Routes external API connections for emission factors and grid factors"
+    required: true
+  - id: AGENT-DATA-010
+    name: "Data Quality Profiler"
+    description: "Profiles data quality across all activity data sources"
+    required: true
+  - id: AGENT-DATA-013
+    name: "Outlier Detection Agent"
+    description: "Detects anomalous activity data readings (consumption spikes, negative values)"
+    required: true
+  - id: AGENT-DATA-014
+    name: "Time Series Gap Filler"
+    description: "Fills gaps in time series activity data with documented estimation methods"
+    required: true
+  - id: AGENT-DATA-018
+    name: "Data Lineage Tracker"
+    description: "Tracks data lineage from source documents through to inventory totals"
+    required: true
+
+# ---------------------------------------------------------------------------
+# Foundation Agents - Core platform agents
+# ---------------------------------------------------------------------------
+agents_foundation:
+  - id: AGENT-FOUND-001
+    name: "GreenLang Orchestrator (DAG)"
+    description: "Orchestrates 13 MRV agents with DAG dependency resolution"
+    required: true
+  - id: AGENT-FOUND-002
+    name: "Schema Compiler & Validator"
+    description: "Compiles and validates GHG inventory data schemas"
+    required: true
+  - id: AGENT-FOUND-003
+    name: "Unit & Reference Normalizer"
+    description: "Normalises energy units (kWh, MJ, GJ, litres, m3, tonnes) and references"
+    required: true
+  - id: AGENT-FOUND-004
+    name: "Assumptions Registry"
+    description: "Tracks assumptions in emission calculations and factor selections"
+    required: true
+  - id: AGENT-FOUND-005
+    name: "Citations & Evidence Agent"
+    description: "Links emission factors and calculations to source evidence"
+    required: true
+  - id: AGENT-FOUND-006
+    name: "Access & Policy Guard"
+    description: "Enforces role-based access for multi-entity inventory operations"
+    required: true
+  - id: AGENT-FOUND-008
+    name: "Reproducibility Agent"
+    description: "Ensures all emission calculations are reproducible with SHA-256 provenance"
+    required: true
+  - id: AGENT-FOUND-010
+    name: "Observability & Telemetry Agent"
+    description: "Monitors inventory pipeline health and agent performance"
+    required: true
+
+# -----------------------------------------------------------------------------
+# Agent Dependencies Summary
+# -----------------------------------------------------------------------------
+dependencies:
+  total_agents: 29
+  breakdown:
+    mrv_agents: 13
+    data_agents: 8
+    foundation_agents: 8
+  python_min_version: "3.11"
+  platform_min_version: "2.0.0"
+
+# -----------------------------------------------------------------------------
+# Database
+# -----------------------------------------------------------------------------
+database:
+  schema: ghg_accounting_scope12
+  migrations:
+    - id: "V326__pack041_scope12_001"
+      description: "Core inventory schema, organisational boundaries, and entity hierarchy"
+    - id: "V327__pack041_scope12_002"
+      description: "Emission factor tables with multi-source hierarchy and vintage tracking"
+    - id: "V328__pack041_scope12_003"
+      description: "GWP tables (AR4, AR5, AR6) and gas species registry"
+    - id: "V329__pack041_scope12_004"
+      description: "Scope 1 source tables (8 categories) and activity data storage"
+    - id: "V330__pack041_scope12_005"
+      description: "Scope 2 source tables, contractual instruments, and grid factors"
+    - id: "V331__pack041_scope12_006"
+      description: "Consolidation tables, entity ownership, and allocation rules"
+    - id: "V332__pack041_scope12_007"
+      description: "Uncertainty analysis tables (Monte Carlo results, distributions)"
+    - id: "V333__pack041_scope12_008"
+      description: "Base year tables, recalculation history, and trigger log"
+    - id: "V334__pack041_scope12_009"
+      description: "Trend analysis tables, intensity metrics, and projection data"
+    - id: "V335__pack041_scope12_010"
+      description: "Views, indexes, RLS policies, compliance mapping, and seed data"
+
+# -----------------------------------------------------------------------------
+# Performance Targets
+# -----------------------------------------------------------------------------
+performance:
+  scope1_calculation:
+    max_facilities: 1000
+    target_duration_per_facility_minutes: 2
+    stationary_combustion_per_source_ms: 50
+    mobile_combustion_per_vehicle_ms: 30
+    process_emission_per_source_ms: 100
+    fugitive_per_component_ms: 20
+    refrigerant_per_system_ms: 50
+  scope2_calculation:
+    max_facilities: 1000
+    target_duration_per_facility_minutes: 1
+    location_based_per_meter_ms: 30
+    market_based_per_contract_ms: 50
+    dual_reporting_reconciliation_ms: 100
+  consolidation:
+    max_entities: 500
+    consolidation_per_entity_ms: 100
+    total_consolidation_target_seconds: 60
+  uncertainty_analysis:
+    monte_carlo_10k_iterations_seconds: 30
+    sensitivity_per_parameter_ms: 200
+    target_duration_minutes: 5
+  compliance_mapping:
+    framework_mapping_per_framework_ms: 500
+    total_mapping_target_seconds: 10
+  reporting:
+    executive_summary_generation_ms: 2000
+    detailed_inventory_generation_ms: 5000
+    verification_package_generation_ms: 10000
+  cache_hit_ratio_target: 0.85
+  memory_ceiling_mb: 8192
+
+# -----------------------------------------------------------------------------
+# Security & Access Control
+# -----------------------------------------------------------------------------
+security:
+  authentication: "JWT (RS256)"
+  authorization: "RBAC with entity-level and facility-level access control"
+  encryption_at_rest: "AES-256-GCM"
+  encryption_in_transit: "TLS 1.3"
+  audit_logging: true
+  pii_redaction: true
+  data_classification:
+    - INTERNAL
+    - CONFIDENTIAL
+  required_roles:
+    - ghg_manager
+    - sustainability_officer
+    - facility_manager
+    - data_analyst
+    - verifier
+    - viewer
+    - admin
+  audit_events:
+    - "inventory.boundary.updated"
+    - "inventory.data.imported"
+    - "inventory.scope1.calculated"
+    - "inventory.scope2.calculated"
+    - "inventory.consolidated"
+    - "inventory.uncertainty.analysed"
+    - "inventory.qaqc.completed"
+    - "inventory.report.generated"
+    - "inventory.base_year.recalculated"
+    - "inventory.emission_factor.updated"
+    - "inventory.instrument.allocated"
+    - "inventory.config.modified"
+    - "inventory.preset.loaded"
+    - "inventory.verified"
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+testing:
+  test_directory: "tests/"
+  coverage_target: 85
+  test_categories:
+    - unit
+    - integration
+    - e2e
+  fixtures:
+    - "tests/fixtures/sample_stationary_combustion.json"
+    - "tests/fixtures/sample_mobile_fleet.json"
+    - "tests/fixtures/sample_refrigerant_log.json"
+    - "tests/fixtures/sample_electricity_consumption.json"
+    - "tests/fixtures/sample_contractual_instruments.json"
+    - "tests/fixtures/sample_entity_hierarchy.json"
+
+# -----------------------------------------------------------------------------
+# Compliance Framework Mappings
+# -----------------------------------------------------------------------------
+compliance:
+  frameworks:
+    - id: "GHG_PROTOCOL"
+      name: "GHG Protocol Corporate Standard"
+      coverage: "Chapters 3-8: boundary, quantification, base year, reporting"
+    - id: "GHG_PROTOCOL_SCOPE2"
+      name: "GHG Protocol Scope 2 Guidance"
+      coverage: "Dual reporting, instrument quality, residual mix"
+    - id: "ISO_14064"
+      name: "ISO 14064-1:2018"
+      coverage: "Clauses 5.2, 5.3, 6: boundaries, quantification, reporting"
+    - id: "ESRS_E1"
+      name: "ESRS E1 Climate Change"
+      coverage: "E1-6 Scope 1, E1-7 Scope 2, biogenic CO2, ETS percentage"
+    - id: "CDP"
+      name: "CDP Climate Change"
+      coverage: "C5 methodology, C6 Scope 1, C7 Scope 2, C10 verification"
+    - id: "SBTI"
+      name: "Science Based Targets initiative"
+      coverage: "Scope 1+2 baseline, annual tracking, 4.2% p.a. pathway"
+    - id: "SEC"
+      name: "US SEC Climate Disclosure"
+      coverage: "Regulation S-K Item 1505, materiality threshold, attestation"
+    - id: "SB_253"
+      name: "California SB 253"
+      coverage: "Annual Scope 1+2 reporting per GHG Protocol"
+
+# -----------------------------------------------------------------------------
+# Requirements
+# -----------------------------------------------------------------------------
+requirements:
+  runtime:
+    python: ">=3.11"
+    postgresql: ">=16"
+    redis: ">=7"
+
+  python_packages:
+    - "pydantic>=2.0"
+    - "pyyaml>=6.0"
+    - "pandas>=2.0"
+    - "numpy>=1.24"
+    - "scipy>=1.11"
+    - "httpx>=0.24"
+    - "psycopg[binary]>=3.1"
+    - "psycopg_pool>=3.1"
+    - "redis>=5.0"
+    - "jinja2>=3.1"
+    - "openpyxl>=3.1"
+    - "plotly>=5.18"
+    - "cryptography>=41.0"
+
+  infrastructure:
+    min_cpu_cores: 4
+    min_memory_gb: 8
+    min_storage_gb: 50
+    recommended_cpu_cores: 8
+    recommended_memory_gb: 16
+    recommended_storage_gb: 200
+
+  database:
+    extensions:
+      - "pgvector"
+    min_connections: 15
+    recommended_connections: 40
+
+# -----------------------------------------------------------------------------
+# Installation Configuration
+# -----------------------------------------------------------------------------
+installation:
+  pre_checks:
+    - verify_python_version
+    - verify_postgresql_connection
+    - verify_redis_connection
+    - verify_disk_space
+    - verify_emission_factor_database
+    - verify_gwp_tables
+    - verify_grid_factor_database
+    - verify_mrv_agents_available
+
+  database_migrations:
+    inherited:
+      - "V001-V006"   # Core platform tables
+      - "V007-V008"   # Feature flags and agent factory
+      - "V009-V010"   # Authentication and RBAC
+      - "V019-V020"   # Observability
+      - "V021-V030"   # AGENT-FOUND
+      - "V031-V050"   # AGENT-DATA
+      - "V051-V081"   # AGENT-MRV
+    new:
+      - "V326__pack041_scope12_001"
+      - "V327__pack041_scope12_002"
+      - "V328__pack041_scope12_003"
+      - "V329__pack041_scope12_004"
+      - "V330__pack041_scope12_005"
+      - "V331__pack041_scope12_006"
+      - "V332__pack041_scope12_007"
+      - "V333__pack041_scope12_008"
+      - "V334__pack041_scope12_009"
+      - "V335__pack041_scope12_010"
+
+  post_install:
+    - seed_emission_factors
+    - seed_gwp_tables
+    - seed_grid_factors
+    - seed_residual_mix_factors
+    - seed_gas_species_registry
+    - validate_preset_configs
+
+# -----------------------------------------------------------------------------
+# Component Registry: Engines
+# -----------------------------------------------------------------------------
+engines:
+  - name: InventoryConsolidationEngine
+    file: engines/inventory_consolidation_engine.py
+    description: "Multi-entity consolidation with equity share, operational, and financial control"
+  - name: EmissionFactorManagementEngine
+    file: engines/emission_factor_management_engine.py
+    description: "Multi-source EF hierarchy with IPCC, DEFRA, EPA, UBA, ADEME, ISPRA, IEA"
+  - name: GWPConversionEngine
+    file: engines/gwp_conversion_engine.py
+    description: "AR4/AR5/AR6 GWP conversion for all 7 Kyoto basket gases"
+  - name: BoundaryAssessmentEngine
+    file: engines/boundary_assessment_engine.py
+    description: "Organisational and operational boundary mapping with source significance"
+  - name: UncertaintyAnalysisEngine
+    file: engines/uncertainty_analysis_engine.py
+    description: "Monte Carlo uncertainty quantification at source, scope, and total level"
+  - name: BaseYearManagementEngine
+    file: engines/base_year_management_engine.py
+    description: "Base year management with recalculation triggers and threshold rules"
+  - name: TrendAnalysisEngine
+    file: engines/trend_analysis_engine.py
+    description: "Multi-year trend analysis with absolute, intensity, and LMDI decomposition"
+  - name: ComplianceMappingEngine
+    file: engines/compliance_mapping_engine.py
+    description: "Maps inventory to 7 frameworks: GHG Protocol, ISO, ESRS, CDP, SBTi, SEC, SB 253"
+  - name: InventoryQAQCEngine
+    file: engines/inventory_qaqc_engine.py
+    description: "GHG Protocol Chapter 7 QA/QC checks: completeness, consistency, accuracy"
+  - name: InventoryReportingEngine
+    file: engines/inventory_reporting_engine.py
+    description: "Multi-format report generation: executive, detailed, compliance, verification"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Workflows
+# -----------------------------------------------------------------------------
+workflows:
+  - name: AnnualInventoryWorkflow
+    file: workflows/annual_inventory_workflow.py
+    description: "6-phase annual GHG inventory from boundary review through reporting"
+  - name: QuarterlyUpdateWorkflow
+    file: workflows/quarterly_update_workflow.py
+    description: "4-phase quarterly tracking with year-to-date consolidation"
+  - name: BaseYearRecalculationWorkflow
+    file: workflows/base_year_recalculation_workflow.py
+    description: "4-phase base year recalculation with trigger assessment and documentation"
+  - name: VerificationPreparationWorkflow
+    file: workflows/verification_preparation_workflow.py
+    description: "5-phase verification preparation per ISO 14064-3 and ISAE 3410"
+  - name: Scope2InstrumentReviewWorkflow
+    file: workflows/scope2_instrument_review_workflow.py
+    description: "3-phase Scope 2 contractual instrument quality review and allocation"
+  - name: EmissionFactorUpdateWorkflow
+    file: workflows/emission_factor_update_workflow.py
+    description: "3-phase annual emission factor update with impact assessment"
+  - name: SourceSignificanceWorkflow
+    file: workflows/source_significance_workflow.py
+    description: "3-phase source significance assessment and methodology tier assignment"
+  - name: FullInventoryPipelineWorkflow
+    file: workflows/full_inventory_pipeline_workflow.py
+    description: "10-phase end-to-end inventory pipeline from health check through reporting"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Templates
+# -----------------------------------------------------------------------------
+templates:
+  - name: ExecutiveSummaryTemplate
+    file: templates/executive_summary.py
+    description: "C-suite GHG inventory summary with KPI cards and charts"
+  - name: DetailedInventoryTemplate
+    file: templates/detailed_inventory.py
+    description: "Source-level inventory report with factor citations and methodology"
+  - name: Scope1BreakdownTemplate
+    file: templates/scope1_breakdown.py
+    description: "Scope 1 breakdown by category, gas, facility, and methodology tier"
+  - name: Scope2DualReportTemplate
+    file: templates/scope2_dual_report.py
+    description: "Scope 2 location vs market with instrument quality assessment"
+  - name: ComplianceESRSE1Template
+    file: templates/compliance_esrs_e1.py
+    description: "ESRS E1-6 and E1-7 disclosure datapoints for CSRD"
+  - name: ComplianceCDPTemplate
+    file: templates/compliance_cdp.py
+    description: "CDP C6/C7 response data for Climate Change questionnaire"
+  - name: UncertaintyReportTemplate
+    file: templates/uncertainty_report.py
+    description: "Monte Carlo results with confidence intervals and tornado diagrams"
+  - name: TrendAnalysisTemplate
+    file: templates/trend_analysis.py
+    description: "Multi-year trend with absolute, intensity, and SBTi pathway"
+  - name: VerificationPackageTemplate
+    file: templates/verification_package.py
+    description: "ISO 14064-3 / ISAE 3410 verification package"
+  - name: BaseYearReportTemplate
+    file: templates/base_year_report.py
+    description: "Base year inventory with recalculation history and policy"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Integrations
+# -----------------------------------------------------------------------------
+integrations:
+  - name: Scope12Orchestrator
+    file: integrations/pack_orchestrator.py
+    description: "10-phase pipeline with DAG dependency resolution and provenance tracking"
+  - name: MRVScope1Bridge
+    file: integrations/mrv_scope1_bridge.py
+    description: "Routes activity data to 8 Scope 1 MRV agents with parallel execution"
+  - name: MRVScope2Bridge
+    file: integrations/mrv_scope2_bridge.py
+    description: "Routes consumption data to 5 Scope 2 MRV agents with dual reporting"
+  - name: DataIntakeBridge
+    file: integrations/data_intake_bridge.py
+    description: "Routes source documents to DATA agents for extraction and quality profiling"
+  - name: ERPFinanceBridge
+    file: integrations/erp_finance_bridge.py
+    description: "Automated activity data retrieval from ERP and financial systems"
+  - name: EmissionFactorBridge
+    file: integrations/emission_factor_bridge.py
+    description: "Emission factor database integration with DEFRA, EPA, IEA, and national DBs"
+  - name: GridFactorBridge
+    file: integrations/grid_factor_bridge.py
+    description: "Grid-average and marginal emission factor retrieval by country and region"
+  - name: InstrumentRegistryBridge
+    file: integrations/instrument_registry_bridge.py
+    description: "GO/REC registry integration for Scope 2 market-based accounting"
+  - name: WeatherDataBridge
+    file: integrations/weather_data_bridge.py
+    description: "HDD/CDD calculation and weather-normalised trend analysis"
+  - name: HealthCheck
+    file: integrations/health_check.py
+    description: "15-category system health verification"
+  - name: SetupWizard
+    file: integrations/setup_wizard.py
+    description: "8-step guided configuration for GHG inventory setup"
+  - name: AlertBridge
+    file: integrations/alert_bridge.py
+    description: "Multi-channel notification for data quality, deadlines, and SBTi deviation"
+
+# -----------------------------------------------------------------------------
+# Component Registry: Presets
+# -----------------------------------------------------------------------------
+presets:
+  - name: corporate_office
+    file: config/presets/corporate_office.yaml
+    description: "Office-based organisations (financial services, technology, consulting)"
+  - name: manufacturing
+    file: config/presets/manufacturing.yaml
+    description: "Industrial manufacturing with process emissions and stationary combustion"
+  - name: energy_utility
+    file: config/presets/energy_utility.yaml
+    description: "Power generation and energy distribution utilities"
+  - name: transport_logistics
+    file: config/presets/transport_logistics.yaml
+    description: "Fleet operators and logistics companies (mobile combustion dominant)"
+  - name: food_agriculture
+    file: config/presets/food_agriculture.yaml
+    description: "Agricultural operations and food processing"
+  - name: real_estate
+    file: config/presets/real_estate.yaml
+    description: "Property portfolios and REIT companies"
+  - name: healthcare
+    file: config/presets/healthcare.yaml
+    description: "Hospitals and healthcare systems"
+  - name: sme_simplified
+    file: config/presets/sme_simplified.yaml
+    description: "Simplified inventory for small-medium enterprises"

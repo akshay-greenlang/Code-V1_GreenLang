@@ -142,3 +142,17 @@ def test_process_sanitizes_path_from_pipeline_errors(monkeypatch) -> None:
     assert errors
     assert "C:\\Users\\aksha" not in errors[0]
     assert "<redacted-path>" in errors[0]
+
+
+def test_v1_download_bundle_rejects_invalid_run_id() -> None:
+    client = TestClient(create_app())
+    response = client.get("/api/v1/runs/not-a-valid-id/bundle")
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid run ID"
+
+
+def test_v1_download_artifact_rejects_invalid_run_id() -> None:
+    client = TestClient(create_app())
+    response = client.get("/api/v1/runs/not-a-valid-id/artifacts/audit/run_manifest.json")
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid run ID"

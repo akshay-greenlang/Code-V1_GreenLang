@@ -14,6 +14,7 @@ Version: 1.0.0
 Date: 2025-11-08
 """
 
+import os
 import sys
 import json
 from pathlib import Path
@@ -23,7 +24,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from greenlang.determinism import deterministic_random
+from greenlang.determinism import DeterministicClock
 from rich.progress import (
     Progress,
     SpinnerColumn,
@@ -39,12 +40,11 @@ from rich.text import Text
 # Import agents
 try:
     from services.agents.intake.agent import ValueChainIntakeAgent
-    from services.agents.calculator.agent import Scope3CalculatorAgent
-    from services.agents.hotspot.agent import HotspotAnalysisAgent
-    from services.agents.reporting.agent import ReportingAgent
     AGENTS_AVAILABLE = True
-except ImportError:
+    AGENTS_IMPORT_ERROR = ""
+except ImportError as exc:
     AGENTS_AVAILABLE = False
+    AGENTS_IMPORT_ERROR = str(exc)
 
 # Create console
 console = Console()
@@ -104,6 +104,7 @@ class PipelineExecutor:
             console.print("=" * 60)
 
             calc_results = self._stage_calculate(
+                input_path=input_path,
                 categories=categories,
                 enable_llm=enable_llm,
                 enable_monte_carlo=enable_monte_carlo
@@ -151,6 +152,32 @@ class PipelineExecutor:
 
     def _stage_intake(self, input_path: Path) -> Dict[str, Any]:
         """Execute intake stage."""
+        if not AGENTS_AVAILABLE:
+            allow_optional_fallback = (
+                os.environ.get("GL_VCCI_ALLOW_OPTIONAL_FALLBACK", "0").strip().lower()
+                in {"1", "true", "yes", "on"}
+            )
+            if not allow_optional_fallback:
+                raise RuntimeError(
+                    "VCCI intake agents unavailable in strict mode. "
+                    f"Import error: {AGENTS_IMPORT_ERROR or 'unknown'}"
+                )
+            if input_path.is_file():
+                row_count = max(0, len(input_path.read_text(encoding="utf-8").splitlines()) - 1)
+                return {
+                    "total_records": row_count,
+                    "successful": row_count,
+                    "failed": 0,
+                    "batch_id": f"fallback-{self.run_id}",
+                }
+            files = list(input_path.glob("*.*"))
+            return {
+                "total_records": len(files),
+                "successful": len(files),
+                "failed": 0,
+                "files_processed": len(files),
+            }
+
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -232,11 +259,13 @@ class PipelineExecutor:
 
     def _stage_calculate(
         self,
+        input_path: Path,
         categories: List[int],
         enable_llm: bool,
         enable_monte_carlo: bool
     ) -> Dict[str, Any]:
         """Execute calculation stage."""
+        records = self._load_calculation_records(input_path)
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
@@ -259,15 +288,39 @@ class PipelineExecutor:
                     description=f"[cyan]Calculating Category {category}..."
                 )
 
-                # Mock calculation (in production: use actual calculator)
-                import random
-                emissions = random.uniform(500, 5000)
-                uncertainty = random.uniform(15, 35)
+                category_records = []
+                for row in records:
+                    try:
+                        row_category = int(row.get("category", 1) or 1)
+                    except (TypeError, ValueError):
+                        row_category = 1
+                    if row_category == category:
+                        category_records.append(row)
+                emissions = sum(
+                    float(row.get("supplier_pcf", 0.0)) * float(row.get("quantity", 0.0))
+                    for row in category_records
+                )
+                uncertainty = (
+                    sum(float(row.get("supplier_pcf_uncertainty", 0.2)) for row in category_records)
+                    / len(category_records)
+                    * 100.0
+                ) if category_records else 0.0
+                supplier_records = sum(
+                    1 for row in category_records if float(row.get("supplier_pcf", 0.0)) > 0
+                )
+                data_quality_tier = 1
+                if category_records:
+                    supplier_ratio = supplier_records / len(category_records)
+                    if supplier_ratio < 0.4:
+                        data_quality_tier = 3
+                    elif supplier_ratio < 0.8:
+                        data_quality_tier = 2
 
                 results["categories"][category] = {
                     "emissions_tco2e": emissions,
                     "uncertainty_pct": uncertainty,
-                    "data_quality_tier": deterministic_random().choice([1, 2, 3]),
+                    "data_quality_tier": data_quality_tier,
+                    "records_processed": len(category_records),
                     "llm_enhanced": enable_llm,
                     "monte_carlo": enable_monte_carlo
                 }
@@ -325,10 +378,6 @@ class PipelineExecutor:
         ) as progress:
             task = progress.add_task("[cyan]Performing hotspot analysis...", total=None)
 
-            # Mock analysis
-            import time
-            time.sleep(0.5)
-
             # Identify hotspots (top 3 categories)
             categories = calc_results["categories"]
             sorted_cats = sorted(
@@ -383,6 +432,44 @@ class PipelineExecutor:
                 "Consider supplier switching scenarios for hotspot categories"
             ]
         }
+
+    def _load_calculation_records(self, input_path: Path) -> List[Dict[str, Any]]:
+        """Load deterministic calculation records from CSV or JSON input."""
+        if input_path.suffix.lower() == ".csv":
+            import csv
+
+            records: List[Dict[str, Any]] = []
+            with open(input_path, "r", encoding="utf-8") as handle:
+                for row in csv.DictReader(handle):
+                    records.append(
+                        {
+                            "category": row.get("category", "1"),
+                            "quantity": row.get("quantity", "0"),
+                            "supplier_pcf": row.get("supplier_pcf", "0"),
+                            "supplier_pcf_uncertainty": row.get("supplier_pcf_uncertainty", "0.2"),
+                        }
+                    )
+            return records
+
+        payload = json.loads(input_path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            payload = payload.get("records", [payload])
+        if not isinstance(payload, list):
+            return []
+
+        records = []
+        for row in payload:
+            if not isinstance(row, dict):
+                continue
+            records.append(
+                {
+                    "category": row.get("category", 1),
+                    "quantity": row.get("quantity", 0),
+                    "supplier_pcf": row.get("supplier_pcf", 0),
+                    "supplier_pcf_uncertainty": row.get("supplier_pcf_uncertainty", 0.2),
+                }
+            )
+        return records
 
     def _stage_report(
         self,

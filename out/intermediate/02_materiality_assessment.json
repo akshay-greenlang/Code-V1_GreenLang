@@ -1,0 +1,858 @@
+{
+  "assessment_metadata": {
+    "assessment_id": "uuid_f6b61088301420a0",
+    "assessment_date": "2026-03-24T13:36:08+00:00",
+    "reporting_period": {
+      "year": 2024
+    },
+    "company_id": "unknown",
+    "version": "v1.0",
+    "status": "draft",
+    "approved_by": null,
+    "approval_date": null,
+    "ai_powered": true,
+    "requires_human_review": true
+  },
+  "methodology": {
+    "framework": "ESRS_1_Double_Materiality",
+    "impact_threshold": 5.0,
+    "financial_threshold": 5.0,
+    "double_materiality_rule": "either_or",
+    "scoring_methodology": {},
+    "stakeholder_engagement": null
+  },
+  "material_topics": [
+    {
+      "topic_id": "E1",
+      "topic_name": "Climate Change",
+      "esrs_standard": "E1",
+      "topic_description": "Climate change mitigation and adaptation",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "E2",
+      "topic_name": "Pollution",
+      "esrs_standard": "E2",
+      "topic_description": "Pollution of air, water and soil",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "E3",
+      "topic_name": "Water and Marine Resources",
+      "esrs_standard": "E3",
+      "topic_description": "Water and marine resources",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "E4",
+      "topic_name": "Biodiversity and Ecosystems",
+      "esrs_standard": "E4",
+      "topic_description": "Biodiversity and ecosystems",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "E5",
+      "topic_name": "Resource Use and Circular Economy",
+      "esrs_standard": "E5",
+      "topic_description": "Resource use and circular economy",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "S1",
+      "topic_name": "Own Workforce",
+      "esrs_standard": "S1",
+      "topic_description": "Own workforce",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "S2",
+      "topic_name": "Workers in the Value Chain",
+      "esrs_standard": "S2",
+      "topic_description": "Workers in the value chain",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "S3",
+      "topic_name": "Affected Communities",
+      "esrs_standard": "S3",
+      "topic_description": "Affected communities",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "S4",
+      "topic_name": "Consumers and End-Users",
+      "esrs_standard": "S4",
+      "topic_description": "Consumers and end-users",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    },
+    {
+      "topic_id": "G1",
+      "topic_name": "Business Conduct",
+      "esrs_standard": "G1",
+      "topic_description": "Business conduct",
+      "impact_materiality": {
+        "severity": 5.0,
+        "scope": 5.0,
+        "irremediability": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "impact_type": [
+          "unknown"
+        ],
+        "affected_stakeholders": [],
+        "time_horizon": "medium_term",
+        "value_chain_stage": []
+      },
+      "financial_materiality": {
+        "magnitude": 5.0,
+        "likelihood": 5.0,
+        "score": 2.5,
+        "is_material": false,
+        "rationale": "Assessment failed - requires manual review",
+        "confidence": 0.0,
+        "effect_type": [
+          "unknown"
+        ],
+        "financial_impact_areas": [],
+        "time_horizon": "medium_term"
+      },
+      "double_material": false,
+      "materiality_conclusion": "not_material",
+      "disclosure_requirements": [],
+      "data_sources": [
+        "AI assessment",
+        "Company context",
+        "Stakeholder input"
+      ],
+      "review_status": "pending_review",
+      "reviewer_comments": null,
+      "human_override": null
+    }
+  ],
+  "stakeholder_perspectives": [
+    {
+      "topic_id": "E1",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "E2",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "E3",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "E4",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "E5",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "S1",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "S2",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "S3",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "S4",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    },
+    {
+      "topic_id": "G1",
+      "stakeholder_groups": [],
+      "key_concerns": [],
+      "consensus_view": null,
+      "divergent_views": [],
+      "participants_count": 0,
+      "confidence": 0.0
+    }
+  ],
+  "materiality_matrix": {
+    "chart_data": [
+      {
+        "topic_id": "E1",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Climate Change"
+      },
+      {
+        "topic_id": "E2",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Pollution"
+      },
+      {
+        "topic_id": "E3",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Water and Marine Resources"
+      },
+      {
+        "topic_id": "E4",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Biodiversity and Ecosystems"
+      },
+      {
+        "topic_id": "E5",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Resource Use and Circular Economy"
+      },
+      {
+        "topic_id": "S1",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Own Workforce"
+      },
+      {
+        "topic_id": "S2",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Workers in the Value Chain"
+      },
+      {
+        "topic_id": "S3",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Affected Communities"
+      },
+      {
+        "topic_id": "S4",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Consumers and End-Users"
+      },
+      {
+        "topic_id": "G1",
+        "x_financial": 2.5,
+        "y_impact": 2.5,
+        "label": "Business Conduct"
+      }
+    ],
+    "quadrants": {
+      "high_impact_high_financial": [],
+      "high_impact_low_financial": [],
+      "low_impact_high_financial": [],
+      "low_impact_low_financial": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "G1"
+      ]
+    }
+  },
+  "summary_statistics": {
+    "total_topics_assessed": 10,
+    "material_topics_count": 0,
+    "material_from_impact": 0,
+    "material_from_financial": 0,
+    "double_material_count": 0,
+    "esrs_standards_triggered": []
+  },
+  "review_flags": [
+    {
+      "topic_id": "E1",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E1",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E1",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E2",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E2",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E2",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E3",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E3",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E3",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E4",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E4",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E4",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E5",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E5",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "E5",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S1",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S1",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S1",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S2",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S2",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S2",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S3",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S3",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S3",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S4",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S4",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "S4",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "G1",
+      "flag_type": "impact_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "G1",
+      "flag_type": "financial_assessment_failed",
+      "reason": "LLM assessment failed, using fallback",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    },
+    {
+      "topic_id": "G1",
+      "flag_type": "low_confidence",
+      "reason": "Average confidence: 0.00",
+      "timestamp": "2026-03-24T13:36:08+00:00"
+    }
+  ],
+  "ai_metadata": {
+    "llm_provider": "openai",
+    "llm_model": "gpt-4o",
+    "total_llm_calls": 20,
+    "average_confidence": 0.0,
+    "processing_time_seconds": 0.0,
+    "processing_time_minutes": 0.0,
+    "deterministic": false,
+    "zero_hallucination": false,
+    "requires_human_review": true
+  },
+  "limitations_assumptions": [
+    "AI assessments are preliminary and require expert validation",
+    "Materiality is company-specific - AI cannot replace human judgment",
+    "Stakeholder analysis may miss nuanced perspectives",
+    "Financial impact estimates are directional, not precise",
+    "Topic assessments may evolve as business context changes"
+  ],
+  "next_review_date": null
+}

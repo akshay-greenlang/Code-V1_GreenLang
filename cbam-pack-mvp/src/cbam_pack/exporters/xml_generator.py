@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from io import BytesIO
+from pathlib import Path
 from typing import Optional
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
@@ -59,6 +60,7 @@ class CBAMXMLGenerator:
     # XSD Schema metadata
     XSD_VERSION = "1.0.0"
     XSD_DATE = "2024-10-01"
+    XSD_FILENAME = "cbam_transitional_v1.xsd"
 
     def __init__(self):
         """Initialize the XML generator."""
@@ -246,8 +248,8 @@ class CBAMXMLGenerator:
         """Validate XML against embedded XSD schema using lxml."""
         errors = []
 
-        # Embedded XSD schema for CBAM transitional reports
-        xsd_content = self._get_embedded_xsd()
+        # Prefer bundled XSD file; keep embedded fallback.
+        xsd_content = self._load_xsd_schema()
 
         try:
             schema_doc = lxml_etree.fromstring(xsd_content.encode())
@@ -269,6 +271,18 @@ class CBAMXMLGenerator:
             pass
 
         return errors
+
+    def _load_xsd_schema(self) -> str:
+        """Load XSD from bundled schema path, fallback to embedded schema."""
+        module_root = Path(__file__).resolve().parent
+        candidates = [
+            module_root.parent / "schemas" / self.XSD_FILENAME,
+            module_root.parents[2] / "schemas" / self.XSD_FILENAME,
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                return candidate.read_text(encoding="utf-8")
+        return self._get_embedded_xsd()
 
     def _get_embedded_xsd(self) -> str:
         """Get the embedded XSD schema for CBAM validation."""

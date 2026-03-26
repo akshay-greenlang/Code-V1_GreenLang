@@ -1,0 +1,166 @@
+# =============================================================================
+# PACK-044 GHG Inventory Management - Energy & Utility Preset
+# =============================================================================
+# Energy generation and utility companies subject to emissions trading schemes
+# (EU ETS, UK ETS, CA Cap-and-Trade). Monthly data collection with three-level
+# review and mandatory ETS reconciliation. Handles large-scale combustion
+# sources, grid emission factors, and regulatory compliance reporting.
+#
+# Typical use cases:
+#   - Electricity generation (thermal, combined cycle, CHP)
+#   - Natural gas transmission and distribution
+#   - District heating and cooling providers
+#   - Water and wastewater utilities
+#   - Integrated energy companies (upstream + midstream)
+#
+# Typical inventory profile:
+#   - 10-100+ generation assets across multiple grid regions
+#   - Scope 1: dominant (fossil fuel combustion for generation)
+#   - Scope 2: relatively small (office and auxiliary loads)
+#   - ETS-regulated: mandatory annual verified reporting
+#   - Typical intensity: 0.2-1.0 tCO2e per MWh generated
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+facility_name: ""
+sector_type: "ENERGY_UTILITY"
+country: "DE"
+reporting_year: 2026
+
+# --- Inventory Period ---
+inventory_period:
+  period_type: "CALENDAR_YEAR"
+  fiscal_year_end_month: 12
+  lock_after_days: 14
+  auto_create_next_period: true
+
+# --- Data Collection ---
+data_collection:
+  frequency: "MONTHLY"
+  collection_window_days: 14
+  reminder_before_days: 5
+  escalation_after_days: 7
+  auto_send_reminders: true
+  require_evidence_upload: true
+  allow_estimation: false
+  estimation_requires_justification: true
+  meter_integration_enabled: true
+  scada_integration_enabled: true
+  cems_integration_enabled: true
+
+# --- Quality Management ---
+quality_management:
+  qaqc_enabled: true
+  automated_checks:
+    - "COMPLETENESS"
+    - "RANGE_CHECK"
+    - "YEAR_ON_YEAR_VARIANCE"
+    - "MONTH_ON_MONTH_VARIANCE"
+    - "UNIT_CONSISTENCY"
+    - "MASS_BALANCE"
+    - "HEAT_RATE_CHECK"
+    - "CEMS_CALIBRATION"
+    - "ETS_RECONCILIATION"
+    - "OUTLIER_DETECTION"
+  variance_threshold_pct: 5.0
+  data_quality_score_target: 95.0
+  require_improvement_plan: true
+  improvement_plan_review_frequency: "QUARTERLY"
+
+# --- Review and Approval ---
+review_approval:
+  review_levels: 3
+  level_1_role: "PLANT_OPERATOR"
+  level_2_role: "ENVIRONMENTAL_COMPLIANCE_MANAGER"
+  level_3_role: "HEAD_OF_REGULATORY_AFFAIRS"
+  require_comments: true
+  auto_approve_below_threshold: false
+  sign_off_required: true
+  parallel_review_allowed: false
+  ets_verifier_sign_off: true
+
+# --- ETS Integration ---
+ets_integration:
+  enabled: true
+  scheme: "EU_ETS"
+  installation_ids: []
+  free_allocation_tracking: true
+  surrender_deadline_month: 4
+  surplus_deficit_tracking: true
+  carbon_price_tracking: true
+  phase: "PHASE_4"
+
+# --- Change Management ---
+change_management:
+  require_change_request: true
+  auto_approve_minor_changes: false
+  minor_change_threshold_pct: 0.5
+  impact_assessment_required: true
+  require_recalculation_on_change: true
+  regulatory_notification_required: true
+
+# --- Versioning ---
+versioning:
+  enabled: true
+  max_versions_per_period: 10
+  snapshot_on_approval: true
+  track_field_changes: true
+  retain_all_versions: true
+  diff_report_enabled: true
+  regulatory_version_tagging: true
+
+# --- Consolidation ---
+consolidation:
+  approach: "OPERATIONAL_CONTROL"
+  multi_entity: true
+  require_subsidiary_sign_off: true
+  inter_company_elimination: true
+  grid_region_aggregation: true
+  fuel_type_disaggregation: true
+
+# --- Gap Analysis ---
+gap_analysis:
+  enabled: true
+  assess_frequency: "ANNUAL"
+  maturity_model: "GHG_PROTOCOL_5_LEVEL"
+  generate_improvement_roadmap: true
+  benchmark_against_peers: true
+  sector_benchmark_source: "CDP_ELECTRIC_UTILITIES"
+
+# --- Documentation ---
+documentation:
+  methodology_doc_required: true
+  assumption_register: true
+  evidence_retention_years: 10
+  link_to_source_documents: true
+  auto_generate_methodology: true
+  monitoring_plan_reference: true
+  ets_verification_report: true
+
+# --- Reporting ---
+reporting:
+  frequency: "ANNUAL"
+  formats:
+    - "HTML"
+    - "PDF"
+    - "JSON"
+    - "XML"
+    - "XBRL"
+  executive_summary: true
+  detailed_inventory: true
+  verification_package: true
+  output_language: "en"
+  include_methodology_notes: true
+  include_ets_reconciliation: true
+  include_generation_intensity: true
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: true
+  assumption_tracking: true
+  data_lineage_enabled: true
+  retention_years: 10
+  ets_audit_trail: true

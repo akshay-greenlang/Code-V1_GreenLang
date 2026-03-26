@@ -1,0 +1,248 @@
+# =============================================================================
+# PACK-042 Scope 3 Starter - SME Simplified Preset
+# =============================================================================
+# Simplified configuration for small and medium enterprises with limited
+# data availability and resource constraints. Covers only the top 5 most
+# material Scope 3 categories using spend-based and average-data methods.
+# Downstream categories are disabled by default. Supplier engagement
+# limited to top 10 suppliers. Simplified uncertainty assessment.
+#
+# Typical use cases:
+#   - Small offices and professional services (under 250 employees)
+#   - Independent retailers and shops
+#   - Small workshops and light manufacturing
+#   - Startups and technology scale-ups
+#   - Small hospitality businesses
+#   - Local services companies
+#
+# Typical Scope 3 emission profile (top 5 approach):
+#   Cat 1 (Purchased Goods):     40-70% (office supplies, IT, services)
+#   Cat 3 (Fuel & Energy):        3-8%  (WTT, T&D losses)
+#   Cat 5 (Waste):                 1-3%  (office waste)
+#   Cat 6 (Business Travel):      5-15% (client visits, training)
+#   Cat 7 (Employee Commuting):   5-15% (staff commuting)
+#
+#   Total Scope 3 typically: 3-10x Scope 1+2
+#   Key supplier engagement: Top 10 suppliers only
+# =============================================================================
+
+# --- Organisation Details ---
+company_name: ""
+sector_type: "SME"
+country: "DE"
+reporting_year: 2026
+
+# --- Screening ---
+screening:
+  eeio_model: "EXIOBASE_3"
+  currency: "EUR"
+  base_year: 2024
+  revenue_threshold_eur: 0
+  inflation_adjustment: true
+  include_second_order: false
+
+# --- Spend Classification ---
+spend_classification:
+  code_system: "NAICS"
+  confidence_threshold: 0.75
+  manual_review_threshold: 0.55
+  currency: "EUR"
+  inflation_year: 2024
+
+# --- Categories ---
+categories:
+  cat_1:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "spend_data"
+      - "accounting_software"
+    materiality_threshold_pct: 1.0
+    notes: "Office supplies, IT services, professional services, subcontractors"
+  cat_2:
+    enabled: false
+    tier: "SPEND_BASED"
+    data_sources:
+      - "capex_records"
+    materiality_threshold_pct: 5.0
+    notes: "Enable if significant capital investments made in reporting year"
+  cat_3:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "scope1_fuel_data"
+      - "scope2_electricity_data"
+    materiality_threshold_pct: 2.0
+    notes: "WTT and T&D losses for gas heating and electricity"
+  cat_4:
+    enabled: false
+    tier: "SPEND_BASED"
+    data_sources:
+      - "freight_invoices"
+    materiality_threshold_pct: 5.0
+    notes: "Enable if physical goods procured with significant inbound logistics"
+  cat_5:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "waste_contractor_invoices"
+      - "waste_estimates"
+    materiality_threshold_pct: 2.0
+    notes: "Office waste, recycling, general waste"
+  cat_6:
+    enabled: true
+    tier: "SPEND_BASED"
+    data_sources:
+      - "expense_reports"
+      - "corporate_cards"
+    materiality_threshold_pct: 1.0
+    notes: "Client visits, training, conferences"
+  cat_7:
+    enabled: true
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "employee_surveys"
+      - "hr_records"
+      - "national_averages"
+    materiality_threshold_pct: 1.0
+    notes: "Staff commuting using national average data or simple survey"
+  cat_8:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "lease_contracts"
+    materiality_threshold_pct: 5.0
+  cat_9:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "distribution_data"
+    materiality_threshold_pct: 5.0
+  cat_10:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "customer_processing_data"
+    materiality_threshold_pct: 5.0
+  cat_11:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_specs"
+    materiality_threshold_pct: 5.0
+  cat_12:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "product_composition"
+    materiality_threshold_pct: 5.0
+  cat_13:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "tenant_data"
+    materiality_threshold_pct: 5.0
+  cat_14:
+    enabled: false
+    tier: "AVERAGE_DATA"
+    data_sources:
+      - "franchise_reports"
+    materiality_threshold_pct: 5.0
+  cat_15:
+    enabled: false
+    tier: "SPEND_BASED"
+    data_sources:
+      - "portfolio_data"
+    materiality_threshold_pct: 5.0
+
+# --- Double Counting ---
+double_counting:
+  rules_enabled:
+    - "cat3_vs_scope12"
+  allocation_method: "ECONOMIC"
+  conservative_mode: true
+  document_exclusions: true
+  scope12_reference_enabled: true
+
+# --- Hotspot ---
+hotspot:
+  pareto_threshold_pct: 80.0
+  min_categories: 3
+  benchmark_source: "ghg_protocol_sector_guidance"
+  top_n_suppliers: 10
+  include_product_group_analysis: false
+  trend_comparison_years: 2
+
+# --- Supplier Engagement ---
+supplier_engagement:
+  top_percent: 70.0
+  top_n_suppliers: 10
+  reminder_frequency_days: 60
+  quality_target: "LEVEL_3"
+  deadline_days: 120
+  escalation_after_days: 90
+  use_cdp_supply_chain: false
+  questionnaire_template: "ghg_protocol_scope3_supplier_simplified"
+
+# --- Data Quality ---
+data_quality:
+  min_dqr: 1.0
+  target_dqr: 4.0
+  quality_weights:
+    technological_representativeness: 0.30
+    temporal_representativeness: 0.20
+    geographical_representativeness: 0.20
+    completeness: 0.15
+    reliability: 0.15
+  improvement_plan_required: false
+  track_dqr_trend: false
+
+# --- Uncertainty ---
+uncertainty:
+  method: "QUALITATIVE"
+  monte_carlo_iterations: 3000
+  confidence_level: 0.90
+  default_spend_uncertainty_pct: 60.0
+  default_average_data_uncertainty_pct: 40.0
+  default_supplier_uncertainty_pct: 15.0
+
+# --- Compliance ---
+compliance:
+  target_frameworks:
+    - "GHG_PROTOCOL"
+  esrs_phase_in_year: 2026
+  sec_safe_harbour: true
+  sb253_scope3_from: 2027
+  pcaf_enabled: false
+  cdp_supply_chain_module: false
+
+# --- Reporting ---
+reporting:
+  formats:
+    - "HTML"
+  frequency: "ANNUAL"
+  include_provenance: true
+  include_appendices: false
+  include_data_quality_matrix: false
+  include_supplier_engagement_status: false
+  include_hotspot_analysis: true
+  include_double_counting_log: false
+  output_language: "en"
+  watermark_draft: true
+
+# --- Integration ---
+integration:
+  pack041_enabled: true
+  pack041_pack_id: "PACK-041-scope-1-2-complete"
+  lca_database: "ecoinvent_3.10"
+
+# --- Audit Trail ---
+audit_trail:
+  enabled: true
+  sha256_provenance: true
+  calculation_logging: false
+  assumption_tracking: true
+  data_lineage_enabled: false
+  retention_years: 3
+  emission_factor_citation: true
+  supplier_data_versioning: false

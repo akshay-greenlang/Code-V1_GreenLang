@@ -1,0 +1,60 @@
+# PACK-049 Preset: Financial Services
+# Bank branches and offices with FTE intensity and PCAF quality scoring
+
+site_registry:
+  max_sites: 10000
+  facility_types_enabled: ["OFFICE", "DATA_CENTER", "RETAIL"]
+  lifecycle_tracking: true
+  grouping_enabled: true
+
+data_collection:
+  collection_period: QUARTERLY
+  data_entry_modes: ["SPREADSHEET_UPLOAD", "ERP_CONNECTOR", "API_PUSH"]
+  validation_strictness: STRICT
+  estimation_allowed: true
+  reminder_days: [14, 7, 3, 1]
+
+boundary:
+  consolidation_approach: FINANCIAL_CONTROL
+  materiality_threshold: 0.05
+  de_minimis_threshold: 0.01
+  annual_boundary_lock: true
+
+regional_factor:
+  preferred_tier: TIER_2_NATIONAL
+  default_source: IEA
+  grid_factor_update_frequency: ANNUAL
+  climate_zone_enabled: false
+
+consolidation:
+  elimination_enabled: true
+  equity_adjustment_enabled: true
+  completeness_threshold: 0.90
+  reconciliation_tolerance: 0.02
+
+allocation:
+  default_method: HEADCOUNT
+  shared_services_enabled: true
+  landlord_tenant_enabled: true
+  cogeneration_enabled: false
+
+comparison:
+  default_kpi: EMISSIONS_PER_FTE
+  peer_group_min_size: 5
+  percentile_bands: [10, 25, 50, 75, 90]
+  trend_years: 3
+
+completion:
+  completeness_target: 0.95
+  deadline_reminders_days: [14, 7, 3, 1]
+  escalation_enabled: true
+  auto_estimation_enabled: true
+
+quality:
+  minimum_quality_score: 3
+  improvement_tracking_enabled: true
+
+reporting:
+  default_format: HTML
+  drill_down_levels: 4
+  multi_year_enabled: true
