@@ -104,7 +104,7 @@ networkx==3.2.1  # Graph analysis
 plotly==5.19.0  # Interactive visualizations
 
 # CDP API Integration
-requests==2.31.0
+requests==2.33.0
 requests-oauthlib==1.4.0
 
 # Document Generation
