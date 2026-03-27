@@ -112,7 +112,7 @@ data = [
 # PDF processing (from config/requirements.txt, config/requirements-pinned.txt)
 # ---------------------------------------------------------------------------
 pdf = [
-  "pdfplumber==0.10.3",
+  "pdfplumber==0.11.9",
   "pdfminer-six==20221105",
   "pypdf2==3.0.1",
   "pypdf==6.6.2",
