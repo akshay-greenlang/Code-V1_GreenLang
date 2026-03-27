@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.employee_commuting.setup import (
+    from greenlang.agents.mrv.employee_commuting.setup import (
         EmployeeCommutingService,
         get_service,
         get_router,
@@ -127,7 +127,7 @@ class TestServiceCreation:
 
     def test_get_service_singleton(self):
         """get_service returns the same instance on repeated calls."""
-        import greenlang.employee_commuting.setup as setup_mod
+        import greenlang.agents.mrv.employee_commuting.setup as setup_mod
         original = getattr(setup_mod, "_service_instance", None)
         setup_mod._service_instance = None
         try:
@@ -139,7 +139,7 @@ class TestServiceCreation:
 
     def test_get_service_thread_safety(self):
         """get_service is thread-safe under concurrent access."""
-        import greenlang.employee_commuting.setup as setup_mod
+        import greenlang.agents.mrv.employee_commuting.setup as setup_mod
         original = getattr(setup_mod, "_service_instance", None)
         setup_mod._service_instance = None
         try:

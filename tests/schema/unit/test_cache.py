@@ -31,9 +31,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.schema.compiler.ir import COMPILER_VERSION, PropertyIR, SchemaIR
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.registry.cache import (
+from greenlang.agents.foundation.schema.compiler.ir import COMPILER_VERSION, PropertyIR, SchemaIR
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.registry.cache import (
     CacheEntry,
     CacheMetrics,
     CacheWarmupScheduler,

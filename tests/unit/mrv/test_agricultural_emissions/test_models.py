@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.models import (
+    from greenlang.agents.mrv.agricultural_emissions.models import (
         # Enumerations (18)
         AnimalType,
         ManureSystem,

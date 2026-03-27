@@ -19,7 +19,7 @@ References:
     - RFC 6901: JavaScript Object Notation (JSON) Pointer
 
 Example:
-    >>> from greenlang.schema.suggestions.patches import PatchGenerator, apply_patch
+    >>> from greenlang.agents.foundation.schema.suggestions.patches import PatchGenerator, apply_patch
     >>> generator = PatchGenerator()
     >>> patch = generator.generate_add("/energy", {"value": 100, "unit": "kWh"})
     >>> print(patch.to_rfc6902())

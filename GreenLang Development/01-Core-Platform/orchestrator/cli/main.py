@@ -39,7 +39,7 @@ if click is None:
         print("CLI requires 'click' and 'rich'. Install with: pip install click rich")
         sys.exit(1)
 else:
-    from greenlang.orchestrator.pipeline_schema import (
+    from greenlang.agents.foundation.orchestrator.pipeline_schema import (
         PipelineDefinition,
         load_pipeline_file,
     )

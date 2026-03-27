@@ -11,11 +11,11 @@ from decimal import Decimal
 from unittest.mock import Mock, patch, MagicMock
 import time
 
-from greenlang.fuel_energy_activities.metrics import (
+from greenlang.agents.mrv.fuel_energy_activities.metrics import (
     FuelEnergyActivitiesMetrics,
     MetricsCollector,
 )
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     FuelType,
     ActivityType,
     CalculationMethod,

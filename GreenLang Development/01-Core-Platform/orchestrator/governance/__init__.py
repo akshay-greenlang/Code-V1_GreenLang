@@ -19,7 +19,7 @@ Evaluation Points:
     - Post-step: Artifact classification, export controls
 
 Example:
-    >>> from greenlang.orchestrator.governance import PolicyEngine
+    >>> from greenlang.agents.foundation.orchestrator.governance import PolicyEngine
     >>> engine = PolicyEngine()
     >>> decision = await engine.evaluate_pre_run(pipeline, run_config)
     >>> if not decision.allowed:
@@ -29,7 +29,7 @@ Author: GreenLang Team
 Version: 1.0.0
 """
 
-from greenlang.orchestrator.governance.policy_engine import (
+from greenlang.agents.foundation.orchestrator.governance.policy_engine import (
     # Main classes
     PolicyEngine,
     PolicyEngineConfig,
@@ -54,7 +54,7 @@ from greenlang.orchestrator.governance.policy_engine import (
     OPAError,
 )
 
-from greenlang.orchestrator.governance.approvals import (
+from greenlang.agents.foundation.orchestrator.governance.approvals import (
     # Enums
     ApprovalStatus,
     ApprovalDecision,

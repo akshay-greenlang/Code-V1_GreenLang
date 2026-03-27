@@ -23,14 +23,14 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest
 
 # Note: Adjust imports when actual models are implemented
-# from greenlang.upstream_transportation.models import (
+# from greenlang.agents.mrv.upstream_transportation.models import (
 #     CalculationMethod, TransportMode, RoadVehicleType, MaritimeVesselType,
 #     AircraftType, TransportFuelType, Incoterm, HubType, PipelineStage,
 #     TransportLeg, TransportHub, TransportChain, ShipmentInput,
 #     FuelConsumptionInput, SpendInput, SupplierEmissionInput,
 #     AllocationConfig, ReeferConfig, WarehouseConfig, CalculationRequest
 # )
-# from greenlang.upstream_transportation.config import UpstreamTransportationConfig
+# from greenlang.agents.mrv.upstream_transportation.config import UpstreamTransportationConfig
 
 
 # ============================================================================
@@ -793,7 +793,7 @@ def config_fixture(monkeypatch):
     monkeypatch.setenv("GL_UTO_API_MAX_BATCH_SIZE", "100")
 
     # Note: Return actual config object when implemented
-    # from greenlang.upstream_transportation.config import UpstreamTransportationConfig
+    # from greenlang.agents.mrv.upstream_transportation.config import UpstreamTransportationConfig
     # return UpstreamTransportationConfig()
 
     return {

@@ -39,7 +39,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.schema_migration.migration_planner import (
+from greenlang.agents.data.schema_migration.migration_planner import (
     MigrationPlannerEngine,
     OP_ADD,
     OP_CAST,
@@ -58,7 +58,7 @@ from greenlang.schema_migration.migration_planner import (
     _safe_cast,
     _serialize,
 )
-from greenlang.schema_migration.provenance import ProvenanceTracker
+from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
 
 
 # ---------------------------------------------------------------------------

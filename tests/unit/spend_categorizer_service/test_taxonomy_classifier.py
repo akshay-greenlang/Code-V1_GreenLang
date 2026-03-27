@@ -31,7 +31,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.spend_categorizer.taxonomy_classifier import (
+from greenlang.agents.data.spend_categorizer.taxonomy_classifier import (
     TaxonomyClassifierEngine,
     TaxonomyClassification,
     TaxonomyCode,

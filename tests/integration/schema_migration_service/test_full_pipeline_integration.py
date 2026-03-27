@@ -35,13 +35,13 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.schema_migration.schema_migration_pipeline import SchemaMigrationPipelineEngine
-from greenlang.schema_migration.schema_registry import SchemaRegistryEngine
-from greenlang.schema_migration.schema_versioner import SchemaVersionerEngine
-from greenlang.schema_migration.change_detector import ChangeDetectorEngine
-from greenlang.schema_migration.compatibility_checker import CompatibilityCheckerEngine
-from greenlang.schema_migration.migration_planner import MigrationPlannerEngine
-from greenlang.schema_migration.migration_executor import MigrationExecutorEngine
+from greenlang.agents.data.schema_migration.schema_migration_pipeline import SchemaMigrationPipelineEngine
+from greenlang.agents.data.schema_migration.schema_registry import SchemaRegistryEngine
+from greenlang.agents.data.schema_migration.schema_versioner import SchemaVersionerEngine
+from greenlang.agents.data.schema_migration.change_detector import ChangeDetectorEngine
+from greenlang.agents.data.schema_migration.compatibility_checker import CompatibilityCheckerEngine
+from greenlang.agents.data.schema_migration.migration_planner import MigrationPlannerEngine
+from greenlang.agents.data.schema_migration.migration_executor import MigrationExecutorEngine
 
 
 # ---------------------------------------------------------------------------

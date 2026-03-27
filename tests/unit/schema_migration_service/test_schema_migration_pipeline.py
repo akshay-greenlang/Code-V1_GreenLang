@@ -3,7 +3,7 @@
 Unit tests for SchemaMigrationPipelineEngine - AGENT-DATA-017
 
 Tests the SchemaMigrationPipelineEngine from
-greenlang.schema_migration.schema_migration_pipeline with ~100 tests
+greenlang.agents.data.schema_migration.schema_migration_pipeline with ~100 tests
 covering initialization, run_pipeline (full success, short-circuits,
 abort paths, skip flags, dry-run), individual stage methods, pipeline
 result retrieval/listing, batch pipeline, report generation,
@@ -34,9 +34,9 @@ import pytest
 # pipeline module's broad except clause and the registry engine falls
 # back to None.  This mirrors the import order used in the conftest
 # for other test files in this package.
-from greenlang.schema_migration import metrics as _sm_metrics  # noqa: F401
+from greenlang.agents.data.schema_migration import metrics as _sm_metrics  # noqa: F401
 
-from greenlang.schema_migration.schema_migration_pipeline import (
+from greenlang.agents.data.schema_migration.schema_migration_pipeline import (
     SchemaMigrationPipelineEngine,
     _sha256,
     _new_id,
@@ -49,7 +49,7 @@ from greenlang.schema_migration.schema_migration_pipeline import (
     _STATUS_NO_CHANGES,
     _STATUS_DRY_RUN,
 )
-from greenlang.schema_migration.provenance import ProvenanceTracker
+from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
 
 
 # ---------------------------------------------------------------------------

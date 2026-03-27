@@ -37,7 +37,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.validation_rule_engine.validation_pipeline import (
+from greenlang.agents.data.validation_rule_engine.validation_pipeline import (
     ValidationPipelineEngine,
     PIPELINE_STAGES,
 )

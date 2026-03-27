@@ -7,9 +7,9 @@ import importlib.util
 sys.path.insert(0, ".")
 
 # Patch sys.modules to prevent chain imports
-sys.modules["greenlang.climate_hazard.provenance"] = type(sys)("fake_prov")
-sys.modules["greenlang.climate_hazard.metrics"] = type(sys)("fake_metrics")
-sys.modules["greenlang.climate_hazard.config"] = type(sys)("fake_config")
+sys.modules["greenlang.agents.data.climate_hazard.provenance"] = type(sys)("fake_prov")
+sys.modules["greenlang.agents.data.climate_hazard.metrics"] = type(sys)("fake_metrics")
+sys.modules["greenlang.agents.data.climate_hazard.config"] = type(sys)("fake_config")
 
 spec = importlib.util.spec_from_file_location(
     "scenario_projector",

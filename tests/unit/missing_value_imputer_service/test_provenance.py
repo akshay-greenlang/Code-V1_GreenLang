@@ -19,7 +19,7 @@ import threading
 
 import pytest
 
-from greenlang.missing_value_imputer.provenance import ProvenanceTracker
+from greenlang.agents.data.missing_value_imputer.provenance import ProvenanceTracker
 
 
 class TestGenesisHash:

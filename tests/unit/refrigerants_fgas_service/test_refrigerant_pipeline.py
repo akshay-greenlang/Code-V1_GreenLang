@@ -28,7 +28,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.refrigerants_fgas.refrigerant_pipeline import (
+from greenlang.agents.mrv.refrigerants_fgas.refrigerant_pipeline import (
     PIPELINE_STAGES,
     SUPPORTED_METHODS,
     RefrigerantPipelineEngine,
@@ -950,7 +950,7 @@ class TestComputeHash:
 
     def test_compute_hash_pydantic_model(self):
         """_compute_hash handles Pydantic models via model_dump."""
-        from greenlang.refrigerants_fgas.models import GWPValue, GWPSource
+        from greenlang.agents.mrv.refrigerants_fgas.models import GWPValue, GWPSource
 
         model = GWPValue(gwp_source=GWPSource.AR6, value=2256.0)
         h = _compute_hash(model)

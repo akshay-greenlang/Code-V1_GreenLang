@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.process_emissions.abatement_tracker import (
+from greenlang.agents.mrv.process_emissions.abatement_tracker import (
     AbatementTrackerEngine,
     AbatementTechnology,
     AbatementTechnologyType,

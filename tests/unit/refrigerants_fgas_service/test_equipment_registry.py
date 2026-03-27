@@ -16,11 +16,11 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.refrigerants_fgas.equipment_registry import (
+from greenlang.agents.mrv.refrigerants_fgas.equipment_registry import (
     EquipmentRegistryEngine,
     EQUIPMENT_DEFAULTS,
 )
-from greenlang.refrigerants_fgas.models import (
+from greenlang.agents.mrv.refrigerants_fgas.models import (
     EquipmentProfile,
     EquipmentType,
     EquipmentStatus,

@@ -15,7 +15,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.fugitive_emissions.setup import FugitiveEmissionsService
+from greenlang.agents.mrv.fugitive_emissions.setup import FugitiveEmissionsService
 
 
 # ---------------------------------------------------------------------------

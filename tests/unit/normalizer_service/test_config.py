@@ -32,7 +32,7 @@ _ENV_PREFIX = "GL_NORMALIZER_"
 
 @dataclass
 class NormalizerConfig:
-    """Mirrors greenlang.normalizer.config.NormalizerConfig."""
+    """Mirrors greenlang.agents.foundation.normalizer.config.NormalizerConfig."""
 
     # Decimal precision
     default_precision: int = 10

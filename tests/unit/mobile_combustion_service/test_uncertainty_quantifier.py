@@ -23,7 +23,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.mobile_combustion.uncertainty_quantifier import (
+from greenlang.agents.mrv.mobile_combustion.uncertainty_quantifier import (
     UncertaintyQuantifierEngine,
     UncertaintyResult,
     SensitivityResult,

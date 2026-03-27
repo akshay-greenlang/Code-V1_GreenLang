@@ -1,0 +1,105 @@
+# PACK-050 Preset: SME Group
+# Small-to-medium enterprise group with fewer entities, simplified
+# workflows, streamlined consolidation, and reduced complexity.
+# Typical users: Family-owned groups, small holding companies, startups.
+
+entity_registry:
+  max_entities: 50
+  entity_types_enabled:
+    - SUBSIDIARY
+    - DIVISION
+    - BRANCH
+  lifecycle_tracking: true
+  hierarchy_depth_limit: 3
+  require_legal_entity_id: false
+  require_country_code: true
+  custom_attributes_enabled: false
+  auto_classify_ownership: true
+
+ownership:
+  multi_tier_enabled: false
+  max_chain_depth: 3
+  effective_equity_method: MULTIPLICATIVE
+  circular_ownership_detection: false
+  minority_interest_threshold_pct: 20.0
+  associate_threshold_pct: 20.0
+  require_evidence_for_control: false
+  track_ownership_changes: true
+
+boundary:
+  consolidation_approach: OPERATIONAL_CONTROL
+  materiality_threshold: TEN_PCT
+  materiality_threshold_pct: 0.10
+  de_minimis_threshold_pct: 0.05
+  annual_boundary_lock: true
+  track_boundary_changes: true
+  require_boundary_approval: false
+  dual_approach_enabled: false
+
+equity_share:
+  default_equity_pct: 100.0
+  round_equity_to_dp: 2
+  include_associates: false
+  include_minority_interests: false
+  waterfall_reconciliation: false
+  proportional_scope3: false
+
+control_approach:
+  control_test_method: POLICY_AUTHORITY
+  franchise_inclusion: false
+  leased_asset_treatment: ALL_EXCLUDE
+  spv_consolidation: false
+  jv_control_override: false
+  document_control_basis: false
+
+elimination:
+  elimination_enabled: false
+  elimination_types:
+    - ENERGY_TRANSFER
+  require_matching_entries: false
+  tolerance_pct: 10.0
+  auto_detect_transfers: false
+  elimination_log_enabled: false
+  net_to_zero_validation: false
+
+mna:
+  mna_tracking_enabled: true
+  pro_rata_method: REPORTING_MONTHS
+  auto_base_year_recalculation: true
+  base_year_materiality_trigger_pct: 10.0
+  require_mna_approval: false
+  track_mna_history: true
+  event_types_enabled:
+    - ACQUISITION
+    - DIVESTITURE
+  lookback_years: 3
+
+adjustment:
+  require_justification: true
+  require_approval: false
+  materiality_threshold_pct: 5.0
+  restatement_window_years: 2
+  late_submission_grace_days: 60
+  track_adjustment_history: true
+
+reporting:
+  reporting_frameworks:
+    - GRI_305
+    - CDP
+  default_format: MARKDOWN
+  include_entity_breakdown: true
+  include_scope_breakdown: true
+  include_trend_analysis: true
+  trend_years: 3
+  include_elimination_log: false
+  include_mna_impact: false
+
+audit:
+  audit_trail_enabled: true
+  reconciliation_checks_enabled: true
+  variance_threshold_pct: 10.0
+  require_sign_off: true
+  sign_off_levels: 1
+  evidence_retention_years: 5
+  assurance_ready: false
+  data_quality_scoring: false

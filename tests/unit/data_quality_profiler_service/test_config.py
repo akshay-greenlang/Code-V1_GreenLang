@@ -6,7 +6,7 @@ Tests the DataQualityProfilerConfig dataclass, all default values,
 environment variable overrides (GL_DQ_ prefix), type coercion fallback,
 thread-safe singleton management, and equality/repr behaviour.
 
-Target: 100+ tests, 85%+ coverage of greenlang.data_quality_profiler.config
+Target: 100+ tests, 85%+ coverage of greenlang.agents.data.data_quality_profiler.config
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -20,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
 
-from greenlang.data_quality_profiler.config import (
+from greenlang.agents.data.data_quality_profiler.config import (
     DataQualityProfilerConfig,
     get_config,
     reset_config,
@@ -650,25 +650,25 @@ class TestModuleExports:
     """Verify config module exports."""
 
     def test_all_list_exists(self):
-        from greenlang.data_quality_profiler import config as mod
+        from greenlang.agents.data.data_quality_profiler import config as mod
         assert hasattr(mod, "__all__")
 
     def test_all_contains_config_class(self):
-        from greenlang.data_quality_profiler import config as mod
+        from greenlang.agents.data.data_quality_profiler import config as mod
         assert "DataQualityProfilerConfig" in mod.__all__
 
     def test_all_contains_get_config(self):
-        from greenlang.data_quality_profiler import config as mod
+        from greenlang.agents.data.data_quality_profiler import config as mod
         assert "get_config" in mod.__all__
 
     def test_all_contains_set_config(self):
-        from greenlang.data_quality_profiler import config as mod
+        from greenlang.agents.data.data_quality_profiler import config as mod
         assert "set_config" in mod.__all__
 
     def test_all_contains_reset_config(self):
-        from greenlang.data_quality_profiler import config as mod
+        from greenlang.agents.data.data_quality_profiler import config as mod
         assert "reset_config" in mod.__all__
 
     def test_all_has_four_entries(self):
-        from greenlang.data_quality_profiler import config as mod
+        from greenlang.agents.data.data_quality_profiler import config as mod
         assert len(mod.__all__) == 4

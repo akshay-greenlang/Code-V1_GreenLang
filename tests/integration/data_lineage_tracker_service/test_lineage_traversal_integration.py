@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Set
 
 import pytest
 
-from greenlang.data_lineage_tracker.lineage_graph import (
+from greenlang.agents.data.data_lineage_tracker.lineage_graph import (
     LineageGraphEngine,
     VALID_EDGE_TYPES,
 )
@@ -425,7 +425,7 @@ class TestLineageTraversal:
         assert "metadata" in exported
 
         # Create a new graph and import
-        from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+        from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
         new_graph = LineageGraphEngine(provenance=ProvenanceTracker())
         new_graph.import_graph(exported)
 

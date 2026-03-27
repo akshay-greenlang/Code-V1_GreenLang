@@ -37,7 +37,7 @@ def _q(v: Decimal) -> Decimal:
 @pytest.fixture(autouse=True)
 def _reset_singleton():
     """Reset the singleton before each test."""
-    from greenlang.employee_commuting.telework_calculator import (
+    from greenlang.agents.mrv.employee_commuting.telework_calculator import (
         TeleworkCalculatorEngine,
     )
     TeleworkCalculatorEngine.reset_instance()
@@ -48,7 +48,7 @@ def _reset_singleton():
 @pytest.fixture
 def engine():
     """Create a fresh TeleworkCalculatorEngine instance."""
-    from greenlang.employee_commuting.telework_calculator import (
+    from greenlang.agents.mrv.employee_commuting.telework_calculator import (
         TeleworkCalculatorEngine,
     )
     return TeleworkCalculatorEngine.get_instance()
@@ -63,7 +63,7 @@ class TestSingletonTelework:
 
     def test_singleton_identity(self, engine):
         """Two get_instance calls return the same object."""
-        from greenlang.employee_commuting.telework_calculator import (
+        from greenlang.agents.mrv.employee_commuting.telework_calculator import (
             TeleworkCalculatorEngine,
         )
         assert engine is TeleworkCalculatorEngine.get_instance()
@@ -228,7 +228,7 @@ class TestGridFactorResolution:
 
     def test_egrid_subregion_overrides_country(self, engine):
         """eGRID subregion overrides national grid factor."""
-        from greenlang.employee_commuting.telework_calculator import US_EGRID_FACTORS
+        from greenlang.agents.mrv.employee_commuting.telework_calculator import US_EGRID_FACTORS
         result = engine.calculate_telework_emissions(
             telework_category="full_remote",
             country_code="US",

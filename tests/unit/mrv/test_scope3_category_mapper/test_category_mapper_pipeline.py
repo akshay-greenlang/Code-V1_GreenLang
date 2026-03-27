@@ -34,7 +34,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope3_category_mapper.category_mapper_pipeline import (
+    from greenlang.agents.mrv.scope3_category_mapper.category_mapper_pipeline import (
         CategoryMapperPipeline,
     )
     PIPELINE_AVAILABLE = True
@@ -42,7 +42,7 @@ except (ImportError, AttributeError):
     PIPELINE_AVAILABLE = False
 
 try:
-    from greenlang.scope3_category_mapper.models import (
+    from greenlang.agents.mrv.scope3_category_mapper.models import (
         Scope3Category,
         CompanyType,
     )
@@ -51,7 +51,7 @@ except ImportError:
     MODELS_AVAILABLE = False
 
 try:
-    from greenlang.scope3_category_mapper.category_database import (
+    from greenlang.agents.mrv.scope3_category_mapper.category_database import (
         CategoryDatabaseEngine,
     )
     DATABASE_AVAILABLE = True

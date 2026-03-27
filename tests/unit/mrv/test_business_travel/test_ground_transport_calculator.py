@@ -33,7 +33,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.business_travel.models import (
+from greenlang.agents.mrv.business_travel.models import (
     RailInput,
     RailResult,
     RoadDistanceInput,
@@ -80,7 +80,7 @@ def _reset_singleton():
     after each test so that calculation counts and state do not
     leak between tests.
     """
-    from greenlang.business_travel.ground_transport_calculator import (
+    from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
         GroundTransportCalculatorEngine,
     )
 
@@ -96,18 +96,18 @@ def engine():
     dependencies (config, metrics, provenance).
     """
     with patch(
-        "greenlang.business_travel.ground_transport_calculator.get_config"
+        "greenlang.agents.mrv.business_travel.ground_transport_calculator.get_config"
     ) as mock_config, patch(
-        "greenlang.business_travel.ground_transport_calculator.get_metrics"
+        "greenlang.agents.mrv.business_travel.ground_transport_calculator.get_metrics"
     ) as mock_metrics, patch(
-        "greenlang.business_travel.ground_transport_calculator.get_provenance_tracker"
+        "greenlang.agents.mrv.business_travel.ground_transport_calculator.get_provenance_tracker"
     ) as mock_prov:
         mock_config.return_value = MagicMock()
         metrics = MagicMock()
         mock_metrics.return_value = metrics
         mock_prov.return_value = MagicMock()
 
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
         )
 
@@ -810,7 +810,7 @@ class TestUnitConversions:
     # 61
     def test_miles_to_km_100(self):
         """100 miles = 160.93400000 km."""
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
         )
 
@@ -820,7 +820,7 @@ class TestUnitConversions:
     # 62
     def test_miles_to_km_zero(self):
         """0 miles = 0 km."""
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
         )
 
@@ -830,7 +830,7 @@ class TestUnitConversions:
     # 63
     def test_miles_to_km_negative_raises(self):
         """Negative miles raises ValueError."""
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
         )
 
@@ -840,7 +840,7 @@ class TestUnitConversions:
     # 64
     def test_gallons_to_litres_10(self):
         """10 US gallons = 37.85410000 litres."""
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
         )
 
@@ -850,7 +850,7 @@ class TestUnitConversions:
     # 65
     def test_gallons_to_litres_negative_raises(self):
         """Negative gallons raises ValueError."""
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
         )
 
@@ -924,21 +924,21 @@ class TestBatchAndInfrastructure:
     # 69
     def test_singleton_reset(self):
         """reset_instance clears singleton so next call creates new engine."""
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
             _instance,
         )
 
         GroundTransportCalculatorEngine.reset_instance()
         # After reset, module-level _instance should be None
-        import greenlang.business_travel.ground_transport_calculator as mod
+        import greenlang.agents.mrv.business_travel.ground_transport_calculator as mod
 
         assert mod._instance is None
 
     # 70
     def test_ef_accessor_rail(self, engine):
         """get_rail_emission_factors returns dict with all rail types."""
-        from greenlang.business_travel.ground_transport_calculator import (
+        from greenlang.agents.mrv.business_travel.ground_transport_calculator import (
             GroundTransportCalculatorEngine,
         )
 

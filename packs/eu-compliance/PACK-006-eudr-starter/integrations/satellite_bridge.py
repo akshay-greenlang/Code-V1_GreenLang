@@ -227,7 +227,7 @@ class SatelliteBridge:
         """Detect whether the Deforestation Satellite Connector is available."""
         try:
             import importlib
-            importlib.import_module("greenlang.deforestation_satellite")
+            importlib.import_module("greenlang.agents.data.deforestation_satellite")
             self._connector_available = True
         except ImportError:
             self._connector_available = False

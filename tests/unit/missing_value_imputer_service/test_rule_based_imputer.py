@@ -17,15 +17,15 @@ from __future__ import annotations
 
 import pytest
 
-from greenlang.missing_value_imputer.config import MissingValueImputerConfig
-from greenlang.missing_value_imputer.rule_based_imputer import (
+from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
+from greenlang.agents.data.missing_value_imputer.rule_based_imputer import (
     RuleBasedImputerEngine,
     _is_missing,
     _classify_confidence,
     _PRIORITY_ORDER,
     _PRIORITY_CONFIDENCE,
 )
-from greenlang.missing_value_imputer.models import (
+from greenlang.agents.data.missing_value_imputer.models import (
     ConfidenceLevel,
     ImputationRule,
     ImputationStrategy,

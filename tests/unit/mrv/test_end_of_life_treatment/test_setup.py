@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.end_of_life_treatment.setup import (
+    from greenlang.agents.mrv.end_of_life_treatment.setup import (
         EndOfLifeTreatmentService,
         get_service,
         get_router,

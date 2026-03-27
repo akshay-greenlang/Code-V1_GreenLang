@@ -33,7 +33,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.end_of_life_treatment.config import (
+    from greenlang.agents.mrv.end_of_life_treatment.config import (
         get_config,
         reset_config,
         GeneralConfig,

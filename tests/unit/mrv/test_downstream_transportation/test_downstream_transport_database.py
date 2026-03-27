@@ -37,7 +37,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.downstream_transport_database import (
+    from greenlang.agents.mrv.downstream_transportation.downstream_transport_database import (
         DownstreamTransportDatabaseEngine,
     )
 except ImportError as exc:

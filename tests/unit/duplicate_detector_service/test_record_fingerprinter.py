@@ -30,12 +30,12 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.models import (
     FieldType,
     FingerprintAlgorithm,
     RecordFingerprint,
 )
-from greenlang.duplicate_detector.record_fingerprinter import (
+from greenlang.agents.data.duplicate_detector.record_fingerprinter import (
     RecordFingerprinter,
     _MINHASH_MAX_HASH,
     _MINHASH_PRIME,

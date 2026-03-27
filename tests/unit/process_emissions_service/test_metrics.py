@@ -15,8 +15,8 @@ from unittest.mock import patch, MagicMock
 # Import the metrics module under test. We use a fresh import in some
 # tests that mock away prometheus_client.
 # ---------------------------------------------------------------------------
-from greenlang.process_emissions import metrics as metrics_mod
-from greenlang.process_emissions.metrics import (
+from greenlang.agents.mrv.process_emissions import metrics as metrics_mod
+from greenlang.agents.mrv.process_emissions.metrics import (
     PROMETHEUS_AVAILABLE,
     pe_calculations_total,
     pe_emissions_kg_co2e_total,

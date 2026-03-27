@@ -4,9 +4,9 @@ Unit Tests for Data Quality Profiler Models - AGENT-DATA-010
 
 Tests all enumerations (13), SDK models (15), request models (7), utility
 helpers, constants, and re-exported Layer 1 symbols from
-``greenlang.data_quality_profiler.models``.
+``greenlang.agents.data.data_quality_profiler.models``.
 
-Target: 230+ tests, 85%+ coverage of greenlang.data_quality_profiler.models
+Target: 230+ tests, 85%+ coverage of greenlang.agents.data.data_quality_profiler.models
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -21,7 +21,7 @@ from enum import Enum
 import pytest
 from pydantic import ValidationError
 
-from greenlang.data_quality_profiler.models import (
+from greenlang.agents.data.data_quality_profiler.models import (
     # Enumerations (13)
     QualityDimension,
     DataType,
@@ -1451,26 +1451,26 @@ class TestModuleExports:
     """Verify __all__ completeness."""
 
     def test_all_list_exists(self):
-        from greenlang.data_quality_profiler import models as mod
+        from greenlang.agents.data.data_quality_profiler import models as mod
         assert hasattr(mod, "__all__")
 
     def test_all_contains_quality_dimension(self):
-        from greenlang.data_quality_profiler import models as mod
+        from greenlang.agents.data.data_quality_profiler import models as mod
         assert "QualityDimension" in mod.__all__
 
     def test_all_contains_column_profile(self):
-        from greenlang.data_quality_profiler import models as mod
+        from greenlang.agents.data.data_quality_profiler import models as mod
         assert "ColumnProfile" in mod.__all__
 
     def test_all_contains_profile_dataset_request(self):
-        from greenlang.data_quality_profiler import models as mod
+        from greenlang.agents.data.data_quality_profiler import models as mod
         assert "ProfileDatasetRequest" in mod.__all__
 
     def test_all_contains_quality_level(self):
-        from greenlang.data_quality_profiler import models as mod
+        from greenlang.agents.data.data_quality_profiler import models as mod
         assert "QualityLevel" in mod.__all__
 
     def test_all_minimum_count(self):
-        from greenlang.data_quality_profiler import models as mod
+        from greenlang.agents.data.data_quality_profiler import models as mod
         # 6 L1 re-exports + 10 constants + 13 enums + 15 models + 7 requests = 51+
         assert len(mod.__all__) >= 45

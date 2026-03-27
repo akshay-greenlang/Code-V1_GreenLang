@@ -32,11 +32,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.missing_value_imputer.config import (
+from greenlang.agents.data.missing_value_imputer.config import (
     MissingValueImputerConfig,
     set_config,
 )
-from greenlang.missing_value_imputer.setup import (
+from greenlang.agents.data.missing_value_imputer.setup import (
     MissingValueImputerService,
     AnalysisResponse,
     ImputationResponse,

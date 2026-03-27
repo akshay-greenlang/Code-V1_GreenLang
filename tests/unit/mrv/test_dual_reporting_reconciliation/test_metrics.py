@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.metrics import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.metrics import (
     DualReportingReconciliationMetrics,
     get_metrics,
 )

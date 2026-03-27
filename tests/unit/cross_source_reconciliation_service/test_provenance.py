@@ -22,7 +22,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.cross_source_reconciliation.provenance import (
+from greenlang.agents.data.cross_source_reconciliation.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     get_provenance_tracker,

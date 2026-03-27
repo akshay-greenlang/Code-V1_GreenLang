@@ -51,7 +51,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 import yaml
 from pydantic import BaseModel, Field, field_validator
 
-from greenlang.orchestrator.pipeline_schema import (
+from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     DataClassification,
     ExecutionContext,
     PipelineDefinition,

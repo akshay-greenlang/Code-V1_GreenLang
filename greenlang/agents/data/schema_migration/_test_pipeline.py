@@ -33,10 +33,10 @@ def _load_module(dotted_name: str) -> types.ModuleType:
 
 
 # Load in dependency order so each module's imports resolve correctly
-_provenance_mod = _load_module("greenlang.schema_migration.provenance")
-_config_mod = _load_module("greenlang.schema_migration.config")
-_metrics_mod = _load_module("greenlang.schema_migration.metrics")
-_pipeline_mod = _load_module("greenlang.schema_migration.schema_migration_pipeline")
+_provenance_mod = _load_module("greenlang.agents.data.schema_migration.provenance")
+_config_mod = _load_module("greenlang.agents.data.schema_migration.config")
+_metrics_mod = _load_module("greenlang.agents.data.schema_migration.metrics")
+_pipeline_mod = _load_module("greenlang.agents.data.schema_migration.schema_migration_pipeline")
 
 SchemaMigrationPipelineEngine = _pipeline_mod.SchemaMigrationPipelineEngine
 

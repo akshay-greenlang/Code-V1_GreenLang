@@ -20,7 +20,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.supplier_questionnaire.config import (
+from greenlang.agents.data.supplier_questionnaire.config import (
     SupplierQuestionnaireConfig,
     get_config,
     reset_config,

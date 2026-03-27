@@ -66,11 +66,15 @@ IMP-002,Q1,2025,76011000,Primary aluminum ingots,RU,120,tonnes
 
 ### 3. Run the Pipeline
 
-```bash
-gl-cbam run cbam --config cbam.yaml --imports imports.csv --out ./output/
+Canonical runtime path (monorepo root): `gl run cbam ...`.
+Standalone compatibility path: `gl-cbam run cbam ...`.
 
+```bash
 # Monorepo canonical CLI path (from repository root)
 python -m greenlang.cli.main run cbam cbam.yaml imports.csv ./output/
+
+# Standalone CBAM package compatibility path
+gl-cbam run cbam --config cbam.yaml --imports imports.csv --out ./output/
 ```
 
 ## Output Artifacts
@@ -88,6 +92,12 @@ The pipeline generates:
 | `audit/checksums.json` | SHA-256 hashes |
 
 ## Commands
+
+`gl-cbam` commands below are supported for standalone CBAM package workflows.
+For platform-level operations and release gates, use the canonical `gl` runtime surface.
+If using monorepo source fallback for local development, set
+`GL_ALLOW_MONOREPO_CBAM_FALLBACK=1`. This fallback is blocked in strict release
+profiles (`GL_RELEASE_STRICT=1` or `CI=true`).
 
 ### Run Pipeline
 

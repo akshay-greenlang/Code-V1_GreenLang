@@ -29,7 +29,7 @@ import pytest
 from unittest.mock import Mock
 
 # Note: Adjust imports when actual provenance is implemented
-# from greenlang.upstream_transportation.provenance import (
+# from greenlang.agents.mrv.upstream_transportation.provenance import (
 #     ProvenanceTracker,
 #     hash_calculation_input,
 #     hash_transport_leg,

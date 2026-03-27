@@ -39,7 +39,7 @@ except ImportError:
 
 from pydantic import Field
 
-from greenlang.orchestrator.artifacts.base import (
+from greenlang.agents.foundation.orchestrator.artifacts.base import (
     ArtifactManifest,
     ArtifactMetadata,
     ArtifactStore,

@@ -38,15 +38,23 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import (
+    GreenLangBase,
+    GreenLangRecord,
+    GreenLangRequest,
+    GreenLangResult,
+    ProvenanceMixin,
+    utcnow,
+    new_uuid,
+    prefixed_uuid,
+)
+
 
 # ---------------------------------------------------------------------------
-# Helper
+# Helper (local alias for backward compatibility)
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
+_utcnow = utcnow
 
 
 # ---------------------------------------------------------------------------
@@ -763,8 +771,11 @@ class GasEmission(BaseModel):
     )
 
 
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase, ProvenanceMixin):
     """Complete result of a single stationary combustion emission calculation.
+
+    Inherits from GreenLangBase + ProvenanceMixin: provenance_hash,
+    model_config (extra=forbid, validate_default=True).
 
     Contains all calculated emissions by gas, total CO2e, biogenic CO2
     (if applicable), the methodology parameters used, and a SHA-256
@@ -788,7 +799,6 @@ class CalculationResult(BaseModel):
             separately per GHG Protocol guidance).
         biogenic_co2_tonnes: Biogenic CO2 emissions in metric tonnes.
         regulatory_framework: Framework governing this calculation.
-        provenance_hash: SHA-256 hash for audit trail integrity.
         calculation_trace: Ordered list of human-readable calculation steps.
         timestamp: UTC timestamp when the calculation was performed.
         facility_id: Facility identifier (if provided in input).
@@ -798,7 +808,7 @@ class CalculationResult(BaseModel):
     """
 
     calculation_id: str = Field(
-        default_factory=lambda: f"calc_{uuid.uuid4().hex[:12]}",
+        default_factory=lambda: prefixed_uuid("calc"),
         description="Unique identifier for this calculation result",
     )
     fuel_type: FuelType = Field(
@@ -871,10 +881,6 @@ class CalculationResult(BaseModel):
         default=None,
         description="Framework governing this calculation",
     )
-    provenance_hash: str = Field(
-        default="",
-        description="SHA-256 hash for audit trail integrity",
-    )
     calculation_trace: List[str] = Field(
         default_factory=list,
         max_length=MAX_TRACE_STEPS,
@@ -902,8 +908,10 @@ class CalculationResult(BaseModel):
     )
 
 
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangRequest):
     """Request model for batch stationary combustion calculations.
+
+    Inherits from GreenLangRequest: model_config (extra=forbid, validate_default=True).
 
     Groups multiple combustion inputs for processing as a single
     batch, sharing common parameters like GWP source, biogenic
@@ -946,8 +954,11 @@ class BatchCalculationRequest(BaseModel):
     )
 
 
-class BatchCalculationResponse(BaseModel):
+class BatchCalculationResponse(GreenLangBase, ProvenanceMixin):
     """Response model for a batch stationary combustion calculation.
+
+    Inherits from GreenLangBase + ProvenanceMixin: provenance_hash,
+    model_config (extra=forbid, validate_default=True).
 
     Aggregates individual calculation results with batch-level totals,
     emissions breakdown by fuel type, and processing metadata.
@@ -964,7 +975,6 @@ class BatchCalculationResponse(BaseModel):
         calculation_count: Number of successful calculations.
         failed_count: Number of failed calculations.
         processing_time_ms: Total batch processing wall-clock time in ms.
-        provenance_hash: SHA-256 hash covering the entire batch result.
         gwp_source: GWP source used for this batch.
     """
 
@@ -1019,10 +1029,6 @@ class BatchCalculationResponse(BaseModel):
         default=0.0,
         ge=0,
         description="Total batch processing wall-clock time in milliseconds",
-    )
-    provenance_hash: str = Field(
-        default="",
-        description="SHA-256 hash covering the entire batch result",
     )
     gwp_source: GWPSource = Field(
         default=GWPSource.AR6,

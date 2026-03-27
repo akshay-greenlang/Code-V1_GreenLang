@@ -26,7 +26,7 @@ Regulatory Basis:
 
 Integration:
     - Imports ``BatchRecord``, ``CustodyModel``, ``EUDRCommodity`` from
-      ``greenlang.eudr_traceability.models`` (AGENT-DATA-005).
+      ``greenlang.agents.data.eudr_traceability.models`` (AGENT-DATA-005).
     - Optionally integrates with ``ChainOfCustodyEngine`` and
       ``PlotRegistryEngine`` for live data lookups.
     - Optionally integrates with ``ProvenanceTracker`` for audit chain.

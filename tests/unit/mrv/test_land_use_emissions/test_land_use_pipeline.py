@@ -30,7 +30,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.land_use_emissions.land_use_pipeline import (
+from greenlang.agents.mrv.land_use_emissions.land_use_pipeline import (
     LandUsePipelineEngine,
     PipelineStage,
     VALID_CATEGORIES,

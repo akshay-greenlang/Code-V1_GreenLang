@@ -3,7 +3,7 @@
 Unit Tests for TimeSeriesGapFillerService (AGENT-DATA-014)
 ============================================================
 
-Comprehensive test suite for ``greenlang.time_series_gap_filler.setup``
+Comprehensive test suite for ``greenlang.agents.data.time_series_gap_filler.setup``
 covering the ``TimeSeriesGapFillerService`` facade, all public methods,
 lifecycle, statistics, provenance, configuration helpers, singleton
 management, and full end-to-end workflows.
@@ -26,13 +26,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import (
+from greenlang.agents.data.time_series_gap_filler.config import (
     TimeSeriesGapFillerConfig,
     get_config,
     set_config,
     reset_config,
 )
-from greenlang.time_series_gap_filler.setup import (
+from greenlang.agents.data.time_series_gap_filler.setup import (
     TimeSeriesGapFillerService,
     configure_gap_filler,
     get_gap_filler,
@@ -99,7 +99,7 @@ def _series_trailing_gap() -> List[Optional[float]]:
 @pytest.fixture(autouse=True)
 def _reset_singleton():
     """Reset the module-level singleton before each test."""
-    import greenlang.time_series_gap_filler.setup as setup_mod
+    import greenlang.agents.data.time_series_gap_filler.setup as setup_mod
     setup_mod._service_instance = None
     reset_config()
     yield

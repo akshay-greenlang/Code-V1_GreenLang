@@ -35,7 +35,7 @@ def _clean_supplier_quest_env(monkeypatch):
             monkeypatch.delenv(key, raising=False)
 
     # Reset the config singleton so each test starts fresh
-    from greenlang.supplier_questionnaire.config import reset_config
+    from greenlang.agents.data.supplier_questionnaire.config import reset_config
     reset_config()
 
 

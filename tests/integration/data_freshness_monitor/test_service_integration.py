@@ -20,7 +20,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from greenlang.data_freshness_monitor.setup import (
+from greenlang.agents.data.data_freshness_monitor.setup import (
     DataFreshnessMonitorService,
 )
 

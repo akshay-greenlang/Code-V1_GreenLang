@@ -28,10 +28,10 @@ import pytest
 from decimal import Decimal, ROUND_HALF_UP
 from unittest.mock import patch, MagicMock, PropertyMock
 
-from greenlang.business_travel.spend_based_calculator import (
+from greenlang.agents.mrv.business_travel.spend_based_calculator import (
     SpendBasedCalculatorEngine,
 )
-from greenlang.business_travel.models import (
+from greenlang.agents.mrv.business_travel.models import (
     SpendInput,
     SpendResult,
     CurrencyCode,
@@ -88,9 +88,9 @@ def _make_mock_config(
 def engine():
     """Create a fresh SpendBasedCalculatorEngine with mocked dependencies."""
     with patch(
-        "greenlang.business_travel.spend_based_calculator.get_config"
+        "greenlang.agents.mrv.business_travel.spend_based_calculator.get_config"
     ) as mock_config, patch(
-        "greenlang.business_travel.spend_based_calculator.get_metrics"
+        "greenlang.agents.mrv.business_travel.spend_based_calculator.get_metrics"
     ) as mock_metrics:
         mock_config.return_value = _make_mock_config()
         mock_metrics.return_value = MagicMock()
@@ -102,9 +102,9 @@ def engine():
 def engine_with_margin():
     """Engine with margin removal enabled (15% margin)."""
     with patch(
-        "greenlang.business_travel.spend_based_calculator.get_config"
+        "greenlang.agents.mrv.business_travel.spend_based_calculator.get_config"
     ) as mock_config, patch(
-        "greenlang.business_travel.spend_based_calculator.get_metrics"
+        "greenlang.agents.mrv.business_travel.spend_based_calculator.get_metrics"
     ) as mock_metrics:
         mock_config.return_value = _make_mock_config(enable_margin_removal=True)
         mock_metrics.return_value = MagicMock()
@@ -530,9 +530,9 @@ class TestSingleton:
     def test_singleton_pattern(self):
         """get_instance returns the same object on repeated calls."""
         with patch(
-            "greenlang.business_travel.spend_based_calculator.get_config"
+            "greenlang.agents.mrv.business_travel.spend_based_calculator.get_config"
         ) as mock_config, patch(
-            "greenlang.business_travel.spend_based_calculator.get_metrics"
+            "greenlang.agents.mrv.business_travel.spend_based_calculator.get_metrics"
         ) as mock_metrics:
             mock_config.return_value = _make_mock_config()
             mock_metrics.return_value = MagicMock()

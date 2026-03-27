@@ -24,7 +24,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.config import (
+    from greenlang.agents.mrv.steam_heat_purchase.config import (
         SteamHeatPurchaseConfig,
         get_config,
         reset_config,
@@ -44,7 +44,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not CONFIG_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.config not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.config not importable",
 )
 
 

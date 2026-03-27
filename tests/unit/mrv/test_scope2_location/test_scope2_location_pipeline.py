@@ -25,7 +25,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.scope2_location.scope2_location_pipeline import (
+    from greenlang.agents.mrv.scope2_location.scope2_location_pipeline import (
         Scope2LocationPipelineEngine,
         PIPELINE_STAGES,
         GWP_TABLE,

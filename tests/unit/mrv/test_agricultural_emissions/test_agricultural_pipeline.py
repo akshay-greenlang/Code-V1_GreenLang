@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.agricultural_pipeline import (
+    from greenlang.agents.mrv.agricultural_emissions.agricultural_pipeline import (
         AgriculturalPipelineEngine,
     )
     PIPELINE_AVAILABLE = True

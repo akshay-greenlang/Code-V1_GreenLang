@@ -22,7 +22,7 @@ All endpoints include:
 
 Example:
     >>> from fastapi import FastAPI
-    >>> from greenlang.schema.api.routes import router
+    >>> from greenlang.agents.foundation.schema.api.routes import router
     >>> app = FastAPI()
     >>> app.include_router(router)
 
@@ -43,7 +43,7 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from greenlang.schema.api.dependencies import (
+from greenlang.agents.foundation.schema.api.dependencies import (
     APIConfig,
     MetricsCollector,
     RequestContext,
@@ -58,7 +58,7 @@ from greenlang.schema.api.dependencies import (
     get_uptime_seconds,
     get_validator,
 )
-from greenlang.schema.api.models import (
+from greenlang.agents.foundation.schema.api.models import (
     BatchItemResult,
     BatchSummary,
     BatchValidateRequest,
@@ -77,9 +77,9 @@ from greenlang.schema.api.models import (
     ValidateRequest,
     ValidateResponse,
 )
-from greenlang.schema.constants import MAX_BATCH_ITEMS, MAX_PAYLOAD_BYTES
-from greenlang.schema.models.config import ValidationOptions
-from greenlang.schema.models.report import ValidationSummary
+from greenlang.agents.foundation.schema.constants import MAX_BATCH_ITEMS, MAX_PAYLOAD_BYTES
+from greenlang.agents.foundation.schema.models.config import ValidationOptions
+from greenlang.agents.foundation.schema.models.report import ValidationSummary
 
 
 logger = logging.getLogger(__name__)

@@ -13,7 +13,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from greenlang.orchestrator.pipeline_schema import (
+from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     # Core models
     PipelineDefinition,
     PipelineMetadata,

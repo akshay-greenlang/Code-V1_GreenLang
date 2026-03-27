@@ -8,45 +8,45 @@ from decimal import Decimal
 def _reset_singletons():
     """Reset all singletons before each test."""
     modules = [
-        ("greenlang.steam_heat_purchase.config", "reset_config"),
-        ("greenlang.steam_heat_purchase.metrics", "reset"),
-        ("greenlang.steam_heat_purchase.provenance", "reset_provenance"),
+        ("greenlang.agents.mrv.steam_heat_purchase.config", "reset_config"),
+        ("greenlang.agents.mrv.steam_heat_purchase.metrics", "reset"),
+        ("greenlang.agents.mrv.steam_heat_purchase.provenance", "reset_provenance"),
         (
-            "greenlang.steam_heat_purchase.steam_heat_database",
+            "greenlang.agents.mrv.steam_heat_purchase.steam_heat_database",
             "SteamHeatDatabaseEngine",
             "reset",
         ),
         (
-            "greenlang.steam_heat_purchase.steam_emissions_calculator",
+            "greenlang.agents.mrv.steam_heat_purchase.steam_emissions_calculator",
             "SteamEmissionsCalculatorEngine",
             "reset",
         ),
         (
-            "greenlang.steam_heat_purchase.heat_cooling_calculator",
+            "greenlang.agents.mrv.steam_heat_purchase.heat_cooling_calculator",
             "HeatCoolingCalculatorEngine",
             "reset",
         ),
         (
-            "greenlang.steam_heat_purchase.chp_allocation",
+            "greenlang.agents.mrv.steam_heat_purchase.chp_allocation",
             "CHPAllocationEngine",
             "reset",
         ),
         (
-            "greenlang.steam_heat_purchase.uncertainty_quantifier",
+            "greenlang.agents.mrv.steam_heat_purchase.uncertainty_quantifier",
             "UncertaintyQuantifierEngine",
             "reset",
         ),
         (
-            "greenlang.steam_heat_purchase.compliance_checker",
+            "greenlang.agents.mrv.steam_heat_purchase.compliance_checker",
             "ComplianceCheckerEngine",
             "reset",
         ),
         (
-            "greenlang.steam_heat_purchase.steam_heat_pipeline",
+            "greenlang.agents.mrv.steam_heat_purchase.steam_heat_pipeline",
             "SteamHeatPipelineEngine",
             "reset",
         ),
-        ("greenlang.steam_heat_purchase.setup", "reset_service"),
+        ("greenlang.agents.mrv.steam_heat_purchase.setup", "reset_service"),
     ]
     yield
     for entry in modules:

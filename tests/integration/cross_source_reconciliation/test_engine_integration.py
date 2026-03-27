@@ -20,12 +20,12 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.cross_source_reconciliation.config import (
+from greenlang.agents.data.cross_source_reconciliation.config import (
     CrossSourceReconciliationConfig,
     set_config,
 )
-from greenlang.cross_source_reconciliation.provenance import ProvenanceTracker
-from greenlang.cross_source_reconciliation.setup import (
+from greenlang.agents.data.cross_source_reconciliation.provenance import ProvenanceTracker
+from greenlang.agents.data.cross_source_reconciliation.setup import (
     CrossSourceReconciliationService,
 )
 

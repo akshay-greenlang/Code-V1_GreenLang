@@ -29,7 +29,7 @@ except ImportError:
     FASTAPI_AVAILABLE = False
 
 try:
-    from greenlang.steam_heat_purchase.api.router import (
+    from greenlang.agents.mrv.steam_heat_purchase.api.router import (
         create_router,
     )
     ROUTER_AVAILABLE = True
@@ -37,7 +37,7 @@ except ImportError:
     ROUTER_AVAILABLE = False
 
 try:
-    from greenlang.steam_heat_purchase.api.router import router as shp_router
+    from greenlang.agents.mrv.steam_heat_purchase.api.router import router as shp_router
     DIRECT_ROUTER_AVAILABLE = True
 except ImportError:
     DIRECT_ROUTER_AVAILABLE = False
@@ -227,8 +227,8 @@ def app_client(mock_service):
 
     # Patch all possible import paths for the service
     patches = [
-        "greenlang.steam_heat_purchase.setup.get_service",
-        "greenlang.steam_heat_purchase.api.router.get_service",
+        "greenlang.agents.mrv.steam_heat_purchase.setup.get_service",
+        "greenlang.agents.mrv.steam_heat_purchase.api.router.get_service",
     ]
 
     active_patches = []

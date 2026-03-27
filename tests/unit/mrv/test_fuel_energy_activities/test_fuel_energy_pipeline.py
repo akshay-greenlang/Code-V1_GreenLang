@@ -12,14 +12,14 @@ from typing import Dict, Any, List
 from unittest.mock import Mock, patch
 import json
 
-from greenlang.fuel_energy_activities.engines.fuel_energy_pipeline import (
+from greenlang.agents.mrv.fuel_energy_activities.engines.fuel_energy_pipeline import (
     FuelEnergyPipelineEngine,
     PipelineInput,
     PipelineOutput,
     PipelineStage,
     AggregationDimension,
 )
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     FuelType,
     ActivityType,
 )

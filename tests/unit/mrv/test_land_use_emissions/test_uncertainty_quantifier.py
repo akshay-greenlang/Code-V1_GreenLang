@@ -23,7 +23,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from greenlang.land_use_emissions.uncertainty_quantifier import (
+from greenlang.agents.mrv.land_use_emissions.uncertainty_quantifier import (
     UncertaintyQuantifierEngine,
     DEFAULT_CV,
     _D,
@@ -1058,12 +1058,12 @@ class TestHelperFunctions:
 
     def test_safe_decimal_none(self):
         """Test _safe_decimal returns default for None."""
-        from greenlang.land_use_emissions.uncertainty_quantifier import _safe_decimal, _ZERO
+        from greenlang.agents.mrv.land_use_emissions.uncertainty_quantifier import _safe_decimal, _ZERO
         assert _safe_decimal(None) == _ZERO
 
     def test_safe_decimal_invalid(self):
         """Test _safe_decimal returns default for invalid string."""
-        from greenlang.land_use_emissions.uncertainty_quantifier import _safe_decimal, _ZERO
+        from greenlang.agents.mrv.land_use_emissions.uncertainty_quantifier import _safe_decimal, _ZERO
         assert _safe_decimal("abc") == _ZERO
 
     def test_D_from_string(self):

@@ -28,10 +28,10 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.api import router  # noqa: F401
+    from greenlang.agents.mrv.downstream_transportation.api import router  # noqa: F401
 except ImportError:
     try:
-        from greenlang.downstream_transportation.api import dto_router as router  # noqa: F401
+        from greenlang.agents.mrv.downstream_transportation.api import dto_router as router  # noqa: F401
     except ImportError as exc:
         _AVAILABLE = False
         _IMPORT_ERROR = str(exc)
@@ -215,7 +215,7 @@ class TestRequestValidation:
         """Test distance calculation requires mode field."""
         # This tests the Pydantic model validation used by the API
         try:
-            from greenlang.downstream_transportation.models import ShipmentInput
+            from greenlang.agents.mrv.downstream_transportation.models import ShipmentInput
             from pydantic import ValidationError
             with pytest.raises(ValidationError):
                 ShipmentInput(
@@ -230,7 +230,7 @@ class TestRequestValidation:
     def test_spend_requires_amount(self):
         """Test spend calculation requires spend_amount field."""
         try:
-            from greenlang.downstream_transportation.models import SpendInput
+            from greenlang.agents.mrv.downstream_transportation.models import SpendInput
             from pydantic import ValidationError
             with pytest.raises(ValidationError):
                 SpendInput(
@@ -262,7 +262,7 @@ class TestResponseStructure:
         ]
         # Verify model has these fields
         try:
-            from greenlang.downstream_transportation.models import CalculationResult
+            from greenlang.agents.mrv.downstream_transportation.models import CalculationResult
             for field in expected_fields:
                 assert hasattr(CalculationResult, "__fields__") or \
                        hasattr(CalculationResult, "model_fields")
@@ -272,7 +272,7 @@ class TestResponseStructure:
     def test_compliance_response_has_status(self):
         """Test compliance response contains compliant status."""
         try:
-            from greenlang.downstream_transportation.models import ComplianceResult
+            from greenlang.agents.mrv.downstream_transportation.models import ComplianceResult
             assert ComplianceResult is not None
         except ImportError:
             pytest.skip("Models not available")

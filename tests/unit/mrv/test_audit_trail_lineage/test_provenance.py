@@ -38,7 +38,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.provenance import (
+    from greenlang.agents.mrv.audit_trail_lineage.provenance import (
         ProvenanceEntry,
         ProvenanceChain,
         ProvenanceTracker,
@@ -51,7 +51,7 @@ except ImportError:
 # module doesn't exist yet
 if not PROVENANCE_AVAILABLE:
     try:
-        from greenlang.audit_trail_lineage.audit_event_engine import (
+        from greenlang.agents.mrv.audit_trail_lineage.audit_event_engine import (
             AuditEventEngine,
             AuditEventRecord,
         )

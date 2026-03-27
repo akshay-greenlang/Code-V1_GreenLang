@@ -28,7 +28,7 @@ import threading
 
 import pytest
 
-from greenlang.data_lineage_tracker.provenance import (
+from greenlang.agents.data.data_lineage_tracker.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     get_provenance_tracker,

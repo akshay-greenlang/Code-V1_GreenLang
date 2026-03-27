@@ -32,23 +32,23 @@ import pytest
 def _make_service(**kwargs):
     """Create a LandUseEmissionsService with engine imports stubbed out."""
     with patch(
-        "greenlang.land_use_emissions.setup.LandUseDatabaseEngine", None,
+        "greenlang.agents.mrv.land_use_emissions.setup.LandUseDatabaseEngine", None,
     ), patch(
-        "greenlang.land_use_emissions.setup.CarbonStockCalculatorEngine", None,
+        "greenlang.agents.mrv.land_use_emissions.setup.CarbonStockCalculatorEngine", None,
     ), patch(
-        "greenlang.land_use_emissions.setup.LandUseChangeTrackerEngine", None,
+        "greenlang.agents.mrv.land_use_emissions.setup.LandUseChangeTrackerEngine", None,
     ), patch(
-        "greenlang.land_use_emissions.setup.SoilOrganicCarbonEngine", None,
+        "greenlang.agents.mrv.land_use_emissions.setup.SoilOrganicCarbonEngine", None,
     ), patch(
-        "greenlang.land_use_emissions.setup.UncertaintyQuantifierEngine", None,
+        "greenlang.agents.mrv.land_use_emissions.setup.UncertaintyQuantifierEngine", None,
     ), patch(
-        "greenlang.land_use_emissions.setup.ComplianceCheckerEngine", None,
+        "greenlang.agents.mrv.land_use_emissions.setup.ComplianceCheckerEngine", None,
     ), patch(
-        "greenlang.land_use_emissions.setup.LandUsePipelineEngine", None,
+        "greenlang.agents.mrv.land_use_emissions.setup.LandUsePipelineEngine", None,
     ), patch(
-        "greenlang.land_use_emissions.setup.get_config", return_value=None,
+        "greenlang.agents.mrv.land_use_emissions.setup.get_config", return_value=None,
     ):
-        from greenlang.land_use_emissions.setup import LandUseEmissionsService
+        from greenlang.agents.mrv.land_use_emissions.setup import LandUseEmissionsService
         return LandUseEmissionsService(**kwargs)
 
 
@@ -167,7 +167,7 @@ class TestSingletonAndConfigure:
 
     def test_get_service_returns_singleton(self):
         """get_service returns the same instance on repeated calls."""
-        import greenlang.land_use_emissions.setup as mod
+        import greenlang.agents.mrv.land_use_emissions.setup as mod
         mod._service_instance = None
         with patch.object(mod, "LandUseEmissionsService", side_effect=lambda **kw: MagicMock()):
             s1 = mod.get_service()
@@ -177,7 +177,7 @@ class TestSingletonAndConfigure:
 
     def test_get_router_returns_none_without_fastapi(self):
         """get_router returns None when FastAPI is not available."""
-        import greenlang.land_use_emissions.setup as mod
+        import greenlang.agents.mrv.land_use_emissions.setup as mod
         original = mod.FASTAPI_AVAILABLE
         mod.FASTAPI_AVAILABLE = False
         try:
@@ -188,12 +188,12 @@ class TestSingletonAndConfigure:
 
     def test_get_router_returns_router_when_available(self):
         """get_router returns an APIRouter when FastAPI is available."""
-        import greenlang.land_use_emissions.setup as mod
+        import greenlang.agents.mrv.land_use_emissions.setup as mod
         original = mod.FASTAPI_AVAILABLE
         mod.FASTAPI_AVAILABLE = True
         mock_router = MagicMock(name="FakeRouter")
         with patch(
-            "greenlang.land_use_emissions.api.router.create_router",
+            "greenlang.agents.mrv.land_use_emissions.api.router.create_router",
             return_value=mock_router,
         ):
             result = mod.get_router()
@@ -202,7 +202,7 @@ class TestSingletonAndConfigure:
 
     def test_configure_land_use_creates_service_and_mounts_router(self):
         """configure_land_use sets app.state and includes the router."""
-        import greenlang.land_use_emissions.setup as mod
+        import greenlang.agents.mrv.land_use_emissions.setup as mod
         mod._service_instance = None
         app = MagicMock(name="FakeApp")
         app.state = MagicMock()
@@ -232,7 +232,7 @@ class TestSingletonAndConfigure:
 
     def test_configure_land_use_without_router(self):
         """configure_land_use still returns service when router is None."""
-        import greenlang.land_use_emissions.setup as mod
+        import greenlang.agents.mrv.land_use_emissions.setup as mod
         mod._service_instance = None
         app = MagicMock(name="FakeApp")
         app.state = MagicMock()
@@ -261,7 +261,7 @@ class TestCalculate:
 
     def test_calculate_returns_calculate_response(self):
         """calculate() returns a CalculateResponse with correct types."""
-        from greenlang.land_use_emissions.setup import CalculateResponse
+        from greenlang.agents.mrv.land_use_emissions.setup import CalculateResponse
         svc = _make_service()
         result = svc.calculate(_valid_calc_request())
         assert isinstance(result, CalculateResponse)
@@ -351,7 +351,7 @@ class TestCalculateBatch:
 
     def test_batch_returns_batch_response(self):
         """calculate_batch returns a BatchCalculateResponse."""
-        from greenlang.land_use_emissions.setup import BatchCalculateResponse
+        from greenlang.agents.mrv.land_use_emissions.setup import BatchCalculateResponse
         svc = _make_service()
         result = svc.calculate_batch([_valid_calc_request()])
         assert isinstance(result, BatchCalculateResponse)
@@ -804,7 +804,7 @@ class TestHealthAndStats:
 
     def test_health_check_returns_health_response(self):
         """health_check returns a HealthResponse model."""
-        from greenlang.land_use_emissions.setup import HealthResponse
+        from greenlang.agents.mrv.land_use_emissions.setup import HealthResponse
         svc = _make_service()
         result = svc.health_check()
         assert isinstance(result, HealthResponse)
@@ -845,7 +845,7 @@ class TestHealthAndStats:
 
     def test_get_stats_returns_stats_response(self):
         """get_stats returns a StatsResponse model."""
-        from greenlang.land_use_emissions.setup import StatsResponse
+        from greenlang.agents.mrv.land_use_emissions.setup import StatsResponse
         svc = _make_service()
         result = svc.get_stats()
         assert isinstance(result, StatsResponse)

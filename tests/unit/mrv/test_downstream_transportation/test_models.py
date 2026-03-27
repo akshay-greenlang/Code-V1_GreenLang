@@ -36,7 +36,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.models import (
+    from greenlang.agents.mrv.downstream_transportation.models import (
         # Enumerations
         CalculationMethod,
         TransportMode,

@@ -5,10 +5,10 @@ sys.path.insert(0, ".")
 from decimal import Decimal
 from datetime import date
 
-from greenlang.fuel_energy_activities.supplier_specific_calculator import (
+from greenlang.agents.mrv.fuel_energy_activities.supplier_specific_calculator import (
     SupplierSpecificCalculatorEngine,
 )
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     FuelConsumptionRecord, ElectricityConsumptionRecord,
     SupplierFuelData, FuelType, FuelCategory,
     EnergyType, AccountingMethod, GridRegionType,

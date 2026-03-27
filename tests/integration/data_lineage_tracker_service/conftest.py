@@ -5,7 +5,7 @@ Shared Fixtures for Data Lineage Tracker Integration Tests (AGENT-DATA-018)
 
 Provides fixtures used across all integration test modules:
   - Prometheus metric pre-import to prevent duplicate ValueError
-  - Package stub for greenlang.data_lineage_tracker
+  - Package stub for greenlang.agents.data.data_lineage_tracker
   - Environment cleanup (autouse, removes GL_DLT_* env vars, resets config)
   - ProvenanceTracker fixture with deterministic genesis hash
   - Fresh engine fixtures (asset_registry, transformation_tracker,
@@ -41,7 +41,7 @@ os.environ.setdefault("GL_DLT_REDIS_URL", "redis://localhost:6379/20")
 # to Prometheus duplicate metric registration or missing dependencies).
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.data_lineage_tracker"
+_PKG_NAME = "greenlang.agents.data.data_lineage_tracker"
 
 if _PKG_NAME not in sys.modules:
     import greenlang  # noqa: F401 ensure parent package exists
@@ -62,7 +62,7 @@ if _PKG_NAME not in sys.modules:
 # then fall back to no-op stubs.
 # ---------------------------------------------------------------------------
 
-from greenlang.data_lineage_tracker import metrics as _dlt_metrics  # noqa: F401, E402
+from greenlang.agents.data.data_lineage_tracker import metrics as _dlt_metrics  # noqa: F401, E402
 
 
 # ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ def _relax_model_configs() -> None:
     without triggering ValidationError during integration tests.
     """
     import pydantic
-    from greenlang.data_lineage_tracker import models as dlt_models
+    from greenlang.agents.data.data_lineage_tracker import models as dlt_models
 
     for name in dir(dlt_models):
         obj = getattr(dlt_models, name)
@@ -98,19 +98,19 @@ _relax_model_configs()
 # Engine imports (post-stub, post-metrics)
 # ---------------------------------------------------------------------------
 
-from greenlang.data_lineage_tracker.config import (  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.config import (  # noqa: E402
     DataLineageTrackerConfig,
     set_config,
     reset_config,
 )
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker  # noqa: E402
-from greenlang.data_lineage_tracker.asset_registry import AssetRegistryEngine  # noqa: E402
-from greenlang.data_lineage_tracker.transformation_tracker import TransformationTrackerEngine  # noqa: E402
-from greenlang.data_lineage_tracker.lineage_graph import LineageGraphEngine  # noqa: E402
-from greenlang.data_lineage_tracker.impact_analyzer import ImpactAnalyzerEngine  # noqa: E402
-from greenlang.data_lineage_tracker.lineage_validator import LineageValidatorEngine  # noqa: E402
-from greenlang.data_lineage_tracker.lineage_reporter import LineageReporterEngine  # noqa: E402
-from greenlang.data_lineage_tracker.lineage_tracker_pipeline import LineageTrackerPipelineEngine  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.asset_registry import AssetRegistryEngine  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.transformation_tracker import TransformationTrackerEngine  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.lineage_graph import LineageGraphEngine  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.impact_analyzer import ImpactAnalyzerEngine  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.lineage_validator import LineageValidatorEngine  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.lineage_reporter import LineageReporterEngine  # noqa: E402
+from greenlang.agents.data.data_lineage_tracker.lineage_tracker_pipeline import LineageTrackerPipelineEngine  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

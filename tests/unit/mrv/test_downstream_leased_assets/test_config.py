@@ -28,7 +28,7 @@ from decimal import Decimal
 import pytest
 
 try:
-    from greenlang.downstream_leased_assets.config import (
+    from greenlang.agents.mrv.downstream_leased_assets.config import (
         get_config,
         GeneralConfig,
         DatabaseConfig,
@@ -71,14 +71,14 @@ def _reset_config_singleton():
     """Reset config singleton before and after every test."""
     if _AVAILABLE:
         try:
-            from greenlang.downstream_leased_assets.config import _reset_config
+            from greenlang.agents.mrv.downstream_leased_assets.config import _reset_config
             _reset_config()
         except (ImportError, AttributeError):
             pass
     yield
     if _AVAILABLE:
         try:
-            from greenlang.downstream_leased_assets.config import _reset_config
+            from greenlang.agents.mrv.downstream_leased_assets.config import _reset_config
             _reset_config()
         except (ImportError, AttributeError):
             pass

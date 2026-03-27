@@ -8,7 +8,7 @@ by the reporting company at the end of their life, disposed of by downstream
 consumers and third parties.
 
 Agent ID: GL-MRV-S3-012
-Package: greenlang.end_of_life_treatment
+Package: greenlang.agents.mrv.end_of_life_treatment
 API Prefix: /api/v1/end-of-life-treatment
 DB Migration: V076
 Metrics Prefix: gl_eol_

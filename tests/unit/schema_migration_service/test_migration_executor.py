@@ -41,7 +41,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.schema_migration.migration_executor import (
+from greenlang.agents.data.schema_migration.migration_executor import (
     CAST_FUNCTIONS,
     EXECUTABLE_PLAN_STATUSES,
     MigrationExecutorEngine,
@@ -60,7 +60,7 @@ from greenlang.schema_migration.migration_executor import (
     _utcnow,
     _utcnow_iso,
 )
-from greenlang.schema_migration.provenance import ProvenanceTracker
+from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
 
 
 # ---------------------------------------------------------------------------

@@ -26,7 +26,7 @@ except ImportError:
 
 # Check if router is importable
 try:
-    from greenlang.dual_reporting_reconciliation.api.router import (
+    from greenlang.agents.mrv.dual_reporting_reconciliation.api.router import (
         router,
         create_router,
     )

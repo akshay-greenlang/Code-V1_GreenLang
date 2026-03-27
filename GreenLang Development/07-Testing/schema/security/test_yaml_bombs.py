@@ -30,12 +30,12 @@ Version: 1.0.0
 
 import pytest
 
-from greenlang.schema.compiler.parser import (
+from greenlang.agents.foundation.schema.compiler.parser import (
     ParseError,
     parse_payload,
     SafeYAMLLoader,
 )
-from greenlang.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.errors import ErrorCode
 
 
 # =============================================================================

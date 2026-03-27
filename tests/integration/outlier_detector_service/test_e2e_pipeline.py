@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.outlier_detector.setup import (
+from greenlang.agents.data.outlier_detector.setup import (
     OutlierDetectorService,
     DetectionResponse,
     BatchDetectionResponse,

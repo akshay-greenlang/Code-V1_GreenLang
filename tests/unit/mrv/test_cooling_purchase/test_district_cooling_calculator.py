@@ -21,11 +21,11 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.cooling_purchase.district_cooling_calculator import (
+from greenlang.agents.mrv.cooling_purchase.district_cooling_calculator import (
     DistrictCoolingCalculatorEngine,
     get_district_cooling_calculator,
 )
-from greenlang.cooling_purchase.models import (
+from greenlang.agents.mrv.cooling_purchase.models import (
     FreeCoolingSource,
     TESType,
     DataQualityTier,

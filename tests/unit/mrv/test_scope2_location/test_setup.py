@@ -23,7 +23,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.scope2_location.setup import (
+    from greenlang.agents.mrv.scope2_location.setup import (
         Scope2LocationService,
         get_service,
         SERVICE_VERSION,

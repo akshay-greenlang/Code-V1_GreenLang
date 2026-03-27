@@ -3,7 +3,7 @@
 Unit Tests for CompletenessAnalyzer Engine - AGENT-DATA-010 (GL-DATA-X-013)
 ===========================================================================
 
-Tests CompletenessAnalyzer from greenlang.data_quality_profiler.completeness_analyzer.
+Tests CompletenessAnalyzer from greenlang.agents.data.data_quality_profiler.completeness_analyzer.
 
 Covers:
     - Initialization (default/custom config, stats, None config)
@@ -32,7 +32,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_quality_profiler.completeness_analyzer import (
+from greenlang.agents.data.data_quality_profiler.completeness_analyzer import (
     CompletenessAnalyzer,
     _is_missing,
     _safe_stdev,

@@ -39,13 +39,13 @@ _AVAILABLE = True
 _SKIP = None
 
 try:
-    import greenlang.downstream_transportation  # noqa: F401
+    import greenlang.agents.mrv.downstream_transportation  # noqa: F401
 except ImportError:
     _AVAILABLE = False
 
 _SKIP = pytest.mark.skipif(
     not _AVAILABLE,
-    reason="greenlang.downstream_transportation not installed or import failed",
+    reason="greenlang.agents.mrv.downstream_transportation not installed or import failed",
 )
 
 
@@ -65,14 +65,14 @@ def _do_reset():
     """Perform singleton reset for config, database, provenance, pipeline."""
     # Reset config singleton
     try:
-        from greenlang.downstream_transportation.config import reset_config
+        from greenlang.agents.mrv.downstream_transportation.config import reset_config
         reset_config()
     except (ImportError, AttributeError):
         pass
 
     # Reset database singleton
     try:
-        from greenlang.downstream_transportation.downstream_transport_database import (
+        from greenlang.agents.mrv.downstream_transportation.downstream_transport_database import (
             DownstreamTransportDatabaseEngine,
         )
         if hasattr(DownstreamTransportDatabaseEngine, "_instance"):
@@ -84,7 +84,7 @@ def _do_reset():
 
     # Reset provenance tracker singleton
     try:
-        from greenlang.downstream_transportation.provenance import (
+        from greenlang.agents.mrv.downstream_transportation.provenance import (
             get_provenance_tracker,
             ProvenanceTracker,
         )
@@ -95,7 +95,7 @@ def _do_reset():
 
     # Reset pipeline singleton
     try:
-        from greenlang.downstream_transportation.downstream_transport_pipeline import (
+        from greenlang.agents.mrv.downstream_transportation.downstream_transport_pipeline import (
             DownstreamTransportPipelineEngine,
         )
         if hasattr(DownstreamTransportPipelineEngine, "_instance"):
@@ -105,7 +105,7 @@ def _do_reset():
 
     # Reset distance calculator singleton
     try:
-        from greenlang.downstream_transportation.distance_based_calculator import (
+        from greenlang.agents.mrv.downstream_transportation.distance_based_calculator import (
             DistanceBasedCalculatorEngine,
         )
         if hasattr(DistanceBasedCalculatorEngine, "_instance"):
@@ -115,7 +115,7 @@ def _do_reset():
 
     # Reset spend calculator singleton
     try:
-        from greenlang.downstream_transportation.spend_based_calculator import (
+        from greenlang.agents.mrv.downstream_transportation.spend_based_calculator import (
             SpendBasedCalculatorEngine,
         )
         if hasattr(SpendBasedCalculatorEngine, "_instance"):
@@ -125,7 +125,7 @@ def _do_reset():
 
     # Reset average data calculator singleton
     try:
-        from greenlang.downstream_transportation.average_data_calculator import (
+        from greenlang.agents.mrv.downstream_transportation.average_data_calculator import (
             AverageDataCalculatorEngine,
         )
         if hasattr(AverageDataCalculatorEngine, "_instance"):
@@ -135,7 +135,7 @@ def _do_reset():
 
     # Reset warehouse engine singleton
     try:
-        from greenlang.downstream_transportation.warehouse_distribution import (
+        from greenlang.agents.mrv.downstream_transportation.warehouse_distribution import (
             WarehouseDistributionEngine,
         )
         if hasattr(WarehouseDistributionEngine, "_instance"):
@@ -145,7 +145,7 @@ def _do_reset():
 
     # Reset compliance checker singleton
     try:
-        from greenlang.downstream_transportation.compliance_checker import (
+        from greenlang.agents.mrv.downstream_transportation.compliance_checker import (
             ComplianceCheckerEngine,
         )
         if hasattr(ComplianceCheckerEngine, "_instance"):

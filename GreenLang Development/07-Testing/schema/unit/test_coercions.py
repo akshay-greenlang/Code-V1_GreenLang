@@ -21,7 +21,7 @@ Version: 0.1.0
 import pytest
 from decimal import Decimal
 
-from greenlang.schema.normalizer.coercions import (
+from greenlang.agents.foundation.schema.normalizer.coercions import (
     CoercionEngine,
     CoercionRecord,
     CoercionResult,
@@ -36,7 +36,7 @@ from greenlang.schema.normalizer.coercions import (
     can_coerce,
     get_python_type_name,
 )
-from greenlang.schema.models.config import CoercionPolicy
+from greenlang.agents.foundation.schema.models.config import CoercionPolicy
 
 
 # =============================================================================

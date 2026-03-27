@@ -3,7 +3,7 @@
 Unit tests for Steam/Heat Purchase Agent data models - AGENT-MRV-011.
 
 Tests all 18 enumerations, 6 constant tables, and 20 Pydantic data models
-defined in ``greenlang.steam_heat_purchase.models``.
+defined in ``greenlang.agents.mrv.steam_heat_purchase.models``.
 
 Coverage targets:
 - Every enum: value membership, str conversion, invalid value rejection
@@ -22,7 +22,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.models import (
+    from greenlang.agents.mrv.steam_heat_purchase.models import (
         # Enums (18)
         EnergyType,
         FuelType,
@@ -87,7 +87,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not MODELS_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.models not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.models not importable",
 )
 
 

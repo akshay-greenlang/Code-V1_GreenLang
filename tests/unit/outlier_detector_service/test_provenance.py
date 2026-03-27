@@ -19,7 +19,7 @@ import threading
 
 import pytest
 
-from greenlang.outlier_detector.provenance import ProvenanceTracker
+from greenlang.agents.data.outlier_detector.provenance import ProvenanceTracker
 
 
 class TestGenesisHash:

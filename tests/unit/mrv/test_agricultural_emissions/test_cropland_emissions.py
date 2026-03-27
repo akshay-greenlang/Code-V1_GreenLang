@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.cropland_emissions import (
+    from greenlang.agents.mrv.agricultural_emissions.cropland_emissions import (
         CroplandEmissionsEngine,
     )
     CROPLAND_AVAILABLE = True
@@ -32,7 +32,7 @@ except ImportError:
     CROPLAND_AVAILABLE = False
 
 try:
-    from greenlang.agricultural_emissions.agricultural_database import (
+    from greenlang.agents.mrv.agricultural_emissions.agricultural_database import (
         AgriculturalDatabaseEngine,
     )
     DB_AVAILABLE = True

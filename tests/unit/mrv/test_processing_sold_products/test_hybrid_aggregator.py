@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.processing_sold_products.hybrid_aggregator import (
+    from greenlang.agents.mrv.processing_sold_products.hybrid_aggregator import (
         HybridAggregatorEngine,
     )
 

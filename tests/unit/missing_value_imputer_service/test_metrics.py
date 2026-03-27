@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.missing_value_imputer.metrics import (
+from greenlang.agents.data.missing_value_imputer.metrics import (
     PROMETHEUS_AVAILABLE,
     inc_jobs,
     inc_values_imputed,
@@ -121,15 +121,15 @@ class TestHelperFunctionsWithoutPrometheus:
     """Test helpers are safe when prometheus_client is unavailable."""
 
     def test_inc_jobs_when_unavailable(self):
-        with patch("greenlang.missing_value_imputer.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.missing_value_imputer.metrics.PROMETHEUS_AVAILABLE", False):
             inc_jobs("failed")  # Should not raise
 
     def test_observe_duration_when_unavailable(self):
-        with patch("greenlang.missing_value_imputer.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.missing_value_imputer.metrics.PROMETHEUS_AVAILABLE", False):
             observe_duration("impute", 0.5)  # Should not raise
 
     def test_set_active_jobs_when_unavailable(self):
-        with patch("greenlang.missing_value_imputer.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.missing_value_imputer.metrics.PROMETHEUS_AVAILABLE", False):
             set_active_jobs(0)  # Should not raise
 
     def test_inc_values_imputed_default_count(self):

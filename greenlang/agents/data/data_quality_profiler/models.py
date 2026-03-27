@@ -10,7 +10,7 @@ anomaly detection, freshness checking, rule evaluation, quality gates,
 trend tracking, scorecards, reporting, and batch management.
 
 Re-exported Layer 1 sources:
-    - greenlang.excel_normalizer.data_quality_scorer: QualityLevel
+    - greenlang.agents.data.excel_normalizer.data_quality_scorer: QualityLevel
         (as L1QualityLevel), DataQualityReport (as L1DataQualityReport),
         DataQualityScorer (as L1DataQualityScorer)
 

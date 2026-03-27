@@ -32,7 +32,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.spend_categorizer.scope3_mapper import (
+from greenlang.agents.data.spend_categorizer.scope3_mapper import (
     Scope3Assignment,
     Scope3Category,
     Scope3MapperEngine,

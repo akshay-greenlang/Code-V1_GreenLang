@@ -30,7 +30,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.end_of_life_treatment.end_of_life_treatment_pipeline import (
+    from greenlang.agents.mrv.end_of_life_treatment.end_of_life_treatment_pipeline import (
         EndOfLifeTreatmentPipelineEngine,
         PipelineStage,
         PipelineStatus,

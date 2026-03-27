@@ -41,7 +41,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.schema_migration.schema_versioner import (
+from greenlang.agents.data.schema_migration.schema_versioner import (
     BUMP_MAJOR,
     BUMP_MINOR,
     BUMP_PATCH,

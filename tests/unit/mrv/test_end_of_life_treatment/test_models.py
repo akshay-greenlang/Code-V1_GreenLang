@@ -38,7 +38,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.end_of_life_treatment.models import (
+    from greenlang.agents.mrv.end_of_life_treatment.models import (
         # Enumerations
         CalculationMethod,
         TreatmentPathway,

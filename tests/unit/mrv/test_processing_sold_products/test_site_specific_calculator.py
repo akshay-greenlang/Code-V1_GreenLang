@@ -17,7 +17,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.processing_sold_products.site_specific_calculator import (
+    from greenlang.agents.mrv.processing_sold_products.site_specific_calculator import (
         SiteSpecificCalculatorEngine,
         get_site_specific_engine,
         CalculationResult,

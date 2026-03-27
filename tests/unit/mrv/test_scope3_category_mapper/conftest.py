@@ -33,7 +33,7 @@ def reset_singletons():
     """Reset all singleton engines before and after each test."""
     # Reset completeness screener
     try:
-        from greenlang.scope3_category_mapper.completeness_screener import (
+        from greenlang.agents.mrv.scope3_category_mapper.completeness_screener import (
             CompletenessScreenerEngine,
         )
         CompletenessScreenerEngine.reset_instance()
@@ -41,20 +41,20 @@ def reset_singletons():
         pass
     # Reset config singleton
     try:
-        from greenlang.scope3_category_mapper.config import reset_config
+        from greenlang.agents.mrv.scope3_category_mapper.config import reset_config
         reset_config()
     except (ImportError, AttributeError):
         pass
     yield
     try:
-        from greenlang.scope3_category_mapper.completeness_screener import (
+        from greenlang.agents.mrv.scope3_category_mapper.completeness_screener import (
             CompletenessScreenerEngine,
         )
         CompletenessScreenerEngine.reset_instance()
     except (ImportError, AttributeError):
         pass
     try:
-        from greenlang.scope3_category_mapper.config import reset_config
+        from greenlang.agents.mrv.scope3_category_mapper.config import reset_config
         reset_config()
     except (ImportError, AttributeError):
         pass

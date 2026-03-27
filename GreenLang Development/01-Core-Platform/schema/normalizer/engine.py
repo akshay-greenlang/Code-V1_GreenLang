@@ -21,10 +21,10 @@ Design Principles:
     - Full provenance: Complete audit trail in _meta block
 
 Example:
-    >>> from greenlang.schema.normalizer.engine import NormalizationEngine, normalize
-    >>> from greenlang.schema.compiler.ir import SchemaIR
-    >>> from greenlang.schema.units.catalog import UnitCatalog
-    >>> from greenlang.schema.models.config import ValidationOptions
+    >>> from greenlang.agents.foundation.schema.normalizer.engine import NormalizationEngine, normalize
+    >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
+    >>> from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+    >>> from greenlang.agents.foundation.schema.models.config import ValidationOptions
     >>>
     >>> engine = NormalizationEngine(ir, UnitCatalog(), ValidationOptions())
     >>> result = engine.normalize({"Energy": "100 Wh"})

@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 from datetime import datetime, timezone, timedelta
 
-from greenlang.data_freshness_monitor.dataset_registry import (
+from greenlang.agents.data.data_freshness_monitor.dataset_registry import (
     DatasetRegistryEngine,
 )
 

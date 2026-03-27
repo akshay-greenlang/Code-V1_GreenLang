@@ -17,7 +17,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from greenlang.land_use_emissions.metrics import (
+from greenlang.agents.mrv.land_use_emissions.metrics import (
     PROMETHEUS_AVAILABLE,
     lu_calculations_total,
     lu_calculation_duration_seconds,

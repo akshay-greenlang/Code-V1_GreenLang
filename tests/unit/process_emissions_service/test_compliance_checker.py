@@ -18,7 +18,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.process_emissions.compliance_checker import (
+from greenlang.agents.mrv.process_emissions.compliance_checker import (
     ComplianceCheckerEngine,
     ComplianceCheckResult,
     ComplianceRequirement,

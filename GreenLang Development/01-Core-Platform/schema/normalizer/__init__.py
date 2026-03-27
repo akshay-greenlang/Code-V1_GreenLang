@@ -15,10 +15,10 @@ Components:
     - keys: Advanced key canonicalization
 
 Example:
-    >>> from greenlang.schema.normalizer import NormalizationEngine, normalize
-    >>> from greenlang.schema.compiler.ir import SchemaIR
-    >>> from greenlang.schema.units.catalog import UnitCatalog
-    >>> from greenlang.schema.models.config import ValidationOptions
+    >>> from greenlang.agents.foundation.schema.normalizer import NormalizationEngine, normalize
+    >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
+    >>> from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+    >>> from greenlang.agents.foundation.schema.models.config import ValidationOptions
     >>>
     >>> engine = NormalizationEngine(ir, UnitCatalog(), ValidationOptions())
     >>> result = engine.normalize({"Energy": "100 Wh"})
@@ -30,7 +30,7 @@ Version: 0.1.0
 GL-FOUND-X-002: Schema Compiler & Validator
 """
 
-from greenlang.schema.normalizer.canonicalizer import (
+from greenlang.agents.foundation.schema.normalizer.canonicalizer import (
     CANONICAL_UNITS,
     ConversionRecord,
     CanonicalizedValue,
@@ -41,7 +41,7 @@ from greenlang.schema.normalizer.canonicalizer import (
     is_canonical_unit,
 )
 
-from greenlang.schema.normalizer.coercions import (
+from greenlang.agents.foundation.schema.normalizer.coercions import (
     CoercionEngine,
     CoercionRecord,
     CoercionResult,
@@ -58,7 +58,7 @@ from greenlang.schema.normalizer.coercions import (
 )
 
 # Advanced key canonicalization (Task 3.3)
-from greenlang.schema.normalizer.keys import (
+from greenlang.agents.foundation.schema.normalizer.keys import (
     KeyCanonicalizer as AdvancedKeyCanonicalizer,
     KeyRename as AdvancedKeyRename,
     RenameReason,
@@ -70,7 +70,7 @@ from greenlang.schema.normalizer.keys import (
 )
 
 # Normalization Engine (Task 3.4)
-from greenlang.schema.normalizer.engine import (
+from greenlang.agents.foundation.schema.normalizer.engine import (
     NormalizationEngine,
     NormalizationMeta,
     NormalizationResult,

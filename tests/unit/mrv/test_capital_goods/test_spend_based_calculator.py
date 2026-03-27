@@ -29,13 +29,13 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from unittest.mock import Mock, patch, MagicMock
 
-from greenlang.capital_goods.engines.spend_based_calculator import (
+from greenlang.agents.mrv.capital_goods.engines.spend_based_calculator import (
     SpendBasedCalculatorEngine,
     SpendBasedRecord,
     SpendBasedResult,
     GasBreakdown,
 )
-from greenlang.capital_goods.models import (
+from greenlang.agents.mrv.capital_goods.models import (
     EmissionFactorSource,
     DataQualityDimension,
     DataQualityScore,

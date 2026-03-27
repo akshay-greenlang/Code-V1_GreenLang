@@ -22,7 +22,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.compliance_checker import (
+    from greenlang.agents.mrv.agricultural_emissions.compliance_checker import (
         ComplianceCheckerEngine,
     )
     COMPLIANCE_AVAILABLE = True

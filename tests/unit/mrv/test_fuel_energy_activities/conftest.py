@@ -10,7 +10,7 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from typing import Dict, Any, List
 
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     # Enums
     FuelType,
     ActivityType,

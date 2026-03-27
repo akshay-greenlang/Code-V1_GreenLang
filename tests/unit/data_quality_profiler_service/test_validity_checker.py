@@ -3,7 +3,7 @@
 Unit Tests for ValidityChecker Engine - AGENT-DATA-010 (GL-DATA-X-013)
 ======================================================================
 
-Tests ValidityChecker from greenlang.data_quality_profiler.validity_checker.
+Tests ValidityChecker from greenlang.agents.data.data_quality_profiler.validity_checker.
 
 Covers:
     - Initialization (default/custom config, stats, None config)
@@ -34,7 +34,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_quality_profiler.validity_checker import (
+from greenlang.agents.data.data_quality_profiler.validity_checker import (
     ValidityChecker,
     _luhn_check,
     _is_integer,

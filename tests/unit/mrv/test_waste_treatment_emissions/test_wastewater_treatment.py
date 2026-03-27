@@ -32,7 +32,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.waste_treatment_emissions.wastewater_treatment import (
+    from greenlang.agents.mrv.waste_treatment_emissions.wastewater_treatment import (
         WastewaterTreatmentEngine,
         TreatmentSystem,
         IndustryType,

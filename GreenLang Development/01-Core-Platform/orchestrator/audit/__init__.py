@@ -14,7 +14,7 @@ Author: GreenLang Team
 """
 
 try:
-    from greenlang.orchestrator.audit.event_store import (
+    from greenlang.agents.foundation.orchestrator.audit.event_store import (
         EventStore,
         RunEvent,
         EventType,

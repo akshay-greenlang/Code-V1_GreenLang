@@ -26,7 +26,7 @@ except ImportError:
     FASTAPI_AVAILABLE = False
 
 try:
-    from greenlang.use_of_sold_products.api.router import (
+    from greenlang.agents.mrv.use_of_sold_products.api.router import (
         router,
         FASTAPI_AVAILABLE as ROUTER_FASTAPI_AVAILABLE,
     )

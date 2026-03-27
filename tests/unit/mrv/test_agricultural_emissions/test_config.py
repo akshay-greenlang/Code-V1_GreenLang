@@ -8,7 +8,7 @@ reset_config, validation of all enum/range constraints, feature toggles,
 serialization helpers, and all 64 configuration fields.
 
 Target: 60+ tests, 85%+ coverage of
-    greenlang.agricultural_emissions.config
+    greenlang.agents.mrv.agricultural_emissions.config
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -23,7 +23,7 @@ from unittest.mock import patch
 import pytest
 
 try:
-    from greenlang.agricultural_emissions.config import (
+    from greenlang.agents.mrv.agricultural_emissions.config import (
         AgriculturalEmissionsConfig,
         get_config,
         set_config,

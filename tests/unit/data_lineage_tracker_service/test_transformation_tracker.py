@@ -33,11 +33,11 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_lineage_tracker.transformation_tracker import (
+from greenlang.agents.data.data_lineage_tracker.transformation_tracker import (
     TransformationTrackerEngine,
     VALID_TRANSFORMATION_TYPES,
 )
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
 
 # ============================================================================

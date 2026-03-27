@@ -8,7 +8,7 @@ import pytest
 import os
 from decimal import Decimal
 
-from greenlang.purchased_goods_services.config import PurchasedGoodsServicesConfig
+from greenlang.agents.mrv.purchased_goods_services.config import PurchasedGoodsServicesConfig
 
 
 class TestPurchasedGoodsServicesConfig:

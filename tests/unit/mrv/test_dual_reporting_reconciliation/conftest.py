@@ -11,17 +11,17 @@ from typing import Any, Dict, List
 def _reset_singletons():
     """Reset all singletons before each test."""
     modules = [
-        "greenlang.dual_reporting_reconciliation.config",
-        "greenlang.dual_reporting_reconciliation.metrics",
-        "greenlang.dual_reporting_reconciliation.provenance",
-        "greenlang.dual_reporting_reconciliation.dual_result_collector",
-        "greenlang.dual_reporting_reconciliation.discrepancy_analyzer",
-        "greenlang.dual_reporting_reconciliation.quality_scorer",
-        "greenlang.dual_reporting_reconciliation.reporting_table_generator",
-        "greenlang.dual_reporting_reconciliation.trend_analyzer",
-        "greenlang.dual_reporting_reconciliation.compliance_checker",
-        "greenlang.dual_reporting_reconciliation.dual_reporting_pipeline",
-        "greenlang.dual_reporting_reconciliation.setup",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.config",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.metrics",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.provenance",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.dual_result_collector",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.discrepancy_analyzer",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.quality_scorer",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.reporting_table_generator",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.trend_analyzer",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.compliance_checker",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline",
+        "greenlang.agents.mrv.dual_reporting_reconciliation.setup",
     ]
     for mod_name in modules:
         try:

@@ -5,9 +5,9 @@ Unit Tests for Validation Rule Engine Models - AGENT-DATA-019
 Tests all enumerations (12), SDK models (14), request models (8), Layer 1
 re-export availability flags, constants, helpers, and Pydantic validation
 (extra='forbid', required fields, range constraints) from
-``greenlang.validation_rule_engine.models``.
+``greenlang.agents.data.validation_rule_engine.models``.
 
-Target: 80-100 tests, 85%+ coverage of greenlang.validation_rule_engine.models
+Target: 80-100 tests, 85%+ coverage of greenlang.agents.data.validation_rule_engine.models
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -23,7 +23,7 @@ import pydantic
 import pytest
 from pydantic import ValidationError
 
-from greenlang.validation_rule_engine.models import (
+from greenlang.agents.data.validation_rule_engine.models import (
     # Layer 1 re-exports
     QualityDimension,
     RuleType,
@@ -98,7 +98,7 @@ from greenlang.validation_rule_engine.models import (
 
 def _set_model_extra(mode: str) -> None:
     """Set model_config extra to the given mode for all VRE BaseModel subclasses."""
-    from greenlang.validation_rule_engine import models as vre_models
+    from greenlang.agents.data.validation_rule_engine import models as vre_models
 
     for name in dir(vre_models):
         obj = getattr(vre_models, name)

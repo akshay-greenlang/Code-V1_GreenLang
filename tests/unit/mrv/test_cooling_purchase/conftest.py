@@ -10,17 +10,17 @@ from typing import Dict, Any
 def _reset_singletons():
     """Reset all singletons before each test."""
     modules = [
-        "greenlang.cooling_purchase.config",
-        "greenlang.cooling_purchase.metrics",
-        "greenlang.cooling_purchase.provenance",
-        "greenlang.cooling_purchase.cooling_database",
-        "greenlang.cooling_purchase.electric_chiller_calculator",
-        "greenlang.cooling_purchase.absorption_cooling_calculator",
-        "greenlang.cooling_purchase.district_cooling_calculator",
-        "greenlang.cooling_purchase.uncertainty_quantifier",
-        "greenlang.cooling_purchase.compliance_checker",
-        "greenlang.cooling_purchase.cooling_purchase_pipeline",
-        "greenlang.cooling_purchase.setup",
+        "greenlang.agents.mrv.cooling_purchase.config",
+        "greenlang.agents.mrv.cooling_purchase.metrics",
+        "greenlang.agents.mrv.cooling_purchase.provenance",
+        "greenlang.agents.mrv.cooling_purchase.cooling_database",
+        "greenlang.agents.mrv.cooling_purchase.electric_chiller_calculator",
+        "greenlang.agents.mrv.cooling_purchase.absorption_cooling_calculator",
+        "greenlang.agents.mrv.cooling_purchase.district_cooling_calculator",
+        "greenlang.agents.mrv.cooling_purchase.uncertainty_quantifier",
+        "greenlang.agents.mrv.cooling_purchase.compliance_checker",
+        "greenlang.agents.mrv.cooling_purchase.cooling_purchase_pipeline",
+        "greenlang.agents.mrv.cooling_purchase.setup",
     ]
     for mod_name in modules:
         try:

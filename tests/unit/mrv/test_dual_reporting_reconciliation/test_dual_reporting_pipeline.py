@@ -16,12 +16,12 @@ from uuid import uuid4
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import (
     DualReportingPipelineEngine,
     PipelineExecutionError,
     StageExecutionError,
 )
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     PipelineStage,
     ReconciliationStatus,
     ReconciliationWorkspace,
@@ -783,7 +783,7 @@ class TestRunBatch:
 
     def test_run_batch_too_many_periods(self, engine):
         """Test batch validation with too many periods."""
-        from greenlang.dual_reporting_reconciliation.models import MAX_BATCH_PERIODS
+        from greenlang.agents.mrv.dual_reporting_reconciliation.models import MAX_BATCH_PERIODS
 
         periods = [MagicMock() for _ in range(MAX_BATCH_PERIODS + 1)]
 
@@ -915,7 +915,7 @@ class TestExecuteStage:
 
     def test_execute_stage_collect_results(self, engine, sample_request):
         """Test stage 1: COLLECT_RESULTS."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(request=sample_request)
 
@@ -929,7 +929,7 @@ class TestExecuteStage:
 
     def test_execute_stage_align_boundaries(self, engine, sample_request, sample_workspace):
         """Test stage 2: ALIGN_BOUNDARIES."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(request=sample_request, workspace=sample_workspace)
 
@@ -942,7 +942,7 @@ class TestExecuteStage:
 
     def test_execute_stage_map_energy_types(self, engine, sample_request, sample_workspace):
         """Test stage 3: MAP_ENERGY_TYPES."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(request=sample_request, workspace=sample_workspace)
 
@@ -955,7 +955,7 @@ class TestExecuteStage:
 
     def test_execute_stage_analyze_discrepancies(self, engine, sample_request, sample_workspace):
         """Test stage 4: ANALYZE_DISCREPANCIES."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(request=sample_request, workspace=sample_workspace)
 
@@ -969,7 +969,7 @@ class TestExecuteStage:
 
     def test_execute_stage_score_quality(self, engine, sample_request, sample_workspace):
         """Test stage 5: SCORE_QUALITY."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(request=sample_request, workspace=sample_workspace)
 
@@ -983,7 +983,7 @@ class TestExecuteStage:
 
     def test_execute_stage_generate_tables(self, engine, sample_request, sample_workspace):
         """Test stage 6: GENERATE_TABLES."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(
             request=sample_request,
@@ -1002,7 +1002,7 @@ class TestExecuteStage:
 
     def test_execute_stage_analyze_trends(self, engine, sample_request, sample_workspace):
         """Test stage 7: ANALYZE_TRENDS."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(request=sample_request, workspace=sample_workspace)
 
@@ -1015,7 +1015,7 @@ class TestExecuteStage:
 
     def test_execute_stage_check_compliance(self, engine, sample_request, sample_workspace):
         """Test stage 8: CHECK_COMPLIANCE."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(
             request=sample_request,
@@ -1034,7 +1034,7 @@ class TestExecuteStage:
 
     def test_execute_stage_assemble_report(self, engine, sample_request, sample_workspace):
         """Test stage 9: ASSEMBLE_REPORT."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         context = PipelineContext(
             request=sample_request,
@@ -1055,7 +1055,7 @@ class TestExecuteStage:
 
     def test_execute_stage_seal_provenance(self, engine, sample_request):
         """Test stage 10: SEAL_PROVENANCE."""
-        from greenlang.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
+        from greenlang.agents.mrv.dual_reporting_reconciliation.dual_reporting_pipeline import PipelineContext
 
         final_report = ReconciliationReport(
             reconciliation_id="test-123",
@@ -1773,7 +1773,7 @@ class TestHealthCheck:
 
     def test_health_check_includes_agent_info(self, engine):
         """Test health check includes agent information."""
-        from greenlang.dual_reporting_reconciliation.models import (
+        from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
             AGENT_ID,
             AGENT_COMPONENT,
             VERSION,

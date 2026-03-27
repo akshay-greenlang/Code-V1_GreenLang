@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.climate_hazard.config import reset_config
+from greenlang.agents.data.climate_hazard.config import reset_config
 
 
 # ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ def service():
     Returns a fully initialised service with in-memory stores, ready
     for integration testing without external database dependencies.
     """
-    from greenlang.climate_hazard.setup import ClimateHazardService
+    from greenlang.agents.data.climate_hazard.setup import ClimateHazardService
 
     svc = ClimateHazardService()
     return svc
@@ -117,7 +117,7 @@ def started_service(service):
 @pytest.fixture
 def provenance_tracker():
     """Create a fresh ProvenanceTracker for provenance chain testing."""
-    from greenlang.climate_hazard.provenance import ProvenanceTracker
+    from greenlang.agents.data.climate_hazard.provenance import ProvenanceTracker
 
     return ProvenanceTracker(genesis_hash="integration-test-genesis")
 
@@ -130,7 +130,7 @@ def provenance_tracker():
 @pytest.fixture
 def pipeline_engine():
     """Create a fresh HazardPipelineEngine for pipeline testing."""
-    from greenlang.climate_hazard.hazard_pipeline import HazardPipelineEngine
+    from greenlang.agents.data.climate_hazard.hazard_pipeline import HazardPipelineEngine
 
     return HazardPipelineEngine()
 

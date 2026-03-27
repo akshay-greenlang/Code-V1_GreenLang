@@ -22,12 +22,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from greenlang.climate_hazard.config import ClimateHazardConfig
-from greenlang.climate_hazard.provenance import ProvenanceTracker
+from greenlang.agents.data.climate_hazard.config import ClimateHazardConfig
+from greenlang.agents.data.climate_hazard.provenance import ProvenanceTracker
 
 # Import the setup module
-import greenlang.climate_hazard.setup as setup_mod
-from greenlang.climate_hazard.setup import (
+import greenlang.agents.data.climate_hazard.setup as setup_mod
+from greenlang.agents.data.climate_hazard.setup import (
     AssetResponse,
     ClimateHazardService,
     ExposureResponse,

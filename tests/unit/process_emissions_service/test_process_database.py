@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.process_emissions.process_database import ProcessDatabaseEngine
+from greenlang.agents.mrv.process_emissions.process_database import ProcessDatabaseEngine
 
 
 # =========================================================================

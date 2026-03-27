@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import pytest
 
-from greenlang.missing_value_imputer.config import MissingValueImputerConfig
-from greenlang.missing_value_imputer.ml_imputer import (
+from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
+from greenlang.agents.data.missing_value_imputer.ml_imputer import (
     MLImputerEngine,
     _DecisionStump,
     _is_missing,
@@ -26,7 +26,7 @@ from greenlang.missing_value_imputer.ml_imputer import (
     _classify_confidence,
     _safe_stdev,
 )
-from greenlang.missing_value_imputer.models import (
+from greenlang.agents.data.missing_value_imputer.models import (
     ConfidenceLevel,
     ImputationStrategy,
     ImputedValue,

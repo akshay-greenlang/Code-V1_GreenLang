@@ -26,8 +26,8 @@ import pytest
 from decimal import Decimal, ROUND_HALF_UP
 from unittest.mock import patch, MagicMock
 
-from greenlang.business_travel.hotel_stay_calculator import HotelStayCalculatorEngine
-from greenlang.business_travel.models import (
+from greenlang.agents.mrv.business_travel.hotel_stay_calculator import HotelStayCalculatorEngine
+from greenlang.agents.mrv.business_travel.models import (
     HotelInput,
     HotelResult,
     HotelClass,
@@ -66,11 +66,11 @@ def _reset_singleton():
 def engine():
     """Create a fresh HotelStayCalculatorEngine with mocked dependencies."""
     with patch(
-        "greenlang.business_travel.hotel_stay_calculator.get_config"
+        "greenlang.agents.mrv.business_travel.hotel_stay_calculator.get_config"
     ) as mock_config, patch(
-        "greenlang.business_travel.hotel_stay_calculator.get_metrics"
+        "greenlang.agents.mrv.business_travel.hotel_stay_calculator.get_metrics"
     ) as mock_metrics, patch(
-        "greenlang.business_travel.hotel_stay_calculator.get_provenance_tracker"
+        "greenlang.agents.mrv.business_travel.hotel_stay_calculator.get_provenance_tracker"
     ) as mock_prov:
         mock_cfg = MagicMock()
         mock_config.return_value = mock_cfg
@@ -408,11 +408,11 @@ class TestStaticMethodsAndSingleton:
     def test_singleton_pattern(self):
         """get_instance returns the same object on repeated calls."""
         with patch(
-            "greenlang.business_travel.hotel_stay_calculator.get_config"
+            "greenlang.agents.mrv.business_travel.hotel_stay_calculator.get_config"
         ), patch(
-            "greenlang.business_travel.hotel_stay_calculator.get_metrics"
+            "greenlang.agents.mrv.business_travel.hotel_stay_calculator.get_metrics"
         ), patch(
-            "greenlang.business_travel.hotel_stay_calculator.get_provenance_tracker"
+            "greenlang.agents.mrv.business_travel.hotel_stay_calculator.get_provenance_tracker"
         ):
             inst1 = HotelStayCalculatorEngine.get_instance()
             inst2 = HotelStayCalculatorEngine.get_instance()

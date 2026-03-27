@@ -10,8 +10,8 @@ lineage graph construction, impact analysis, validation, reporting, change
 detection, quality scoring, audit trails, and pipeline orchestration.
 
 Re-exported Layer 1 sources (best-effort, with fallback stubs):
-    - greenlang.data_quality_profiler.models: QualityDimension
-    - greenlang.cross_source_reconciliation.source_registry: SourceRegistryEngine
+    - greenlang.agents.data.data_quality_profiler.models: QualityDimension
+    - greenlang.agents.data.cross_source_reconciliation.source_registry: SourceRegistryEngine
 
 New enumerations (14):
     - AssetType, AssetClassification, AssetStatus, TransformationType,

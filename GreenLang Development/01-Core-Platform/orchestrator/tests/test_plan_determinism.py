@@ -34,7 +34,7 @@ from typing import Dict, Any, List
 import pytest
 
 from greenlang.utilities.determinism import DeterministicClock, freeze_time, unfreeze_time
-from greenlang.orchestrator.pipeline_schema import (
+from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     PipelineDefinition,
     PipelineMetadata,
     PipelineSpec,

@@ -389,7 +389,7 @@ class CheckpointManager:
         if self._event_store is None:
             return
         try:
-            from greenlang.orchestrator.audit.event_store import EventType, RunEvent, GENESIS_HASH
+            from greenlang.agents.foundation.orchestrator.audit.event_store import EventType, RunEvent, GENESIS_HASH
             prev_hash = await self._event_store.get_latest_hash(run_id)
             event = RunEvent(event_id=str(uuid4()), run_id=run_id, step_id=step_id, event_type=EventType.ARTIFACT_WRITTEN,
                 timestamp=datetime.now(timezone.utc), payload={"checkpoint_event": event_type, **payload}, prev_event_hash=prev_hash, event_hash="")

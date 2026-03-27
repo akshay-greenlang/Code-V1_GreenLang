@@ -28,8 +28,8 @@ Design Principles:
     - Provenance: Track how suggestions were derived
 
 Example:
-    >>> from greenlang.schema.suggestions.safety import PatchSafetyClassifier
-    >>> from greenlang.schema.compiler.ir import SchemaIR
+    >>> from greenlang.agents.foundation.schema.suggestions.safety import PatchSafetyClassifier
+    >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
     >>> classifier = PatchSafetyClassifier(ir)
     >>> classification = classifier.classify(patch, context)
     >>> if classification.safety == PatchSafety.SAFE:

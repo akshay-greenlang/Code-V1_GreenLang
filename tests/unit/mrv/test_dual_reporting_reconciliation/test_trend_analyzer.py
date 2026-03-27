@@ -13,10 +13,10 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.trend_analyzer import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.trend_analyzer import (
     TrendAnalysisEngine,
 )
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     TrendDataPoint,
     TrendDirection,
 )

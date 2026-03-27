@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.outlier_detector.metrics import (
+from greenlang.agents.data.outlier_detector.metrics import (
     PROMETHEUS_AVAILABLE,
     inc_jobs,
     inc_outliers_detected,
@@ -121,15 +121,15 @@ class TestHelperFunctionsWithoutPrometheus:
     """Test helpers are safe when prometheus_client is unavailable."""
 
     def test_inc_jobs_when_unavailable(self):
-        with patch("greenlang.outlier_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.outlier_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_jobs("failed")  # Should not raise
 
     def test_observe_duration_when_unavailable(self):
-        with patch("greenlang.outlier_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.outlier_detector.metrics.PROMETHEUS_AVAILABLE", False):
             observe_duration("classify", 0.5)  # Should not raise
 
     def test_set_active_jobs_when_unavailable(self):
-        with patch("greenlang.outlier_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.outlier_detector.metrics.PROMETHEUS_AVAILABLE", False):
             set_active_jobs(0)  # Should not raise
 
     def test_inc_outliers_detected_default_count(self):

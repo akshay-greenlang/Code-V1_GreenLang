@@ -18,8 +18,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.missing_value_imputer.config import MissingValueImputerConfig
-from greenlang.missing_value_imputer.imputation_pipeline import (
+from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
+from greenlang.agents.data.missing_value_imputer.imputation_pipeline import (
     ImputationPipelineEngine,
     _is_missing,
     _is_numeric,
@@ -30,7 +30,7 @@ from greenlang.missing_value_imputer.imputation_pipeline import (
     _RULE_STRATEGIES,
     _FALLBACK_CHAINS,
 )
-from greenlang.missing_value_imputer.models import (
+from greenlang.agents.data.missing_value_imputer.models import (
     ConfidenceLevel,
     DataColumnType,
     ImputationStatus,
@@ -48,12 +48,12 @@ def _build_pipeline(cfg=None):
     """Build an ImputationPipelineEngine with real sub-engines."""
     if cfg is None:
         cfg = MissingValueImputerConfig()
-    from greenlang.missing_value_imputer.missingness_analyzer import MissingnessAnalyzerEngine
-    from greenlang.missing_value_imputer.statistical_imputer import StatisticalImputerEngine
-    from greenlang.missing_value_imputer.ml_imputer import MLImputerEngine
-    from greenlang.missing_value_imputer.rule_based_imputer import RuleBasedImputerEngine
-    from greenlang.missing_value_imputer.time_series_imputer import TimeSeriesImputerEngine
-    from greenlang.missing_value_imputer.validation_engine import ValidationEngine
+    from greenlang.agents.data.missing_value_imputer.missingness_analyzer import MissingnessAnalyzerEngine
+    from greenlang.agents.data.missing_value_imputer.statistical_imputer import StatisticalImputerEngine
+    from greenlang.agents.data.missing_value_imputer.ml_imputer import MLImputerEngine
+    from greenlang.agents.data.missing_value_imputer.rule_based_imputer import RuleBasedImputerEngine
+    from greenlang.agents.data.missing_value_imputer.time_series_imputer import TimeSeriesImputerEngine
+    from greenlang.agents.data.missing_value_imputer.validation_engine import ValidationEngine
 
     analyzer = MissingnessAnalyzerEngine(cfg)
     stat = StatisticalImputerEngine(cfg)
@@ -342,7 +342,7 @@ class TestGetPipelineStats:
 
 class TestApplyImputations:
     def test_basic_application(self, pipeline):
-        from greenlang.missing_value_imputer.models import (
+        from greenlang.agents.data.missing_value_imputer.models import (
             ImputationBatch,
             ImputationResult,
             ImputedValue,
@@ -379,7 +379,7 @@ class TestApplyImputations:
         assert imputed[1]["a"] == 2.0  # unchanged
 
     def test_does_not_mutate_original(self, pipeline):
-        from greenlang.missing_value_imputer.models import (
+        from greenlang.agents.data.missing_value_imputer.models import (
             ImputationBatch,
             ImputationResult,
             ImputedValue,

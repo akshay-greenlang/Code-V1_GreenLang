@@ -15,7 +15,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_quality_profiler.consistency_analyzer import (
+from greenlang.agents.data.data_quality_profiler.consistency_analyzer import (
     ConsistencyAnalyzer,
     DRIFT_COLUMN_ADDED,
     DRIFT_COLUMN_REMOVED,

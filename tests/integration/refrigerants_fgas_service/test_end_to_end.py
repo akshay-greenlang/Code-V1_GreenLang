@@ -27,7 +27,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.refrigerants_fgas.setup import RefrigerantsFGasService
+from greenlang.agents.mrv.refrigerants_fgas.setup import RefrigerantsFGasService
 
 
 # ===========================================================================

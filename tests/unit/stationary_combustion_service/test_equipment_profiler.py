@@ -29,7 +29,7 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.stationary_combustion.equipment_profiler import (
+from greenlang.agents.mrv.stationary_combustion.equipment_profiler import (
     EquipmentProfilerEngine,
     EQUIPMENT_DEFAULTS,
 )

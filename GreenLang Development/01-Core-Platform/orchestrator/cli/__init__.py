@@ -18,6 +18,6 @@ Author: GreenLang Team
 Version: 1.0.0
 """
 
-from greenlang.orchestrator.cli.main import create_app, main
+from greenlang.agents.foundation.orchestrator.cli.main import create_app, main
 
 __all__ = ["create_app", "main"]

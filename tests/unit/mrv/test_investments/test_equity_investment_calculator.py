@@ -27,10 +27,10 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 import pytest
 
-from greenlang.investments.equity_investment_calculator import (
+from greenlang.agents.mrv.investments.equity_investment_calculator import (
     EquityInvestmentCalculatorEngine,
 )
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     AssetClass,
     PCAFDataQuality,
     CalculationMethod,
@@ -57,7 +57,7 @@ def _reset_singleton():
 def engine():
     """Create a fresh EquityInvestmentCalculatorEngine with mocked config."""
     with patch(
-        "greenlang.investments.equity_investment_calculator.get_config"
+        "greenlang.agents.mrv.investments.equity_investment_calculator.get_config"
     ) as mock_config:
         cfg = MagicMock()
         cfg.equity.default_evic_source = "BLOOMBERG"

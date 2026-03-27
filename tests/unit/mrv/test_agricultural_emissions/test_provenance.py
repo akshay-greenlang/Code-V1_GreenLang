@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.provenance import (
+    from greenlang.agents.mrv.agricultural_emissions.provenance import (
         ProvenanceTracker,
         ProvenanceEntry,
     )

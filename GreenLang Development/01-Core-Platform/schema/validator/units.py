@@ -26,8 +26,8 @@ Error Codes:
     - GLSCHEMA-E303: UNIT_UNKNOWN - Unit not in catalog
 
 Example:
-    >>> from greenlang.schema.validator.units import UnitValidator
-    >>> from greenlang.schema.units.catalog import UnitCatalog
+    >>> from greenlang.agents.foundation.schema.validator.units import UnitValidator
+    >>> from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
     >>> catalog = UnitCatalog()
     >>> validator = UnitValidator(catalog, ValidationOptions())
     >>> findings, normalized = validator.validate(
@@ -53,11 +53,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from greenlang.schema.compiler.ir import UnitSpecIR
-from greenlang.schema.errors import ErrorCode, format_error_message
-from greenlang.schema.models.config import ValidationOptions, ValidationProfile
-from greenlang.schema.models.finding import Finding, FindingHint, Severity
-from greenlang.schema.units.catalog import UnitCatalog
+from greenlang.agents.foundation.schema.compiler.ir import UnitSpecIR
+from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
+from greenlang.agents.foundation.schema.models.config import ValidationOptions, ValidationProfile
+from greenlang.agents.foundation.schema.models.finding import Finding, FindingHint, Severity
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
 
 
 logger = logging.getLogger(__name__)

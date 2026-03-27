@@ -17,7 +17,7 @@ Available Hooks:
     - PreRunValidationHook: Validates pipeline inputs against declared schemas
 
 Example:
-    >>> from greenlang.orchestrator.hooks import (
+    >>> from greenlang.agents.foundation.orchestrator.hooks import (
     ...     PreRunValidationHook,
     ...     PipelineValidationConfig,
     ...     create_validation_hook,
@@ -30,7 +30,7 @@ Version: 1.0.0
 GL-FOUND-X-002: Schema Compiler & Validator - Task 6.3
 """
 
-from greenlang.orchestrator.hooks.validation_hook import (
+from greenlang.agents.foundation.orchestrator.hooks.validation_hook import (
     # Models
     InputSchemaSpec,
     PipelineValidationConfig,

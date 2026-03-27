@@ -37,12 +37,12 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 import pytest
 
-from greenlang.business_travel.business_travel_database import (
+from greenlang.agents.mrv.business_travel.business_travel_database import (
     BusinessTravelDatabaseEngine,
     get_database_engine,
     reset_database_engine,
 )
-from greenlang.business_travel.models import (
+from greenlang.agents.mrv.business_travel.models import (
     TransportMode,
     FlightDistanceBand,
     CabinClass,

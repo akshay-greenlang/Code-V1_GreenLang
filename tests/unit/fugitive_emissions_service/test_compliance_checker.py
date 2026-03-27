@@ -30,7 +30,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.fugitive_emissions.compliance_checker import (
+from greenlang.agents.mrv.fugitive_emissions.compliance_checker import (
     ComplianceCheckerEngine,
     SUPPORTED_FRAMEWORKS,
     _build_requirements,

@@ -155,6 +155,6 @@ def mock_prometheus():
 def _reset_excel_normalizer_config():
     """Reset the config singleton between tests to avoid state leaks."""
     yield
-    # Inline reset to avoid importing from greenlang.excel_normalizer
+    # Inline reset to avoid importing from greenlang.agents.data.excel_normalizer
     import threading
     globals().setdefault("_config_instance", None)

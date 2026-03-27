@@ -25,7 +25,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.waste_treatment_emissions.uncertainty_quantifier import (
+    from greenlang.agents.mrv.waste_treatment_emissions.uncertainty_quantifier import (
         UncertaintyQuantifierEngine,
         PARAMETER_DISTRIBUTIONS,
         DEFAULT_CV,

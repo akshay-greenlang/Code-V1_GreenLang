@@ -31,7 +31,7 @@ _ENV_PREFIX = "GL_GIS_CONNECTOR_"
 
 @dataclass
 class GISConnectorConfig:
-    """Mirrors greenlang.gis_connector.config.GISConnectorConfig."""
+    """Mirrors greenlang.agents.data.gis_connector.config.GISConnectorConfig."""
 
     database_url: str = ""
     redis_url: str = ""

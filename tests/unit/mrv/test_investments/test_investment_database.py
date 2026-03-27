@@ -32,12 +32,12 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 import pytest
 
-from greenlang.investments.investment_database import (
+from greenlang.agents.mrv.investments.investment_database import (
     InvestmentDatabaseEngine,
     get_database_engine,
     reset_database_engine,
 )
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     AssetClass,
     Sector,
     CurrencyCode,

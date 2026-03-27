@@ -27,12 +27,12 @@ from typing import Any, Dict, List, Tuple
 
 import pytest
 
-from greenlang.duplicate_detector.merge_engine import (
+from greenlang.agents.data.duplicate_detector.merge_engine import (
     MergeEngine,
     _is_empty,
     _record_completeness,
 )
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.models import (
     ConflictResolution,
     DuplicateCluster,
     MergeConflict,

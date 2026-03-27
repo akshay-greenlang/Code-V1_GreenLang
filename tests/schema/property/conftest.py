@@ -29,7 +29,7 @@ import pytest
 from hypothesis import settings, Verbosity, Phase, HealthCheck
 
 # Import schema components
-from greenlang.schema.compiler.ir import (
+from greenlang.agents.foundation.schema.compiler.ir import (
     SchemaIR,
     PropertyIR,
     NumericConstraintIR,
@@ -38,14 +38,14 @@ from greenlang.schema.compiler.ir import (
     UnitSpecIR,
     CompiledPattern,
 )
-from greenlang.schema.units.catalog import UnitCatalog
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     ValidationProfile,
     CoercionPolicy,
     UnknownFieldPolicy,
 )
-from greenlang.schema.normalizer.coercions import CoercionEngine
+from greenlang.agents.foundation.schema.normalizer.coercions import CoercionEngine
 
 
 # =============================================================================

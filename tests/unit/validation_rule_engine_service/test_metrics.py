@@ -7,7 +7,7 @@ each helper records correctly when PROMETHEUS_AVAILABLE is True and
 operates as a graceful no-op when False. Covers counter increments,
 histogram observations, and gauge set operations.
 
-Target: 30-40 tests, 85%+ coverage of greenlang.validation_rule_engine.metrics
+Target: 30-40 tests, 85%+ coverage of greenlang.agents.data.validation_rule_engine.metrics
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -19,7 +19,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.validation_rule_engine.metrics import (
+from greenlang.agents.data.validation_rule_engine.metrics import (
     PROMETHEUS_AVAILABLE,
     # Metric objects
     vre_active_rule_sets,
@@ -395,50 +395,50 @@ class TestNoOpWhenUnavailable:
     """All helper functions must be no-ops when PROMETHEUS_AVAILABLE is False."""
 
     def test_record_rule_registered_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             # Must not raise
             record_rule_registered("range_check", "error")
 
     def test_record_rule_set_created_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             record_rule_set_created("ghg_protocol")
 
     def test_record_evaluation_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             record_evaluation("pass", "range_check")
 
     def test_record_evaluation_failure_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             record_evaluation_failure("critical")
 
     def test_record_conflict_detected_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             record_conflict_detected("contradiction")
 
     def test_record_report_generated_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             record_report_generated("evaluation_summary", "json")
 
     def test_observe_rules_per_set_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             observe_rules_per_set(10)
 
     def test_observe_evaluation_duration_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             observe_evaluation_duration("single_rule", 0.1)
 
     def test_observe_processing_duration_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             observe_processing_duration("rule_register", 0.05)
 
     def test_set_active_rules_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             set_active_rules(42)
 
     def test_set_active_rule_sets_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             set_active_rule_sets(10)
 
     def test_set_pass_rate_noop(self):
-        with patch("greenlang.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.metrics.PROMETHEUS_AVAILABLE", False):
             set_pass_rate(0.95)

@@ -14,13 +14,13 @@ Endpoints:
     GET  /metrics                      - Prometheus metrics
 
 Example:
-    >>> from greenlang.schema.api import create_app
+    >>> from greenlang.agents.foundation.schema.api import create_app
     >>> app = create_app()
     >>> # Run with: uvicorn app:app
 
     >>> # Or use the routers directly
     >>> from fastapi import FastAPI
-    >>> from greenlang.schema.api import router, system_router
+    >>> from greenlang.agents.foundation.schema.api import router, system_router
     >>> app = FastAPI()
     >>> app.include_router(router)
     >>> app.include_router(system_router)
@@ -37,8 +37,8 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from greenlang.schema.api.routes import router, system_router
-from greenlang.schema.api.dependencies import (
+from greenlang.agents.foundation.schema.api.routes import router, system_router
+from greenlang.agents.foundation.schema.api.dependencies import (
     APIConfig,
     SERVICE_VERSION,
     MetricsCollector,
@@ -50,7 +50,7 @@ from greenlang.schema.api.dependencies import (
     get_compiler,
     get_registry,
 )
-from greenlang.schema.api.models import (
+from greenlang.agents.foundation.schema.api.models import (
     ValidateRequest,
     ValidateResponse,
     BatchValidateRequest,

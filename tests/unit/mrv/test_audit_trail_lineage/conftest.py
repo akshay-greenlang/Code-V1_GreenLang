@@ -31,56 +31,56 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.audit_event_engine import AuditEventEngine
+    from greenlang.agents.mrv.audit_trail_lineage.audit_event_engine import AuditEventEngine
     AUDIT_EVENT_ENGINE_AVAILABLE = True
 except ImportError:
     AUDIT_EVENT_ENGINE_AVAILABLE = False
     AuditEventEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.lineage_graph_engine import LineageGraphEngine
+    from greenlang.agents.mrv.audit_trail_lineage.lineage_graph_engine import LineageGraphEngine
     LINEAGE_GRAPH_ENGINE_AVAILABLE = True
 except ImportError:
     LINEAGE_GRAPH_ENGINE_AVAILABLE = False
     LineageGraphEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.evidence_packager_engine import EvidencePackagerEngine
+    from greenlang.agents.mrv.audit_trail_lineage.evidence_packager_engine import EvidencePackagerEngine
     EVIDENCE_PACKAGER_ENGINE_AVAILABLE = True
 except ImportError:
     EVIDENCE_PACKAGER_ENGINE_AVAILABLE = False
     EvidencePackagerEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.compliance_tracer_engine import ComplianceTracerEngine
+    from greenlang.agents.mrv.audit_trail_lineage.compliance_tracer_engine import ComplianceTracerEngine
     COMPLIANCE_TRACER_ENGINE_AVAILABLE = True
 except ImportError:
     COMPLIANCE_TRACER_ENGINE_AVAILABLE = False
     ComplianceTracerEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.change_detector_engine import ChangeDetectorEngine
+    from greenlang.agents.mrv.audit_trail_lineage.change_detector_engine import ChangeDetectorEngine
     CHANGE_DETECTOR_ENGINE_AVAILABLE = True
 except ImportError:
     CHANGE_DETECTOR_ENGINE_AVAILABLE = False
     ChangeDetectorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.compliance_checker import ComplianceCheckerEngine
+    from greenlang.agents.mrv.audit_trail_lineage.compliance_checker import ComplianceCheckerEngine
     COMPLIANCE_CHECKER_ENGINE_AVAILABLE = True
 except ImportError:
     COMPLIANCE_CHECKER_ENGINE_AVAILABLE = False
     ComplianceCheckerEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.audit_trail_pipeline import AuditTrailPipelineEngine
+    from greenlang.agents.mrv.audit_trail_lineage.audit_trail_pipeline import AuditTrailPipelineEngine
     PIPELINE_ENGINE_AVAILABLE = True
 except ImportError:
     PIPELINE_ENGINE_AVAILABLE = False
     AuditTrailPipelineEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.config import (
+    from greenlang.agents.mrv.audit_trail_lineage.config import (
         AuditTrailLineageConfig,
         reset_config,
     )

@@ -42,7 +42,7 @@ from greenlang.utilities.determinism import (
     freeze_time,
     unfreeze_time,
 )
-from greenlang.orchestrator.audit.event_store import (
+from greenlang.agents.foundation.orchestrator.audit.event_store import (
     EventType,
     RunEvent,
     AuditPackage,
@@ -782,7 +782,7 @@ class TestHashChainCrossEnvironment:
             )
 
             # Execute via mock
-            from greenlang.orchestrator.executors.base import ResourceProfile
+            from greenlang.agents.foundation.orchestrator.executors.base import ResourceProfile
 
             result = await mock_k8s_executor.execute(
                 context=context,

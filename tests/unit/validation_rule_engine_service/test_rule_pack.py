@@ -37,7 +37,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.validation_rule_engine.models import (
+from greenlang.agents.data.validation_rule_engine.models import (
     ValidationRule,
     ValidationRuleType,
     RuleOperator,
@@ -47,8 +47,8 @@ from greenlang.validation_rule_engine.models import (
     RulePack,
     RulePackType,
 )
-from greenlang.validation_rule_engine.provenance import ProvenanceTracker
-from greenlang.validation_rule_engine.rule_pack import RulePackEngine
+from greenlang.agents.data.validation_rule_engine.provenance import ProvenanceTracker
+from greenlang.agents.data.validation_rule_engine.rule_pack import RulePackEngine
 
 
 # ---------------------------------------------------------------------------

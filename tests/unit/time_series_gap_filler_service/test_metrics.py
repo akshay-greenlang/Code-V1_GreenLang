@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.time_series_gap_filler.metrics import (
+from greenlang.agents.data.time_series_gap_filler.metrics import (
     PROMETHEUS_AVAILABLE,
     inc_jobs_processed,
     inc_gaps_detected,
@@ -200,51 +200,51 @@ class TestStubModeWithoutPrometheus:
     """Test helpers are safe when prometheus_client is unavailable (stub mode)."""
 
     def test_inc_jobs_processed_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             inc_jobs_processed("failed")  # Should not raise
 
     def test_inc_gaps_detected_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             inc_gaps_detected("missing", 10)
 
     def test_inc_gaps_filled_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             inc_gaps_filled("spline", 5)
 
     def test_inc_validations_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             inc_validations("skipped", 2)
 
     def test_inc_frequencies_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             inc_frequencies("quarterly")
 
     def test_inc_strategies_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             inc_strategies("model_based")
 
     def test_observe_confidence_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             observe_confidence(0.75)
 
     def test_observe_duration_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             observe_duration("fill_gaps", 2.0)
 
     def test_observe_gap_duration_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             observe_gap_duration(86400.0)
 
     def test_set_active_jobs_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             set_active_jobs(0)
 
     def test_set_gaps_open_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             set_gaps_open(0)
 
     def test_inc_errors_when_unavailable(self):
-        with patch("greenlang.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.time_series_gap_filler.metrics.PROMETHEUS_AVAILABLE", False):
             inc_errors("timeout")
 
 

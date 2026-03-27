@@ -17,7 +17,7 @@ Step Registration:
     Use register_all_steps() to register all built-in steps.
 
 Example:
-    >>> from greenlang.orchestrator.steps import (
+    >>> from greenlang.agents.foundation.orchestrator.steps import (
     ...     ValidateStep,
     ...     ValidateStepConfig,
     ...     ValidateStepInput,
@@ -32,7 +32,7 @@ Version: 1.0.0
 GL-FOUND-X-002: Schema Compiler & Validator - Task 6.2
 """
 
-from greenlang.orchestrator.steps.validate_step import (
+from greenlang.agents.foundation.orchestrator.steps.validate_step import (
     # Models
     ValidateStepConfig,
     ValidateStepInput,

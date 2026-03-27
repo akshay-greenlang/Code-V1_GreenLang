@@ -41,22 +41,22 @@ from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
 
 import click
 
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.models.config import (
     CoercionPolicy,
     PatchLevel,
     UnknownFieldPolicy,
     ValidationOptions,
     ValidationProfile,
 )
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.models.report import (
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.report import (
     BatchValidationReport,
     ValidationReport,
     ValidationSummary,
 )
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.validator.core import SchemaValidator
-from greenlang.schema.cli.formatters import (
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.validator.core import SchemaValidator
+from greenlang.agents.foundation.schema.cli.formatters import (
     format_json,
     format_pretty,
     format_sarif,

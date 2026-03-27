@@ -30,17 +30,17 @@ from hypothesis import given, settings, assume, HealthCheck, Phase, example
 from hypothesis import strategies as st
 
 # Import the components under test
-from greenlang.schema.normalizer.engine import (
+from greenlang.agents.foundation.schema.normalizer.engine import (
     NormalizationEngine,
     NormalizationResult,
     normalize,
     is_normalization_idempotent,
     _remove_meta_block,
 )
-from greenlang.schema.normalizer.coercions import CoercionEngine, CoercionPolicy
-from greenlang.schema.compiler.ir import SchemaIR, PropertyIR, UnitSpecIR
-from greenlang.schema.units.catalog import UnitCatalog
-from greenlang.schema.models.config import ValidationOptions, CoercionPolicy as ConfigCoercionPolicy
+from greenlang.agents.foundation.schema.normalizer.coercions import CoercionEngine, CoercionPolicy
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, PropertyIR, UnitSpecIR
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+from greenlang.agents.foundation.schema.models.config import ValidationOptions, CoercionPolicy as ConfigCoercionPolicy
 
 
 # =============================================================================

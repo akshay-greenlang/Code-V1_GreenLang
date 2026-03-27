@@ -457,16 +457,16 @@ def mock_config() -> Dict[str, Any]:
 def reset_singletons():
     """Reset all engine singletons before each test."""
     modules_to_reset = [
-        "greenlang.franchises.franchise_database",
-        "greenlang.franchises.franchise_specific_calculator",
-        "greenlang.franchises.average_data_calculator",
-        "greenlang.franchises.spend_based_calculator",
-        "greenlang.franchises.hybrid_aggregator",
-        "greenlang.franchises.compliance_checker",
-        "greenlang.franchises.franchises_pipeline",
-        "greenlang.franchises.config",
-        "greenlang.franchises.provenance",
-        "greenlang.franchises.setup",
+        "greenlang.agents.mrv.franchises.franchise_database",
+        "greenlang.agents.mrv.franchises.franchise_specific_calculator",
+        "greenlang.agents.mrv.franchises.average_data_calculator",
+        "greenlang.agents.mrv.franchises.spend_based_calculator",
+        "greenlang.agents.mrv.franchises.hybrid_aggregator",
+        "greenlang.agents.mrv.franchises.compliance_checker",
+        "greenlang.agents.mrv.franchises.franchises_pipeline",
+        "greenlang.agents.mrv.franchises.config",
+        "greenlang.agents.mrv.franchises.provenance",
+        "greenlang.agents.mrv.franchises.setup",
     ]
     for module_name in modules_to_reset:
         try:

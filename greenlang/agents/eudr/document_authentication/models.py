@@ -41,7 +41,7 @@ Response Models (15):
       TrustedCAResponse, DocumentSearchResponse, FraudAlertListResponse
 
 Compatibility:
-    Imports EUDRCommodity from greenlang.eudr_traceability.models for
+    Imports EUDRCommodity from greenlang.agents.data.eudr_traceability.models for
     cross-agent consistency with AGENT-DATA-005 EUDR Traceability
     Connector and AGENT-EUDR-011 Mass Balance Calculator.
 
@@ -73,7 +73,7 @@ from pydantic import (
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.eudr_traceability.models import EUDRCommodity
+    from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
 except ImportError:
     EUDRCommodity = None  # type: ignore[assignment,misc]
 

@@ -36,7 +36,7 @@ from unittest.mock import Mock, MagicMock
 
 import pytest
 
-from greenlang.schema.compiler.resolver import (
+from greenlang.agents.foundation.schema.compiler.resolver import (
     RefResolver,
     CircularRefError,
     RefResolutionError,
@@ -46,7 +46,7 @@ from greenlang.schema.compiler.resolver import (
     navigate_json_pointer,
     LocalFileRegistry,
 )
-from greenlang.schema.constants import MAX_REF_EXPANSIONS
+from greenlang.agents.foundation.schema.constants import MAX_REF_EXPANSIONS
 
 
 # =============================================================================

@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.waste_treatment_emissions.waste_treatment_pipeline import (
+    from greenlang.agents.mrv.waste_treatment_emissions.waste_treatment_pipeline import (
         WasteTreatmentPipelineEngine,
         PipelineStage,
         VALID_WASTE_CATEGORIES,

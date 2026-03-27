@@ -33,7 +33,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.audit_trail_pipeline import (
+    from greenlang.agents.mrv.audit_trail_lineage.audit_trail_pipeline import (
         AuditTrailPipelineEngine,
     )
     ENGINE_AVAILABLE = True

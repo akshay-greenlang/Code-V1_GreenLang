@@ -15,10 +15,10 @@ from typing import Dict, List
 
 import pytest
 
-from greenlang.refrigerants_fgas.emission_calculator import (
+from greenlang.agents.mrv.refrigerants_fgas.emission_calculator import (
     EmissionCalculatorEngine,
 )
-from greenlang.refrigerants_fgas.models import (
+from greenlang.agents.mrv.refrigerants_fgas.models import (
     CalculationMethod,
     CalculationResult,
     BatchCalculationResponse,

@@ -17,12 +17,12 @@ from typing import List
 import pytest
 
 try:
-    from greenlang.downstream_leased_assets.downstream_asset_database import (
+    from greenlang.agents.mrv.downstream_leased_assets.downstream_asset_database import (
         DownstreamAssetDatabaseEngine,
         get_database_engine,
         reset_database_engine,
     )
-    from greenlang.downstream_leased_assets.models import (
+    from greenlang.agents.mrv.downstream_leased_assets.models import (
         BuildingType,
         ClimateZone,
         VehicleType,

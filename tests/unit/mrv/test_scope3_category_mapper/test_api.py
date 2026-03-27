@@ -46,7 +46,7 @@ except ImportError:
     TestClient = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.scope3_category_mapper.api.router import router, get_service
+    from greenlang.agents.mrv.scope3_category_mapper.api.router import router, get_service
     ROUTER_AVAILABLE = True
 except ImportError:
     ROUTER_AVAILABLE = False

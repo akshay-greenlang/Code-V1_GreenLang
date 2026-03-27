@@ -17,10 +17,10 @@ PRD: AGENT-DATA-014 Time Series Gap Filler (GL-DATA-X-017)
 
 import pytest
 
-from greenlang.time_series_gap_filler.gap_detector import GapDetectorEngine
-from greenlang.time_series_gap_filler.interpolation_engine import InterpolationEngine
-from greenlang.time_series_gap_filler.seasonal_filler import SeasonalFillerEngine
-from greenlang.time_series_gap_filler.metrics import (
+from greenlang.agents.data.time_series_gap_filler.gap_detector import GapDetectorEngine
+from greenlang.agents.data.time_series_gap_filler.interpolation_engine import InterpolationEngine
+from greenlang.agents.data.time_series_gap_filler.seasonal_filler import SeasonalFillerEngine
+from greenlang.agents.data.time_series_gap_filler.metrics import (
     PROMETHEUS_AVAILABLE,
     inc_gaps_detected,
     inc_gaps_filled,
@@ -69,7 +69,7 @@ class TestMetricsDuringDetection:
 
     def test_frequency_detection_records_metrics(self, sample_datetime_timestamps):
         """Frequency analysis records duration metrics."""
-        from greenlang.time_series_gap_filler.frequency_analyzer import (
+        from greenlang.agents.data.time_series_gap_filler.frequency_analyzer import (
             FrequencyAnalyzerEngine,
         )
 

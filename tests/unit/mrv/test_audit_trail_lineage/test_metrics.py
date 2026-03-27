@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.metrics import (
+    from greenlang.agents.mrv.audit_trail_lineage.metrics import (
         EVENTS_RECORDED_TOTAL,
         EVENTS_RECORDED_ERRORS_TOTAL,
         CHAIN_VERIFICATIONS_TOTAL,

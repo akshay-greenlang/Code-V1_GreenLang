@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.models import (
     # Constants
     BLOCKING_STRATEGIES,
     BLOCKING_STRATEGY_DEFAULTS,
@@ -1615,7 +1615,7 @@ class TestModelsExports:
     """Verify the models module exports all expected names."""
 
     def test_all_enums_exported(self):
-        from greenlang.duplicate_detector import models
+        from greenlang.agents.data.duplicate_detector import models
         enum_names = [
             "FingerprintAlgorithm", "BlockingStrategy", "SimilarityAlgorithm",
             "MatchClassification", "ClusterAlgorithm", "MergeStrategy",
@@ -1626,7 +1626,7 @@ class TestModelsExports:
             assert name in models.__all__, f"{name} missing from __all__"
 
     def test_all_sdk_models_exported(self):
-        from greenlang.duplicate_detector import models
+        from greenlang.agents.data.duplicate_detector import models
         model_names = [
             "RecordFingerprint", "BlockResult", "SimilarityResult",
             "FieldComparisonConfig", "MatchResult", "MergeConflict",
@@ -1638,7 +1638,7 @@ class TestModelsExports:
             assert name in models.__all__, f"{name} missing from __all__"
 
     def test_all_request_models_exported(self):
-        from greenlang.duplicate_detector import models
+        from greenlang.agents.data.duplicate_detector import models
         request_names = [
             "FingerprintRequest", "BlockRequest", "CompareRequest",
             "ClassifyRequest", "ClusterRequest", "MergeRequest",
@@ -1648,7 +1648,7 @@ class TestModelsExports:
             assert name in models.__all__, f"{name} missing from __all__"
 
     def test_all_constants_exported(self):
-        from greenlang.duplicate_detector import models
+        from greenlang.agents.data.duplicate_detector import models
         constant_names = [
             "DEFAULT_FIELD_WEIGHTS", "SIMILARITY_ALGORITHM_DEFAULTS",
             "BLOCKING_STRATEGY_DEFAULTS", "MAX_RECORDS_PER_COMPARISON",

@@ -16,19 +16,19 @@ Version: 1.0.0
 GL-FOUND-X-001: Alert Webhook Providers
 """
 
-from greenlang.orchestrator.alerting.providers.slack import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.slack import (
     SlackWebhookProvider,
     format_slack_payload,
 )
-from greenlang.orchestrator.alerting.providers.discord import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.discord import (
     DiscordWebhookProvider,
     format_discord_payload,
 )
-from greenlang.orchestrator.alerting.providers.pagerduty import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.pagerduty import (
     PagerDutyProvider,
     format_pagerduty_payload,
 )
-from greenlang.orchestrator.alerting.providers.custom import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.custom import (
     CustomWebhookProvider,
     format_custom_payload,
 )

@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.stationary_combustion.models import (
+from greenlang.agents.mrv.stationary_combustion.models import (
     # Constants
     VERSION,
     MAX_CALCULATIONS_PER_BATCH,

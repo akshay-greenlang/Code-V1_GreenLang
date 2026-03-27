@@ -18,7 +18,7 @@ import pytest
 from datetime import datetime, timezone
 from typing import Dict, Any
 
-from greenlang.orchestrator.governance.policy_engine import (
+from greenlang.agents.foundation.orchestrator.governance.policy_engine import (
     PolicyEngine,
     PolicyEngineConfig,
     PolicyDecision,
@@ -36,7 +36,7 @@ from greenlang.orchestrator.governance.policy_engine import (
     PolicyBundle,
     OPAClient,
 )
-from greenlang.orchestrator.pipeline_schema import (
+from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     PipelineDefinition,
     PipelineMetadata,
     PipelineSpec,

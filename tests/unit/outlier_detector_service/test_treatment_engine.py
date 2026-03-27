@@ -18,14 +18,14 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.outlier_detector.treatment_engine import (
+from greenlang.agents.data.outlier_detector.treatment_engine import (
     TreatmentEngine,
     _safe_mean,
     _safe_median,
     _safe_std,
     _percentile,
 )
-from greenlang.outlier_detector.models import (
+from greenlang.agents.data.outlier_detector.models import (
     DetectionMethod,
     ImpactAnalysis,
     OutlierScore,

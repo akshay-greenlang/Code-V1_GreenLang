@@ -8,7 +8,7 @@ sold by the reporting company, where processing is not controlled by
 the reporting company.
 
 Agent ID: GL-MRV-S3-010
-Package: greenlang.processing_sold_products
+Package: greenlang.agents.mrv.processing_sold_products
 API Prefix: /api/v1/processing-sold-products
 DB Migration: V074
 Metrics Prefix: gl_psp_

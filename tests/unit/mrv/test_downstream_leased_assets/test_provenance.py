@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 import pytest
 
 try:
-    from greenlang.downstream_leased_assets.provenance import (
+    from greenlang.agents.mrv.downstream_leased_assets.provenance import (
         ProvenanceEntry,
         ProvenanceChain,
         ProvenanceTracker,

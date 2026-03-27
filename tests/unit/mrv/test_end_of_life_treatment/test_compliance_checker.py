@@ -30,7 +30,7 @@ import pytest
 from tests.unit.mrv.test_end_of_life_treatment.conftest import make_full_compliance_result
 
 try:
-    from greenlang.end_of_life_treatment.compliance_checker import (
+    from greenlang.agents.mrv.end_of_life_treatment.compliance_checker import (
         ComplianceCheckerEngine,
     )
     _AVAILABLE = True

@@ -28,7 +28,7 @@ Evaluation Points:
     - Post-step: Artifact classification, export controls
 
 Example:
-    >>> from greenlang.orchestrator.governance import PolicyEngine
+    >>> from greenlang.agents.foundation.orchestrator.governance import PolicyEngine
     >>> engine = PolicyEngine()
     >>> decision = await engine.evaluate_pre_run(pipeline, run_config)
     >>> if not decision.allowed:
@@ -38,7 +38,7 @@ Author: GreenLang Team
 Version: 1.0.0
 """
 
-from greenlang.orchestrator.governance.policy_engine import (
+from greenlang.agents.foundation.orchestrator.governance.policy_engine import (
     # Main classes
     PolicyEngine,
     PolicyEngineConfig,
@@ -63,7 +63,7 @@ from greenlang.orchestrator.governance.policy_engine import (
     OPAError,
 )
 
-from greenlang.orchestrator.governance.approvals import (
+from greenlang.agents.foundation.orchestrator.governance.approvals import (
     # Enums
     ApprovalStatus,
     ApprovalDecision,
@@ -281,7 +281,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from greenlang.orchestrator.api.deps import (
+from greenlang.agents.foundation.orchestrator.api.deps import (
     AuthContext,
     RequestTrace,
     get_api_key,
@@ -289,7 +289,7 @@ from greenlang.orchestrator.api.deps import (
     get_orchestrator,
     get_approval_workflow,
 )
-from greenlang.orchestrator.api.models import (
+from greenlang.agents.foundation.orchestrator.api.models import (
     ErrorDetail,
     ErrorResponse,
     ApprovalStatusEnum,
@@ -300,7 +300,7 @@ from greenlang.orchestrator.api.models import (
     ApprovalListResponse,
     ApprovalSubmitResponse,
 )
-from greenlang.orchestrator.governance.approvals import (
+from greenlang.agents.foundation.orchestrator.governance.approvals import (
     ApprovalDecision,
     ApprovalStatus,
     SignatureUtils,
@@ -653,11 +653,11 @@ async def get_approval_workflow():
 
     if _approval_workflow_instance is None:
         try:
-            from greenlang.orchestrator.governance.approvals import (
+            from greenlang.agents.foundation.orchestrator.governance.approvals import (
                 ApprovalWorkflow,
                 InMemoryApprovalStore,
             )
-            from greenlang.orchestrator.audit.event_store import EventFactory
+            from greenlang.agents.foundation.orchestrator.audit.event_store import EventFactory
 
             store = InMemoryApprovalStore()
             event_store = await get_event_store()

@@ -17,7 +17,7 @@ Author: GreenLang Team
 Version: 2.0.0
 """
 
-from greenlang.orchestrator.errors.taxonomy import (
+from greenlang.agents.foundation.orchestrator.errors.taxonomy import (
     # Enums
     ErrorClass,
     FixType,

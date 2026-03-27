@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.downstream_leased_assets.hybrid_aggregator import (
+    from greenlang.agents.mrv.downstream_leased_assets.hybrid_aggregator import (
         HybridAggregatorEngine,
     )
     _AVAILABLE = True

@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.time_series_gap_filler.models import (
+from greenlang.agents.data.time_series_gap_filler.models import (
     # Helper
     _utcnow,
     # Constants
@@ -1455,7 +1455,7 @@ class TestLayer1ReExports:
 
     def test_all_exports_importable(self):
         """All items in __all__ should be importable attributes."""
-        from greenlang.time_series_gap_filler import models as mod
+        from greenlang.agents.data.time_series_gap_filler import models as mod
         for name in mod.__all__:
             assert hasattr(mod, name), f"Missing export: {name}"
 

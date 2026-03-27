@@ -10,9 +10,9 @@ compound rules, rule packs, versioning, evaluation, conflict detection,
 reporting, templates, dependencies, SLA thresholds, and audit trails.
 
 Re-exported Layer 1 sources (best-effort, with fallback stubs):
-    - greenlang.data_quality_profiler.quality_rule_engine: QualityRuleEngine
-    - greenlang.data_quality_profiler.validity_checker: ValidityChecker
-    - greenlang.data_quality_profiler.models: QualityDimension, RuleType
+    - greenlang.agents.data.data_quality_profiler.quality_rule_engine: QualityRuleEngine
+    - greenlang.agents.data.data_quality_profiler.validity_checker: ValidityChecker
+    - greenlang.agents.data.data_quality_profiler.models: QualityDimension, RuleType
 
 New enumerations (12):
     - ValidationRuleType, RuleOperator, RuleSeverity, RuleStatus,

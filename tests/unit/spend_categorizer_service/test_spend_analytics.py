@@ -27,7 +27,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.spend_categorizer.spend_analytics import (
+from greenlang.agents.data.spend_categorizer.spend_analytics import (
     HotspotResult,
     SpendAggregate,
     SpendAnalyticsEngine,

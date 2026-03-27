@@ -37,14 +37,14 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.schema.compiler.parser import (
+from greenlang.agents.foundation.schema.compiler.parser import (
     ParseError,
     ParseResult,
     parse_payload,
     validate_payload_size,
     detect_format,
 )
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.constants import (
     MAX_PAYLOAD_BYTES,
     MAX_OBJECT_DEPTH,
     MAX_ARRAY_ITEMS,
@@ -52,7 +52,7 @@ from greenlang.schema.constants import (
     MAX_STRING_LENGTH,
     MAX_OBJECT_PROPERTIES,
 )
-from greenlang.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.errors import ErrorCode
 
 
 # =============================================================================

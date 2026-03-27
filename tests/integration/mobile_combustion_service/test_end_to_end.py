@@ -20,8 +20,8 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.mobile_combustion.setup import MobileCombustionService
-from greenlang.mobile_combustion.mobile_combustion_pipeline import (
+from greenlang.agents.mrv.mobile_combustion.setup import MobileCombustionService
+from greenlang.agents.mrv.mobile_combustion.mobile_combustion_pipeline import (
     BIOFUEL_FOSSIL_FRACTION,
     FUEL_CO2_FACTORS_KG_PER_GALLON,
     SPEND_BASED_FACTORS_KG_CO2E_PER_USD,

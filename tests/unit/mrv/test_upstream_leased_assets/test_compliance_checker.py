@@ -28,10 +28,10 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
 try:
-    from greenlang.upstream_leased_assets.compliance_checker import (
+    from greenlang.agents.mrv.upstream_leased_assets.compliance_checker import (
         ComplianceCheckerEngine,
     )
-    from greenlang.upstream_leased_assets.models import (
+    from greenlang.agents.mrv.upstream_leased_assets.models import (
         ComplianceFramework,
         ComplianceStatus,
     )
@@ -79,7 +79,7 @@ def _make_mock_config(
 def engine():
     """Create a fresh ComplianceCheckerEngine with mocked config."""
     with patch(
-        "greenlang.upstream_leased_assets.compliance_checker.get_config"
+        "greenlang.agents.mrv.upstream_leased_assets.compliance_checker.get_config"
     ) as mock_config:
         mock_config.return_value = _make_mock_config()
         eng = ComplianceCheckerEngine()
@@ -667,7 +667,7 @@ class TestComplianceIntegration:
     def test_singleton_pattern(self):
         """Test ComplianceCheckerEngine is a singleton."""
         with patch(
-            "greenlang.upstream_leased_assets.compliance_checker.get_config"
+            "greenlang.agents.mrv.upstream_leased_assets.compliance_checker.get_config"
         ) as mock_config:
             mock_config.return_value = _make_mock_config()
             e1 = ComplianceCheckerEngine()

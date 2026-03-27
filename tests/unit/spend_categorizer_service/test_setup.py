@@ -30,8 +30,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from greenlang.spend_categorizer.config import SpendCategorizerConfig
-from greenlang.spend_categorizer.setup import (
+from greenlang.agents.data.spend_categorizer.config import SpendCategorizerConfig
+from greenlang.agents.data.spend_categorizer.setup import (
     AnalyticsResponse,
     CategoryRuleResponse,
     ClassificationResponse,

@@ -26,8 +26,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pytest
 
-from greenlang.duplicate_detector.cluster_resolver import ClusterResolver, _UnionFind
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.cluster_resolver import ClusterResolver, _UnionFind
+from greenlang.agents.data.duplicate_detector.models import (
     ClusterAlgorithm,
     DuplicateCluster,
     MatchClassification,

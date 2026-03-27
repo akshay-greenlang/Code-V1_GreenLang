@@ -23,19 +23,19 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.schema.compiler.ir import UnitSpecIR
-from greenlang.schema.errors import ErrorCode
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.compiler.ir import UnitSpecIR
+from greenlang.agents.foundation.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     ValidationProfile,
 )
-from greenlang.schema.models.finding import Severity
-from greenlang.schema.units.catalog import (
+from greenlang.agents.foundation.schema.models.finding import Severity
+from greenlang.agents.foundation.schema.units.catalog import (
     DimensionDefinition,
     UnitCatalog,
     UnitDefinition,
 )
-from greenlang.schema.validator.units import (
+from greenlang.agents.foundation.schema.validator.units import (
     NormalizedUnit,
     UnitValidator,
     create_unit_finding,

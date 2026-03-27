@@ -29,7 +29,7 @@ import pytest
 from pathlib import Path
 from typing import Any, Dict
 
-from greenlang.schema.compiler.resolver import (
+from greenlang.agents.foundation.schema.compiler.resolver import (
     RefResolver,
     LocalFileRegistry,
     SchemaSource,

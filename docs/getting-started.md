@@ -71,9 +71,14 @@ gl run pipeline.yaml
 # Run with explicit input file and output directory
 gl run pipeline.yaml input.json out
 
-# Run CBAM MVP flow (from monorepo root)
+# Canonical CBAM MVP runtime flow (from repository root)
 gl run cbam cbam.yaml imports.csv out
 ```
+
+`gl run` is the canonical operator surface for runtime execution.
+For CBAM package import behavior, monorepo source fallback is development-only via
+`GL_ALLOW_MONOREPO_CBAM_FALLBACK=1` and is disabled in release/CI profiles
+(`GL_RELEASE_STRICT=1` or `CI=true`).
 
 ### 4. View Results
 
@@ -88,6 +93,8 @@ ls out/
 ```
 
 ### CBAM Web Mode (Localhost vs Pilot)
+
+Web serving is currently provided by the standalone CBAM package command surface (`gl-cbam web`).
 
 ```bash
 # Localhost-only (recommended default)

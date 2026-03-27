@@ -76,7 +76,7 @@ from greenlang.agents.eudr.satellite_monitoring.models import (
     SENTINEL1_SAR_BANDS,
     FOREST_NDVI_THRESHOLDS,
     GFW_ALERT_SOURCES,
-    # Re-exported from greenlang.eudr_traceability.models
+    # Re-exported from greenlang.agents.data.eudr_traceability.models
     EUDRCommodity,
     # Enumerations
     SatelliteSource,

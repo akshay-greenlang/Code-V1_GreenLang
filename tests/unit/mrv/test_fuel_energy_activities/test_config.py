@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import Dict, Any
 from unittest.mock import patch
 
-from greenlang.fuel_energy_activities.config import (
+from greenlang.agents.mrv.fuel_energy_activities.config import (
     FuelEnergyActivitiesConfig,
     DatabaseConfig,
     CalculationConfig,
@@ -23,7 +23,7 @@ from greenlang.fuel_energy_activities.config import (
     MetricsConfig,
     ProvenanceConfig,
 )
-from greenlang.fuel_energy_activities.models import RegulatoryFramework
+from greenlang.agents.mrv.fuel_energy_activities.models import RegulatoryFramework
 
 
 # ============================================================================

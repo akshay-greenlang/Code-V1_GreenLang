@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 ASSUMPTIONS_SDK_AVAILABLE = False
 try:
-    from greenlang.assumptions.registry import AssumptionRegistry as _SDKRegistry
+    from greenlang.agents.foundation.assumptions.registry import AssumptionRegistry as _SDKRegistry
     ASSUMPTIONS_SDK_AVAILABLE = True
 except ImportError:
     pass

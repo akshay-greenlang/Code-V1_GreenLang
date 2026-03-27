@@ -15,7 +15,7 @@ concurrent requests.
 
 Example:
     >>> from fastapi import Depends
-    >>> from greenlang.schema.api.dependencies import get_validator
+    >>> from greenlang.agents.foundation.schema.api.dependencies import get_validator
     >>>
     >>> @app.post("/validate")
     >>> async def validate(validator=Depends(get_validator)):
@@ -41,7 +41,7 @@ from uuid import uuid4
 
 from fastapi import Depends, Header, HTTPException, Request, status
 
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.constants import (
     MAX_BATCH_ITEMS,
     MAX_PAYLOAD_BYTES,
     SCHEMA_CACHE_MAX_SIZE,
@@ -656,7 +656,7 @@ async def get_validator():
         for performance.
     """
     # Import here to avoid circular imports
-    from greenlang.schema.validator.core import SchemaValidator
+    from greenlang.agents.foundation.schema.validator.core import SchemaValidator
 
     # Return a validator instance
     # In production, this would be a singleton or use connection pooling
@@ -671,7 +671,7 @@ async def get_compiler():
         SchemaCompiler instance for compilation operations.
     """
     # Import here to avoid circular imports
-    from greenlang.schema.compiler.compiler import SchemaCompiler
+    from greenlang.agents.foundation.schema.compiler.compiler import SchemaCompiler
 
     return SchemaCompiler()
 
@@ -689,7 +689,7 @@ async def get_registry():
     """
     # Import here to avoid circular imports
     try:
-        from greenlang.schema.registry.resolver import SchemaRegistry
+        from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry
 
         # In production, this would be configured from environment
         registry_url = os.environ.get("GL_SCHEMA_REGISTRY_URL")

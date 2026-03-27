@@ -39,7 +39,7 @@ from greenlang.utilities.determinism import (
 )
 
 # Orchestrator imports
-from greenlang.orchestrator.pipeline_schema import (
+from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     PipelineDefinition,
     PipelineMetadata,
     PipelineSpec,
@@ -48,7 +48,7 @@ from greenlang.orchestrator.pipeline_schema import (
     ParameterDefinition,
     ParameterType,
 )
-from greenlang.orchestrator.executors.base import (
+from greenlang.agents.foundation.orchestrator.executors.base import (
     ExecutionStatus,
     ResourceProfile,
     RunContext,
@@ -57,14 +57,14 @@ from greenlang.orchestrator.executors.base import (
     ExecutionResult,
     ArtifactReference,
 )
-from greenlang.orchestrator.artifacts.base import (
+from greenlang.agents.foundation.orchestrator.artifacts.base import (
     ArtifactStore,
     ArtifactMetadata,
     ArtifactManifest,
     ArtifactType,
     RetentionPolicy,
 )
-from greenlang.orchestrator.audit.event_store import (
+from greenlang.agents.foundation.orchestrator.audit.event_store import (
     EventType,
     RunEvent,
     InMemoryEventStore,

@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Tuple
 
 import pytest
 
-from greenlang.process_emissions.uncertainty_quantifier import (
+from greenlang.agents.mrv.process_emissions.uncertainty_quantifier import (
     UncertaintyQuantifierEngine,
     UncertaintyResult,
     SensitivityResult,

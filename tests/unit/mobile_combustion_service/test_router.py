@@ -40,8 +40,8 @@ pytestmark = pytest.mark.skipif(
 
 def _create_app_and_client():
     """Create a FastAPI app with the mobile combustion router and service."""
-    from greenlang.mobile_combustion.setup import MobileCombustionService
-    import greenlang.mobile_combustion.setup as setup_mod
+    from greenlang.agents.mrv.mobile_combustion.setup import MobileCombustionService
+    import greenlang.agents.mrv.mobile_combustion.setup as setup_mod
 
     # Reset singletons
     setup_mod._singleton_instance = None
@@ -51,7 +51,7 @@ def _create_app_and_client():
     setup_mod._singleton_instance = svc
     setup_mod._service = svc
 
-    from greenlang.mobile_combustion.api.router import router
+    from greenlang.agents.mrv.mobile_combustion.api.router import router
 
     app = FastAPI()
     app.include_router(router)
@@ -62,7 +62,7 @@ def _create_app_and_client():
 @pytest.fixture
 def client_and_service():
     """Create a test client with a fresh service instance."""
-    import greenlang.mobile_combustion.setup as setup_mod
+    import greenlang.agents.mrv.mobile_combustion.setup as setup_mod
     app, client, svc = _create_app_and_client()
     yield client, svc
     # Cleanup

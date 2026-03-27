@@ -2,7 +2,7 @@
 """
 Unit Tests for JSON Patch Generator (RFC 6902)
 
-Tests for greenlang.schema.suggestions.patches module implementing
+Tests for greenlang.agents.foundation.schema.suggestions.patches module implementing
 JSON Patch operations per RFC 6902 and JSON Pointer utilities per RFC 6901.
 
 Author: GreenLang Framework Team
@@ -14,7 +14,7 @@ import copy
 import pytest
 from typing import Any, Dict, List
 
-from greenlang.schema.suggestions.patches import (
+from greenlang.agents.foundation.schema.suggestions.patches import (
     # Exceptions
     JSONPointerError,
     PatchApplicationError,

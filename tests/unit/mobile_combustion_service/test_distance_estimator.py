@@ -22,7 +22,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.mobile_combustion.distance_estimator import (
+from greenlang.agents.mrv.mobile_combustion.distance_estimator import (
     DistanceEstimatorEngine,
     VehicleType,
     FuelType,

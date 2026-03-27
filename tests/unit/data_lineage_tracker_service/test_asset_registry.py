@@ -33,7 +33,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_lineage_tracker.asset_registry import (
+from greenlang.agents.data.data_lineage_tracker.asset_registry import (
     AssetRegistryEngine,
     VALID_ASSET_TYPES,
     VALID_CLASSIFICATIONS,
@@ -44,7 +44,7 @@ from greenlang.data_lineage_tracker.asset_registry import (
     MAX_DESCRIPTION_LENGTH,
     MAX_BULK_IMPORT,
 )
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
 
 # ============================================================================

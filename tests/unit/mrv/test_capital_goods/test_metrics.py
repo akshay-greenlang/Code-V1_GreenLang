@@ -8,8 +8,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.capital_goods.metrics import CapitalGoodsMetrics
-from greenlang.capital_goods.models import CalculationMethod
+from greenlang.agents.mrv.capital_goods.metrics import CapitalGoodsMetrics
+from greenlang.agents.mrv.capital_goods.models import CalculationMethod
 
 
 # ============================================================================
@@ -75,7 +75,7 @@ class TestMetricCreation:
         yield
         CapitalGoodsMetrics.reset()
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_calculations_total_counter_created(self, mock_counter):
         """Test calculations_total counter is created."""
         CapitalGoodsMetrics()
@@ -85,7 +85,7 @@ class TestMetricCreation:
             ["method", "status"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Histogram")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Histogram")
     def test_calculation_duration_histogram_created(self, mock_histogram):
         """Test calculation_duration histogram is created."""
         CapitalGoodsMetrics()
@@ -95,7 +95,7 @@ class TestMetricCreation:
             ["method"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_emissions_calculated_counter_created(self, mock_counter):
         """Test emissions_calculated counter is created."""
         CapitalGoodsMetrics()
@@ -105,7 +105,7 @@ class TestMetricCreation:
             ["method"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Gauge")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Gauge")
     def test_active_calculations_gauge_created(self, mock_gauge):
         """Test active_calculations gauge is created."""
         CapitalGoodsMetrics()
@@ -114,7 +114,7 @@ class TestMetricCreation:
             "Number of active calculations in progress",
         )
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_spend_based_calculations_counter_created(self, mock_counter):
         """Test spend_based_calculations counter is created."""
         CapitalGoodsMetrics()
@@ -124,7 +124,7 @@ class TestMetricCreation:
             ["status"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_average_data_calculations_counter_created(self, mock_counter):
         """Test average_data_calculations counter is created."""
         CapitalGoodsMetrics()
@@ -134,7 +134,7 @@ class TestMetricCreation:
             ["status"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_supplier_specific_calculations_counter_created(self, mock_counter):
         """Test supplier_specific_calculations counter is created."""
         CapitalGoodsMetrics()
@@ -144,7 +144,7 @@ class TestMetricCreation:
             ["status"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_hybrid_calculations_counter_created(self, mock_counter):
         """Test hybrid_calculations counter is created."""
         CapitalGoodsMetrics()
@@ -154,7 +154,7 @@ class TestMetricCreation:
             ["status"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Histogram")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Histogram")
     def test_data_quality_scores_histogram_created(self, mock_histogram):
         """Test data_quality_scores histogram is created."""
         CapitalGoodsMetrics()
@@ -164,7 +164,7 @@ class TestMetricCreation:
             ["method"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_compliance_checks_counter_created(self, mock_counter):
         """Test compliance_checks counter is created."""
         CapitalGoodsMetrics()
@@ -174,7 +174,7 @@ class TestMetricCreation:
             ["framework", "status"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Gauge")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Gauge")
     def test_emission_factors_loaded_gauge_created(self, mock_gauge):
         """Test emission_factors_loaded gauge is created."""
         CapitalGoodsMetrics()
@@ -184,7 +184,7 @@ class TestMetricCreation:
             ["sector_classification"],
         )
 
-    @patch("greenlang.capital_goods.metrics.Counter")
+    @patch("greenlang.agents.mrv.capital_goods.metrics.Counter")
     def test_cache_hits_counter_created(self, mock_counter):
         """Test cache_hits counter is created."""
         CapitalGoodsMetrics()

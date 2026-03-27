@@ -19,7 +19,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import pytest
 
 try:
-    from greenlang.scope2_location.steam_heat_cooling import (
+    from greenlang.agents.mrv.scope2_location.steam_heat_cooling import (
         SteamHeatCoolingEngine,
         SteamType,
         HeatingType,

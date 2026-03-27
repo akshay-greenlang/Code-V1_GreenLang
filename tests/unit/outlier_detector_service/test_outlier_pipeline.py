@@ -18,13 +18,13 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.outlier_detector.outlier_pipeline import (
+from greenlang.agents.data.outlier_detector.outlier_pipeline import (
     OutlierPipelineEngine,
     _safe_mean,
     _severity_from_score,
     _utcnow,
 )
-from greenlang.outlier_detector.models import (
+from greenlang.agents.data.outlier_detector.models import (
     BatchDetectionResult,
     DetectionMethod,
     DetectionResult,
@@ -293,7 +293,7 @@ class TestValidateStage:
         assert result["status"] == "no_treatments"
 
     def test_with_treatments(self, engine, sample_records):
-        from greenlang.outlier_detector.models import TreatmentResult, TreatmentStrategy
+        from greenlang.agents.data.outlier_detector.models import TreatmentResult, TreatmentStrategy
         treatments = [
             TreatmentResult(
                 record_index=18,

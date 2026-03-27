@@ -16,16 +16,16 @@ from typing import Dict, List, Any, Optional
 from unittest.mock import Mock, patch, MagicMock
 
 try:
-    from greenlang.purchased_goods_services.setup import (
+    from greenlang.agents.mrv.purchased_goods_services.setup import (
         PurchasedGoodsServicesService,
         get_service,
         get_router,
         configure_purchased_goods,
     )
-    from greenlang.purchased_goods_services.spend_based_calculator import SpendBasedInput
-    from greenlang.purchased_goods_services.average_data_calculator import AverageDataInput
-    from greenlang.purchased_goods_services.supplier_specific_calculator import SupplierSpecificInput
-    from greenlang.purchased_goods_services.purchased_goods_pipeline import PipelineInput
+    from greenlang.agents.mrv.purchased_goods_services.spend_based_calculator import SpendBasedInput
+    from greenlang.agents.mrv.purchased_goods_services.average_data_calculator import AverageDataInput
+    from greenlang.agents.mrv.purchased_goods_services.supplier_specific_calculator import SupplierSpecificInput
+    from greenlang.agents.mrv.purchased_goods_services.purchased_goods_pipeline import PipelineInput
 except ImportError:
     pytest.skip("PurchasedGoodsServicesService not available", allow_module_level=True)
 
@@ -102,7 +102,7 @@ class TestServiceMethods:
         """Test supplier-specific calculation method."""
         service = get_service()
 
-        from greenlang.purchased_goods_services.supplier_specific_calculator import ProductEmissions
+        from greenlang.agents.mrv.purchased_goods_services.supplier_specific_calculator import ProductEmissions
 
         product = ProductEmissions(
             product_id="P001",
@@ -330,7 +330,7 @@ class TestOperationStatistics:
         )
         service.calculate_spend_based(spend_input)
 
-        from greenlang.purchased_goods_services.supplier_specific_calculator import ProductEmissions
+        from greenlang.agents.mrv.purchased_goods_services.supplier_specific_calculator import ProductEmissions
         product = ProductEmissions(
             product_id="P001",
             quantity=Decimal("1000"),
@@ -466,7 +466,7 @@ class TestCaching:
 class TestDatabaseIntegration:
     """Test database integration."""
 
-    @patch('greenlang.purchased_goods_services.setup.get_db_connection')
+    @patch('greenlang.agents.mrv.purchased_goods_services.setup.get_db_connection')
     def test_database_connection_acquired(self, mock_get_db):
         """Test database connection is acquired when needed."""
         service = get_service()
@@ -484,7 +484,7 @@ class TestDatabaseIntegration:
         # Verify DB connection was requested
         assert mock_get_db.called
 
-    @patch('greenlang.purchased_goods_services.setup.get_db_connection')
+    @patch('greenlang.agents.mrv.purchased_goods_services.setup.get_db_connection')
     def test_database_error_handling(self, mock_get_db):
         """Test database errors are handled properly."""
         service = get_service()

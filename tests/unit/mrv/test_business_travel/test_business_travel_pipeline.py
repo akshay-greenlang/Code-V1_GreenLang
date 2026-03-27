@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.business_travel.business_travel_pipeline import (
+    from greenlang.agents.mrv.business_travel.business_travel_pipeline import (
         BusinessTravelPipelineEngine,
         PipelineStatus,
     )
@@ -35,7 +35,7 @@ except ImportError:
     PIPELINE_AVAILABLE = False
 
 try:
-    from greenlang.business_travel.models import (
+    from greenlang.agents.mrv.business_travel.models import (
         TripInput,
         BatchTripInput,
         TripCalculationResult,

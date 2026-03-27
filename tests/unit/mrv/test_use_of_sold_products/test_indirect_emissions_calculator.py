@@ -26,7 +26,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.use_of_sold_products.indirect_emissions_calculator import (
+    from greenlang.agents.mrv.use_of_sold_products.indirect_emissions_calculator import (
         IndirectEmissionsCalculatorEngine,
         get_indirect_calculator,
         calculate_electricity_emissions,

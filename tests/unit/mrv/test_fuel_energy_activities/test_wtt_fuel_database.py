@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     WTTFactor,
     FuelProperties,
     FuelClassification,
@@ -22,7 +22,7 @@ from greenlang.fuel_energy_activities.models import (
     EnergyUnit,
     EmissionFactorSource,
 )
-from greenlang.fuel_energy_activities.engines.wtt_fuel_database import WTTFuelDatabaseEngine
+from greenlang.agents.mrv.fuel_energy_activities.engines.wtt_fuel_database import WTTFuelDatabaseEngine
 from greenlang_core.exceptions import ValidationError, ProcessingError
 
 

@@ -3,7 +3,7 @@
 Unit Tests for Time Series Gap Filler REST API Router (AGENT-DATA-014)
 ========================================================================
 
-Comprehensive test suite for ``greenlang.time_series_gap_filler.api.router``
+Comprehensive test suite for ``greenlang.agents.data.time_series_gap_filler.api.router``
 covering all 20 endpoints using ``starlette.testclient.TestClient``.
 
 Target: 40+ tests covering all endpoints, happy paths, and 404 cases.
@@ -26,7 +26,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from greenlang.time_series_gap_filler.api.router import FASTAPI_AVAILABLE
+from greenlang.agents.data.time_series_gap_filler.api.router import FASTAPI_AVAILABLE
 
 # Skip the entire module if FastAPI is not installed
 pytestmark = pytest.mark.skipif(
@@ -246,7 +246,7 @@ def client(mock_service):
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
-    from greenlang.time_series_gap_filler.api.router import router
+    from greenlang.agents.data.time_series_gap_filler.api.router import router
 
     app = FastAPI()
     app.include_router(router)
@@ -262,7 +262,7 @@ def client_no_service():
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
-    from greenlang.time_series_gap_filler.api.router import router
+    from greenlang.agents.data.time_series_gap_filler.api.router import router
 
     app = FastAPI()
     app.include_router(router)

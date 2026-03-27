@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.refrigerants_fgas.refrigerant_pipeline import (
+from greenlang.agents.mrv.refrigerants_fgas.refrigerant_pipeline import (
     PIPELINE_STAGES,
     SUPPORTED_METHODS,
     RefrigerantPipelineEngine,

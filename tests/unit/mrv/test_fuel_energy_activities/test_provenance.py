@@ -12,13 +12,13 @@ from datetime import datetime, timezone
 import json
 import hashlib
 
-from greenlang.fuel_energy_activities.provenance import (
+from greenlang.agents.mrv.fuel_energy_activities.provenance import (
     FuelEnergyActivitiesProvenance,
     ProvenanceChain,
     ProvenanceEntry,
     ProvenanceStage,
 )
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     FuelType,
     ActivityType,
     CalculationMethod,

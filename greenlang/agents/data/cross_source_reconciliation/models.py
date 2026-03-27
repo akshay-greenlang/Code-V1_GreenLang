@@ -9,11 +9,11 @@ resolution, golden record assembly, and reconciliation pipeline
 orchestration.
 
 Re-exported Layer 1 sources:
-    - greenlang.data_quality_profiler.consistency_analyzer:
+    - greenlang.agents.data.data_quality_profiler.consistency_analyzer:
         ConsistencyAnalyzer (as L1ConsistencyAnalyzer)
-    - greenlang.duplicate_detector.similarity_scorer:
+    - greenlang.agents.data.duplicate_detector.similarity_scorer:
         SimilarityScorer (as L1SimilarityScorer)
-    - greenlang.duplicate_detector.match_classifier:
+    - greenlang.agents.data.duplicate_detector.match_classifier:
         MatchClassifier (as L1MatchClassifier)
     - greenlang.data.data_engineering.reconciliation.factor_reconciliation:
         FactorReconciler (as L1FactorReconciler),

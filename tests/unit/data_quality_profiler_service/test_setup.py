@@ -3,7 +3,7 @@
 Unit Tests for DataQualityProfilerService (AGENT-DATA-010)
 ===========================================================
 
-Comprehensive test suite for ``greenlang.data_quality_profiler.setup``
+Comprehensive test suite for ``greenlang.agents.data.data_quality_profiler.setup``
 covering the ``DataQualityProfilerService`` facade, all 20 public methods,
 lifecycle, statistics, provenance, configuration helpers, Pydantic response
 models, thread-safety, and full end-to-end workflows.
@@ -26,13 +26,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.data_quality_profiler.config import (
+from greenlang.agents.data.data_quality_profiler.config import (
     DataQualityProfilerConfig,
     get_config,
     set_config,
     reset_config,
 )
-from greenlang.data_quality_profiler.setup import (
+from greenlang.agents.data.data_quality_profiler.setup import (
     DataQualityProfilerService,
     DatasetProfileResponse,
     QualityAssessmentResponse,

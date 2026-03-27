@@ -13,7 +13,7 @@ This module provides Pydantic v2 models for the FastAPI REST API, including:
 All models include OpenAPI examples and comprehensive validation.
 
 Example:
-    >>> from greenlang.schema.api.models import ValidateRequest, ValidateResponse
+    >>> from greenlang.agents.foundation.schema.api.models import ValidateRequest, ValidateResponse
     >>> request = ValidateRequest(
     ...     schema_ref=SchemaRef(schema_id="emissions/activity", version="1.3.0"),
     ...     payload={"energy": 100, "unit": "kWh"}
@@ -31,11 +31,11 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator
 
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.models.config import ValidationOptions, ValidationProfile
-from greenlang.schema.models.finding import Finding
-from greenlang.schema.models.report import ValidationSummary
-from greenlang.schema.models.patch import FixSuggestion
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.models.config import ValidationOptions, ValidationProfile
+from greenlang.agents.foundation.schema.models.finding import Finding
+from greenlang.agents.foundation.schema.models.report import ValidationSummary
+from greenlang.agents.foundation.schema.models.patch import FixSuggestion
 
 
 # =============================================================================

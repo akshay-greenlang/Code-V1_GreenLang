@@ -25,9 +25,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from greenlang.supplier_questionnaire.api.router import router
-from greenlang.supplier_questionnaire.config import SupplierQuestionnaireConfig
-from greenlang.supplier_questionnaire.setup import (
+from greenlang.agents.data.supplier_questionnaire.api.router import router
+from greenlang.agents.data.supplier_questionnaire.config import SupplierQuestionnaireConfig
+from greenlang.agents.data.supplier_questionnaire.setup import (
     CampaignAnalytics,
     Distribution,
     FollowUpAction,

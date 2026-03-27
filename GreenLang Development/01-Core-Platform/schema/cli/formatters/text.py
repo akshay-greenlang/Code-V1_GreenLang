@@ -8,7 +8,7 @@ making it suitable for log files, CI systems without color support, and
 piped output.
 
 Example:
-    >>> from greenlang.schema.cli.formatters.text import TextFormatter
+    >>> from greenlang.agents.foundation.schema.cli.formatters.text import TextFormatter
     >>> formatter = TextFormatter(verbosity=1)
     >>> output = formatter.format(validation_report)
     >>> print(output)
@@ -22,8 +22,8 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Union
 
-from greenlang.schema.models.report import ValidationReport, BatchValidationReport
-from greenlang.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.report import ValidationReport, BatchValidationReport
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
 
 
 class TextFormatter:

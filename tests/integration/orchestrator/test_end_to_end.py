@@ -25,7 +25,7 @@ from tests.integration.orchestrator.conftest import _run_async
 
 # ---------------------------------------------------------------------------
 # Import the inline executor from unit tests for integration testing
-# (In production, this would import from greenlang.orchestrator.dag_executor)
+# (In production, this would import from greenlang.agents.foundation.orchestrator.dag_executor)
 # ---------------------------------------------------------------------------
 
 from tests.unit.orchestrator.test_dag_executor import (

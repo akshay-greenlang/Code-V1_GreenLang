@@ -4,9 +4,9 @@ Unit Tests for Schema Migration Agent Models - AGENT-DATA-017
 
 Tests all enumerations (14), SDK models (16), request models (8), utility
 helpers, constants, and re-exported Layer 1 symbols from
-``greenlang.schema_migration.models``.
+``greenlang.agents.data.schema_migration.models``.
 
-Target: 150+ tests, 85%+ coverage of greenlang.schema_migration.models
+Target: 150+ tests, 85%+ coverage of greenlang.agents.data.schema_migration.models
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -22,7 +22,7 @@ import pydantic
 import pytest
 from pydantic import ValidationError
 
-from greenlang.schema_migration.models import (
+from greenlang.agents.data.schema_migration.models import (
     # Layer 1 re-exports
     QualityDimension,
     RuleType,
@@ -93,7 +93,7 @@ from greenlang.schema_migration.models import (
 
 def _set_model_extra(mode: str) -> None:
     """Set model_config extra to the given mode for all SM BaseModel subclasses."""
-    from greenlang.schema_migration import models as sm_models
+    from greenlang.agents.data.schema_migration import models as sm_models
 
     for name in dir(sm_models):
         obj = getattr(sm_models, name)
@@ -1696,30 +1696,30 @@ class TestModuleExports:
     """Verify __all__ completeness."""
 
     def test_all_list_exists(self):
-        from greenlang.schema_migration import models as mod
+        from greenlang.agents.data.schema_migration import models as mod
         assert hasattr(mod, "__all__")
 
     def test_all_contains_schema_type(self):
-        from greenlang.schema_migration import models as mod
+        from greenlang.agents.data.schema_migration import models as mod
         assert "SchemaType" in mod.__all__
 
     def test_all_contains_schema_definition(self):
-        from greenlang.schema_migration import models as mod
+        from greenlang.agents.data.schema_migration import models as mod
         assert "SchemaDefinition" in mod.__all__
 
     def test_all_contains_register_schema_request(self):
-        from greenlang.schema_migration import models as mod
+        from greenlang.agents.data.schema_migration import models as mod
         assert "RegisterSchemaRequest" in mod.__all__
 
     def test_all_contains_quality_dimension(self):
-        from greenlang.schema_migration import models as mod
+        from greenlang.agents.data.schema_migration import models as mod
         assert "QualityDimension" in mod.__all__
 
     def test_all_contains_rule_type(self):
-        from greenlang.schema_migration import models as mod
+        from greenlang.agents.data.schema_migration import models as mod
         assert "RuleType" in mod.__all__
 
     def test_all_minimum_count(self):
-        from greenlang.schema_migration import models as mod
+        from greenlang.agents.data.schema_migration import models as mod
         # 2 L1 re-exports + 2 flags + 10 constants + 14 enums + 16 models + 8 requests = 52+
         assert len(mod.__all__) >= 45

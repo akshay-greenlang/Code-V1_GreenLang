@@ -29,7 +29,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError as PydanticValidationError
 
-from greenlang.employee_commuting.models import (
+from greenlang.agents.mrv.employee_commuting.models import (
     # Enumerations
     CalculationMethod,
     CommuteMode,

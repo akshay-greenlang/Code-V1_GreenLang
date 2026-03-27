@@ -33,8 +33,8 @@ httpx = pytest.importorskip("httpx")
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from greenlang.refrigerants_fgas.api.router import router
-from greenlang.refrigerants_fgas.setup import RefrigerantsFGasService
+from greenlang.agents.mrv.refrigerants_fgas.api.router import router
+from greenlang.agents.mrv.refrigerants_fgas.setup import RefrigerantsFGasService
 
 
 # ---------------------------------------------------------------------------
@@ -62,7 +62,7 @@ def app(service) -> FastAPI:
 def client(app, service) -> TestClient:
     """Create a TestClient with the service singleton patched."""
     with patch(
-        "greenlang.refrigerants_fgas.api.router._get_service",
+        "greenlang.agents.mrv.refrigerants_fgas.api.router._get_service",
         return_value=service,
     ):
         with TestClient(app) as c:

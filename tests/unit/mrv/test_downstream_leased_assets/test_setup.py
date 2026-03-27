@@ -20,7 +20,7 @@ from decimal import Decimal
 import pytest
 
 try:
-    from greenlang.downstream_leased_assets.setup import (
+    from greenlang.agents.mrv.downstream_leased_assets.setup import (
         DownstreamLeasedService,
         get_service,
         get_router,
@@ -30,7 +30,7 @@ except ImportError:
     SETUP_AVAILABLE = False
 
 try:
-    from greenlang.downstream_leased_assets.models import (
+    from greenlang.agents.mrv.downstream_leased_assets.models import (
         AGENT_ID,
         AGENT_COMPONENT,
         VERSION,

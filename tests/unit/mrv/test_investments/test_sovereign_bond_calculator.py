@@ -25,10 +25,10 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 import pytest
 
-from greenlang.investments.sovereign_bond_calculator import (
+from greenlang.agents.mrv.investments.sovereign_bond_calculator import (
     SovereignBondCalculatorEngine,
 )
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     AssetClass,
     PCAFDataQuality,
     AttributionMethod,
@@ -52,7 +52,7 @@ def _reset_singleton():
 def engine():
     """Create a fresh SovereignBondCalculatorEngine with mocked config."""
     with patch(
-        "greenlang.investments.sovereign_bond_calculator.get_config"
+        "greenlang.agents.mrv.investments.sovereign_bond_calculator.get_config"
     ) as mock_config:
         cfg = MagicMock()
         cfg.sovereign.include_lulucf = False

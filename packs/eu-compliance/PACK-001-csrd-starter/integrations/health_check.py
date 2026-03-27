@@ -723,7 +723,7 @@ class PackHealthCheck:
 
         # Check access guard availability
         try:
-            importlib.import_module("greenlang.access_guard")
+            importlib.import_module("greenlang.agents.foundation.access_guard")
             details["access_guard"] = "available"
             passed += 1
         except ImportError:

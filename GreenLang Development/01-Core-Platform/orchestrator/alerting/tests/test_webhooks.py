@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from greenlang.orchestrator.alerting.webhooks import (
+from greenlang.agents.foundation.orchestrator.alerting.webhooks import (
     AlertManager,
     AlertPayload,
     AlertSeverity,
@@ -30,20 +30,20 @@ from greenlang.orchestrator.alerting.webhooks import (
     WebhookManager,
     compute_hmac_signature,
 )
-from greenlang.orchestrator.alerting.providers.slack import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.slack import (
     SlackWebhookProvider,
     format_slack_payload,
 )
-from greenlang.orchestrator.alerting.providers.discord import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.discord import (
     DiscordWebhookProvider,
     format_discord_payload,
 )
-from greenlang.orchestrator.alerting.providers.pagerduty import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.pagerduty import (
     PagerDutyProvider,
     format_pagerduty_payload,
     generate_dedup_key,
 )
-from greenlang.orchestrator.alerting.providers.custom import (
+from greenlang.agents.foundation.orchestrator.alerting.providers.custom import (
     CustomWebhookProvider,
     format_custom_payload,
 )

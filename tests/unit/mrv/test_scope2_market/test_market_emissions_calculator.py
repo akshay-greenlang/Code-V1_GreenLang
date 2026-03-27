@@ -23,7 +23,7 @@ from unittest.mock import Mock
 import pytest
 
 try:
-    from greenlang.scope2_market.market_emissions_calculator import (
+    from greenlang.agents.mrv.scope2_market.market_emissions_calculator import (
         MarketEmissionsCalculatorEngine,
         GWP_VALUES,
         DEFAULT_GAS_FRACTIONS,

@@ -31,7 +31,7 @@ Author: GreenLang Team
 Version: 2.1.0
 """
 
-from greenlang.orchestrator.pipeline_schema import (
+from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     # Core models
     PipelineDefinition,
     PipelineMetadata,
@@ -61,7 +61,7 @@ from greenlang.orchestrator.pipeline_schema import (
     extract_template_references,
 )
 
-from greenlang.orchestrator.governance import (
+from greenlang.agents.foundation.orchestrator.governance import (
     PolicyEngine,
     PolicyEngineConfig,
     PolicyDecision,
@@ -77,7 +77,7 @@ from greenlang.orchestrator.governance import (
 )
 
 # Executors (always available - no external deps)
-from greenlang.orchestrator.executors.base import (
+from greenlang.agents.foundation.orchestrator.executors.base import (
     ExecutorBackend,
     RunContext as GLIPRunContext,
     StepResult as GLIPStepResult,
@@ -89,7 +89,7 @@ from greenlang.orchestrator.executors.base import (
 
 # GLIP Orchestrator (imports gracefully handle missing dependencies)
 try:
-    from greenlang.orchestrator.glip_orchestrator import (
+    from greenlang.agents.foundation.orchestrator.glip_orchestrator import (
         GLIPOrchestrator,
         GLIPOrchestratorConfig,
         GLIPRunConfig,
@@ -120,7 +120,7 @@ except ImportError as e:
     GLIP_AVAILABLE = False
 
 try:
-    from greenlang.orchestrator.executors.k8s_executor import (
+    from greenlang.agents.foundation.orchestrator.executors.k8s_executor import (
         K8sExecutor,
         K8sExecutorConfig,
     )
@@ -131,14 +131,14 @@ except ImportError:
     K8S_AVAILABLE = False
 
 # Artifacts
-from greenlang.orchestrator.artifacts.base import (
+from greenlang.agents.foundation.orchestrator.artifacts.base import (
     ArtifactStore,
     ArtifactMetadata,
     ArtifactManifest,
 )
 
 try:
-    from greenlang.orchestrator.artifacts.s3_store import (
+    from greenlang.agents.foundation.orchestrator.artifacts.s3_store import (
         S3ArtifactStore,
         S3StoreConfig,
     )
@@ -150,7 +150,7 @@ except ImportError:
 
 # Audit
 try:
-    from greenlang.orchestrator.audit.event_store import (
+    from greenlang.agents.foundation.orchestrator.audit.event_store import (
         EventStore as AuditEventStore,
         RunEvent as AuditEvent,
         EventType,
@@ -167,7 +167,7 @@ except ImportError:
 
 # Adapters
 try:
-    from greenlang.orchestrator.adapters.http_legacy_adapter import (
+    from greenlang.agents.foundation.orchestrator.adapters.http_legacy_adapter import (
         HttpLegacyAdapter,
         AdapterConfig,
     )
@@ -178,7 +178,7 @@ except ImportError:
     ADAPTERS_AVAILABLE = False
 
 # Template Engine (FR-005)
-from greenlang.orchestrator.template_engine import (
+from greenlang.agents.foundation.orchestrator.template_engine import (
     # Core models
     PipelineTemplate,
     TemplateParameter,

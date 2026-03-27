@@ -27,8 +27,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from greenlang.supplier_questionnaire.config import SupplierQuestionnaireConfig
-from greenlang.supplier_questionnaire.setup import (
+from greenlang.agents.data.supplier_questionnaire.config import SupplierQuestionnaireConfig
+from greenlang.agents.data.supplier_questionnaire.setup import (
     CampaignAnalytics,
     Distribution,
     FollowUpAction,

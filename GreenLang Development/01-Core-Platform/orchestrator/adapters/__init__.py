@@ -16,7 +16,7 @@ Components:
 Author: GreenLang Team
 """
 
-from greenlang.orchestrator.adapters.http_legacy_adapter import (
+from greenlang.agents.foundation.orchestrator.adapters.http_legacy_adapter import (
     HttpLegacyAdapter,
     AdapterConfig,
     HttpMethod,

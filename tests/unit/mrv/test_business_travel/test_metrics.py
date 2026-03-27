@@ -28,7 +28,7 @@ from typing import Any, Dict
 from unittest.mock import Mock, patch, MagicMock
 import pytest
 
-from greenlang.business_travel.metrics import (
+from greenlang.agents.mrv.business_travel.metrics import (
     BusinessTravelMetrics,
     get_metrics,
     PROMETHEUS_AVAILABLE,

@@ -24,8 +24,8 @@ pytest.importorskip("fastapi")
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from greenlang.process_emissions.api.router import create_router
-from greenlang.process_emissions.setup import (
+from greenlang.agents.mrv.process_emissions.api.router import create_router
+from greenlang.agents.mrv.process_emissions.setup import (
     ProcessEmissionsService,
     CalculateResponse,
     BatchCalculateResponse,
@@ -197,13 +197,13 @@ def client(mock_service: MagicMock) -> TestClient:
     app.include_router(router)
 
     with patch(
-        "greenlang.process_emissions.api.router.create_router.__code__",
+        "greenlang.agents.mrv.process_emissions.api.router.create_router.__code__",
     ):
         pass  # Router already created
 
     # Patch get_service to return our mock
     with patch(
-        "greenlang.process_emissions.setup.get_service",
+        "greenlang.agents.mrv.process_emissions.setup.get_service",
         return_value=mock_service,
     ):
         yield TestClient(app)

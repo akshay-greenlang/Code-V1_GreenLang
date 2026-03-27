@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.franchises.setup import (
+    from greenlang.agents.mrv.franchises.setup import (
         FranchisesService,
         get_service,
         get_router,

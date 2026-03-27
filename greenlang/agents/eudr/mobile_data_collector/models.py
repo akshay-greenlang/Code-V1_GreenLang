@@ -46,7 +46,7 @@ Response Models (15):
       FleetStatusResponse, HealthResponse
 
 Compatibility:
-    Imports EUDRCommodity from greenlang.eudr_traceability.models for
+    Imports EUDRCommodity from greenlang.agents.data.eudr_traceability.models for
     cross-agent consistency with AGENT-DATA-005 EUDR Traceability
     Connector and AGENT-EUDR-002 Geolocation Verification.
 
@@ -77,7 +77,7 @@ from pydantic import (
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.eudr_traceability.models import (
+    from greenlang.agents.data.eudr_traceability.models import (
         EUDRCommodity as _ExternalEUDRCommodity,
     )
 except ImportError:

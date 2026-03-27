@@ -21,7 +21,7 @@ from decimal import Decimal
 from typing import Any, Dict, List
 from unittest.mock import MagicMock
 
-from greenlang.scope3_category_mapper.models import (
+from greenlang.agents.mrv.scope3_category_mapper.models import (
     ALL_SCOPE3_CATEGORIES,
     BenchmarkComparison,
     CategoryCompletenessEntry,
@@ -32,7 +32,7 @@ from greenlang.scope3_category_mapper.models import (
     Scope3Category,
     ScreeningResult,
 )
-from greenlang.scope3_category_mapper.completeness_screener import (
+from greenlang.agents.mrv.scope3_category_mapper.completeness_screener import (
     BENCHMARK_TOLERANCE_PCT,
     COMPANY_TYPE_RELEVANCE,
     CompletenessScreenerEngine,

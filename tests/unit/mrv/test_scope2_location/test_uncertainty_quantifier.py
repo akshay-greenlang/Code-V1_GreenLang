@@ -23,7 +23,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.scope2_location.uncertainty_quantifier import (
+    from greenlang.agents.mrv.scope2_location.uncertainty_quantifier import (
         UncertaintyQuantifierEngine,
         GRID_EF_UNCERTAINTY,
         ACTIVITY_DATA_UNCERTAINTY,

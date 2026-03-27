@@ -90,8 +90,8 @@ def clean_env():
 @pytest.fixture(autouse=True)
 def reset_singletons():
     """Reset config and provenance singletons between tests."""
-    from greenlang.process_emissions.config import reset_config
-    from greenlang.process_emissions.provenance import reset_provenance_tracker
+    from greenlang.agents.mrv.process_emissions.config import reset_config
+    from greenlang.agents.mrv.process_emissions.provenance import reset_provenance_tracker
     reset_config()
     reset_provenance_tracker()
     yield
@@ -107,7 +107,7 @@ def reset_singletons():
 @pytest.fixture
 def process_database_engine():
     """Real ProcessDatabaseEngine for integration testing."""
-    from greenlang.process_emissions.process_database import (
+    from greenlang.agents.mrv.process_emissions.process_database import (
         ProcessDatabaseEngine,
     )
     return ProcessDatabaseEngine()
@@ -116,7 +116,7 @@ def process_database_engine():
 @pytest.fixture
 def emission_calculator_engine(process_database_engine):
     """Real EmissionCalculatorEngine wired to the process database."""
-    from greenlang.process_emissions.emission_calculator import (
+    from greenlang.agents.mrv.process_emissions.emission_calculator import (
         EmissionCalculatorEngine,
     )
     return EmissionCalculatorEngine(
@@ -127,7 +127,7 @@ def emission_calculator_engine(process_database_engine):
 @pytest.fixture
 def abatement_tracker_engine():
     """Real AbatementTrackerEngine for integration testing."""
-    from greenlang.process_emissions.abatement_tracker import (
+    from greenlang.agents.mrv.process_emissions.abatement_tracker import (
         AbatementTrackerEngine,
     )
     return AbatementTrackerEngine()
@@ -136,7 +136,7 @@ def abatement_tracker_engine():
 @pytest.fixture
 def uncertainty_engine():
     """Real UncertaintyQuantifierEngine for integration testing."""
-    from greenlang.process_emissions.uncertainty_quantifier import (
+    from greenlang.agents.mrv.process_emissions.uncertainty_quantifier import (
         UncertaintyQuantifierEngine,
     )
     return UncertaintyQuantifierEngine()
@@ -145,7 +145,7 @@ def uncertainty_engine():
 @pytest.fixture
 def compliance_engine():
     """Real ComplianceCheckerEngine for integration testing."""
-    from greenlang.process_emissions.compliance_checker import (
+    from greenlang.agents.mrv.process_emissions.compliance_checker import (
         ComplianceCheckerEngine,
     )
     return ComplianceCheckerEngine()
@@ -160,7 +160,7 @@ def pipeline_engine(
     compliance_engine,
 ):
     """Real ProcessEmissionsPipelineEngine with all engines wired."""
-    from greenlang.process_emissions.process_emissions_pipeline import (
+    from greenlang.agents.mrv.process_emissions.process_emissions_pipeline import (
         ProcessEmissionsPipelineEngine,
     )
     return ProcessEmissionsPipelineEngine(
@@ -175,7 +175,7 @@ def pipeline_engine(
 @pytest.fixture
 def service():
     """Real ProcessEmissionsService facade for integration testing."""
-    from greenlang.process_emissions.setup import ProcessEmissionsService
+    from greenlang.agents.mrv.process_emissions.setup import ProcessEmissionsService
     return ProcessEmissionsService()
 
 

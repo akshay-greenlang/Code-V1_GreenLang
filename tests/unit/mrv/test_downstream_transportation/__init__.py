@@ -5,7 +5,7 @@ Unit tests for AGENT-MRV-022: Downstream Transportation & Distribution Agent.
 Tests the GL-MRV-S3-009 agent for GHG Protocol Scope 3 Category 9
 downstream transportation and distribution emissions calculations.
 
-Package: greenlang.downstream_transportation
+Package: greenlang.agents.mrv.downstream_transportation
 Agent ID: GL-MRV-S3-009
 API: /api/v1/downstream-transportation
 DB Migration: V073

@@ -15,7 +15,7 @@ Components:
     - regex_analyzer: Regex safety analysis for ReDoS prevention
 
 Example:
-    >>> from greenlang.schema.compiler import (
+    >>> from greenlang.agents.foundation.schema.compiler import (
     ...     SchemaDocument, ObjectTypeNode, build_ast, parse_type_node
     ... )
     >>> schema_dict = {"type": "object", "properties": {"name": {"type": "string"}}}
@@ -28,7 +28,7 @@ Version: 0.1.0
 GL-FOUND-X-002: Schema Compiler & Validator
 """
 
-from greenlang.schema.compiler.ast import (
+from greenlang.agents.foundation.schema.compiler.ast import (
     # Constants
     JSON_SCHEMA_DRAFT_2020_12,
     JSON_SCHEMA_TYPES,
@@ -61,7 +61,7 @@ from greenlang.schema.compiler.ast import (
 )
 
 # Resolver components (Task 1.3 - Complete)
-from greenlang.schema.compiler.resolver import (
+from greenlang.agents.foundation.schema.compiler.resolver import (
     # Exceptions
     CircularRefError,
     RefResolutionError,
@@ -84,7 +84,7 @@ from greenlang.schema.compiler.resolver import (
 )
 
 # Parser components (Task 1.1 - Complete)
-from greenlang.schema.compiler.parser import (
+from greenlang.agents.foundation.schema.compiler.parser import (
     ParseResult,
     ParseError,
     SafeYAMLLoader,
@@ -96,7 +96,7 @@ from greenlang.schema.compiler.parser import (
 )
 
 # Regex Analyzer components (Task 1.5 - Complete)
-from greenlang.schema.compiler.regex_analyzer import (
+from greenlang.agents.foundation.schema.compiler.regex_analyzer import (
     # Main class
     RegexAnalyzer,
     # Result model
@@ -115,7 +115,7 @@ from greenlang.schema.compiler.regex_analyzer import (
 )
 
 # Schema Validator components (Task 1.6 - Complete)
-from greenlang.schema.compiler.schema_validator import (
+from greenlang.agents.foundation.schema.compiler.schema_validator import (
     # Result models
     SchemaValidationFinding,
     SchemaValidationResult,
@@ -129,12 +129,12 @@ from greenlang.schema.compiler.schema_validator import (
 )
 
 # TODO: Import components when implemented
-# from greenlang.schema.compiler.ir import (
+# from greenlang.agents.foundation.schema.compiler.ir import (
 #     SchemaIR,
 #     PropertyIR,
 #     CompiledPattern,
 # )
-# from greenlang.schema.compiler.compiler import (
+# from greenlang.agents.foundation.schema.compiler.compiler import (
 #     SchemaCompiler,
 #     CompilationResult,
 # )

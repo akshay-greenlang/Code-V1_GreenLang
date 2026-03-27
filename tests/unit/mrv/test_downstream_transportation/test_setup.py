@@ -29,7 +29,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation import (
+    from greenlang.agents.mrv.downstream_transportation import (
         DownstreamTransportDatabaseEngine,
         DistanceBasedCalculatorEngine,
         SpendBasedCalculatorEngine,
@@ -309,7 +309,7 @@ class TestServiceAccessors:
 
     def test_all_exports_available(self):
         """Test __all__ exports are available."""
-        from greenlang.downstream_transportation import __all__
+        from greenlang.agents.mrv.downstream_transportation import __all__
         assert "DownstreamTransportDatabaseEngine" in __all__
         assert "DistanceBasedCalculatorEngine" in __all__
         assert "SpendBasedCalculatorEngine" in __all__

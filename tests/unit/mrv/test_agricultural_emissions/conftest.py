@@ -53,13 +53,13 @@ def reset_config_singleton():
     holder class.
     """
     try:
-        from greenlang.agricultural_emissions.config import reset_config
+        from greenlang.agents.mrv.agricultural_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
     yield
     try:
-        from greenlang.agricultural_emissions.config import reset_config
+        from greenlang.agents.mrv.agricultural_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
@@ -95,13 +95,13 @@ def clean_env():
 def reset_metrics_singleton():
     """Reset MetricsCollector singleton before each test."""
     try:
-        from greenlang.agricultural_emissions.metrics import MetricsCollector
+        from greenlang.agents.mrv.agricultural_emissions.metrics import MetricsCollector
         MetricsCollector._instance = None
     except ImportError:
         pass
     yield
     try:
-        from greenlang.agricultural_emissions.metrics import MetricsCollector
+        from greenlang.agents.mrv.agricultural_emissions.metrics import MetricsCollector
         MetricsCollector._instance = None
     except ImportError:
         pass
@@ -116,7 +116,7 @@ def reset_metrics_singleton():
 def reset_provenance_singleton():
     """Reset provenance singleton before and after each test."""
     try:
-        from greenlang.agricultural_emissions.provenance import (
+        from greenlang.agents.mrv.agricultural_emissions.provenance import (
             reset_provenance_tracker,
         )
         reset_provenance_tracker()
@@ -124,7 +124,7 @@ def reset_provenance_singleton():
         pass
     yield
     try:
-        from greenlang.agricultural_emissions.provenance import (
+        from greenlang.agents.mrv.agricultural_emissions.provenance import (
             reset_provenance_tracker,
         )
         reset_provenance_tracker()
@@ -402,7 +402,7 @@ def db_engine():
     Falls back to MagicMock if the module is not importable.
     """
     try:
-        from greenlang.agricultural_emissions.agricultural_database import (
+        from greenlang.agents.mrv.agricultural_emissions.agricultural_database import (
             AgriculturalDatabaseEngine,
         )
         return AgriculturalDatabaseEngine()
@@ -417,7 +417,7 @@ def enteric_engine(db_engine):
     Falls back to MagicMock if the module is not importable.
     """
     try:
-        from greenlang.agricultural_emissions.enteric_fermentation import (
+        from greenlang.agents.mrv.agricultural_emissions.enteric_fermentation import (
             EntericFermentationEngine,
         )
         return EntericFermentationEngine(database=db_engine)
@@ -432,7 +432,7 @@ def manure_engine(db_engine):
     Falls back to MagicMock if the module is not importable.
     """
     try:
-        from greenlang.agricultural_emissions.manure_management import (
+        from greenlang.agents.mrv.agricultural_emissions.manure_management import (
             ManureManagementEngine,
         )
         return ManureManagementEngine(database=db_engine)
@@ -447,7 +447,7 @@ def cropland_engine(db_engine):
     Falls back to MagicMock if the module is not importable.
     """
     try:
-        from greenlang.agricultural_emissions.cropland_emissions import (
+        from greenlang.agents.mrv.agricultural_emissions.cropland_emissions import (
             CroplandEmissionsEngine,
         )
         return CroplandEmissionsEngine(database=db_engine)
@@ -467,7 +467,7 @@ def provenance_tracker():
     Falls back to MagicMock if the module is not importable.
     """
     try:
-        from greenlang.agricultural_emissions.provenance import ProvenanceTracker
+        from greenlang.agents.mrv.agricultural_emissions.provenance import ProvenanceTracker
         return ProvenanceTracker(max_entries=1000)
     except ImportError:
         return MagicMock(name="ProvenanceTracker")

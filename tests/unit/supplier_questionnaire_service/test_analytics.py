@@ -23,8 +23,8 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.supplier_questionnaire.analytics import AnalyticsEngine
-from greenlang.supplier_questionnaire.models import (
+from greenlang.agents.data.supplier_questionnaire.analytics import AnalyticsEngine
+from greenlang.agents.data.supplier_questionnaire.models import (
     CampaignAnalytics,
     Distribution,
     DistributionStatus,

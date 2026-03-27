@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Optional, Union
 import httpx
 from pydantic import BaseModel, Field
 
-from greenlang.orchestrator.executors.base import (
+from greenlang.agents.foundation.orchestrator.executors.base import (
     ArtifactReference,
     RunContext,
     StepMetadata,

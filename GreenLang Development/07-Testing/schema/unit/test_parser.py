@@ -27,7 +27,7 @@ import json
 import pytest
 from typing import Any
 
-from greenlang.schema.compiler.parser import (
+from greenlang.agents.foundation.schema.compiler.parser import (
     ParseResult,
     ParseError,
     SafeYAMLLoader,
@@ -38,7 +38,7 @@ from greenlang.schema.compiler.parser import (
     is_valid_yaml,
     _count_nodes_and_depth,
 )
-from greenlang.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.errors import ErrorCode
 
 
 # =============================================================================
@@ -818,7 +818,7 @@ class TestConstantsIntegration:
 
     def test_default_max_bytes_used(self) -> None:
         """Test that default MAX_PAYLOAD_BYTES is used."""
-        from greenlang.schema.constants import MAX_PAYLOAD_BYTES
+        from greenlang.agents.foundation.schema.constants import MAX_PAYLOAD_BYTES
 
         # Create payload just under default limit
         content = '{"data": "' + 'x' * (MAX_PAYLOAD_BYTES - 100) + '"}'
@@ -829,7 +829,7 @@ class TestConstantsIntegration:
 
     def test_default_max_depth_used(self) -> None:
         """Test that default MAX_OBJECT_DEPTH is used."""
-        from greenlang.schema.constants import MAX_OBJECT_DEPTH
+        from greenlang.agents.foundation.schema.constants import MAX_OBJECT_DEPTH
 
         # Create nested structure just under default limit
         depth = MAX_OBJECT_DEPTH - 1
@@ -840,7 +840,7 @@ class TestConstantsIntegration:
 
     def test_default_max_nodes_used(self) -> None:
         """Test that default MAX_TOTAL_NODES is used."""
-        from greenlang.schema.constants import MAX_TOTAL_NODES
+        from greenlang.agents.foundation.schema.constants import MAX_TOTAL_NODES
 
         # Small payload should be well under limit
         content = '{"a": 1}'

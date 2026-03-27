@@ -20,11 +20,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import (
+from greenlang.agents.data.time_series_gap_filler.config import (
     TimeSeriesGapFillerConfig,
     reset_config,
 )
-from greenlang.time_series_gap_filler.cross_series_filler import (
+from greenlang.agents.data.time_series_gap_filler.cross_series_filler import (
     CrossSeriesFillerEngine,
     ReferenceSeries,
     FillResult,
@@ -35,7 +35,7 @@ from greenlang.time_series_gap_filler.cross_series_filler import (
     _overlap_indices,
     _compute_confidence,
 )
-from greenlang.time_series_gap_filler.provenance import get_provenance_tracker
+from greenlang.agents.data.time_series_gap_filler.provenance import get_provenance_tracker
 
 
 # ---------------------------------------------------------------------------
@@ -678,26 +678,26 @@ class TestProvenanceAndDeterminism:
         frozen_time_val = 1735689600.0
 
         with patch(
-            "greenlang.time_series_gap_filler.provenance._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.provenance._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler.time.time",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler.time.time",
             return_value=frozen_time_val,
         ):
             engine._provenance.reset()
             r1 = engine.fill_regression(list(target_with_gaps), donor_ref)
 
         with patch(
-            "greenlang.time_series_gap_filler.provenance._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.provenance._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler.time.time",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler.time.time",
             return_value=frozen_time_val,
         ):
             engine._provenance.reset()
@@ -715,26 +715,26 @@ class TestProvenanceAndDeterminism:
         frozen_time_val = 1735689600.0
 
         with patch(
-            "greenlang.time_series_gap_filler.provenance._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.provenance._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler.time.time",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler.time.time",
             return_value=frozen_time_val,
         ):
             engine._provenance.reset()
             r1 = engine.fill_ratio(list(target_with_gaps), donor_ref)
 
         with patch(
-            "greenlang.time_series_gap_filler.provenance._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.provenance._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler._utcnow",
             return_value=frozen,
         ), patch(
-            "greenlang.time_series_gap_filler.cross_series_filler.time.time",
+            "greenlang.agents.data.time_series_gap_filler.cross_series_filler.time.time",
             return_value=frozen_time_val,
         ):
             engine._provenance.reset()

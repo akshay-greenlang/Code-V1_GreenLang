@@ -656,7 +656,7 @@ class TraceabilityBridge:
         """Detect whether the EUDR Traceability Connector is available."""
         try:
             import importlib
-            importlib.import_module("greenlang.eudr_traceability")
+            importlib.import_module("greenlang.agents.data.eudr_traceability")
             self._connector_available = True
         except ImportError:
             self._connector_available = False

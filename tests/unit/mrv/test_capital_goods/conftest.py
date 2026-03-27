@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 
-from greenlang.capital_goods.models import (
+from greenlang.agents.mrv.capital_goods.models import (
     AssetCategory,
     AssetSubCategory,
     BatchRequest,

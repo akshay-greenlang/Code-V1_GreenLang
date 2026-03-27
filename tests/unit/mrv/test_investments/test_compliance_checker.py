@@ -30,10 +30,10 @@ import pytest
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
-from greenlang.investments.compliance_checker import (
+from greenlang.agents.mrv.investments.compliance_checker import (
     ComplianceCheckerEngine,
 )
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     ComplianceFramework,
     ComplianceStatus,
 )
@@ -69,7 +69,7 @@ def _make_mock_config(
 def engine():
     """Create a fresh ComplianceCheckerEngine with mocked config."""
     with patch(
-        "greenlang.investments.compliance_checker.get_config"
+        "greenlang.agents.mrv.investments.compliance_checker.get_config"
     ) as mock_config:
         mock_config.return_value = _make_mock_config()
         eng = ComplianceCheckerEngine()

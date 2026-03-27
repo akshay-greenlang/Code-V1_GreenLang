@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.cross_source_reconciliation.metrics import (
+from greenlang.agents.data.cross_source_reconciliation.metrics import (
     PROMETHEUS_AVAILABLE,
     csr_jobs_processed_total,
     csr_records_matched_total,

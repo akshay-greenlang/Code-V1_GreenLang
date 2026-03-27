@@ -3,7 +3,7 @@
 Unit Tests for Data Quality Profiler REST API Router (AGENT-DATA-010)
 =====================================================================
 
-Comprehensive test suite for ``greenlang.data_quality_profiler.api.router``
+Comprehensive test suite for ``greenlang.agents.data.data_quality_profiler.api.router``
 covering all 20 endpoints, service-not-configured 503 responses,
 and a full end-to-end API workflow.
 
@@ -24,13 +24,13 @@ import pytest
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
-from greenlang.data_quality_profiler.config import (
+from greenlang.agents.data.data_quality_profiler.config import (
     DataQualityProfilerConfig,
 )
-from greenlang.data_quality_profiler.setup import (
+from greenlang.agents.data.data_quality_profiler.setup import (
     DataQualityProfilerService,
 )
-from greenlang.data_quality_profiler.api.router import router
+from greenlang.agents.data.data_quality_profiler.api.router import router
 
 
 # ===================================================================

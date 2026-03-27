@@ -26,7 +26,7 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.stationary_combustion.emission_factor_selector import (
+from greenlang.agents.mrv.stationary_combustion.emission_factor_selector import (
     EmissionFactorSelectorEngine,
     IPCC_DEFAULT_FACTORS,
     EPA_FACTORS,

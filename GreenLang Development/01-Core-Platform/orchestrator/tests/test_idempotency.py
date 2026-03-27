@@ -43,13 +43,13 @@ from greenlang.utilities.determinism import (
     unfreeze_time,
     deterministic_id,
 )
-from greenlang.orchestrator.executors.base import (
+from greenlang.agents.foundation.orchestrator.executors.base import (
     ExecutionStatus,
     ResourceProfile,
     RunContext,
     ArtifactReference,
 )
-from greenlang.orchestrator.pipeline_schema import (
+from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     PipelineDefinition,
     PipelineMetadata,
     PipelineSpec,

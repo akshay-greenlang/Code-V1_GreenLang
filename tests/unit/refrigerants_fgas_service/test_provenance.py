@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.refrigerants_fgas.provenance import (
+from greenlang.agents.mrv.refrigerants_fgas.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     VALID_ENTITY_TYPES,

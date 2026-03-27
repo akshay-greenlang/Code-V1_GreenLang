@@ -35,7 +35,7 @@ def _relax_model_configs():
     construct model instances without raising ValidationError.
     """
     try:
-        from greenlang.data_freshness_monitor import models as dfm_models
+        from greenlang.agents.data.data_freshness_monitor import models as dfm_models
 
         for name in dir(dfm_models):
             obj = getattr(dfm_models, name)
@@ -72,7 +72,7 @@ def _clean_dfm_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Reset the singleton config so each test starts fresh
-    from greenlang.data_freshness_monitor.config import reset_config
+    from greenlang.agents.data.data_freshness_monitor.config import reset_config
     reset_config()
 
     yield
@@ -93,7 +93,7 @@ def fresh_config():
     The autouse fixture already calls reset_config() before each test,
     so this simply returns a new default instance.
     """
-    from greenlang.data_freshness_monitor.config import (
+    from greenlang.agents.data.data_freshness_monitor.config import (
         DataFreshnessMonitorConfig,
         reset_config,
     )

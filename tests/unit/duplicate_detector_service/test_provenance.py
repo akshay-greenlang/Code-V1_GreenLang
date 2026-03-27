@@ -20,7 +20,7 @@ import threading
 
 import pytest
 
-from greenlang.duplicate_detector.provenance import ProvenanceTracker
+from greenlang.agents.data.duplicate_detector.provenance import ProvenanceTracker
 
 
 # =============================================================================

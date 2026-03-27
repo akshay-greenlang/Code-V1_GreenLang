@@ -3,7 +3,7 @@
 Shared pytest fixtures for AGENT-DATA-012 Missing Value Imputer integration tests.
 
 Provides reusable test fixtures for:
-- Package stub for greenlang.missing_value_imputer (same pattern as unit tests)
+- Package stub for greenlang.agents.data.missing_value_imputer (same pattern as unit tests)
 - Environment cleanup (autouse)
 - Database mock fixtures (PostgreSQL + Redis)
 - Sample data fixtures (records with missing values, time-series, rules)
@@ -68,7 +68,7 @@ def _clean_mvi_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Also reset the singleton config so each test starts fresh
-    from greenlang.missing_value_imputer.config import reset_config
+    from greenlang.agents.data.missing_value_imputer.config import reset_config
     reset_config()
 
     yield
@@ -94,11 +94,11 @@ def _build_service(config=None):
     Returns:
         MissingValueImputerService instance with engines patched.
     """
-    from greenlang.missing_value_imputer.config import (
+    from greenlang.agents.data.missing_value_imputer.config import (
         MissingValueImputerConfig,
         set_config,
     )
-    from greenlang.missing_value_imputer.setup import MissingValueImputerService
+    from greenlang.agents.data.missing_value_imputer.setup import MissingValueImputerService
 
     cfg = config or MissingValueImputerConfig()
     set_config(cfg)
@@ -116,7 +116,7 @@ def _build_service(config=None):
 @pytest.fixture
 def config():
     """Create a MissingValueImputerConfig with test defaults."""
-    from greenlang.missing_value_imputer.config import MissingValueImputerConfig
+    from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
 
     return MissingValueImputerConfig(
         database_url="postgresql://test:test@localhost:5432/testdb",

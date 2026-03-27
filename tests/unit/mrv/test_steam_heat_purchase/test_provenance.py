@@ -20,7 +20,7 @@ import threading
 
 import pytest
 
-from greenlang.steam_heat_purchase.provenance import (
+from greenlang.agents.mrv.steam_heat_purchase.provenance import (
     ProvenanceEntry,
     SteamHeatPurchaseProvenance,
     VALID_STAGES,

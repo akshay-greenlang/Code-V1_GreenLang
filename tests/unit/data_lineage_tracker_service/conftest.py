@@ -10,7 +10,7 @@ orchestrator components.
 
 All tests are self-contained with no external dependencies.
 
-Includes a module-level stub for greenlang.data_lineage_tracker.__init__
+Includes a module-level stub for greenlang.agents.data.data_lineage_tracker.__init__
 to bypass engine imports that may not yet be available, allowing direct
 submodule imports to work.
 
@@ -32,7 +32,7 @@ import pytest
 # Stub the data_lineage_tracker package to bypass broken __init__ imports.
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.data_lineage_tracker"
+_PKG_NAME = "greenlang.agents.data.data_lineage_tracker"
 
 if _PKG_NAME not in sys.modules:
     import greenlang  # noqa: F401 ensure parent exists
@@ -51,7 +51,7 @@ if _PKG_NAME not in sys.modules:
 # Pre-import metrics to avoid Prometheus duplicate-metric ValueError.
 # ---------------------------------------------------------------------------
 
-from greenlang.data_lineage_tracker import metrics as _dlt_metrics  # noqa: F401
+from greenlang.agents.data.data_lineage_tracker import metrics as _dlt_metrics  # noqa: F401
 
 
 # ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ def _relax_model_configs():
     ValidationError.
     """
     import pydantic
-    from greenlang.data_lineage_tracker import models as dlt_models
+    from greenlang.agents.data.data_lineage_tracker import models as dlt_models
 
     for name in dir(dlt_models):
         obj = getattr(dlt_models, name)
@@ -98,7 +98,7 @@ def _clean_dlt_env(monkeypatch):
         if key.startswith(prefix):
             monkeypatch.delenv(key, raising=False)
 
-    from greenlang.data_lineage_tracker.config import reset_config
+    from greenlang.agents.data.data_lineage_tracker.config import reset_config
     reset_config()
 
     yield
@@ -116,21 +116,21 @@ def _clean_dlt_env(monkeypatch):
 @pytest.fixture
 def provenance_tracker():
     """Create a fresh ProvenanceTracker instance for testing."""
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
     return ProvenanceTracker()
 
 
 @pytest.fixture
 def asset_registry(provenance_tracker):
     """Create a fresh AssetRegistryEngine instance for testing."""
-    from greenlang.data_lineage_tracker.asset_registry import AssetRegistryEngine
+    from greenlang.agents.data.data_lineage_tracker.asset_registry import AssetRegistryEngine
     return AssetRegistryEngine(provenance=provenance_tracker)
 
 
 @pytest.fixture
 def transformation_tracker(provenance_tracker):
     """Create a fresh TransformationTrackerEngine instance for testing."""
-    from greenlang.data_lineage_tracker.transformation_tracker import (
+    from greenlang.agents.data.data_lineage_tracker.transformation_tracker import (
         TransformationTrackerEngine,
     )
     return TransformationTrackerEngine(provenance=provenance_tracker)
@@ -144,7 +144,7 @@ def transformation_tracker(provenance_tracker):
 @pytest.fixture(autouse=True)
 def reset_config_fixture():
     """Set a deterministic test config and reset after each test."""
-    from greenlang.data_lineage_tracker.config import (
+    from greenlang.agents.data.data_lineage_tracker.config import (
         DataLineageTrackerConfig,
         set_config,
         reset_config as _reset,
@@ -168,7 +168,7 @@ def reset_config_fixture():
 @pytest.fixture
 def provenance():
     """Alias for provenance_tracker - returns a fresh ProvenanceTracker."""
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
     return ProvenanceTracker()
 
 
@@ -186,8 +186,8 @@ def lineage_graph():
         raw_orders (a1) ---> clean_orders (a2) ---> agg_orders (a3)
         raw_spend  (a4) ---> clean_spend  (a5) -/
     """
-    from greenlang.data_lineage_tracker.lineage_graph import LineageGraphEngine
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.lineage_graph import LineageGraphEngine
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
     prov = ProvenanceTracker()
     engine = LineageGraphEngine(provenance=prov)
@@ -209,8 +209,8 @@ def lineage_graph():
 @pytest.fixture
 def empty_lineage_graph():
     """Create an empty LineageGraphEngine for tests that need a clean slate."""
-    from greenlang.data_lineage_tracker.lineage_graph import LineageGraphEngine
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.lineage_graph import LineageGraphEngine
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
     prov = ProvenanceTracker()
     return LineageGraphEngine(provenance=prov)
@@ -224,8 +224,8 @@ def empty_lineage_graph():
 @pytest.fixture
 def impact_analyzer(lineage_graph):
     """Create an ImpactAnalyzerEngine backed by the sample lineage graph."""
-    from greenlang.data_lineage_tracker.impact_analyzer import ImpactAnalyzerEngine
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.impact_analyzer import ImpactAnalyzerEngine
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
     prov = ProvenanceTracker()
     return ImpactAnalyzerEngine(graph=lineage_graph, provenance=prov)
@@ -239,8 +239,8 @@ def impact_analyzer(lineage_graph):
 @pytest.fixture
 def lineage_validator(lineage_graph):
     """Create a LineageValidatorEngine backed by the sample lineage graph."""
-    from greenlang.data_lineage_tracker.lineage_validator import LineageValidatorEngine
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.lineage_validator import LineageValidatorEngine
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
     prov = ProvenanceTracker()
     return LineageValidatorEngine(graph=lineage_graph, provenance=prov)
@@ -254,8 +254,8 @@ def lineage_validator(lineage_graph):
 @pytest.fixture
 def lineage_reporter(lineage_graph):
     """Create a LineageReporterEngine backed by the sample lineage graph."""
-    from greenlang.data_lineage_tracker.lineage_reporter import LineageReporterEngine
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.lineage_reporter import LineageReporterEngine
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
     prov = ProvenanceTracker()
     return LineageReporterEngine(graph=lineage_graph, provenance=prov)
@@ -269,16 +269,16 @@ def lineage_reporter(lineage_graph):
 @pytest.fixture
 def pipeline_engine():
     """Create a LineageTrackerPipelineEngine with all engines sharing provenance."""
-    from greenlang.data_lineage_tracker.asset_registry import AssetRegistryEngine
-    from greenlang.data_lineage_tracker.impact_analyzer import ImpactAnalyzerEngine
-    from greenlang.data_lineage_tracker.lineage_graph import LineageGraphEngine
-    from greenlang.data_lineage_tracker.lineage_reporter import LineageReporterEngine
-    from greenlang.data_lineage_tracker.lineage_tracker_pipeline import (
+    from greenlang.agents.data.data_lineage_tracker.asset_registry import AssetRegistryEngine
+    from greenlang.agents.data.data_lineage_tracker.impact_analyzer import ImpactAnalyzerEngine
+    from greenlang.agents.data.data_lineage_tracker.lineage_graph import LineageGraphEngine
+    from greenlang.agents.data.data_lineage_tracker.lineage_reporter import LineageReporterEngine
+    from greenlang.agents.data.data_lineage_tracker.lineage_tracker_pipeline import (
         LineageTrackerPipelineEngine,
     )
-    from greenlang.data_lineage_tracker.lineage_validator import LineageValidatorEngine
-    from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
-    from greenlang.data_lineage_tracker.transformation_tracker import (
+    from greenlang.agents.data.data_lineage_tracker.lineage_validator import LineageValidatorEngine
+    from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
+    from greenlang.agents.data.data_lineage_tracker.transformation_tracker import (
         TransformationTrackerEngine,
     )
 

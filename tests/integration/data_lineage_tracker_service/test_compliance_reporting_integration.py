@@ -23,7 +23,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_lineage_tracker.lineage_reporter import (
+from greenlang.agents.data.data_lineage_tracker.lineage_reporter import (
     LineageReporterEngine,
     VALID_REPORT_TYPES,
     VALID_FORMATS,

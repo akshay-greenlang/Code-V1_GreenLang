@@ -37,7 +37,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.compliance_checker import (
+    from greenlang.agents.mrv.audit_trail_lineage.compliance_checker import (
         ComplianceCheckerEngine,
     )
     ENGINE_AVAILABLE = True

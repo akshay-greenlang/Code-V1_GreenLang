@@ -5,7 +5,7 @@ Shared Fixtures for Schema Migration Agent Integration Tests (AGENT-DATA-017)
 
 Provides fixtures used across all integration test modules:
   - Prometheus metric pre-import to prevent duplicate ValueError
-  - Package stub for greenlang.schema_migration
+  - Package stub for greenlang.agents.data.schema_migration
   - Environment cleanup (autouse, removes GL_SM_* env vars, resets config)
   - Sample schemas (v1 and v2 with distinct structural differences)
   - Sample v1 records (10 records matching v1 schema)
@@ -33,7 +33,7 @@ import pytest
 # to Prometheus duplicate metric registration).
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.schema_migration"
+_PKG_NAME = "greenlang.agents.data.schema_migration"
 
 if _PKG_NAME not in sys.modules:
     import greenlang  # noqa: F401 ensure parent package exists
@@ -54,7 +54,7 @@ if _PKG_NAME not in sys.modules:
 # names; engine try/except blocks then fall back to no-op stubs.
 # ---------------------------------------------------------------------------
 
-from greenlang.schema_migration import metrics as _sm_metrics  # noqa: F401, E402
+from greenlang.agents.data.schema_migration import metrics as _sm_metrics  # noqa: F401, E402
 
 
 # ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ def _relax_model_configs() -> None:
     without triggering ValidationError during integration tests.
     """
     import pydantic
-    from greenlang.schema_migration import models as sm_models
+    from greenlang.agents.data.schema_migration import models as sm_models
 
     for name in dir(sm_models):
         obj = getattr(sm_models, name)
@@ -90,13 +90,13 @@ _relax_model_configs()
 # Engine imports (post-stub, post-metrics)
 # ---------------------------------------------------------------------------
 
-from greenlang.schema_migration.schema_registry import SchemaRegistryEngine  # noqa: E402
-from greenlang.schema_migration.schema_versioner import SchemaVersionerEngine  # noqa: E402
-from greenlang.schema_migration.change_detector import ChangeDetectorEngine  # noqa: E402
-from greenlang.schema_migration.compatibility_checker import CompatibilityCheckerEngine  # noqa: E402
-from greenlang.schema_migration.migration_planner import MigrationPlannerEngine  # noqa: E402
-from greenlang.schema_migration.migration_executor import MigrationExecutorEngine  # noqa: E402
-from greenlang.schema_migration.schema_migration_pipeline import SchemaMigrationPipelineEngine  # noqa: E402
+from greenlang.agents.data.schema_migration.schema_registry import SchemaRegistryEngine  # noqa: E402
+from greenlang.agents.data.schema_migration.schema_versioner import SchemaVersionerEngine  # noqa: E402
+from greenlang.agents.data.schema_migration.change_detector import ChangeDetectorEngine  # noqa: E402
+from greenlang.agents.data.schema_migration.compatibility_checker import CompatibilityCheckerEngine  # noqa: E402
+from greenlang.agents.data.schema_migration.migration_planner import MigrationPlannerEngine  # noqa: E402
+from greenlang.agents.data.schema_migration.migration_executor import MigrationExecutorEngine  # noqa: E402
+from greenlang.agents.data.schema_migration.schema_migration_pipeline import SchemaMigrationPipelineEngine  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -114,7 +114,7 @@ def _clean_sm_env(monkeypatch):
         if key.startswith(prefix):
             monkeypatch.delenv(key, raising=False)
 
-    from greenlang.schema_migration.config import reset_config
+    from greenlang.agents.data.schema_migration.config import reset_config
     reset_config()
 
     yield

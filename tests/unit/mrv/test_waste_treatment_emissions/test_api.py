@@ -51,7 +51,7 @@ except ImportError:
     TestClient = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.waste_treatment_emissions.api.router import (
+    from greenlang.agents.mrv.waste_treatment_emissions.api.router import (
         create_router,
     )
     ROUTER_AVAILABLE = True
@@ -59,7 +59,7 @@ except ImportError:
     ROUTER_AVAILABLE = False
 
 try:
-    from greenlang.waste_treatment_emissions.setup import (
+    from greenlang.agents.mrv.waste_treatment_emissions.setup import (
         WasteTreatmentEmissionsService,
     )
     SETUP_AVAILABLE = True
@@ -97,10 +97,10 @@ def app(service):
 @pytest.fixture
 def client(app, service):
     """Create a TestClient with mocked service singleton."""
-    # The router's _get_service() calls ``from greenlang.waste_treatment_emissions.setup import get_service``
+    # The router's _get_service() calls ``from greenlang.agents.mrv.waste_treatment_emissions.setup import get_service``
     # so we patch the module-level function in setup.py to return our fixture service.
     with patch(
-        "greenlang.waste_treatment_emissions.setup.get_service",
+        "greenlang.agents.mrv.waste_treatment_emissions.setup.get_service",
         return_value=service,
     ):
         yield TestClient(app)

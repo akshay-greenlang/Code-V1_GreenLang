@@ -19,7 +19,7 @@ import threading
 
 import pytest
 
-from greenlang.stationary_combustion.audit_trail import (
+from greenlang.agents.mrv.stationary_combustion.audit_trail import (
     AuditTrailEngine,
     AuditEntry,
     COMPLIANCE_MAP,

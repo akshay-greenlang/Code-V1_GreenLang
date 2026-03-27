@@ -4,7 +4,7 @@ Unit tests for Cross-Source Reconciliation data models - AGENT-DATA-015
 
 Tests all 13 enumerations, 22 SDK models, 8 request models, 10 constants,
 Layer 1 re-exports, and the _utcnow() helper defined in
-greenlang.cross_source_reconciliation.models.
+greenlang.agents.data.cross_source_reconciliation.models.
 
 Total: 110+ tests organized into classes by component category.
 
@@ -22,7 +22,7 @@ from typing import Dict, List
 import pytest
 from pydantic import ValidationError
 
-from greenlang.cross_source_reconciliation.models import (
+from greenlang.agents.data.cross_source_reconciliation.models import (
     # Helper
     _utcnow,
     # Constants
@@ -1291,27 +1291,27 @@ class TestLayer1ReExports:
 
     def test_consistency_analyzer_available(self):
         """ConsistencyAnalyzer should be importable (None if dep missing)."""
-        from greenlang.cross_source_reconciliation import models
+        from greenlang.agents.data.cross_source_reconciliation import models
         assert hasattr(models, "ConsistencyAnalyzer")
 
     def test_similarity_scorer_available(self):
-        from greenlang.cross_source_reconciliation import models
+        from greenlang.agents.data.cross_source_reconciliation import models
         assert hasattr(models, "SimilarityScorer")
 
     def test_match_classifier_available(self):
-        from greenlang.cross_source_reconciliation import models
+        from greenlang.agents.data.cross_source_reconciliation import models
         assert hasattr(models, "MatchClassifier")
 
     def test_factor_reconciler_available(self):
-        from greenlang.cross_source_reconciliation import models
+        from greenlang.agents.data.cross_source_reconciliation import models
         assert hasattr(models, "FactorReconciler")
 
     def test_conflict_resolution_strategy_available(self):
-        from greenlang.cross_source_reconciliation import models
+        from greenlang.agents.data.cross_source_reconciliation import models
         assert hasattr(models, "ConflictResolutionStrategy")
 
     def test_all_exports_list_contains_layer1(self):
-        from greenlang.cross_source_reconciliation.models import __all__
+        from greenlang.agents.data.cross_source_reconciliation.models import __all__
         expected = [
             "ConsistencyAnalyzer",
             "SimilarityScorer",
@@ -1323,7 +1323,7 @@ class TestLayer1ReExports:
             assert name in __all__
 
     def test_all_exports_list_contains_all_enums(self):
-        from greenlang.cross_source_reconciliation.models import __all__
+        from greenlang.agents.data.cross_source_reconciliation.models import __all__
         enum_names = [
             "SourceType", "SourceStatus", "MatchStrategy", "MatchStatus",
             "ComparisonResult", "DiscrepancyType", "DiscrepancySeverity",
@@ -1334,7 +1334,7 @@ class TestLayer1ReExports:
             assert name in __all__
 
     def test_all_exports_list_contains_all_sdk_models(self):
-        from greenlang.cross_source_reconciliation.models import __all__
+        from greenlang.agents.data.cross_source_reconciliation.models import __all__
         model_names = [
             "SourceDefinition", "SchemaMapping", "MatchKey", "MatchResult",
             "FieldComparison", "Discrepancy", "ResolutionDecision",
@@ -1349,7 +1349,7 @@ class TestLayer1ReExports:
             assert name in __all__
 
     def test_all_exports_list_contains_all_request_models(self):
-        from greenlang.cross_source_reconciliation.models import __all__
+        from greenlang.agents.data.cross_source_reconciliation.models import __all__
         request_names = [
             "CreateJobRequest", "RegisterSourceRequest",
             "UpdateSourceRequest", "MatchRequest", "CompareRequest",
@@ -1359,7 +1359,7 @@ class TestLayer1ReExports:
             assert name in __all__
 
     def test_all_exports_list_contains_constants(self):
-        from greenlang.cross_source_reconciliation.models import __all__
+        from greenlang.agents.data.cross_source_reconciliation.models import __all__
         const_names = [
             "DEFAULT_MATCH_THRESHOLD", "DEFAULT_TOLERANCE_PCT",
             "DEFAULT_TOLERANCE_ABS", "MAX_SOURCES",
@@ -1371,5 +1371,5 @@ class TestLayer1ReExports:
             assert name in __all__
 
     def test_all_exports_list_contains_utcnow(self):
-        from greenlang.cross_source_reconciliation.models import __all__
+        from greenlang.agents.data.cross_source_reconciliation.models import __all__
         assert "_utcnow" in __all__

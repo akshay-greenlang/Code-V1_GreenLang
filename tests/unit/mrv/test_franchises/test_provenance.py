@@ -33,7 +33,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any
 import pytest
 
-from greenlang.franchises.provenance import (
+from greenlang.agents.mrv.franchises.provenance import (
     ProvenanceEntry,
     ProvenanceChain,
     ProvenanceTracker,

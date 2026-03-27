@@ -33,7 +33,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.compliance_tracer_engine import (
+    from greenlang.agents.mrv.audit_trail_lineage.compliance_tracer_engine import (
         ComplianceTracerEngine,
     )
     ENGINE_AVAILABLE = True

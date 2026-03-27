@@ -21,8 +21,8 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.supplier_questionnaire.follow_up import FollowUpEngine
-from greenlang.supplier_questionnaire.models import (
+from greenlang.agents.data.supplier_questionnaire.follow_up import FollowUpEngine
+from greenlang.agents.data.supplier_questionnaire.models import (
     Distribution,
     DistributionStatus,
     EscalationLevel,

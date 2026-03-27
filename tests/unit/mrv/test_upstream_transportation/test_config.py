@@ -29,7 +29,7 @@ import pytest
 from unittest.mock import patch
 
 # Note: Adjust imports when actual config is implemented
-# from greenlang.upstream_transportation.config import (
+# from greenlang.agents.mrv.upstream_transportation.config import (
 #     UpstreamTransportationConfig,
 #     GeneralConfig,
 #     DatabaseConfig,

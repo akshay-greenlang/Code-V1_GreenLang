@@ -6,7 +6,7 @@ Tests the ProvenanceTracker class, ProvenanceEntry dataclass, chain
 integrity verification, entity-scoped and global lookups, export helpers,
 build_hash utility, singleton management, and thread safety.
 
-Target: 40-50 tests, 85%+ coverage of greenlang.validation_rule_engine.provenance
+Target: 40-50 tests, 85%+ coverage of greenlang.agents.data.validation_rule_engine.provenance
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -21,7 +21,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
 
-from greenlang.validation_rule_engine.provenance import (
+from greenlang.agents.data.validation_rule_engine.provenance import (
     VALID_ACTIONS,
     VALID_ENTITY_TYPES,
     ProvenanceEntry,

@@ -40,12 +40,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from greenlang.duplicate_detector.config import (
+from greenlang.agents.data.duplicate_detector.config import (
     DuplicateDetectorConfig,
     reset_config,
     set_config,
 )
-from greenlang.duplicate_detector.setup import (
+from greenlang.agents.data.duplicate_detector.setup import (
     BlockResponse,
     ClassifyResponse,
     ClusterResponse,

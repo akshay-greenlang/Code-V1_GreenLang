@@ -32,7 +32,7 @@ from decimal import Decimal
 from typing import Any, Dict
 import pytest
 
-from greenlang.employee_commuting.config import (
+from greenlang.agents.mrv.employee_commuting.config import (
     GeneralConfig,
     DatabaseConfig,
     RedisConfig,

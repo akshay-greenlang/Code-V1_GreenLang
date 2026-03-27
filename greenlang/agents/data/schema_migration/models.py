@@ -11,8 +11,8 @@ rollback, field mapping, drift monitoring, audit trails, and pipeline
 orchestration.
 
 Re-exported Layer 1 sources (best-effort, with fallback stubs):
-    - greenlang.data_quality_profiler.models: QualityDimension, RuleType
-    - greenlang.schema_compiler: SchemaCompilerEngine
+    - greenlang.agents.data.data_quality_profiler.models: QualityDimension, RuleType
+    - greenlang.agents.foundation.schema_compiler: SchemaCompilerEngine
 
 New enumerations (14):
     - SchemaType, SchemaStatus, ChangeType, ChangeSeverity,
@@ -86,7 +86,7 @@ except ImportError:  # pragma: no cover
 
 
 try:
-    from greenlang.schema_compiler import (  # type: ignore[import]
+    from greenlang.agents.foundation.schema_compiler import (  # type: ignore[import]
         SchemaCompilerEngine as L1SchemaCompilerEngine,
     )
 

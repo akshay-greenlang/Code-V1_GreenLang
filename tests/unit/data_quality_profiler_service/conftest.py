@@ -9,7 +9,7 @@ checker, and related components.
 
 All tests are self-contained with no external dependencies.
 
-Includes a module-level stub for greenlang.data_quality_profiler.__init__
+Includes a module-level stub for greenlang.agents.data.data_quality_profiler.__init__
 to bypass engine imports that may not yet be available, allowing direct
 submodule imports to work.
 
@@ -31,7 +31,7 @@ import pytest
 # Stub the data_quality_profiler package to bypass broken __init__ imports.
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.data_quality_profiler"
+_PKG_NAME = "greenlang.agents.data.data_quality_profiler"
 
 if _PKG_NAME not in sys.modules:
     import greenlang  # noqa: F401 ensure parent exists
@@ -66,7 +66,7 @@ def _clean_dq_env(monkeypatch):
         if key.startswith(prefix):
             monkeypatch.delenv(key, raising=False)
 
-    from greenlang.data_quality_profiler.config import reset_config
+    from greenlang.agents.data.data_quality_profiler.config import reset_config
     reset_config()
 
     yield

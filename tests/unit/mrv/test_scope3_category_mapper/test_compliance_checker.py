@@ -31,7 +31,7 @@ from unittest.mock import MagicMock, patch
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope3_category_mapper.compliance_checker import (
+    from greenlang.agents.mrv.scope3_category_mapper.compliance_checker import (
         ComplianceCheckerEngine,
     )
     COMPLIANCE_AVAILABLE = True
@@ -39,7 +39,7 @@ except (ImportError, AttributeError):
     COMPLIANCE_AVAILABLE = False
 
 try:
-    from greenlang.scope3_category_mapper.models import (
+    from greenlang.agents.mrv.scope3_category_mapper.models import (
         ALL_SCOPE3_CATEGORIES,
         CategoryCompletenessEntry,
         CategoryRelevance,
@@ -59,7 +59,7 @@ except ImportError:
     MODELS_AVAILABLE = False
 
 try:
-    from greenlang.scope3_category_mapper.completeness_screener import (
+    from greenlang.agents.mrv.scope3_category_mapper.completeness_screener import (
         CompletenessScreenerEngine,
         COMPANY_TYPE_RELEVANCE,
     )

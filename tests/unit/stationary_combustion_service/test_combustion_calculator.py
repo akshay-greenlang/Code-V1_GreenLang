@@ -30,12 +30,12 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from greenlang.stationary_combustion.fuel_database import FuelDatabaseEngine
-from greenlang.stationary_combustion.combustion_calculator import (
+from greenlang.agents.mrv.stationary_combustion.fuel_database import FuelDatabaseEngine
+from greenlang.agents.mrv.stationary_combustion.combustion_calculator import (
     CombustionCalculatorEngine,
     _MMBTU_TO_GJ,
 )
-from greenlang.stationary_combustion.models import (
+from greenlang.agents.mrv.stationary_combustion.models import (
     CalculationStatus,
     CalculationTier,
 )

@@ -31,7 +31,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.use_of_sold_products.config import (
+    from greenlang.agents.mrv.use_of_sold_products.config import (
         get_config,
         reset_config,
         GeneralConfig,

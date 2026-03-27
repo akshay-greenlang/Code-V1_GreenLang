@@ -21,12 +21,12 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.cooling_purchase.compliance_checker import (
+from greenlang.agents.mrv.cooling_purchase.compliance_checker import (
     ComplianceCheckerEngine,
     get_compliance_checker,
     SUPPORTED_FRAMEWORKS,
 )
-from greenlang.cooling_purchase.models import (
+from greenlang.agents.mrv.cooling_purchase.models import (
     ComplianceStatus,
     CoolingTechnology,
     DataQualityTier,

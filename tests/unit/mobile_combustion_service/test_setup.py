@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.mobile_combustion.setup import (
+from greenlang.agents.mrv.mobile_combustion.setup import (
     MobileCombustionService,
     CalculateResponse,
     BatchCalculateResponse,
@@ -684,7 +684,7 @@ class TestModuleFunctions:
     def test_get_service_returns_instance(self):
         """get_service returns a MobileCombustionService."""
         # Reset singleton state
-        import greenlang.mobile_combustion.setup as setup_mod
+        import greenlang.agents.mrv.mobile_combustion.setup as setup_mod
         setup_mod._singleton_instance = None
         setup_mod._service = None
         svc = get_service()
@@ -703,8 +703,8 @@ class TestModuleFunctions:
     def test_configure_mobile_combustion(self):
         """configure_mobile_combustion creates service and mounts router."""
         import asyncio
-        from greenlang.mobile_combustion.setup import configure_mobile_combustion
-        import greenlang.mobile_combustion.setup as setup_mod
+        from greenlang.agents.mrv.mobile_combustion.setup import configure_mobile_combustion
+        import greenlang.agents.mrv.mobile_combustion.setup as setup_mod
 
         # Reset singleton
         setup_mod._singleton_instance = None

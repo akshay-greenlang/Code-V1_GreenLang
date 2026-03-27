@@ -125,7 +125,7 @@ async def get_orchestrator():
     if _orchestrator_instance is None:
         # Lazy initialization - try to import and create
         try:
-            from greenlang.orchestrator.glip_orchestrator import GLIPOrchestrator
+            from greenlang.agents.foundation.orchestrator.glip_orchestrator import GLIPOrchestrator
 
             _orchestrator_instance = GLIPOrchestrator()
             logger.info("GLIPOrchestrator initialized via dependency injection")
@@ -234,7 +234,7 @@ async def get_event_store():
 
     if _event_store_instance is None:
         try:
-            from greenlang.orchestrator.audit.event_store import InMemoryEventStore
+            from greenlang.agents.foundation.orchestrator.audit.event_store import InMemoryEventStore
 
             _event_store_instance = InMemoryEventStore()
             logger.info("InMemoryEventStore initialized via dependency injection")
@@ -284,7 +284,7 @@ async def get_policy_engine():
 
     if _policy_engine_instance is None:
         try:
-            from greenlang.orchestrator.governance.policy_engine import PolicyEngine
+            from greenlang.agents.foundation.orchestrator.governance.policy_engine import PolicyEngine
 
             _policy_engine_instance = PolicyEngine()
             logger.info("PolicyEngine initialized via dependency injection")
@@ -713,11 +713,11 @@ async def get_approval_workflow():
 
     if _approval_workflow_instance is None:
         try:
-            from greenlang.orchestrator.governance.approvals import (
+            from greenlang.agents.foundation.orchestrator.governance.approvals import (
                 ApprovalWorkflow,
                 InMemoryApprovalStore,
             )
-            from greenlang.orchestrator.audit.event_store import EventFactory
+            from greenlang.agents.foundation.orchestrator.audit.event_store import EventFactory
 
             store = InMemoryApprovalStore()
             event_store = await get_event_store()

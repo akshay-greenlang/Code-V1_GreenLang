@@ -13,7 +13,7 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.config import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.config import (
     DualReportingReconciliationConfig,
     get_config,
 )

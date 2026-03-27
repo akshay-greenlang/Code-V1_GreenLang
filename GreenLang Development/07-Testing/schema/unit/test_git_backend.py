@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
-from greenlang.schema.registry.git_backend import (
+from greenlang.agents.foundation.schema.registry.git_backend import (
     GitSchemaRegistry,
     SchemaNotFoundError,
     InvalidSchemaIdError,

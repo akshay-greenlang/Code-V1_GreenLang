@@ -33,7 +33,7 @@ import pytest
 
 def _restore_strict_configs():
     """Restore extra='forbid' on all Pydantic models for strict testing."""
-    from greenlang.data_lineage_tracker import models as dlt_models
+    from greenlang.agents.data.data_lineage_tracker import models as dlt_models
 
     for name in dir(dlt_models):
         obj = getattr(dlt_models, name)
@@ -54,7 +54,7 @@ _restore_strict_configs()
 # Imports from the models module
 # ---------------------------------------------------------------------------
 
-from greenlang.data_lineage_tracker.models import (
+from greenlang.agents.data.data_lineage_tracker.models import (
     # Constants
     VERSION,
     MAX_ASSETS_PER_NAMESPACE,

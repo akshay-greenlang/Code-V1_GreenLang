@@ -18,7 +18,7 @@ from typing import Any, Dict, Generator, List
 
 import pytest
 
-from greenlang.mobile_combustion.setup import MobileCombustionService
+from greenlang.agents.mrv.mobile_combustion.setup import MobileCombustionService
 
 
 # ---------------------------------------------------------------------------
@@ -59,18 +59,18 @@ def clean_env() -> Generator[None, None, None]:
     _strip_env()
 
     # Reset singleton state
-    import greenlang.mobile_combustion.setup as setup_mod
+    import greenlang.agents.mrv.mobile_combustion.setup as setup_mod
     setup_mod._singleton_instance = None
     setup_mod._service = None
 
     try:
-        from greenlang.mobile_combustion.config import reset_config
+        from greenlang.agents.mrv.mobile_combustion.config import reset_config
         reset_config()
     except ImportError:
         pass
 
     try:
-        from greenlang.mobile_combustion.provenance import reset_provenance_tracker
+        from greenlang.agents.mrv.mobile_combustion.provenance import reset_provenance_tracker
         reset_provenance_tracker()
     except ImportError:
         pass
@@ -82,13 +82,13 @@ def clean_env() -> Generator[None, None, None]:
     setup_mod._service = None
 
     try:
-        from greenlang.mobile_combustion.config import reset_config
+        from greenlang.agents.mrv.mobile_combustion.config import reset_config
         reset_config()
     except ImportError:
         pass
 
     try:
-        from greenlang.mobile_combustion.provenance import reset_provenance_tracker
+        from greenlang.agents.mrv.mobile_combustion.provenance import reset_provenance_tracker
         reset_provenance_tracker()
     except ImportError:
         pass

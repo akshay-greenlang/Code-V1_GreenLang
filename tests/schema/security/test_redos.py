@@ -31,7 +31,7 @@ import time
 import pytest
 import re
 
-from greenlang.schema.compiler.regex_analyzer import (
+from greenlang.agents.foundation.schema.compiler.regex_analyzer import (
     RegexAnalyzer,
     RegexAnalysisResult,
     VulnerabilityType,
@@ -40,7 +40,7 @@ from greenlang.schema.compiler.regex_analyzer import (
     compile_with_timeout,
     DANGEROUS_PATTERNS,
 )
-from greenlang.schema.constants import MAX_REGEX_LENGTH
+from greenlang.agents.foundation.schema.constants import MAX_REGEX_LENGTH
 
 
 # =============================================================================

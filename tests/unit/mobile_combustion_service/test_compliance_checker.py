@@ -28,7 +28,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.mobile_combustion.compliance_checker import (
+from greenlang.agents.mrv.mobile_combustion.compliance_checker import (
     ComplianceCheckerEngine,
     ComplianceCheckResult,
     ComplianceFinding,

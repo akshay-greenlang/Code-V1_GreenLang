@@ -38,7 +38,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pytest
 
-from greenlang.schema.compiler.resolver import (
+from greenlang.agents.foundation.schema.compiler.resolver import (
     RefResolver,
     RefResolutionError,
     LocalFileRegistry,

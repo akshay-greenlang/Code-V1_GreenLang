@@ -27,7 +27,7 @@ import pytest
 
 def _make_engine():
     """Create a WasteTreatmentDatabaseEngine without conftest dependency."""
-    from greenlang.waste_treatment_emissions.waste_treatment_database import (
+    from greenlang.agents.mrv.waste_treatment_emissions.waste_treatment_database import (
         WasteTreatmentDatabaseEngine,
     )
     return WasteTreatmentDatabaseEngine()

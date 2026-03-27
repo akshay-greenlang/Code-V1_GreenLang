@@ -18,7 +18,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.use_of_sold_products.use_of_sold_products_pipeline import (
+    from greenlang.agents.mrv.use_of_sold_products.use_of_sold_products_pipeline import (
         UseOfSoldProductsPipelineEngine,
         PipelineStage,
         PipelineStatus,

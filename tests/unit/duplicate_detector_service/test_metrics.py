@@ -19,7 +19,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Import the metrics module and its exports
-from greenlang.duplicate_detector.metrics import (
+from greenlang.agents.data.duplicate_detector.metrics import (
     PROMETHEUS_AVAILABLE,
     dd_active_jobs,
     dd_blocks_created_total,
@@ -360,52 +360,52 @@ class TestGracefulFallback:
     """Verify helpers do nothing when PROMETHEUS_AVAILABLE is False."""
 
     def test_inc_jobs_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             # Should not raise
             inc_jobs("completed")
 
     def test_inc_fingerprints_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_fingerprints("sha256", count=10)
 
     def test_inc_blocks_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_blocks("sorted_neighborhood")
 
     def test_inc_comparisons_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_comparisons("exact", count=100)
 
     def test_inc_matches_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_matches("match")
 
     def test_inc_clusters_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_clusters("union_find")
 
     def test_inc_merges_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_merges("keep_first")
 
     def test_inc_conflicts_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_conflicts("first")
 
     def test_observe_duration_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             observe_duration("fingerprint", 1.5)
 
     def test_observe_similarity_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             observe_similarity("jaro_winkler", 0.9)
 
     def test_set_active_jobs_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             set_active_jobs(10)
 
     def test_inc_errors_no_op_when_unavailable(self):
-        with patch("greenlang.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.duplicate_detector.metrics.PROMETHEUS_AVAILABLE", False):
             inc_errors("validation")
 
 
@@ -496,7 +496,7 @@ class TestMetricsExports:
     """Verify the metrics module exports all expected names."""
 
     def test_all_metric_objects_exported(self):
-        import greenlang.duplicate_detector.metrics as mod
+        import greenlang.agents.data.duplicate_detector.metrics as mod
         metric_names = [
             "dd_jobs_processed_total",
             "dd_records_fingerprinted_total",
@@ -515,7 +515,7 @@ class TestMetricsExports:
             assert name in mod.__all__, f"{name} missing from __all__"
 
     def test_all_helper_functions_exported(self):
-        import greenlang.duplicate_detector.metrics as mod
+        import greenlang.agents.data.duplicate_detector.metrics as mod
         helper_names = [
             "inc_jobs",
             "inc_fingerprints",
@@ -534,10 +534,10 @@ class TestMetricsExports:
             assert name in mod.__all__, f"{name} missing from __all__"
 
     def test_prometheus_available_exported(self):
-        import greenlang.duplicate_detector.metrics as mod
+        import greenlang.agents.data.duplicate_detector.metrics as mod
         assert "PROMETHEUS_AVAILABLE" in mod.__all__
 
     def test_total_exports_count(self):
-        import greenlang.duplicate_detector.metrics as mod
+        import greenlang.agents.data.duplicate_detector.metrics as mod
         # 1 flag + 12 metric objects + 12 helper functions = 25
         assert len(mod.__all__) == 25

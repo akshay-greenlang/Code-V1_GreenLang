@@ -10,7 +10,7 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.capital_goods.provenance import (
+from greenlang.agents.mrv.capital_goods.provenance import (
     CapitalGoodsProvenance,
     ProvenanceEntry,
     ProvenanceStage,
@@ -565,7 +565,7 @@ class TestHashAlgorithm:
 
     def test_hash_collision_resistance(self):
         """Test hash collision resistance with similar inputs."""
-        from greenlang.capital_goods.models import CapitalAssetRecord, AssetCategory, AssetSubCategory
+        from greenlang.agents.mrv.capital_goods.models import CapitalAssetRecord, AssetCategory, AssetSubCategory
 
         asset1 = CapitalAssetRecord(
             asset_id="ASSET-001",

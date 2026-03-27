@@ -22,7 +22,7 @@ from typing import List
 
 import pytest
 
-from greenlang.data_freshness_monitor.refresh_predictor import (
+from greenlang.agents.data.data_freshness_monitor.refresh_predictor import (
     PredictionStatus,
     RefreshPrediction,
     RefreshPredictorEngine,

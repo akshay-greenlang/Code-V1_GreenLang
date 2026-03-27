@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from greenlang.fugitive_emissions.equipment_component import (
+from greenlang.agents.mrv.fugitive_emissions.equipment_component import (
     EquipmentComponentEngine,
     ComponentType,
     ServiceType,

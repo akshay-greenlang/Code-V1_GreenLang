@@ -44,8 +44,8 @@ except ImportError:
         "kubernetes_asyncio not available. Install with: pip install kubernetes_asyncio"
     )
 
-from greenlang.orchestrator.artifacts.base import ArtifactStore
-from greenlang.orchestrator.executors.base import (
+from greenlang.agents.foundation.orchestrator.artifacts.base import ArtifactStore
+from greenlang.agents.foundation.orchestrator.executors.base import (
     ExecutionResult,
     ExecutionStatus,
     ExecutorBackend,

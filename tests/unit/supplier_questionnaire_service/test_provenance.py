@@ -18,7 +18,7 @@ import json
 
 import pytest
 
-from greenlang.supplier_questionnaire.provenance import ProvenanceTracker
+from greenlang.agents.data.supplier_questionnaire.provenance import ProvenanceTracker
 
 
 # ============================================================================

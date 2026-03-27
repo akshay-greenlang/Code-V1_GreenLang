@@ -34,7 +34,7 @@ _logger = logging.getLogger(__name__)
 
 @dataclass
 class ReproducibilityConfig:
-    """Mirrors greenlang.reproducibility.config.ReproducibilityConfig."""
+    """Mirrors greenlang.agents.foundation.reproducibility.config.ReproducibilityConfig."""
 
     # Connections
     database_url: str = ""

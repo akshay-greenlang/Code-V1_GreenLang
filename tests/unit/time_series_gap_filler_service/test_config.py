@@ -2,7 +2,7 @@
 """
 Unit tests for TimeSeriesGapFillerConfig - AGENT-DATA-014
 
-Tests the config dataclass at greenlang.time_series_gap_filler.config with
+Tests the config dataclass at greenlang.agents.data.time_series_gap_filler.config with
 70+ tests covering default values for all 22 fields, GL_TSGF_ environment
 variable overrides, singleton pattern, thread safety, validation logic,
 type coercion, invalid env fallback, repr/str, and edge cases.
@@ -20,7 +20,7 @@ from dataclasses import fields as dc_fields
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import (
+from greenlang.agents.data.time_series_gap_filler.config import (
     TimeSeriesGapFillerConfig,
     get_config,
     reset_config,

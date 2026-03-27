@@ -34,7 +34,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.fugitive_emissions.config import (
+from greenlang.agents.mrv.fugitive_emissions.config import (
     FugitiveEmissionsConfig,
     get_config,
     set_config,

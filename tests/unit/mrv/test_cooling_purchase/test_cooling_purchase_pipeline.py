@@ -21,11 +21,11 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.cooling_purchase.cooling_purchase_pipeline import (
+from greenlang.agents.mrv.cooling_purchase.cooling_purchase_pipeline import (
     CoolingPurchasePipelineEngine,
     get_cooling_purchase_pipeline,
 )
-from greenlang.cooling_purchase.models import (
+from greenlang.agents.mrv.cooling_purchase.models import (
     CoolingTechnology,
     FreeCoolingSource,
     TESType,

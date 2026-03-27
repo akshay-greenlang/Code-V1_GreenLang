@@ -11,7 +11,7 @@ from datetime import datetime, date
 from typing import Dict, Any, List
 from unittest.mock import Mock, patch
 
-from greenlang.fuel_energy_activities.engines.supplier_specific_calculator import (
+from greenlang.agents.mrv.fuel_energy_activities.engines.supplier_specific_calculator import (
     SupplierSpecificCalculatorEngine,
     SupplierSpecificInput,
     SupplierSpecificOutput,
@@ -20,7 +20,7 @@ from greenlang.fuel_energy_activities.engines.supplier_specific_calculator impor
     MIQGrade,
     OGMPLevel,
 )
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     FuelType,
     ActivityType,
     VerificationLevel,

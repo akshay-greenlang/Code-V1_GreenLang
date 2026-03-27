@@ -1,7 +1,7 @@
 """Integration validation for scope2_market models.py"""
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
-from greenlang.scope2_market.models import (
+from greenlang.agents.mrv.scope2_market.models import (
     InstrumentType, InstrumentStatus, EnergySource, EnergyType, EnergyUnit,
     CalculationMethod, EmissionGas, GWPSource, QualityCriterion, TrackingSystem,
     ResidualMixSource, FacilityType, ComplianceStatus, CoverageStatus,

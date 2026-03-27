@@ -25,7 +25,7 @@ from datetime import datetime, timezone, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from greenlang.orchestrator.audit.event_store import (
+from greenlang.agents.foundation.orchestrator.audit.event_store import (
     EventType,
     RunEvent,
     AuditPackage,

@@ -20,12 +20,12 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.climate_hazard.config import (
+from greenlang.agents.data.climate_hazard.config import (
     ClimateHazardConfig,
     reset_config,
     set_config,
 )
-from greenlang.climate_hazard.provenance import (
+from greenlang.agents.data.climate_hazard.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     reset_provenance_tracker,

@@ -26,7 +26,7 @@ from typing import Any, Dict
 import pytest
 
 try:
-    from greenlang.end_of_life_treatment.eol_product_database import (
+    from greenlang.agents.mrv.end_of_life_treatment.eol_product_database import (
         EOLProductDatabaseEngine,
     )
     _AVAILABLE = True

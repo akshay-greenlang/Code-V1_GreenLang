@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Tuple
 
 import pytest
 
-from greenlang.data_quality_profiler.anomaly_detector import (
+from greenlang.agents.data.data_quality_profiler.anomaly_detector import (
     AnomalyDetector,
     METHOD_IQR,
     METHOD_ZSCORE,

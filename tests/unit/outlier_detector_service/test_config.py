@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.outlier_detector.config import (
+from greenlang.agents.data.outlier_detector.config import (
     OutlierDetectorConfig,
     get_config,
     reset_config,

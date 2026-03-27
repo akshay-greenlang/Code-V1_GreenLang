@@ -17,7 +17,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.processing_sold_products.processing_pipeline import (
+    from greenlang.agents.mrv.processing_sold_products.processing_pipeline import (
         ProcessingPipelineEngine,
         PipelineStage,
         PipelineStatus,

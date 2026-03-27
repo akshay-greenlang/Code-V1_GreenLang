@@ -2,7 +2,7 @@
 """
 Unit tests for CrossSourceReconciliationConfig - AGENT-DATA-015
 
-Tests the config dataclass at greenlang.cross_source_reconciliation.config with
+Tests the config dataclass at greenlang.agents.data.cross_source_reconciliation.config with
 80+ tests covering default values for all 25 fields, GL_CSR_ environment
 variable overrides, singleton pattern, thread safety, validation logic,
 type coercion, invalid env fallback, and edge cases.
@@ -20,7 +20,7 @@ from dataclasses import fields as dc_fields
 
 import pytest
 
-from greenlang.cross_source_reconciliation.config import (
+from greenlang.agents.data.cross_source_reconciliation.config import (
     CrossSourceReconciliationConfig,
     get_config,
     reset_config,

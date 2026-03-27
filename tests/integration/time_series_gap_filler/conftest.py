@@ -23,7 +23,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import reset_config
+from greenlang.agents.data.time_series_gap_filler.config import reset_config
 
 
 # ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ def reference_series():
 @pytest.fixture
 def sample_calendar():
     """Return a CalendarDefinition for calendar-aware filling tests."""
-    from greenlang.time_series_gap_filler.seasonal_filler import CalendarDefinition
+    from greenlang.agents.data.time_series_gap_filler.seasonal_filler import CalendarDefinition
 
     return CalendarDefinition(
         business_days=[0, 1, 2, 3, 4],
@@ -177,7 +177,7 @@ def complete_series():
 def gap_filler_app():
     """Create a minimal FastAPI test app with TSGF service attached.
 
-    Mounts the real router from greenlang.time_series_gap_filler.api.router
+    Mounts the real router from greenlang.agents.data.time_series_gap_filler.api.router
     and attaches a lightweight mock service to
     app.state.time_series_gap_filler_service (matching the attribute name
     that _get_service() reads from the request).
@@ -187,7 +187,7 @@ def gap_filler_app():
     except ImportError:
         pytest.skip("FastAPI not installed; skipping API integration tests")
 
-    from greenlang.time_series_gap_filler.api.router import router, FASTAPI_AVAILABLE
+    from greenlang.agents.data.time_series_gap_filler.api.router import router, FASTAPI_AVAILABLE
 
     if not FASTAPI_AVAILABLE:
         pytest.skip("FastAPI not available in router module")

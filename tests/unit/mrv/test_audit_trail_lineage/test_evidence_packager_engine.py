@@ -36,7 +36,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.evidence_packager_engine import (
+    from greenlang.agents.mrv.audit_trail_lineage.evidence_packager_engine import (
         EvidencePackagerEngine,
     )
     ENGINE_AVAILABLE = True

@@ -24,7 +24,7 @@ GL-FOUND-X-002: Schema Compiler & Validator - Task 7.5
 import pytest
 from typing import Any, Dict, List
 
-from greenlang.schema.sdk import (
+from greenlang.agents.foundation.schema.sdk import (
     # Main functions
     validate,
     validate_batch,
@@ -46,7 +46,7 @@ from greenlang.schema.sdk import (
     SchemaInput,
     PayloadInput,
 )
-from greenlang.schema.models import (
+from greenlang.agents.foundation.schema.models import (
     SchemaRef,
     ValidationReport,
     BatchValidationReport,
@@ -662,7 +662,7 @@ class TestModuleExports:
 
     def test_sdk_exports(self):
         """Test SDK module exports."""
-        from greenlang.schema import sdk
+        from greenlang.agents.foundation.schema import sdk
 
         # Main functions
         assert hasattr(sdk, "validate")

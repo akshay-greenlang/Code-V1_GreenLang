@@ -27,7 +27,7 @@ Version: 1.0.0
 Date: 2026-01-28
 
 Example:
-    >>> from greenlang.schema.constants import MAX_PAYLOAD_BYTES, Limits
+    >>> from greenlang.agents.foundation.schema.constants import MAX_PAYLOAD_BYTES, Limits
     >>> print(f"Max payload size: {MAX_PAYLOAD_BYTES} bytes")
     Max payload size: 1048576 bytes
 

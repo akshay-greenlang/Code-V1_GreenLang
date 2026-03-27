@@ -9,7 +9,7 @@ FastAPI integration helpers (configure_data_lineage_tracker,
 get_data_lineage_tracker, get_router).
 
 Target: 40+ tests, 4 test classes, 85%+ coverage of
-greenlang.data_lineage_tracker.setup
+greenlang.agents.data.data_lineage_tracker.setup
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -38,13 +38,13 @@ import pytest
 # ---------------------------------------------------------------------------
 
 _ENGINE_MODULES = [
-    "greenlang.data_lineage_tracker.asset_registry",
-    "greenlang.data_lineage_tracker.transformation_tracker",
-    "greenlang.data_lineage_tracker.lineage_graph",
-    "greenlang.data_lineage_tracker.impact_analyzer",
-    "greenlang.data_lineage_tracker.lineage_validator",
-    "greenlang.data_lineage_tracker.lineage_reporter",
-    "greenlang.data_lineage_tracker.lineage_tracker_pipeline",
+    "greenlang.agents.data.data_lineage_tracker.asset_registry",
+    "greenlang.agents.data.data_lineage_tracker.transformation_tracker",
+    "greenlang.agents.data.data_lineage_tracker.lineage_graph",
+    "greenlang.agents.data.data_lineage_tracker.impact_analyzer",
+    "greenlang.agents.data.data_lineage_tracker.lineage_validator",
+    "greenlang.agents.data.data_lineage_tracker.lineage_reporter",
+    "greenlang.agents.data.data_lineage_tracker.lineage_tracker_pipeline",
 ]
 
 _ENGINE_CLASSES = [
@@ -70,8 +70,8 @@ _ENGINE_CLASSES = [
 # these tests will be updated to import from it directly.
 # ---------------------------------------------------------------------------
 
-from greenlang.data_lineage_tracker.config import DataLineageTrackerConfig
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.agents.data.data_lineage_tracker.config import DataLineageTrackerConfig
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
 
 # ============================================================================

@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 import pytest
 
-from greenlang.franchises.hybrid_aggregator import (
+from greenlang.agents.mrv.franchises.hybrid_aggregator import (
     HybridAggregatorEngine,
     HybridNetworkInput,
     FranchiseUnitData,

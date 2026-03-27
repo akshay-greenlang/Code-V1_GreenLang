@@ -18,7 +18,7 @@ under ``/api/v1/data-lineage-tracker``.  Tests cover:
 - Error handling (ValueError -> 400, None -> 404, Exception -> 500, 422)
 - Pagination parameter defaults and bounds
 
-Since the router module (greenlang.data_lineage_tracker.api.router) does
+Since the router module (greenlang.agents.data.data_lineage_tracker.api.router) does
 not yet exist on disk, these tests use a self-contained mock router that
 mirrors the expected contract from the schema-migration router pattern.
 

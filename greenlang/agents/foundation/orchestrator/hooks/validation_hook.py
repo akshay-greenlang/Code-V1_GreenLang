@@ -73,15 +73,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from pydantic import BaseModel, Field, field_validator
 
 # Schema validator imports
-from greenlang.schema.validator.core import SchemaValidator
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.validator.core import SchemaValidator
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     ValidationProfile,
     CoercionPolicy,
     UnknownFieldPolicy,
 )
-from greenlang.schema.models.report import ValidationReport
+from greenlang.agents.foundation.schema.models.report import ValidationReport
 
 logger = logging.getLogger(__name__)
 

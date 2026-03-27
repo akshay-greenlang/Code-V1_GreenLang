@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.climate_hazard.hazard_pipeline import (
+from greenlang.agents.data.climate_hazard.hazard_pipeline import (
     HazardPipelineEngine,
     PIPELINE_STAGES,
     _classify_risk,

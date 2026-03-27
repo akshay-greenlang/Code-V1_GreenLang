@@ -31,7 +31,7 @@ _ENV_PREFIX = "GL_EUDR_TRACEABILITY_"
 
 @dataclass
 class EUDRTraceabilityConfig:
-    """Mirrors greenlang.eudr_traceability.config.EUDRTraceabilityConfig."""
+    """Mirrors greenlang.agents.data.eudr_traceability.config.EUDRTraceabilityConfig."""
 
     database_url: str = ""
     redis_url: str = ""

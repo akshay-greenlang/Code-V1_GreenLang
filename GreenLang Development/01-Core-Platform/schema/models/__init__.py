@@ -23,20 +23,20 @@ Version: 0.1.0
 GL-FOUND-X-002: Schema Compiler & Validator
 """
 
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.models.config import (
     ValidationProfile,
     CoercionPolicy,
     UnknownFieldPolicy,
     PatchLevel,
     ValidationOptions,
 )
-from greenlang.schema.models.finding import (
+from greenlang.agents.foundation.schema.models.finding import (
     Severity,
     FindingHint,
     Finding,
 )
-from greenlang.schema.models.report import (
+from greenlang.agents.foundation.schema.models.report import (
     ValidationSummary,
     TimingInfo,
     ValidationReport,
@@ -44,7 +44,7 @@ from greenlang.schema.models.report import (
     ItemResult,
     BatchValidationReport,
 )
-from greenlang.schema.models.patch import (
+from greenlang.agents.foundation.schema.models.patch import (
     JSONPatchOp,
     PatchSafety,
     FixSuggestion,

@@ -12,7 +12,7 @@ from datetime import datetime, date
 from typing import Dict, Any, List
 from unittest.mock import Mock, patch
 
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     ElectricityConsumptionRecord,
     UpstreamElectricityResult,
     UpstreamElectricityBatchResult,
@@ -23,7 +23,7 @@ from greenlang.fuel_energy_activities.models import (
     GasBreakdown,
     GridMix,
 )
-from greenlang.fuel_energy_activities.engines.upstream_electricity_calculator import (
+from greenlang.agents.mrv.fuel_energy_activities.engines.upstream_electricity_calculator import (
     UpstreamElectricityCalculatorEngine,
 )
 from greenlang_core.exceptions import ValidationError, ProcessingError

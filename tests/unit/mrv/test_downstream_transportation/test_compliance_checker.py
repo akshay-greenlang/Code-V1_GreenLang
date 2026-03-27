@@ -31,7 +31,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.compliance_checker import (
+    from greenlang.agents.mrv.downstream_transportation.compliance_checker import (
         ComplianceCheckerEngine,
     )
 except ImportError as exc:

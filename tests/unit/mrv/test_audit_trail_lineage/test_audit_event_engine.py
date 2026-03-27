@@ -47,7 +47,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.audit_event_engine import (
+    from greenlang.agents.mrv.audit_trail_lineage.audit_event_engine import (
         AuditEventEngine,
         AuditEventRecord,
         AuditEventType,

@@ -22,7 +22,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.waste_treatment_emissions.models import (
+from greenlang.agents.mrv.waste_treatment_emissions.models import (
     # Enumerations (16)
     WasteCategory,
     TreatmentMethod,

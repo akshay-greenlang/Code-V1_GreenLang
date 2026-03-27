@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 import cbam_pack.web.app as web_app
 from cbam_pack.web.app import MAX_UPLOAD_BYTES, create_app
+from greenlang.v1.backends import BackendRunResult
 
 
 def test_process_rejects_traversal_filename() -> None:
@@ -156,3 +157,117 @@ def test_v1_download_artifact_rejects_invalid_run_id() -> None:
     response = client.get("/api/v1/runs/not-a-valid-id/artifacts/audit/run_manifest.json")
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid run ID"
+
+
+def test_v1_csrd_run_requires_api_key_when_configured(monkeypatch) -> None:
+    monkeypatch.setenv("CBAM_API_KEY", "secret-token")
+
+    def _fake_csrd_backend(*args, **kwargs):
+        return BackendRunResult(
+            success=True,
+            exit_code=0,
+            artifacts=["esrs_report.json", "audit/run_manifest.json", "audit/checksums.json"],
+            errors=[],
+            warnings=[],
+            native_backend_used=True,
+            fallback_used=False,
+        )
+
+    monkeypatch.setattr(web_app, "run_csrd_backend", _fake_csrd_backend)
+    client = TestClient(create_app())
+    files = {"input_file": ("input.csv", b"col\n1\n", "text/csv")}
+
+    unauthorized = client.post("/api/v1/apps/csrd/run", files=files)
+    assert unauthorized.status_code == 401
+
+    authorized = client.post(
+        "/api/v1/apps/csrd/run",
+        files=files,
+        headers={"X-API-Key": "secret-token"},
+    )
+    assert authorized.status_code == 200
+
+
+def test_v1_vcci_run_requires_api_key_when_configured(monkeypatch) -> None:
+    monkeypatch.setenv("CBAM_API_KEY", "secret-token")
+
+    def _fake_vcci_backend(*args, **kwargs):
+        return BackendRunResult(
+            success=True,
+            exit_code=0,
+            artifacts=["scope3_inventory.json", "audit/run_manifest.json", "audit/checksums.json"],
+            errors=[],
+            warnings=[],
+            native_backend_used=True,
+            fallback_used=False,
+        )
+
+    monkeypatch.setattr(web_app, "run_vcci_backend", _fake_vcci_backend)
+    client = TestClient(create_app())
+    files = {"input_file": ("input.csv", b"supplier_pcf,quantity\n2,3\n", "text/csv")}
+
+    unauthorized = client.post("/api/v1/apps/vcci/run", files=files)
+    assert unauthorized.status_code == 401
+
+    authorized = client.post(
+        "/api/v1/apps/vcci/run",
+        files=files,
+        headers={"X-API-Key": "secret-token"},
+    )
+    assert authorized.status_code == 200
+
+
+def test_v1_csrd_errors_are_sanitized(monkeypatch) -> None:
+    monkeypatch.delenv("CBAM_API_KEY", raising=False)
+
+    def _fake_csrd_backend(*args, **kwargs):
+        return BackendRunResult(
+            success=False,
+            exit_code=1,
+            artifacts=[],
+            errors=[
+                r"failed reading C:\Users\aksha\AppData\Local\Temp\csrd_123\input.csv"
+            ],
+            warnings=[],
+            native_backend_used=False,
+            fallback_used=False,
+        )
+
+    monkeypatch.setattr(web_app, "run_csrd_backend", _fake_csrd_backend)
+    client = TestClient(create_app())
+    files = {"input_file": ("input.csv", b"col\n1\n", "text/csv")}
+    response = client.post("/api/v1/apps/csrd/run", files=files)
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["success"] is False
+    assert payload["errors"]
+    assert "C:\\Users\\aksha" not in payload["errors"][0]
+    assert "<redacted-path>" in payload["errors"][0]
+
+
+def test_v1_vcci_errors_are_sanitized(monkeypatch) -> None:
+    monkeypatch.delenv("CBAM_API_KEY", raising=False)
+
+    def _fake_vcci_backend(*args, **kwargs):
+        return BackendRunResult(
+            success=False,
+            exit_code=1,
+            artifacts=[],
+            errors=[
+                r"failed reading C:\Users\aksha\AppData\Local\Temp\vcci_123\input.csv"
+            ],
+            warnings=[],
+            native_backend_used=False,
+            fallback_used=False,
+        )
+
+    monkeypatch.setattr(web_app, "run_vcci_backend", _fake_vcci_backend)
+    client = TestClient(create_app())
+    files = {"input_file": ("input.csv", b"supplier_pcf,quantity\n2,3\n", "text/csv")}
+    response = client.post("/api/v1/apps/vcci/run", files=files)
+    payload = response.json()
+    assert response.status_code == 200
+    assert payload["success"] is False
+    assert payload["errors"]
+    assert "C:\\Users\\aksha" not in payload["errors"][0]
+    assert "<redacted-path>" in payload["errors"][0]

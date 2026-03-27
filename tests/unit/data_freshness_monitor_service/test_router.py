@@ -21,8 +21,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from greenlang.data_freshness_monitor.api.router import router
-from greenlang.data_freshness_monitor.setup import DataFreshnessMonitorService
+from greenlang.agents.data.data_freshness_monitor.api.router import router
+from greenlang.agents.data.data_freshness_monitor.setup import DataFreshnessMonitorService
 
 
 # ===================================================================

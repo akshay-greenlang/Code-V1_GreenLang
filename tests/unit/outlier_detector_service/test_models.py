@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.outlier_detector.models import (
+from greenlang.agents.data.outlier_detector.models import (
     # Enums
     DetectionMethod, OutlierClass, TreatmentStrategy, OutlierStatus,
     EnsembleMethod, ContextType, TemporalMethod, SeverityLevel,

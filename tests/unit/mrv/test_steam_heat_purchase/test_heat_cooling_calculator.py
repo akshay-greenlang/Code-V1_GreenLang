@@ -19,7 +19,7 @@ from decimal import Decimal, ROUND_HALF_UP
 
 import pytest
 
-from greenlang.steam_heat_purchase.heat_cooling_calculator import (
+from greenlang.agents.mrv.steam_heat_purchase.heat_cooling_calculator import (
     HeatCoolingCalculatorEngine,
     HeatingCoolingType,
     CoolingCategory,

@@ -18,7 +18,7 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.steam_heat_purchase.steam_heat_database import (
+from greenlang.agents.mrv.steam_heat_purchase.steam_heat_database import (
     SteamHeatDatabaseEngine,
     FUEL_EMISSION_FACTORS,
     DISTRICT_HEATING_FACTORS,

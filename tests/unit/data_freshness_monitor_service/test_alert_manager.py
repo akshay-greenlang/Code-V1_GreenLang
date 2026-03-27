@@ -94,11 +94,11 @@ class _FlexSLABreach:
 # ---------------------------------------------------------------------------
 
 # We need to patch the model classes *in the module where they are imported*
-# (greenlang.data_freshness_monitor.alert_manager) so the engine constructs
+# (greenlang.agents.data.data_freshness_monitor.alert_manager) so the engine constructs
 # our flexible dataclasses instead of the strict Pydantic models.
 
-import greenlang.data_freshness_monitor.alert_manager as _am_module  # noqa: E402
-from greenlang.data_freshness_monitor.models import (  # noqa: E402
+import greenlang.agents.data.data_freshness_monitor.alert_manager as _am_module  # noqa: E402
+from greenlang.agents.data.data_freshness_monitor.models import (  # noqa: E402
     AlertChannel,
     AlertSeverity,
     AlertStatus,
@@ -110,7 +110,7 @@ from greenlang.data_freshness_monitor.models import (  # noqa: E402
 _am_module.FreshnessAlert = _FlexFreshnessAlert  # type: ignore[misc]
 _am_module.SLABreach = _FlexSLABreach  # type: ignore[misc]
 
-from greenlang.data_freshness_monitor.alert_manager import (  # noqa: E402
+from greenlang.agents.data.data_freshness_monitor.alert_manager import (  # noqa: E402
     AlertManagerEngine,
 )
 

@@ -23,7 +23,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.scope2_market.instrument_allocation import (
+    from greenlang.agents.mrv.scope2_market.instrument_allocation import (
         InstrumentAllocationEngine,
         InstrumentType,
         CoverageStatus,

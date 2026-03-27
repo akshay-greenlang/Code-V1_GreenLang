@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.duplicate_detector.config import (
+from greenlang.agents.data.duplicate_detector.config import (
     DuplicateDetectorConfig,
     get_config,
     reset_config,
@@ -756,14 +756,14 @@ class TestConfigExports:
     """Verify the config module exports the expected names."""
 
     def test_all_exports(self):
-        import greenlang.duplicate_detector.config as mod
+        import greenlang.agents.data.duplicate_detector.config as mod
         assert "DuplicateDetectorConfig" in mod.__all__
         assert "get_config" in mod.__all__
         assert "set_config" in mod.__all__
         assert "reset_config" in mod.__all__
 
     def test_env_prefix_is_gl_dd(self):
-        from greenlang.duplicate_detector.config import _ENV_PREFIX
+        from greenlang.agents.data.duplicate_detector.config import _ENV_PREFIX
         assert _ENV_PREFIX == "GL_DD_"
 
 

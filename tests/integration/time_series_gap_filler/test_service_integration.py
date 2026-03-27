@@ -22,19 +22,19 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import (
+from greenlang.agents.data.time_series_gap_filler.config import (
     TimeSeriesGapFillerConfig,
     get_config,
     set_config,
 )
-from greenlang.time_series_gap_filler.gap_detector import GapDetectorEngine
-from greenlang.time_series_gap_filler.frequency_analyzer import FrequencyAnalyzerEngine
-from greenlang.time_series_gap_filler.interpolation_engine import InterpolationEngine
-from greenlang.time_series_gap_filler.seasonal_filler import (
+from greenlang.agents.data.time_series_gap_filler.gap_detector import GapDetectorEngine
+from greenlang.agents.data.time_series_gap_filler.frequency_analyzer import FrequencyAnalyzerEngine
+from greenlang.agents.data.time_series_gap_filler.interpolation_engine import InterpolationEngine
+from greenlang.agents.data.time_series_gap_filler.seasonal_filler import (
     CalendarDefinition,
     SeasonalFillerEngine,
 )
-from greenlang.time_series_gap_filler.provenance import ProvenanceTracker
+from greenlang.agents.data.time_series_gap_filler.provenance import ProvenanceTracker
 
 
 # =========================================================================

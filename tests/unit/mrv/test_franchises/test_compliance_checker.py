@@ -18,7 +18,7 @@ from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 import pytest
 
-from greenlang.franchises.compliance_checker import (
+from greenlang.agents.mrv.franchises.compliance_checker import (
     ComplianceCheckerEngine,
     ComplianceCheckResult,
     ComplianceFramework,

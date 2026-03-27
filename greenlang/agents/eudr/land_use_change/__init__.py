@@ -82,7 +82,7 @@ from greenlang.agents.eudr.land_use_change.models import (
     MIN_CONFIDENCE_THRESHOLD,
     MIN_TRANSITION_AREA_HA,
     MAX_TIME_STEPS,
-    # Re-exported from greenlang.eudr_traceability.models
+    # Re-exported from greenlang.agents.data.eudr_traceability.models
     EUDRCommodity,
     # Enumerations
     LandUseCategory,

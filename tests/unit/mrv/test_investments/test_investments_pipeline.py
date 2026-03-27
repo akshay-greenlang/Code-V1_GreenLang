@@ -25,10 +25,10 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock, AsyncMock
 import pytest
 
-from greenlang.investments.investments_pipeline import (
+from greenlang.agents.mrv.investments.investments_pipeline import (
     InvestmentsPipelineEngine,
 )
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     AssetClass,
     ProvenanceStage,
 )
@@ -51,7 +51,7 @@ def _reset_singleton():
 def engine():
     """Create a fresh InvestmentsPipelineEngine with mocked dependencies."""
     with patch(
-        "greenlang.investments.investments_pipeline.get_config"
+        "greenlang.agents.mrv.investments.investments_pipeline.get_config"
     ) as mock_config:
         cfg = MagicMock()
         cfg.general.enabled = True

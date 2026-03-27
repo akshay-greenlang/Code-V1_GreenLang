@@ -33,7 +33,7 @@ Response Models (4):
       VerificationResponse, BatchResponse
 
 Compatibility:
-    Imports EUDRCommodity from greenlang.eudr_traceability.models for
+    Imports EUDRCommodity from greenlang.agents.data.eudr_traceability.models for
     cross-agent consistency with AGENT-DATA-005 EUDR Traceability
     Connector, AGENT-EUDR-001 Supply Chain Mapper, AGENT-EUDR-002
     Geolocation Verification, AGENT-EUDR-003 Satellite Monitoring,
@@ -60,7 +60,7 @@ from pydantic import (
     model_validator,
 )
 
-from greenlang.eudr_traceability.models import EUDRCommodity
+from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
 
 
 # ---------------------------------------------------------------------------

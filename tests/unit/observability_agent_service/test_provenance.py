@@ -18,7 +18,7 @@ import json
 
 import pytest
 
-from greenlang.observability_agent.provenance import ProvenanceTracker
+from greenlang.agents.foundation.observability_agent.provenance import ProvenanceTracker
 
 
 # ---------------------------------------------------------------------------

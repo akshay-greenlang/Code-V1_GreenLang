@@ -23,7 +23,7 @@ from typing import Any, Dict
 import pytest
 
 try:
-    from greenlang.scope2_location.provenance import (
+    from greenlang.agents.mrv.scope2_location.provenance import (
         Scope2LocationProvenance,
         ProvenanceEntry,
         VALID_STAGES,

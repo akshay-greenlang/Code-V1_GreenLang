@@ -38,7 +38,7 @@ from hypothesis import given, settings, assume, HealthCheck, Phase, example
 from hypothesis import strategies as st
 
 # Import components under test
-from greenlang.schema.normalizer.coercions import (
+from greenlang.agents.foundation.schema.normalizer.coercions import (
     CoercionEngine,
     CoercionRecord,
     CoercionResult,
@@ -51,7 +51,7 @@ from greenlang.schema.normalizer.coercions import (
     JSON_TYPE_BOOLEAN,
     JSON_TYPE_NULL,
 )
-from greenlang.schema.models.config import CoercionPolicy
+from greenlang.agents.foundation.schema.models.config import CoercionPolicy
 
 
 # =============================================================================

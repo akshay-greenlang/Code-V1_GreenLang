@@ -8,7 +8,7 @@ metrics tracking, statistics, health checks), and the three module-level
 FastAPI integration helpers (configure_schema_migration, get_schema_migration,
 get_router).
 
-Target: ~100 tests, 85%+ coverage of greenlang.schema_migration.setup
+Target: ~100 tests, 85%+ coverage of greenlang.agents.data.schema_migration.setup
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -36,19 +36,19 @@ from pydantic import ValidationError
 # ---------------------------------------------------------------------------
 
 _ENGINE_MODULES = [
-    "greenlang.schema_migration.schema_registry",
-    "greenlang.schema_migration.schema_versioner",
-    "greenlang.schema_migration.change_detector",
-    "greenlang.schema_migration.compatibility_checker",
-    "greenlang.schema_migration.migration_planner",
-    "greenlang.schema_migration.migration_executor",
-    "greenlang.schema_migration.schema_migration_pipeline",
+    "greenlang.agents.data.schema_migration.schema_registry",
+    "greenlang.agents.data.schema_migration.schema_versioner",
+    "greenlang.agents.data.schema_migration.change_detector",
+    "greenlang.agents.data.schema_migration.compatibility_checker",
+    "greenlang.agents.data.schema_migration.migration_planner",
+    "greenlang.agents.data.schema_migration.migration_executor",
+    "greenlang.agents.data.schema_migration.schema_migration_pipeline",
 ]
 
 for _mod_name in _ENGINE_MODULES:
     if _mod_name not in sys.modules:
         _stub = types.ModuleType(_mod_name)
-        _stub.__package__ = "greenlang.schema_migration"
+        _stub.__package__ = "greenlang.agents.data.schema_migration"
         # The engine class names that setup.py imports; set them to None so
         # the ``if <EngineClass> is not None`` guards evaluate to False.
         _class_name = _mod_name.rsplit(".", 1)[-1]
@@ -57,8 +57,8 @@ for _mod_name in _ENGINE_MODULES:
         setattr(_stub, _pascal, None)
         sys.modules[_mod_name] = _stub
 
-from greenlang.schema_migration.config import SchemaMigrationConfig
-from greenlang.schema_migration.setup import (
+from greenlang.agents.data.schema_migration.config import SchemaMigrationConfig
+from greenlang.agents.data.schema_migration.setup import (
     SchemaResponse,
     SchemaVersionResponse,
     ChangeDetectionResponse,
@@ -91,13 +91,13 @@ def _make_config(**overrides: Any) -> SchemaMigrationConfig:
 def _make_service(**overrides: Any) -> SchemaMigrationService:
     """Create a SchemaMigrationService with engines stubbed to None."""
     cfg = _make_config(**overrides)
-    with patch("greenlang.schema_migration.setup.SchemaRegistryEngine", None), \
-         patch("greenlang.schema_migration.setup.SchemaVersionerEngine", None), \
-         patch("greenlang.schema_migration.setup.ChangeDetectorEngine", None), \
-         patch("greenlang.schema_migration.setup.CompatibilityCheckerEngine", None), \
-         patch("greenlang.schema_migration.setup.MigrationPlannerEngine", None), \
-         patch("greenlang.schema_migration.setup.MigrationExecutorEngine", None), \
-         patch("greenlang.schema_migration.setup.SchemaMigrationPipelineEngine", None):
+    with patch("greenlang.agents.data.schema_migration.setup.SchemaRegistryEngine", None), \
+         patch("greenlang.agents.data.schema_migration.setup.SchemaVersionerEngine", None), \
+         patch("greenlang.agents.data.schema_migration.setup.ChangeDetectorEngine", None), \
+         patch("greenlang.agents.data.schema_migration.setup.CompatibilityCheckerEngine", None), \
+         patch("greenlang.agents.data.schema_migration.setup.MigrationPlannerEngine", None), \
+         patch("greenlang.agents.data.schema_migration.setup.MigrationExecutorEngine", None), \
+         patch("greenlang.agents.data.schema_migration.setup.SchemaMigrationPipelineEngine", None):
         return SchemaMigrationService(config=cfg)
 
 
@@ -641,13 +641,13 @@ class TestSchemaMigrationServiceInit:
 
     def test_custom_config(self):
         cfg = _make_config(max_schemas=999)
-        with patch("greenlang.schema_migration.setup.SchemaRegistryEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaVersionerEngine", None), \
-             patch("greenlang.schema_migration.setup.ChangeDetectorEngine", None), \
-             patch("greenlang.schema_migration.setup.CompatibilityCheckerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationPlannerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationExecutorEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaMigrationPipelineEngine", None):
+        with patch("greenlang.agents.data.schema_migration.setup.SchemaRegistryEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaVersionerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.ChangeDetectorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.CompatibilityCheckerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationPlannerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationExecutorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaMigrationPipelineEngine", None):
             svc = SchemaMigrationService(config=cfg)
         assert svc.config.max_schemas == 999
 
@@ -1351,14 +1351,14 @@ class TestConfigureSchemaMigration:
         app = MagicMock()
         app.state = MagicMock()
 
-        with patch("greenlang.schema_migration.setup.SchemaRegistryEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaVersionerEngine", None), \
-             patch("greenlang.schema_migration.setup.ChangeDetectorEngine", None), \
-             patch("greenlang.schema_migration.setup.CompatibilityCheckerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationPlannerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationExecutorEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaMigrationPipelineEngine", None), \
-             patch("greenlang.schema_migration.setup._singleton_instance", None):
+        with patch("greenlang.agents.data.schema_migration.setup.SchemaRegistryEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaVersionerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.ChangeDetectorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.CompatibilityCheckerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationPlannerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationExecutorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaMigrationPipelineEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup._singleton_instance", None):
             service = asyncio.get_event_loop().run_until_complete(
                 configure_schema_migration(app)
             )
@@ -1370,16 +1370,16 @@ class TestConfigureSchemaMigration:
         app.state = MagicMock()
 
         mock_router = MagicMock()
-        with patch("greenlang.schema_migration.setup.SchemaRegistryEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaVersionerEngine", None), \
-             patch("greenlang.schema_migration.setup.ChangeDetectorEngine", None), \
-             patch("greenlang.schema_migration.setup.CompatibilityCheckerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationPlannerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationExecutorEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaMigrationPipelineEngine", None), \
-             patch("greenlang.schema_migration.setup._singleton_instance", None), \
+        with patch("greenlang.agents.data.schema_migration.setup.SchemaRegistryEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaVersionerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.ChangeDetectorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.CompatibilityCheckerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationPlannerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationExecutorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaMigrationPipelineEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup._singleton_instance", None), \
              patch(
-                 "greenlang.schema_migration.api.router.router",
+                 "greenlang.agents.data.schema_migration.api.router.router",
                  mock_router,
              ):
             asyncio.get_event_loop().run_until_complete(
@@ -1391,14 +1391,14 @@ class TestConfigureSchemaMigration:
         app = MagicMock()
         app.state = MagicMock()
 
-        with patch("greenlang.schema_migration.setup.SchemaRegistryEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaVersionerEngine", None), \
-             patch("greenlang.schema_migration.setup.ChangeDetectorEngine", None), \
-             patch("greenlang.schema_migration.setup.CompatibilityCheckerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationPlannerEngine", None), \
-             patch("greenlang.schema_migration.setup.MigrationExecutorEngine", None), \
-             patch("greenlang.schema_migration.setup.SchemaMigrationPipelineEngine", None), \
-             patch("greenlang.schema_migration.setup._singleton_instance", None):
+        with patch("greenlang.agents.data.schema_migration.setup.SchemaRegistryEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaVersionerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.ChangeDetectorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.CompatibilityCheckerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationPlannerEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.MigrationExecutorEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup.SchemaMigrationPipelineEngine", None), \
+             patch("greenlang.agents.data.schema_migration.setup._singleton_instance", None):
             service = asyncio.get_event_loop().run_until_complete(
                 configure_schema_migration(app)
             )
@@ -1434,7 +1434,7 @@ class TestGetRouter:
     def test_returns_router_when_available(self):
         mock_router = MagicMock()
         with patch(
-            "greenlang.schema_migration.api.router.router",
+            "greenlang.agents.data.schema_migration.api.router.router",
             mock_router,
         ):
             result = get_router()
@@ -1443,7 +1443,7 @@ class TestGetRouter:
     def test_returns_none_when_import_fails(self):
         with patch.dict(
             "sys.modules",
-            {"greenlang.schema_migration.api.router": None},
+            {"greenlang.agents.data.schema_migration.api.router": None},
         ):
             result = get_router()
         # Should return None gracefully
@@ -1452,7 +1452,7 @@ class TestGetRouter:
     def test_accepts_optional_service_arg(self):
         mock_router = MagicMock()
         with patch(
-            "greenlang.schema_migration.api.router.router",
+            "greenlang.agents.data.schema_migration.api.router.router",
             mock_router,
         ):
             result = get_router(service=MagicMock())
@@ -1461,7 +1461,7 @@ class TestGetRouter:
     def test_default_service_is_none(self):
         mock_router = MagicMock()
         with patch(
-            "greenlang.schema_migration.api.router.router",
+            "greenlang.agents.data.schema_migration.api.router.router",
             mock_router,
         ):
             # Should work without passing service

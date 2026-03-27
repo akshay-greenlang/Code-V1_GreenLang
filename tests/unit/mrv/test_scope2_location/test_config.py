@@ -27,7 +27,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope2_location.config import (
+    from greenlang.agents.mrv.scope2_location.config import (
         Scope2LocationConfig,
         get_config,
         set_config,

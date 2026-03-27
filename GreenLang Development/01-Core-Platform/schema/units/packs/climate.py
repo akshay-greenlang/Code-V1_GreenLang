@@ -4,7 +4,7 @@ Climate Unit Pack for GL-FOUND-X-002.
 Climate and emissions-specific units.
 """
 
-from greenlang.schema.units.catalog import UnitCatalog, UnitDefinition
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog, UnitDefinition
 
 
 def load_climate_units(catalog: UnitCatalog) -> None:

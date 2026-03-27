@@ -568,7 +568,7 @@ class HazardPipelineEngine:
       vulnerability scores are computed using deterministic weighted
       arithmetic.  No LLM inference is used in any calculation path.
     - **Provenance**: every pipeline run appends chain-hashed entries to
-      the shared :class:`~greenlang.climate_hazard.provenance.ProvenanceTracker`.
+      the shared :class:`~greenlang.agents.data.climate_hazard.provenance.ProvenanceTracker`.
     - **Thread-safety**: ``self._lock`` serialises writes to
       ``self._pipeline_runs`` and statistics counters while individual
       engine calls are stateless.

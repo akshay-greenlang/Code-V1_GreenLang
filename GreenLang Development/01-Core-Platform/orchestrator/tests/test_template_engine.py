@@ -14,7 +14,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from greenlang.orchestrator.template_engine import (
+from greenlang.agents.foundation.orchestrator.template_engine import (
     # Core models
     PipelineTemplate,
     TemplateParameter,

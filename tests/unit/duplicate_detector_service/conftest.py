@@ -37,7 +37,7 @@ def _clean_dd_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Also reset the singleton config so each test starts fresh
-    from greenlang.duplicate_detector.config import reset_config
+    from greenlang.agents.data.duplicate_detector.config import reset_config
     reset_config()
 
     yield
@@ -54,7 +54,7 @@ def _clean_dd_env(monkeypatch):
 @pytest.fixture
 def config():
     """Create a DuplicateDetectorConfig with test defaults."""
-    from greenlang.duplicate_detector.config import DuplicateDetectorConfig
+    from greenlang.agents.data.duplicate_detector.config import DuplicateDetectorConfig
 
     return DuplicateDetectorConfig(
         database_url="postgresql://test:test@localhost:5432/testdb",
@@ -561,7 +561,7 @@ def sample_records_with_duplicates() -> List[Dict[str, Any]]:
 @pytest.fixture
 def sample_field_configs():
     """Return a list of FieldComparisonConfig for common dedup fields."""
-    from greenlang.duplicate_detector.models import (
+    from greenlang.agents.data.duplicate_detector.models import (
         FieldComparisonConfig,
         FieldType,
         SimilarityAlgorithm,
@@ -642,7 +642,7 @@ def sample_field_configs():
 @pytest.fixture
 def sample_dedup_rule(sample_field_configs):
     """Return a complete DedupRule with field configs and thresholds."""
-    from greenlang.duplicate_detector.models import (
+    from greenlang.agents.data.duplicate_detector.models import (
         BlockingStrategy,
         DedupRule,
         MergeStrategy,
@@ -669,7 +669,7 @@ def sample_dedup_rule(sample_field_configs):
 @pytest.fixture
 def sample_similarity_results():
     """Return pre-computed SimilarityResult objects for testing classifier."""
-    from greenlang.duplicate_detector.models import (
+    from greenlang.agents.data.duplicate_detector.models import (
         SimilarityAlgorithm,
         SimilarityResult,
     )
@@ -731,7 +731,7 @@ def sample_similarity_results():
 @pytest.fixture
 def sample_match_results():
     """Return pre-computed MatchResult objects for testing clustering."""
-    from greenlang.duplicate_detector.models import (
+    from greenlang.agents.data.duplicate_detector.models import (
         MatchClassification,
         MatchResult,
     )
@@ -793,7 +793,7 @@ def sample_match_results():
 @pytest.fixture
 def sample_clusters():
     """Return pre-computed DuplicateCluster objects for testing merge."""
-    from greenlang.duplicate_detector.models import DuplicateCluster
+    from greenlang.agents.data.duplicate_detector.models import DuplicateCluster
 
     return [
         DuplicateCluster(

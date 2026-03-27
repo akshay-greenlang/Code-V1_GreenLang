@@ -32,7 +32,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.scope3_category_mapper.config import (
+from greenlang.agents.mrv.scope3_category_mapper.config import (
     get_config,
     reset_config,
     set_config,

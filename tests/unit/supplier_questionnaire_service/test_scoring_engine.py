@@ -21,8 +21,8 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.supplier_questionnaire.scoring_engine import ScoringEngine
-from greenlang.supplier_questionnaire.models import (
+from greenlang.agents.data.supplier_questionnaire.scoring_engine import ScoringEngine
+from greenlang.agents.data.supplier_questionnaire.models import (
     Answer,
     CDPGrade,
     Framework,

@@ -22,7 +22,7 @@ from typing import Dict, List, Any, Optional
 from unittest.mock import Mock, patch, MagicMock
 
 try:
-    from greenlang.purchased_goods_services.compliance_checker import (
+    from greenlang.agents.mrv.purchased_goods_services.compliance_checker import (
         ComplianceCheckerEngine,
         ComplianceInput,
         ComplianceOutput,

@@ -59,7 +59,7 @@ from greenlang.agents.eudr.geolocation_verification.models import (
     DEFAULT_SCORE_WEIGHTS,
     QUALITY_TIER_THRESHOLDS,
     MAX_BATCH_SIZE,
-    # Re-exported from greenlang.eudr_traceability.models
+    # Re-exported from greenlang.agents.data.eudr_traceability.models
     EUDRCommodity,
     # Enumerations
     VerificationLevel,

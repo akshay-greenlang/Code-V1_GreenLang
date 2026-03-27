@@ -293,13 +293,13 @@ def mock_config() -> MagicMock:
 def reset_singletons():
     """Reset all singleton engines before and after each test."""
     try:
-        from greenlang.investments.investment_database import reset_database_engine
+        from greenlang.agents.mrv.investments.investment_database import reset_database_engine
         reset_database_engine()
     except (ImportError, AttributeError):
         pass
     yield
     try:
-        from greenlang.investments.investment_database import reset_database_engine
+        from greenlang.agents.mrv.investments.investment_database import reset_database_engine
         reset_database_engine()
     except (ImportError, AttributeError):
         pass

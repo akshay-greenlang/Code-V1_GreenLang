@@ -3,7 +3,7 @@
 Shared pytest fixtures for AGENT-DATA-011 Duplicate Detection Agent integration tests.
 
 Provides reusable test fixtures for:
-- Package stub for greenlang.duplicate_detector (same pattern as unit tests)
+- Package stub for greenlang.agents.data.duplicate_detector (same pattern as unit tests)
 - Environment cleanup (autouse)
 - Database mock fixtures (PostgreSQL + Redis)
 - Sample data fixtures (10 records with known duplicates)
@@ -69,7 +69,7 @@ def _clean_dd_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Also reset the singleton config so each test starts fresh
-    from greenlang.duplicate_detector.config import reset_config
+    from greenlang.agents.data.duplicate_detector.config import reset_config
     reset_config()
 
     yield
@@ -95,11 +95,11 @@ def _build_service(config=None):
     Returns:
         DuplicateDetectorService instance with engines patched.
     """
-    from greenlang.duplicate_detector.config import (
+    from greenlang.agents.data.duplicate_detector.config import (
         DuplicateDetectorConfig,
         set_config,
     )
-    from greenlang.duplicate_detector.setup import DuplicateDetectorService
+    from greenlang.agents.data.duplicate_detector.setup import DuplicateDetectorService
 
     cfg = config or DuplicateDetectorConfig()
     set_config(cfg)
@@ -117,7 +117,7 @@ def _build_service(config=None):
 @pytest.fixture
 def config():
     """Create a DuplicateDetectorConfig with test defaults."""
-    from greenlang.duplicate_detector.config import DuplicateDetectorConfig
+    from greenlang.agents.data.duplicate_detector.config import DuplicateDetectorConfig
 
     return DuplicateDetectorConfig(
         database_url="postgresql://test:test@localhost:5432/testdb",

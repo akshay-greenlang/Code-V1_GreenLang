@@ -40,7 +40,7 @@ import pytest
 # ============================================================================
 
 try:
-    from greenlang.downstream_leased_assets.downstream_asset_database import (
+    from greenlang.agents.mrv.downstream_leased_assets.downstream_asset_database import (
         DownstreamAssetDatabaseEngine,
     )
     DB_ENGINE_AVAILABLE = True
@@ -49,7 +49,7 @@ except ImportError:
     DownstreamAssetDatabaseEngine = None  # type: ignore[assignment,misc]
 
 try:
-    from greenlang.downstream_leased_assets.asset_specific_calculator import (
+    from greenlang.agents.mrv.downstream_leased_assets.asset_specific_calculator import (
         AssetSpecificCalculatorEngine,
     )
     ASSET_CALC_AVAILABLE = True
@@ -58,7 +58,7 @@ except ImportError:
     AssetSpecificCalculatorEngine = None  # type: ignore[assignment,misc]
 
 try:
-    from greenlang.downstream_leased_assets.average_data_calculator import (
+    from greenlang.agents.mrv.downstream_leased_assets.average_data_calculator import (
         AverageDataCalculatorEngine,
     )
     AVG_CALC_AVAILABLE = True
@@ -67,7 +67,7 @@ except ImportError:
     AverageDataCalculatorEngine = None  # type: ignore[assignment,misc]
 
 try:
-    from greenlang.downstream_leased_assets.spend_based_calculator import (
+    from greenlang.agents.mrv.downstream_leased_assets.spend_based_calculator import (
         SpendBasedCalculatorEngine,
     )
     SPEND_CALC_AVAILABLE = True
@@ -76,7 +76,7 @@ except ImportError:
     SpendBasedCalculatorEngine = None  # type: ignore[assignment,misc]
 
 try:
-    from greenlang.downstream_leased_assets.hybrid_aggregator import (
+    from greenlang.agents.mrv.downstream_leased_assets.hybrid_aggregator import (
         HybridAggregatorEngine,
     )
     HYBRID_AVAILABLE = True
@@ -85,7 +85,7 @@ except ImportError:
     HybridAggregatorEngine = None  # type: ignore[assignment,misc]
 
 try:
-    from greenlang.downstream_leased_assets.compliance_checker import (
+    from greenlang.agents.mrv.downstream_leased_assets.compliance_checker import (
         ComplianceCheckerEngine,
     )
     COMPLIANCE_AVAILABLE = True
@@ -94,7 +94,7 @@ except ImportError:
     ComplianceCheckerEngine = None  # type: ignore[assignment,misc]
 
 try:
-    from greenlang.downstream_leased_assets.downstream_leased_assets_pipeline import (
+    from greenlang.agents.mrv.downstream_leased_assets.downstream_leased_assets_pipeline import (
         DownstreamLeasedAssetsPipelineEngine,
     )
     PIPELINE_AVAILABLE = True
@@ -147,7 +147,7 @@ def _do_reset():
                     break
     # Also reset config singleton
     try:
-        from greenlang.downstream_leased_assets.config import _reset_config
+        from greenlang.agents.mrv.downstream_leased_assets.config import _reset_config
         _reset_config()
     except (ImportError, AttributeError):
         pass

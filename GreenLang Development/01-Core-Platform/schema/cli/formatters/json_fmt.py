@@ -13,7 +13,7 @@ Features:
 - Pydantic model serialization
 
 Example:
-    >>> from greenlang.schema.cli.formatters.json_fmt import JSONFormatter
+    >>> from greenlang.agents.foundation.schema.cli.formatters.json_fmt import JSONFormatter
     >>> formatter = JSONFormatter(indent=2)
     >>> output = formatter.format(validation_report)
     >>> print(output)
@@ -31,8 +31,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
-from greenlang.schema.models.report import ValidationReport, BatchValidationReport
-from greenlang.schema.models.finding import Finding
+from greenlang.agents.foundation.schema.models.report import ValidationReport, BatchValidationReport
+from greenlang.agents.foundation.schema.models.finding import Finding
 
 
 class JSONFormatter:

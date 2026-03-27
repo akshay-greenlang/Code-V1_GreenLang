@@ -31,7 +31,7 @@ from typing import Dict, Any, List, Set
 
 import pytest
 
-from greenlang.schema.normalizer.keys import (
+from greenlang.agents.foundation.schema.normalizer.keys import (
     KeyCanonicalizer,
     KeyRename,
     RenameReason,
@@ -41,7 +41,7 @@ from greenlang.schema.normalizer.keys import (
     detect_casing,
     normalize_to_casing,
 )
-from greenlang.schema.compiler.ir import SchemaIR, PropertyIR
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, PropertyIR
 
 
 # =============================================================================

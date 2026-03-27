@@ -9,7 +9,7 @@ from decimal import Decimal
 from datetime import date, datetime
 from pydantic import ValidationError
 
-from greenlang.purchased_goods_services.models import (
+from greenlang.agents.mrv.purchased_goods_services.models import (
     # Enums
     CalculationMethod,
     EEIODatabase,

@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Tuple
 import pytest
 
 try:
-    from greenlang.processing_sold_products.processing_database import (
+    from greenlang.agents.mrv.processing_sold_products.processing_database import (
         ProcessingDatabaseEngine,
         get_database_engine,
         calculate_provenance_hash,

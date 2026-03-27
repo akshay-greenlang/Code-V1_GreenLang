@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.mobile_combustion.mobile_combustion_pipeline import (
+from greenlang.agents.mrv.mobile_combustion.mobile_combustion_pipeline import (
     BIOFUEL_FOSSIL_FRACTION,
     CH4_G_PER_MILE,
     COMPLIANCE_REQUIREMENTS,

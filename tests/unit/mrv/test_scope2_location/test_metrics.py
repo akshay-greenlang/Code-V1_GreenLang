@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope2_location.metrics import (
+    from greenlang.agents.mrv.scope2_location.metrics import (
         PROMETHEUS_AVAILABLE,
         Scope2LocationMetrics,
         get_metrics,
@@ -444,7 +444,7 @@ class TestModuleLevelFunctions:
         the default prometheus registry, we reset and create with a
         custom registry, then wire the module-level _default_metrics.
         """
-        import greenlang.scope2_location.metrics as _m
+        import greenlang.agents.mrv.scope2_location.metrics as _m
         _m.Scope2LocationMetrics._reset()
         _m._default_metrics = None
         if PROMETHEUS_AVAILABLE:

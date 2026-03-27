@@ -21,7 +21,7 @@ import time
 
 import pytest
 
-from greenlang.schema_migration.provenance import (
+from greenlang.agents.data.schema_migration.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     get_provenance_tracker,

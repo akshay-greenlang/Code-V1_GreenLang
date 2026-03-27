@@ -36,7 +36,7 @@ Response Models (8):
       ReportResponse, BatchResult
 
 Compatibility:
-    Imports EUDRCommodity from greenlang.eudr_traceability.models for
+    Imports EUDRCommodity from greenlang.agents.data.eudr_traceability.models for
     cross-agent consistency with AGENT-DATA-005 EUDR Traceability
     Connector, AGENT-EUDR-001 Supply Chain Mapper, and AGENT-EUDR-008
     Multi-Tier Supplier Tracker.

@@ -58,6 +58,7 @@ Legend:
 - Status: **Done**
 - Evidence:
   - Workflow: `.github/workflows/greenlang-v1-platform-ci.yml`
+  - Frontend blocker workflow: `.github/workflows/vcci-frontend-ci.yml`
   - Shared gate lane: `pytest -q tests/v1`, `gl v1 gate`
   - Profile matrix lane: `cbam`, `csrd`, `vcci` with profile-specific execution lanes and artifact assertions
 
@@ -94,4 +95,18 @@ Legend:
 - Done: 8 / 8
 - Partial: 0 / 8
 - Not done: 0 / 8
+
+## Current-HEAD Validation Refresh
+
+- Commit SHA: `0c12d8a57e30597739d4e18e5adc810dfbcc1f21`
+- Timestamp (UTC): `2026-03-27T11:41:28Z`
+- Evidence artifacts:
+  - `phase1_evidence/current_head/metadata.txt`
+  - `phase1_evidence/current_head/exit_codes.txt`
+  - `phase1_evidence/current_head/v1_validate_contracts.log`
+  - `phase1_evidence/current_head/v1_check_policy.log`
+  - `phase1_evidence/current_head/v1_full_backend_checks.log`
+  - `phase1_evidence/current_head/v1_gate.log`
+  - `phase1_evidence/current_head/tests_v1_backend_semantics.log`
+  - `phase1_evidence/current_head/tests_web_security_contract.log`
 

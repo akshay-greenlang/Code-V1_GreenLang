@@ -45,7 +45,7 @@ Response Models (18):
       BatchJobResponse, HealthResponse
 
 Compatibility:
-    Imports EUDRCommodity from greenlang.eudr_traceability.models for
+    Imports EUDRCommodity from greenlang.agents.data.eudr_traceability.models for
     cross-agent consistency with AGENT-DATA-005 EUDR Traceability
     Connector, AGENT-EUDR-001 Supply Chain Mapper, and AGENT-EUDR-009
     Chain of Custody Agent.
@@ -78,7 +78,7 @@ from pydantic import (
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.eudr_traceability.models import EUDRCommodity
+    from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
 except ImportError:
     EUDRCommodity = None  # type: ignore[assignment,misc]
 

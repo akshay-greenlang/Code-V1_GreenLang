@@ -22,7 +22,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from greenlang.cross_source_reconciliation.config import reset_config
+from greenlang.agents.data.cross_source_reconciliation.config import reset_config
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ def sample_meter_data() -> List[Dict[str, Any]]:
 @pytest.fixture
 def source_registry_engine():
     """Create a fresh SourceRegistryEngine instance."""
-    from greenlang.cross_source_reconciliation.source_registry import (
+    from greenlang.agents.data.cross_source_reconciliation.source_registry import (
         SourceRegistryEngine,
     )
     return SourceRegistryEngine()
@@ -239,7 +239,7 @@ def source_registry_engine():
 @pytest.fixture
 def matching_engine():
     """Create a fresh MatchingEngine instance."""
-    from greenlang.cross_source_reconciliation.matching_engine import (
+    from greenlang.agents.data.cross_source_reconciliation.matching_engine import (
         MatchingEngine,
     )
     return MatchingEngine()
@@ -248,7 +248,7 @@ def matching_engine():
 @pytest.fixture
 def comparison_engine():
     """Create a fresh ComparisonEngine instance."""
-    from greenlang.cross_source_reconciliation.comparison_engine import (
+    from greenlang.agents.data.cross_source_reconciliation.comparison_engine import (
         ComparisonEngine,
     )
     return ComparisonEngine()
@@ -257,7 +257,7 @@ def comparison_engine():
 @pytest.fixture
 def discrepancy_engine():
     """Create a fresh DiscrepancyDetectorEngine instance."""
-    from greenlang.cross_source_reconciliation.discrepancy_detector import (
+    from greenlang.agents.data.cross_source_reconciliation.discrepancy_detector import (
         DiscrepancyDetectorEngine,
     )
     return DiscrepancyDetectorEngine()
@@ -266,7 +266,7 @@ def discrepancy_engine():
 @pytest.fixture
 def resolution_engine():
     """Create a fresh ResolutionEngine instance."""
-    from greenlang.cross_source_reconciliation.resolution_engine import (
+    from greenlang.agents.data.cross_source_reconciliation.resolution_engine import (
         ResolutionEngine,
     )
     return ResolutionEngine()
@@ -275,7 +275,7 @@ def resolution_engine():
 @pytest.fixture
 def audit_engine():
     """Create a fresh AuditTrailEngine instance."""
-    from greenlang.cross_source_reconciliation.audit_trail import (
+    from greenlang.agents.data.cross_source_reconciliation.audit_trail import (
         AuditTrailEngine,
     )
     return AuditTrailEngine()
@@ -284,7 +284,7 @@ def audit_engine():
 @pytest.fixture
 def pipeline_engine():
     """Create a fresh ReconciliationPipelineEngine instance."""
-    from greenlang.cross_source_reconciliation.reconciliation_pipeline import (
+    from greenlang.agents.data.cross_source_reconciliation.reconciliation_pipeline import (
         ReconciliationPipelineEngine,
     )
     return ReconciliationPipelineEngine()
@@ -309,7 +309,7 @@ def service():
     and resolution. This fixture catches startup errors and still
     marks the service as started so fallback code paths are exercised.
     """
-    from greenlang.cross_source_reconciliation.setup import (
+    from greenlang.agents.data.cross_source_reconciliation.setup import (
         CrossSourceReconciliationService,
     )
 
@@ -336,7 +336,7 @@ def provenance_tracker():
     Provides an isolated provenance tracker so tests do not
     pollute the global singleton.
     """
-    from greenlang.cross_source_reconciliation.provenance import (
+    from greenlang.agents.data.cross_source_reconciliation.provenance import (
         ProvenanceTracker,
     )
 
@@ -354,7 +354,7 @@ def provenance_tracker():
 def reconciliation_app():
     """Create a minimal FastAPI test app with CSR service attached.
 
-    Mounts the real router from greenlang.cross_source_reconciliation.api.router
+    Mounts the real router from greenlang.agents.data.cross_source_reconciliation.api.router
     and attaches a CrossSourceReconciliationService instance to
     app.state.cross_source_reconciliation_service (matching the attribute
     name that _get_service() reads from the request).
@@ -364,7 +364,7 @@ def reconciliation_app():
     except ImportError:
         pytest.skip("FastAPI not installed; skipping API integration tests")
 
-    from greenlang.cross_source_reconciliation.api.router import (
+    from greenlang.agents.data.cross_source_reconciliation.api.router import (
         router,
         FASTAPI_AVAILABLE,
     )
@@ -372,7 +372,7 @@ def reconciliation_app():
     if not FASTAPI_AVAILABLE:
         pytest.skip("FastAPI not available in router module")
 
-    from greenlang.cross_source_reconciliation.setup import (
+    from greenlang.agents.data.cross_source_reconciliation.setup import (
         CrossSourceReconciliationService,
     )
 

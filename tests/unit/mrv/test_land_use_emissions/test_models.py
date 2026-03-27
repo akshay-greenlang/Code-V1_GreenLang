@@ -22,7 +22,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.land_use_emissions.models import (
+from greenlang.agents.mrv.land_use_emissions.models import (
     # Enumerations (16)
     LandCategory,
     CarbonPool,

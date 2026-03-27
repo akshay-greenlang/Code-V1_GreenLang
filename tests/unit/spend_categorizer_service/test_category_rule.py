@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pytest
 
-from greenlang.spend_categorizer.category_rule import (
+from greenlang.agents.data.spend_categorizer.category_rule import (
     CategoryRule,
     CategoryRuleEngine,
     MatchType,

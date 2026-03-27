@@ -21,12 +21,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import (
+from greenlang.agents.data.time_series_gap_filler.config import (
     TimeSeriesGapFillerConfig,
     reset_config,
 )
-from greenlang.time_series_gap_filler.models import TrendType
-from greenlang.time_series_gap_filler.trend_extrapolator import (
+from greenlang.agents.data.time_series_gap_filler.models import TrendType
+from greenlang.agents.data.time_series_gap_filler.trend_extrapolator import (
     TrendExtrapolatorEngine,
 )
 

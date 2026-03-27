@@ -20,7 +20,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.time_series_gap_filler.provenance import (
+from greenlang.agents.data.time_series_gap_filler.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     get_provenance_tracker,

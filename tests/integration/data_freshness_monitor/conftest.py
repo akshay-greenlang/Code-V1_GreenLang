@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.data_freshness_monitor.config import reset_config
+from greenlang.agents.data.data_freshness_monitor.config import reset_config
 
 
 # ---------------------------------------------------------------------------
@@ -247,7 +247,7 @@ def service():
     implementations. This fixture catches startup errors and still
     marks the service as started so fallback code paths are exercised.
     """
-    from greenlang.data_freshness_monitor.setup import (
+    from greenlang.agents.data.data_freshness_monitor.setup import (
         DataFreshnessMonitorService,
     )
 
@@ -274,7 +274,7 @@ def provenance_tracker():
     Provides an isolated provenance tracker so tests do not
     pollute the global singleton.
     """
-    from greenlang.data_freshness_monitor.provenance import (
+    from greenlang.agents.data.data_freshness_monitor.provenance import (
         ProvenanceTracker,
     )
 
@@ -292,7 +292,7 @@ def provenance_tracker():
 def freshness_app():
     """Create a minimal FastAPI test app with DFM service attached.
 
-    Mounts the real router from greenlang.data_freshness_monitor.api.router
+    Mounts the real router from greenlang.agents.data.data_freshness_monitor.api.router
     and attaches a DataFreshnessMonitorService instance to
     app.state.data_freshness_monitor_service (matching the attribute
     name that _get_service() reads from the request).
@@ -302,7 +302,7 @@ def freshness_app():
     except ImportError:
         pytest.skip("FastAPI not installed; skipping API integration tests")
 
-    from greenlang.data_freshness_monitor.api.router import (
+    from greenlang.agents.data.data_freshness_monitor.api.router import (
         router,
         FASTAPI_AVAILABLE,
     )
@@ -310,7 +310,7 @@ def freshness_app():
     if not FASTAPI_AVAILABLE:
         pytest.skip("FastAPI not available in router module")
 
-    from greenlang.data_freshness_monitor.setup import (
+    from greenlang.agents.data.data_freshness_monitor.setup import (
         DataFreshnessMonitorService,
     )
 

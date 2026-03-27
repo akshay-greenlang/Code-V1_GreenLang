@@ -6,11 +6,11 @@ import threading
 
 # Load the module directly bypassing __init__.py
 for mod_name, mod_path in [
-    ("greenlang.validation_rule_engine.config",
+    ("greenlang.agents.data.validation_rule_engine.config",
      "greenlang/validation_rule_engine/config.py"),
-    ("greenlang.validation_rule_engine.provenance",
+    ("greenlang.agents.data.validation_rule_engine.provenance",
      "greenlang/validation_rule_engine/provenance.py"),
-    ("greenlang.validation_rule_engine.validation_reporter",
+    ("greenlang.agents.data.validation_rule_engine.validation_reporter",
      "greenlang/validation_rule_engine/validation_reporter.py"),
 ]:
     spec = importlib.util.spec_from_file_location(mod_name, mod_path)
@@ -18,7 +18,7 @@ for mod_name, mod_path in [
     sys.modules[mod_name] = mod
     spec.loader.exec_module(mod)
 
-from greenlang.validation_rule_engine.validation_reporter import (
+from greenlang.agents.data.validation_rule_engine.validation_reporter import (
     ValidationReporterEngine,
 )
 

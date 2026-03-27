@@ -20,7 +20,7 @@ from typing import get_type_hints
 import pytest
 from pydantic import ValidationError
 
-from greenlang.spend_categorizer.models import (
+from greenlang.agents.data.spend_categorizer.models import (
     # New enumerations (12)
     TaxonomySystem,
     IngestionSource,
@@ -77,8 +77,8 @@ from greenlang.spend_categorizer.models import (
     ProcurementItem,
     EmissionCalculation,
 )
-from greenlang.spend_categorizer.models import _utcnow
-from greenlang.spend_categorizer import models as models_module
+from greenlang.agents.data.spend_categorizer.models import _utcnow
+from greenlang.agents.data.spend_categorizer import models as models_module
 
 
 # ============================================================================

@@ -38,7 +38,7 @@ def _q(v: Decimal) -> Decimal:
 @pytest.fixture(autouse=True)
 def _reset_singleton():
     """Reset the singleton before each test."""
-    from greenlang.employee_commuting.personal_vehicle_calculator import (
+    from greenlang.agents.mrv.employee_commuting.personal_vehicle_calculator import (
         PersonalVehicleCalculatorEngine,
     )
     PersonalVehicleCalculatorEngine.reset_instance()
@@ -49,7 +49,7 @@ def _reset_singleton():
 @pytest.fixture
 def engine():
     """Create a fresh PersonalVehicleCalculatorEngine instance."""
-    from greenlang.employee_commuting.personal_vehicle_calculator import (
+    from greenlang.agents.mrv.employee_commuting.personal_vehicle_calculator import (
         PersonalVehicleCalculatorEngine,
     )
     return PersonalVehicleCalculatorEngine.get_instance()
@@ -64,7 +64,7 @@ class TestSingletonPersonalVehicle:
 
     def test_singleton_identity(self, engine):
         """Two get_instance calls return the same object."""
-        from greenlang.employee_commuting.personal_vehicle_calculator import (
+        from greenlang.agents.mrv.employee_commuting.personal_vehicle_calculator import (
             PersonalVehicleCalculatorEngine,
         )
         assert engine is PersonalVehicleCalculatorEngine.get_instance()

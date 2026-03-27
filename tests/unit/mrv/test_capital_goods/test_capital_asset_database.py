@@ -26,7 +26,7 @@ from datetime import datetime
 from typing import Dict, Optional, List
 from unittest.mock import Mock, patch, MagicMock
 
-from greenlang.capital_goods.engines.capital_asset_database import (
+from greenlang.agents.mrv.capital_goods.engines.capital_asset_database import (
     CapitalAssetDatabaseEngine,
     EEIOFactor,
     PhysicalEmissionFactor,
@@ -35,7 +35,7 @@ from greenlang.capital_goods.engines.capital_asset_database import (
     MaterialType,
     DatabaseStats,
 )
-from greenlang.capital_goods.models import (
+from greenlang.agents.mrv.capital_goods.models import (
     EmissionFactorSource,
     DataQualityDimension,
 )

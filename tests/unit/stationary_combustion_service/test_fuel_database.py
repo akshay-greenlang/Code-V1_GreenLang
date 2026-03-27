@@ -26,7 +26,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.stationary_combustion.fuel_database import (
+from greenlang.agents.mrv.stationary_combustion.fuel_database import (
     FuelDatabaseEngine,
     _EPA_FACTORS,
     _IPCC_FACTORS,

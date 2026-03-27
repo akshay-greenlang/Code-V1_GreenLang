@@ -25,11 +25,11 @@ import pytest
 from decimal import Decimal
 from unittest.mock import patch, MagicMock
 
-from greenlang.business_travel.compliance_checker import (
+from greenlang.agents.mrv.business_travel.compliance_checker import (
     ComplianceCheckerEngine,
     BoundaryClassification,
 )
-from greenlang.business_travel.models import (
+from greenlang.agents.mrv.business_travel.models import (
     ComplianceFramework,
     ComplianceStatus,
     ComplianceCheckResult,
@@ -66,7 +66,7 @@ def _make_mock_config(
 def engine():
     """Create a fresh ComplianceCheckerEngine with mocked config."""
     with patch(
-        "greenlang.business_travel.compliance_checker.get_config"
+        "greenlang.agents.mrv.business_travel.compliance_checker.get_config"
     ) as mock_config:
         mock_config.return_value = _make_mock_config()
         eng = ComplianceCheckerEngine()
@@ -619,7 +619,7 @@ class TestIntegration:
     def test_singleton_pattern(self):
         """get_instance returns the same object on repeated calls."""
         with patch(
-            "greenlang.business_travel.compliance_checker.get_config"
+            "greenlang.agents.mrv.business_travel.compliance_checker.get_config"
         ) as mock_config:
             mock_config.return_value = _make_mock_config()
             inst1 = ComplianceCheckerEngine.get_instance()

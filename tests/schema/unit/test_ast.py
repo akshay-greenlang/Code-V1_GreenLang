@@ -22,7 +22,7 @@ import json
 import pytest
 from typing import Any, Dict
 
-from greenlang.schema.compiler.ast import (
+from greenlang.agents.foundation.schema.compiler.ast import (
     # Constants
     JSON_SCHEMA_DRAFT_2020_12,
     JSON_SCHEMA_TYPES,

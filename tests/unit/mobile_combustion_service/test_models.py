@@ -3,7 +3,7 @@
 Unit tests for Mobile Combustion Data Models - AGENT-MRV-003
 
 Tests all 16 enumerations, 16 data models, and 2 constant dictionaries
-defined in greenlang.mobile_combustion.models.
+defined in greenlang.agents.mrv.mobile_combustion.models.
 
 Target: 142+ tests
 """
@@ -16,7 +16,7 @@ from typing import Any, Dict, List
 import pytest
 from pydantic import ValidationError
 
-from greenlang.mobile_combustion.models import (
+from greenlang.agents.mrv.mobile_combustion.models import (
     # Constants
     BIOFUEL_FRACTIONS,
     GWP_VALUES,

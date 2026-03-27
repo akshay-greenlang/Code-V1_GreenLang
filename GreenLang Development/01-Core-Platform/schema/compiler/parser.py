@@ -21,7 +21,7 @@ Security Features:
     6. UTF-8 Handling: Graceful handling of encoding errors
 
 Example:
-    >>> from greenlang.schema.compiler.parser import parse_payload, detect_format
+    >>> from greenlang.agents.foundation.schema.compiler.parser import parse_payload, detect_format
     >>> result = parse_payload('{"name": "test", "value": 42}')
     >>> print(result.format)
     json
@@ -33,7 +33,7 @@ Example:
     1
 
 Error Handling:
-    >>> from greenlang.schema.compiler.parser import parse_payload, ParseError
+    >>> from greenlang.agents.foundation.schema.compiler.parser import parse_payload, ParseError
     >>> try:
     ...     result = parse_payload('{"deeply": ' * 100 + '{}' + '}' * 100)
     ... except ParseError as e:
@@ -55,13 +55,13 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 import yaml
 from pydantic import BaseModel, Field
 
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.constants import (
     MAX_OBJECT_DEPTH,
     MAX_PAYLOAD_BYTES,
     MAX_TOTAL_NODES,
     DEFAULT_ENCODING,
 )
-from greenlang.schema.errors import ErrorCode, format_error_message
+from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
 
 logger = logging.getLogger(__name__)
 

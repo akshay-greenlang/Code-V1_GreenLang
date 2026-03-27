@@ -26,8 +26,8 @@ from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
 
-from greenlang.duplicate_detector.deduplication_pipeline import DeduplicationPipeline
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.deduplication_pipeline import DeduplicationPipeline
+from greenlang.agents.data.duplicate_detector.models import (
     BlockingStrategy,
     ClusterAlgorithm,
     DedupJob,
@@ -470,7 +470,7 @@ class TestGenerateReport:
         """Report format is JSON by default."""
         job = DedupJob(total_records=5, status=JobStatus.COMPLETED)
         report = pipeline.generate_report(job, [], [], [])
-        from greenlang.duplicate_detector.models import ReportFormat
+        from greenlang.agents.data.duplicate_detector.models import ReportFormat
         assert report.format == ReportFormat.JSON
 
     def test_report_avg_similarity(self, pipeline: DeduplicationPipeline):

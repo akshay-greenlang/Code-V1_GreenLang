@@ -16,7 +16,7 @@ Version: 1.0.0
 GL-FOUND-X-001: Alert Webhooks Integration
 """
 
-from greenlang.orchestrator.alerting.webhooks import (
+from greenlang.agents.foundation.orchestrator.alerting.webhooks import (
     AlertType,
     AlertSeverity,
     AlertPayload,

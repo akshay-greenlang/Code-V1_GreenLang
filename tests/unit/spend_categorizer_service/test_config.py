@@ -21,7 +21,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.spend_categorizer.config import (
+from greenlang.agents.data.spend_categorizer.config import (
     SpendCategorizerConfig,
     get_config,
     reset_config,

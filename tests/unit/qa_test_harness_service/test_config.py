@@ -33,7 +33,7 @@ _logger = logging.getLogger(__name__)
 
 @dataclass
 class QATestHarnessConfig:
-    """Mirrors greenlang.qa_test_harness.config.QATestHarnessConfig."""
+    """Mirrors greenlang.agents.foundation.qa_test_harness.config.QATestHarnessConfig."""
 
     # Connections
     database_url: str = ""

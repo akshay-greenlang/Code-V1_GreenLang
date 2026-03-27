@@ -40,7 +40,7 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.scope3_category_mapper.category_database import (
+from greenlang.agents.mrv.scope3_category_mapper.category_database import (
     AGENT_COMPONENT,
     AGENT_ID,
     MAPPING_VERSION,

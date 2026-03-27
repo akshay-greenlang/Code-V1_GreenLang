@@ -23,10 +23,10 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.supplier_questionnaire.questionnaire_template import (
+from greenlang.agents.data.supplier_questionnaire.questionnaire_template import (
     QuestionnaireTemplateEngine,
 )
-from greenlang.supplier_questionnaire.models import (
+from greenlang.agents.data.supplier_questionnaire.models import (
     Framework,
     QuestionnaireStatus,
     QuestionnaireTemplate,

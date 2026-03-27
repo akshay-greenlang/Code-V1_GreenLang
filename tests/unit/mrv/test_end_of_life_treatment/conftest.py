@@ -40,7 +40,7 @@ import pytest
 # ============================================================================
 
 try:
-    from greenlang.end_of_life_treatment.eol_product_database import (
+    from greenlang.agents.mrv.end_of_life_treatment.eol_product_database import (
         EOLProductDatabaseEngine,
     )
     EOL_DB_AVAILABLE = True
@@ -49,7 +49,7 @@ except ImportError:
     EOLProductDatabaseEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.end_of_life_treatment.waste_type_specific_calculator import (
+    from greenlang.agents.mrv.end_of_life_treatment.waste_type_specific_calculator import (
         WasteTypeSpecificCalculatorEngine,
     )
     WASTE_TYPE_AVAILABLE = True
@@ -58,7 +58,7 @@ except ImportError:
     WasteTypeSpecificCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.end_of_life_treatment.average_data_calculator import (
+    from greenlang.agents.mrv.end_of_life_treatment.average_data_calculator import (
         AverageDataCalculatorEngine,
     )
     AVERAGE_DATA_AVAILABLE = True
@@ -67,7 +67,7 @@ except ImportError:
     AverageDataCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.end_of_life_treatment.producer_specific_calculator import (
+    from greenlang.agents.mrv.end_of_life_treatment.producer_specific_calculator import (
         ProducerSpecificCalculatorEngine,
     )
     PRODUCER_SPECIFIC_AVAILABLE = True
@@ -76,7 +76,7 @@ except ImportError:
     ProducerSpecificCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.end_of_life_treatment.hybrid_aggregator import (
+    from greenlang.agents.mrv.end_of_life_treatment.hybrid_aggregator import (
         HybridAggregatorEngine,
     )
     HYBRID_AVAILABLE = True
@@ -85,7 +85,7 @@ except ImportError:
     HybridAggregatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.end_of_life_treatment.compliance_checker import (
+    from greenlang.agents.mrv.end_of_life_treatment.compliance_checker import (
         ComplianceCheckerEngine,
     )
     COMPLIANCE_AVAILABLE = True
@@ -94,7 +94,7 @@ except ImportError:
     ComplianceCheckerEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.end_of_life_treatment.end_of_life_treatment_pipeline import (
+    from greenlang.agents.mrv.end_of_life_treatment.end_of_life_treatment_pipeline import (
         EndOfLifeTreatmentPipelineEngine,
     )
     PIPELINE_AVAILABLE = True
@@ -103,13 +103,13 @@ except ImportError:
     EndOfLifeTreatmentPipelineEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.end_of_life_treatment.config import get_config, reset_config
+    from greenlang.agents.mrv.end_of_life_treatment.config import get_config, reset_config
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False
 
 try:
-    from greenlang.end_of_life_treatment.provenance import (
+    from greenlang.agents.mrv.end_of_life_treatment.provenance import (
         ProvenanceChainBuilder,
     )
     PROVENANCE_AVAILABLE = True
@@ -117,7 +117,7 @@ except ImportError:
     PROVENANCE_AVAILABLE = False
 
 try:
-    from greenlang.end_of_life_treatment.setup import (
+    from greenlang.agents.mrv.end_of_life_treatment.setup import (
         EndOfLifeTreatmentService,
     )
     SETUP_AVAILABLE = True

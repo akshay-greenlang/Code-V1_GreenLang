@@ -25,7 +25,7 @@ from unittest.mock import MagicMock, patch, PropertyMock
 
 import pytest
 
-from greenlang.business_travel.models import (
+from greenlang.agents.mrv.business_travel.models import (
     FlightInput,
     FlightResult,
     CabinClass,
@@ -64,7 +64,7 @@ def _reset_singleton():
     This ensures every test starts with a fresh engine instance so that
     singleton state (e.g. calculation_count) does not leak between tests.
     """
-    from greenlang.business_travel.air_travel_calculator import (
+    from greenlang.agents.mrv.business_travel.air_travel_calculator import (
         reset_air_travel_calculator,
     )
 
@@ -83,11 +83,11 @@ def engine():
     calculation pipeline.
     """
     with patch(
-        "greenlang.business_travel.air_travel_calculator.get_config"
+        "greenlang.agents.mrv.business_travel.air_travel_calculator.get_config"
     ) as mock_config, patch(
-        "greenlang.business_travel.air_travel_calculator.get_metrics"
+        "greenlang.agents.mrv.business_travel.air_travel_calculator.get_metrics"
     ) as mock_metrics, patch(
-        "greenlang.business_travel.air_travel_calculator.get_database_engine"
+        "greenlang.agents.mrv.business_travel.air_travel_calculator.get_database_engine"
     ) as mock_db_factory:
         # Configure mock config
         cfg = MagicMock()
@@ -111,7 +111,7 @@ def engine():
         db_engine.get_air_emission_factor.side_effect = _mock_air_ef
         mock_db_factory.return_value = db_engine
 
-        from greenlang.business_travel.air_travel_calculator import (
+        from greenlang.agents.mrv.business_travel.air_travel_calculator import (
             AirTravelCalculatorEngine,
         )
 
@@ -129,15 +129,15 @@ class TestGreatCircleDistance:
 
     def setup_method(self):
         with patch(
-            "greenlang.business_travel.air_travel_calculator.get_config"
+            "greenlang.agents.mrv.business_travel.air_travel_calculator.get_config"
         ) as mc, patch(
-            "greenlang.business_travel.air_travel_calculator.get_metrics"
+            "greenlang.agents.mrv.business_travel.air_travel_calculator.get_metrics"
         ) as mm:
             cfg = MagicMock()
             cfg.general.default_uplift_factor = Decimal("0.08")
             mc.return_value = cfg
             mm.return_value = MagicMock()
-            from greenlang.business_travel.air_travel_calculator import (
+            from greenlang.agents.mrv.business_travel.air_travel_calculator import (
                 AirTravelCalculatorEngine,
             )
             self.engine = AirTravelCalculatorEngine()
@@ -267,15 +267,15 @@ class TestUpliftFactor:
 
     def setup_method(self):
         with patch(
-            "greenlang.business_travel.air_travel_calculator.get_config"
+            "greenlang.agents.mrv.business_travel.air_travel_calculator.get_config"
         ) as mc, patch(
-            "greenlang.business_travel.air_travel_calculator.get_metrics"
+            "greenlang.agents.mrv.business_travel.air_travel_calculator.get_metrics"
         ) as mm:
             cfg = MagicMock()
             cfg.general.default_uplift_factor = Decimal("0.08")
             mc.return_value = cfg
             mm.return_value = MagicMock()
-            from greenlang.business_travel.air_travel_calculator import (
+            from greenlang.agents.mrv.business_travel.air_travel_calculator import (
                 AirTravelCalculatorEngine,
             )
             self.engine = AirTravelCalculatorEngine()
@@ -322,15 +322,15 @@ class TestDistanceBandClassification:
 
     def setup_method(self):
         with patch(
-            "greenlang.business_travel.air_travel_calculator.get_config"
+            "greenlang.agents.mrv.business_travel.air_travel_calculator.get_config"
         ) as mc, patch(
-            "greenlang.business_travel.air_travel_calculator.get_metrics"
+            "greenlang.agents.mrv.business_travel.air_travel_calculator.get_metrics"
         ) as mm:
             cfg = MagicMock()
             cfg.general.default_uplift_factor = Decimal("0.08")
             mc.return_value = cfg
             mm.return_value = MagicMock()
-            from greenlang.business_travel.air_travel_calculator import (
+            from greenlang.agents.mrv.business_travel.air_travel_calculator import (
                 AirTravelCalculatorEngine,
             )
             self.engine = AirTravelCalculatorEngine()
@@ -880,7 +880,7 @@ class TestInfrastructure:
     # 77
     def test_reset_clears_singleton(self):
         """reset() should clear the singleton instance."""
-        from greenlang.business_travel.air_travel_calculator import (
+        from greenlang.agents.mrv.business_travel.air_travel_calculator import (
             AirTravelCalculatorEngine,
             reset_air_travel_calculator,
         )
@@ -892,7 +892,7 @@ class TestInfrastructure:
     # 78
     def test_get_air_travel_calculator_returns_engine(self, engine):
         """get_air_travel_calculator returns an AirTravelCalculatorEngine."""
-        from greenlang.business_travel.air_travel_calculator import (
+        from greenlang.agents.mrv.business_travel.air_travel_calculator import (
             AirTravelCalculatorEngine,
         )
 

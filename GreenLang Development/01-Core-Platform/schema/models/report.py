@@ -36,9 +36,9 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.models.finding import Finding
-from greenlang.schema.models.patch import FixSuggestion
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.models.finding import Finding
+from greenlang.agents.foundation.schema.models.patch import FixSuggestion
 
 
 class ValidationSummary(BaseModel):

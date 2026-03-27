@@ -27,7 +27,7 @@ Design Principles:
     - Forward references supported for recursive types
 
 Example:
-    >>> from greenlang.schema.compiler.ast import (
+    >>> from greenlang.agents.foundation.schema.compiler.ast import (
     ...     SchemaDocument, ObjectTypeNode, StringTypeNode, create_node_id
     ... )
     >>> name_field = StringTypeNode(

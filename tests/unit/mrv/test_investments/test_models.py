@@ -34,7 +34,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError as PydanticValidationError
 
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     # Enumerations
     AssetClass,
     CalculationMethod,

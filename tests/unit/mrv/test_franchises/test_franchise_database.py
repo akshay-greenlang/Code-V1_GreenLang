@@ -17,7 +17,7 @@ from decimal import Decimal
 from typing import Any, Dict, List
 import pytest
 
-from greenlang.franchises.franchise_database import (
+from greenlang.agents.mrv.franchises.franchise_database import (
     FranchiseDatabaseEngine,
     FRANCHISE_TYPES,
     CLIMATE_ZONES,

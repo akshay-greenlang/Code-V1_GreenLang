@@ -28,7 +28,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope2_market.config import (
+    from greenlang.agents.mrv.scope2_market.config import (
         Scope2MarketConfig,
         get_config,
         set_config,

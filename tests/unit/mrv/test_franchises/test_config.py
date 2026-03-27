@@ -30,7 +30,7 @@ from decimal import Decimal
 from typing import Any, Dict
 import pytest
 
-from greenlang.franchises.config import (
+from greenlang.agents.mrv.franchises.config import (
     get_config,
     GeneralConfig,
     DatabaseConfig,

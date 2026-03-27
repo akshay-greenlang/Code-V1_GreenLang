@@ -33,11 +33,11 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.models import (
     BlockingStrategy,
     BlockResult,
 )
-from greenlang.duplicate_detector.blocking_engine import (
+from greenlang.agents.data.duplicate_detector.blocking_engine import (
     BlockingEngine,
     _DEFAULT_KEY_SIZE,
     _DEFAULT_WINDOW_SIZE,

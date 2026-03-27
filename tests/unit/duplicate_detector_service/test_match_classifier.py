@@ -25,8 +25,8 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.duplicate_detector.match_classifier import MatchClassifier
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.match_classifier import MatchClassifier
+from greenlang.agents.data.duplicate_detector.models import (
     FieldComparisonConfig,
     MatchClassification,
     MatchResult,

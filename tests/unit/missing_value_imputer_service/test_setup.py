@@ -26,8 +26,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.missing_value_imputer.config import MissingValueImputerConfig
-from greenlang.missing_value_imputer.setup import (
+from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
+from greenlang.agents.data.missing_value_imputer.setup import (
     AnalysisResponse,
     BatchImputationResponse,
     ImputationResponse,

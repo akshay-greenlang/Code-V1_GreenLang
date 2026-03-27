@@ -29,8 +29,8 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.schema.compiler.ir import SchemaIR, UnitSpecIR
-from greenlang.schema.normalizer.canonicalizer import (
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, UnitSpecIR
+from greenlang.agents.foundation.schema.normalizer.canonicalizer import (
     CANONICAL_UNITS,
     CanonicalizedValue,
     ConversionRecord,
@@ -40,7 +40,7 @@ from greenlang.schema.normalizer.canonicalizer import (
     get_canonical_unit,
     is_canonical_unit,
 )
-from greenlang.schema.units.catalog import UnitCatalog
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
 
 
 # =============================================================================

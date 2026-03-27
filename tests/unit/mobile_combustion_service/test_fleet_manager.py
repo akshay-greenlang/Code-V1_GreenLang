@@ -19,7 +19,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from greenlang.mobile_combustion.fleet_manager import (
+from greenlang.agents.mrv.mobile_combustion.fleet_manager import (
     FleetManagerEngine,
     VEHICLE_STATUS_ACTIVE,
     VEHICLE_STATUS_DISPOSED,
@@ -35,8 +35,8 @@ from greenlang.mobile_combustion.fleet_manager import (
     _PRECISION,
     _KG_TO_TONNES,
 )
-from greenlang.mobile_combustion.vehicle_database import VehicleDatabaseEngine
-from greenlang.mobile_combustion.emission_calculator import EmissionCalculatorEngine
+from greenlang.agents.mrv.mobile_combustion.vehicle_database import VehicleDatabaseEngine
+from greenlang.agents.mrv.mobile_combustion.emission_calculator import EmissionCalculatorEngine
 
 
 # ===========================================================================

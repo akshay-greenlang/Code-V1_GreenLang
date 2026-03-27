@@ -21,7 +21,7 @@ Error Codes:
     - GLSCHEMA-E402: CONSISTENCY_ERROR - Consistency check failed
 
 Example:
-    >>> from greenlang.schema.validator.rules import RuleValidator, Rule
+    >>> from greenlang.agents.foundation.schema.validator.rules import RuleValidator, Rule
     >>> validator = RuleValidator(ir, options)
     >>> findings = validator.validate(payload)
 
@@ -42,9 +42,9 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from greenlang.schema.compiler.ir import RuleBindingIR, SchemaIR
-from greenlang.schema.models.config import ValidationOptions
-from greenlang.schema.models.finding import Finding, FindingHint, Severity
+from greenlang.agents.foundation.schema.compiler.ir import RuleBindingIR, SchemaIR
+from greenlang.agents.foundation.schema.models.config import ValidationOptions
+from greenlang.agents.foundation.schema.models.finding import Finding, FindingHint, Severity
 
 logger = logging.getLogger(__name__)
 

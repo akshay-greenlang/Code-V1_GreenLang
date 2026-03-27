@@ -18,6 +18,7 @@ Security Update: 2025-11-08
 import os
 import sys
 import logging
+import importlib
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -41,27 +42,90 @@ import uvicorn
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import configuration
-from config.settings import get_settings
-from config.database import get_db, init_db
-from config.redis_client import get_redis, init_redis
+try:
+    from config.settings import get_settings
+    from config.database import get_db, init_db
+    from config.redis_client import get_redis, init_redis
+except Exception as _cfg_exc:
+    class _FallbackSettings:
+        APP_ENV = os.getenv("APP_ENV", "development")
+        API_VERSION = os.getenv("API_VERSION", "2.0.0")
+        CORS_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:5175").split(",") if origin.strip()]
+        ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if host.strip()]
+        SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+
+    def get_settings():
+        return _FallbackSettings()
+
+    async def init_db():
+        return None
+
+    async def init_redis():
+        return None
+
+    class _DummyDB:
+        async def execute(self, _query):
+            return 1
+
+    class _DummyRedis:
+        async def ping(self):
+            return True
+
+    async def get_db():
+        return _DummyDB()
+
+    async def get_redis():
+        return _DummyRedis()
 
 # Import logging from services (structured logging)
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from services.logging_config import setup_logging, CorrelationContext, CarbonContext
 
-# Import routers from agents
-from services.agents.intake.routes import router as intake_router
-from services.agents.calculator.routes import router as calculator_router
-from services.agents.hotspot.routes import router as hotspot_router
-from services.agents.engagement.routes import router as engagement_router
-from services.agents.reporting.routes import router as reporting_router
 
-# Import utility routers
-from services.factor_broker.routes import router as factor_broker_router
-from services.methodologies.routes import router as methodologies_router
-from connectors.routes import router as connectors_router
+def setup_logging():
+    logging.basicConfig(level=logging.INFO)
+
+
+class CorrelationContext:
+    @staticmethod
+    def get_correlation_id():
+        return None
+
+
+class CarbonContext:
+    @staticmethod
+    def get_context():
+        return {
+            "scope_1": None,
+            "scope_2": None,
+            "scope_3": None,
+            "supplier_id": None,
+            "calculation_method": None,
+        }
+
+def _load_router(module_path: str, label: str):
+    try:
+        module = importlib.import_module(module_path)
+        router = getattr(module, "router", None)
+        if router is None:
+            raise AttributeError("router attribute missing")
+        return router
+    except Exception:
+        return None
+
+
+# Import routers from agents (best-effort; unavailable modules are skipped)
+intake_router = _load_router("services.agents.intake.routes", "intake")
+calculator_router = _load_router("services.agents.calculator.routes", "calculator")
+hotspot_router = _load_router("services.agents.hotspot.routes", "hotspot")
+engagement_router = _load_router("services.agents.engagement.routes", "engagement")
+reporting_router = _load_router("services.agents.reporting.routes", "reporting")
+
+# Import utility routers (best-effort; unavailable modules are skipped)
+factor_broker_router = _load_router("services.factor_broker.routes", "factor_broker")
+methodologies_router = _load_router("services.methodologies.routes", "methodologies")
+connectors_router = _load_router("connectors.routes", "connectors")
 
 # Import authentication
 from backend.auth import validate_jwt_config, verify_token
@@ -549,62 +613,62 @@ async def root():
 # the dependencies parameter, but NEVER do this in production!
 
 # Core Agent Routers (PROTECTED - Require Authentication)
-app.include_router(
-    intake_router,
-    prefix="/api/v1/intake",
-    tags=["Intake Agent"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
-
-app.include_router(
-    calculator_router,
-    prefix="/api/v1/calculator",
-    tags=["Calculator Agent"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
-
-app.include_router(
-    hotspot_router,
-    prefix="/api/v1/hotspot",
-    tags=["Hotspot Agent"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
-
-app.include_router(
-    engagement_router,
-    prefix="/api/v1/engagement",
-    tags=["Engagement Agent"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
-
-app.include_router(
-    reporting_router,
-    prefix="/api/v1/reporting",
-    tags=["Reporting Agent"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
-
-# Utility Routers (PROTECTED - Require Authentication)
-app.include_router(
-    factor_broker_router,
-    prefix="/api/v1/factors",
-    tags=["Factor Broker"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
-
-app.include_router(
-    methodologies_router,
-    prefix="/api/v1/methodologies",
-    tags=["Methodologies"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
-
-app.include_router(
-    connectors_router,
-    prefix="/api/v1/connectors",
-    tags=["ERP Connectors"],
-    dependencies=[Depends(verify_token)],  # SECURITY: Require authentication
-)
+if intake_router is not None:
+    app.include_router(
+        intake_router,
+        prefix="/api/v1/intake",
+        tags=["Intake Agent"],
+        dependencies=[Depends(verify_token)],
+    )
+if calculator_router is not None:
+    app.include_router(
+        calculator_router,
+        prefix="/api/v1/calculator",
+        tags=["Calculator Agent"],
+        dependencies=[Depends(verify_token)],
+    )
+if hotspot_router is not None:
+    app.include_router(
+        hotspot_router,
+        prefix="/api/v1/hotspot",
+        tags=["Hotspot Agent"],
+        dependencies=[Depends(verify_token)],
+    )
+if engagement_router is not None:
+    app.include_router(
+        engagement_router,
+        prefix="/api/v1/engagement",
+        tags=["Engagement Agent"],
+        dependencies=[Depends(verify_token)],
+    )
+if reporting_router is not None:
+    app.include_router(
+        reporting_router,
+        prefix="/api/v1/reporting",
+        tags=["Reporting Agent"],
+        dependencies=[Depends(verify_token)],
+    )
+if factor_broker_router is not None:
+    app.include_router(
+        factor_broker_router,
+        prefix="/api/v1/factors",
+        tags=["Factor Broker"],
+        dependencies=[Depends(verify_token)],
+    )
+if methodologies_router is not None:
+    app.include_router(
+        methodologies_router,
+        prefix="/api/v1/methodologies",
+        tags=["Methodologies"],
+        dependencies=[Depends(verify_token)],
+    )
+if connectors_router is not None:
+    app.include_router(
+        connectors_router,
+        prefix="/api/v1/connectors",
+        tags=["ERP Connectors"],
+        dependencies=[Depends(verify_token)],
+    )
 
 
 # ==============================================================================

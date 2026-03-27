@@ -38,8 +38,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.validation_rule_engine.provenance import ProvenanceTracker
-from greenlang.validation_rule_engine.validation_reporter import ValidationReporterEngine
+from greenlang.agents.data.validation_rule_engine.provenance import ProvenanceTracker
+from greenlang.agents.data.validation_rule_engine.validation_reporter import ValidationReporterEngine
 
 
 # ---------------------------------------------------------------------------

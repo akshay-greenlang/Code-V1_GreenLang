@@ -27,7 +27,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope2_market.models import (
+    from greenlang.agents.mrv.scope2_market.models import (
         # Enumerations (20)
         InstrumentType,
         InstrumentStatus,

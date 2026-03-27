@@ -24,8 +24,8 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.supplier_questionnaire.distribution import DistributionEngine
-from greenlang.supplier_questionnaire.models import (
+from greenlang.agents.data.supplier_questionnaire.distribution import DistributionEngine
+from greenlang.agents.data.supplier_questionnaire.models import (
     Distribution,
     DistributionChannel,
     DistributionStatus,

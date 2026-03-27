@@ -50,7 +50,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.validation_rule_engine.rule_registry import (
+from greenlang.agents.data.validation_rule_engine.rule_registry import (
     MAX_BULK_IMPORT,
     MAX_RULE_NAME_LENGTH,
     MAX_TAG_LENGTH,

@@ -37,7 +37,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.use_of_sold_products.models import (
+    from greenlang.agents.mrv.use_of_sold_products.models import (
         # Enumerations
         CalculationMethod,
         ProductCategory,

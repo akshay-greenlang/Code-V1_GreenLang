@@ -12,7 +12,7 @@ This module provides:
 - QuotaEvents: Event types for slot acquisition/release/timeout
 
 Example:
-    >>> from greenlang.orchestrator.quotas import QuotaManager, QuotaConfig
+    >>> from greenlang.agents.foundation.orchestrator.quotas import QuotaManager, QuotaConfig
     >>>
     >>> # Initialize quota manager
     >>> manager = QuotaManager()
@@ -36,7 +36,7 @@ GL-FOUND-X-001: FR-024 Namespace Concurrency Quotas
 Status: Production Ready
 """
 
-from greenlang.orchestrator.quotas.manager import (
+from greenlang.agents.foundation.orchestrator.quotas.manager import (
     QuotaConfig,
     QuotaUsage,
     QuotaManager,

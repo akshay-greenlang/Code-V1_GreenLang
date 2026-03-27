@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch, PropertyMock
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.setup import (
+    from greenlang.agents.mrv.steam_heat_purchase.setup import (
         SteamHeatPurchaseService,
         get_service,
         create_service,
@@ -32,7 +32,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not SERVICE_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.setup not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.setup not importable",
 )
 
 

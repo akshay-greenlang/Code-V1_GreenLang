@@ -24,10 +24,10 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.supplier_questionnaire.response_collector import (
+from greenlang.agents.data.supplier_questionnaire.response_collector import (
     ResponseCollectorEngine,
 )
-from greenlang.supplier_questionnaire.models import (
+from greenlang.agents.data.supplier_questionnaire.models import (
     Answer,
     QuestionnaireResponse,
     QuestionnaireTemplate,

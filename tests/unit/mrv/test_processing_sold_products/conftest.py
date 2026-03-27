@@ -34,7 +34,7 @@ import pytest
 # ============================================================================
 
 try:
-    from greenlang.processing_sold_products.processing_database import (
+    from greenlang.agents.mrv.processing_sold_products.processing_database import (
         ProcessingDatabaseEngine,
     )
     PROCESSING_DB_AVAILABLE = True
@@ -43,7 +43,7 @@ except ImportError:
     ProcessingDatabaseEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.processing_sold_products.site_specific_calculator import (
+    from greenlang.agents.mrv.processing_sold_products.site_specific_calculator import (
         SiteSpecificCalculatorEngine,
     )
     SITE_SPECIFIC_AVAILABLE = True
@@ -52,7 +52,7 @@ except ImportError:
     SiteSpecificCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.processing_sold_products.average_data_calculator import (
+    from greenlang.agents.mrv.processing_sold_products.average_data_calculator import (
         AverageDataCalculatorEngine,
     )
     AVERAGE_DATA_AVAILABLE = True
@@ -61,7 +61,7 @@ except ImportError:
     AverageDataCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.processing_sold_products.spend_based_calculator import (
+    from greenlang.agents.mrv.processing_sold_products.spend_based_calculator import (
         SpendBasedCalculatorEngine,
     )
     SPEND_BASED_AVAILABLE = True
@@ -70,7 +70,7 @@ except ImportError:
     SpendBasedCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.processing_sold_products.hybrid_aggregator import (
+    from greenlang.agents.mrv.processing_sold_products.hybrid_aggregator import (
         HybridAggregatorEngine,
     )
     HYBRID_AVAILABLE = True
@@ -79,7 +79,7 @@ except ImportError:
     HybridAggregatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.processing_sold_products.compliance_checker import (
+    from greenlang.agents.mrv.processing_sold_products.compliance_checker import (
         ComplianceCheckerEngine,
     )
     COMPLIANCE_AVAILABLE = True
@@ -88,7 +88,7 @@ except ImportError:
     ComplianceCheckerEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.processing_sold_products.processing_pipeline import (
+    from greenlang.agents.mrv.processing_sold_products.processing_pipeline import (
         ProcessingPipelineEngine,
     )
     PIPELINE_AVAILABLE = True
@@ -97,13 +97,13 @@ except ImportError:
     ProcessingPipelineEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.processing_sold_products.config import get_config, reset_config
+    from greenlang.agents.mrv.processing_sold_products.config import get_config, reset_config
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False
 
 try:
-    from greenlang.processing_sold_products.provenance import (
+    from greenlang.agents.mrv.processing_sold_products.provenance import (
         ProvenanceTracker,
     )
     PROVENANCE_AVAILABLE = True
@@ -111,7 +111,7 @@ except ImportError:
     PROVENANCE_AVAILABLE = False
 
 try:
-    from greenlang.processing_sold_products.setup import (
+    from greenlang.agents.mrv.processing_sold_products.setup import (
         ProcessingSoldProductsService,
     )
     SETUP_AVAILABLE = True

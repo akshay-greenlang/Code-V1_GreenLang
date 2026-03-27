@@ -36,13 +36,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.schema_migration.compatibility_checker import (
+from greenlang.agents.data.schema_migration.compatibility_checker import (
     CompatibilityCheckerEngine,
     TYPE_NARROWING,
     TYPE_WIDENING,
     _COMPATIBILITY_RULES,
 )
-from greenlang.schema_migration.provenance import ProvenanceTracker
+from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
 
 
 # ---------------------------------------------------------------------------

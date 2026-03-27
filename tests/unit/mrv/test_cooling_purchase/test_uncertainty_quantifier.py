@@ -22,11 +22,11 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.cooling_purchase.uncertainty_quantifier import (
+from greenlang.agents.mrv.cooling_purchase.uncertainty_quantifier import (
     UncertaintyQuantifierEngine,
     get_uncertainty_quantifier,
 )
-from greenlang.cooling_purchase.models import (
+from greenlang.agents.mrv.cooling_purchase.models import (
     UncertaintyRequest,
     UncertaintyResult,
     DataQualityTier,

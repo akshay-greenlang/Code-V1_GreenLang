@@ -5,7 +5,7 @@ Unit Tests for ProvenanceTracker - AGENT-DATA-010
 Tests the SHA-256 chain-hashed provenance tracker used for audit trail
 tracking in the Data Quality Profiler service.
 
-Target: 50+ tests, 85%+ coverage of greenlang.data_quality_profiler.provenance
+Target: 50+ tests, 85%+ coverage of greenlang.agents.data.data_quality_profiler.provenance
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -18,7 +18,7 @@ import re
 
 import pytest
 
-from greenlang.data_quality_profiler.provenance import ProvenanceTracker
+from greenlang.agents.data.data_quality_profiler.provenance import ProvenanceTracker
 
 
 # ============================================================================
@@ -447,13 +447,13 @@ class TestModuleExports:
     """Verify provenance module exports."""
 
     def test_all_list_exists(self):
-        from greenlang.data_quality_profiler import provenance as mod
+        from greenlang.agents.data.data_quality_profiler import provenance as mod
         assert hasattr(mod, "__all__")
 
     def test_all_contains_provenance_tracker(self):
-        from greenlang.data_quality_profiler import provenance as mod
+        from greenlang.agents.data.data_quality_profiler import provenance as mod
         assert "ProvenanceTracker" in mod.__all__
 
     def test_all_has_one_entry(self):
-        from greenlang.data_quality_profiler import provenance as mod
+        from greenlang.agents.data.data_quality_profiler import provenance as mod
         assert len(mod.__all__) == 1

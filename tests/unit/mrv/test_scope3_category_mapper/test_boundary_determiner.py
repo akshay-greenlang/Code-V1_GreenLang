@@ -26,7 +26,7 @@ from unittest.mock import MagicMock, patch
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope3_category_mapper.boundary_determiner import (
+    from greenlang.agents.mrv.scope3_category_mapper.boundary_determiner import (
         BoundaryDeterminerEngine,
         DoubleCountingRule,
         BoundaryResult,
@@ -38,7 +38,7 @@ except ImportError:
     BOUNDARY_AVAILABLE = False
 
 try:
-    from greenlang.scope3_category_mapper.models import (
+    from greenlang.agents.mrv.scope3_category_mapper.models import (
         Scope3Category,
         CompanyType,
     )

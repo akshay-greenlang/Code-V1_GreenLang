@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.setup import (
+    from greenlang.agents.mrv.agricultural_emissions.setup import (
         AgriculturalEmissionsService,
         CalculateResponse,
         BatchCalculateResponse,

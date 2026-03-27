@@ -36,10 +36,10 @@ from typing import Any, Dict, Optional
 
 import click
 
-from greenlang.schema.compiler.compiler import SchemaCompiler
-from greenlang.schema.compiler.ir import CompilationResult, SchemaIR
-from greenlang.schema.compiler.parser import parse_payload, ParseError
-from greenlang.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.compiler.compiler import SchemaCompiler
+from greenlang.agents.foundation.schema.compiler.ir import CompilationResult, SchemaIR
+from greenlang.agents.foundation.schema.compiler.parser import parse_payload, ParseError
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 
 
 logger = logging.getLogger(__name__)

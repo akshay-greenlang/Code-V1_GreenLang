@@ -7,7 +7,7 @@ environment variable overrides (GL_VRE_ prefix), type coercion fallback,
 post-init validation constraints, thread-safe singleton management,
 serialisation helpers (to_dict, repr), and equality behaviour.
 
-Target: 60-80 tests, 85%+ coverage of greenlang.validation_rule_engine.config
+Target: 60-80 tests, 85%+ coverage of greenlang.agents.data.validation_rule_engine.config
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -21,7 +21,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
 
-from greenlang.validation_rule_engine.config import (
+from greenlang.agents.data.validation_rule_engine.config import (
     ValidationRuleEngineConfig,
     get_config,
     reset_config,

@@ -25,7 +25,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.waste_treatment_emissions.provenance import (
+    from greenlang.agents.mrv.waste_treatment_emissions.provenance import (
         ProvenanceEntry,
         ProvenanceTracker,
         VALID_ENTITY_TYPES,

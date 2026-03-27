@@ -17,7 +17,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.mobile_combustion.vehicle_database import (
+from greenlang.agents.mrv.mobile_combustion.vehicle_database import (
     CONTROL_TECHNOLOGIES,
     FUEL_TYPES,
     VEHICLE_CATEGORIES,

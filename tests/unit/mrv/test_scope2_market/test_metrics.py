@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope2_market.metrics import (
+    from greenlang.agents.mrv.scope2_market.metrics import (
         PROMETHEUS_AVAILABLE,
         Scope2MarketMetrics,
         get_metrics,
@@ -635,7 +635,7 @@ class TestModuleLevelFunctions:
         the default prometheus registry, we reset and create with a
         custom registry, then wire the module-level _default_metrics.
         """
-        import greenlang.scope2_market.metrics as _m
+        import greenlang.agents.mrv.scope2_market.metrics as _m
         _m.Scope2MarketMetrics._reset()
         _m._default_metrics = None
         if PROMETHEUS_AVAILABLE:

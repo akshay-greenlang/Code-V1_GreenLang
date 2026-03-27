@@ -21,7 +21,7 @@ from datetime import datetime
 import pytest
 
 # Note: Adjust imports when actual models are implemented
-# from greenlang.upstream_transportation.models import (
+# from greenlang.agents.mrv.upstream_transportation.models import (
 #     CalculationMethod, TransportMode, RoadVehicleType, MaritimeVesselType,
 #     AircraftType, RailVehicleType, TransportFuelType, Incoterm, HubType,
 #     PipelineStage, GWPVersion, EmissionFactorScope, AllocationMethod,

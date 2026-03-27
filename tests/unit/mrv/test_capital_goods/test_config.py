@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.capital_goods.config import CapitalGoodsConfig
+from greenlang.agents.mrv.capital_goods.config import CapitalGoodsConfig
 
 
 # ============================================================================

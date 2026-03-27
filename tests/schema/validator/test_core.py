@@ -24,19 +24,19 @@ import pytest
 from datetime import datetime
 from typing import Any, Dict, List
 
-from greenlang.schema.validator.core import (
+from greenlang.agents.foundation.schema.validator.core import (
     SchemaValidator,
     validate,
     SEVERITY_ORDER,
 )
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     ValidationProfile,
     UnknownFieldPolicy,
     CoercionPolicy,
 )
-from greenlang.schema.models.finding import Finding, Severity, FindingHint
-from greenlang.schema.models.report import (
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity, FindingHint
+from greenlang.agents.foundation.schema.models.report import (
     ValidationSummary,
     ValidationReport,
     BatchValidationReport,
@@ -44,8 +44,8 @@ from greenlang.schema.models.report import (
     ItemResult,
     TimingInfo,
 )
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.compiler.ir import SchemaIR, PropertyIR
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, PropertyIR
 
 
 # =============================================================================
@@ -188,7 +188,7 @@ class TestSchemaValidatorInit:
 
     def test_initialization_with_all_params(self) -> None:
         """Test validator initializes with all parameters."""
-        from greenlang.schema.validator.units import UnitCatalog
+        from greenlang.agents.foundation.schema.validator.units import UnitCatalog
 
         catalog = UnitCatalog()
         options = ValidationOptions()
@@ -534,7 +534,7 @@ class TestBatchValidation:
         default_validator: SchemaValidator,
     ) -> None:
         """Test batch size limit is enforced."""
-        from greenlang.schema.constants import MAX_BATCH_ITEMS
+        from greenlang.agents.foundation.schema.constants import MAX_BATCH_ITEMS
 
         # Create a batch larger than the limit
         large_batch = [{"key": i} for i in range(MAX_BATCH_ITEMS + 1)]
@@ -666,12 +666,12 @@ class TestModuleExports:
 
     def test_schemavalidator_exported(self) -> None:
         """Test SchemaValidator is exported."""
-        from greenlang.schema.validator import SchemaValidator
+        from greenlang.agents.foundation.schema.validator import SchemaValidator
         assert SchemaValidator is not None
 
     def test_validate_exported(self) -> None:
         """Test validate function is exported."""
-        from greenlang.schema.validator import validate
+        from greenlang.agents.foundation.schema.validator import validate
         assert validate is not None
 
 

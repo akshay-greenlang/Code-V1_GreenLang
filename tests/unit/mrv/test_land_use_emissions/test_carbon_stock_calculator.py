@@ -23,7 +23,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.land_use_emissions.carbon_stock_calculator import (
+from greenlang.agents.mrv.land_use_emissions.carbon_stock_calculator import (
     CarbonStockCalculatorEngine,
     CalculationMethod,
     CarbonPool,
@@ -34,7 +34,7 @@ from greenlang.land_use_emissions.carbon_stock_calculator import (
     _ONE,
     _PRECISION,
 )
-from greenlang.land_use_emissions.land_use_database import LandUseDatabaseEngine
+from greenlang.agents.mrv.land_use_emissions.land_use_database import LandUseDatabaseEngine
 
 
 # ===========================================================================

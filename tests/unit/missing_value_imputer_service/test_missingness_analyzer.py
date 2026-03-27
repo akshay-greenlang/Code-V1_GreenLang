@@ -18,8 +18,8 @@ import math
 
 import pytest
 
-from greenlang.missing_value_imputer.config import MissingValueImputerConfig
-from greenlang.missing_value_imputer.missingness_analyzer import (
+from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
+from greenlang.agents.data.missing_value_imputer.missingness_analyzer import (
     MissingnessAnalyzerEngine,
     _is_missing,
     _is_numeric,
@@ -29,7 +29,7 @@ from greenlang.missing_value_imputer.missingness_analyzer import (
     _detect_column_type,
     _pearson_correlation,
 )
-from greenlang.missing_value_imputer.models import (
+from greenlang.agents.data.missing_value_imputer.models import (
     DataColumnType,
     ImputationStrategy,
     MissingnessType,

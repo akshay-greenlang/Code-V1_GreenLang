@@ -20,7 +20,7 @@ from unittest.mock import Mock
 import pytest
 
 try:
-    from greenlang.scope2_location.electricity_emissions import (
+    from greenlang.agents.mrv.scope2_location.electricity_emissions import (
         ElectricityEmissionsEngine,
         GWP_VALUES,
         _to_decimal,

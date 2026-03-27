@@ -3,7 +3,7 @@
 Unit tests for the Regex Safety Analyzer.
 
 This module tests the RegexAnalyzer class and related functions from
-greenlang.schema.compiler.regex_analyzer for detecting ReDoS vulnerabilities.
+greenlang.agents.foundation.schema.compiler.regex_analyzer for detecting ReDoS vulnerabilities.
 
 Test Categories:
 1. Nested quantifier detection
@@ -24,7 +24,7 @@ Date: 2026-01-29
 import pytest
 import re
 
-from greenlang.schema.compiler.regex_analyzer import (
+from greenlang.agents.foundation.schema.compiler.regex_analyzer import (
     RegexAnalyzer,
     RegexAnalysisResult,
     VulnerabilityType,
@@ -40,7 +40,7 @@ from greenlang.schema.compiler.regex_analyzer import (
     _compute_complexity_score,
     _suggest_safe_alternative,
 )
-from greenlang.schema.constants import MAX_REGEX_LENGTH, REGEX_TIMEOUT_MS
+from greenlang.agents.foundation.schema.constants import MAX_REGEX_LENGTH, REGEX_TIMEOUT_MS
 
 
 # ============================================================================

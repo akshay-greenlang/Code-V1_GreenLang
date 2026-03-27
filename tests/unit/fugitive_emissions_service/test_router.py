@@ -55,8 +55,8 @@ pytest.importorskip("fastapi")
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from greenlang.fugitive_emissions.api.router import create_router
-from greenlang.fugitive_emissions.setup import (
+from greenlang.agents.mrv.fugitive_emissions.api.router import create_router
+from greenlang.agents.mrv.fugitive_emissions.setup import (
     BatchCalculateResponse,
     CalculateResponse,
     ComplianceCheckResponse,
@@ -301,7 +301,7 @@ def mock_service() -> MagicMock:
 def client(mock_service: MagicMock) -> TestClient:
     """Create a FastAPI TestClient with mock service injected.
 
-    Patches ``greenlang.fugitive_emissions.setup.get_service`` so that
+    Patches ``greenlang.agents.mrv.fugitive_emissions.setup.get_service`` so that
     the router's internal ``_get_service()`` closure returns the mock.
     """
     app = FastAPI()
@@ -309,7 +309,7 @@ def client(mock_service: MagicMock) -> TestClient:
     app.include_router(router)
 
     with patch(
-        "greenlang.fugitive_emissions.setup.get_service",
+        "greenlang.agents.mrv.fugitive_emissions.setup.get_service",
         return_value=mock_service,
     ):
         yield TestClient(app)

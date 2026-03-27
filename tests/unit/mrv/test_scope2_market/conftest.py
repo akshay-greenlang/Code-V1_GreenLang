@@ -64,14 +64,14 @@ def reset_config_singleton():
     (test teardown).
     """
     try:
-        from greenlang.scope2_market.config import Scope2MarketConfig
+        from greenlang.agents.mrv.scope2_market.config import Scope2MarketConfig
         Scope2MarketConfig._instance = None
         Scope2MarketConfig._initialized = False
     except ImportError:
         pass
     yield
     try:
-        from greenlang.scope2_market.config import Scope2MarketConfig
+        from greenlang.agents.mrv.scope2_market.config import Scope2MarketConfig
         Scope2MarketConfig._instance = None
         Scope2MarketConfig._initialized = False
     except ImportError:
@@ -92,14 +92,14 @@ def reset_metrics_singleton():
     _default_metrics variable used by get_metrics().
     """
     try:
-        import greenlang.scope2_market.metrics as _metrics_mod
+        import greenlang.agents.mrv.scope2_market.metrics as _metrics_mod
         _metrics_mod.Scope2MarketMetrics._reset()
         _metrics_mod._default_metrics = None
     except (ImportError, AttributeError):
         pass
     yield
     try:
-        import greenlang.scope2_market.metrics as _metrics_mod
+        import greenlang.agents.mrv.scope2_market.metrics as _metrics_mod
         _metrics_mod.Scope2MarketMetrics._reset()
         _metrics_mod._default_metrics = None
     except (ImportError, AttributeError):
@@ -132,7 +132,7 @@ def clean_env(monkeypatch):
 def sample_config():
     """Return a Scope2MarketConfig with default values for testing."""
     try:
-        from greenlang.scope2_market.config import Scope2MarketConfig
+        from greenlang.agents.mrv.scope2_market.config import Scope2MarketConfig
         return Scope2MarketConfig()
     except ImportError:
         pytest.skip("Scope2MarketConfig not available")

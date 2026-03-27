@@ -24,7 +24,7 @@ Key Features:
     - Pattern sanitization suggestions
 
 Example:
-    >>> from greenlang.schema.compiler.regex_analyzer import RegexAnalyzer
+    >>> from greenlang.agents.foundation.schema.compiler.regex_analyzer import RegexAnalyzer
     >>> analyzer = RegexAnalyzer()
     >>> result = analyzer.analyze("(a+)+")
     >>> print(result.is_safe)
@@ -57,7 +57,7 @@ from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field, field_validator
 
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.constants import (
     MAX_REGEX_COMPLEXITY_SCORE,
     MAX_REGEX_LENGTH,
     REGEX_TIMEOUT_MS,

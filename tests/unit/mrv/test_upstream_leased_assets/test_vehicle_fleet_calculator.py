@@ -23,10 +23,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.upstream_leased_assets.vehicle_fleet_calculator import (
+    from greenlang.agents.mrv.upstream_leased_assets.vehicle_fleet_calculator import (
         VehicleFleetCalculatorEngine,
     )
-    from greenlang.upstream_leased_assets.models import (
+    from greenlang.agents.mrv.upstream_leased_assets.models import (
         VehicleType,
         FuelType,
     )

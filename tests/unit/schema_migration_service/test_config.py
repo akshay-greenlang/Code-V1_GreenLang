@@ -7,7 +7,7 @@ environment variable overrides (GL_SM_ prefix), type coercion fallback,
 post-init validation constraints, thread-safe singleton management,
 serialisation helpers (to_dict, repr), and equality behaviour.
 
-Target: 120+ tests, 85%+ coverage of greenlang.schema_migration.config
+Target: 120+ tests, 85%+ coverage of greenlang.agents.data.schema_migration.config
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -21,7 +21,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
 
-from greenlang.schema_migration.config import (
+from greenlang.agents.data.schema_migration.config import (
     SchemaMigrationConfig,
     get_config,
     reset_config,
@@ -812,25 +812,25 @@ class TestModuleExports:
     """Verify config module exports."""
 
     def test_all_list_exists(self):
-        from greenlang.schema_migration import config as mod
+        from greenlang.agents.data.schema_migration import config as mod
         assert hasattr(mod, "__all__")
 
     def test_all_contains_config_class(self):
-        from greenlang.schema_migration import config as mod
+        from greenlang.agents.data.schema_migration import config as mod
         assert "SchemaMigrationConfig" in mod.__all__
 
     def test_all_contains_get_config(self):
-        from greenlang.schema_migration import config as mod
+        from greenlang.agents.data.schema_migration import config as mod
         assert "get_config" in mod.__all__
 
     def test_all_contains_set_config(self):
-        from greenlang.schema_migration import config as mod
+        from greenlang.agents.data.schema_migration import config as mod
         assert "set_config" in mod.__all__
 
     def test_all_contains_reset_config(self):
-        from greenlang.schema_migration import config as mod
+        from greenlang.agents.data.schema_migration import config as mod
         assert "reset_config" in mod.__all__
 
     def test_all_has_four_entries(self):
-        from greenlang.schema_migration import config as mod
+        from greenlang.agents.data.schema_migration import config as mod
         assert len(mod.__all__) == 4

@@ -13,7 +13,7 @@ The resolver follows JSON Pointer (RFC 6901) for navigating within documents
 and supports the GreenLang gl:// URI scheme for external schema references.
 
 Example:
-    >>> from greenlang.schema.compiler.resolver import RefResolver, LocalFileRegistry
+    >>> from greenlang.agents.foundation.schema.compiler.resolver import RefResolver, LocalFileRegistry
     >>> registry = LocalFileRegistry("./schemas")
     >>> resolver = RefResolver(schema_registry=registry)
     >>> resolved = resolver.resolve("#/definitions/Activity", context_document)
@@ -45,11 +45,11 @@ except ImportError:
     def Field(*args, **kwargs):  # type: ignore
         return kwargs.get('default', None)
 
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.constants import (
     MAX_REF_EXPANSIONS,
     GREENLANG_SCHEMA_PREFIX,
 )
-from greenlang.schema.errors import ErrorCode, format_error_message
+from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
 
 logger = logging.getLogger(__name__)
 

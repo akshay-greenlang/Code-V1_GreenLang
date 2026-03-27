@@ -52,7 +52,7 @@ def service():
     This is a REAL service instance (not a mock) that will exercise all
     7 engines through their actual code paths.
     """
-    from greenlang.fugitive_emissions.setup import FugitiveEmissionsService
+    from greenlang.agents.mrv.fugitive_emissions.setup import FugitiveEmissionsService
 
     return FugitiveEmissionsService()
 

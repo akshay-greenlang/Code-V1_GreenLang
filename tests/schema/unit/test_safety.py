@@ -30,7 +30,7 @@ import pytest
 from datetime import datetime
 from typing import Any, Dict, List
 
-from greenlang.schema.suggestions.safety import (
+from greenlang.agents.foundation.schema.suggestions.safety import (
     PatchSafety,
     PatchOp,
     JSONPatchOperation,
@@ -48,8 +48,8 @@ from greenlang.schema.suggestions.safety import (
     LOW_CONFIDENCE_THRESHOLD,
     LARGE_UNIT_FACTOR_THRESHOLD,
 )
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.compiler.ir import SchemaIR, PropertyIR
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, PropertyIR
 
 
 # =============================================================================

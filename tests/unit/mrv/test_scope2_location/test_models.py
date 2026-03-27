@@ -27,7 +27,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope2_location.models import (
+    from greenlang.agents.mrv.scope2_location.models import (
         # Enumerations (18)
         EnergyType,
         EnergyUnit,

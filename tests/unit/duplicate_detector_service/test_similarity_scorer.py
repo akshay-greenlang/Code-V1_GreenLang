@@ -40,13 +40,13 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.duplicate_detector.models import (
+from greenlang.agents.data.duplicate_detector.models import (
     FieldComparisonConfig,
     FieldType,
     SimilarityAlgorithm,
     SimilarityResult,
 )
-from greenlang.duplicate_detector.similarity_scorer import (
+from greenlang.agents.data.duplicate_detector.similarity_scorer import (
     SimilarityScorer,
     _SOUNDEX_TABLE,
 )

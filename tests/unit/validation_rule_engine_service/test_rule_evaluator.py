@@ -47,7 +47,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.validation_rule_engine.rule_evaluator import RuleEvaluatorEngine
+from greenlang.agents.data.validation_rule_engine.rule_evaluator import RuleEvaluatorEngine
 
 
 # ---------------------------------------------------------------------------

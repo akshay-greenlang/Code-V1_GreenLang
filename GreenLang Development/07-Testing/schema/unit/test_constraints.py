@@ -26,15 +26,15 @@ GL-FOUND-X-002: Schema Compiler & Validator - Task 2.2
 import pytest
 from datetime import datetime
 
-from greenlang.schema.compiler.ir import (
+from greenlang.agents.foundation.schema.compiler.ir import (
     ArrayConstraintIR,
     CompiledPattern,
     NumericConstraintIR,
     SchemaIR,
     StringConstraintIR,
 )
-from greenlang.schema.models.config import ValidationOptions
-from greenlang.schema.validator.constraints import (
+from greenlang.agents.foundation.schema.models.config import ValidationOptions
+from greenlang.agents.foundation.schema.validator.constraints import (
     ConstraintValidator,
     FORMAT_VALIDATORS,
     _validate_date,

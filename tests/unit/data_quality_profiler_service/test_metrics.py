@@ -5,7 +5,7 @@ Unit Tests for Data Quality Profiler Metrics - AGENT-DATA-010
 Tests the 12 Prometheus metrics, the PROMETHEUS_AVAILABLE flag, all 12
 helper functions, and graceful fallback when prometheus_client is not installed.
 
-Target: 65+ tests, 85%+ coverage of greenlang.data_quality_profiler.metrics
+Target: 65+ tests, 85%+ coverage of greenlang.agents.data.data_quality_profiler.metrics
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -19,8 +19,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.data_quality_profiler import metrics as metrics_mod
-from greenlang.data_quality_profiler.metrics import (
+from greenlang.agents.data.data_quality_profiler import metrics as metrics_mod
+from greenlang.agents.data.data_quality_profiler.metrics import (
     PROMETHEUS_AVAILABLE,
     dq_datasets_profiled_total,
     dq_columns_profiled_total,

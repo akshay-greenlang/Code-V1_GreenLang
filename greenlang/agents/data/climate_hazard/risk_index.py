@@ -344,7 +344,7 @@ class RiskIndexEngine:
     no LLM involvement.
 
     Risk weights and classification thresholds are loaded from the
-    :class:`~greenlang.climate_hazard.config.ClimateHazardConfig`
+    :class:`~greenlang.agents.data.climate_hazard.config.ClimateHazardConfig`
     singleton when available, otherwise built-in defaults are used.
 
     Thread-safety is provided via a ``threading.Lock`` that protects

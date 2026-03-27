@@ -17,7 +17,7 @@ Key Features:
     - Deterministic execution (zero-hallucination)
 
 Example:
-    >>> from greenlang.orchestrator.steps import ValidateStep, ValidateStepConfig
+    >>> from greenlang.agents.foundation.orchestrator.steps import ValidateStep, ValidateStepConfig
     >>> config = ValidateStepConfig(
     ...     schema="gl://schemas/activity@1.0.0",
     ...     profile="strict",
@@ -51,17 +51,17 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Schema validator integration
-from greenlang.schema.validator.core import SchemaValidator
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.validator.core import SchemaValidator
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     ValidationProfile,
     UnknownFieldPolicy,
     CoercionPolicy,
 )
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.models.report import ValidationReport
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.registry.resolver import SchemaRegistry
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.report import ValidationReport
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry
 
 # NOTE: Step registry functions are defined in __init__.py
 # We avoid importing them here to prevent circular imports.
@@ -961,11 +961,11 @@ def register_validate_step() -> None:
     to make the validate step type available for use in pipelines.
 
     Example:
-        >>> from greenlang.orchestrator.steps import register_validate_step
+        >>> from greenlang.agents.foundation.orchestrator.steps import register_validate_step
         >>> register_validate_step()
     """
     # Import at runtime to avoid circular imports
-    from greenlang.orchestrator.steps import register_step
+    from greenlang.agents.foundation.orchestrator.steps import register_step
 
     try:
         register_step(STEP_TYPE, ValidateStep)

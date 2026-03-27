@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.waste_treatment_emissions.compliance_checker import (
+    from greenlang.agents.mrv.waste_treatment_emissions.compliance_checker import (
         ComplianceCheckerEngine,
         ComplianceFinding,
         SUPPORTED_FRAMEWORKS,

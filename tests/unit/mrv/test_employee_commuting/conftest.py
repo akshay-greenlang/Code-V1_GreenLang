@@ -324,40 +324,40 @@ def sample_compliance_input() -> Dict[str, Any]:
 @pytest.fixture
 def default_config():
     """Default EmployeeCommutingConfig with all 15 sections."""
-    from greenlang.employee_commuting.config import EmployeeCommutingConfig
+    from greenlang.agents.mrv.employee_commuting.config import EmployeeCommutingConfig
     return EmployeeCommutingConfig()
 
 
 @pytest.fixture
 def default_general_config():
     """Default GeneralConfig."""
-    from greenlang.employee_commuting.config import GeneralConfig
+    from greenlang.agents.mrv.employee_commuting.config import GeneralConfig
     return GeneralConfig()
 
 
 @pytest.fixture
 def default_database_config():
     """Default DatabaseConfig."""
-    from greenlang.employee_commuting.config import DatabaseConfig
+    from greenlang.agents.mrv.employee_commuting.config import DatabaseConfig
     return DatabaseConfig()
 
 
 @pytest.fixture
 def default_telework_config():
     """Default TeleworkConfig."""
-    from greenlang.employee_commuting.config import TeleworkConfig
+    from greenlang.agents.mrv.employee_commuting.config import TeleworkConfig
     return TeleworkConfig()
 
 
 @pytest.fixture
 def default_commute_mode_config():
     """Default CommuteModeConfig."""
-    from greenlang.employee_commuting.config import CommuteModeConfig
+    from greenlang.agents.mrv.employee_commuting.config import CommuteModeConfig
     return CommuteModeConfig()
 
 
 @pytest.fixture
 def default_survey_config():
     """Default SurveyConfig."""
-    from greenlang.employee_commuting.config import SurveyConfig
+    from greenlang.agents.mrv.employee_commuting.config import SurveyConfig
     return SurveyConfig()

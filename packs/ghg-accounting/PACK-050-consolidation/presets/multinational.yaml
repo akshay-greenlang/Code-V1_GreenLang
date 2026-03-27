@@ -1,0 +1,120 @@
+# PACK-050 Preset: Multinational
+# Multi-country multinational with regional consolidation tiers,
+# multi-currency revenue normalisation, and jurisdiction-specific reporting.
+# Typical users: Unilever, Nestle, Toyota, P&G type global structures.
+
+entity_registry:
+  max_entities: 10000
+  entity_types_enabled:
+    - SUBSIDIARY
+    - JOINT_VENTURE
+    - ASSOCIATE
+    - DIVISION
+    - BRANCH
+    - FRANCHISE
+  lifecycle_tracking: true
+  hierarchy_depth_limit: 12
+  require_legal_entity_id: true
+  require_country_code: true
+  custom_attributes_enabled: true
+  auto_classify_ownership: true
+
+ownership:
+  multi_tier_enabled: true
+  max_chain_depth: 12
+  effective_equity_method: MULTIPLICATIVE
+  circular_ownership_detection: true
+  minority_interest_threshold_pct: 20.0
+  associate_threshold_pct: 20.0
+  require_evidence_for_control: true
+  track_ownership_changes: true
+
+boundary:
+  consolidation_approach: OPERATIONAL_CONTROL
+  materiality_threshold: FIVE_PCT
+  materiality_threshold_pct: 0.05
+  de_minimis_threshold_pct: 0.01
+  annual_boundary_lock: true
+  track_boundary_changes: true
+  require_boundary_approval: true
+  dual_approach_enabled: true
+  secondary_approach: FINANCIAL_CONTROL
+  scopes_in_boundary:
+    - SCOPE_1
+    - SCOPE_2_LOCATION
+    - SCOPE_2_MARKET
+    - SCOPE_3
+
+equity_share:
+  default_equity_pct: 100.0
+  round_equity_to_dp: 2
+  include_associates: true
+  include_minority_interests: false
+  waterfall_reconciliation: true
+  proportional_scope3: false
+
+control_approach:
+  control_test_method: POLICY_AUTHORITY
+  franchise_inclusion: true
+  leased_asset_treatment: FINANCE_LEASE_INCLUDE
+  spv_consolidation: true
+  jv_control_override: false
+  document_control_basis: true
+
+elimination:
+  elimination_enabled: true
+  elimination_types:
+    - ENERGY_TRANSFER
+    - WASTE_TRANSFER
+    - PRODUCT_TRANSFER
+    - SERVICE_TRANSFER
+  require_matching_entries: true
+  tolerance_pct: 5.0
+  auto_detect_transfers: true
+  elimination_log_enabled: true
+  net_to_zero_validation: true
+
+mna:
+  mna_tracking_enabled: true
+  pro_rata_method: CALENDAR_DAYS
+  auto_base_year_recalculation: true
+  base_year_materiality_trigger_pct: 5.0
+  require_mna_approval: true
+  track_mna_history: true
+  lookback_years: 5
+
+adjustment:
+  require_justification: true
+  require_approval: true
+  materiality_threshold_pct: 1.0
+  restatement_window_years: 5
+  late_submission_grace_days: 30
+  track_adjustment_history: true
+
+reporting:
+  reporting_frameworks:
+    - CSRD_ESRS_E1
+    - CDP
+    - GRI_305
+    - TCFD
+    - SBTI
+    - IFRS_S2
+    - UK_SECR
+    - NGER
+  default_format: HTML
+  include_entity_breakdown: true
+  include_scope_breakdown: true
+  include_trend_analysis: true
+  trend_years: 5
+  include_elimination_log: true
+  include_mna_impact: true
+
+audit:
+  audit_trail_enabled: true
+  reconciliation_checks_enabled: true
+  variance_threshold_pct: 5.0
+  require_sign_off: true
+  sign_off_levels: 3
+  evidence_retention_years: 10
+  assurance_ready: true
+  data_quality_scoring: true

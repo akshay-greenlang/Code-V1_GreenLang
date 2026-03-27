@@ -12,7 +12,7 @@ Available Stores:
 Author: GreenLang Team
 """
 
-from greenlang.orchestrator.artifacts.base import (
+from greenlang.agents.foundation.orchestrator.artifacts.base import (
     ArtifactStore,
     ArtifactMetadata,
     ArtifactManifest,
@@ -20,7 +20,7 @@ from greenlang.orchestrator.artifacts.base import (
 
 # S3 store is optional (requires aioboto3)
 try:
-    from greenlang.orchestrator.artifacts.s3_store import S3ArtifactStore, S3StoreConfig
+    from greenlang.agents.foundation.orchestrator.artifacts.s3_store import S3ArtifactStore, S3StoreConfig
     S3_AVAILABLE = True
 except ImportError:
     S3ArtifactStore = None

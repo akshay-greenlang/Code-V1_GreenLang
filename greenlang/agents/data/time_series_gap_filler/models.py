@@ -10,9 +10,9 @@ calendar-aware filling, cross-series filling, seasonal decomposition,
 pipeline orchestration, statistics, and reporting.
 
 Re-exported Layer 1 sources:
-    - greenlang.missing_value_imputer.time_series_imputer:
+    - greenlang.agents.data.missing_value_imputer.time_series_imputer:
         TimeSeriesImputerEngine (as L1TimeSeriesImputerEngine)
-    - greenlang.missing_value_imputer.models:
+    - greenlang.agents.data.missing_value_imputer.models:
         ImputedValue (as L1ImputedValue),
         ConfidenceLevel (as L1ConfidenceLevel)
 

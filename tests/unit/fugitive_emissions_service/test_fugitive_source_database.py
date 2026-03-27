@@ -31,7 +31,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.fugitive_emissions.fugitive_source_database import (
+from greenlang.agents.mrv.fugitive_emissions.fugitive_source_database import (
     FugitiveSourceDatabaseEngine,
     SOURCE_TYPES,
     COMPONENT_EMISSION_FACTORS,

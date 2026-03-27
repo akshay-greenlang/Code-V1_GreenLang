@@ -27,7 +27,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.refrigerants_fgas.config import (
+from greenlang.agents.mrv.refrigerants_fgas.config import (
     RefrigerantsFGasConfig,
     get_config,
     reset_config,

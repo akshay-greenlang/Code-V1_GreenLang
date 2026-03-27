@@ -13,9 +13,9 @@ from unittest.mock import Mock, patch, MagicMock
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, status
 
-from greenlang.fuel_energy_activities.api import router, get_fuel_energy_service
-from greenlang.fuel_energy_activities.models import FuelType, ActivityType
-from greenlang.fuel_energy_activities.setup import FuelEnergyActivitiesService
+from greenlang.agents.mrv.fuel_energy_activities.api import router, get_fuel_energy_service
+from greenlang.agents.mrv.fuel_energy_activities.models import FuelType, ActivityType
+from greenlang.agents.mrv.fuel_energy_activities.setup import FuelEnergyActivitiesService
 from greenlang_core import AgentConfig
 
 

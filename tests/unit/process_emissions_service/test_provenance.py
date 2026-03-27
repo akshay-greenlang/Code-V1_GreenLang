@@ -23,7 +23,7 @@ from typing import List
 
 import pytest
 
-from greenlang.process_emissions.provenance import (
+from greenlang.agents.mrv.process_emissions.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     VALID_ENTITY_TYPES,

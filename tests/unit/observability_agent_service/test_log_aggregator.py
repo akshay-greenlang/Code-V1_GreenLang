@@ -28,7 +28,7 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# Inline LogAggregator (mirrors expected greenlang.observability_agent.log_aggregator)
+# Inline LogAggregator (mirrors expected greenlang.agents.foundation.observability_agent.log_aggregator)
 # ---------------------------------------------------------------------------
 
 

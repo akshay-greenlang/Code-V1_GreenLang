@@ -23,7 +23,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.end_of_life_treatment.average_data_calculator import (
+    from greenlang.agents.mrv.end_of_life_treatment.average_data_calculator import (
         AverageDataCalculatorEngine,
     )
     _AVAILABLE = True

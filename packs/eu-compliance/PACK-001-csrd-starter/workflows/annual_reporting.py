@@ -435,9 +435,9 @@ class AnnualReportingWorkflow:
             - greenlang.agents.data.document_ingestion_agent (PDF/invoices)
             - greenlang.agents.data.supplier_data_exchange_agent (supplier data)
             - greenlang.agents.foundation.schema_compiler (schema validation)
-            - greenlang.data_quality_profiler (profiling & completeness)
-            - greenlang.validation_rule_engine (ESRS data point validation)
-            - greenlang.data_lineage_tracker (provenance registration)
+            - greenlang.agents.data.data_quality_profiler (profiling & completeness)
+            - greenlang.agents.data.validation_rule_engine (ESRS data point validation)
+            - greenlang.agents.data.data_lineage_tracker (provenance registration)
         """
         phase_name = "data_collection"
         errors: List[str] = []
@@ -641,15 +641,15 @@ class AnnualReportingWorkflow:
         Execute all GHG emissions calculations across Scope 1, 2, and 3.
 
         Agents invoked (30 total):
-            Scope 1 (8): greenlang.stationary_combustion, greenlang.mobile_combustion,
-                greenlang.process_emissions, greenlang.fugitive_emissions,
-                greenlang.refrigerants, greenlang.land_use_emissions,
-                greenlang.waste_treatment, greenlang.agricultural_emissions
-            Scope 2 (5): greenlang.scope2_location, greenlang.scope2_market,
-                greenlang.steam_heat, greenlang.cooling_purchase,
-                greenlang.dual_reporting_reconciliation
+            Scope 1 (8): greenlang.agents.mrv.stationary_combustion, greenlang.agents.mrv.mobile_combustion,
+                greenlang.agents.mrv.process_emissions, greenlang.agents.mrv.fugitive_emissions,
+                greenlang.refrigerants, greenlang.agents.mrv.land_use_emissions,
+                greenlang.waste_treatment, greenlang.agents.mrv.agricultural_emissions
+            Scope 2 (5): greenlang.agents.mrv.scope2_location, greenlang.agents.mrv.scope2_market,
+                greenlang.steam_heat, greenlang.agents.mrv.cooling_purchase,
+                greenlang.agents.mrv.dual_reporting_reconciliation
             Scope 3 (17): greenlang.scope3 categories 1-15,
-                greenlang.scope3_category_mapper, greenlang.audit_trail_lineage
+                greenlang.agents.mrv.scope3_category_mapper, greenlang.agents.mrv.audit_trail_lineage
 
         All calculations are ZERO-HALLUCINATION: deterministic formulas only,
         no LLM in the numeric path.
@@ -673,14 +673,14 @@ class AnnualReportingWorkflow:
         # --- Scope 1 ---
         self._notify_progress(phase_name, "Calculating Scope 1 emissions", pct_base + 0.02)
         scope1_agents = [
-            ("stationary_combustion", "greenlang.stationary_combustion"),
-            ("mobile_combustion", "greenlang.mobile_combustion"),
-            ("process_emissions", "greenlang.process_emissions"),
-            ("fugitive_emissions", "greenlang.fugitive_emissions"),
+            ("stationary_combustion", "greenlang.agents.mrv.stationary_combustion"),
+            ("mobile_combustion", "greenlang.agents.mrv.mobile_combustion"),
+            ("process_emissions", "greenlang.agents.mrv.process_emissions"),
+            ("fugitive_emissions", "greenlang.agents.mrv.fugitive_emissions"),
             ("refrigerants_fgas", "greenlang.refrigerants"),
-            ("land_use", "greenlang.land_use_emissions"),
+            ("land_use", "greenlang.agents.mrv.land_use_emissions"),
             ("waste_treatment", "greenlang.waste_treatment"),
-            ("agricultural", "greenlang.agricultural_emissions"),
+            ("agricultural", "greenlang.agents.mrv.agricultural_emissions"),
         ]
         scope1_results = await self._run_agent_group(
             "scope1", scope1_agents, calc_context, errors, warnings
@@ -703,11 +703,11 @@ class AnnualReportingWorkflow:
         # --- Scope 2 ---
         self._notify_progress(phase_name, "Calculating Scope 2 emissions", pct_base + 0.06)
         scope2_agents = [
-            ("location_based", "greenlang.scope2_location"),
-            ("market_based", "greenlang.scope2_market"),
+            ("location_based", "greenlang.agents.mrv.scope2_location"),
+            ("market_based", "greenlang.agents.mrv.scope2_market"),
             ("steam_heat", "greenlang.steam_heat"),
-            ("cooling", "greenlang.cooling_purchase"),
-            ("dual_reporting", "greenlang.dual_reporting_reconciliation"),
+            ("cooling", "greenlang.agents.mrv.cooling_purchase"),
+            ("dual_reporting", "greenlang.agents.mrv.dual_reporting_reconciliation"),
         ]
         scope2_results = await self._run_agent_group(
             "scope2", scope2_agents, calc_context, errors, warnings
@@ -758,8 +758,8 @@ class AnnualReportingWorkflow:
             ("cat13_downstream_leased", "greenlang.scope3.downstream_leased_assets"),
             ("cat14_franchises", "greenlang.scope3.franchises"),
             ("cat15_investments", "greenlang.scope3.investments"),
-            ("category_mapper", "greenlang.scope3_category_mapper"),
-            ("audit_trail", "greenlang.audit_trail_lineage"),
+            ("category_mapper", "greenlang.agents.mrv.scope3_category_mapper"),
+            ("audit_trail", "greenlang.agents.mrv.audit_trail_lineage"),
         ]
         scope3_results = await self._run_agent_group(
             "scope3", scope3_categories, calc_context, errors, warnings
@@ -946,8 +946,8 @@ class AnnualReportingWorkflow:
         assemble the auditor evidence package.
 
         Agents invoked:
-            - greenlang.validation_rule_engine (235 ESRS compliance rules)
-            - greenlang.audit_trail_lineage (lineage verification)
+            - greenlang.agents.data.validation_rule_engine (235 ESRS compliance rules)
+            - greenlang.agents.mrv.audit_trail_lineage (lineage verification)
             - greenlang.agents.reporting.assurance_preparation_agent (evidence pkg)
             - greenlang.agents.foundation.reproducibility_agent (calc re-verify)
         """
@@ -1075,7 +1075,7 @@ class AnnualReportingWorkflow:
     async def _run_data_quality_profiler(
         self, org_id: str, year: int
     ) -> Dict[str, Any]:
-        """Invoke greenlang.data_quality_profiler for completeness and accuracy."""
+        """Invoke greenlang.agents.data.data_quality_profiler for completeness and accuracy."""
         logger.info("Running data quality profiler for org=%s year=%d", org_id, year)
         await asyncio.sleep(0)
         return {
@@ -1114,7 +1114,7 @@ class AnnualReportingWorkflow:
     async def _register_data_lineage(
         self, org_id: str, sources: Dict[str, Any], quality: Dict[str, Any]
     ) -> str:
-        """Register data lineage via greenlang.data_lineage_tracker."""
+        """Register data lineage via greenlang.agents.data.data_lineage_tracker."""
         await asyncio.sleep(0)
         return str(uuid.uuid4())
 

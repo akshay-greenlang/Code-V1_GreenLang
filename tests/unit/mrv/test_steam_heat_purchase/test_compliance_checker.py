@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.compliance_checker import (
+    from greenlang.agents.mrv.steam_heat_purchase.compliance_checker import (
         ComplianceCheckerEngine,
         ComplianceFinding,
         SUPPORTED_FRAMEWORKS,
@@ -37,7 +37,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not COMPLIANCE_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.compliance_checker not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.compliance_checker not importable",
 )
 
 

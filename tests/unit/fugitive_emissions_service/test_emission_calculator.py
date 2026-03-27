@@ -29,7 +29,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.fugitive_emissions.emission_calculator import (
+from greenlang.agents.mrv.fugitive_emissions.emission_calculator import (
     EmissionCalculatorEngine,
     CalculationMethod,
     CalculationStatus,
@@ -160,7 +160,7 @@ def calc() -> EmissionCalculatorEngine:
 @pytest.fixture
 def calc_real():
     """Create an EmissionCalculatorEngine with real source database."""
-    from greenlang.fugitive_emissions.fugitive_source_database import (
+    from greenlang.agents.mrv.fugitive_emissions.fugitive_source_database import (
         FugitiveSourceDatabaseEngine,
     )
     db = FugitiveSourceDatabaseEngine()

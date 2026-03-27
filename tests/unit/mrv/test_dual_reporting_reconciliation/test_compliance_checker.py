@@ -14,10 +14,10 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.compliance_checker import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.compliance_checker import (
     ComplianceCheckerEngine,
 )
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     ReconciliationWorkspace,
     ReportingFramework,
     UpstreamResult,

@@ -8,7 +8,7 @@ get_entity_chain(), export_chain(), export_json(), reset(), build_hash(),
 properties, singleton accessors, chain integrity, and thread safety.
 
 AGENT-DATA-020: Climate Hazard Connector
-Target: 85%+ coverage of greenlang.climate_hazard.provenance
+Target: 85%+ coverage of greenlang.agents.data.climate_hazard.provenance
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.climate_hazard.provenance import (
+from greenlang.agents.data.climate_hazard.provenance import (
     VALID_ACTIONS,
     VALID_ENTITY_TYPES,
     ProvenanceEntry,

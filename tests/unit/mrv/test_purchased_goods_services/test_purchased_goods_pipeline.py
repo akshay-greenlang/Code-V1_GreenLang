@@ -22,7 +22,7 @@ import json
 import csv
 
 try:
-    from greenlang.purchased_goods_services.purchased_goods_pipeline import (
+    from greenlang.agents.mrv.purchased_goods_services.purchased_goods_pipeline import (
         PurchasedGoodsPipelineEngine,
         PipelineInput,
         PipelineOutput,

@@ -17,7 +17,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from greenlang.stationary_combustion.uncertainty_quantifier import (
+from greenlang.agents.mrv.stationary_combustion.uncertainty_quantifier import (
     UncertaintyQuantifierEngine,
     UncertaintyResult,
     DEFAULT_UNCERTAINTIES,
@@ -126,7 +126,7 @@ class TestUncertaintyInit:
     def test_none_config_fallback(self):
         """When config is None and get_config raises, defaults are used."""
         with patch(
-            "greenlang.stationary_combustion.uncertainty_quantifier.get_config",
+            "greenlang.agents.mrv.stationary_combustion.uncertainty_quantifier.get_config",
             side_effect=Exception("no config"),
         ):
             eng = UncertaintyQuantifierEngine(config=None)

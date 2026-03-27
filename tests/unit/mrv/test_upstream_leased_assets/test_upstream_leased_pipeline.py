@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.upstream_leased_assets.upstream_leased_pipeline import (
+    from greenlang.agents.mrv.upstream_leased_assets.upstream_leased_pipeline import (
         UpstreamLeasedPipelineEngine,
         PipelineStatus,
     )
@@ -29,7 +29,7 @@ except ImportError:
     PIPELINE_AVAILABLE = False
 
 try:
-    from greenlang.upstream_leased_assets.models import (
+    from greenlang.agents.mrv.upstream_leased_assets.models import (
         AssetCategory,
         CalculationMethod,
         BuildingType,

@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.refrigerants_fgas.metrics import (
+from greenlang.agents.mrv.refrigerants_fgas.metrics import (
     PROMETHEUS_AVAILABLE,
     # Metric objects
     rf_calculations_total,
@@ -408,50 +408,50 @@ class TestMetricLabels:
 class TestGracefulFallback:
     """Verify helpers do not raise when PROMETHEUS_AVAILABLE is False."""
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_calculation_noop(self):
         record_calculation("EQUIPMENT_BASED", "R_410A", "completed")
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_emissions_noop(self):
         record_emissions("R_410A", "hfc_blend", 100.0)
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_refrigerant_lookup_noop(self):
         record_refrigerant_lookup("AR6")
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_leak_rate_selection_noop(self):
         record_leak_rate_selection("commercial_ac", "operating")
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_equipment_event_noop(self):
         record_equipment_event("switchgear", "installation")
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_uncertainty_noop(self):
         record_uncertainty("monte_carlo")
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_compliance_check_noop(self):
         record_compliance_check("eu_fgas_2024_573", "compliant")
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_record_batch_noop(self):
         record_batch("completed")
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_observe_calculation_duration_noop(self):
         observe_calculation_duration("single_calculation", 0.1)
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_observe_batch_size_noop(self):
         observe_batch_size("EQUIPMENT_BASED", 50)
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_set_active_calculations_noop(self):
         set_active_calculations(0)
 
-    @patch("greenlang.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
+    @patch("greenlang.agents.mrv.refrigerants_fgas.metrics.PROMETHEUS_AVAILABLE", False)
     def test_set_refrigerants_loaded_noop(self):
         set_refrigerants_loaded("AR6", 50)

@@ -36,16 +36,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from greenlang.stationary_combustion.config import (
+from greenlang.agents.mrv.stationary_combustion.config import (
     StationaryCombustionConfig,
     reset_config,
 )
-from greenlang.stationary_combustion.models import (
+from greenlang.agents.mrv.stationary_combustion.models import (
     EquipmentType,
     FuelType,
     RegulatoryFramework,
 )
-from greenlang.stationary_combustion.setup import (
+from greenlang.agents.mrv.stationary_combustion.setup import (
     StationaryCombustionService,
     configure_stationary_combustion,
     get_router,
@@ -81,7 +81,7 @@ def cleanup_singleton():
     """Reset the module-level singleton after each test."""
     yield
     # Reset singleton state to avoid cross-test contamination
-    import greenlang.stationary_combustion.setup as setup_module
+    import greenlang.agents.mrv.stationary_combustion.setup as setup_module
     setup_module._singleton_instance = None
     setup_module._service = None
     reset_config()

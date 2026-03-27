@@ -25,7 +25,7 @@ from decimal import Decimal
 from typing import Any, Dict
 import pytest
 
-from greenlang.waste_generated.config import (
+from greenlang.agents.mrv.waste_generated.config import (
     get_config,
     WasteGeneratedConfig,
     GeneralConfig,

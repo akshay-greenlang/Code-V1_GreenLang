@@ -35,13 +35,13 @@ def reset_config_singleton():
     resetting the WasteTreatmentConfig singleton in the holder class.
     """
     try:
-        from greenlang.waste_treatment_emissions.config import reset_config
+        from greenlang.agents.mrv.waste_treatment_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
     yield
     try:
-        from greenlang.waste_treatment_emissions.config import reset_config
+        from greenlang.agents.mrv.waste_treatment_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
@@ -275,7 +275,7 @@ def sample_waste_composition() -> Dict[str, Any]:
 def db_engine():
     """Create a WasteTreatmentDatabaseEngine instance for testing."""
     try:
-        from greenlang.waste_treatment_emissions.waste_treatment_database import (
+        from greenlang.agents.mrv.waste_treatment_emissions.waste_treatment_database import (
             WasteTreatmentDatabaseEngine,
         )
         return WasteTreatmentDatabaseEngine()
@@ -287,7 +287,7 @@ def db_engine():
 def bio_engine(db_engine):
     """Create a BiologicalTreatmentEngine instance for testing."""
     try:
-        from greenlang.waste_treatment_emissions.biological_treatment import (
+        from greenlang.agents.mrv.waste_treatment_emissions.biological_treatment import (
             BiologicalTreatmentEngine,
         )
         return BiologicalTreatmentEngine(database=db_engine)
@@ -299,7 +299,7 @@ def bio_engine(db_engine):
 def thermal_engine(db_engine):
     """Create a ThermalTreatmentEngine instance for testing."""
     try:
-        from greenlang.waste_treatment_emissions.thermal_treatment import (
+        from greenlang.agents.mrv.waste_treatment_emissions.thermal_treatment import (
             ThermalTreatmentEngine,
         )
         return ThermalTreatmentEngine(database=db_engine)
@@ -316,7 +316,7 @@ def thermal_engine(db_engine):
 def provenance_tracker():
     """Create a fresh ProvenanceTracker for testing."""
     try:
-        from greenlang.waste_treatment_emissions.provenance import ProvenanceTracker
+        from greenlang.agents.mrv.waste_treatment_emissions.provenance import ProvenanceTracker
         return ProvenanceTracker(max_entries=1000)
     except ImportError:
         return MagicMock(name="ProvenanceTracker")

@@ -19,10 +19,10 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 try:
-    from greenlang.downstream_leased_assets.compliance_checker import (
+    from greenlang.agents.mrv.downstream_leased_assets.compliance_checker import (
         ComplianceCheckerEngine,
     )
-    from greenlang.downstream_leased_assets.models import (
+    from greenlang.agents.mrv.downstream_leased_assets.models import (
         ComplianceFramework,
         ComplianceStatus,
     )
@@ -58,7 +58,7 @@ def _make_mock_config(
 @pytest.fixture
 def engine():
     with patch(
-        "greenlang.downstream_leased_assets.compliance_checker.get_config"
+        "greenlang.agents.mrv.downstream_leased_assets.compliance_checker.get_config"
     ) as mock_config:
         mock_config.return_value = _make_mock_config()
         eng = ComplianceCheckerEngine()

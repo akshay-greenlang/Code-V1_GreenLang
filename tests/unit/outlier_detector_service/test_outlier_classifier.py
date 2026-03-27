@@ -18,14 +18,14 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.outlier_detector.outlier_classifier import (
+from greenlang.agents.data.outlier_detector.outlier_classifier import (
     OutlierClassifierEngine,
     _CLASS_TREATMENTS,
     _safe_mean,
     _safe_std,
     _severity_from_score,
 )
-from greenlang.outlier_detector.models import (
+from greenlang.agents.data.outlier_detector.models import (
     DetectionMethod,
     OutlierClass,
     OutlierClassification,

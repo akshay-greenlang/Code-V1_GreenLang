@@ -25,7 +25,7 @@ import pytest
 try:
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
-    from greenlang.cooling_purchase.api.router import router
+    from greenlang.agents.mrv.cooling_purchase.api.router import router
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False

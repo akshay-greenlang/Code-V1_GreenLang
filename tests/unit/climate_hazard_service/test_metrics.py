@@ -7,7 +7,7 @@ graceful fallback when prometheus_client is not installed, and correct
 metric types (Counter, Gauge, Histogram).
 
 AGENT-DATA-020: Climate Hazard Connector
-Target: 85%+ coverage of greenlang.climate_hazard.metrics
+Target: 85%+ coverage of greenlang.agents.data.climate_hazard.metrics
 """
 
 from __future__ import annotations
@@ -24,8 +24,8 @@ import pytest
 # Import the module under test
 # =============================================================================
 
-from greenlang.climate_hazard import metrics as metrics_mod
-from greenlang.climate_hazard.metrics import (
+from greenlang.agents.data.climate_hazard import metrics as metrics_mod
+from greenlang.agents.data.climate_hazard.metrics import (
     PROMETHEUS_AVAILABLE,
     chc_active_assets,
     chc_active_sources,

@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.missing_value_imputer.api.router import (
+from greenlang.agents.data.missing_value_imputer.api.router import (
     FASTAPI_AVAILABLE,
     router,
 )
@@ -38,7 +38,7 @@ if FASTAPI_AVAILABLE:
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
-    from greenlang.missing_value_imputer.setup import (
+    from greenlang.agents.data.missing_value_imputer.setup import (
         MissingValueImputerService,
     )
 

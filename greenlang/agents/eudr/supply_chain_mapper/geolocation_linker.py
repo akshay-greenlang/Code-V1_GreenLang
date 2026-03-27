@@ -1098,7 +1098,7 @@ class GeolocationLinker:
 
         # Record metrics
         try:
-            from greenlang.eudr_traceability.metrics import record_plot_registered
+            from greenlang.agents.data.eudr_traceability.metrics import record_plot_registered
             record_plot_registered(commodity or "unknown", country_code or "XX")
         except (ImportError, Exception):
             pass
@@ -1786,7 +1786,7 @@ class GeolocationLinker:
                     [point[0] - d_lon, point[1] - d_lat],
                 ]
 
-                from greenlang.deforestation_satellite.models import QueryAlertsRequest
+                from greenlang.agents.data.deforestation_satellite.models import QueryAlertsRequest
                 query = QueryAlertsRequest(
                     polygon_coordinates=search_polygon,
                     start_date=start_date,

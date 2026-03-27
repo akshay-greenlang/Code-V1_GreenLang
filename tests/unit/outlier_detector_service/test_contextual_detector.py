@@ -18,7 +18,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.outlier_detector.contextual_detector import (
+from greenlang.agents.data.outlier_detector.contextual_detector import (
     ContextualDetectorEngine,
     _safe_mean,
     _safe_std,
@@ -26,7 +26,7 @@ from greenlang.outlier_detector.contextual_detector import (
     _percentile,
     _severity_from_score,
 )
-from greenlang.outlier_detector.models import (
+from greenlang.agents.data.outlier_detector.models import (
     ContextType,
     ContextualResult,
     DetectionMethod,

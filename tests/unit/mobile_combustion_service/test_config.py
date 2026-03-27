@@ -18,7 +18,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.mobile_combustion.config import (
+from greenlang.agents.mrv.mobile_combustion.config import (
     MobileCombustionConfig,
     get_config,
     reset_config,

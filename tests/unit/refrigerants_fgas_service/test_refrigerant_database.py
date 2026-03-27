@@ -14,10 +14,10 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.refrigerants_fgas.refrigerant_database import (
+from greenlang.agents.mrv.refrigerants_fgas.refrigerant_database import (
     RefrigerantDatabaseEngine,
 )
-from greenlang.refrigerants_fgas.models import (
+from greenlang.agents.mrv.refrigerants_fgas.models import (
     BlendComponent,
     GasEmission,
     GWPSource,

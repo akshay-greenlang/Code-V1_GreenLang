@@ -7,7 +7,7 @@ Tests ClimateHazardConfig dataclass, from_env(), singleton accessors
 serialization, and all 28 environment variable overrides.
 
 AGENT-DATA-020: Climate Hazard Connector
-Target: 85%+ coverage of greenlang.climate_hazard.config
+Target: 85%+ coverage of greenlang.agents.data.climate_hazard.config
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.climate_hazard.config import (
+from greenlang.agents.data.climate_hazard.config import (
     ClimateHazardConfig,
     get_config,
     reset_config,

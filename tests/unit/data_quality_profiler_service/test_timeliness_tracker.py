@@ -17,7 +17,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.data_quality_profiler.timeliness_tracker import (
+from greenlang.agents.data.data_quality_profiler.timeliness_tracker import (
     TimelinessTracker,
     SEVERITY_CRITICAL,
     SEVERITY_HIGH,

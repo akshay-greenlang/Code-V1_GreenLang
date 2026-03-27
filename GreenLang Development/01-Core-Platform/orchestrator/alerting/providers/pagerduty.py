@@ -22,7 +22,7 @@ import hashlib
 import logging
 from typing import Any, Dict, List, Optional
 
-from greenlang.orchestrator.alerting.webhooks import (
+from greenlang.agents.foundation.orchestrator.alerting.webhooks import (
     AlertPayload,
     AlertSeverity,
     AlertType,

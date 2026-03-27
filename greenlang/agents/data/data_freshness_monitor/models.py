@@ -9,9 +9,9 @@ detection, breach alerting, refresh prediction, and monitoring pipeline
 orchestration.
 
 Re-exported Layer 1 sources:
-    - greenlang.data_quality_profiler.timeliness_tracker:
+    - greenlang.agents.data.data_quality_profiler.timeliness_tracker:
         TimelinessTracker (as L1TimelinessTracker)
-    - greenlang.data_quality_profiler.models:
+    - greenlang.agents.data.data_quality_profiler.models:
         FreshnessResult (as L1FreshnessResult),
         QualityDimension (as L1QualityDimension),
         RuleType (as L1RuleType),

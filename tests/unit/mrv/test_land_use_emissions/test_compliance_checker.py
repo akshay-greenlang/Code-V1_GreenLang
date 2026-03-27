@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.land_use_emissions.compliance_checker import (
+from greenlang.agents.mrv.land_use_emissions.compliance_checker import (
     ComplianceCheckerEngine,
     ComplianceFinding,
     SUPPORTED_FRAMEWORKS,

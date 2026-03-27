@@ -21,7 +21,7 @@ from typing import Any, Dict
 import pytest
 
 try:
-    from greenlang.scope2_location.compliance_checker import (
+    from greenlang.agents.mrv.scope2_location.compliance_checker import (
         ComplianceCheckerEngine,
         ComplianceFinding,
         ComplianceCheckResult,

@@ -33,7 +33,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from greenlang.orchestrator.api.deps import (
+from greenlang.agents.foundation.orchestrator.api.deps import (
     APIConfig,
     AuthContext,
     RequestTrace,
@@ -45,7 +45,7 @@ from greenlang.orchestrator.api.deps import (
     get_policy_engine,
     get_request_trace,
 )
-from greenlang.orchestrator.api.models import (
+from greenlang.agents.foundation.orchestrator.api.models import (
     AgentDetailResponse,
     AgentListParams,
     AgentListResponse,
@@ -90,7 +90,7 @@ from greenlang.orchestrator.api.models import (
 )
 
 # FR-043: Import approval routes
-from greenlang.orchestrator.api.approval_routes import (
+from greenlang.agents.foundation.orchestrator.api.approval_routes import (
     approval_router,
     run_approval_router,
 )
@@ -2149,7 +2149,7 @@ async def get_quota_manager():
 
     if _quota_manager_instance is None:
         try:
-            from greenlang.orchestrator.quotas import QuotaManager
+            from greenlang.agents.foundation.orchestrator.quotas import QuotaManager
 
             _quota_manager_instance = QuotaManager()
             # Try to load from default config
@@ -2391,7 +2391,7 @@ async def update_namespace_quota(
         quota_manager = await get_quota_manager()
 
         # Import QuotaConfig from the quotas module
-        from greenlang.orchestrator.quotas import QuotaConfig
+        from greenlang.agents.foundation.orchestrator.quotas import QuotaConfig
 
         config = QuotaConfig(
             max_concurrent_runs=request.max_concurrent_runs,
@@ -2492,7 +2492,7 @@ async def get_alert_manager():
     global _alert_manager_instance
     if _alert_manager_instance is None:
         try:
-            from greenlang.orchestrator.alerting import AlertManager
+            from greenlang.agents.foundation.orchestrator.alerting import AlertManager
             _alert_manager_instance = AlertManager()
             try:
                 import os
@@ -2618,7 +2618,7 @@ async def register_webhook(
         if alert_manager is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=create_error_response(error_type="service_unavailable", message="Alert manager not available", trace_id=trace.trace_id).model_dump())
-        from greenlang.orchestrator.alerting import AlertSeverity, WebhookConfig
+        from greenlang.agents.foundation.orchestrator.alerting import AlertSeverity, WebhookConfig
         try:
             severity_threshold = AlertSeverity(request.severity_threshold.lower())
         except ValueError:

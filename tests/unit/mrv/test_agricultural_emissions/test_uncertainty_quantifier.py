@@ -23,7 +23,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.uncertainty_quantifier import (
+    from greenlang.agents.mrv.agricultural_emissions.uncertainty_quantifier import (
         UncertaintyQuantifierEngine,
     )
     UNCERTAINTY_AVAILABLE = True

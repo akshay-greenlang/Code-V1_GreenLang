@@ -18,7 +18,7 @@ import threading
 
 import pytest
 
-from greenlang.land_use_emissions.provenance import (
+from greenlang.agents.mrv.land_use_emissions.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     VALID_ENTITY_TYPES,

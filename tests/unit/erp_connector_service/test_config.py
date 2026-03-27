@@ -31,7 +31,7 @@ _ENV_PREFIX = "GL_ERP_CONNECTOR_"
 
 @dataclass
 class ERPConnectorConfig:
-    """Mirrors greenlang.erp_connector.config.ERPConnectorConfig."""
+    """Mirrors greenlang.agents.data.erp_connector.config.ERPConnectorConfig."""
 
     database_url: str = ""
     redis_url: str = ""

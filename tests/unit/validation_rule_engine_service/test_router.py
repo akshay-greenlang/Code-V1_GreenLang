@@ -259,13 +259,13 @@ def mock_service() -> MagicMock:
 @pytest.fixture
 def client(mock_service: MagicMock) -> "TestClient":
     """Create a FastAPI TestClient wired to the mock service."""
-    from greenlang.validation_rule_engine.api.router import router
+    from greenlang.agents.data.validation_rule_engine.api.router import router
 
     app = FastAPI()
 
     # Patch the _get_service function so it returns our mock
     with patch(
-        "greenlang.validation_rule_engine.api.router._get_service",
+        "greenlang.agents.data.validation_rule_engine.api.router._get_service",
         return_value=mock_service,
     ):
         app.include_router(router)
@@ -279,12 +279,12 @@ def error_client(mock_service: MagicMock) -> "TestClient":
     Used by error-handling tests so that 500 responses are returned
     as HTTP responses instead of propagating as Python exceptions.
     """
-    from greenlang.validation_rule_engine.api.router import router
+    from greenlang.agents.data.validation_rule_engine.api.router import router
 
     app = FastAPI()
 
     with patch(
-        "greenlang.validation_rule_engine.api.router._get_service",
+        "greenlang.agents.data.validation_rule_engine.api.router._get_service",
         return_value=mock_service,
     ):
         app.include_router(router)
@@ -300,19 +300,19 @@ class TestRouterAvailability:
     """Verify the router module is importable and exposes expected symbols."""
 
     def test_module_importable(self):
-        mod = importlib.import_module("greenlang.validation_rule_engine.api.router")
+        mod = importlib.import_module("greenlang.agents.data.validation_rule_engine.api.router")
         assert mod is not None
 
     def test_fastapi_available_flag(self):
-        from greenlang.validation_rule_engine.api.router import FASTAPI_AVAILABLE as flag
+        from greenlang.agents.data.validation_rule_engine.api.router import FASTAPI_AVAILABLE as flag
         assert flag is True
 
     def test_router_module_level_instance(self):
-        from greenlang.validation_rule_engine.api.router import router
+        from greenlang.agents.data.validation_rule_engine.api.router import router
         assert router is not None
 
     def test_all_exports(self):
-        from greenlang.validation_rule_engine.api.router import __all__
+        from greenlang.agents.data.validation_rule_engine.api.router import __all__
         assert "router" in __all__
 
 
@@ -761,12 +761,12 @@ class TestServiceNotConfigured:
 
     def test_no_service_503(self):
         from fastapi import HTTPException as _HTTPException
-        from greenlang.validation_rule_engine.api.router import router
+        from greenlang.agents.data.validation_rule_engine.api.router import router
 
         app = FastAPI()
 
         with patch(
-            "greenlang.validation_rule_engine.api.router._get_service",
+            "greenlang.agents.data.validation_rule_engine.api.router._get_service",
             side_effect=_HTTPException(
                 status_code=503,
                 detail="Validation Rule Engine service not initialized",

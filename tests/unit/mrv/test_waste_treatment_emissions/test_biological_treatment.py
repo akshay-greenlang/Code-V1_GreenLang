@@ -30,10 +30,10 @@ import pytest
 
 def _make_bio_engine():
     """Create a BiologicalTreatmentEngine with a real database engine."""
-    from greenlang.waste_treatment_emissions.waste_treatment_database import (
+    from greenlang.agents.mrv.waste_treatment_emissions.waste_treatment_database import (
         WasteTreatmentDatabaseEngine,
     )
-    from greenlang.waste_treatment_emissions.biological_treatment import (
+    from greenlang.agents.mrv.waste_treatment_emissions.biological_treatment import (
         BiologicalTreatmentEngine,
     )
     db = WasteTreatmentDatabaseEngine()

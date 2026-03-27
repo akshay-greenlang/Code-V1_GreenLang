@@ -22,9 +22,9 @@ Warning Codes:
     - GLSCHEMA-W702: UNIT_FORMAT_STYLE
 
 Example:
-    >>> from greenlang.schema.validator.linter import SchemaLinter, lint_payload
-    >>> from greenlang.schema.compiler.ir import SchemaIR
-    >>> from greenlang.schema.models.config import ValidationOptions
+    >>> from greenlang.agents.foundation.schema.validator.linter import SchemaLinter, lint_payload
+    >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
+    >>> from greenlang.agents.foundation.schema.models.config import ValidationOptions
     >>>
     >>> linter = SchemaLinter(ir, ValidationOptions())
     >>> findings = linter.lint({"emmisions": 100})  # typo: "emmisions"
@@ -41,16 +41,16 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from greenlang.schema.compiler.ir import SchemaIR
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
+from greenlang.agents.foundation.schema.constants import (
     MAX_TYPO_EDIT_DISTANCE,
     MIN_KEY_LENGTH_FOR_TYPO_CHECK,
     NAMING_CONVENTIONS,
     DEFAULT_NAMING_CONVENTION,
 )
-from greenlang.schema.errors import ErrorCode
-from greenlang.schema.models.config import ValidationOptions
-from greenlang.schema.models.finding import Finding, FindingHint, Severity
+from greenlang.agents.foundation.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.models.config import ValidationOptions
+from greenlang.agents.foundation.schema.models.finding import Finding, FindingHint, Severity
 
 
 logger = logging.getLogger(__name__)

@@ -15,7 +15,7 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.refrigerants_fgas.leak_rate_estimator import (
+from greenlang.agents.mrv.refrigerants_fgas.leak_rate_estimator import (
     LeakRateEstimatorEngine,
     LeakEquipmentType,
     LifecycleStage,

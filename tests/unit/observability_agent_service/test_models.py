@@ -3,7 +3,7 @@
 Unit Tests for Observability Agent Data Models (AGENT-FOUND-010)
 
 Tests all Pydantic models, enumerations, validators, and request/response
-wrappers defined in greenlang.observability_agent.models.
+wrappers defined in greenlang.agents.foundation.observability_agent.models.
 
 Coverage target: 85%+ of models.py
 
@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.observability_agent.models import (
+from greenlang.agents.foundation.observability_agent.models import (
     # Enums
     AlertSeverity,
     AlertStatus,

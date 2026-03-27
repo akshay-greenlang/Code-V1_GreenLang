@@ -7,8 +7,8 @@ Tests the PurchasedGoodsServicesMetrics singleton and Prometheus metrics collect
 import pytest
 from decimal import Decimal
 
-from greenlang.purchased_goods_services.metrics import PurchasedGoodsServicesMetrics
-from greenlang.purchased_goods_services.models import CalculationMethod, EEIODatabase
+from greenlang.agents.mrv.purchased_goods_services.metrics import PurchasedGoodsServicesMetrics
+from greenlang.agents.mrv.purchased_goods_services.models import CalculationMethod, EEIODatabase
 
 
 class TestPurchasedGoodsServicesMetrics:

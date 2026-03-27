@@ -59,7 +59,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from greenlang.fugitive_emissions.models import (
+from greenlang.agents.mrv.fugitive_emissions.models import (
     # Enumerations
     FugitiveSourceCategory,
     FugitiveSourceType,

@@ -60,14 +60,14 @@ def reset_config_singleton():
     (test teardown).
     """
     try:
-        from greenlang.scope2_location.config import Scope2LocationConfig
+        from greenlang.agents.mrv.scope2_location.config import Scope2LocationConfig
         Scope2LocationConfig._instance = None
         Scope2LocationConfig._initialized = False
     except ImportError:
         pass
     yield
     try:
-        from greenlang.scope2_location.config import Scope2LocationConfig
+        from greenlang.agents.mrv.scope2_location.config import Scope2LocationConfig
         Scope2LocationConfig._instance = None
         Scope2LocationConfig._initialized = False
     except ImportError:
@@ -88,14 +88,14 @@ def reset_metrics_singleton():
     _default_metrics variable used by get_metrics().
     """
     try:
-        import greenlang.scope2_location.metrics as _metrics_mod
+        import greenlang.agents.mrv.scope2_location.metrics as _metrics_mod
         _metrics_mod.Scope2LocationMetrics._reset()
         _metrics_mod._default_metrics = None
     except (ImportError, AttributeError):
         pass
     yield
     try:
-        import greenlang.scope2_location.metrics as _metrics_mod
+        import greenlang.agents.mrv.scope2_location.metrics as _metrics_mod
         _metrics_mod.Scope2LocationMetrics._reset()
         _metrics_mod._default_metrics = None
     except (ImportError, AttributeError):
@@ -128,7 +128,7 @@ def clean_env(monkeypatch):
 def sample_config():
     """Return a Scope2LocationConfig with default values for testing."""
     try:
-        from greenlang.scope2_location.config import Scope2LocationConfig
+        from greenlang.agents.mrv.scope2_location.config import Scope2LocationConfig
         return Scope2LocationConfig()
     except ImportError:
         pytest.skip("Scope2LocationConfig not available")
@@ -143,7 +143,7 @@ def sample_config():
 def grid_factor_db():
     """Create a GridEmissionFactorDatabaseEngine instance for testing."""
     try:
-        from greenlang.scope2_location.grid_factor_database import (
+        from greenlang.agents.mrv.scope2_location.grid_factor_database import (
             GridEmissionFactorDatabaseEngine,
         )
         return GridEmissionFactorDatabaseEngine()
@@ -155,7 +155,7 @@ def grid_factor_db():
 def electricity_engine(grid_factor_db):
     """Create an ElectricityEmissionsEngine instance for testing."""
     try:
-        from greenlang.scope2_location.electricity_emissions import (
+        from greenlang.agents.mrv.scope2_location.electricity_emissions import (
             ElectricityEmissionsEngine,
         )
         return ElectricityEmissionsEngine(grid_factor_db)
@@ -167,7 +167,7 @@ def electricity_engine(grid_factor_db):
 def steam_heat_cool_engine(grid_factor_db):
     """Create a SteamHeatCoolingEngine instance for testing."""
     try:
-        from greenlang.scope2_location.steam_heat_cooling import (
+        from greenlang.agents.mrv.scope2_location.steam_heat_cooling import (
             SteamHeatCoolingEngine,
         )
         return SteamHeatCoolingEngine(grid_factor_db)
@@ -179,7 +179,7 @@ def steam_heat_cool_engine(grid_factor_db):
 def transmission_engine():
     """Create a TransmissionLossEngine instance for testing."""
     try:
-        from greenlang.scope2_location.transmission_loss import (
+        from greenlang.agents.mrv.scope2_location.transmission_loss import (
             TransmissionLossEngine,
         )
         return TransmissionLossEngine()
@@ -191,7 +191,7 @@ def transmission_engine():
 def uncertainty_engine():
     """Create an UncertaintyQuantifierEngine instance for testing."""
     try:
-        from greenlang.scope2_location.uncertainty_quantifier import (
+        from greenlang.agents.mrv.scope2_location.uncertainty_quantifier import (
             UncertaintyQuantifierEngine,
         )
         return UncertaintyQuantifierEngine()
@@ -203,7 +203,7 @@ def uncertainty_engine():
 def compliance_engine():
     """Create a ComplianceCheckerEngine instance for testing."""
     try:
-        from greenlang.scope2_location.compliance_checker import (
+        from greenlang.agents.mrv.scope2_location.compliance_checker import (
             ComplianceCheckerEngine,
         )
         return ComplianceCheckerEngine()
@@ -222,7 +222,7 @@ def pipeline_engine(
 ):
     """Create a Scope2LocationPipelineEngine with all sub-engines."""
     try:
-        from greenlang.scope2_location.scope2_location_pipeline import (
+        from greenlang.agents.mrv.scope2_location.scope2_location_pipeline import (
             Scope2LocationPipelineEngine,
         )
         return Scope2LocationPipelineEngine(
@@ -241,7 +241,7 @@ def pipeline_engine(
 def provenance_tracker():
     """Create a fresh ProvenanceTracker instance for testing."""
     try:
-        from greenlang.scope2_location.provenance import ProvenanceTracker
+        from greenlang.agents.mrv.scope2_location.provenance import ProvenanceTracker
         return ProvenanceTracker(max_entries=1000)
     except ImportError:
         pytest.skip("ProvenanceTracker not available")

@@ -26,8 +26,8 @@ from typing import Dict, List, Optional
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import TimeSeriesGapFillerConfig
-from greenlang.time_series_gap_filler.seasonal_filler import (
+from greenlang.agents.data.time_series_gap_filler.config import TimeSeriesGapFillerConfig
+from greenlang.agents.data.time_series_gap_filler.seasonal_filler import (
     CalendarDefinition,
     FillResult,
     SeasonalDecomposition,

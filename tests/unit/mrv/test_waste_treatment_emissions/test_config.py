@@ -20,7 +20,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.waste_treatment_emissions.config import (
+from greenlang.agents.mrv.waste_treatment_emissions.config import (
     WasteTreatmentConfig,
     get_config,
     set_config,

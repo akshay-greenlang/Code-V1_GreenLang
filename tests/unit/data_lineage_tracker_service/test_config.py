@@ -24,7 +24,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.data_lineage_tracker.config import (
+from greenlang.agents.data.data_lineage_tracker.config import (
     DataLineageTrackerConfig,
     get_config,
     reset_config,

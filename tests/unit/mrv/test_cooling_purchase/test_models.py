@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import Dict, Any
 
 try:
-    from greenlang.cooling_purchase.models import (
+    from greenlang.agents.mrv.cooling_purchase.models import (
         # Enums
         CoolingTechnology,
         CompressorType,

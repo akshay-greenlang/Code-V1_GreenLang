@@ -2,17 +2,18 @@
 
 ## Candidate
 
-- Candidate version: v1.0-rc1
+- Candidate version: v1.0-rc2
 - Soak owner: Release Engineering
-- Start time: 2026-03-26T07:28:10Z
-- End time: 2026-03-26T07:40:11Z
-- Commit SHA: `4e5ef5a72e4b61088086fa5aeaa3834b24e4ed4e`
-- Evidence directory: `phase1_evidence/`
+- Start time: 2026-03-27T11:21:30Z
+- End time: 2026-03-27T11:41:28Z
+- Commit SHA: `0c12d8a57e30597739d4e18e5adc810dfbcc1f21`
+- Evidence directory: `phase1_evidence/current_head/`
 - CI run reference:
   - Pre-push local strict validation (same commit SHA):
     - `python -m greenlang.cli.main v1 full-backend-checks` -> pass
     - `python -m greenlang.cli.main v1 gate` -> pass
-    - `pytest -q tests/v1` -> pass
+    - `pytest -q tests/v1/test_full_backends.py tests/v1/test_cli_v1.py` -> pass
+    - `pytest -q cbam-pack-mvp/tests/test_web_security.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v1_contract.py` -> pass
   - Post-push workflow URL (must be attached before external promotion): `PENDING_POST_PUSH`
 
 ## Required Observations
@@ -26,15 +27,12 @@
 
 | Timestamp | Check | Result | Notes |
 |-----------|-------|--------|-------|
-| 2026-03-26T07:28:10Z | `gl run cbam ... phase1_evidence/cbam` | Pass | Strict native runtime completed and generated report + audit bundle. |
-| 2026-03-26T07:29:01Z | `gl run csrd ... phase1_evidence/csrd` | Pass | Strict native runtime completed and generated `esrs_report.json` + audit bundle. |
-| 2026-03-26T07:29:51Z | `gl run vcci ... phase1_evidence/vcci` | Pass | Strict native runtime completed and generated `scope3_inventory.json` + audit bundle. |
-| 2026-03-26T07:33:10Z | `gl v1 full-backend-checks` | Pass | CBAM/CSRD/VCCI full backend checks passed in one lane. |
-| 2026-03-26T07:40:11Z | `gl v1 gate` | Pass | Contract, signed-pack, runtime conventions, full-backend checks, docs contract all green. |
-| 2026-03-26T12:00:00Z | Web shell smoke (`/apps`, `/runs`) | Pass | Unified shell/workspaces render with command palette + onboarding modal + run timeline. |
-| 2026-03-26T12:02:00Z | Demo mode endpoints | Pass | `cbam/csrd/vcci` demo-run endpoints return run IDs and appear in run center. |
-| 2026-03-26T12:04:00Z | Frontend telemetry | Pass | `POST /api/telemetry/client-error` accepted browser error payloads. |
-| 2026-03-26T16:45:17Z | Strict native app reruns + hash refresh | Pass | CBAM/CSRD/VCCI native runs regenerated `phase1_evidence` artifacts and hashes were refreshed in quickstart/UAT/go-no-go docs. |
+| 2026-03-27T11:21:30Z | `gl v1 validate-contracts` | Pass | Current-HEAD contract checks archived to `phase1_evidence/current_head/v1_validate_contracts.log`. |
+| 2026-03-27T11:22:24Z | `gl v1 check-policy` | Pass | Signed-pack policy checks archived to `phase1_evidence/current_head/v1_check_policy.log`. |
+| 2026-03-27T11:28:14Z | `gl v1 full-backend-checks` | Pass | Strict native CBAM/CSRD/VCCI parity checks archived to `phase1_evidence/current_head/v1_full_backend_checks.log`. |
+| 2026-03-27T11:31:06Z | `gl v1 gate` | Pass | Release gates passed and archived to `phase1_evidence/current_head/v1_gate.log`. |
+| 2026-03-27T11:36:47Z | Backend semantic tests | Pass | `tests/v1/test_full_backends.py` + `tests/v1/test_cli_v1.py` archived to `phase1_evidence/current_head/tests_v1_backend_semantics.log`. |
+| 2026-03-27T11:41:28Z | Web security/contract tests | Pass | API-key and sanitization parity tests archived to `phase1_evidence/current_head/tests_web_security_contract.log`. |
 
 ## Command Output Excerpt
 

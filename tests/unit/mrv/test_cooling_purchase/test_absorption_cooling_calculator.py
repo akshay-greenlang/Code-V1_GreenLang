@@ -30,7 +30,7 @@ from decimal import Decimal
 from typing import Dict, Any
 
 try:
-    from greenlang.cooling_purchase.absorption_cooling_calculator import (
+    from greenlang.agents.mrv.cooling_purchase.absorption_cooling_calculator import (
         AbsorptionCoolingCalculatorEngine,
     )
 except ImportError:

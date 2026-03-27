@@ -25,10 +25,10 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 import pytest
 
-from greenlang.investments.debt_investment_calculator import (
+from greenlang.agents.mrv.investments.debt_investment_calculator import (
     DebtInvestmentCalculatorEngine,
 )
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     AssetClass,
     PCAFDataQuality,
     AttributionMethod,
@@ -52,7 +52,7 @@ def _reset_singleton():
 def engine():
     """Create a fresh DebtInvestmentCalculatorEngine with mocked config."""
     with patch(
-        "greenlang.investments.debt_investment_calculator.get_config"
+        "greenlang.agents.mrv.investments.debt_investment_calculator.get_config"
     ) as mock_config:
         cfg = MagicMock()
         cfg.debt.green_bond_discount = Decimal("0.0")
@@ -265,7 +265,7 @@ class TestGreenBondHandling:
     def test_green_bond_discount_applied(self, engine):
         """Test green bond discount factor is applied when configured."""
         with patch(
-            "greenlang.investments.debt_investment_calculator.get_config"
+            "greenlang.agents.mrv.investments.debt_investment_calculator.get_config"
         ) as mock_config:
             cfg = MagicMock()
             cfg.debt.green_bond_discount = Decimal("0.50")

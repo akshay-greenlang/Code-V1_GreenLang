@@ -20,7 +20,7 @@ from unittest.mock import patch
 import pytest
 
 # Import the metrics module and its exports
-from greenlang.schema_migration.metrics import (
+from greenlang.agents.data.schema_migration.metrics import (
     PROMETHEUS_AVAILABLE,
     # Metric objects
     sm_schemas_registered_total,
@@ -360,51 +360,51 @@ class TestHelperFunctionsWithoutPrometheus:
     """Verify helpers are no-ops when PROMETHEUS_AVAILABLE is False."""
 
     def test_record_schema_registered_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_schema_registered("json_schema", "emissions")  # Should not raise
 
     def test_record_version_created_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_version_created("major")
 
     def test_record_change_detected_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_change_detected("field_added", "non_breaking")
 
     def test_record_compatibility_check_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_compatibility_check("compatible")
 
     def test_record_migration_planned_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_migration_planned("success")
 
     def test_record_migration_executed_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_migration_executed("success")
 
     def test_record_rollback_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_rollback("automatic", "success")
 
     def test_record_drift_detected_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             record_drift_detected("structural", "critical")
 
     def test_observe_migration_duration_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             observe_migration_duration(10.0)
 
     def test_observe_records_migrated_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             observe_records_migrated(1000)
 
     def test_observe_processing_duration_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             observe_processing_duration("schema_register", 0.05)
 
     def test_set_active_migrations_no_op(self):
-        with patch("greenlang.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.data.schema_migration.metrics.PROMETHEUS_AVAILABLE", False):
             set_active_migrations(5)
 
 
@@ -547,7 +547,7 @@ class TestMetricsExports:
 
     def test_all_metric_objects_exported(self):
         """All 12 metric objects should be in __all__."""
-        import greenlang.schema_migration.metrics as mod
+        import greenlang.agents.data.schema_migration.metrics as mod
         metric_names = [
             "sm_schemas_registered_total",
             "sm_versions_created_total",
@@ -567,7 +567,7 @@ class TestMetricsExports:
 
     def test_all_helper_functions_exported(self):
         """All 12 helper functions should be in __all__."""
-        import greenlang.schema_migration.metrics as mod
+        import greenlang.agents.data.schema_migration.metrics as mod
         helper_names = [
             "record_schema_registered",
             "record_version_created",
@@ -587,10 +587,10 @@ class TestMetricsExports:
 
     def test_prometheus_available_exported(self):
         """PROMETHEUS_AVAILABLE should be in __all__."""
-        import greenlang.schema_migration.metrics as mod
+        import greenlang.agents.data.schema_migration.metrics as mod
         assert "PROMETHEUS_AVAILABLE" in mod.__all__
 
     def test_total_exports_count(self):
         """__all__ should have exactly 25 entries (1 flag + 12 metrics + 12 helpers)."""
-        import greenlang.schema_migration.metrics as mod
+        import greenlang.agents.data.schema_migration.metrics as mod
         assert len(mod.__all__) == 25

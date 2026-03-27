@@ -9,7 +9,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from greenlang.capital_goods.models import (
+from greenlang.agents.mrv.capital_goods.models import (
     # Enums
     AssetCategory,
     AssetSubCategory,

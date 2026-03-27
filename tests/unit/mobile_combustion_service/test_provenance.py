@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.mobile_combustion.provenance import (
+from greenlang.agents.mrv.mobile_combustion.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     VALID_ACTIONS,

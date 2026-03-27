@@ -4,7 +4,7 @@ End-to-End SDK Flow Tests for Schema Service (AGENT-FOUND-002)
 
 Tests the complete SDK workflow from schema compilation through
 validation, fix suggestions, and finding filters. Uses the actual
-greenlang.schema.sdk module when available, or self-contained stubs
+greenlang.agents.foundation.schema.sdk module when available, or self-contained stubs
 to verify the expected behavior patterns.
 
 Tests:
@@ -35,7 +35,7 @@ import pytest
 
 # ---------------------------------------------------------------------------
 # Self-contained SDK stubs for testing expected behavior patterns
-# These mirror the interface of greenlang.schema.sdk
+# These mirror the interface of greenlang.agents.foundation.schema.sdk
 # ---------------------------------------------------------------------------
 
 

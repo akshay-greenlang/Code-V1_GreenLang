@@ -14,8 +14,8 @@ Heuristics per PRD Appendix C:
     5. Close-match unknown keys (edit distance <= 2)
 
 Example:
-    >>> from greenlang.schema.suggestions.heuristics import FixHeuristics
-    >>> from greenlang.schema.compiler.ir import SchemaIR
+    >>> from greenlang.agents.foundation.schema.suggestions.heuristics import FixHeuristics
+    >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
     >>> heuristics = FixHeuristics(ir)
     >>> suggestion = heuristics.suggest_for_finding(finding, payload)
     >>> if suggestion:
@@ -93,7 +93,7 @@ class FixHeuristics:
         5. typo_correction: Edit distance-based field matching
 
     Example:
-        >>> from greenlang.schema.compiler.ir import SchemaIR
+        >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
         >>> ir = SchemaIR(...)
         >>> heuristics = FixHeuristics(ir)
         >>> suggestion = heuristics.suggest_for_finding(finding, payload)

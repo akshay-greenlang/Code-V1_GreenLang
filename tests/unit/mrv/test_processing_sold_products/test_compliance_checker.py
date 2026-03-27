@@ -17,7 +17,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.processing_sold_products.compliance_checker import (
+    from greenlang.agents.mrv.processing_sold_products.compliance_checker import (
         ComplianceCheckerEngine,
         ComplianceFramework,
         ComplianceStatus,

@@ -18,14 +18,14 @@ from typing import List
 
 import pytest
 
-from greenlang.outlier_detector.temporal_detector import (
+from greenlang.agents.data.outlier_detector.temporal_detector import (
     TemporalDetectorEngine,
     _safe_mean,
     _safe_std,
     _safe_median,
     _severity_from_score,
 )
-from greenlang.outlier_detector.models import (
+from greenlang.agents.data.outlier_detector.models import (
     DetectionMethod,
     OutlierScore,
     SeverityLevel,

@@ -27,7 +27,7 @@ try:
 except ImportError:
     FASTAPI_AVAILABLE = False
 
-from greenlang.climate_hazard.api.router import router
+from greenlang.agents.data.climate_hazard.api.router import router
 
 
 # =========================================================================
@@ -204,7 +204,7 @@ def client(mock_service) -> TestClient:
     app.include_router(router)
 
     with patch(
-        "greenlang.climate_hazard.api.router._get_service",
+        "greenlang.agents.data.climate_hazard.api.router._get_service",
         return_value=mock_service,
     ):
         yield TestClient(app)
@@ -226,7 +226,7 @@ def client_no_service() -> TestClient:
         )
 
     with patch(
-        "greenlang.climate_hazard.api.router._get_service",
+        "greenlang.agents.data.climate_hazard.api.router._get_service",
         side_effect=raise_503,
     ):
         yield TestClient(app)

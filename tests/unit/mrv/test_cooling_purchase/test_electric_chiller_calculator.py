@@ -26,7 +26,7 @@ from decimal import Decimal
 from typing import Dict, Any
 
 try:
-    from greenlang.cooling_purchase.electric_chiller_calculator import (
+    from greenlang.agents.mrv.cooling_purchase.electric_chiller_calculator import (
         ElectricChillerCalculatorEngine,
     )
 except ImportError:

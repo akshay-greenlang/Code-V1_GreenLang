@@ -20,8 +20,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.spend_categorizer import metrics as metrics_module
-from greenlang.spend_categorizer.metrics import (
+from greenlang.agents.data.spend_categorizer import metrics as metrics_module
+from greenlang.agents.data.spend_categorizer.metrics import (
     PROMETHEUS_AVAILABLE,
     # Metric objects
     spend_cat_records_ingested_total,

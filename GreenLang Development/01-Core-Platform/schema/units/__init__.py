@@ -11,7 +11,7 @@ Components:
     - packs: Domain-specific unit packs (SI, climate, finance)
 
 Example:
-    >>> from greenlang.schema.units import UnitCatalog, UnitDefinition
+    >>> from greenlang.agents.foundation.schema.units import UnitCatalog, UnitDefinition
     >>> catalog = UnitCatalog()
     >>> catalog.is_compatible("kWh", "MWh")
     True
@@ -21,7 +21,7 @@ Example:
     'mass'
 """
 
-from greenlang.schema.units.catalog import (
+from greenlang.agents.foundation.schema.units.catalog import (
     UnitDefinition,
     DimensionDefinition,
     UnitCatalog,

@@ -36,7 +36,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.change_detector_engine import (
+    from greenlang.agents.mrv.audit_trail_lineage.change_detector_engine import (
         ChangeDetectorEngine,
     )
     ENGINE_AVAILABLE = True

@@ -12,13 +12,13 @@ from typing import Dict, Any
 from unittest.mock import Mock, patch
 from fastapi import FastAPI
 
-from greenlang.fuel_energy_activities.setup import (
+from greenlang.agents.mrv.fuel_energy_activities.setup import (
     FuelEnergyActivitiesService,
     configure_fuel_energy_activities,
     get_service,
     get_router,
 )
-from greenlang.fuel_energy_activities.models import FuelType, ActivityType
+from greenlang.agents.mrv.fuel_energy_activities.models import FuelType, ActivityType
 from greenlang_core import AgentConfig
 from greenlang_core.exceptions import ValidationError
 

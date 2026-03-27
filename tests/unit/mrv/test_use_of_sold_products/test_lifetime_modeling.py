@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.use_of_sold_products.lifetime_modeling import (
+    from greenlang.agents.mrv.use_of_sold_products.lifetime_modeling import (
         LifetimeModelingEngine,
         get_lifetime_engine,
         calculate_degradation_factor,

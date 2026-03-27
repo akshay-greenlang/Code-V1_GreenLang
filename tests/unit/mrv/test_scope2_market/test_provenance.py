@@ -27,7 +27,7 @@ from typing import Any, Dict
 import pytest
 
 try:
-    from greenlang.scope2_market.provenance import (
+    from greenlang.agents.mrv.scope2_market.provenance import (
         Scope2MarketProvenance,
         ProvenanceEntry,
         VALID_STAGES,

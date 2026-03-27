@@ -14,7 +14,7 @@ from decimal import Decimal
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from greenlang.purchased_goods_services.average_data_calculator import (
+from greenlang.agents.mrv.purchased_goods_services.average_data_calculator import (
     AverageDataCalculatorEngine,
     PhysicalRecord,
     PhysicalCalculationResult,
@@ -23,7 +23,7 @@ from greenlang.purchased_goods_services.average_data_calculator import (
     DQIScore,
     UncertaintyRange
 )
-from greenlang.purchased_goods_services.procurement_database import (
+from greenlang.agents.mrv.purchased_goods_services.procurement_database import (
     ProcurementDatabaseEngine
 )
 

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from greenlang.stationary_combustion.metrics import (
+from greenlang.agents.mrv.stationary_combustion.metrics import (
     PROMETHEUS_AVAILABLE,
     # Metric objects
     sc_calculations_total,

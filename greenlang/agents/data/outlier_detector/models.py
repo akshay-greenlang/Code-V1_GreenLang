@@ -8,9 +8,9 @@ and defines additional SDK models for outlier detection, classification,
 treatment, ensemble scoring, pipeline orchestration, and reporting.
 
 Re-exported Layer 1 sources:
-    - greenlang.data_quality_profiler.models: QualityDimension
+    - greenlang.agents.data.data_quality_profiler.models: QualityDimension
         (as L1QualityDimension)
-    - greenlang.data_quality_profiler.anomaly_detector:
+    - greenlang.agents.data.data_quality_profiler.anomaly_detector:
         AnomalyDetector (as L1AnomalyDetector),
         AnomalyResult (as L1AnomalyResult)
 

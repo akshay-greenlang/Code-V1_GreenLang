@@ -27,7 +27,7 @@ from greenlang.utilities.determinism import (
     freeze_time,
     unfreeze_time,
 )
-from greenlang.orchestrator.glip_orchestrator import (
+from greenlang.agents.foundation.orchestrator.glip_orchestrator import (
     ApprovalStatus,
     ApprovalRequest,
     ConcurrencyConfig,

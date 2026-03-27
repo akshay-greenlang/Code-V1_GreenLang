@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.cross_source_reconciliation.audit_trail import (
+from greenlang.agents.data.cross_source_reconciliation.audit_trail import (
     AuditTrailEngine,
     _safe_float,
     _safe_str,

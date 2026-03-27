@@ -14,7 +14,7 @@ Features:
 - Batch report summary tables
 
 Example:
-    >>> from greenlang.schema.cli.formatters.table import TableFormatter
+    >>> from greenlang.agents.foundation.schema.cli.formatters.table import TableFormatter
     >>> formatter = TableFormatter(use_color=True, max_width=120)
     >>> output = formatter.format(validation_report)
     >>> print(output)
@@ -29,8 +29,8 @@ from __future__ import annotations
 import sys
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from greenlang.schema.models.report import ValidationReport, BatchValidationReport
-from greenlang.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.report import ValidationReport, BatchValidationReport
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
 
 
 class TableFormatter:

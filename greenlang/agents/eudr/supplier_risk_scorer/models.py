@@ -58,7 +58,7 @@ Response Models (15):
       HealthResponse
 
 Compatibility:
-    Imports EUDRCommodity from greenlang.eudr_traceability.models for
+    Imports EUDRCommodity from greenlang.agents.data.eudr_traceability.models for
     cross-agent consistency with AGENT-DATA-005 EUDR Traceability
     Connector and AGENT-EUDR-001 Supply Chain Mapping Master.
 
@@ -90,7 +90,7 @@ from pydantic import (
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.eudr_traceability.models import (
+    from greenlang.agents.data.eudr_traceability.models import (
         EUDRCommodity as _ExternalEUDRCommodity,
     )
 except ImportError:

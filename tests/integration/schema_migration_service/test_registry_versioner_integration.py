@@ -28,8 +28,8 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.schema_migration.schema_registry import SchemaRegistryEngine
-from greenlang.schema_migration.schema_versioner import SchemaVersionerEngine
+from greenlang.agents.data.schema_migration.schema_registry import SchemaRegistryEngine
+from greenlang.agents.data.schema_migration.schema_versioner import SchemaVersionerEngine
 
 
 # ---------------------------------------------------------------------------

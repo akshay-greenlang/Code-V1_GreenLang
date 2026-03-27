@@ -20,8 +20,8 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.data_lineage_tracker import metrics as dlt_metrics
-from greenlang.data_lineage_tracker.metrics import (
+from greenlang.agents.data.data_lineage_tracker import metrics as dlt_metrics
+from greenlang.agents.data.data_lineage_tracker.metrics import (
     PROMETHEUS_AVAILABLE,
     dlt_assets_registered_total,
     dlt_change_events_total,

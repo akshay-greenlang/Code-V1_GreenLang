@@ -29,7 +29,7 @@ Validation Pipeline:
     7. Linting (non-blocking)
 
 Example:
-    >>> from greenlang.schema.validator import SchemaValidator, validate
+    >>> from greenlang.agents.foundation.schema.validator import SchemaValidator, validate
     >>> validator = SchemaValidator(registry, unit_catalog)
     >>> result = validator.validate(payload, schema_ref)
     >>> print(result.valid)
@@ -42,13 +42,13 @@ Version: 1.0.0
 GL-FOUND-X-002: Schema Compiler & Validator
 """
 
-from greenlang.schema.validator.core import (
+from greenlang.agents.foundation.schema.validator.core import (
     SchemaValidator,
     validate,
 )
 
 # Structural validator - Task 2.1 COMPLETE
-from greenlang.schema.validator.structural import (
+from greenlang.agents.foundation.schema.validator.structural import (
     StructuralValidator,
     validate_structure,
     PYTHON_TO_JSON_TYPE,
@@ -56,13 +56,13 @@ from greenlang.schema.validator.structural import (
 )
 
 # Constraint validator - Task 2.2 COMPLETE
-from greenlang.schema.validator.constraints import (
+from greenlang.agents.foundation.schema.validator.constraints import (
     ConstraintValidator,
     FORMAT_VALIDATORS,
 )
 
 # Linter - Task 2.6 COMPLETE
-from greenlang.schema.validator.linter import (
+from greenlang.agents.foundation.schema.validator.linter import (
     SchemaLinter,
     lint_payload,
     # Casing detection helpers
@@ -77,7 +77,7 @@ from greenlang.schema.validator.linter import (
 )
 
 # Rule validator - Task 2.4 COMPLETE
-from greenlang.schema.validator.rules import (
+from greenlang.agents.foundation.schema.validator.rules import (
     RuleValidator,
     ExpressionEvaluator,
     Rule,
@@ -98,7 +98,7 @@ from greenlang.schema.validator.rules import (
 )
 
 # Unit validator - Task 2.3 COMPLETE
-from greenlang.schema.validator.units import (
+from greenlang.agents.foundation.schema.validator.units import (
     UnitValidator,
     NormalizedUnit,
     create_unit_finding,

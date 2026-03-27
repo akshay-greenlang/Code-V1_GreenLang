@@ -17,17 +17,17 @@ from typing import Any, Dict, Generator, List
 
 import pytest
 
-from greenlang.stationary_combustion.config import (
+from greenlang.agents.mrv.stationary_combustion.config import (
     StationaryCombustionConfig,
     reset_config,
     set_config,
 )
-from greenlang.stationary_combustion.provenance import (
+from greenlang.agents.mrv.stationary_combustion.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     reset_provenance_tracker,
 )
-from greenlang.stationary_combustion.models import (
+from greenlang.agents.mrv.stationary_combustion.models import (
     CombustionInput,
     FuelType,
     UnitType,
@@ -140,7 +140,7 @@ def custom_config() -> StationaryCombustionConfig:
 @pytest.fixture
 def fuel_database():
     """Return a FuelDatabaseEngine instance."""
-    from greenlang.stationary_combustion.fuel_database import FuelDatabaseEngine
+    from greenlang.agents.mrv.stationary_combustion.fuel_database import FuelDatabaseEngine
 
     return FuelDatabaseEngine(config={"enable_provenance": False})
 
@@ -148,7 +148,7 @@ def fuel_database():
 @pytest.fixture
 def combustion_calculator(fuel_database):
     """Return a CombustionCalculatorEngine with a test fuel_database."""
-    from greenlang.stationary_combustion.combustion_calculator import (
+    from greenlang.agents.mrv.stationary_combustion.combustion_calculator import (
         CombustionCalculatorEngine,
     )
 
@@ -161,7 +161,7 @@ def combustion_calculator(fuel_database):
 @pytest.fixture
 def equipment_profiler():
     """Return an EquipmentProfilerEngine instance."""
-    from greenlang.stationary_combustion.equipment_profiler import (
+    from greenlang.agents.mrv.stationary_combustion.equipment_profiler import (
         EquipmentProfilerEngine,
     )
 
@@ -171,7 +171,7 @@ def equipment_profiler():
 @pytest.fixture
 def emission_factor_selector(fuel_database):
     """Return an EmissionFactorSelectorEngine with a test fuel_database."""
-    from greenlang.stationary_combustion.emission_factor_selector import (
+    from greenlang.agents.mrv.stationary_combustion.emission_factor_selector import (
         EmissionFactorSelectorEngine,
     )
 
@@ -181,7 +181,7 @@ def emission_factor_selector(fuel_database):
 @pytest.fixture
 def uncertainty_quantifier():
     """Return an UncertaintyQuantifierEngine instance."""
-    from greenlang.stationary_combustion.uncertainty_quantifier import (
+    from greenlang.agents.mrv.stationary_combustion.uncertainty_quantifier import (
         UncertaintyQuantifierEngine,
     )
 
@@ -191,7 +191,7 @@ def uncertainty_quantifier():
 @pytest.fixture
 def audit_trail_engine():
     """Return an AuditTrailEngine instance."""
-    from greenlang.stationary_combustion.audit_trail import AuditTrailEngine
+    from greenlang.agents.mrv.stationary_combustion.audit_trail import AuditTrailEngine
 
     return AuditTrailEngine()
 
@@ -207,7 +207,7 @@ def pipeline(
     default_config,
 ):
     """Return a StationaryCombustionPipelineEngine with all engines wired."""
-    from greenlang.stationary_combustion.combustion_pipeline import (
+    from greenlang.agents.mrv.stationary_combustion.combustion_pipeline import (
         StationaryCombustionPipelineEngine,
     )
 

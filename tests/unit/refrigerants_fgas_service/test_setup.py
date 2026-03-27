@@ -25,7 +25,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from greenlang.refrigerants_fgas.setup import (
+from greenlang.agents.mrv.refrigerants_fgas.setup import (
     AuditTrailResponse,
     BatchResponse,
     BlendResponse,
@@ -569,7 +569,7 @@ class TestModuleLevelFunctions:
 
     def test_get_service(self):
         """get_service() returns a RefrigerantsFGasService instance."""
-        import greenlang.refrigerants_fgas.setup as setup_mod
+        import greenlang.agents.mrv.refrigerants_fgas.setup as setup_mod
 
         # Reset singleton state
         setup_mod._singleton_instance = None
@@ -592,8 +592,8 @@ class TestModuleLevelFunctions:
     @pytest.mark.asyncio
     async def test_configure_function(self):
         """configure_refrigerants_fgas() wires the service to a FastAPI app."""
-        import greenlang.refrigerants_fgas.setup as setup_mod
-        from greenlang.refrigerants_fgas.setup import (
+        import greenlang.agents.mrv.refrigerants_fgas.setup as setup_mod
+        from greenlang.agents.mrv.refrigerants_fgas.setup import (
             configure_refrigerants_fgas,
         )
 

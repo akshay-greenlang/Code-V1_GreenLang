@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.supplier_questionnaire import metrics as metrics_mod
+from greenlang.agents.data.supplier_questionnaire import metrics as metrics_mod
 
 
 # ============================================================================

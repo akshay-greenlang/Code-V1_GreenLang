@@ -34,11 +34,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.duplicate_detector.config import (
+from greenlang.agents.data.duplicate_detector.config import (
     DuplicateDetectorConfig,
     set_config,
 )
-from greenlang.duplicate_detector.setup import (
+from greenlang.agents.data.duplicate_detector.setup import (
     DuplicateDetectorService,
     FingerprintResponse,
     BlockResponse,

@@ -9,9 +9,9 @@ selection, imputation execution, validation, rule-based imputation,
 template management, pipeline orchestration, statistics, and reporting.
 
 Re-exported Layer 1 sources:
-    - greenlang.data_quality_profiler.models: QualityDimension
+    - greenlang.agents.data.data_quality_profiler.models: QualityDimension
         (as L1QualityDimension), DataType (as L1DataType)
-    - greenlang.data_quality_profiler.completeness_analyzer:
+    - greenlang.agents.data.data_quality_profiler.completeness_analyzer:
         CompletenessAnalyzer (as L1CompletenessAnalyzer),
         CompletenessReport (as L1CompletenessReport)
 

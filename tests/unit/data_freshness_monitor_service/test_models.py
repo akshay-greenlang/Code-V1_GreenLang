@@ -2,7 +2,7 @@
 """
 Unit tests for Data Freshness Monitor models - AGENT-DATA-016
 
-Tests the Pydantic v2 models at greenlang.data_freshness_monitor.models with
+Tests the Pydantic v2 models at greenlang.agents.data.data_freshness_monitor.models with
 150+ tests covering all 13 enumerations, 16 SDK models, 8 request models,
 6 constants, Layer 1 re-exports, field validators, model validators,
 extra="forbid" enforcement, and edge cases.
@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.data_freshness_monitor.models import (
+from greenlang.agents.data.data_freshness_monitor.models import (
     # Constants
     CADENCE_HOURS,
     DEFAULT_ESCALATION_DELAYS,
@@ -88,7 +88,7 @@ import pydantic
 
 def _set_model_extra(mode: str) -> None:
     """Set extra config on all DFM Pydantic models."""
-    from greenlang.data_freshness_monitor import models as dfm_models
+    from greenlang.agents.data.data_freshness_monitor import models as dfm_models
     for name in dir(dfm_models):
         obj = getattr(dfm_models, name)
         if (
@@ -501,23 +501,23 @@ class TestLayer1ReExports:
 
     def test_timeliness_tracker_importable(self):
         # Should be importable (either class or None)
-        from greenlang.data_freshness_monitor.models import TimelinessTracker
+        from greenlang.agents.data.data_freshness_monitor.models import TimelinessTracker
         assert TimelinessTracker is not None or TimelinessTracker is None
 
     def test_freshness_result_importable(self):
-        from greenlang.data_freshness_monitor.models import FreshnessResult
+        from greenlang.agents.data.data_freshness_monitor.models import FreshnessResult
         assert FreshnessResult is not None or FreshnessResult is None
 
     def test_quality_dimension_importable(self):
-        from greenlang.data_freshness_monitor.models import QualityDimension
+        from greenlang.agents.data.data_freshness_monitor.models import QualityDimension
         assert QualityDimension is not None or QualityDimension is None
 
     def test_rule_type_importable(self):
-        from greenlang.data_freshness_monitor.models import RuleType
+        from greenlang.agents.data.data_freshness_monitor.models import RuleType
         assert RuleType is not None or RuleType is None
 
     def test_freshness_boundaries_hours_importable(self):
-        from greenlang.data_freshness_monitor.models import FRESHNESS_BOUNDARIES_HOURS
+        from greenlang.agents.data.data_freshness_monitor.models import FRESHNESS_BOUNDARIES_HOURS
         assert FRESHNESS_BOUNDARIES_HOURS is not None or FRESHNESS_BOUNDARIES_HOURS is None
 
 

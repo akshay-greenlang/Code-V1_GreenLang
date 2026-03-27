@@ -9,7 +9,7 @@ conflict detector, rule pack, validation reporter, and pipeline orchestrator.
 
 All tests are self-contained with no external dependencies.
 
-Includes a module-level stub for greenlang.validation_rule_engine.__init__
+Includes a module-level stub for greenlang.agents.data.validation_rule_engine.__init__
 to bypass engine imports that may not yet be available, allowing direct
 submodule imports to work.
 
@@ -31,7 +31,7 @@ import pytest
 # Stub the validation_rule_engine package to bypass broken __init__ imports.
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.validation_rule_engine"
+_PKG_NAME = "greenlang.agents.data.validation_rule_engine"
 
 if _PKG_NAME not in sys.modules:
     import greenlang  # noqa: F401 ensure parent exists
@@ -55,7 +55,7 @@ if _PKG_NAME not in sys.modules:
 # caught by their own try/except and they fall back to no-op stubs.
 # ---------------------------------------------------------------------------
 
-from greenlang.validation_rule_engine import metrics as _vre_metrics  # noqa: F401
+from greenlang.agents.data.validation_rule_engine import metrics as _vre_metrics  # noqa: F401
 
 
 # ---------------------------------------------------------------------------
@@ -72,7 +72,7 @@ def _relax_model_configs():
     via its own module-scoped fixture.
     """
     import pydantic
-    from greenlang.validation_rule_engine import models as vre_models
+    from greenlang.agents.data.validation_rule_engine import models as vre_models
 
     for name in dir(vre_models):
         obj = getattr(vre_models, name)
@@ -109,7 +109,7 @@ def _clean_vre_env(monkeypatch):
         if key.startswith(prefix):
             monkeypatch.delenv(key, raising=False)
 
-    from greenlang.validation_rule_engine.config import reset_config
+    from greenlang.agents.data.validation_rule_engine.config import reset_config
     reset_config()
 
     yield
@@ -129,7 +129,7 @@ def _clean_vre_env(monkeypatch):
 @pytest.fixture
 def provenance_tracker():
     """Create a fresh ProvenanceTracker instance for testing."""
-    from greenlang.validation_rule_engine.provenance import ProvenanceTracker
+    from greenlang.agents.data.validation_rule_engine.provenance import ProvenanceTracker
     return ProvenanceTracker()
 
 
@@ -145,7 +145,7 @@ def rule_registry(provenance_tracker):
     Returns None if the engine module is not yet available.
     """
     try:
-        from greenlang.validation_rule_engine.rule_registry import RuleRegistryEngine
+        from greenlang.agents.data.validation_rule_engine.rule_registry import RuleRegistryEngine
         return RuleRegistryEngine(provenance_tracker=provenance_tracker)
     except (ImportError, Exception):
         return None
@@ -158,7 +158,7 @@ def rule_composer(provenance_tracker, rule_registry):
     Returns None if the engine module is not yet available.
     """
     try:
-        from greenlang.validation_rule_engine.rule_composer import RuleComposerEngine
+        from greenlang.agents.data.validation_rule_engine.rule_composer import RuleComposerEngine
         return RuleComposerEngine(
             provenance_tracker=provenance_tracker,
             rule_registry=rule_registry,
@@ -174,7 +174,7 @@ def rule_evaluator(provenance_tracker, rule_registry):
     Returns None if the engine module is not yet available.
     """
     try:
-        from greenlang.validation_rule_engine.rule_evaluator import RuleEvaluatorEngine
+        from greenlang.agents.data.validation_rule_engine.rule_evaluator import RuleEvaluatorEngine
         return RuleEvaluatorEngine(
             provenance_tracker=provenance_tracker,
             rule_registry=rule_registry,
@@ -190,7 +190,7 @@ def conflict_detector(provenance_tracker, rule_registry):
     Returns None if the engine module is not yet available.
     """
     try:
-        from greenlang.validation_rule_engine.conflict_detector import (
+        from greenlang.agents.data.validation_rule_engine.conflict_detector import (
             ConflictDetectorEngine,
         )
         return ConflictDetectorEngine(

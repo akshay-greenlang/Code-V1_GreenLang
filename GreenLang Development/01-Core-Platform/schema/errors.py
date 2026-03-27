@@ -15,13 +15,13 @@ Error Code Structure:
     - NUMBER: Specific error within category (00-99)
 
 Example:
-    >>> from greenlang.schema.errors import ErrorCode, get_error_info
+    >>> from greenlang.agents.foundation.schema.errors import ErrorCode, get_error_info
     >>> info = get_error_info(ErrorCode.MISSING_REQUIRED)
     >>> print(f"{info.code}: {info.message_template}")
     GLSCHEMA-E100: Required field '{field}' is missing at path '{path}'
 
 Usage:
-    >>> from greenlang.schema.errors import format_error_message, ErrorCode
+    >>> from greenlang.agents.foundation.schema.errors import format_error_message, ErrorCode
     >>> msg = format_error_message(
     ...     ErrorCode.TYPE_MISMATCH,
     ...     path="/data/value",

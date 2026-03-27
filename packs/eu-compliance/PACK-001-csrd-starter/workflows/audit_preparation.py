@@ -463,7 +463,7 @@ class AuditPreparationWorkflow:
         Execute all 235 ESRS compliance rules against the current dataset.
 
         Agents invoked:
-            - greenlang.validation_rule_engine (rule execution)
+            - greenlang.agents.data.validation_rule_engine (rule execution)
             - greenlang.agents.foundation.schema_compiler (schema validation)
 
         Rules are organized by ESRS standard and cover:
@@ -667,8 +667,8 @@ class AuditPreparationWorkflow:
         reported values, including all transformations and calculations.
 
         Agents invoked:
-            - greenlang.data_lineage_tracker (lineage retrieval)
-            - greenlang.audit_trail_lineage (trail documentation)
+            - greenlang.agents.data.data_lineage_tracker (lineage retrieval)
+            - greenlang.agents.mrv.audit_trail_lineage (trail documentation)
             - greenlang.agents.foundation.citations_agent (source citation)
         """
         step_name = "lineage_documentation"

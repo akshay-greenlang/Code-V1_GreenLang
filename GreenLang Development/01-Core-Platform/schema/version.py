@@ -5,7 +5,7 @@ This module provides version and identification constants for the schema
 compiler and validator component of the GreenLang framework.
 
 Example:
-    >>> from greenlang.schema.version import __version__, __agent_id__
+    >>> from greenlang.agents.foundation.schema.version import __version__, __agent_id__
     >>> print(f"Running {__agent_id__} v{__version__}")
     Running GL-FOUND-X-002 v0.1.0
 """

@@ -21,8 +21,8 @@ Error Codes:
     - GLSCHEMA-E105: PROPERTY_COUNT_VIOLATION - Property count outside range
 
 Example:
-    >>> from greenlang.schema.validator.structural import StructuralValidator
-    >>> from greenlang.schema.validator.structural import validate_structure
+    >>> from greenlang.agents.foundation.schema.validator.structural import StructuralValidator
+    >>> from greenlang.agents.foundation.schema.validator.structural import validate_structure
     >>> validator = StructuralValidator(ir, options)
     >>> findings = validator.validate(payload)
     >>> # Or use convenience function
@@ -101,8 +101,8 @@ class StructuralValidator:
         _findings: Internal list of findings accumulated during validation
 
     Example:
-        >>> from greenlang.schema.compiler.ir import SchemaIR
-        >>> from greenlang.schema.models.config import ValidationOptions
+        >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
+        >>> from greenlang.agents.foundation.schema.models.config import ValidationOptions
         >>> ir = SchemaIR(schema_id="test", version="1.0", schema_hash="a" * 64,
         ...              compiled_at=datetime.now())
         >>> validator = StructuralValidator(ir, ValidationOptions())
@@ -828,7 +828,7 @@ def validate_structure(
         List of validation findings
 
     Example:
-        >>> from greenlang.schema.validator.structural import validate_structure
+        >>> from greenlang.agents.foundation.schema.validator.structural import validate_structure
         >>> ir = compile_schema(schema_source)
         >>> findings = validate_structure({"name": "test"}, ir)
         >>> for f in findings:

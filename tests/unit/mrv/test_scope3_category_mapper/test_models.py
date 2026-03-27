@@ -28,7 +28,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError as PydanticValidationError
 
-from greenlang.scope3_category_mapper.models import (
+from greenlang.agents.mrv.scope3_category_mapper.models import (
     # Enumerations
     Scope3Category,
     CompanyType,

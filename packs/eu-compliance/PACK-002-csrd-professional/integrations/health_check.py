@@ -1287,7 +1287,7 @@ class ProfessionalHealthCheck:
         # Check auth module availability
         auth_modules = [
             ("greenlang.auth", "Auth module"),
-            ("greenlang.access_guard", "Access guard"),
+            ("greenlang.agents.foundation.access_guard", "Access guard"),
             ("greenlang.agents.foundation.policy_guard", "Policy guard"),
             ("greenlang.agents.foundation.pii_redaction", "PII redaction"),
         ]

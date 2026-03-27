@@ -7,7 +7,7 @@ Calculates total expected lifetime emissions from the USE of goods and
 services sold by the reporting company in the reporting period.
 
 Agent ID: GL-MRV-S3-011
-Package: greenlang.use_of_sold_products
+Package: greenlang.agents.mrv.use_of_sold_products
 API Prefix: /api/v1/use-of-sold-products
 DB Migration: V075
 Metrics Prefix: gl_usp_

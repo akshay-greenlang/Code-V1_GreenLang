@@ -29,7 +29,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.stationary_combustion.models import FuelType
+from greenlang.agents.mrv.stationary_combustion.models import FuelType
 
 pytestmark = pytest.mark.integration
 

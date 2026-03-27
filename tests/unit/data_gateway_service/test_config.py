@@ -31,7 +31,7 @@ _ENV_PREFIX = "GL_DATA_GATEWAY_"
 
 @dataclass
 class DataGatewayConfig:
-    """Mirrors greenlang.data_gateway.config.DataGatewayConfig."""
+    """Mirrors greenlang.agents.data.data_gateway.config.DataGatewayConfig."""
 
     database_url: str = ""
     redis_url: str = ""

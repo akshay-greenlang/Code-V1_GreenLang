@@ -25,8 +25,8 @@ from typing import List, Optional
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import TimeSeriesGapFillerConfig
-from greenlang.time_series_gap_filler.gap_detector import (
+from greenlang.agents.data.time_series_gap_filler.config import TimeSeriesGapFillerConfig
+from greenlang.agents.data.time_series_gap_filler.gap_detector import (
     Frequency,
     GapCharacterization,
     GapDetectionResult,

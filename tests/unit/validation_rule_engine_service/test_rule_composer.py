@@ -49,12 +49,12 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.validation_rule_engine.rule_composer import (
+from greenlang.agents.data.validation_rule_engine.rule_composer import (
     MAX_COMPOUND_DEPTH,
     VALID_COMPOUND_OPERATORS,
     RuleComposerEngine,
 )
-from greenlang.validation_rule_engine.rule_registry import (
+from greenlang.agents.data.validation_rule_engine.rule_registry import (
     RuleRegistryEngine,
 )
 

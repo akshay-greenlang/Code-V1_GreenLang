@@ -385,7 +385,7 @@ class TestPipelineStageSelection:
         self, pipeline_engine, pipeline_single_asset
     ):
         """Run pipeline explicitly requesting all 7 stages."""
-        from greenlang.climate_hazard.hazard_pipeline import PIPELINE_STAGES
+        from greenlang.agents.data.climate_hazard.hazard_pipeline import PIPELINE_STAGES
 
         result = pipeline_engine.run_pipeline(
             assets=pipeline_single_asset,

@@ -53,6 +53,10 @@ jobs:
           pip install -e .
           pip install pytest
 
+      - name: Generate v1 pack signatures
+        run: |
+          python -c "from pathlib import Path; from greenlang.utilities.provenance.signing import sign_pack; [sign_pack(p) for p in [Path('applications/GL-CBAM-APP/v1'), Path('applications/GL-CSRD-APP/CSRD-Reporting-Platform/v1'), Path('applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v1')]]"
+
       - name: Run fast v1 smoke lane
         run: |
           python -m greenlang.cli.main v1 validate-contracts
@@ -78,6 +82,10 @@ jobs:
           pip install -e .
           pip install pytest
 
+      - name: Generate v1 pack signatures
+        run: |
+          python -c "from pathlib import Path; from greenlang.utilities.provenance.signing import sign_pack; [sign_pack(p) for p in [Path('applications/GL-CBAM-APP/v1'), Path('applications/GL-CSRD-APP/CSRD-Reporting-Platform/v1'), Path('applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v1')]]"
+
       - name: Run strict v1 tests
         run: |
           pytest -q tests/v1
@@ -102,6 +110,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
+
+      - name: Generate v1 pack signatures
+        run: |
+          python -c "from pathlib import Path; from greenlang.utilities.provenance.signing import sign_pack; [sign_pack(p) for p in [Path('applications/GL-CBAM-APP/v1'), Path('applications/GL-CSRD-APP/CSRD-Reporting-Platform/v1'), Path('applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v1')]]"
 
       - name: Validate v1 contracts and policy
         run: |

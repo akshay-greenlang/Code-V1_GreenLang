@@ -3,7 +3,7 @@
 Unit Tests for Cross-Source Reconciliation REST API Router (AGENT-DATA-015)
 ============================================================================
 
-Comprehensive test suite for ``greenlang.cross_source_reconciliation.api.router``
+Comprehensive test suite for ``greenlang.agents.data.cross_source_reconciliation.api.router``
 covering all 20 endpoints using ``starlette.testclient.TestClient``.
 
 Target: 50+ tests covering all endpoints, happy paths, 404 cases, and 503 cases.
@@ -26,7 +26,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from greenlang.cross_source_reconciliation.api.router import FASTAPI_AVAILABLE
+from greenlang.agents.data.cross_source_reconciliation.api.router import FASTAPI_AVAILABLE
 
 # Skip the entire module if FastAPI is not installed
 pytestmark = pytest.mark.skipif(
@@ -247,7 +247,7 @@ def client(mock_service):
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
-    from greenlang.cross_source_reconciliation.api.router import router
+    from greenlang.agents.data.cross_source_reconciliation.api.router import router
 
     app = FastAPI()
     app.include_router(router)
@@ -263,7 +263,7 @@ def client_no_service():
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
-    from greenlang.cross_source_reconciliation.api.router import router
+    from greenlang.agents.data.cross_source_reconciliation.api.router import router
 
     app = FastAPI()
     app.include_router(router)

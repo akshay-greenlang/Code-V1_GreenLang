@@ -14,10 +14,10 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-from greenlang.dual_reporting_reconciliation.discrepancy_analyzer import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.discrepancy_analyzer import (
     DiscrepancyAnalyzerEngine,
 )
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     EnergyType,
     Scope2Method,
     UpstreamAgent,

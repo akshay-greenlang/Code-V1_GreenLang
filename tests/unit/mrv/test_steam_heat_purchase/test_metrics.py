@@ -25,7 +25,7 @@ from unittest.mock import patch
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.metrics import (
+    from greenlang.agents.mrv.steam_heat_purchase.metrics import (
         SteamHeatPurchaseMetrics,
         get_metrics,
         reset,
@@ -57,7 +57,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not METRICS_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.metrics not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.metrics not importable",
 )
 
 

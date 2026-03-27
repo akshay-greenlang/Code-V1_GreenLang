@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.climate_hazard.compliance_reporter import (
+from greenlang.agents.data.climate_hazard.compliance_reporter import (
     ADAPTATION_MEASURES,
     ComplianceReporterEngine,
     FRAMEWORK_TEMPLATES,

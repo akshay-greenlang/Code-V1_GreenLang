@@ -10,9 +10,9 @@ scenario projections, asset exposure, vulnerability scoring, compound
 hazards, compliance reporting, and pipeline orchestration.
 
 Re-exported Layer 1 sources (best-effort, with fallback stubs):
-    - greenlang.gis_connector.spatial_analyzer: SpatialAnalyzerEngine
-    - greenlang.gis_connector.boundary_resolver: BoundaryResolverEngine
-    - greenlang.gis_connector.crs_transformer: CRSTransformerEngine
+    - greenlang.agents.data.gis_connector.spatial_analyzer: SpatialAnalyzerEngine
+    - greenlang.agents.data.gis_connector.boundary_resolver: BoundaryResolverEngine
+    - greenlang.agents.data.gis_connector.crs_transformer: CRSTransformerEngine
 
 New enumerations (12):
     - HazardType, RiskLevel, Scenario, TimeHorizon, AssetType,

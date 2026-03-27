@@ -30,7 +30,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.fugitive_emissions.fugitive_emissions_pipeline import (
+from greenlang.agents.mrv.fugitive_emissions.fugitive_emissions_pipeline import (
     FugitiveEmissionsPipelineEngine,
     PipelineStage,
     GWP_VALUES,

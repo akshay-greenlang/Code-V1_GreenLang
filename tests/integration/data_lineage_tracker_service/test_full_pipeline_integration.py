@@ -20,11 +20,11 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_lineage_tracker.lineage_tracker_pipeline import (
+from greenlang.agents.data.data_lineage_tracker.lineage_tracker_pipeline import (
     LineageTrackerPipelineEngine,
     PIPELINE_STAGES,
 )
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
 from tests.integration.data_lineage_tracker_service.conftest import (
     GREENLANG_ASSET_NAMES,

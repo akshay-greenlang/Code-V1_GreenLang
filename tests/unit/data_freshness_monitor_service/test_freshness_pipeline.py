@@ -149,7 +149,7 @@ _MODEL_PATCHES = {
 # Import pipeline module pieces that do NOT need patching
 # ---------------------------------------------------------------------------
 
-from greenlang.data_freshness_monitor.freshness_pipeline import (
+from greenlang.agents.data.data_freshness_monitor.freshness_pipeline import (
     FreshnessMonitorPipelineEngine,
     PipelineStageResult,
     PipelineStatistics,
@@ -163,7 +163,7 @@ from greenlang.data_freshness_monitor.freshness_pipeline import (
 # ---------------------------------------------------------------------------
 
 _HEX64_RE = re.compile(r"^[0-9a-f]{64}$")
-_PIPELINE_MODULE = "greenlang.data_freshness_monitor.freshness_pipeline"
+_PIPELINE_MODULE = "greenlang.agents.data.data_freshness_monitor.freshness_pipeline"
 
 
 def _make_dataset(

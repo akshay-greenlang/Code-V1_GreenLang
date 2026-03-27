@@ -11,7 +11,7 @@ import os
 import threading
 import pytest
 
-from greenlang.process_emissions.config import (
+from greenlang.agents.mrv.process_emissions.config import (
     ProcessEmissionsConfig,
     get_config,
     set_config,

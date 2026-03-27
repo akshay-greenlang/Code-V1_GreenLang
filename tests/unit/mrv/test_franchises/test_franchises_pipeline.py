@@ -17,7 +17,7 @@ from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 import pytest
 
-from greenlang.franchises.franchises_pipeline import (
+from greenlang.agents.mrv.franchises.franchises_pipeline import (
     FranchisesPipelineEngine,
     PipelineStage,
     PipelineStatus,

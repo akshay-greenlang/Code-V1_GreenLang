@@ -33,7 +33,7 @@ from typing import Optional
 
 import click
 
-from greenlang.schema import __version__ as schema_version
+from greenlang.agents.foundation.schema import __version__ as schema_version
 
 
 # Configure logging
@@ -145,10 +145,10 @@ def schema(ctx: click.Context) -> None:
 
 
 # Import and register commands
-from greenlang.schema.cli.commands.validate import validate
-from greenlang.schema.cli.commands.compile import compile_schema
-from greenlang.schema.cli.commands.lint import lint
-from greenlang.schema.cli.commands.migrate import migrate
+from greenlang.agents.foundation.schema.cli.commands.validate import validate
+from greenlang.agents.foundation.schema.cli.commands.compile import compile_schema
+from greenlang.agents.foundation.schema.cli.commands.lint import lint
+from greenlang.agents.foundation.schema.cli.commands.migrate import migrate
 
 # Register commands under 'schema' group
 schema.add_command(validate)

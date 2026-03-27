@@ -129,6 +129,14 @@ def test_csrd_backend_adapter_generates_required_artifacts(tmp_path) -> None:
     assert (run1 / "esrs_report.json").exists()
     assert (run1 / "audit" / "run_manifest.json").exists()
     assert (run1 / "audit" / "checksums.json").exists()
+    csrd_manifest = json.loads((run1 / "audit" / "run_manifest.json").read_text(encoding="utf-8"))
+    csrd_report = json.loads((run1 / "esrs_report.json").read_text(encoding="utf-8"))
+    assert csrd_manifest["app_id"] == "GL-CSRD-APP"
+    assert csrd_manifest["execution_mode"] in {"native", "fallback"}
+    assert "esrs_report.json" in csrd_manifest["artifacts"]
+    assert csrd_report.get("app_id") == "GL-CSRD-APP"
+    assert isinstance(csrd_report.get("records_processed", 0), int)
+    assert csrd_report.get("records_processed", 0) >= 0
     determinism = compare_artifact_hashes(
         _contract_subset(run1, ["esrs_report.json", "audit/run_manifest.json", "audit/checksums.json"]),
         _contract_subset(run2, ["esrs_report.json", "audit/run_manifest.json", "audit/checksums.json"]),
@@ -198,6 +206,16 @@ def test_vcci_backend_adapter_generates_required_artifacts(tmp_path) -> None:
     assert (run1 / "scope3_inventory.json").exists()
     assert (run1 / "audit" / "run_manifest.json").exists()
     assert (run1 / "audit" / "checksums.json").exists()
+    vcci_manifest = json.loads((run1 / "audit" / "run_manifest.json").read_text(encoding="utf-8"))
+    vcci_inventory = json.loads((run1 / "scope3_inventory.json").read_text(encoding="utf-8"))
+    assert vcci_manifest["app_id"] == "GL-VCCI-Carbon-APP"
+    assert vcci_manifest["execution_mode"] in {"native", "fallback"}
+    assert "scope3_inventory.json" in vcci_manifest["artifacts"]
+    assert vcci_inventory.get("app_id") == "GL-VCCI-Carbon-APP"
+    assert isinstance(vcci_inventory.get("records_processed", 0), int)
+    assert vcci_inventory.get("records_processed", 0) >= 0
+    assert isinstance(vcci_inventory.get("total_emissions_kgco2e", 0.0), (int, float))
+    assert vcci_inventory.get("total_emissions_kgco2e", 0.0) >= 0
     determinism = compare_artifact_hashes(
         _contract_subset(run1, ["scope3_inventory.json", "audit/run_manifest.json", "audit/checksums.json"]),
         _contract_subset(run2, ["scope3_inventory.json", "audit/run_manifest.json", "audit/checksums.json"]),

@@ -18,11 +18,11 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.outlier_detector.multivariate_detector import (
+from greenlang.agents.data.outlier_detector.multivariate_detector import (
     MultivariateDetectorEngine,
     _severity_from_score,
 )
-from greenlang.outlier_detector.models import (
+from greenlang.agents.data.outlier_detector.models import (
     DetectionMethod,
     MultivariateResult,
     OutlierScore,

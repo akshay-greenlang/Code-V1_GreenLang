@@ -41,7 +41,7 @@ def mock_tenant_id() -> str:
 @pytest.fixture
 def sample_config():
     """Return a LandUseConfig with default values for testing."""
-    from greenlang.land_use_emissions.config import LandUseConfig
+    from greenlang.agents.mrv.land_use_emissions.config import LandUseConfig
     return LandUseConfig()
 
 
@@ -49,13 +49,13 @@ def sample_config():
 def reset_config_singleton():
     """Reset the config singleton before and after each test."""
     try:
-        from greenlang.land_use_emissions.config import reset_config
+        from greenlang.agents.mrv.land_use_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
     yield
     try:
-        from greenlang.land_use_emissions.config import reset_config
+        from greenlang.agents.mrv.land_use_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
@@ -188,14 +188,14 @@ def sample_carbon_stock_snapshot() -> Dict[str, Any]:
 @pytest.fixture
 def land_use_database_engine():
     """Create a LandUseDatabaseEngine instance for testing."""
-    from greenlang.land_use_emissions.land_use_database import LandUseDatabaseEngine
+    from greenlang.agents.mrv.land_use_emissions.land_use_database import LandUseDatabaseEngine
     return LandUseDatabaseEngine()
 
 
 @pytest.fixture
 def carbon_stock_calculator(land_use_database_engine):
     """Create a CarbonStockCalculatorEngine instance for testing."""
-    from greenlang.land_use_emissions.carbon_stock_calculator import (
+    from greenlang.agents.mrv.land_use_emissions.carbon_stock_calculator import (
         CarbonStockCalculatorEngine,
     )
     return CarbonStockCalculatorEngine(land_use_database=land_use_database_engine)
@@ -204,7 +204,7 @@ def carbon_stock_calculator(land_use_database_engine):
 @pytest.fixture
 def land_use_change_tracker():
     """Create a LandUseChangeTrackerEngine instance for testing."""
-    from greenlang.land_use_emissions.land_use_change_tracker import (
+    from greenlang.agents.mrv.land_use_emissions.land_use_change_tracker import (
         LandUseChangeTrackerEngine,
     )
     return LandUseChangeTrackerEngine()
@@ -213,5 +213,5 @@ def land_use_change_tracker():
 @pytest.fixture
 def provenance_tracker():
     """Create a fresh ProvenanceTracker instance for testing."""
-    from greenlang.land_use_emissions.provenance import ProvenanceTracker
+    from greenlang.agents.mrv.land_use_emissions.provenance import ProvenanceTracker
     return ProvenanceTracker(max_entries=1000)

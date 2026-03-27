@@ -21,7 +21,7 @@ from decimal import Decimal
 from typing import Dict, Tuple, Optional
 
 try:
-    from greenlang.cooling_purchase.database import CoolingDatabaseEngine
+    from greenlang.agents.mrv.cooling_purchase.database import CoolingDatabaseEngine
 except ImportError:
     pytest.skip("cooling_purchase not available", allow_module_level=True)
 

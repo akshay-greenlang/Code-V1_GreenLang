@@ -12,7 +12,7 @@ TODO Task 5.4:
 from typing import Any, Dict, List, Optional
 import logging
 
-from greenlang.schema.registry.resolver import SchemaRegistry, SchemaSource
+from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry, SchemaSource
 
 logger = logging.getLogger(__name__)
 

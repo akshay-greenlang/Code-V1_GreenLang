@@ -136,7 +136,7 @@ except ImportError:
 
 # Duplicate Detection Agent imports (AGENT-DATA-011)
 try:
-    from greenlang.duplicate_detector.api.router import router as dedup_router
+    from greenlang.agents.data.duplicate_detector.api.router import router as dedup_router
 
     DUPLICATE_DETECTOR_AVAILABLE = True
 except ImportError:
@@ -145,7 +145,7 @@ except ImportError:
 
 # Missing Value Imputer Agent imports (AGENT-DATA-012)
 try:
-    from greenlang.missing_value_imputer.api.router import router as imputer_router
+    from greenlang.agents.data.missing_value_imputer.api.router import router as imputer_router
 
     MISSING_VALUE_IMPUTER_AVAILABLE = True
 except ImportError:
@@ -154,7 +154,7 @@ except ImportError:
 
 # Outlier Detection Agent imports (AGENT-DATA-013)
 try:
-    from greenlang.outlier_detector.api.router import router as outlier_router
+    from greenlang.agents.data.outlier_detector.api.router import router as outlier_router
 
     OUTLIER_DETECTOR_AVAILABLE = True
 except ImportError:
@@ -163,7 +163,7 @@ except ImportError:
 
 # Time Series Gap Filler Agent imports (AGENT-DATA-014)
 try:
-    from greenlang.time_series_gap_filler.setup import get_router as get_gap_filler_router
+    from greenlang.agents.data.time_series_gap_filler.setup import get_router as get_gap_filler_router
 
     _gap_filler_router = get_gap_filler_router()
     GAP_FILLER_AVAILABLE = True
@@ -173,7 +173,7 @@ except ImportError:
 
 # Cross-Source Reconciliation Agent imports (AGENT-DATA-015)
 try:
-    from greenlang.cross_source_reconciliation.setup import get_router as get_reconciliation_router
+    from greenlang.agents.data.cross_source_reconciliation.setup import get_router as get_reconciliation_router
 
     _reconciliation_router = get_reconciliation_router()
     RECONCILIATION_AVAILABLE = True
@@ -183,7 +183,7 @@ except ImportError:
 
 # Data Freshness Monitor Agent imports (AGENT-DATA-016)
 try:
-    from greenlang.data_freshness_monitor.setup import get_router as get_freshness_router
+    from greenlang.agents.data.data_freshness_monitor.setup import get_router as get_freshness_router
 
     _freshness_router = get_freshness_router()
     FRESHNESS_MONITOR_AVAILABLE = True
@@ -193,7 +193,7 @@ except ImportError:
 
 # Schema Migration Agent imports (AGENT-DATA-017)
 try:
-    from greenlang.schema_migration.setup import get_router as get_sm_router
+    from greenlang.agents.data.schema_migration.setup import get_router as get_sm_router
 
     _sm_router = get_sm_router()
     SCHEMA_MIGRATION_AVAILABLE = True
@@ -203,7 +203,7 @@ except ImportError:
 
 # Data Lineage Tracker Agent imports (AGENT-DATA-018)
 try:
-    from greenlang.data_lineage_tracker.setup import get_router as get_dlt_router
+    from greenlang.agents.data.data_lineage_tracker.setup import get_router as get_dlt_router
 
     DATA_LINEAGE_AVAILABLE = True
     _dlt_router = get_dlt_router()
@@ -213,7 +213,7 @@ except ImportError:
 
 # Validation Rule Engine imports (AGENT-DATA-019)
 try:
-    from greenlang.validation_rule_engine.setup import get_router as get_vre_router
+    from greenlang.agents.data.validation_rule_engine.setup import get_router as get_vre_router
     VALIDATION_RULE_ENGINE_AVAILABLE = True
     _vre_router = get_vre_router()
 except ImportError:
@@ -222,7 +222,7 @@ except ImportError:
 
 # Climate Hazard Connector imports (AGENT-DATA-020)
 try:
-    from greenlang.climate_hazard.setup import get_router as get_chc_router
+    from greenlang.agents.data.climate_hazard.setup import get_router as get_chc_router
     CLIMATE_HAZARD_AVAILABLE = True
     _chc_router = get_chc_router()
 except ImportError:
@@ -231,7 +231,7 @@ except ImportError:
 
 # Stationary Combustion imports (AGENT-MRV-001)
 try:
-    from greenlang.stationary_combustion.setup import get_router as get_sc_router
+    from greenlang.agents.mrv.stationary_combustion.setup import get_router as get_sc_router
     STATIONARY_COMBUSTION_AVAILABLE = True
     _sc_router = get_sc_router()
 except ImportError:
@@ -240,7 +240,7 @@ except ImportError:
 
 # Refrigerants & F-Gas imports (AGENT-MRV-002)
 try:
-    from greenlang.refrigerants_fgas.setup import get_router as get_rf_router
+    from greenlang.agents.mrv.refrigerants_fgas.setup import get_router as get_rf_router
     REFRIGERANTS_FGAS_AVAILABLE = True
     _rf_router = get_rf_router()
 except ImportError:
@@ -249,7 +249,7 @@ except ImportError:
 
 # Mobile Combustion imports (AGENT-MRV-003)
 try:
-    from greenlang.mobile_combustion.setup import get_router as get_mc_router
+    from greenlang.agents.mrv.mobile_combustion.setup import get_router as get_mc_router
     MOBILE_COMBUSTION_AVAILABLE = True
     _mc_router = get_mc_router()
 except ImportError:
@@ -258,7 +258,7 @@ except ImportError:
 
 # Process Emissions imports (AGENT-MRV-004)
 try:
-    from greenlang.process_emissions.setup import get_router as get_pe_router
+    from greenlang.agents.mrv.process_emissions.setup import get_router as get_pe_router
     PROCESS_EMISSIONS_AVAILABLE = True
     _pe_router = get_pe_router()
 except ImportError:
@@ -267,7 +267,7 @@ except ImportError:
 
 # Fugitive Emissions imports (AGENT-MRV-005)
 try:
-    from greenlang.fugitive_emissions.setup import get_router as get_fue_router
+    from greenlang.agents.mrv.fugitive_emissions.setup import get_router as get_fue_router
     FUGITIVE_EMISSIONS_AVAILABLE = True
     _fue_router = get_fue_router()
 except ImportError:
@@ -276,7 +276,7 @@ except ImportError:
 
 # Land Use Emissions imports (AGENT-MRV-006)
 try:
-    from greenlang.land_use_emissions.setup import get_router as get_lu_router
+    from greenlang.agents.mrv.land_use_emissions.setup import get_router as get_lu_router
     LAND_USE_EMISSIONS_AVAILABLE = True
     _lu_router = get_lu_router()
 except ImportError:
@@ -285,7 +285,7 @@ except ImportError:
 
 # Waste Treatment Emissions imports (AGENT-MRV-007)
 try:
-    from greenlang.waste_treatment_emissions.setup import get_router as get_wt_router
+    from greenlang.agents.mrv.waste_treatment_emissions.setup import get_router as get_wt_router
     WASTE_TREATMENT_EMISSIONS_AVAILABLE = True
     _wt_router = get_wt_router()
 except ImportError:
@@ -295,7 +295,7 @@ except ImportError:
 
 # Agricultural Emissions imports (AGENT-MRV-008)
 try:
-    from greenlang.agricultural_emissions.setup import get_router as get_ag_router
+    from greenlang.agents.mrv.agricultural_emissions.setup import get_router as get_ag_router
     AGRICULTURAL_EMISSIONS_AVAILABLE = True
     _ag_router = get_ag_router()
 except ImportError:
@@ -304,7 +304,7 @@ except ImportError:
 
 # Scope 2 Location-Based Emissions imports (AGENT-MRV-009)
 try:
-    from greenlang.scope2_location.api.router import router as _s2l_router
+    from greenlang.agents.mrv.scope2_location.api.router import router as _s2l_router
     SCOPE2_LOCATION_AVAILABLE = True
 except ImportError:
     SCOPE2_LOCATION_AVAILABLE = False
@@ -312,7 +312,7 @@ except ImportError:
 
 # Scope 2 Market-Based Emissions imports (AGENT-MRV-010)
 try:
-    from greenlang.scope2_market.api.router import router as _s2m_router
+    from greenlang.agents.mrv.scope2_market.api.router import router as _s2m_router
     SCOPE2_MARKET_AVAILABLE = True
 except ImportError:
     SCOPE2_MARKET_AVAILABLE = False
@@ -320,7 +320,7 @@ except ImportError:
 
 # Steam/Heat Purchase imports (AGENT-MRV-011)
 try:
-    from greenlang.steam_heat_purchase.api.router import router as _shp_router
+    from greenlang.agents.mrv.steam_heat_purchase.api.router import router as _shp_router
     STEAM_HEAT_PURCHASE_AVAILABLE = True
 except ImportError:
     STEAM_HEAT_PURCHASE_AVAILABLE = False
@@ -328,7 +328,7 @@ except ImportError:
 
 # Cooling Purchase imports (AGENT-MRV-012)
 try:
-    from greenlang.cooling_purchase.api.router import router as _cp_router
+    from greenlang.agents.mrv.cooling_purchase.api.router import router as _cp_router
     COOLING_PURCHASE_AVAILABLE = True
 except ImportError:
     COOLING_PURCHASE_AVAILABLE = False
@@ -336,7 +336,7 @@ except ImportError:
 
 # Dual Reporting Reconciliation imports (AGENT-MRV-013)
 try:
-    from greenlang.dual_reporting_reconciliation.api.router import router as _drr_router
+    from greenlang.agents.mrv.dual_reporting_reconciliation.api.router import router as _drr_router
     DUAL_REPORTING_AVAILABLE = True
 except ImportError:
     DUAL_REPORTING_AVAILABLE = False
@@ -344,7 +344,7 @@ except ImportError:
 
 # Purchased Goods & Services imports (AGENT-MRV-014)
 try:
-    from greenlang.purchased_goods_services.setup import get_router as get_pgs_router
+    from greenlang.agents.mrv.purchased_goods_services.setup import get_router as get_pgs_router
     PURCHASED_GOODS_AVAILABLE = True
     _pgs_router = get_pgs_router()
 except ImportError:
@@ -353,7 +353,7 @@ except ImportError:
 
 # Capital Goods imports (AGENT-MRV-015)
 try:
-    from greenlang.capital_goods.setup import get_router as get_cg_router
+    from greenlang.agents.mrv.capital_goods.setup import get_router as get_cg_router
     CAPITAL_GOODS_AVAILABLE = True
     _cg_router = get_cg_router()
 except ImportError:
@@ -362,7 +362,7 @@ except ImportError:
 
 # Fuel & Energy Activities imports (AGENT-MRV-016)
 try:
-    from greenlang.fuel_energy_activities.setup import get_router as get_fea_router
+    from greenlang.agents.mrv.fuel_energy_activities.setup import get_router as get_fea_router
     FUEL_ENERGY_ACTIVITIES_AVAILABLE = True
     _fea_router = get_fea_router()
 except ImportError:
@@ -371,7 +371,7 @@ except ImportError:
 
 # Upstream Transportation & Distribution imports (AGENT-MRV-017)
 try:
-    from greenlang.upstream_transportation.setup import get_router as get_uto_router
+    from greenlang.agents.mrv.upstream_transportation.setup import get_router as get_uto_router
     UPSTREAM_TRANSPORTATION_AVAILABLE = True
     _uto_router = get_uto_router()
 except ImportError:
@@ -380,7 +380,7 @@ except ImportError:
 
 # Waste Generated imports (AGENT-MRV-018)
 try:
-    from greenlang.waste_generated.setup import get_router as get_wg_router
+    from greenlang.agents.mrv.waste_generated.setup import get_router as get_wg_router
     WASTE_GENERATED_AVAILABLE = True
     _wg_router = get_wg_router()
 except ImportError:
@@ -389,7 +389,7 @@ except ImportError:
 
 # Business Travel imports (AGENT-MRV-019)
 try:
-    from greenlang.business_travel.setup import get_router as get_bt_router
+    from greenlang.agents.mrv.business_travel.setup import get_router as get_bt_router
     BUSINESS_TRAVEL_AVAILABLE = True
     _bt_router = get_bt_router()
 except ImportError:
@@ -398,7 +398,7 @@ except ImportError:
 
 # Employee Commuting imports (AGENT-MRV-020)
 try:
-    from greenlang.employee_commuting.setup import get_router as get_ec_router
+    from greenlang.agents.mrv.employee_commuting.setup import get_router as get_ec_router
     EMPLOYEE_COMMUTING_AVAILABLE = True
     _ec_router = get_ec_router()
 except ImportError:
@@ -407,7 +407,7 @@ except ImportError:
 
 # Upstream Leased Assets imports (AGENT-MRV-021)
 try:
-    from greenlang.upstream_leased_assets.setup import get_router as get_ula_router
+    from greenlang.agents.mrv.upstream_leased_assets.setup import get_router as get_ula_router
     UPSTREAM_LEASED_AVAILABLE = True
     _ula_router = get_ula_router()
 except ImportError:
@@ -416,7 +416,7 @@ except ImportError:
 
 # Downstream Transportation imports (AGENT-MRV-022)
 try:
-    from greenlang.downstream_transportation.setup import get_router as get_dto_router
+    from greenlang.agents.mrv.downstream_transportation.setup import get_router as get_dto_router
     DOWNSTREAM_TRANSPORT_AVAILABLE = True
     _dto_router = get_dto_router()
 except ImportError:
@@ -425,7 +425,7 @@ except ImportError:
 
 # Processing of Sold Products imports (AGENT-MRV-023)
 try:
-    from greenlang.processing_sold_products.setup import get_router as get_psp_router
+    from greenlang.agents.mrv.processing_sold_products.setup import get_router as get_psp_router
     PROCESSING_SOLD_PRODUCTS_AVAILABLE = True
     _psp_router = get_psp_router()
 except ImportError:
@@ -434,7 +434,7 @@ except ImportError:
 
 # Use of Sold Products imports (AGENT-MRV-024)
 try:
-    from greenlang.use_of_sold_products.setup import get_router as get_usp_router
+    from greenlang.agents.mrv.use_of_sold_products.setup import get_router as get_usp_router
     USE_OF_SOLD_PRODUCTS_AVAILABLE = True
     _usp_router = get_usp_router()
 except ImportError:
@@ -443,7 +443,7 @@ except ImportError:
 
 # End-of-Life Treatment imports (AGENT-MRV-025)
 try:
-    from greenlang.end_of_life_treatment.setup import get_router as get_eol_router
+    from greenlang.agents.mrv.end_of_life_treatment.setup import get_router as get_eol_router
     END_OF_LIFE_TREATMENT_AVAILABLE = True
     _eol_router = get_eol_router()
 except ImportError:
@@ -452,7 +452,7 @@ except ImportError:
 
 # Downstream Leased Assets imports (AGENT-MRV-026)
 try:
-    from greenlang.downstream_leased_assets.setup import get_router as get_dla_router
+    from greenlang.agents.mrv.downstream_leased_assets.setup import get_router as get_dla_router
     DOWNSTREAM_LEASED_ASSETS_AVAILABLE = True
     _dla_router = get_dla_router()
 except ImportError:
@@ -461,7 +461,7 @@ except ImportError:
 
 # Franchises imports (AGENT-MRV-027)
 try:
-    from greenlang.franchises.setup import get_router as get_frn_router
+    from greenlang.agents.mrv.franchises.setup import get_router as get_frn_router
     FRANCHISES_AVAILABLE = True
     _frn_router = get_frn_router()
 except ImportError:
@@ -470,7 +470,7 @@ except ImportError:
 
 # Investments imports (AGENT-MRV-028)
 try:
-    from greenlang.investments.setup import get_router as get_inv_router
+    from greenlang.agents.mrv.investments.setup import get_router as get_inv_router
     INVESTMENTS_AVAILABLE = True
     _inv_router = get_inv_router()
 except ImportError:
@@ -479,7 +479,7 @@ except ImportError:
 
 # Scope 3 Category Mapper Agent imports (AGENT-MRV-029)
 try:
-    from greenlang.scope3_category_mapper.setup import get_router as get_scm_router
+    from greenlang.agents.mrv.scope3_category_mapper.setup import get_router as get_scm_router
     SCOPE3_CATEGORY_MAPPER_AVAILABLE = True
     _scm_router = get_scm_router()
 except ImportError:
@@ -488,7 +488,7 @@ except ImportError:
 
 # Audit Trail & Lineage Agent imports (AGENT-MRV-030)
 try:
-    from greenlang.audit_trail_lineage.setup import get_router as get_atl_router
+    from greenlang.agents.mrv.audit_trail_lineage.setup import get_router as get_atl_router
     AUDIT_TRAIL_LINEAGE_AVAILABLE = True
     _atl_router = get_atl_router()
 except ImportError:

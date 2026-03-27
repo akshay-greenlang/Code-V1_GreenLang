@@ -30,7 +30,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.spend_categorizer.emission_factor import (
+from greenlang.agents.data.spend_categorizer.emission_factor import (
     EmissionCalculation,
     EmissionFactor,
     EmissionFactorEngine,

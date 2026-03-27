@@ -14,7 +14,7 @@ Features:
 - Color disable option for pipe/file output
 
 Example:
-    >>> from greenlang.schema.cli.formatters.pretty import PrettyFormatter
+    >>> from greenlang.agents.foundation.schema.cli.formatters.pretty import PrettyFormatter
     >>> formatter = PrettyFormatter(use_color=True, verbosity=1)
     >>> output = formatter.format(validation_report)
     >>> print(output)
@@ -30,8 +30,8 @@ import json
 import sys
 from typing import Any, Dict, List, Optional, Union
 
-from greenlang.schema.models.report import ValidationReport, BatchValidationReport
-from greenlang.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.report import ValidationReport, BatchValidationReport
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
 
 
 class PrettyFormatter:

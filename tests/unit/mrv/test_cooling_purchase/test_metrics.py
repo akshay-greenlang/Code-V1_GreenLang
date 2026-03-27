@@ -5,7 +5,7 @@ from decimal import Decimal
 import threading
 
 try:
-    from greenlang.cooling_purchase.metrics import CoolingPurchaseMetrics
+    from greenlang.agents.mrv.cooling_purchase.metrics import CoolingPurchaseMetrics
     METRICS_AVAILABLE = True
 except ImportError:
     METRICS_AVAILABLE = False

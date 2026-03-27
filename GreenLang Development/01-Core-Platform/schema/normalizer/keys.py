@@ -17,7 +17,7 @@ Design Principles:
     - Idempotency: canonicalize(canonicalize(x)) == canonicalize(x)
 
 Example:
-    >>> from greenlang.schema.normalizer.keys import KeyCanonicalizer
+    >>> from greenlang.agents.foundation.schema.normalizer.keys import KeyCanonicalizer
     >>> canonicalizer = KeyCanonicalizer(schema_ir)
     >>> result, renames = canonicalizer.canonicalize({"energyConsumption": 100})
     >>> print(result)

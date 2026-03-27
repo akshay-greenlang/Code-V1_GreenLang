@@ -19,6 +19,7 @@ Version: 1.0.0
 
 import os
 import time
+from pathlib import Path
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -27,6 +28,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+import yaml
 import structlog
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
@@ -153,6 +155,91 @@ class ValidationResponse(BaseModel):
 
 start_time = time.time()
 pipeline_jobs: Dict[str, Dict[str, Any]] = {}
+BASE_DIR = Path(__file__).resolve().parents[1]
+DEFAULT_CONFIG_PATH = BASE_DIR / "config" / "csrd_config.yaml"
+API_OUTPUT_ROOT = BASE_DIR / "output" / "api_jobs"
+
+
+def _model_to_dict(model: Any) -> Dict[str, Any]:
+    if hasattr(model, "model_dump"):
+        return model.model_dump()
+    if hasattr(model, "dict"):
+        return model.dict()
+    return dict(model)
+
+
+def _load_csrd_config(config_path: Path = DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
+    if not config_path.exists():
+        raise FileNotFoundError(f"CSRD config not found: {config_path}")
+    with config_path.open("r", encoding="utf-8") as handle:
+        return yaml.safe_load(handle) or {}
+
+
+def _resolve_relative_path(config: Dict[str, Any], key: str) -> Path:
+    raw = config.get("paths", {}).get(key)
+    if not raw:
+        raise KeyError(f"Missing required config path: paths.{key}")
+    value = Path(raw)
+    return value if value.is_absolute() else (BASE_DIR / value)
+
+
+def _build_company_profile(request_payload: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "company_name": request_payload.get("company_name"),
+        "legal_name": request_payload.get("company_name"),
+        "lei_code": request_payload.get("lei_code"),
+        "reporting_year": request_payload.get("reporting_year"),
+    }
+
+
+def execute_pipeline(job_id: str, request_payload: Dict[str, Any]) -> None:
+    """Background pipeline execution worker."""
+    job = pipeline_jobs.get(job_id)
+    if not job:
+        return
+
+    input_file = Path(request_payload["input_file"])
+    output_dir = API_OUTPUT_ROOT / job_id
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        job["status"] = "running"
+        job["progress"] = 10
+        job["updated_at"] = DeterministicClock.utcnow().isoformat()
+
+        from csrd_pipeline import CSRDPipeline
+
+        config_path = DEFAULT_CONFIG_PATH
+        pipeline = CSRDPipeline(config_path=str(config_path))
+        job["progress"] = 30
+        job["updated_at"] = DeterministicClock.utcnow().isoformat()
+
+        result = pipeline.run(
+            esg_data_file=str(input_file),
+            company_profile=_build_company_profile(request_payload),
+            output_dir=str(output_dir),
+        )
+
+        job["status"] = "completed"
+        job["progress"] = 100
+        job["completed_at"] = DeterministicClock.utcnow().isoformat()
+        job["result"] = {
+            "pipeline_id": result.pipeline_id,
+            "status": result.status,
+            "compliance_status": result.compliance_status,
+            "data_quality_score": result.data_quality_score,
+            "warnings_count": result.warnings_count,
+            "errors_count": result.errors_count,
+            "output_dir": str(output_dir),
+        }
+    except Exception as exc:
+        logger.error("Pipeline execution failed", job_id=job_id, error=str(exc))
+        job["status"] = "failed"
+        job["progress"] = 100
+        job["failed_at"] = DeterministicClock.utcnow().isoformat()
+        job["error"] = str(exc)
+    finally:
+        job["updated_at"] = DeterministicClock.utcnow().isoformat()
 
 
 # ============================================================================
@@ -274,7 +361,8 @@ csrd_pipeline_jobs_total {len(pipeline_jobs)}
 @app.post("/api/v1/pipeline/run", tags=["Pipeline"], response_model=PipelineResponse)
 @limiter.limit("10/minute") if limiter else lambda x: x  # SECURITY: Rate limit pipeline execution
 async def run_pipeline(
-    request: PipelineRequest,
+    request: Request,
+    payload: PipelineRequest,
     background_tasks: BackgroundTasks,
 ):
     """
@@ -291,25 +379,32 @@ async def run_pipeline(
     The pipeline runs asynchronously in the background.
     Use the job_id to check status via /api/v1/pipeline/status/{job_id}
     """
-    import uuid
+    input_file = Path(payload.input_file)
+    if not input_file.exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Input file not found: {input_file}",
+        )
 
     # Generate unique job ID
     job_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
     # Create job record
+    request_payload = _model_to_dict(payload)
     job_record = {
         "job_id": job_id,
         "status": "queued",
-        "request": request.dict(),
+        "request": request_payload,
         "started_at": DeterministicClock.utcnow().isoformat(),
         "progress": 0,
+        "updated_at": DeterministicClock.utcnow().isoformat(),
     }
     pipeline_jobs[job_id] = job_record
 
     # Queue pipeline execution
-    # background_tasks.add_task(execute_pipeline, job_id, request)
+    background_tasks.add_task(execute_pipeline, job_id, request_payload)
 
-    logger.info("Pipeline job queued", job_id=job_id, company=request.company_name)
+    logger.info("Pipeline job queued", job_id=job_id, company=payload.company_name)
 
     return PipelineResponse(
         job_id=job_id,
@@ -372,39 +467,55 @@ async def list_pipeline_jobs(
 
 @app.post("/api/v1/validate", tags=["Validation"], response_model=ValidationResponse)
 @limiter.limit("60/minute") if limiter else lambda x: x  # SECURITY: Rate limit validation
-async def validate_data(request: ValidationRequest):
+async def validate_data(
+    request: Request,
+    payload: ValidationRequest,
+):
     """
     Validate input data against CSRD/ESRS schema.
 
     Runs IntakeAgent validation only without executing the full pipeline.
     Useful for pre-flight checks and data quality assessment.
     """
-    # NOTE: Validation implementation pending
-    # When implementing:
-    # 1. Import IntakeAgent for schema validation
-    # 2. Load input file from request.input_file path
-    # 3. Execute IntakeAgent.validate() method
-    # 4. Return actual validation results
-    # Example:
-    #   from agents.intake_agent import IntakeAgent
-    #   intake = IntakeAgent()
-    #   validation_result = await intake.validate_file(
-    #       file_path=request.input_file,
-    #       schema_version=request.schema_version
-    #   )
-    #   return ValidationResponse(
-    #       is_valid=validation_result.is_valid,
-    #       errors=validation_result.errors,
-    #       warnings=validation_result.warnings,
-    #       data_quality_score=validation_result.quality_score
-    #   )
+    input_file = Path(payload.input_file)
+    if not input_file.exists():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Input file not found: {input_file}",
+        )
 
-    # Mock implementation - replace with actual IntakeAgent validation
+    try:
+        from agents.intake_agent import IntakeAgent
+
+        config = _load_csrd_config()
+        intake = IntakeAgent(
+            esrs_data_points_path=_resolve_relative_path(config, "esrs_data_points"),
+            data_quality_rules_path=_resolve_relative_path(config, "data_quality_rules"),
+            esg_data_schema_path=_resolve_relative_path(config, "esg_data_schema"),
+            company_profile_schema_path=_resolve_relative_path(config, "company_profile_schema"),
+            quality_threshold=float(config.get("agents", {}).get("intake", {}).get("data_quality_threshold", 0.80)),
+        )
+        result = intake.process({"input_file": str(input_file)})
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Validation failed", error=str(exc), input_file=str(input_file))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Validation failed: {exc}",
+        ) from exc
+
+    issues = result.get("validation_issues", [])
+    errors = [issue.get("message", "Unknown validation error") for issue in issues if issue.get("severity") == "error"]
+    warnings = [issue.get("message", "Validation warning") for issue in issues if issue.get("severity") != "error"]
+    metadata = result.get("metadata", {})
+    is_valid = metadata.get("invalid_records", 0) == 0
+
     return ValidationResponse(
-        is_valid=True,
-        errors=[],
-        warnings=[],
-        data_quality_score=95.5,
+        is_valid=bool(is_valid),
+        errors=errors,
+        warnings=warnings,
+        data_quality_score=float(metadata.get("data_quality_score", 0.0)),
     )
 
 

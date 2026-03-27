@@ -368,7 +368,7 @@ def get_data_gateway(app: Any) -> DataGatewayService:
 def get_router(service: Optional[DataGatewayService] = None) -> Any:
     """Get the data gateway API router."""
     try:
-        # Would import from greenlang.data_gateway.api.router
+        # Would import from greenlang.agents.data.data_gateway.api.router
         return None  # Router not available in test context
     except ImportError:
         return None

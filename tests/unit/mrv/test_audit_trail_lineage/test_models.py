@@ -31,7 +31,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.audit_event_engine import (
+    from greenlang.agents.mrv.audit_trail_lineage.audit_event_engine import (
         AuditEventType,
         AuditEventRecord,
         _decimal_serializer,
@@ -60,7 +60,7 @@ except ImportError:
     ENGINE_MODELS_AVAILABLE = False
 
 try:
-    from greenlang.audit_trail_lineage import (
+    from greenlang.agents.mrv.audit_trail_lineage import (
         AGENT_ID,
         AGENT_COMPONENT,
         VERSION,
@@ -154,7 +154,7 @@ class TestModuleMetadata:
     def test_get_agent_info_package(self):
         """Test get_agent_info() contains correct package."""
         info = get_agent_info()
-        assert info["package"] == "greenlang.audit_trail_lineage"
+        assert info["package"] == "greenlang.agents.mrv.audit_trail_lineage"
 
     def test_get_agent_info_scope(self):
         """Test get_agent_info() scope covers all three scopes."""

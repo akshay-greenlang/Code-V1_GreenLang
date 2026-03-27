@@ -20,7 +20,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import pytest
 
 try:
-    from greenlang.scope2_location.transmission_loss import (
+    from greenlang.agents.mrv.scope2_location.transmission_loss import (
         TransmissionLossEngine,
         TDLossResult,
         TD_LOSS_FACTORS,

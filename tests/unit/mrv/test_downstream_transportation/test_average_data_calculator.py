@@ -30,7 +30,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.average_data_calculator import (
+    from greenlang.agents.mrv.downstream_transportation.average_data_calculator import (
         AverageDataCalculatorEngine,
     )
 except ImportError as exc:

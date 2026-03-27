@@ -5,7 +5,7 @@ Shared Fixtures for Validation Rule Engine Integration Tests (AGENT-DATA-019)
 
 Provides fixtures used across all integration test modules:
   - Prometheus metric pre-import to prevent duplicate ValueError
-  - Package stub for greenlang.validation_rule_engine
+  - Package stub for greenlang.agents.data.validation_rule_engine
   - Environment cleanup (autouse, removes GL_VRE_* env vars, resets config)
   - ProvenanceTracker fixture
   - Full service fixture with in-memory engines
@@ -34,7 +34,7 @@ import pytest
 # to Prometheus duplicate metric registration).
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.validation_rule_engine"
+_PKG_NAME = "greenlang.agents.data.validation_rule_engine"
 
 if _PKG_NAME not in sys.modules:
     import greenlang  # noqa: F401 ensure parent package exists
@@ -55,7 +55,7 @@ if _PKG_NAME not in sys.modules:
 # then fall back to no-op stubs.
 # ---------------------------------------------------------------------------
 
-from greenlang.validation_rule_engine import metrics as _vre_metrics  # noqa: F401, E402
+from greenlang.agents.data.validation_rule_engine import metrics as _vre_metrics  # noqa: F401, E402
 
 
 # ---------------------------------------------------------------------------
@@ -63,42 +63,42 @@ from greenlang.validation_rule_engine import metrics as _vre_metrics  # noqa: F4
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.validation_rule_engine.rule_registry import RuleRegistryEngine
+    from greenlang.agents.data.validation_rule_engine.rule_registry import RuleRegistryEngine
 except ImportError:
     RuleRegistryEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.validation_rule_engine.rule_composer import RuleComposerEngine
+    from greenlang.agents.data.validation_rule_engine.rule_composer import RuleComposerEngine
 except ImportError:
     RuleComposerEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.validation_rule_engine.rule_evaluator import RuleEvaluatorEngine
+    from greenlang.agents.data.validation_rule_engine.rule_evaluator import RuleEvaluatorEngine
 except ImportError:
     RuleEvaluatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.validation_rule_engine.conflict_detector import ConflictDetectorEngine
+    from greenlang.agents.data.validation_rule_engine.conflict_detector import ConflictDetectorEngine
 except ImportError:
     ConflictDetectorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.validation_rule_engine.rule_pack import RulePackEngine
+    from greenlang.agents.data.validation_rule_engine.rule_pack import RulePackEngine
 except ImportError:
     RulePackEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.validation_rule_engine.validation_reporter import ValidationReporterEngine
+    from greenlang.agents.data.validation_rule_engine.validation_reporter import ValidationReporterEngine
 except ImportError:
     ValidationReporterEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.validation_rule_engine.validation_pipeline import ValidationPipelineEngine
+    from greenlang.agents.data.validation_rule_engine.validation_pipeline import ValidationPipelineEngine
 except ImportError:
     ValidationPipelineEngine = None  # type: ignore[assignment, misc]
 
-from greenlang.validation_rule_engine.provenance import ProvenanceTracker  # noqa: E402
-from greenlang.validation_rule_engine.config import (  # noqa: E402
+from greenlang.agents.data.validation_rule_engine.provenance import ProvenanceTracker  # noqa: E402
+from greenlang.agents.data.validation_rule_engine.config import (  # noqa: E402
     ValidationRuleEngineConfig,
     reset_config,
 )

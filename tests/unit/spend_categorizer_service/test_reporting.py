@@ -27,7 +27,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.spend_categorizer.reporting import (
+from greenlang.agents.data.spend_categorizer.reporting import (
     CategorizationReport,
     ReportingEngine,
     _SUPPORTED_FORMATS,

@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.missing_value_imputer.models import (
+from greenlang.agents.data.missing_value_imputer.models import (
     # Enums
     MissingnessType,
     ImputationStrategy,

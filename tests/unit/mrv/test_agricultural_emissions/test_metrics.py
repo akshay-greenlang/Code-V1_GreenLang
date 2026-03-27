@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.metrics import (
+    from greenlang.agents.mrv.agricultural_emissions.metrics import (
         MetricsCollector,
     )
     METRICS_AVAILABLE = True

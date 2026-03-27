@@ -49,7 +49,7 @@ def reset_config_singleton():
     any GL_PROCESS_EMISSIONS_* env vars created during the test to
     prevent cross-test contamination.
     """
-    from greenlang.process_emissions.config import reset_config
+    from greenlang.agents.mrv.process_emissions.config import reset_config
     reset_config()
     # Snapshot env vars before the test
     pre_keys = {k for k in os.environ if k.startswith(_GL_PE_PREFIX)}
@@ -65,7 +65,7 @@ def reset_config_singleton():
 @pytest.fixture(autouse=True)
 def reset_provenance_singleton():
     """Reset the provenance tracker singleton before and after every test."""
-    from greenlang.process_emissions.provenance import reset_provenance_tracker
+    from greenlang.agents.mrv.process_emissions.provenance import reset_provenance_tracker
     reset_provenance_tracker()
     yield
     reset_provenance_tracker()
@@ -78,7 +78,7 @@ def reset_provenance_singleton():
 @pytest.fixture()
 def default_config():
     """Return a ProcessEmissionsConfig with all default values."""
-    from greenlang.process_emissions.config import ProcessEmissionsConfig
+    from greenlang.agents.mrv.process_emissions.config import ProcessEmissionsConfig
     return ProcessEmissionsConfig()
 
 
@@ -88,7 +88,7 @@ def custom_config():
 
     Useful for testing that overrides propagate correctly.
     """
-    from greenlang.process_emissions.config import ProcessEmissionsConfig
+    from greenlang.agents.mrv.process_emissions.config import ProcessEmissionsConfig
     return ProcessEmissionsConfig(
         enabled=False,
         database_url="postgresql://test:test@localhost:5432/pe_test",
@@ -131,7 +131,7 @@ def custom_config():
 @pytest.fixture()
 def tracker():
     """Return a fresh ProvenanceTracker instance (not the singleton)."""
-    from greenlang.process_emissions.provenance import ProvenanceTracker
+    from greenlang.agents.mrv.process_emissions.provenance import ProvenanceTracker
     return ProvenanceTracker(
         genesis_hash="TEST-PROCESS-EMISSIONS-GENESIS",
         max_entries=500,
@@ -286,49 +286,49 @@ def sample_materials():
 @pytest.fixture()
 def process_database_engine():
     """Return a ProcessDatabaseEngine instance with default config."""
-    from greenlang.process_emissions.process_database import ProcessDatabaseEngine
+    from greenlang.agents.mrv.process_emissions.process_database import ProcessDatabaseEngine
     return ProcessDatabaseEngine()
 
 
 @pytest.fixture()
 def emission_calculator_engine(process_database_engine):
     """Return an EmissionCalculatorEngine wired to the process database."""
-    from greenlang.process_emissions.emission_calculator import EmissionCalculatorEngine
+    from greenlang.agents.mrv.process_emissions.emission_calculator import EmissionCalculatorEngine
     return EmissionCalculatorEngine(process_database=process_database_engine)
 
 
 @pytest.fixture()
 def material_balance_engine():
     """Return a MaterialBalanceEngine with default precision."""
-    from greenlang.process_emissions.material_balance import MaterialBalanceEngine
+    from greenlang.agents.mrv.process_emissions.material_balance import MaterialBalanceEngine
     return MaterialBalanceEngine(precision=8)
 
 
 @pytest.fixture()
 def abatement_tracker_engine():
     """Return an AbatementTrackerEngine with default config."""
-    from greenlang.process_emissions.abatement_tracker import AbatementTrackerEngine
+    from greenlang.agents.mrv.process_emissions.abatement_tracker import AbatementTrackerEngine
     return AbatementTrackerEngine()
 
 
 @pytest.fixture()
 def uncertainty_engine():
     """Return an UncertaintyQuantifierEngine instance."""
-    from greenlang.process_emissions.uncertainty_quantifier import UncertaintyQuantifierEngine
+    from greenlang.agents.mrv.process_emissions.uncertainty_quantifier import UncertaintyQuantifierEngine
     return UncertaintyQuantifierEngine()
 
 
 @pytest.fixture()
 def compliance_engine():
     """Return a ComplianceCheckerEngine instance."""
-    from greenlang.process_emissions.compliance_checker import ComplianceCheckerEngine
+    from greenlang.agents.mrv.process_emissions.compliance_checker import ComplianceCheckerEngine
     return ComplianceCheckerEngine()
 
 
 @pytest.fixture()
 def pipeline_engine():
     """Return a ProcessEmissionsPipelineEngine with all engines wired."""
-    from greenlang.process_emissions.process_emissions_pipeline import (
+    from greenlang.agents.mrv.process_emissions.process_emissions_pipeline import (
         ProcessEmissionsPipelineEngine,
     )
     return ProcessEmissionsPipelineEngine()

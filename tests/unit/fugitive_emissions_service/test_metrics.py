@@ -25,7 +25,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from greenlang.fugitive_emissions.metrics import (
+from greenlang.agents.mrv.fugitive_emissions.metrics import (
     PROMETHEUS_AVAILABLE,
     # Metric objects
     fe_calculations_total,
@@ -197,7 +197,7 @@ class TestMetricsDisabledMode:
     def _run_with_prom_disabled(self, func, *args):
         """Helper to run a function with PROMETHEUS_AVAILABLE mocked to False."""
         with patch(
-            "greenlang.fugitive_emissions.metrics.PROMETHEUS_AVAILABLE", False
+            "greenlang.agents.mrv.fugitive_emissions.metrics.PROMETHEUS_AVAILABLE", False
         ):
             # Should return None and not raise
             result = func(*args)

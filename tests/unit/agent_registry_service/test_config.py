@@ -30,7 +30,7 @@ _ENV_PREFIX = "GL_AGENT_REGISTRY_"
 
 @dataclass
 class AgentRegistryConfig:
-    """Mirrors greenlang.agent_registry.config.AgentRegistryConfig."""
+    """Mirrors greenlang.agents.foundation.agent_registry.config.AgentRegistryConfig."""
 
     # Service
     service_name: str = "agent-registry"

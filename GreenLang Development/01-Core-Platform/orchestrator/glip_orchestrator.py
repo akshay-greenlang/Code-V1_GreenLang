@@ -47,7 +47,7 @@ from greenlang.agents.foundation.agent_registry import (
     VersionedAgentRegistry,
 )
 # Core executor interfaces (always available)
-from greenlang.orchestrator.executors.base import (
+from greenlang.agents.foundation.orchestrator.executors.base import (
     ExecutorBackend,
     RunContext,
     StepResult,
@@ -56,23 +56,23 @@ from greenlang.orchestrator.executors.base import (
 
 # Optional: K8s executor (requires kubernetes_asyncio)
 try:
-    from greenlang.orchestrator.executors.k8s_executor import K8sExecutor, K8sExecutorConfig
+    from greenlang.agents.foundation.orchestrator.executors.k8s_executor import K8sExecutor, K8sExecutorConfig
 except ImportError:
     K8sExecutor = None
     K8sExecutorConfig = None
 
 # Core artifact interfaces (always available)
-from greenlang.orchestrator.artifacts.base import ArtifactStore
+from greenlang.agents.foundation.orchestrator.artifacts.base import ArtifactStore
 
 # Optional: S3 store (requires aioboto3)
 try:
-    from greenlang.orchestrator.artifacts.s3_store import S3ArtifactStore, S3StoreConfig
+    from greenlang.agents.foundation.orchestrator.artifacts.s3_store import S3ArtifactStore, S3StoreConfig
 except ImportError:
     S3ArtifactStore = None
     S3StoreConfig = None
 
 # Policy engine (always available - no external deps)
-from greenlang.orchestrator.governance.policy_engine import (
+from greenlang.agents.foundation.orchestrator.governance.policy_engine import (
     PolicyEngine,
     PolicyEngineConfig,
     PolicyDecision,
@@ -81,7 +81,7 @@ from greenlang.orchestrator.governance.policy_engine import (
 
 # Audit event store (always available - no external deps)
 try:
-    from greenlang.orchestrator.audit.event_store import (
+    from greenlang.agents.foundation.orchestrator.audit.event_store import (
         EventStore as AuditEventStore,
         EventType,
     )
@@ -93,7 +93,7 @@ except ImportError:
 
 # Legacy HTTP adapter (always available - uses aiohttp)
 try:
-    from greenlang.orchestrator.adapters.http_legacy_adapter import (
+    from greenlang.agents.foundation.orchestrator.adapters.http_legacy_adapter import (
         HttpLegacyAdapter,
         AdapterConfig,
     )

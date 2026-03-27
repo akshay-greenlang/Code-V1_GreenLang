@@ -27,7 +27,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError as PydanticValidationError
 
-from greenlang.business_travel.models import (
+from greenlang.agents.mrv.business_travel.models import (
     # Enumerations
     CalculationMethod,
     TransportMode,

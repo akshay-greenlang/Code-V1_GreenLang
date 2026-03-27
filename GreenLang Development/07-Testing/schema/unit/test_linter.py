@@ -20,7 +20,7 @@ from typing import Dict, Any, Set
 
 import pytest
 
-from greenlang.schema.validator.linter import (
+from greenlang.agents.foundation.schema.validator.linter import (
     SchemaLinter,
     lint_payload,
     # Casing detection functions
@@ -41,10 +41,10 @@ from greenlang.schema.validator.linter import (
     CASING_SCREAMING_SNAKE,
     CASING_UNKNOWN,
 )
-from greenlang.schema.compiler.ir import SchemaIR, PropertyIR, UnitSpecIR
-from greenlang.schema.models.config import ValidationOptions
-from greenlang.schema.models.finding import Severity
-from greenlang.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, PropertyIR, UnitSpecIR
+from greenlang.agents.foundation.schema.models.config import ValidationOptions
+from greenlang.agents.foundation.schema.models.finding import Severity
+from greenlang.agents.foundation.schema.errors import ErrorCode
 
 
 # =============================================================================

@@ -29,7 +29,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.setup import (
+    from greenlang.agents.mrv.audit_trail_lineage.setup import (
         AuditTrailLineageService,
         get_service,
         get_router,
@@ -41,7 +41,7 @@ except ImportError:
 # Fallback: try importing from __init__ if setup module doesn't exist yet
 if not SETUP_AVAILABLE:
     try:
-        from greenlang.audit_trail_lineage import (
+        from greenlang.agents.mrv.audit_trail_lineage import (
             AGENT_ID,
             AGENT_COMPONENT,
             VERSION,
@@ -259,28 +259,28 @@ class TestInitModuleIntegration:
 
     def test_agent_id_accessible(self):
         """Test AGENT_ID is accessible from __init__."""
-        from greenlang.audit_trail_lineage import AGENT_ID
+        from greenlang.agents.mrv.audit_trail_lineage import AGENT_ID
         assert AGENT_ID == "GL-MRV-X-042"
 
     def test_version_accessible(self):
         """Test VERSION is accessible from __init__."""
-        from greenlang.audit_trail_lineage import VERSION
+        from greenlang.agents.mrv.audit_trail_lineage import VERSION
         assert VERSION == "1.0.0"
 
     def test_get_version_callable(self):
         """Test get_version is callable from __init__."""
-        from greenlang.audit_trail_lineage import get_version
+        from greenlang.agents.mrv.audit_trail_lineage import get_version
         assert get_version() == "1.0.0"
 
     def test_get_agent_info_callable(self):
         """Test get_agent_info is callable from __init__."""
-        from greenlang.audit_trail_lineage import get_agent_info
+        from greenlang.agents.mrv.audit_trail_lineage import get_agent_info
         info = get_agent_info()
         assert info["agent_id"] == "GL-MRV-X-042"
 
     def test_all_exports_defined(self):
         """Test __all__ lists expected exports."""
-        from greenlang.audit_trail_lineage import __all__
+        from greenlang.agents.mrv.audit_trail_lineage import __all__
         assert "AGENT_ID" in __all__
         assert "AGENT_COMPONENT" in __all__
         assert "VERSION" in __all__

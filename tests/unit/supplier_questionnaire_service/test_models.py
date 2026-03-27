@@ -19,7 +19,7 @@ from datetime import date, datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from greenlang.supplier_questionnaire.models import (
+from greenlang.agents.data.supplier_questionnaire.models import (
     # Enums
     Framework,
     QuestionType,
@@ -976,11 +976,11 @@ class TestModelSerialization:
 
 class TestModelsExports:
     def test_all_exports_defined(self):
-        import greenlang.supplier_questionnaire.models as mod
+        import greenlang.agents.data.supplier_questionnaire.models as mod
         for name in mod.__all__:
             assert hasattr(mod, name), f"{name} in __all__ but not defined"
 
     def test_all_count(self):
-        import greenlang.supplier_questionnaire.models as mod
+        import greenlang.agents.data.supplier_questionnaire.models as mod
         # 12 enums + 11 core models + 3 request models = 26
         assert len(mod.__all__) == 26

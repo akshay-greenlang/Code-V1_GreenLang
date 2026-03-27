@@ -19,7 +19,7 @@ import json
 
 import pytest
 
-from greenlang.spend_categorizer.provenance import ProvenanceTracker
+from greenlang.agents.data.spend_categorizer.provenance import ProvenanceTracker
 
 
 # ============================================================================

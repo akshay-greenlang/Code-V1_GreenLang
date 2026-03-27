@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope3_category_mapper.setup import (
+    from greenlang.agents.mrv.scope3_category_mapper.setup import (
         Scope3CategoryMapperService,
         get_service,
         get_router,

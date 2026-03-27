@@ -17,7 +17,7 @@ Validation Checks:
     8. Pattern regexes are safe (no ReDoS)
 
 Example:
-    >>> from greenlang.schema.compiler.schema_validator import validate_schema
+    >>> from greenlang.agents.foundation.schema.compiler.schema_validator import validate_schema
     >>> result = validate_schema({
     ...     "$schema": "https://json-schema.org/draft/2020-12/schema",
     ...     "type": "object",
@@ -66,16 +66,16 @@ from typing import (
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.constants import (
     MAX_REGEX_LENGTH,
     MAX_REGEX_COMPLEXITY_SCORE,
     SUPPORTED_DIALECTS,
 )
-from greenlang.schema.errors import ErrorCode, Severity
+from greenlang.agents.foundation.schema.errors import ErrorCode, Severity
 
 if TYPE_CHECKING:
-    from greenlang.schema.units.catalog import UnitCatalog
-    from greenlang.schema.models.schema_ref import SchemaRef
+    from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+    from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 
 logger = logging.getLogger(__name__)
 
@@ -263,7 +263,7 @@ class RegexAnalyzer:
 
     This is a minimal implementation for schema validation that detects
     common ReDoS patterns. For full functionality, use the dedicated
-    RegexAnalyzer from greenlang.schema.compiler.regex_analyzer.
+    RegexAnalyzer from greenlang.agents.foundation.schema.compiler.regex_analyzer.
 
     Detected Patterns:
         - Nested quantifiers: (a+)+, (a*)+, (a+)*

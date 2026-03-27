@@ -28,7 +28,7 @@ import pytest
 from datetime import datetime
 from copy import deepcopy
 
-from greenlang.schema.compiler.ir import (
+from greenlang.agents.foundation.schema.compiler.ir import (
     COMPILER_VERSION,
     CompiledPattern,
     NumericConstraintIR,
@@ -42,7 +42,7 @@ from greenlang.schema.compiler.ir import (
     CompilationResult,
     CompilationError,
 )
-from greenlang.schema.compiler.compiler import (
+from greenlang.agents.foundation.schema.compiler.compiler import (
     SchemaCompiler,
     GL_UNIT_KEY,
     GL_DIMENSION_KEY,

@@ -31,6 +31,24 @@ def _coerce_bool(value: object) -> bool:
     return bool(value)
 
 
+def _release_strict_mode_enabled() -> bool:
+    """Return True when release/CI profile should forbid local fallback imports."""
+    return _coerce_bool(os.environ.get("GL_RELEASE_STRICT", "0")) or _coerce_bool(
+        os.environ.get("CI", "0")
+    )
+
+
+def _allow_monorepo_cbam_fallback() -> bool:
+    """
+    Development-only fallback gate for loading cbam-pack-mvp from source.
+
+    Fallback is intentionally disabled for CI/release profile runs.
+    """
+    if _release_strict_mode_enabled():
+        return False
+    return _coerce_bool(os.environ.get("GL_ALLOW_MONOREPO_CBAM_FALLBACK", "0"))
+
+
 def _patch_typer_click_compat() -> None:
     """
     Compatibility patch for Typer/Click versions where metavar signatures differ.
@@ -346,27 +364,10 @@ def run(
             raise typer.Exit(2)
 
         try:
-            # Prefer monorepo source to avoid stale site-package imports.
-            prefer_monorepo = os.environ.get("GL_PREFER_MONOREPO_CBAM", "1").lower() in {
-                "1",
-                "true",
-                "yes",
-                "on",
-            }
-            cbam_src = Path(__file__).resolve().parents[2] / "cbam-pack-mvp" / "src"
-            if prefer_monorepo and cbam_src.exists():
-                if str(cbam_src) not in sys.path:
-                    sys.path.insert(0, str(cbam_src))
             from cbam_pack.pipeline import CBAMPipeline
         except Exception as first_exc:
-            # Fallback for monorepo development can be explicitly disabled in
-            # distribution contexts to avoid hidden sys.path behavior.
-            allow_fallback = os.environ.get("GL_ALLOW_MONOREPO_CBAM_FALLBACK", "1").lower() in {
-                "1",
-                "true",
-                "yes",
-                "on",
-            }
+            # Optional monorepo fallback for local development only.
+            allow_fallback = _allow_monorepo_cbam_fallback()
             cbam_src = Path(__file__).resolve().parents[2] / "cbam-pack-mvp" / "src"
             if allow_fallback and cbam_src.exists():
                 if str(cbam_src) not in sys.path:
@@ -392,8 +393,12 @@ def run(
                     "pip install -e \"./cbam-pack-mvp[web,dev]\""
                 )
                 console.print(
-                    "[yellow]Or enable monorepo fallback:[/yellow] "
+                    "[yellow]Optional local fallback:[/yellow] "
                     "set GL_ALLOW_MONOREPO_CBAM_FALLBACK=1"
+                )
+                console.print(
+                    "[yellow]Note:[/yellow] Monorepo fallback is disabled when "
+                    "GL_RELEASE_STRICT=1 or CI=true."
                 )
                 raise typer.Exit(1)
 

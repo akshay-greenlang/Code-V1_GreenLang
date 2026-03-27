@@ -36,7 +36,7 @@ except ImportError:
             return datetime.now(tz or timezone.utc).replace(microsecond=0)
 
 try:
-    from greenlang.orchestrator.governance.policy_engine import ApprovalRequirement, ApprovalType
+    from greenlang.agents.foundation.orchestrator.governance.policy_engine import ApprovalRequirement, ApprovalType
 except ImportError:
     class ApprovalType(str, Enum):
         MANAGER = "manager"
@@ -54,7 +54,7 @@ except ImportError:
         auto_deny_on_timeout: bool = True
 
 try:
-    from greenlang.orchestrator.audit.event_store import EventFactory, EventType
+    from greenlang.agents.foundation.orchestrator.audit.event_store import EventFactory, EventType
 except ImportError:
     EventFactory = None
     EventType = None

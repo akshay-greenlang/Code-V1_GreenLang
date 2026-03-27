@@ -29,7 +29,7 @@ Performance:
     - Batch validation shares compiled IR for efficiency
 
 Example:
-    >>> from greenlang.schema.validator.core import SchemaValidator, validate
+    >>> from greenlang.agents.foundation.schema.validator.core import SchemaValidator, validate
     >>> validator = SchemaValidator()
     >>> result = validator.validate(payload, "gl://schemas/activity@1.0.0")
     >>> if result.valid:
@@ -50,22 +50,22 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from greenlang.schema.compiler.compiler import SchemaCompiler
-from greenlang.schema.compiler.ir import SchemaIR, CompilationResult
-from greenlang.schema.compiler.parser import parse_payload, ParseResult, ParseError
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.compiler.compiler import SchemaCompiler
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, CompilationResult
+from greenlang.agents.foundation.schema.compiler.parser import parse_payload, ParseResult, ParseError
+from greenlang.agents.foundation.schema.constants import (
     MAX_FINDINGS,
     MAX_BATCH_ITEMS,
     MAX_BATCH_TIME_SECONDS,
     BATCH_CHUNK_SIZE,
 )
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     ValidationProfile,
     UnknownFieldPolicy,
 )
-from greenlang.schema.models.finding import Finding, Severity, FindingHint
-from greenlang.schema.models.report import (
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity, FindingHint
+from greenlang.agents.foundation.schema.models.report import (
     ValidationReport,
     ValidationSummary,
     TimingInfo,
@@ -73,15 +73,15 @@ from greenlang.schema.models.report import (
     BatchSummary,
     ItemResult,
 )
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.registry.resolver import SchemaRegistry, SchemaSource
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry, SchemaSource
 
 # Import validators (these may be partially implemented)
-from greenlang.schema.validator.structural import StructuralValidator
-from greenlang.schema.validator.constraints import ConstraintValidator
-from greenlang.schema.validator.units import UnitValidator, UnitCatalog
-from greenlang.schema.validator.rules import RuleValidator
-from greenlang.schema.validator.linter import SchemaLinter
+from greenlang.agents.foundation.schema.validator.structural import StructuralValidator
+from greenlang.agents.foundation.schema.validator.constraints import ConstraintValidator
+from greenlang.agents.foundation.schema.validator.units import UnitValidator, UnitCatalog
+from greenlang.agents.foundation.schema.validator.rules import RuleValidator
+from greenlang.agents.foundation.schema.validator.linter import SchemaLinter
 
 
 logger = logging.getLogger(__name__)
@@ -674,7 +674,7 @@ class SchemaValidator:
         """
         try:
             # Create structural validator with appropriate options
-            from greenlang.schema.validator.structural import (
+            from greenlang.agents.foundation.schema.validator.structural import (
                 StructuralValidator,
                 ValidationOptions as StructuralValidationOptions,
             )
@@ -727,7 +727,7 @@ class SchemaValidator:
             List of constraint findings
         """
         try:
-            from greenlang.schema.validator.constraints import (
+            from greenlang.agents.foundation.schema.validator.constraints import (
                 ConstraintValidator,
                 ValidationOptions as ConstraintValidationOptions,
             )
@@ -866,7 +866,7 @@ class SchemaValidator:
             List of unit findings
         """
         try:
-            from greenlang.schema.validator.units import (
+            from greenlang.agents.foundation.schema.validator.units import (
                 UnitValidator,
                 ValidationOptions as UnitValidationOptions,
             )
@@ -969,7 +969,7 @@ class SchemaValidator:
             return []
 
         try:
-            from greenlang.schema.validator.rules import (
+            from greenlang.agents.foundation.schema.validator.rules import (
                 RuleValidator,
                 ValidationOptions as RuleValidationOptions,
             )

@@ -31,7 +31,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from unittest.mock import Mock, patch, MagicMock
 
-from greenlang.capital_goods.engines.average_data_calculator import (
+from greenlang.agents.mrv.capital_goods.engines.average_data_calculator import (
     AverageDataCalculatorEngine,
     AverageDataRecord,
     AverageDataResult,
@@ -40,7 +40,7 @@ from greenlang.capital_goods.engines.average_data_calculator import (
     EquipmentRecord,
     TransportRecord,
 )
-from greenlang.capital_goods.models import (
+from greenlang.agents.mrv.capital_goods.models import (
     EmissionFactorSource,
     MaterialType,
     DataQualityDimension,

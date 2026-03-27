@@ -245,7 +245,7 @@ def get_eudr_traceability(app: Any) -> EUDRTraceabilityService:
 def get_router(service: Optional[EUDRTraceabilityService] = None) -> Any:
     """Get the EUDR traceability API router."""
     try:
-        # Would import from greenlang.eudr_traceability.api.router
+        # Would import from greenlang.agents.data.eudr_traceability.api.router
         return None  # Router not available in test context
     except ImportError:
         return None

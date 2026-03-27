@@ -17,7 +17,7 @@ from typing import List
 
 import pytest
 
-from greenlang.stationary_combustion.provenance import (
+from greenlang.agents.mrv.stationary_combustion.provenance import (
     VALID_ACTIONS,
     VALID_ENTITY_TYPES,
     ProvenanceEntry,

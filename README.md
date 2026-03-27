@@ -43,13 +43,14 @@ In 6 months of intensive development, we've built a production-grade platform wi
 
 ### MVP Quick Start (CBAM Flagship Loop)
 
-Use one of these supported paths:
+Canonical operator path: `gl run cbam` from the repository root.
+Compatibility path: `gl-cbam` for standalone CBAM package usage.
 
 ```bash
-# Option A: Monorepo canonical CLI path
+# Canonical path (recommended)
 python -m greenlang.cli.main run cbam "cbam-pack-mvp/examples/sample_config.yaml" "cbam-pack-mvp/examples/sample_imports.csv" out
 
-# Option B: Standalone CBAM CLI
+# Compatibility path (standalone CBAM package)
 cd cbam-pack-mvp
 pip install -e ".[web,dev]"
 gl-cbam run cbam --config examples/sample_config.yaml --imports examples/sample_imports.csv --out ./out

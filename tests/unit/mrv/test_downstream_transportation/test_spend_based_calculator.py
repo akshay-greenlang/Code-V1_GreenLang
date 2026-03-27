@@ -32,7 +32,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.spend_based_calculator import (
+    from greenlang.agents.mrv.downstream_transportation.spend_based_calculator import (
         SpendBasedCalculatorEngine,
     )
 except ImportError as exc:

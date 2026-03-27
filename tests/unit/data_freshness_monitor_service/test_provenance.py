@@ -6,7 +6,7 @@ Tests the SHA-256 chain-hashed provenance tracker including ProvenanceEntry
 dataclass, ProvenanceTracker methods, compute_hash static method,
 singleton pattern, reset/clear, chain integrity, and genesis hash.
 
-Target: 80+ tests, 85%+ coverage of greenlang.data_freshness_monitor.provenance
+Target: 80+ tests, 85%+ coverage of greenlang.agents.data.data_freshness_monitor.provenance
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -25,8 +25,8 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.data_freshness_monitor import provenance as provenance_mod
-from greenlang.data_freshness_monitor.provenance import (
+from greenlang.agents.data.data_freshness_monitor import provenance as provenance_mod
+from greenlang.agents.data.data_freshness_monitor.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     _normalize_value,

@@ -245,7 +245,7 @@ class GISBridge:
         """Detect whether the GIS/Mapping Connector is available."""
         try:
             import importlib
-            importlib.import_module("greenlang.gis_connector")
+            importlib.import_module("greenlang.agents.data.gis_connector")
             self._connector_available = True
         except ImportError:
             self._connector_available = False

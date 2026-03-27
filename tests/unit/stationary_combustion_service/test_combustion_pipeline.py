@@ -30,13 +30,13 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from greenlang.stationary_combustion.config import StationaryCombustionConfig
-from greenlang.stationary_combustion.combustion_pipeline import (
+from greenlang.agents.mrv.stationary_combustion.config import StationaryCombustionConfig
+from greenlang.agents.mrv.stationary_combustion.combustion_pipeline import (
     PIPELINE_STAGES,
     StationaryCombustionPipelineEngine,
     _compute_hash,
 )
-from greenlang.stationary_combustion.models import (
+from greenlang.agents.mrv.stationary_combustion.models import (
     CalculationResult,
     CalculationStatus,
     CalculationTier,

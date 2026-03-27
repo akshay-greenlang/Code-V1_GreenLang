@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 import pytest
 
-from greenlang.franchises.franchise_specific_calculator import (
+from greenlang.agents.mrv.franchises.franchise_specific_calculator import (
     FranchiseSpecificCalculatorEngine,
     FranchiseUnitInput,
     FranchiseCalculationResult,

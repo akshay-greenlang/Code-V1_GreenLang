@@ -27,8 +27,8 @@ from typing import List, Union
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import TimeSeriesGapFillerConfig
-from greenlang.time_series_gap_filler.frequency_analyzer import (
+from greenlang.agents.data.time_series_gap_filler.config import TimeSeriesGapFillerConfig
+from greenlang.agents.data.time_series_gap_filler.frequency_analyzer import (
     FREQUENCY_INTERVALS,
     FREQUENCY_TOLERANCES,
     FrequencyAnalyzerEngine,

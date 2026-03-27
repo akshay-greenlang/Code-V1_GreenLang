@@ -37,7 +37,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.config import (
+    from greenlang.agents.mrv.audit_trail_lineage.config import (
         GeneralConfig,
         DatabaseConfig,
         RedisConfig,

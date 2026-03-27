@@ -23,8 +23,8 @@ Design Principles:
     - Policy controls which coercions are allowed
 
 Example:
-    >>> from greenlang.schema.normalizer.coercions import CoercionEngine
-    >>> from greenlang.schema.models.config import CoercionPolicy
+    >>> from greenlang.agents.foundation.schema.normalizer.coercions import CoercionEngine
+    >>> from greenlang.agents.foundation.schema.models.config import CoercionPolicy
     >>> engine = CoercionEngine(policy=CoercionPolicy.SAFE)
     >>> result = engine.coerce("42", "integer", "/value")
     >>> if result.success:

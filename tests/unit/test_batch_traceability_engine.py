@@ -37,12 +37,12 @@ from typing import List
 
 import pytest
 
-from greenlang.eudr_traceability.models import (
+from greenlang.agents.data.eudr_traceability.models import (
     BatchRecord,
     CustodyModel,
     EUDRCommodity,
 )
-from greenlang.eudr_traceability.supply_chain_mapper.batch_traceability import (
+from greenlang.agents.data.eudr_traceability.supply_chain_mapper.batch_traceability import (
     AlertSeverity,
     BatchOperation,
     BatchOperationType,
@@ -68,7 +68,7 @@ def engine() -> BatchTraceabilityEngine:
 @pytest.fixture
 def engine_with_provenance():
     """Create engine with a mock provenance tracker."""
-    from greenlang.eudr_traceability.provenance import ProvenanceTracker
+    from greenlang.agents.data.eudr_traceability.provenance import ProvenanceTracker
 
     tracker = ProvenanceTracker()
     return BatchTraceabilityEngine(provenance=tracker), tracker
@@ -1391,14 +1391,14 @@ class TestImportFromChainOfCustody:
 
     def test_import_batches(self, engine: BatchTraceabilityEngine):
         """Import batches from a ChainOfCustodyEngine instance."""
-        from greenlang.eudr_traceability.chain_of_custody import (
+        from greenlang.agents.data.eudr_traceability.chain_of_custody import (
             ChainOfCustodyEngine,
         )
 
         coc_engine = ChainOfCustodyEngine()
 
         # Create some batches in the CoC engine
-        from greenlang.eudr_traceability.models import RecordTransferRequest
+        from greenlang.agents.data.eudr_traceability.models import RecordTransferRequest
 
         request = RecordTransferRequest(
             source_operator_id="OP-001",

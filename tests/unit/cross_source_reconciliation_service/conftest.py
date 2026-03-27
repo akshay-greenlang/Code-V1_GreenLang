@@ -37,7 +37,7 @@ def _clean_csr_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Reset the singleton config so each test starts fresh
-    from greenlang.cross_source_reconciliation.config import reset_config
+    from greenlang.agents.data.cross_source_reconciliation.config import reset_config
     reset_config()
 
     yield
@@ -58,7 +58,7 @@ def fresh_config():
     The autouse fixture already calls reset_config() before each test,
     so this simply returns a new default instance.
     """
-    from greenlang.cross_source_reconciliation.config import (
+    from greenlang.agents.data.cross_source_reconciliation.config import (
         CrossSourceReconciliationConfig,
         reset_config,
     )

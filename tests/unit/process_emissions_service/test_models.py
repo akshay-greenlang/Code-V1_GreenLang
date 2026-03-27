@@ -12,7 +12,7 @@ from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from pydantic import ValidationError
 
-from greenlang.process_emissions.models import (
+from greenlang.agents.mrv.process_emissions.models import (
     # Constants
     VERSION,
     MAX_CALCULATIONS_PER_BATCH,

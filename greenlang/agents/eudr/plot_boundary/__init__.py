@@ -78,7 +78,7 @@ from greenlang.agents.eudr.plot_boundary.models import (
     WGS84_SEMI_MAJOR_AXIS,
     WGS84_FLATTENING,
     MIN_POLYGON_VERTICES,
-    # Re-exported from greenlang.eudr_traceability.models
+    # Re-exported from greenlang.agents.data.eudr_traceability.models
     EUDRCommodity,
     # Enumerations
     GeometryType,

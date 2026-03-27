@@ -22,16 +22,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import (
+from greenlang.agents.data.time_series_gap_filler.config import (
     TimeSeriesGapFillerConfig,
     reset_config,
 )
-from greenlang.time_series_gap_filler.gap_filler_pipeline import (
+from greenlang.agents.data.time_series_gap_filler.gap_filler_pipeline import (
     GapFillerPipelineEngine,
     GapSegment,
     ValidationResult,
 )
-from greenlang.time_series_gap_filler.provenance import get_provenance_tracker
+from greenlang.agents.data.time_series_gap_filler.provenance import get_provenance_tracker
 
 
 # ---------------------------------------------------------------------------
@@ -572,16 +572,16 @@ class TestProvenanceChain:
         frozen_time_val = 1735689600.0  # fixed time.time() value
 
         with patch(
-            "greenlang.time_series_gap_filler.provenance._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.provenance._utcnow",
             return_value=frozen_time,
         ), patch(
-            "greenlang.time_series_gap_filler.gap_filler_pipeline._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.gap_filler_pipeline._utcnow",
             return_value=frozen_time,
         ), patch(
-            "greenlang.time_series_gap_filler.gap_filler_pipeline.time.time",
+            "greenlang.agents.data.time_series_gap_filler.gap_filler_pipeline.time.time",
             return_value=frozen_time_val,
         ), patch(
-            "greenlang.time_series_gap_filler.gap_filler_pipeline.uuid4",
+            "greenlang.agents.data.time_series_gap_filler.gap_filler_pipeline.uuid4",
             return_value=MagicMock(
                 __str__=MagicMock(return_value="00000000-0000-0000-0000-000000000001")
             ),
@@ -594,16 +594,16 @@ class TestProvenanceChain:
             )
 
         with patch(
-            "greenlang.time_series_gap_filler.provenance._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.provenance._utcnow",
             return_value=frozen_time,
         ), patch(
-            "greenlang.time_series_gap_filler.gap_filler_pipeline._utcnow",
+            "greenlang.agents.data.time_series_gap_filler.gap_filler_pipeline._utcnow",
             return_value=frozen_time,
         ), patch(
-            "greenlang.time_series_gap_filler.gap_filler_pipeline.time.time",
+            "greenlang.agents.data.time_series_gap_filler.gap_filler_pipeline.time.time",
             return_value=frozen_time_val,
         ), patch(
-            "greenlang.time_series_gap_filler.gap_filler_pipeline.uuid4",
+            "greenlang.agents.data.time_series_gap_filler.gap_filler_pipeline.uuid4",
             return_value=MagicMock(
                 __str__=MagicMock(return_value="00000000-0000-0000-0000-000000000001")
             ),

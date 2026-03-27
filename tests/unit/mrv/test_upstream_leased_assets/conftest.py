@@ -560,7 +560,7 @@ def sample_revenue_allocation() -> Dict[str, Any]:
 def default_config():
     """Default UpstreamLeasedConfig with all 15 sections."""
     try:
-        from greenlang.upstream_leased_assets.config import UpstreamLeasedConfig
+        from greenlang.agents.mrv.upstream_leased_assets.config import UpstreamLeasedConfig
         return UpstreamLeasedConfig()
     except ImportError:
         pytest.skip("UpstreamLeasedConfig not available")
@@ -570,7 +570,7 @@ def default_config():
 def default_general_config():
     """Default GeneralConfig."""
     try:
-        from greenlang.upstream_leased_assets.config import GeneralConfig
+        from greenlang.agents.mrv.upstream_leased_assets.config import GeneralConfig
         return GeneralConfig()
     except ImportError:
         pytest.skip("GeneralConfig not available")
@@ -580,7 +580,7 @@ def default_general_config():
 def default_database_config():
     """Default DatabaseConfig."""
     try:
-        from greenlang.upstream_leased_assets.config import DatabaseConfig
+        from greenlang.agents.mrv.upstream_leased_assets.config import DatabaseConfig
         return DatabaseConfig()
     except ImportError:
         pytest.skip("DatabaseConfig not available")
@@ -590,7 +590,7 @@ def default_database_config():
 def default_building_config():
     """Default BuildingConfig."""
     try:
-        from greenlang.upstream_leased_assets.config import BuildingConfig
+        from greenlang.agents.mrv.upstream_leased_assets.config import BuildingConfig
         return BuildingConfig()
     except ImportError:
         pytest.skip("BuildingConfig not available")
@@ -600,7 +600,7 @@ def default_building_config():
 def default_vehicle_config():
     """Default VehicleConfig."""
     try:
-        from greenlang.upstream_leased_assets.config import VehicleConfig
+        from greenlang.agents.mrv.upstream_leased_assets.config import VehicleConfig
         return VehicleConfig()
     except ImportError:
         pytest.skip("VehicleConfig not available")
@@ -610,7 +610,7 @@ def default_vehicle_config():
 def default_equipment_config():
     """Default EquipmentConfig."""
     try:
-        from greenlang.upstream_leased_assets.config import EquipmentConfig
+        from greenlang.agents.mrv.upstream_leased_assets.config import EquipmentConfig
         return EquipmentConfig()
     except ImportError:
         pytest.skip("EquipmentConfig not available")
@@ -620,7 +620,7 @@ def default_equipment_config():
 def default_it_config():
     """Default ITAssetsConfig."""
     try:
-        from greenlang.upstream_leased_assets.config import ITAssetsConfig
+        from greenlang.agents.mrv.upstream_leased_assets.config import ITAssetsConfig
         return ITAssetsConfig()
     except ImportError:
         pytest.skip("ITAssetsConfig not available")

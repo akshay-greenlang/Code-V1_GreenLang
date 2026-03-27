@@ -13,10 +13,10 @@ Version: 1.0.0
 GL-FOUND-X-002: Schema Compiler & Validator - Task 5.1
 """
 
-from greenlang.schema.cli.commands.validate import validate
-from greenlang.schema.cli.commands.compile import compile_schema
-from greenlang.schema.cli.commands.lint import lint
-from greenlang.schema.cli.commands.migrate import (
+from greenlang.agents.foundation.schema.cli.commands.validate import validate
+from greenlang.agents.foundation.schema.cli.commands.compile import compile_schema
+from greenlang.agents.foundation.schema.cli.commands.lint import lint
+from greenlang.agents.foundation.schema.cli.commands.migrate import (
     migrate,
     MigrationAnalyzer,
     SchemaConverter,

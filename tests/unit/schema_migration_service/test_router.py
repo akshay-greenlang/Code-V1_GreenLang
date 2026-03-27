@@ -267,9 +267,9 @@ def client(mock_service: MagicMock) -> "TestClient":
     """Create a FastAPI TestClient wired to the mock service.
 
     The router is imported dynamically to benefit from the conftest
-    stub that patches the greenlang.schema_migration package.
+    stub that patches the greenlang.agents.data.schema_migration package.
     """
-    from greenlang.schema_migration.api.router import (
+    from greenlang.agents.data.schema_migration.api.router import (
         create_schema_migration_router,
     )
 
@@ -291,13 +291,13 @@ class TestRouterAvailability:
     def test_module_importable(self):
         """The router module can be imported without errors."""
         mod = importlib.import_module(
-            "greenlang.schema_migration.api.router"
+            "greenlang.agents.data.schema_migration.api.router"
         )
         assert mod is not None
 
     def test_fastapi_available_flag(self):
         """The FASTAPI_AVAILABLE flag is True when FastAPI is installed."""
-        from greenlang.schema_migration.api.router import (
+        from greenlang.agents.data.schema_migration.api.router import (
             FASTAPI_AVAILABLE as flag,
         )
 
@@ -305,7 +305,7 @@ class TestRouterAvailability:
 
     def test_create_schema_migration_router_callable(self):
         """create_schema_migration_router is a callable factory function."""
-        from greenlang.schema_migration.api.router import (
+        from greenlang.agents.data.schema_migration.api.router import (
             create_schema_migration_router,
         )
 
@@ -313,13 +313,13 @@ class TestRouterAvailability:
 
     def test_router_module_level_instance(self):
         """The module exports a pre-built router instance."""
-        from greenlang.schema_migration.api.router import router
+        from greenlang.agents.data.schema_migration.api.router import router
 
         assert router is not None
 
     def test_all_exports(self):
         """__all__ contains the expected public symbols."""
-        from greenlang.schema_migration.api.router import __all__
+        from greenlang.agents.data.schema_migration.api.router import __all__
 
         assert "create_schema_migration_router" in __all__
         assert "router" in __all__
@@ -1525,7 +1525,7 @@ class TestServiceNotConfigured:
 
     def test_no_service_503(self):
         """Endpoints return 503 when service is not configured on app state."""
-        from greenlang.schema_migration.api.router import (
+        from greenlang.agents.data.schema_migration.api.router import (
             create_schema_migration_router,
         )
 
@@ -1541,7 +1541,7 @@ class TestServiceNotConfigured:
 
     def test_no_service_503_on_post(self):
         """POST endpoints return 503 when service is not configured."""
-        from greenlang.schema_migration.api.router import (
+        from greenlang.agents.data.schema_migration.api.router import (
             create_schema_migration_router,
         )
 
@@ -1569,7 +1569,7 @@ class TestRouterFactoryDirectService:
 
     def test_direct_service_injection(self):
         """create_schema_migration_router(service=...) uses injected service."""
-        from greenlang.schema_migration.api.router import (
+        from greenlang.agents.data.schema_migration.api.router import (
             create_schema_migration_router,
         )
 
@@ -1590,7 +1590,7 @@ class TestRouterFactoryDirectService:
 
     def test_direct_service_ignores_app_state(self):
         """When service is injected directly, app.state is ignored."""
-        from greenlang.schema_migration.api.router import (
+        from greenlang.agents.data.schema_migration.api.router import (
             create_schema_migration_router,
         )
 

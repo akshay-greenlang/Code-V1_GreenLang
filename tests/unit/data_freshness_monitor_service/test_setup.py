@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.data_freshness_monitor.setup import (
+from greenlang.agents.data.data_freshness_monitor.setup import (
     DataFreshnessMonitorService,
     _compute_hash,
     configure_freshness_monitor,
@@ -92,7 +92,7 @@ def sla_id(started_service: DataFreshnessMonitorService, dataset_id: str) -> str
 @pytest.fixture()
 def _reset_singleton():
     """Reset the module-level singleton after the test."""
-    import greenlang.data_freshness_monitor.setup as setup_mod
+    import greenlang.agents.data.data_freshness_monitor.setup as setup_mod
 
     original = setup_mod._service_instance
     yield
@@ -1404,7 +1404,7 @@ class TestSingleton:
     @pytest.fixture(autouse=True)
     def _clean_singleton(self):
         """Reset singleton state before and after each test."""
-        import greenlang.data_freshness_monitor.setup as setup_mod
+        import greenlang.agents.data.data_freshness_monitor.setup as setup_mod
 
         original = setup_mod._service_instance
         setup_mod._service_instance = None
@@ -1460,7 +1460,7 @@ class TestConfigureAndGetFreshnessMonitor:
     @pytest.fixture(autouse=True)
     def _clean_singleton(self):
         """Reset singleton state before and after each test."""
-        import greenlang.data_freshness_monitor.setup as setup_mod
+        import greenlang.agents.data.data_freshness_monitor.setup as setup_mod
 
         original = setup_mod._service_instance
         setup_mod._service_instance = None

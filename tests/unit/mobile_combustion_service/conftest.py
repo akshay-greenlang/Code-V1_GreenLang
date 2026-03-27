@@ -17,13 +17,13 @@ from typing import Any, Dict, Generator, List
 
 import pytest
 
-from greenlang.mobile_combustion.config import (
+from greenlang.agents.mrv.mobile_combustion.config import (
     MobileCombustionConfig,
     get_config,
     reset_config,
     set_config,
 )
-from greenlang.mobile_combustion.provenance import (
+from greenlang.agents.mrv.mobile_combustion.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     get_provenance_tracker,

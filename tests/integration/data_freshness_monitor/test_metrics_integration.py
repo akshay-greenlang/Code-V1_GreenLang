@@ -20,7 +20,7 @@ PRD: AGENT-DATA-016 Data Freshness Monitor (GL-DATA-X-019)
 
 import pytest
 
-from greenlang.data_freshness_monitor.metrics import (
+from greenlang.agents.data.data_freshness_monitor.metrics import (
     PROMETHEUS_AVAILABLE,
     DummyCounter,
     DummyGauge,

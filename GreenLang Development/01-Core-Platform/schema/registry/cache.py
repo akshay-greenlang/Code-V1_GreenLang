@@ -26,8 +26,8 @@ Performance Characteristics:
     - O(k) warm-up where k is number of schemas to pre-compile
 
 Example:
-    >>> from greenlang.schema.registry.cache import IRCacheService
-    >>> from greenlang.schema.models.schema_ref import SchemaRef
+    >>> from greenlang.agents.foundation.schema.registry.cache import IRCacheService
+    >>> from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
     >>>
     >>> cache = IRCacheService(max_size=1000, ttl_seconds=3600)
     >>> ref = SchemaRef(schema_id="emissions/activity", version="1.3.0")
@@ -53,11 +53,11 @@ from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from greenlang.schema.compiler.ir import COMPILER_VERSION, SchemaIR
-from greenlang.schema.constants import SCHEMA_CACHE_MAX_SIZE, SCHEMA_CACHE_TTL_SECONDS
+from greenlang.agents.foundation.schema.compiler.ir import COMPILER_VERSION, SchemaIR
+from greenlang.agents.foundation.schema.constants import SCHEMA_CACHE_MAX_SIZE, SCHEMA_CACHE_TTL_SECONDS
 
 if TYPE_CHECKING:
-    from greenlang.schema.models.schema_ref import SchemaRef
+    from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 
 logger = logging.getLogger(__name__)
 

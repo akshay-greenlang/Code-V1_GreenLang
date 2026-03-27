@@ -20,7 +20,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from greenlang.orchestrator.api.deps import (
+from greenlang.agents.foundation.orchestrator.api.deps import (
     AuthContext,
     RequestTrace,
     get_api_key,
@@ -28,7 +28,7 @@ from greenlang.orchestrator.api.deps import (
     get_orchestrator,
     get_approval_workflow,
 )
-from greenlang.orchestrator.api.models import (
+from greenlang.agents.foundation.orchestrator.api.models import (
     ErrorDetail,
     ErrorResponse,
     ApprovalStatusEnum,
@@ -39,7 +39,7 @@ from greenlang.orchestrator.api.models import (
     ApprovalListResponse,
     ApprovalSubmitResponse,
 )
-from greenlang.orchestrator.governance.approvals import (
+from greenlang.agents.foundation.orchestrator.governance.approvals import (
     ApprovalDecision,
     ApprovalStatus,
     SignatureUtils,

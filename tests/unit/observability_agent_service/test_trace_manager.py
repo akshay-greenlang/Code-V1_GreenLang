@@ -17,7 +17,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from greenlang.observability_agent.trace_manager import (
+from greenlang.agents.foundation.observability_agent.trace_manager import (
     VALID_SPAN_KINDS,
     VALID_STATUSES,
     SpanEvent,

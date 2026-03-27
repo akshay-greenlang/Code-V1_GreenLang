@@ -12,7 +12,7 @@ import pytest
 from datetime import datetime
 from typing import Any, Dict
 
-from greenlang.schema.suggestions.heuristics import (
+from greenlang.agents.foundation.schema.suggestions.heuristics import (
     FixHeuristics,
     MAX_TYPO_DISTANCE,
     MAX_ENUM_DISTANCE,
@@ -20,9 +20,9 @@ from greenlang.schema.suggestions.heuristics import (
     BOOLEAN_TRUE_VALUES,
     BOOLEAN_FALSE_VALUES,
 )
-from greenlang.schema.compiler.ir import SchemaIR, PropertyIR, NumericConstraintIR, UnitSpecIR
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.models.patch import PatchSafety
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, PropertyIR, NumericConstraintIR, UnitSpecIR
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.patch import PatchSafety
 
 
 # =============================================================================

@@ -15,8 +15,8 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.mobile_combustion import metrics as metrics_mod
-from greenlang.mobile_combustion.metrics import (
+from greenlang.agents.mrv.mobile_combustion import metrics as metrics_mod
+from greenlang.agents.mrv.mobile_combustion.metrics import (
     PROMETHEUS_AVAILABLE,
     mc_calculations_total,
     mc_emissions_kg_co2e_total,

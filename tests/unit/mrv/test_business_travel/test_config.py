@@ -28,7 +28,7 @@ from decimal import Decimal
 from typing import Any, Dict
 import pytest
 
-from greenlang.business_travel.config import (
+from greenlang.agents.mrv.business_travel.config import (
     get_config,
     GeneralConfig,
     DatabaseConfig,

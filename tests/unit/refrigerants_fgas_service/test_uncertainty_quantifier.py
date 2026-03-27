@@ -16,7 +16,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import pytest
 
-from greenlang.refrigerants_fgas.uncertainty_quantifier import (
+from greenlang.agents.mrv.refrigerants_fgas.uncertainty_quantifier import (
     UncertaintyQuantifierEngine,
     UncertaintyMethod,
     UncertaintyResult,

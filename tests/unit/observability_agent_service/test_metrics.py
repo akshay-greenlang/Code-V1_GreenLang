@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.observability_agent.metrics import (
+from greenlang.agents.foundation.observability_agent.metrics import (
     PROMETHEUS_AVAILABLE,
     obs_alerts_evaluated_total,
     obs_alerts_firing,

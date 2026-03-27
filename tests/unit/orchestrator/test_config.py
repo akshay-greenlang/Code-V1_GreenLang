@@ -26,7 +26,7 @@ _SINGLETON_CONFIG = None
 
 
 class OrchestratorConfig:
-    """Mirrors expected greenlang.orchestrator.config.OrchestratorConfig."""
+    """Mirrors expected greenlang.agents.foundation.orchestrator.config.OrchestratorConfig."""
 
     ENV_PREFIX = "GL_ORCHESTRATOR_"
 

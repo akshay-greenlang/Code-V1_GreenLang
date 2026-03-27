@@ -4,7 +4,7 @@ SI Unit Pack for GL-FOUND-X-002.
 Core SI (International System of Units) definitions.
 """
 
-from greenlang.schema.units.catalog import UnitCatalog, UnitDefinition
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog, UnitDefinition
 
 
 def load_si_units(catalog: UnitCatalog) -> None:

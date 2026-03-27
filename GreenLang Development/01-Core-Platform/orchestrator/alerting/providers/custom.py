@@ -18,7 +18,7 @@ GL-FOUND-X-001: Custom Webhook Provider
 import logging
 from typing import Any, Dict, Optional
 
-from greenlang.orchestrator.alerting.webhooks import (
+from greenlang.agents.foundation.orchestrator.alerting.webhooks import (
     AlertPayload,
     AlertSeverity,
     AlertType,
@@ -140,7 +140,7 @@ class CustomWebhookProvider:
         """
         envelope: Dict[str, Any] = {
             "version": "1.0",
-            "type": "greenlang.orchestrator.alert",
+            "type": "greenlang.agents.foundation.orchestrator.alert",
             "webhook_id": config.webhook_id,
             "webhook_name": config.name,
             "data": format_custom_payload(alert, config),

@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.cross_source_reconciliation.resolution_engine import (
+from greenlang.agents.data.cross_source_reconciliation.resolution_engine import (
     CredibilityFactor,
     Discrepancy,
     DiscrepancySeverity,

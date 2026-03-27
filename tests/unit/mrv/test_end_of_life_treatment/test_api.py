@@ -50,7 +50,7 @@ except ImportError:
     FASTAPI_AVAILABLE = False
 
 try:
-    from greenlang.end_of_life_treatment.api.router import (
+    from greenlang.agents.mrv.end_of_life_treatment.api.router import (
         router,
     )
     _ROUTER_AVAILABLE = True

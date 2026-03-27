@@ -14,24 +14,24 @@ Components:
     - client: HTTP registry client
 
 Example:
-    >>> from greenlang.schema.registry import GitSchemaRegistry
+    >>> from greenlang.agents.foundation.schema.registry import GitSchemaRegistry
     >>> registry = GitSchemaRegistry("./schemas")
     >>> schema = registry.resolve("emissions/activity", "1.3.0")
     >>> versions = registry.list_versions("emissions/activity")
     >>> latest = registry.get_latest("emissions/activity", "^1.0.0")
 
-    >>> from greenlang.schema.registry import IRCacheService, CacheWarmupScheduler
+    >>> from greenlang.agents.foundation.schema.registry import IRCacheService, CacheWarmupScheduler
     >>> cache = IRCacheService(max_size=1000, ttl_seconds=3600)
     >>> scheduler = CacheWarmupScheduler(cache, interval_seconds=300)
 """
 
-from greenlang.schema.registry.cache import (
+from greenlang.agents.foundation.schema.registry.cache import (
     CacheEntry,
     CacheMetrics,
     CacheWarmupScheduler,
     IRCacheService,
 )
-from greenlang.schema.registry.git_backend import (
+from greenlang.agents.foundation.schema.registry.git_backend import (
     CachedSchema,
     GitOperationError,
     GitSchemaRegistry,
@@ -48,7 +48,7 @@ from greenlang.schema.registry.git_backend import (
     filter_versions,
     sort_versions,
 )
-from greenlang.schema.registry.resolver import (
+from greenlang.agents.foundation.schema.registry.resolver import (
     SchemaRegistry,
     SchemaSource,
 )

@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.setup import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.setup import (
     DualReportingService,
     get_service,
     reset_service,

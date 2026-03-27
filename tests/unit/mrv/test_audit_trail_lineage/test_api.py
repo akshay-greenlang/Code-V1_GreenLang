@@ -64,7 +64,7 @@ except ImportError:
     TestClient = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.audit_trail_lineage.api.router import router, get_service
+    from greenlang.agents.mrv.audit_trail_lineage.api.router import router, get_service
     ROUTER_AVAILABLE = True
 except ImportError:
     ROUTER_AVAILABLE = False

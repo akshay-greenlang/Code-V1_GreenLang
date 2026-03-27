@@ -20,7 +20,7 @@ from datetime import datetime
 import pytest
 
 try:
-    from greenlang.scope2_location.grid_factor_database import (
+    from greenlang.agents.mrv.scope2_location.grid_factor_database import (
         GridEmissionFactorDatabaseEngine,
         EGRID_SUBREGION_FACTORS,
         IEA_COUNTRY_FACTORS,

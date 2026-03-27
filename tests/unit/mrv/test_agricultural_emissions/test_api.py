@@ -23,7 +23,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.api.router import router as ag_router
+    from greenlang.agents.mrv.agricultural_emissions.api.router import router as ag_router
     ROUTER_AVAILABLE = True
 except ImportError:
     ROUTER_AVAILABLE = False
@@ -36,7 +36,7 @@ except ImportError:
     FASTAPI_AVAILABLE = False
 
 try:
-    from greenlang.agricultural_emissions.setup import (
+    from greenlang.agents.mrv.agricultural_emissions.setup import (
         AgriculturalEmissionsService,
         CalculateResponse,
         BatchCalculateResponse,
@@ -107,7 +107,7 @@ def client(mock_service):
     app.include_router(ag_router)
     # Patch the service dependency
     with patch(
-        "greenlang.agricultural_emissions.api.router.get_service",
+        "greenlang.agents.mrv.agricultural_emissions.api.router.get_service",
         return_value=mock_service,
     ):
         yield TestClient(app)

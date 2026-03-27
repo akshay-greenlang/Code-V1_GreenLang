@@ -22,7 +22,7 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from greenlang.orchestrator.governance.approvals import (
+from greenlang.agents.foundation.orchestrator.governance.approvals import (
     ApprovalStatus,
     ApprovalDecision,
     ApprovalAttestation,
@@ -41,9 +41,9 @@ from greenlang.orchestrator.governance.approvals import (
 
 # Import ApprovalRequirement and ApprovalType from approvals.py fallback
 try:
-    from greenlang.orchestrator.governance.policy_engine import ApprovalRequirement, ApprovalType
+    from greenlang.agents.foundation.orchestrator.governance.policy_engine import ApprovalRequirement, ApprovalType
 except ImportError:
-    from greenlang.orchestrator.governance.approvals import ApprovalType
+    from greenlang.agents.foundation.orchestrator.governance.approvals import ApprovalType
     from pydantic import BaseModel
     from typing import Optional
 
@@ -212,13 +212,13 @@ class TestApprovalRequest:
         """Test is_expired returns false for future deadline."""
         # Deadline is 24 hours in the future from sample_timestamp
         # Mock DeterministicClock to return sample_timestamp
-        with patch("greenlang.orchestrator.governance.approvals.DeterministicClock") as mock_clock:
+        with patch("greenlang.agents.foundation.orchestrator.governance.approvals.DeterministicClock") as mock_clock:
             mock_clock.now.return_value = sample_request.requested_at
             assert not sample_request.is_expired()
 
     def test_is_expired_true(self, sample_request):
         """Test is_expired returns true for past deadline."""
-        with patch("greenlang.orchestrator.governance.approvals.DeterministicClock") as mock_clock:
+        with patch("greenlang.agents.foundation.orchestrator.governance.approvals.DeterministicClock") as mock_clock:
             mock_clock.now.return_value = sample_request.deadline + timedelta(hours=1)
             assert sample_request.is_expired()
 
@@ -317,7 +317,7 @@ class TestInMemoryApprovalStore:
         await memory_store.save(sample_request)
 
         # Mock time to be after deadline
-        with patch("greenlang.orchestrator.governance.approvals.DeterministicClock") as mock_clock:
+        with patch("greenlang.agents.foundation.orchestrator.governance.approvals.DeterministicClock") as mock_clock:
             mock_clock.now.return_value = sample_request.deadline + timedelta(hours=1)
             count = await memory_store.expire_stale()
 

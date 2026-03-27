@@ -31,7 +31,7 @@ _ENV_PREFIX = "GL_PDF_EXTRACTOR_"
 
 @dataclass
 class PDFExtractorConfig:
-    """Mirrors greenlang.pdf_extractor.config.PDFExtractorConfig."""
+    """Mirrors greenlang.agents.data.pdf_extractor.config.PDFExtractorConfig."""
 
     database_url: str = ""
     redis_url: str = ""

@@ -27,11 +27,11 @@ from decimal import Decimal
 from typing import Dict, Any, List
 from datetime import date
 
-from greenlang.dual_reporting_reconciliation.dual_result_collector import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.dual_result_collector import (
     DualResultCollectorEngine,
     reset,
 )
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     UpstreamResult,
     ReconciliationWorkspace,
     EnergyTypeBreakdown,

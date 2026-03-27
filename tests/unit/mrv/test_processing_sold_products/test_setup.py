@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.processing_sold_products.setup import (
+    from greenlang.agents.mrv.processing_sold_products.setup import (
         ProcessingSoldProductsService,
         get_service,
         get_router,

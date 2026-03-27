@@ -16,14 +16,14 @@ from __future__ import annotations
 
 import pytest
 
-from greenlang.missing_value_imputer.config import MissingValueImputerConfig
-from greenlang.missing_value_imputer.validation_engine import (
+from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
+from greenlang.agents.data.missing_value_imputer.validation_engine import (
     ValidationEngine,
     _is_missing,
     _is_numeric,
     _safe_stdev,
 )
-from greenlang.missing_value_imputer.models import (
+from greenlang.agents.data.missing_value_imputer.models import (
     ValidationMethod,
     ValidationReport,
     ValidationResult,

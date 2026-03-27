@@ -13,7 +13,7 @@ from datetime import datetime
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.provenance import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.provenance import (
     DualReportingReconciliationProvenance,
     DualReportingProvenanceTracker,
     ProvenanceStage,

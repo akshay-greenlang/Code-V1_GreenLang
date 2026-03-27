@@ -22,7 +22,7 @@ Date: 2026-01-29
 import pytest
 from typing import Dict, Any
 
-from greenlang.schema.compiler.schema_validator import (
+from greenlang.agents.foundation.schema.compiler.schema_validator import (
     SchemaValidator,
     SchemaValidationFinding,
     SchemaValidationResult,
@@ -32,7 +32,7 @@ from greenlang.schema.compiler.schema_validator import (
     is_valid_semver,
     compare_semver,
 )
-from greenlang.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.errors import ErrorCode
 
 
 # ============================================================================

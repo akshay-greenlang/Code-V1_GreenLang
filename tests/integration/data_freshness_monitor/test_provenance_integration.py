@@ -21,7 +21,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from greenlang.data_freshness_monitor.provenance import ProvenanceTracker
+from greenlang.agents.data.data_freshness_monitor.provenance import ProvenanceTracker
 
 
 def _utcnow() -> datetime:

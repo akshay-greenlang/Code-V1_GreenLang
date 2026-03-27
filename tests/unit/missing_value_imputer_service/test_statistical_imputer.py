@@ -16,9 +16,9 @@ from __future__ import annotations
 
 import pytest
 
-from greenlang.missing_value_imputer.config import MissingValueImputerConfig
-from greenlang.missing_value_imputer.models import ImputationStrategy
-from greenlang.missing_value_imputer.statistical_imputer import StatisticalImputerEngine
+from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
+from greenlang.agents.data.missing_value_imputer.models import ImputationStrategy
+from greenlang.agents.data.missing_value_imputer.statistical_imputer import StatisticalImputerEngine
 
 
 @pytest.fixture

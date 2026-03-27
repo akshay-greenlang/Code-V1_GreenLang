@@ -59,7 +59,7 @@ class ValidationResult:
 
 # Check whether the Schema SDK is actually importable
 try:
-    from greenlang.schema.sdk import validate as _sdk_validate
+    from greenlang.agents.foundation.schema.sdk import validate as _sdk_validate
 
     _SCHEMA_SDK_AVAILABLE = True
 except ImportError:
@@ -162,7 +162,7 @@ class TestSchemaSDKAvailableFlag:
     def test_sdk_importable_when_flag_true(self):
         """If flag is True, the SDK should actually be importable."""
         if _SCHEMA_SDK_AVAILABLE:
-            from greenlang.schema.sdk import validate
+            from greenlang.agents.foundation.schema.sdk import validate
 
             assert callable(validate)
 
@@ -170,7 +170,7 @@ class TestSchemaSDKAvailableFlag:
         """If flag is False, the SDK import should have failed."""
         if not _SCHEMA_SDK_AVAILABLE:
             with pytest.raises(ImportError):
-                from greenlang.schema.sdk import validate  # noqa: F811
+                from greenlang.agents.foundation.schema.sdk import validate  # noqa: F811
 
 
 class TestFoundationAgentDelegation:

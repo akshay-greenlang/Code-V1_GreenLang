@@ -28,8 +28,8 @@ from typing import List, Optional
 
 import pytest
 
-from greenlang.time_series_gap_filler.config import TimeSeriesGapFillerConfig
-from greenlang.time_series_gap_filler.interpolation_engine import (
+from greenlang.agents.data.time_series_gap_filler.config import TimeSeriesGapFillerConfig
+from greenlang.agents.data.time_series_gap_filler.interpolation_engine import (
     FillResult,
     InterpolationEngine,
 )

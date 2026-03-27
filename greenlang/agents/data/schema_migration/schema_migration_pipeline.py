@@ -241,7 +241,7 @@ class SchemaMigrationPipelineEngine:
       classifications come exclusively from upstream engine calls.  No LLM
       inference is used in any stage.
     - Provenance: every pipeline run appends chain-hashed entries to the
-      shared :class:`~greenlang.schema_migration.provenance.ProvenanceTracker`.
+      shared :class:`~greenlang.agents.data.schema_migration.provenance.ProvenanceTracker`.
     - Thread-safety: ``self._lock`` serialises writes to
       ``self._pipeline_runs`` while individual engine calls are stateless.
     - Graceful degradation: missing engines trigger stub behaviour that
@@ -277,7 +277,7 @@ class SchemaMigrationPipelineEngine:
         is set to ``None`` and the corresponding stage will return an
         ``"engine_unavailable"`` error result rather than raising.
 
-        The :class:`~greenlang.schema_migration.provenance.ProvenanceTracker`
+        The :class:`~greenlang.agents.data.schema_migration.provenance.ProvenanceTracker`
         is always created because it is a pure-Python dependency with no
         optional imports.
         """

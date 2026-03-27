@@ -13,7 +13,7 @@ This module provides the Control Plane API for:
 
 Usage:
     # Create and run the app
-    from greenlang.orchestrator.api import create_app
+    from greenlang.agents.foundation.orchestrator.api import create_app
 
     app = create_app()
 
@@ -22,7 +22,7 @@ Usage:
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
     # Or use the router directly
-    from greenlang.orchestrator.api import router
+    from greenlang.agents.foundation.orchestrator.api import router
     from fastapi import FastAPI
 
     app = FastAPI()
@@ -66,14 +66,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
-from greenlang.orchestrator.api.deps import (
+from greenlang.agents.foundation.orchestrator.api.deps import (
     APIConfig,
     get_config,
     shutdown_dependencies,
     startup_dependencies,
 )
-from greenlang.orchestrator.api.models import ErrorResponse
-from greenlang.orchestrator.api.routes import router
+from greenlang.agents.foundation.orchestrator.api.models import ErrorResponse
+from greenlang.agents.foundation.orchestrator.api.routes import router
 
 logger = logging.getLogger(__name__)
 

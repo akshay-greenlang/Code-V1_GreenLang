@@ -32,7 +32,7 @@ from typing import Any, Dict
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.scope3_category_mapper.provenance import (
+    from greenlang.agents.mrv.scope3_category_mapper.provenance import (
         ProvenanceTracker,
         ProvenanceEntry,
         ProvenanceChain,
@@ -49,7 +49,7 @@ except (ImportError, AttributeError):
 
 # Fallback: use the hashing utilities from completeness_screener
 try:
-    from greenlang.scope3_category_mapper.completeness_screener import (
+    from greenlang.agents.mrv.scope3_category_mapper.completeness_screener import (
         _serialize_for_hash,
         _compute_hash,
     )

@@ -35,7 +35,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.schema_migration.schema_registry import (
+from greenlang.agents.data.schema_migration.schema_registry import (
     AVRO_REQUIRED_KEYS,
     JSON_SCHEMA_REQUIRED_KEYS,
     MAX_BULK_IMPORT,

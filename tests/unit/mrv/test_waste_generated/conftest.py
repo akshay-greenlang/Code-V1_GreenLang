@@ -27,7 +27,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest
 
 # Note: Adjust imports when actual models are implemented
-# from greenlang.waste_generated.models import (
+# from greenlang.agents.mrv.waste_generated.models import (
 #     CalculationMethod, WasteTreatmentMethod, WasteCategory, WasteStream,
 #     LandfillType, ClimateZone, IncineratorType, RecyclingType,
 #     WastewaterSystem, GasCollectionSystem, EFSource, ComplianceFramework,
@@ -35,7 +35,7 @@ import pytest
 #     CompostingInput, AnaerobicDigestionInput, WastewaterInput,
 #     WasteComposition, CalculationRequest, CalculationResult
 # )
-# from greenlang.waste_generated.config import WasteGeneratedConfig
+# from greenlang.agents.mrv.waste_generated.config import WasteGeneratedConfig
 
 
 # ============================================================================

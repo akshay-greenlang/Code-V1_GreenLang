@@ -39,7 +39,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.validation_rule_engine.conflict_detector import (
+from greenlang.agents.data.validation_rule_engine.conflict_detector import (
     ConflictDetectorEngine,
     ConflictType,
     ConflictSeverity,
@@ -97,7 +97,7 @@ class MockProvenanceTracker:
 
     The ConflictDetectorEngine calls ``self._provenance.record(...)``
     with a ``data=`` keyword argument. The real ProvenanceTracker in
-    ``greenlang.validation_rule_engine.provenance`` uses ``metadata=``
+    ``greenlang.agents.data.validation_rule_engine.provenance`` uses ``metadata=``
     instead. This stub bridges the mismatch so that the engine can be
     tested without modifying its source code.
     """

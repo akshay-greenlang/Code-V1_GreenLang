@@ -20,11 +20,11 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.stationary_combustion.config import (
+from greenlang.agents.mrv.stationary_combustion.config import (
     StationaryCombustionConfig,
     reset_config,
 )
-from greenlang.stationary_combustion.setup import StationaryCombustionService
+from greenlang.agents.mrv.stationary_combustion.setup import StationaryCombustionService
 
 
 # =====================================================================

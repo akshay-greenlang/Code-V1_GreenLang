@@ -19,10 +19,10 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.schema.compiler.ir import RuleBindingIR, SchemaIR
-from greenlang.schema.models.config import ValidationOptions, ValidationProfile
-from greenlang.schema.models.finding import Severity
-from greenlang.schema.validator.rules import (
+from greenlang.agents.foundation.schema.compiler.ir import RuleBindingIR, SchemaIR
+from greenlang.agents.foundation.schema.models.config import ValidationOptions, ValidationProfile
+from greenlang.agents.foundation.schema.models.finding import Severity
+from greenlang.agents.foundation.schema.validator.rules import (
     ARITHMETIC_OPERATORS,
     COMPARISON_OPERATORS,
     ERROR_CODE_CONDITIONAL_REQUIRED,

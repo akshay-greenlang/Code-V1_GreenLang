@@ -21,7 +21,7 @@ from decimal import Decimal
 from datetime import datetime, date
 import pytest
 
-from greenlang.waste_generated.models import (
+from greenlang.agents.mrv.waste_generated.models import (
     # Enumerations
     CalculationMethod,
     WasteTreatmentMethod,

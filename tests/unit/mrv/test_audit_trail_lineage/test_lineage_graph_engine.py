@@ -41,7 +41,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.audit_trail_lineage.lineage_graph_engine import (
+    from greenlang.agents.mrv.audit_trail_lineage.lineage_graph_engine import (
         LineageGraphEngine,
     )
     ENGINE_AVAILABLE = True

@@ -46,7 +46,7 @@ try:
 except ImportError:
     FASTAPI_AVAILABLE = False
 
-from greenlang.stationary_combustion.config import (
+from greenlang.agents.mrv.stationary_combustion.config import (
     StationaryCombustionConfig,
     reset_config,
 )
@@ -75,10 +75,10 @@ def config():
 @pytest.fixture
 def app(config):
     """Create a FastAPI application with the stationary combustion router."""
-    from greenlang.stationary_combustion.setup import (
+    from greenlang.agents.mrv.stationary_combustion.setup import (
         StationaryCombustionService,
     )
-    import greenlang.stationary_combustion.setup as setup_module
+    import greenlang.agents.mrv.stationary_combustion.setup as setup_module
 
     # Create a fresh service and install as singleton
     svc = StationaryCombustionService(config=config)
@@ -87,7 +87,7 @@ def app(config):
     setup_module._service = svc
 
     app = FastAPI()
-    from greenlang.stationary_combustion.api.router import router
+    from greenlang.agents.mrv.stationary_combustion.api.router import router
     if router is not None:
         app.include_router(router)
 
@@ -783,10 +783,10 @@ class TestServiceUnavailable:
     @pytest.mark.asyncio
     async def test_health_503_when_no_service(self):
         """GET /health returns 503 when service singleton is None."""
-        import greenlang.stationary_combustion.setup as setup_module
+        import greenlang.agents.mrv.stationary_combustion.setup as setup_module
 
         app = FastAPI()
-        from greenlang.stationary_combustion.api.router import router
+        from greenlang.agents.mrv.stationary_combustion.api.router import router
         if router is not None:
             app.include_router(router)
 

@@ -24,7 +24,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.use_of_sold_products.fuels_feedstocks_calculator import (
+    from greenlang.agents.mrv.use_of_sold_products.fuels_feedstocks_calculator import (
         FuelsAndFeedstocksCalculatorEngine,
         get_fuels_calculator,
         calculate_fuel_sales_emissions,

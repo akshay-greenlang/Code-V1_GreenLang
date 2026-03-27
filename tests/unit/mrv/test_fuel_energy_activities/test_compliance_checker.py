@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 from unittest.mock import Mock, patch
 
-from greenlang.fuel_energy_activities.engines.compliance_checker import (
+from greenlang.agents.mrv.fuel_energy_activities.engines.compliance_checker import (
     ComplianceCheckerEngine,
     ComplianceCheckInput,
     ComplianceCheckOutput,
@@ -20,7 +20,7 @@ from greenlang.fuel_energy_activities.engines.compliance_checker import (
     ComplianceIssue,
     IssueSeverity,
 )
-from greenlang.fuel_energy_activities.models import (
+from greenlang.agents.mrv.fuel_energy_activities.models import (
     FuelType,
     ActivityType,
     ComplianceFramework,

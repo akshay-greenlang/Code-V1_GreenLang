@@ -18,7 +18,7 @@ from typing import Any, Dict, List
 import pytest
 from pydantic import ValidationError
 
-from greenlang.refrigerants_fgas.models import (
+from greenlang.agents.mrv.refrigerants_fgas.models import (
     # Constants
     VERSION,
     MAX_CALCULATIONS_PER_BATCH,

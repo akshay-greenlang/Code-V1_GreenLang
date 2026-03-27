@@ -18,11 +18,11 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 
 try:
-    from greenlang.purchased_goods_services.api import (
+    from greenlang.agents.mrv.purchased_goods_services.api import (
         router,
         get_router,
     )
-    from greenlang.purchased_goods_services.setup import get_service
+    from greenlang.agents.mrv.purchased_goods_services.setup import get_service
 except ImportError:
     pytest.skip("Purchased Goods Services API not available", allow_module_level=True)
 
@@ -44,7 +44,7 @@ def client(app):
 @pytest.fixture
 def mock_service():
     """Create mock service."""
-    with patch('greenlang.purchased_goods_services.api.get_service') as mock:
+    with patch('greenlang.agents.mrv.purchased_goods_services.api.get_service') as mock:
         service = Mock()
         mock.return_value = service
         yield service

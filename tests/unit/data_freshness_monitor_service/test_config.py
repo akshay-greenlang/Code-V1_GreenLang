@@ -2,7 +2,7 @@
 """
 Unit tests for DataFreshnessMonitorConfig - AGENT-DATA-016
 
-Tests the config dataclass at greenlang.data_freshness_monitor.config with
+Tests the config dataclass at greenlang.agents.data.data_freshness_monitor.config with
 70+ tests covering default values for all 26 fields, GL_DFM_ environment
 variable overrides, singleton pattern, thread safety, validation logic,
 type coercion, invalid env fallback, to_dict() serialization, from_env()
@@ -21,7 +21,7 @@ from dataclasses import fields as dc_fields
 
 import pytest
 
-from greenlang.data_freshness_monitor.config import (
+from greenlang.agents.data.data_freshness_monitor.config import (
     DataFreshnessMonitorConfig,
     get_config,
     reset_config,

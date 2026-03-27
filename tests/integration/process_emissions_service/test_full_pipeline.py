@@ -18,7 +18,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.process_emissions.process_emissions_pipeline import (
+from greenlang.agents.mrv.process_emissions.process_emissions_pipeline import (
     ProcessEmissionsPipelineEngine,
     PipelineStage,
     PIPELINE_STAGES,

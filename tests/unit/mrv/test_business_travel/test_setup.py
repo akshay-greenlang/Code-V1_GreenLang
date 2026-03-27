@@ -26,7 +26,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.business_travel.setup import (
+    from greenlang.agents.mrv.business_travel.setup import (
         BusinessTravelService,
         get_service,
         get_router,
@@ -251,7 +251,7 @@ class TestBusinessTravelService:
     def test_get_service_singleton(self):
         """get_service returns the same instance on repeated calls."""
         # Reset the module-level singleton for this test
-        import greenlang.business_travel.setup as setup_mod
+        import greenlang.agents.mrv.business_travel.setup as setup_mod
         original = setup_mod._service_instance
         setup_mod._service_instance = None
         try:
@@ -263,7 +263,7 @@ class TestBusinessTravelService:
 
     def test_get_service_thread_safety(self):
         """get_service is thread-safe under concurrent access."""
-        import greenlang.business_travel.setup as setup_mod
+        import greenlang.agents.mrv.business_travel.setup as setup_mod
         original = setup_mod._service_instance
         setup_mod._service_instance = None
         try:

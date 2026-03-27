@@ -348,7 +348,7 @@ class QuarterlyUpdateWorkflow:
             - greenlang.agents.data.erp_connector_agent (incremental ERP pull)
             - greenlang.agents.data.document_ingestion_agent (new invoices/docs)
             - greenlang.agents.data.utility_tariff_agent (utility bills)
-            - greenlang.data_quality_profiler (quality check on new data)
+            - greenlang.agents.data.data_quality_profiler (quality check on new data)
         """
         step_name = "incremental_intake"
         errors: List[str] = []
@@ -428,8 +428,8 @@ class QuarterlyUpdateWorkflow:
         Recalculate emissions for the quarter using zero-hallucination agents.
 
         Agents invoked (conditional on recalculate_scopes):
-            Scope 1: greenlang.stationary_combustion, greenlang.mobile_combustion, etc.
-            Scope 2: greenlang.scope2_location, greenlang.scope2_market
+            Scope 1: greenlang.agents.mrv.stationary_combustion, greenlang.agents.mrv.mobile_combustion, etc.
+            Scope 2: greenlang.agents.mrv.scope2_location, greenlang.agents.mrv.scope2_market
             Scope 3: greenlang.scope3.* categories as configured
         """
         step_name = "emissions_recalculation"

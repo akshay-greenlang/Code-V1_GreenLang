@@ -17,7 +17,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.process_emissions.setup import (
+from greenlang.agents.mrv.process_emissions.setup import (
     ProcessEmissionsService,
     CalculateResponse,
     BatchCalculateResponse,
@@ -328,7 +328,7 @@ class TestComplianceWorkflow:
         self, compliance_check_data: Dict[str, Any],
     ):
         """Direct compliance engine check with full data."""
-        from greenlang.process_emissions.compliance_checker import (
+        from greenlang.agents.mrv.process_emissions.compliance_checker import (
             ComplianceCheckerEngine,
         )
         engine = ComplianceCheckerEngine()
@@ -344,7 +344,7 @@ class TestComplianceWorkflow:
         self, compliance_check_data: Dict[str, Any],
     ):
         """Compliance results are deterministic across runs."""
-        from greenlang.process_emissions.compliance_checker import (
+        from greenlang.agents.mrv.process_emissions.compliance_checker import (
             ComplianceCheckerEngine,
         )
         engine = ComplianceCheckerEngine()

@@ -40,7 +40,7 @@ from greenlang.agents.foundation.orchestrator.hooks.validation_hook import (
     create_validation_hook,
     extract_input_schemas,
 )
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.models.config import (
     CoercionPolicy,
     UnknownFieldPolicy,
     ValidationOptions,

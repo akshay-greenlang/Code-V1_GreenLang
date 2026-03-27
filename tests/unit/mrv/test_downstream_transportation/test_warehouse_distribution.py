@@ -35,7 +35,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.warehouse_distribution import (
+    from greenlang.agents.mrv.downstream_transportation.warehouse_distribution import (
         WarehouseDistributionEngine,
     )
 except ImportError as exc:

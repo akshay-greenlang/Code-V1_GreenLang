@@ -82,7 +82,7 @@ from greenlang.agents.eudr.forest_cover_analysis.models import (
     FAO_AREA_THRESHOLD,
     BIOME_COUNT,
     AGB_CONVERSION_FACTOR,
-    # Re-exported from greenlang.eudr_traceability.models
+    # Re-exported from greenlang.agents.data.eudr_traceability.models
     EUDRCommodity,
     # Enumerations
     ForestType,

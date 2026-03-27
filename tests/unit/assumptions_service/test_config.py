@@ -30,7 +30,7 @@ _ENV_PREFIX = "GL_ASSUMPTIONS_"
 
 @dataclass
 class AssumptionsConfig:
-    """Mirrors greenlang.assumptions.config.AssumptionsConfig."""
+    """Mirrors greenlang.agents.foundation.assumptions.config.AssumptionsConfig."""
 
     # Version management
     max_versions: int = 50

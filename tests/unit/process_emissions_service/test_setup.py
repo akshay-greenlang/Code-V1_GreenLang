@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.process_emissions.setup import (
+from greenlang.agents.mrv.process_emissions.setup import (
     ProcessEmissionsService,
     CalculateResponse,
     BatchCalculateResponse,

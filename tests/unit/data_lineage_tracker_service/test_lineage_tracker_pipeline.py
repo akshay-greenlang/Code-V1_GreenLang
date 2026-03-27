@@ -19,14 +19,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.data_lineage_tracker.lineage_tracker_pipeline import (
+from greenlang.agents.data.data_lineage_tracker.lineage_tracker_pipeline import (
     LineageTrackerPipelineEngine,
     PIPELINE_STAGES,
     _sha256,
     _new_id,
     _elapsed_ms,
 )
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
 
 # ============================================================================
@@ -61,7 +61,7 @@ def pipeline_no_engines() -> LineageTrackerPipelineEngine:
     We patch the availability flags so that the constructor does not
     auto-create engines from the importable modules.
     """
-    import greenlang.data_lineage_tracker.lineage_tracker_pipeline as _mod
+    import greenlang.agents.data.data_lineage_tracker.lineage_tracker_pipeline as _mod
 
     patches = {
         "_ASSET_REGISTRY_AVAILABLE": False,

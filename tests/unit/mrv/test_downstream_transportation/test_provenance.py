@@ -42,7 +42,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.provenance import (
+    from greenlang.agents.mrv.downstream_transportation.provenance import (
         ProvenanceEntry,
         ProvenanceChain,
         ProvenanceTracker,

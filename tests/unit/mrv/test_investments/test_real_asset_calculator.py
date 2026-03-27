@@ -25,10 +25,10 @@ from decimal import Decimal
 from unittest.mock import patch, MagicMock
 import pytest
 
-from greenlang.investments.real_asset_calculator import (
+from greenlang.agents.mrv.investments.real_asset_calculator import (
     RealAssetCalculatorEngine,
 )
-from greenlang.investments.models import (
+from greenlang.agents.mrv.investments.models import (
     AssetClass,
     PropertyType,
     ClimateZone,
@@ -56,7 +56,7 @@ def _reset_singleton():
 def engine():
     """Create a fresh RealAssetCalculatorEngine with mocked config."""
     with patch(
-        "greenlang.investments.real_asset_calculator.get_config"
+        "greenlang.agents.mrv.investments.real_asset_calculator.get_config"
     ) as mock_config:
         cfg = MagicMock()
         cfg.real_assets.default_eui_source = "CRREM"

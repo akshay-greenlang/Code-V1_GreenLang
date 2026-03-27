@@ -10,7 +10,7 @@ This module provides output formatters for validation reports in various formats
 - text: Plain text output (no colors)
 
 Example:
-    >>> from greenlang.schema.cli.formatters import format_pretty, format_json
+    >>> from greenlang.agents.foundation.schema.cli.formatters import format_pretty, format_json
     >>> print(format_pretty(report, use_color=True))
     >>> print(format_json(report, indent=2))
 
@@ -19,25 +19,25 @@ Version: 0.1.0
 GL-FOUND-X-002: Schema Compiler & Validator
 """
 
-from greenlang.schema.cli.formatters.pretty import (
+from greenlang.agents.foundation.schema.cli.formatters.pretty import (
     PrettyFormatter,
     format_pretty,
 )
 
-from greenlang.schema.cli.formatters.json_fmt import (
+from greenlang.agents.foundation.schema.cli.formatters.json_fmt import (
     JSONFormatter,
     CompactJSONFormatter,
     NDJSONFormatter,
     format_json,
 )
 
-from greenlang.schema.cli.formatters.table import (
+from greenlang.agents.foundation.schema.cli.formatters.table import (
     TableFormatter,
     CSVFormatter,
     format_table,
 )
 
-from greenlang.schema.cli.formatters.sarif import (
+from greenlang.agents.foundation.schema.cli.formatters.sarif import (
     SARIFFormatter,
     SARIFFixFormatter,
     format_sarif,
@@ -45,7 +45,7 @@ from greenlang.schema.cli.formatters.sarif import (
     SARIF_SCHEMA,
 )
 
-from greenlang.schema.cli.formatters.text import (
+from greenlang.agents.foundation.schema.cli.formatters.text import (
     TextFormatter,
     format_text,
 )

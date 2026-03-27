@@ -10,7 +10,7 @@ and pipeline orchestrator components.
 
 All tests are self-contained with no external dependencies.
 
-Includes a module-level stub for greenlang.schema_migration.__init__
+Includes a module-level stub for greenlang.agents.data.schema_migration.__init__
 to bypass engine imports that may not yet be available, allowing direct
 submodule imports to work.
 
@@ -32,7 +32,7 @@ import pytest
 # Stub the schema_migration package to bypass broken __init__ imports.
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.schema_migration"
+_PKG_NAME = "greenlang.agents.data.schema_migration"
 
 if _PKG_NAME not in sys.modules:
     import greenlang  # noqa: F401 ensure parent exists
@@ -57,7 +57,7 @@ if _PKG_NAME not in sys.modules:
 # their own try/except and they fall back to no-op stubs.
 # ---------------------------------------------------------------------------
 
-from greenlang.schema_migration import metrics as _sm_metrics  # noqa: F401
+from greenlang.agents.data.schema_migration import metrics as _sm_metrics  # noqa: F401
 
 
 # ---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ def _relax_model_configs():
     via its own module-scoped fixture.
     """
     import pydantic
-    from greenlang.schema_migration import models as sm_models
+    from greenlang.agents.data.schema_migration import models as sm_models
 
     for name in dir(sm_models):
         obj = getattr(sm_models, name)
@@ -111,7 +111,7 @@ def _clean_sm_env(monkeypatch):
         if key.startswith(prefix):
             monkeypatch.delenv(key, raising=False)
 
-    from greenlang.schema_migration.config import reset_config
+    from greenlang.agents.data.schema_migration.config import reset_config
     reset_config()
 
     yield

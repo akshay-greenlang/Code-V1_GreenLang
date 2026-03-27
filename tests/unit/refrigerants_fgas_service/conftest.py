@@ -17,17 +17,17 @@ from typing import Any, Dict, Generator, List
 
 import pytest
 
-from greenlang.refrigerants_fgas.config import (
+from greenlang.agents.mrv.refrigerants_fgas.config import (
     RefrigerantsFGasConfig,
     reset_config,
     set_config,
 )
-from greenlang.refrigerants_fgas.provenance import (
+from greenlang.agents.mrv.refrigerants_fgas.provenance import (
     ProvenanceEntry,
     ProvenanceTracker,
     reset_provenance_tracker,
 )
-from greenlang.refrigerants_fgas.models import (
+from greenlang.agents.mrv.refrigerants_fgas.models import (
     EquipmentProfile,
     EquipmentType,
     EquipmentStatus,

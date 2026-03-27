@@ -25,7 +25,7 @@ Version: 1.0.0
 GL-FOUND-X-002: Schema Compiler & Validator - Task 5.1
 """
 
-from greenlang.schema.cli.main import cli, main, schema
+from greenlang.agents.foundation.schema.cli.main import cli, main, schema
 
 # Exit codes
 EXIT_SUCCESS = 0

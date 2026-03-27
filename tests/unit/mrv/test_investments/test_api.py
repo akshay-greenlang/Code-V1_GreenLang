@@ -59,7 +59,7 @@ except ImportError:
     TestClient = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.investments.api.router import router, get_service
+    from greenlang.agents.mrv.investments.api.router import router, get_service
     ROUTER_AVAILABLE = True
 except ImportError:
     ROUTER_AVAILABLE = False

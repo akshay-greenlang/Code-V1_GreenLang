@@ -31,7 +31,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.fugitive_emissions.uncertainty_quantifier import (
+from greenlang.agents.mrv.fugitive_emissions.uncertainty_quantifier import (
     UncertaintyQuantifierEngine,
     FugitiveSourceCategory,
     CalculationMethodType,

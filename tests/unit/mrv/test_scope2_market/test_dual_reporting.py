@@ -25,7 +25,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.scope2_market.dual_reporting import (
+    from greenlang.agents.mrv.scope2_market.dual_reporting import (
         DualReportingEngine,
         TYPICAL_REC_COST_PER_MWH,
         RE100_TARGET_PCT,

@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.uncertainty_quantifier import (
+    from greenlang.agents.mrv.steam_heat_purchase.uncertainty_quantifier import (
         UncertaintyQuantifierEngine,
         TIER_DEFAULTS,
         ACTIVITY_DATA_UNCERTAINTY,
@@ -37,7 +37,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not UNC_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.uncertainty_quantifier not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.uncertainty_quantifier not importable",
 )
 
 

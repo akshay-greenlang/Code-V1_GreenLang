@@ -32,7 +32,7 @@ from unittest.mock import patch, MagicMock
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.employee_commuting.compliance_checker import (
+    from greenlang.agents.mrv.employee_commuting.compliance_checker import (
         ComplianceCheckerEngine,
     )
     COMPLIANCE_AVAILABLE = True
@@ -40,7 +40,7 @@ except ImportError:
     COMPLIANCE_AVAILABLE = False
 
 try:
-    from greenlang.employee_commuting.models import (
+    from greenlang.agents.mrv.employee_commuting.models import (
         ComplianceFramework,
         ComplianceStatus,
     )
@@ -86,7 +86,7 @@ def _make_mock_config(
 def engine():
     """Create a fresh ComplianceCheckerEngine with mocked config."""
     with patch(
-        "greenlang.employee_commuting.compliance_checker.get_config"
+        "greenlang.agents.mrv.employee_commuting.compliance_checker.get_config"
     ) as mock_config:
         mock_config.return_value = _make_mock_config()
         eng = ComplianceCheckerEngine()
@@ -696,7 +696,7 @@ class TestSingletonPattern:
     def test_get_instance_returns_same(self):
         """get_instance returns the same object on repeated calls."""
         with patch(
-            "greenlang.employee_commuting.compliance_checker.get_config"
+            "greenlang.agents.mrv.employee_commuting.compliance_checker.get_config"
         ) as mock_config:
             mock_config.return_value = _make_mock_config()
             inst1 = ComplianceCheckerEngine.get_instance()
@@ -706,7 +706,7 @@ class TestSingletonPattern:
     def test_reset_instance_clears(self):
         """reset_instance allows new instance creation."""
         with patch(
-            "greenlang.employee_commuting.compliance_checker.get_config"
+            "greenlang.agents.mrv.employee_commuting.compliance_checker.get_config"
         ) as mock_config:
             mock_config.return_value = _make_mock_config()
             inst1 = ComplianceCheckerEngine.get_instance()

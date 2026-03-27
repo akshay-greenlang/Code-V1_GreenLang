@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.end_of_life_treatment.provenance import (
+    from greenlang.agents.mrv.end_of_life_treatment.provenance import (
         ProvenanceChainBuilder,
         ProvenanceChain,
         ProvenanceStage,

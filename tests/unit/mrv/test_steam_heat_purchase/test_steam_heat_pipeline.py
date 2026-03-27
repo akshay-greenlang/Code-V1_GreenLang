@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.steam_heat_pipeline import (
+    from greenlang.agents.mrv.steam_heat_purchase.steam_heat_pipeline import (
         SteamHeatPipelineEngine,
         SUPPORTED_ENERGY_TYPES,
         PIPELINE_STAGES,
@@ -36,7 +36,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not PIPELINE_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.steam_heat_pipeline not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.steam_heat_pipeline not importable",
 )
 
 

@@ -36,7 +36,7 @@ import pytest
 # ============================================================================
 
 try:
-    from greenlang.use_of_sold_products.product_use_database import (
+    from greenlang.agents.mrv.use_of_sold_products.product_use_database import (
         ProductUseDatabaseEngine,
     )
     PRODUCT_DB_AVAILABLE = True
@@ -45,7 +45,7 @@ except ImportError:
     ProductUseDatabaseEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.use_of_sold_products.direct_emissions_calculator import (
+    from greenlang.agents.mrv.use_of_sold_products.direct_emissions_calculator import (
         DirectEmissionsCalculatorEngine,
     )
     DIRECT_CALC_AVAILABLE = True
@@ -54,7 +54,7 @@ except ImportError:
     DirectEmissionsCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.use_of_sold_products.indirect_emissions_calculator import (
+    from greenlang.agents.mrv.use_of_sold_products.indirect_emissions_calculator import (
         IndirectEmissionsCalculatorEngine,
     )
     INDIRECT_CALC_AVAILABLE = True
@@ -63,7 +63,7 @@ except ImportError:
     IndirectEmissionsCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.use_of_sold_products.fuels_feedstocks_calculator import (
+    from greenlang.agents.mrv.use_of_sold_products.fuels_feedstocks_calculator import (
         FuelsAndFeedstocksCalculatorEngine,
     )
     FUELS_CALC_AVAILABLE = True
@@ -72,7 +72,7 @@ except ImportError:
     FuelsAndFeedstocksCalculatorEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.use_of_sold_products.lifetime_modeling import (
+    from greenlang.agents.mrv.use_of_sold_products.lifetime_modeling import (
         LifetimeModelingEngine,
     )
     LIFETIME_AVAILABLE = True
@@ -81,7 +81,7 @@ except ImportError:
     LifetimeModelingEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.use_of_sold_products.compliance_checker import (
+    from greenlang.agents.mrv.use_of_sold_products.compliance_checker import (
         ComplianceCheckerEngine,
     )
     COMPLIANCE_AVAILABLE = True
@@ -90,7 +90,7 @@ except ImportError:
     ComplianceCheckerEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.use_of_sold_products.use_of_sold_products_pipeline import (
+    from greenlang.agents.mrv.use_of_sold_products.use_of_sold_products_pipeline import (
         UseOfSoldProductsPipelineEngine,
     )
     PIPELINE_AVAILABLE = True
@@ -99,13 +99,13 @@ except ImportError:
     UseOfSoldProductsPipelineEngine = None  # type: ignore[assignment, misc]
 
 try:
-    from greenlang.use_of_sold_products.config import get_config, reset_config
+    from greenlang.agents.mrv.use_of_sold_products.config import get_config, reset_config
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False
 
 try:
-    from greenlang.use_of_sold_products.provenance import (
+    from greenlang.agents.mrv.use_of_sold_products.provenance import (
         ProvenanceChainBuilder,
     )
     PROVENANCE_AVAILABLE = True
@@ -113,7 +113,7 @@ except ImportError:
     PROVENANCE_AVAILABLE = False
 
 try:
-    from greenlang.use_of_sold_products.setup import (
+    from greenlang.agents.mrv.use_of_sold_products.setup import (
         UseOfSoldProductsService,
     )
     SETUP_AVAILABLE = True

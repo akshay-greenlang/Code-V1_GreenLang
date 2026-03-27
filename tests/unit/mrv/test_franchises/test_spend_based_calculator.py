@@ -17,7 +17,7 @@ from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 import pytest
 
-from greenlang.franchises.spend_based_calculator import (
+from greenlang.agents.mrv.franchises.spend_based_calculator import (
     SpendBasedCalculatorEngine,
     FranchiseNetworkInput,
     NetworkAggregationResult,

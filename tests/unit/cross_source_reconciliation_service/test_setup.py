@@ -3,7 +3,7 @@
 Unit Tests for CrossSourceReconciliationService (AGENT-DATA-015)
 =================================================================
 
-Comprehensive test suite for ``greenlang.cross_source_reconciliation.setup``
+Comprehensive test suite for ``greenlang.agents.data.cross_source_reconciliation.setup``
 covering the ``CrossSourceReconciliationService`` facade, all public methods,
 lifecycle, statistics, provenance, configuration helpers, singleton
 management, and full end-to-end workflows.
@@ -26,7 +26,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.cross_source_reconciliation.setup import (
+from greenlang.agents.data.cross_source_reconciliation.setup import (
     CrossSourceReconciliationService,
     configure_reconciliation,
     get_reconciliation,
@@ -86,7 +86,7 @@ def _patch_engines_and_reset():
     engine construction. All facade methods exercise the fallback code
     paths instead.
     """
-    import greenlang.cross_source_reconciliation.setup as setup_mod
+    import greenlang.agents.data.cross_source_reconciliation.setup as setup_mod
 
     engine_names = [
         "SourceRegistryEngine",

@@ -15,10 +15,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.reporting_table_generator import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.reporting_table_generator import (
     ReportingTableGeneratorEngine,
 )
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     ReconciliationWorkspace,
     DiscrepancyReport,
     QualityAssessment,

@@ -19,7 +19,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.fugitive_emissions.leak_detection import (
+from greenlang.agents.mrv.fugitive_emissions.leak_detection import (
     LeakDetectionEngine,
     SurveyType,
     SurveyStatus,

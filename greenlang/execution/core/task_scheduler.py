@@ -31,7 +31,7 @@ from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple, TypeVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from greenlang.orchestrator.quotas.manager import QuotaManager
+    from greenlang.agents.foundation.orchestrator.quotas.manager import QuotaManager
 
 logger = logging.getLogger(__name__)
 

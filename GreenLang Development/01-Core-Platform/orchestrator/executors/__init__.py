@@ -13,7 +13,7 @@ Available Backends:
 Author: GreenLang Team
 """
 
-from greenlang.orchestrator.executors.base import (
+from greenlang.agents.foundation.orchestrator.executors.base import (
     ExecutorBackend,
     RunContext,
     StepResult,
@@ -27,7 +27,7 @@ StepStatus = ExecutionStatus
 
 # K8s executor is optional (requires kubernetes_asyncio)
 try:
-    from greenlang.orchestrator.executors.k8s_executor import K8sExecutor, K8sExecutorConfig
+    from greenlang.agents.foundation.orchestrator.executors.k8s_executor import K8sExecutor, K8sExecutorConfig
     KUBERNETES_AVAILABLE = True
 except ImportError:
     K8sExecutor = None

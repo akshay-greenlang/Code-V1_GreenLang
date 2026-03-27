@@ -38,7 +38,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.employee_commuting.employee_commuting_pipeline import (
+    from greenlang.agents.mrv.employee_commuting.employee_commuting_pipeline import (
         EmployeeCommutingPipelineEngine,
     )
     PIPELINE_AVAILABLE = True
@@ -46,7 +46,7 @@ except ImportError:
     PIPELINE_AVAILABLE = False
 
 try:
-    from greenlang.employee_commuting.models import (
+    from greenlang.agents.mrv.employee_commuting.models import (
         CommuteMode,
         CalculationMethod,
         VehicleType,

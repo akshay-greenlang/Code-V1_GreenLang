@@ -13,12 +13,12 @@ import pytest
 from decimal import Decimal
 from typing import Any, Dict, List
 
-from greenlang.dual_reporting_reconciliation.quality_scorer import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.quality_scorer import (
     QualityScorerEngine,
     ENGINE_ID,
     ENGINE_VERSION,
 )
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     EnergyType,
     Scope2Method,
     QualityDimension,

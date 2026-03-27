@@ -584,9 +584,9 @@ class ConsolidatedReportingWorkflow:
         Agents invoked (per entity):
             - greenlang.agents.data.erp_connector_agent
             - greenlang.agents.data.document_ingestion_agent
-            - greenlang.data_quality_profiler
-            - greenlang.validation_rule_engine
-            - greenlang.data_lineage_tracker
+            - greenlang.agents.data.data_quality_profiler
+            - greenlang.agents.data.validation_rule_engine
+            - greenlang.agents.data.data_lineage_tracker
         """
         phase_name = "parallel_data_collection"
         errors: List[str] = []
@@ -684,7 +684,7 @@ class ConsolidatedReportingWorkflow:
 
         Agents invoked (per entity):
             - All 30 MRV agents (Scope 1/2/3) via greenlang MRV bridge
-            - greenlang.validation_rule_engine (entity validation)
+            - greenlang.agents.data.validation_rule_engine (entity validation)
         """
         phase_name = "entity_calculations"
         errors: List[str] = []

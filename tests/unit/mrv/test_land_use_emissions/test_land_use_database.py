@@ -19,7 +19,7 @@ from decimal import Decimal
 
 import pytest
 
-from greenlang.land_use_emissions.land_use_database import (
+from greenlang.agents.mrv.land_use_emissions.land_use_database import (
     LandUseDatabaseEngine,
     LandCategory,
     ClimateZone,

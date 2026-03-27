@@ -12,7 +12,7 @@ import pytest
 from datetime import datetime
 from typing import Any, Dict, List
 
-from greenlang.schema.suggestions.engine import (
+from greenlang.agents.foundation.schema.suggestions.engine import (
     FixSuggestionEngine,
     SuggestionEngineResult,
     generate_suggestions,
@@ -20,10 +20,10 @@ from greenlang.schema.suggestions.engine import (
     get_fixable_codes,
     FIXABLE_CODES,
 )
-from greenlang.schema.compiler.ir import SchemaIR, PropertyIR, NumericConstraintIR, UnitSpecIR
-from greenlang.schema.models.config import ValidationOptions, PatchLevel
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.models.patch import FixSuggestion, PatchSafety, JSONPatchOp
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, PropertyIR, NumericConstraintIR, UnitSpecIR
+from greenlang.agents.foundation.schema.models.config import ValidationOptions, PatchLevel
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.patch import FixSuggestion, PatchSafety, JSONPatchOp
 
 
 # =============================================================================

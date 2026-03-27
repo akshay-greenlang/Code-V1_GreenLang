@@ -15,7 +15,7 @@ Design Goals:
     - Pythonic conventions throughout
 
 Quick Start:
-    >>> from greenlang.schema import validate, compile_schema, SchemaRef
+    >>> from greenlang.agents.foundation.schema import validate, compile_schema, SchemaRef
     >>>
     >>> # Simple validation
     >>> result = validate(payload, "gl://schemas/activity@1.0.0")
@@ -64,29 +64,29 @@ from typing import (
     overload,
 )
 
-from greenlang.schema.compiler.compiler import SchemaCompiler
-from greenlang.schema.compiler.ir import SchemaIR, CompilationResult
-from greenlang.schema.compiler.parser import parse_payload, ParseError
-from greenlang.schema.constants import MAX_BATCH_ITEMS
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.compiler.compiler import SchemaCompiler
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, CompilationResult
+from greenlang.agents.foundation.schema.compiler.parser import parse_payload, ParseError
+from greenlang.agents.foundation.schema.constants import MAX_BATCH_ITEMS
+from greenlang.agents.foundation.schema.models.config import (
     CoercionPolicy,
     PatchLevel,
     UnknownFieldPolicy,
     ValidationOptions,
     ValidationProfile,
 )
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.models.patch import FixSuggestion, JSONPatchOp, PatchSafety
-from greenlang.schema.models.report import (
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.models.patch import FixSuggestion, JSONPatchOp, PatchSafety
+from greenlang.agents.foundation.schema.models.report import (
     BatchValidationReport,
     ItemResult,
     ValidationReport,
     ValidationSummary,
 )
-from greenlang.schema.models.schema_ref import SchemaRef
-from greenlang.schema.registry.resolver import SchemaRegistry
-from greenlang.schema.validator.core import SchemaValidator
-from greenlang.schema.validator.units import UnitCatalog
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry
+from greenlang.agents.foundation.schema.validator.core import SchemaValidator
+from greenlang.agents.foundation.schema.validator.units import UnitCatalog
 
 
 logger = logging.getLogger(__name__)
@@ -692,7 +692,7 @@ def apply_fixes(
         fixes. The original payload is never modified.
     """
     # Import here to avoid circular import
-    from greenlang.schema.suggestions.engine import apply_suggestions
+    from greenlang.agents.foundation.schema.suggestions.engine import apply_suggestions
 
     # Convert safety string to PatchSafety
     safety_level = PatchSafety(safety)
@@ -966,7 +966,7 @@ def _create_compile_error_report(
     Internal helper for generating error reports when schema
     compilation fails.
     """
-    from greenlang.schema.models.report import TimingInfo
+    from greenlang.agents.foundation.schema.models.report import TimingInfo
 
     findings = [
         Finding(
@@ -1008,7 +1008,7 @@ def _create_batch_compile_error_report(
     Internal helper for generating batch error reports when schema
     compilation fails.
     """
-    from greenlang.schema.models.report import BatchSummary
+    from greenlang.agents.foundation.schema.models.report import BatchSummary
 
     compile_findings = [
         Finding(

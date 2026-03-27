@@ -25,7 +25,7 @@ import pytest
 import time
 
 # Note: Adjust imports when actual metrics are implemented
-# from greenlang.upstream_transportation.metrics import (
+# from greenlang.agents.mrv.upstream_transportation.metrics import (
 #     MetricsManager,
 #     calculations_total,
 #     emissions_tco2e_total,
@@ -589,7 +589,7 @@ class TestMetricsErrorHandling:
 
     def test_graceful_degradation_without_prometheus(self):
         """Test metrics work without Prometheus installed."""
-        with patch("greenlang.upstream_transportation.metrics.PROMETHEUS_AVAILABLE", False):
+        with patch("greenlang.agents.mrv.upstream_transportation.metrics.PROMETHEUS_AVAILABLE", False):
             # manager = MetricsManager()
             # Should not raise error
             # manager.record_calculation(
@@ -604,7 +604,7 @@ class TestMetricsErrorHandling:
 
     def test_error_in_metric_recording_does_not_crash(self):
         """Test error in metric recording does not crash calculation."""
-        # with patch("greenlang.upstream_transportation.metrics.calculations_total") as mock_counter:
+        # with patch("greenlang.agents.mrv.upstream_transportation.metrics.calculations_total") as mock_counter:
         #     mock_counter.labels.side_effect = Exception("Prometheus error")
         #     manager = MetricsManager()
         #     # Should log error but not raise

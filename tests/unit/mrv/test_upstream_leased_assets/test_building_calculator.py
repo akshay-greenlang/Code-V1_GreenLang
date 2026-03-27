@@ -23,10 +23,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.upstream_leased_assets.building_calculator import (
+    from greenlang.agents.mrv.upstream_leased_assets.building_calculator import (
         BuildingCalculatorEngine,
     )
-    from greenlang.upstream_leased_assets.models import (
+    from greenlang.agents.mrv.upstream_leased_assets.models import (
         BuildingType,
         ClimateZone,
         AllocationMethod,

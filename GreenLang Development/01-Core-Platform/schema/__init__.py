@@ -20,7 +20,7 @@ Key Components:
     - api: FastAPI HTTP service
 
 Example:
-    >>> from greenlang.schema import validate, SchemaRef
+    >>> from greenlang.agents.foundation.schema import validate, SchemaRef
     >>> result = validate(
     ...     payload={"energy": 100, "unit": "kWh"},
     ...     schema=SchemaRef(schema_id="emissions/activity", version="1.3.0")
@@ -35,7 +35,7 @@ Agent ID: GL-FOUND-X-002
 Agent Name: GreenLang Schema Compiler & Validator
 """
 
-from greenlang.schema.version import (
+from greenlang.agents.foundation.schema.version import (
     __version__,
     __agent_id__,
     __agent_name__,
@@ -43,9 +43,9 @@ from greenlang.schema.version import (
     get_version_info,
 )
 
-from greenlang.schema.errors import ErrorCode, get_error_by_code
+from greenlang.agents.foundation.schema.errors import ErrorCode, get_error_by_code
 
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.constants import (
     MAX_PAYLOAD_BYTES,
     MAX_SCHEMA_BYTES,
     MAX_OBJECT_DEPTH,
@@ -56,7 +56,7 @@ from greenlang.schema.constants import (
 )
 
 # Core models
-from greenlang.schema.models import (
+from greenlang.agents.foundation.schema.models import (
     SchemaRef,
     ValidationProfile,
     CoercionPolicy,
@@ -78,7 +78,7 @@ from greenlang.schema.models import (
 )
 
 # SDK functions - user-friendly API
-from greenlang.schema.sdk import (
+from greenlang.agents.foundation.schema.sdk import (
     validate,
     validate_batch,
     compile_schema,

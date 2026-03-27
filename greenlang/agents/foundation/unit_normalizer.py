@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # NORMALIZER SDK DELEGATION
 # =============================================================================
-# When the greenlang.normalizer SDK package is installed, delegate
+# When the greenlang.agents.foundation.normalizer SDK package is installed, delegate
 # conversion operations to UnitConverter for consistent behaviour
 # across the codebase. Falls back gracefully to the built-in tables.
 
@@ -58,12 +58,12 @@ NORMALIZER_SDK_AVAILABLE = False
 _sdk_converter = None
 
 try:
-    from greenlang.normalizer.converter import UnitConverter as _SDKUnitConverter
+    from greenlang.agents.foundation.normalizer.converter import UnitConverter as _SDKUnitConverter
     NORMALIZER_SDK_AVAILABLE = True
     _sdk_converter = _SDKUnitConverter()
     logger.info(
         "Normalizer SDK available - delegating conversions to "
-        "greenlang.normalizer.converter.UnitConverter"
+        "greenlang.agents.foundation.normalizer.converter.UnitConverter"
     )
 except ImportError:
     logger.info(

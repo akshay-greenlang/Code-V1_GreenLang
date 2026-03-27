@@ -22,10 +22,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.upstream_leased_assets.it_assets_calculator import (
+    from greenlang.agents.mrv.upstream_leased_assets.it_assets_calculator import (
         ITAssetsCalculatorEngine,
     )
-    from greenlang.upstream_leased_assets.models import (
+    from greenlang.agents.mrv.upstream_leased_assets.models import (
         ITAssetType,
     )
     _AVAILABLE = True

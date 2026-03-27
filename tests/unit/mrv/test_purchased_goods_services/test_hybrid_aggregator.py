@@ -23,7 +23,7 @@ from typing import Dict, List, Any, Optional
 from unittest.mock import Mock, patch, MagicMock
 
 try:
-    from greenlang.purchased_goods_services.hybrid_aggregator import (
+    from greenlang.agents.mrv.purchased_goods_services.hybrid_aggregator import (
         HybridAggregatorEngine,
         HybridInput,
         HybridOutput,

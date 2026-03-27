@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.outlier_detector.api.router import FASTAPI_AVAILABLE
+from greenlang.agents.data.outlier_detector.api.router import FASTAPI_AVAILABLE
 
 # Skip the entire module if FastAPI is not installed
 pytestmark = pytest.mark.skipif(
@@ -37,7 +37,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture
 def mock_service():
     """Create a MagicMock that mimics OutlierDetectorService."""
-    from greenlang.outlier_detector.setup import (
+    from greenlang.agents.data.outlier_detector.setup import (
         BatchDetectionResponse,
         ClassificationResponse,
         DetectionResponse,
@@ -165,7 +165,7 @@ def client(mock_service):
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
-    from greenlang.outlier_detector.api.router import router
+    from greenlang.agents.data.outlier_detector.api.router import router
 
     app = FastAPI()
     app.include_router(router)
@@ -180,7 +180,7 @@ def client_no_service():
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
-    from greenlang.outlier_detector.api.router import router
+    from greenlang.agents.data.outlier_detector.api.router import router
 
     app = FastAPI()
     app.include_router(router)

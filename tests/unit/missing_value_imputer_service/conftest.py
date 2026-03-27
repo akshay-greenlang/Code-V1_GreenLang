@@ -38,7 +38,7 @@ def _clean_mvi_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Also reset the singleton config so each test starts fresh
-    from greenlang.missing_value_imputer.config import reset_config
+    from greenlang.agents.data.missing_value_imputer.config import reset_config
     reset_config()
 
     yield
@@ -54,7 +54,7 @@ def _clean_mvi_env(monkeypatch):
 
 def _make_config(**overrides):
     """Create a MissingValueImputerConfig with optional overrides."""
-    from greenlang.missing_value_imputer.config import MissingValueImputerConfig
+    from greenlang.agents.data.missing_value_imputer.config import MissingValueImputerConfig
 
     defaults = dict(
         database_url="postgresql://test:test@localhost:5432/testdb",
@@ -112,13 +112,13 @@ def _build_service(cfg=None):
     if cfg is None:
         cfg = _make_config()
 
-    from greenlang.missing_value_imputer.missingness_analyzer import MissingnessAnalyzerEngine
-    from greenlang.missing_value_imputer.statistical_imputer import StatisticalImputerEngine
-    from greenlang.missing_value_imputer.ml_imputer import MLImputerEngine
-    from greenlang.missing_value_imputer.rule_based_imputer import RuleBasedImputerEngine
-    from greenlang.missing_value_imputer.time_series_imputer import TimeSeriesImputerEngine
-    from greenlang.missing_value_imputer.validation_engine import ValidationEngine
-    from greenlang.missing_value_imputer.imputation_pipeline import ImputationPipelineEngine
+    from greenlang.agents.data.missing_value_imputer.missingness_analyzer import MissingnessAnalyzerEngine
+    from greenlang.agents.data.missing_value_imputer.statistical_imputer import StatisticalImputerEngine
+    from greenlang.agents.data.missing_value_imputer.ml_imputer import MLImputerEngine
+    from greenlang.agents.data.missing_value_imputer.rule_based_imputer import RuleBasedImputerEngine
+    from greenlang.agents.data.missing_value_imputer.time_series_imputer import TimeSeriesImputerEngine
+    from greenlang.agents.data.missing_value_imputer.validation_engine import ValidationEngine
+    from greenlang.agents.data.missing_value_imputer.imputation_pipeline import ImputationPipelineEngine
 
     analyzer = MissingnessAnalyzerEngine(cfg)
     stat_imputer = StatisticalImputerEngine(cfg)

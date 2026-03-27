@@ -22,8 +22,8 @@ Design Principles:
     - Idempotent: canonicalize(canonicalize(x)) == canonicalize(x)
 
 Example:
-    >>> from greenlang.schema.normalizer.canonicalizer import UnitCanonicalizer
-    >>> from greenlang.schema.units.catalog import UnitCatalog
+    >>> from greenlang.agents.foundation.schema.normalizer.canonicalizer import UnitCanonicalizer
+    >>> from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
     >>> catalog = UnitCatalog()
     >>> canonicalizer = UnitCanonicalizer(catalog)
     >>> value, records = canonicalizer.canonicalize(
@@ -49,8 +49,8 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from greenlang.schema.compiler.ir import SchemaIR, UnitSpecIR
-from greenlang.schema.units.catalog import UnitCatalog
+from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, UnitSpecIR
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
 
 
 logger = logging.getLogger(__name__)

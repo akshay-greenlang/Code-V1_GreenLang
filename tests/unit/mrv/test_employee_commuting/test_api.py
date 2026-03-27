@@ -24,7 +24,7 @@ import pytest
 # Import router and models
 # ---------------------------------------------------------------------------
 
-from greenlang.employee_commuting.api.router import (
+from greenlang.agents.mrv.employee_commuting.api.router import (
     router,
     CalculateRequest,
     BatchCalculateRequest,

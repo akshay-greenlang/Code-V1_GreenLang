@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.steam_heat_purchase.chp_allocation import (
+    from greenlang.agents.mrv.steam_heat_purchase.chp_allocation import (
         CHPAllocationEngine,
         FUEL_EMISSION_FACTORS,
         CHP_DEFAULT_EFFICIENCIES,
@@ -43,7 +43,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not CHP_AVAILABLE,
-    reason="greenlang.steam_heat_purchase.chp_allocation not importable",
+    reason="greenlang.agents.mrv.steam_heat_purchase.chp_allocation not importable",
 )
 
 # ---------------------------------------------------------------------------

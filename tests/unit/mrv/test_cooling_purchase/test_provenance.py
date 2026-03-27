@@ -19,7 +19,7 @@ from typing import Dict, Any
 import hashlib
 
 try:
-    from greenlang.cooling_purchase.provenance import (
+    from greenlang.agents.mrv.cooling_purchase.provenance import (
         CoolingPurchaseProvenance,
         ProvenanceStage,
     )

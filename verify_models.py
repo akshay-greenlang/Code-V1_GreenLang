@@ -3,12 +3,12 @@ import sys
 import types
 
 # Block gis_connector imports so stubs are used
-sys.modules["greenlang.gis_connector"] = types.ModuleType("x")
-sys.modules["greenlang.gis_connector.spatial_analyzer"] = types.ModuleType("x")
-sys.modules["greenlang.gis_connector.boundary_resolver"] = types.ModuleType("x")
-sys.modules["greenlang.gis_connector.crs_transformer"] = types.ModuleType("x")
+sys.modules["greenlang.agents.data.gis_connector"] = types.ModuleType("x")
+sys.modules["greenlang.agents.data.gis_connector.spatial_analyzer"] = types.ModuleType("x")
+sys.modules["greenlang.agents.data.gis_connector.boundary_resolver"] = types.ModuleType("x")
+sys.modules["greenlang.agents.data.gis_connector.crs_transformer"] = types.ModuleType("x")
 
-from greenlang.climate_hazard import models as mod
+from greenlang.agents.data.climate_hazard import models as mod
 
 # Verify models (14)
 models = [

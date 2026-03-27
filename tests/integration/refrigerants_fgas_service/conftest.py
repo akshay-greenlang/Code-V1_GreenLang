@@ -16,7 +16,7 @@ from typing import Any, Dict, Generator, List
 
 import pytest
 
-from greenlang.refrigerants_fgas.setup import RefrigerantsFGasService
+from greenlang.agents.mrv.refrigerants_fgas.setup import RefrigerantsFGasService
 
 
 # ---------------------------------------------------------------------------
@@ -39,7 +39,7 @@ def mock_agents():
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.refrigerants_fgas.config import (
+    from greenlang.agents.mrv.refrigerants_fgas.config import (
         RefrigerantsFGasConfig,
         reset_config,
     )
@@ -50,7 +50,7 @@ except ImportError:
         """No-op fallback when config module is unavailable."""
 
 try:
-    from greenlang.refrigerants_fgas.provenance import reset_provenance_tracker
+    from greenlang.agents.mrv.refrigerants_fgas.provenance import reset_provenance_tracker
 except ImportError:
 
     def reset_provenance_tracker() -> None:

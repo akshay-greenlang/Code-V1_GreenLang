@@ -30,7 +30,7 @@ _ENV_PREFIX = "GL_ACCESS_GUARD_"
 
 @dataclass
 class AccessGuardConfig:
-    """Mirrors greenlang.access_guard.config.AccessGuardConfig."""
+    """Mirrors greenlang.agents.foundation.access_guard.config.AccessGuardConfig."""
 
     # Enforcement
     strict_mode: bool = True

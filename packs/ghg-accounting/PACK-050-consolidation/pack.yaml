@@ -1,0 +1,355 @@
+# =============================================================================
+# PACK-050: GHG Consolidation Pack
+# GreenLang GHG Accounting Pack for Multi-Entity Corporate GHG Consolidation
+# =============================================================================
+# This pack delivers a production-ready, verification-grade multi-entity GHG
+# consolidation system covering entity registry, ownership chain management,
+# organisational boundary definition per GHG Protocol Corporate Standard
+# Chapter 3, equity share / operational control / financial control
+# consolidation approaches, inter-company elimination, M&A event handling
+# (acquisition, divestiture, merger, demerger), pro-rata adjustments,
+# adjustment and restatement processing, group reporting with multi-framework
+# output, and comprehensive audit trail generation.
+#
+# The pack follows a zero-hallucination approach: all consolidation
+# calculations, equity share adjustments, elimination netting, pro-rata
+# apportionment, variance analysis, and materiality assessments use
+# deterministic formulas from established standards (GHG Protocol, ISO
+# 14064-1, IFRS S2, SEC Climate Rules). No LLM is used in any calculation
+# path. Emission factors and ownership data are sourced from authoritative
+# registries with full provenance tracking via SHA-256 hashing.
+# =============================================================================
+
+pack:
+  id: PACK-050
+  name: "GHG Consolidation Pack"
+  version: "1.0.0"
+  category: "ghg-accounting"
+  tier: "enterprise"
+  status: "production-ready"
+  author: "GreenLang Platform Team"
+  date: "2026-03-27"
+  license: "Proprietary"
+  min_platform_version: "1.0.0"
+
+description:
+  short: "Multi-entity corporate GHG consolidation with equity share, operational control, financial control approaches, inter-company elimination, M&A handling, and multi-framework regulatory reporting"
+  long: |
+    PACK-050 provides the complete multi-entity corporate GHG consolidation
+    lifecycle per GHG Protocol Corporate Standard Chapter 3. It enables
+    registration of subsidiaries, joint ventures, associates, divisions,
+    branches, SPVs, franchises, and partnerships in a hierarchical entity
+    registry with multi-tier ownership chain tracking. The pack implements
+    all three GHG Protocol consolidation approaches (equity share,
+    operational control, financial control) with automatic boundary
+    determination based on ownership structure and control relationships.
+    Inter-company emission eliminations prevent double-counting of energy
+    transfers, waste transfers, product transfers, and service transfers
+    between group entities. M&A event handling covers acquisitions,
+    divestitures, mergers, demergers, JV formations, and JV dissolutions
+    with pro-rata apportionment by calendar days, reporting months, or
+    financial quarters. Adjustment and restatement processing supports
+    methodology changes, error corrections, scope reclassifications,
+    timing adjustments, and late submissions with full audit trail.
+    Group reporting generates consolidated GHG inventories with entity
+    breakdowns, ownership waterfall, elimination logs, M&A impact
+    analysis, scope breakdowns, trend analysis, and regulatory-specific
+    outputs for CSRD/ESRS E1, CDP, GRI 305, TCFD, SEC Climate, SBTi,
+    IFRS S2, UK SECR, and NGER.
+
+regulatory_basis:
+  - framework: "GHG Protocol Corporate Standard"
+    description: "Chapter 3: Setting Organisational Boundaries - equity share, operational control, financial control consolidation approaches"
+  - framework: "ISO 14064-1:2018"
+    description: "Clause 5: Organisational boundaries; Clause 6: Reporting boundaries for consolidated inventories"
+  - framework: "EU CSRD / ESRS E1"
+    description: "Consolidated GHG reporting across value chain for EU-regulated entities"
+  - framework: "US SEC Climate Rules"
+    description: "Registrant-level consolidated GHG disclosure including Scope 1/2 with assurance requirements"
+  - framework: "IFRS S2"
+    description: "Climate-related financial disclosures at consolidated reporting entity level"
+  - framework: "GRI 305"
+    description: "Consolidated organisational GHG emissions reporting (305-1, 305-2, 305-3)"
+  - framework: "CDP"
+    description: "Corporate climate questionnaire - consolidated emissions (C6/C7)"
+  - framework: "SBTi"
+    description: "Science Based Targets - consolidated base year inventory and boundary requirements"
+  - framework: "PCAF Global Standard"
+    description: "Data quality scoring for financial institution portfolio consolidation"
+
+components:
+  engines:
+    count: 10
+    items:
+      - name: "EntityRegistryEngine"
+        file: "engines/entity_registry_engine.py"
+        description: "Entity registry with classification, hierarchy, lifecycle management, and metadata"
+      - name: "OwnershipChainEngine"
+        file: "engines/ownership_chain_engine.py"
+        description: "Multi-tier ownership chain resolution, effective equity calculation, control determination"
+      - name: "BoundaryDeterminationEngine"
+        file: "engines/boundary_determination_engine.py"
+        description: "Organisational boundary determination per consolidation approach with materiality screening"
+      - name: "EquityShareEngine"
+        file: "engines/equity_share_engine.py"
+        description: "Equity share consolidation with proportional emissions allocation and waterfall reconciliation"
+      - name: "ControlApproachEngine"
+        file: "engines/control_approach_engine.py"
+        description: "Operational and financial control consolidation with 100%/0% inclusion logic"
+      - name: "EliminationEngine"
+        file: "engines/elimination_engine.py"
+        description: "Inter-company emission elimination for energy, waste, product, and service transfers"
+      - name: "MnAEventEngine"
+        file: "engines/mna_event_engine.py"
+        description: "M&A event processing with pro-rata apportionment and base year recalculation triggers"
+      - name: "AdjustmentEngine"
+        file: "engines/adjustment_engine.py"
+        description: "Adjustment and restatement processing for methodology changes, errors, reclassifications"
+      - name: "GroupReportingEngine"
+        file: "engines/group_reporting_engine.py"
+        description: "Consolidated group reports with entity breakdown, scope split, and multi-framework output"
+      - name: "ConsolidationAuditEngine"
+        file: "engines/consolidation_audit_engine.py"
+        description: "Audit trail generation with reconciliation checks, variance analysis, sign-off workflow"
+
+  workflows:
+    count: 8
+    items:
+      - name: "EntityOnboardingWorkflow"
+        file: "workflows/entity_onboarding_workflow.py"
+        phases: 5
+        description: "EntityRegistration -> OwnershipMapping -> BoundaryAssignment -> DataSetup -> Activation"
+      - name: "BoundaryReviewWorkflow"
+        file: "workflows/boundary_review_workflow.py"
+        phases: 5
+        description: "StructureReview -> OwnershipUpdate -> BoundaryRecalculation -> MaterialityCheck -> BoundaryLock"
+      - name: "ConsolidationRunWorkflow"
+        file: "workflows/consolidation_run_workflow.py"
+        phases: 6
+        description: "DataGather -> EquityAdjust -> EliminationProcess -> Reconcile -> Approve -> Publish"
+      - name: "MnAProcessingWorkflow"
+        file: "workflows/mna_processing_workflow.py"
+        phases: 5
+        description: "EventCapture -> ProRataCalculation -> BoundaryUpdate -> BaseYearReview -> Restatement"
+      - name: "AdjustmentWorkflow"
+        file: "workflows/adjustment_workflow.py"
+        phases: 4
+        description: "AdjustmentRequest -> ImpactAnalysis -> Approval -> Application"
+      - name: "GroupReportingWorkflow"
+        file: "workflows/group_reporting_workflow.py"
+        phases: 5
+        description: "DataValidation -> Consolidation -> FrameworkMapping -> ReportGeneration -> Distribution"
+      - name: "AuditPreparationWorkflow"
+        file: "workflows/audit_preparation_workflow.py"
+        phases: 5
+        description: "EvidenceGather -> ReconciliationCheck -> VarianceAnalysis -> SignOff -> PackageExport"
+      - name: "FullConsolidationPipelineWorkflow"
+        file: "workflows/full_consolidation_pipeline_workflow.py"
+        phases: 10
+        description: "End-to-end corporate GHG consolidation orchestration"
+
+  templates:
+    count: 10
+    items:
+      - name: "ConsolidatedGHGReport"
+        file: "templates/consolidated_ghg_report.py"
+      - name: "EntityBreakdownReport"
+        file: "templates/entity_breakdown_report.py"
+      - name: "OwnershipWaterfallReport"
+        file: "templates/ownership_waterfall_report.py"
+      - name: "EquityShareReport"
+        file: "templates/equity_share_report.py"
+      - name: "EliminationLogReport"
+        file: "templates/elimination_log_report.py"
+      - name: "MnAImpactReport"
+        file: "templates/mna_impact_report.py"
+      - name: "ScopeBreakdownReport"
+        file: "templates/scope_breakdown_report.py"
+      - name: "TrendAnalysisReport"
+        file: "templates/trend_analysis_report.py"
+      - name: "RegulatoryOutputReport"
+        file: "templates/regulatory_output_report.py"
+      - name: "ConsolidationDashboard"
+        file: "templates/consolidation_dashboard.py"
+
+  integrations:
+    count: 13
+    items:
+      - name: "PackOrchestrator"
+        file: "integrations/pack_orchestrator.py"
+        description: "10-phase DAG pipeline coordinator for consolidation lifecycle"
+      - name: "MRVBridge"
+        file: "integrations/mrv_bridge.py"
+        description: "30 AGENT-MRV agents for per-entity emissions calculation"
+      - name: "DataBridge"
+        file: "integrations/data_bridge.py"
+        description: "AGENT-DATA agents for entity data collection and quality"
+      - name: "Pack041Bridge"
+        file: "integrations/pack041_bridge.py"
+        description: "Scope 1-2 Complete - entity-level Scope 1+2 emissions"
+      - name: "Pack042043Bridge"
+        file: "integrations/pack042_043_bridge.py"
+        description: "Scope 3 Starter and Complete - entity-level Scope 3 emissions"
+      - name: "Pack044Bridge"
+        file: "integrations/pack044_bridge.py"
+        description: "Inventory Management - inventory structure and review workflows"
+      - name: "Pack045Bridge"
+        file: "integrations/pack045_bridge.py"
+        description: "Base Year Management - base year data and recalculation triggers"
+      - name: "Pack046047Bridge"
+        file: "integrations/pack046_047_bridge.py"
+        description: "Intensity Metrics and Benchmark - consolidated intensity calculations"
+      - name: "Pack049Bridge"
+        file: "integrations/pack049_bridge.py"
+        description: "Multi-Site Management - site-level data feeding entity consolidation"
+      - name: "FoundationBridge"
+        file: "integrations/foundation_bridge.py"
+        description: "FOUND-003 normaliser, FOUND-004 assumptions, FOUND-005 citations"
+      - name: "HealthCheck"
+        file: "integrations/health_check.py"
+        description: "20-category system verification for consolidation readiness"
+      - name: "SetupWizard"
+        file: "integrations/setup_wizard.py"
+        description: "8-step guided configuration for corporate group structure"
+      - name: "AlertBridge"
+        file: "integrations/alert_bridge.py"
+        description: "Deadline, completeness, variance, boundary change, M&A event, and approval alerts"
+
+  config:
+    file: "config/pack_config.py"
+    enums: 18
+    sub_configs: 16
+    presets: 8
+
+  presets:
+    - corporate_conglomerate
+    - financial_holding
+    - jv_partnership
+    - multinational
+    - private_equity
+    - real_estate_fund
+    - public_company
+    - sme_group
+
+agent_dependencies:
+  mrv:
+    count: 30
+    description: "All 30 AGENT-MRV agents for per-entity emissions calculation"
+  data:
+    count: 20
+    description: "AGENT-DATA agents for entity data collection and quality profiling"
+  foundation:
+    count: 3
+    description: "FOUND-003 (Normaliser), FOUND-004 (Assumptions), FOUND-005 (Citations)"
+
+pack_dependencies:
+  - pack_id: "PACK-041"
+    name: "Scope 1-2 Complete"
+    relationship: "Scope 1+2 emissions per entity for consolidation"
+    required: true
+  - pack_id: "PACK-042"
+    name: "Scope 3 Starter"
+    relationship: "Scope 3 emissions per entity (basic categories)"
+    required: false
+  - pack_id: "PACK-043"
+    name: "Scope 3 Complete"
+    relationship: "Scope 3 enterprise + multi-entity upstream/downstream"
+    required: false
+  - pack_id: "PACK-044"
+    name: "Inventory Management"
+    relationship: "Inventory structure, review workflows, and versioning"
+    required: false
+  - pack_id: "PACK-045"
+    name: "Base Year Management"
+    relationship: "Base year per entity and group-level recalculation"
+    required: false
+  - pack_id: "PACK-046"
+    name: "Intensity Metrics"
+    relationship: "Intensity metrics per entity and consolidated"
+    required: false
+  - pack_id: "PACK-047"
+    name: "Benchmark"
+    relationship: "External benchmark per entity and group"
+    required: false
+  - pack_id: "PACK-048"
+    name: "Assurance Prep"
+    relationship: "Assurance preparation for consolidated inventory"
+    required: false
+  - pack_id: "PACK-049"
+    name: "Multi-Site Management"
+    relationship: "Site-level data feeding entity-level consolidation"
+    required: false
+
+database:
+  schema: "ghg_consolidation"
+  table_prefix: "gl_cons_"
+  migrations:
+    start: "V416"
+    end: "V425"
+    count: 10
+    files:
+      - "V416__pack050_core_schema.sql"
+      - "V417__pack050_entity_registry.sql"
+      - "V418__pack050_ownership_chain.sql"
+      - "V419__pack050_boundary.sql"
+      - "V420__pack050_equity_share.sql"
+      - "V421__pack050_control_approach.sql"
+      - "V422__pack050_elimination.sql"
+      - "V423__pack050_mna_adjustments.sql"
+      - "V424__pack050_group_reporting.sql"
+      - "V425__pack050_views_indexes_seed.sql"
+
+performance:
+  entity_registry_operations: "<1 second per 1,000 entities"
+  ownership_chain_resolution: "<5 seconds for 500 entities with 5-tier depth"
+  boundary_determination: "<10 seconds for 500 entities"
+  equity_share_consolidation: "<30 seconds for 500 entities"
+  elimination_processing: "<15 seconds for 1,000 inter-company transfers"
+  mna_event_processing: "<20 seconds per event"
+  full_consolidation_run: "<5 minutes for 500 entities"
+  report_generation: "<10 seconds per format"
+
+security:
+  authentication: "JWT RS256 via SEC-001"
+  authorisation: "RBAC via SEC-002"
+  permissions:
+    - "consolidation:read"
+    - "consolidation:write"
+    - "consolidation:admin"
+    - "consolidation:approver"
+  encryption: "AES-256-GCM at rest via SEC-003"
+  tls: "TLS 1.3 in transit via SEC-004"
+  audit: "Full audit trail via SEC-005"
+  tenant_isolation: "RLS on all database tables"
+  provenance: "SHA-256 hash on every result"
+
+compliance:
+  zero_hallucination: true
+  deterministic_calculations: true
+  decimal_arithmetic: true
+  no_llm_in_calculations: true
+  sha256_provenance: true
+  consolidation_approaches:
+    - "Equity Share"
+    - "Operational Control"
+    - "Financial Control"
+  mna_handling:
+    - "Acquisition with pro-rata"
+    - "Divestiture with pro-rata"
+    - "Merger with boundary recalculation"
+    - "Demerger with boundary split"
+    - "JV Formation with equity assignment"
+    - "JV Dissolution with equity removal"
+  elimination_types:
+    - "Energy Transfer (intra-group electricity, steam, heat)"
+    - "Waste Transfer (intra-group waste processing)"
+    - "Product Transfer (intra-group product/material flow)"
+    - "Service Transfer (intra-group service emissions)"
+
+testing:
+  test_files: 18
+  test_functions: 700
+  pass_rate: "100%"
+  coverage_target: "95%+"
+  e2e_scenarios: 52
+  determinism_verified: true

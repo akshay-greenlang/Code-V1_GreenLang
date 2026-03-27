@@ -6,7 +6,7 @@ Tests all 12 enums, 14 SDK data models, 8 request models, constants,
 Layer 1 re-exports, Pydantic validation, serialization, and edge cases.
 
 AGENT-DATA-020: Climate Hazard Connector
-Target: 85%+ coverage of greenlang.climate_hazard.models
+Target: 85%+ coverage of greenlang.agents.data.climate_hazard.models
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from typing import Any, Dict
 import pytest
 from pydantic import ValidationError
 
-from greenlang.climate_hazard.models import (
+from greenlang.agents.data.climate_hazard.models import (
     # Constants
     DEFAULT_CONFIDENCE_THRESHOLD,
     DEFAULT_PIPELINE_BATCH_SIZE,
@@ -1649,7 +1649,7 @@ class TestModelsExports:
     """Verify __all__ export list covers key symbols."""
 
     def test_all_enums_exported(self) -> None:
-        from greenlang.climate_hazard import models as m
+        from greenlang.agents.data.climate_hazard import models as m
         enum_names = [
             "HazardType", "RiskLevel", "Scenario", "TimeHorizon",
             "AssetType", "ReportType", "ReportFormat", "DataSourceType",
@@ -1660,7 +1660,7 @@ class TestModelsExports:
             assert name in m.__all__, f"{name} missing from __all__"
 
     def test_all_sdk_models_exported(self) -> None:
-        from greenlang.climate_hazard import models as m
+        from greenlang.agents.data.climate_hazard import models as m
         model_names = [
             "Location", "HazardSource", "HazardDataRecord", "HazardEvent",
             "RiskIndex", "ScenarioProjection", "Asset", "ExposureResult",
@@ -1672,7 +1672,7 @@ class TestModelsExports:
             assert name in m.__all__, f"{name} missing from __all__"
 
     def test_all_request_models_exported(self) -> None:
-        from greenlang.climate_hazard import models as m
+        from greenlang.agents.data.climate_hazard import models as m
         request_names = [
             "RegisterSourceRequest", "IngestDataRequest",
             "CalculateRiskRequest", "ProjectScenarioRequest",

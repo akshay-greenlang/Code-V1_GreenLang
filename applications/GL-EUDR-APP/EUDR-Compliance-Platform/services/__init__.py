@@ -6,8 +6,8 @@ GL-EUDR-APP Backend Services - EU Deforestation Regulation Compliance Platform
 This package provides the core backend services for the GL-EUDR-APP
 compliance platform. It integrates with three GreenLang agents:
 
-- AGENT-DATA-005 (EUDR Traceability): ``greenlang.eudr_traceability``
-- AGENT-DATA-007 (Deforestation Satellite): ``greenlang.deforestation_satellite``
+- AGENT-DATA-005 (EUDR Traceability): ``greenlang.agents.data.eudr_traceability``
+- AGENT-DATA-007 (Deforestation Satellite): ``greenlang.agents.data.deforestation_satellite``
 - AGENT-EUDR-001 (Supply Chain Mapper): ``greenlang.agents.eudr.supply_chain_mapper``
 
 Core Engines:

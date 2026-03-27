@@ -34,7 +34,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any
 import pytest
 
-from greenlang.business_travel.provenance import (
+from greenlang.agents.mrv.business_travel.provenance import (
     ProvenanceEntry,
     ProvenanceChain,
     ProvenanceTracker,

@@ -22,7 +22,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from greenlang.land_use_emissions.api.router import create_router
+from greenlang.agents.mrv.land_use_emissions.api.router import create_router
 
 
 # ===================================================================
@@ -46,7 +46,7 @@ def app_client(mock_service):
     """Create a FastAPI TestClient with the router and mocked service.
 
     The router's ``_get_service`` closure calls
-    ``from greenlang.land_use_emissions.setup import get_service``
+    ``from greenlang.agents.mrv.land_use_emissions.setup import get_service``
     at request time. We patch that module-level function so every
     endpoint resolves to our mock.
     """
@@ -55,7 +55,7 @@ def app_client(mock_service):
     app.include_router(router)
 
     with patch(
-        "greenlang.land_use_emissions.setup.get_service",
+        "greenlang.agents.mrv.land_use_emissions.setup.get_service",
         return_value=mock_service,
     ):
         client = TestClient(app, raise_server_exceptions=False)
@@ -1425,7 +1425,7 @@ class TestRouterCreation:
         assert "Land Use Emissions" in router.tags
 
     def test_create_router_raises_without_fastapi(self):
-        import greenlang.land_use_emissions.api.router as mod
+        import greenlang.agents.mrv.land_use_emissions.api.router as mod
         original = mod.FASTAPI_AVAILABLE
         mod.FASTAPI_AVAILABLE = False
         try:
@@ -1455,7 +1455,7 @@ class TestServiceUnavailable:
         app.include_router(router)
 
         with patch(
-            "greenlang.land_use_emissions.setup.get_service",
+            "greenlang.agents.mrv.land_use_emissions.setup.get_service",
             return_value=None,
         ):
             client = TestClient(app, raise_server_exceptions=False)

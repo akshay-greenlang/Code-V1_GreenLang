@@ -33,7 +33,7 @@ _ENV_PREFIX = "GL_DEFORESTATION_SAT_"
 
 @dataclass
 class DeforestationSatelliteConfig:
-    """Mirrors greenlang.deforestation_satellite.config.DeforestationSatelliteConfig."""
+    """Mirrors greenlang.agents.data.deforestation_satellite.config.DeforestationSatelliteConfig."""
 
     # -- Connections
     database_url: str = ""

@@ -19,7 +19,7 @@ import threading
 
 import pytest
 
-from greenlang.observability_agent.config import (
+from greenlang.agents.foundation.observability_agent.config import (
     ObservabilityAgentConfig,
     get_config,
     reset_config,

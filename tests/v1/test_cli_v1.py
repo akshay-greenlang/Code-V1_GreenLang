@@ -160,8 +160,20 @@ def test_v1_run_profile_full_backend_csrd_vcci_strict_native(tmp_path, monkeypat
     assert vcci.exit_code == 0
     csrd_manifest = json.loads((csrd_out / "audit" / "run_manifest.json").read_text(encoding="utf-8"))
     vcci_manifest = json.loads((vcci_out / "audit" / "run_manifest.json").read_text(encoding="utf-8"))
+    csrd_report = json.loads((csrd_out / "esrs_report.json").read_text(encoding="utf-8"))
+    vcci_inventory = json.loads((vcci_out / "scope3_inventory.json").read_text(encoding="utf-8"))
     assert csrd_manifest["execution_mode"] == "native"
     assert vcci_manifest["execution_mode"] == "native"
+    assert csrd_manifest["app_id"] == "GL-CSRD-APP"
+    assert vcci_manifest["app_id"] == "GL-VCCI-Carbon-APP"
+    assert csrd_report.get("app_id") == "GL-CSRD-APP"
+    assert isinstance(csrd_report.get("records_processed", 0), int)
+    assert csrd_report.get("records_processed", 0) >= 0
+    assert vcci_inventory.get("app_id") == "GL-VCCI-Carbon-APP"
+    assert isinstance(vcci_inventory.get("records_processed", 0), int)
+    assert vcci_inventory.get("records_processed", 0) >= 0
+    assert isinstance(vcci_inventory.get("total_emissions_kgco2e", 0.0), (int, float))
+    assert vcci_inventory.get("total_emissions_kgco2e", 0.0) >= 0
 
 
 def test_v1_full_backend_checks_command_passes() -> None:

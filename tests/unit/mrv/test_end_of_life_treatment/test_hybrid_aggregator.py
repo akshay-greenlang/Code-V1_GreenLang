@@ -27,7 +27,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.end_of_life_treatment.hybrid_aggregator import (
+    from greenlang.agents.mrv.end_of_life_treatment.hybrid_aggregator import (
         HybridAggregatorEngine,
     )
     _AVAILABLE = True

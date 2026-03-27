@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import Dict
 
 try:
-    from greenlang.cooling_purchase.config import CoolingPurchaseConfig
+    from greenlang.agents.mrv.cooling_purchase.config import CoolingPurchaseConfig
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False

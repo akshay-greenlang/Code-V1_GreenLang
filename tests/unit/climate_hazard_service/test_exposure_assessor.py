@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.climate_hazard.exposure_assessor import (
+from greenlang.agents.data.climate_hazard.exposure_assessor import (
     AssetRecord,
     AssetType,
     EARTH_RADIUS_KM,

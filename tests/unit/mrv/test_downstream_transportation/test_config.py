@@ -37,7 +37,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.config import (
+    from greenlang.agents.mrv.downstream_transportation.config import (
         GeneralConfig,
         DatabaseConfig,
         RedisConfig,

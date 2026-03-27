@@ -19,7 +19,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from greenlang.waste_treatment_emissions.metrics import (
+from greenlang.agents.mrv.waste_treatment_emissions.metrics import (
     PROMETHEUS_AVAILABLE,
     # Metric objects
     wt_calculations_total,

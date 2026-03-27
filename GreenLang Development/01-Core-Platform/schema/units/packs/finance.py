@@ -4,7 +4,7 @@ Finance Unit Pack for GL-FOUND-X-002.
 Financial and monetary units.
 """
 
-from greenlang.schema.units.catalog import UnitCatalog, UnitDefinition
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog, UnitDefinition
 
 
 def load_finance_units(catalog: UnitCatalog) -> None:

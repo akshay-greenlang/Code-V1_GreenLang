@@ -3,7 +3,7 @@
 Shared pytest fixtures for AGENT-DATA-013 Outlier Detection Agent integration tests.
 
 Provides reusable test fixtures for:
-- Package stub for greenlang.outlier_detector (same pattern as unit tests)
+- Package stub for greenlang.agents.data.outlier_detector (same pattern as unit tests)
 - Environment cleanup (autouse)
 - Database mock fixtures (PostgreSQL + Redis)
 - Sample data fixtures (records with known outliers)
@@ -68,7 +68,7 @@ def _clean_od_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Also reset the singleton config so each test starts fresh
-    from greenlang.outlier_detector.config import reset_config
+    from greenlang.agents.data.outlier_detector.config import reset_config
 
     reset_config()
 
@@ -85,7 +85,7 @@ def _clean_od_env(monkeypatch):
 
 def _make_config(**overrides):
     """Create an OutlierDetectorConfig with optional overrides."""
-    from greenlang.outlier_detector.config import OutlierDetectorConfig
+    from greenlang.agents.data.outlier_detector.config import OutlierDetectorConfig
 
     defaults = dict(
         database_url="postgresql://test:test@localhost:5432/testdb",
@@ -132,7 +132,7 @@ def _build_service(config=None):
     Returns:
         OutlierDetectorService instance.
     """
-    from greenlang.outlier_detector.setup import OutlierDetectorService
+    from greenlang.agents.data.outlier_detector.setup import OutlierDetectorService
 
     cfg = config or _make_config()
     return OutlierDetectorService(config=cfg)

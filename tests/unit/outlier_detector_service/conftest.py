@@ -38,7 +38,7 @@ def _clean_od_env(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     # Also reset the singleton config so each test starts fresh
-    from greenlang.outlier_detector.config import reset_config
+    from greenlang.agents.data.outlier_detector.config import reset_config
     reset_config()
 
     yield
@@ -54,7 +54,7 @@ def _clean_od_env(monkeypatch):
 
 def _make_config(**overrides):
     """Create an OutlierDetectorConfig with optional overrides."""
-    from greenlang.outlier_detector.config import OutlierDetectorConfig
+    from greenlang.agents.data.outlier_detector.config import OutlierDetectorConfig
 
     defaults = dict(
         database_url="postgresql://test:test@localhost:5432/testdb",
@@ -109,7 +109,7 @@ def _build_service(cfg=None):
     if cfg is None:
         cfg = _make_config()
 
-    from greenlang.outlier_detector.setup import OutlierDetectorService
+    from greenlang.agents.data.outlier_detector.setup import OutlierDetectorService
     return OutlierDetectorService(config=cfg)
 
 
@@ -181,7 +181,7 @@ def sample_multivariate() -> List[Dict[str, float]]:
 @pytest.fixture
 def sample_detections():
     """Return pre-built OutlierScore and DetectionResult objects."""
-    from greenlang.outlier_detector.models import (
+    from greenlang.agents.data.outlier_detector.models import (
         DetectionMethod,
         DetectionResult,
         OutlierScore,
@@ -222,7 +222,7 @@ def sample_detections():
 @pytest.fixture
 def sample_thresholds():
     """Return 3 DomainThreshold objects."""
-    from greenlang.outlier_detector.models import DomainThreshold, ThresholdSource
+    from greenlang.agents.data.outlier_detector.models import DomainThreshold, ThresholdSource
 
     return [
         DomainThreshold(

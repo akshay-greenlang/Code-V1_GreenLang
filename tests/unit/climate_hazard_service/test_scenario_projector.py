@@ -22,7 +22,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.climate_hazard.scenario_projector import (
+from greenlang.agents.data.climate_hazard.scenario_projector import (
     ScenarioProjectorEngine,
     _HAZARD_DURATION_FACTORS,
     _HAZARD_PROBABILITY_FACTORS,

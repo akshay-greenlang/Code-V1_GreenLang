@@ -37,12 +37,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.duplicate_detector.config import (
+from greenlang.agents.data.duplicate_detector.config import (
     DuplicateDetectorConfig,
     reset_config,
     set_config,
 )
-from greenlang.duplicate_detector.setup import DuplicateDetectorService
+from greenlang.agents.data.duplicate_detector.setup import DuplicateDetectorService
 
 try:
     from fastapi import FastAPI
@@ -93,7 +93,7 @@ def service(config: DuplicateDetectorConfig) -> DuplicateDetectorService:
 @pytest.fixture
 def app(service: DuplicateDetectorService) -> "FastAPI":
     """Create a FastAPI app with the duplicate detector service configured."""
-    from greenlang.duplicate_detector.api.router import router
+    from greenlang.agents.data.duplicate_detector.api.router import router
 
     application = FastAPI()
     application.state.duplicate_detector_service = service
@@ -854,7 +854,7 @@ class TestServiceNotConfigured:
     """Tests for service not configured error (503)."""
 
     def test_health_503_when_no_service(self):
-        from greenlang.duplicate_detector.api.router import router
+        from greenlang.agents.data.duplicate_detector.api.router import router
 
         application = FastAPI()
         # Do NOT set duplicate_detector_service on app.state
@@ -865,7 +865,7 @@ class TestServiceNotConfigured:
         assert resp.status_code == 503
 
     def test_stats_503_when_no_service(self):
-        from greenlang.duplicate_detector.api.router import router
+        from greenlang.agents.data.duplicate_detector.api.router import router
 
         application = FastAPI()
         application.include_router(router)
@@ -875,7 +875,7 @@ class TestServiceNotConfigured:
         assert resp.status_code == 503
 
     def test_create_job_503_when_no_service(self):
-        from greenlang.duplicate_detector.api.router import router
+        from greenlang.agents.data.duplicate_detector.api.router import router
 
         application = FastAPI()
         application.include_router(router)

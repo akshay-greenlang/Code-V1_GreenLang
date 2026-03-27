@@ -30,7 +30,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.downstream_transport_pipeline import (
+    from greenlang.agents.mrv.downstream_transportation.downstream_transport_pipeline import (
         DownstreamTransportPipelineEngine,
     )
 except ImportError as exc:

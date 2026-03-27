@@ -16,7 +16,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.cross_source_reconciliation.metrics import (
+from greenlang.agents.data.cross_source_reconciliation.metrics import (
     PROMETHEUS_AVAILABLE,
     # 12 metric objects
     csr_jobs_processed_total,
@@ -570,84 +570,84 @@ class TestStubModeWithoutPrometheus:
 
     def test_inc_jobs_processed_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             inc_jobs_processed("failed")
 
     def test_inc_records_matched_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             inc_records_matched("exact", 10)
 
     def test_inc_comparisons_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             inc_comparisons("match", 5)
 
     def test_inc_discrepancies_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             inc_discrepancies("duplicate", "low")
 
     def test_inc_resolutions_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             inc_resolutions("average")
 
     def test_inc_golden_records_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             inc_golden_records("created")
 
     def test_observe_confidence_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             observe_confidence(0.75)
 
     def test_observe_duration_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             observe_duration(2.0)
 
     def test_observe_magnitude_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             observe_magnitude(50.0)
 
     def test_set_active_jobs_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             set_active_jobs(0)
 
     def test_set_pending_reviews_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             set_pending_reviews(0)
 
     def test_inc_errors_when_unavailable(self):
         with patch(
-            "greenlang.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
+            "greenlang.agents.data.cross_source_reconciliation.metrics.PROMETHEUS_AVAILABLE",
             False,
         ):
             inc_errors("timeout")

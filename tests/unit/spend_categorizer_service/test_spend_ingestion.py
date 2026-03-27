@@ -31,7 +31,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.spend_categorizer.spend_ingestion import (
+from greenlang.agents.data.spend_categorizer.spend_ingestion import (
     IngestionBatch,
     NormalizedSpendRecord,
     SpendIngestionEngine,

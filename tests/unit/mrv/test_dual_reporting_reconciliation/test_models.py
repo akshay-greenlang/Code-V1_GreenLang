@@ -14,7 +14,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.dual_reporting_reconciliation.models import (
+from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     # Module-level constants
     AGENT_ID,
     AGENT_COMPONENT,

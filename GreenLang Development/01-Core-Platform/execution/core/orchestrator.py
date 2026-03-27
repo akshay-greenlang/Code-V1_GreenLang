@@ -39,7 +39,7 @@ except ImportError:
 
 # FR-063: Import alert management
 try:
-    from greenlang.orchestrator.alerting import AlertManager, AlertType, AlertSeverity
+    from greenlang.agents.foundation.orchestrator.alerting import AlertManager, AlertType, AlertSeverity
     ALERTING_AVAILABLE = True
 except ImportError:
     ALERTING_AVAILABLE = False

@@ -26,17 +26,17 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.schema.compiler.ir import PropertyIR, SchemaIR
-from greenlang.schema.errors import ErrorCode
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.compiler.ir import PropertyIR, SchemaIR
+from greenlang.agents.foundation.schema.errors import ErrorCode
+from greenlang.agents.foundation.schema.models.config import (
     CoercionPolicy,
     PatchLevel,
     UnknownFieldPolicy,
     ValidationOptions,
     ValidationProfile,
 )
-from greenlang.schema.models.finding import Severity
-from greenlang.schema.validator.structural import (
+from greenlang.agents.foundation.schema.models.finding import Severity
+from greenlang.agents.foundation.schema.validator.structural import (
     PYTHON_TO_JSON_TYPE,
     TYPE_COMPATIBILITY,
     StructuralValidator,

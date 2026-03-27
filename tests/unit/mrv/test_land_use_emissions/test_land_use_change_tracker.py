@@ -24,7 +24,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.land_use_emissions.land_use_change_tracker import (
+from greenlang.agents.mrv.land_use_emissions.land_use_change_tracker import (
     LAND_CATEGORIES,
     DEFAULT_TRANSITION_PERIOD,
     TRANSITION_REMAINING,

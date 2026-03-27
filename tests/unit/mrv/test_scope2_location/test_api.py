@@ -21,14 +21,14 @@ from typing import Any, Dict
 import pytest
 
 try:
-    from greenlang.scope2_location.api.router import router as s2l_router
+    from greenlang.agents.mrv.scope2_location.api.router import router as s2l_router
     ROUTER_AVAILABLE = True
 except (ImportError, RuntimeError):
     ROUTER_AVAILABLE = False
     s2l_router = None
 
 try:
-    from greenlang.scope2_location.api.router import create_router
+    from greenlang.agents.mrv.scope2_location.api.router import create_router
     CREATE_ROUTER_AVAILABLE = True
 except ImportError:
     CREATE_ROUTER_AVAILABLE = False

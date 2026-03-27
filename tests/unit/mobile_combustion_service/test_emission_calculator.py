@@ -16,8 +16,8 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.mobile_combustion.emission_calculator import EmissionCalculatorEngine
-from greenlang.mobile_combustion.vehicle_database import VehicleDatabaseEngine
+from greenlang.agents.mrv.mobile_combustion.emission_calculator import EmissionCalculatorEngine
+from greenlang.agents.mrv.mobile_combustion.vehicle_database import VehicleDatabaseEngine
 
 
 # ===========================================================================

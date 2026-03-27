@@ -79,9 +79,13 @@ gl = "greenlang.cli.main:main"
 greenlang = "greenlang.cli.main:main"  # Backward compatibility
 
 [project.optional-dependencies]
+# ---------------------------------------------------------------------------
+# Data & Analytics (from config/requirements.txt, greenlang/monitoring/requirements.txt)
+# ---------------------------------------------------------------------------
 analytics = [
   "pandas==2.1.4",
   "numpy==1.26.3",
+  "scipy==1.12.0",
 ]
 cli = [
   "click==8.1.7",
@@ -91,18 +95,59 @@ data = [
   "pandas==2.1.4",
   "numpy==1.26.3",
   "openpyxl==3.1.2",
+  "xlrd==2.0.1",
   "jinja2==3.1.6",
   "weasyprint==60.2",
   "sqlalchemy==2.0.25",
   "alembic==1.13.1",
   "psycopg2-binary==2.9.9",
   "pymongo==4.16.0",
+  "lxml==5.1.0",
+  "beautifulsoup4==4.12.3",
+  "python-docx==1.1.0",
+  "python-dateutil==2.9.0.post0",
+  "simpleeval==1.0.5",
 ]
+# ---------------------------------------------------------------------------
+# PDF processing (from config/requirements.txt, config/requirements-pinned.txt)
+# ---------------------------------------------------------------------------
+pdf = [
+  "pdfplumber==0.10.3",
+  "pdfminer-six==20221105",
+  "pypdf2==3.0.1",
+  "pypdf==6.6.2",
+  "reportlab==4.0.9",
+  "pillow==12.1.1",
+]
+# ---------------------------------------------------------------------------
+# Visualization (from config/requirements.txt, greenlang/monitoring/requirements.txt)
+# ---------------------------------------------------------------------------
+visualization = [
+  "matplotlib==3.8.2",
+  "seaborn==0.13.2",
+  "plotly==5.18.0",
+]
+# ---------------------------------------------------------------------------
+# NLP (from config/requirements.txt - spaCy pipeline)
+# ---------------------------------------------------------------------------
+nlp = [
+  "spacy==3.8.11",
+  "spacy-legacy==3.0.12",
+  "spacy-loggers==1.0.5",
+]
+# ---------------------------------------------------------------------------
+# Graph database (from config/requirements-pinned.txt)
+# ---------------------------------------------------------------------------
+graph = [
+  "neo4j==5.16.0",
+]
+# ---------------------------------------------------------------------------
+# AI / LLM (from config/requirements.txt, tests/requirements_test.txt)
+# ---------------------------------------------------------------------------
 llm = [
   "openai==2.16.0",
-  # LangChain: Required for core GreenLang RAG tools (scripts/build_vector_store.py, greenlang/cli/assistant_rag.py)
-  # NOTE: GL-CSRD-APP uses greenlang.intelligence abstraction layer instead of direct LangChain imports
   "langchain==0.1.9",
+  "langchain-core==0.1.9",
   "langchain-openai==0.0.5",
   "langchain-community==0.4.1",
   "anthropic==0.18.1",
@@ -124,6 +169,11 @@ vector-db = [
 ai-full = [
   "greenlang-cli[llm,ml,vector-db]",
 ]
+# ---------------------------------------------------------------------------
+# Server / API (from config/requirements.txt, greenlang/integration/api/requirements.txt,
+#   greenlang/config/greenlang_registry/requirements.txt, greenlang/monitoring/requirements.txt,
+#   deployment/docker/base/requirements-base.txt)
+# ---------------------------------------------------------------------------
 server = [
   "aiohttp==3.9.3",
   "fastapi==0.109.2",
@@ -141,10 +191,21 @@ server = [
   "aioredis==2.0.1",
   "slowapi==0.1.9",
   "httpx==0.28.1",
+  "pydantic-settings==2.1.0",
+  "python-json-logger==2.0.7",
+  "aiofiles==23.2.1",
+  "cachetools==5.3.2",
+  "email-validator==2.1.0",
 ]
+# ---------------------------------------------------------------------------
+# Auth (from greenlang/integration/api/requirements.txt,
+#   greenlang/config/greenlang_registry/requirements.txt)
+# ---------------------------------------------------------------------------
 security = [
   "cryptography==46.0.3",
   "PyJWT==2.8.0",
+  "python-jose[cryptography]==3.4.0",
+  "passlib[bcrypt]==1.7.4",
 ]
 sbom = [
   "sigstore==3.0.0",
@@ -158,6 +219,22 @@ supply-chain = [
   "pip-audit==2.10.0",
   "safety==3.0.1",
 ]
+# ---------------------------------------------------------------------------
+# Monitoring (from greenlang/monitoring/requirements.txt)
+# ---------------------------------------------------------------------------
+monitoring = [
+  "prometheus-client==0.19.0",
+  "prometheus-api-client==0.5.3",
+  "elasticsearch==8.11.0",
+  "elasticsearch-dsl==8.11.0",
+  "statsd==4.0.1",
+  "python-pptx==0.6.23",
+  "markdown==3.8.1",
+  "aiosmtplib==3.0.1",
+]
+# ---------------------------------------------------------------------------
+# Testing (from config/requirements-test.txt, tests/requirements_test.txt)
+# ---------------------------------------------------------------------------
 test = [
   "pytest==7.4.4",
   "pytest-cov==4.1.0",
@@ -167,6 +244,8 @@ test = [
   "pytest-xdist==3.5.0",
   "pytest-benchmark==5.2.3",
   "pytest-regressions==2.5.0",
+  "pytest-html==3.2.0",
+  "pytest-json-report==1.5.0",
   "hypothesis==6.98.0",
   "psutil==7.1.3",
   "coverage[toml]==7.4.1",
@@ -174,11 +253,16 @@ test = [
   "responses==0.24.1",
   "freezegun==1.4.0",
   "factory-boy==3.3.0",
+  "deepdiff==6.7.1",
+  "httpx-mock==0.7.0",
   "greenlang-cli[cli]",
   "greenlang-cli[data]",
   "greenlang-cli[analytics]",
   "greenlang-cli[security]",
 ]
+# ---------------------------------------------------------------------------
+# Development (from config/requirements-test.txt, greenlang/monitoring/requirements.txt)
+# ---------------------------------------------------------------------------
 dev = [
   "mypy==1.8.0",
   "ruff==0.14.14",
@@ -198,19 +282,27 @@ dev = [
   "flake8==7.0.0",
   "pylint==3.0.3",
   "autopep8==2.0.4",
+  "memory-profiler==0.61.0",
+  "line-profiler==4.1.2",
 ]
 doc = [
   "mkdocs==1.5.3",
   "mkdocs-material==9.5.7",
   "mkdocstrings==0.24.0",
 ]
+# ---------------------------------------------------------------------------
+# Meta-groups
+# ---------------------------------------------------------------------------
 full = [
   "greenlang-cli[cli]",
   "greenlang-cli[data]",
   "greenlang-cli[analytics]",
+  "greenlang-cli[pdf]",
+  "greenlang-cli[visualization]",
   "greenlang-cli[llm]",
   "greenlang-cli[server]",
   "greenlang-cli[security]",
+  "greenlang-cli[monitoring]",
 ]
 all = [
   "greenlang-cli[full]",
@@ -218,6 +310,9 @@ all = [
   "greenlang-cli[dev]",
   "greenlang-cli[doc]",
   "greenlang-cli[ai-full]",
+  "greenlang-cli[nlp]",
+  "greenlang-cli[graph]",
+  "greenlang-cli[supply-chain]",
 ]
 
 # Removed setuptools_scm - using static version

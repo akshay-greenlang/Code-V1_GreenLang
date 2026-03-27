@@ -30,7 +30,7 @@ from typing import Dict, Any
 import pytest
 
 try:
-    from greenlang.upstream_leased_assets.provenance import (
+    from greenlang.agents.mrv.upstream_leased_assets.provenance import (
         ProvenanceEntry,
         ProvenanceChain,
         ProvenanceTracker,

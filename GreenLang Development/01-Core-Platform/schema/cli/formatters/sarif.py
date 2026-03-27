@@ -19,7 +19,7 @@ Features:
 - Configurable artifact URIs
 
 Example:
-    >>> from greenlang.schema.cli.formatters.sarif import SARIFFormatter
+    >>> from greenlang.agents.foundation.schema.cli.formatters.sarif import SARIFFormatter
     >>> formatter = SARIFFormatter(tool_name="greenlang-validator")
     >>> output = formatter.format(validation_report, source_file="data.yaml")
     >>> print(output)
@@ -35,9 +35,9 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Union
 
-from greenlang.schema.models.report import ValidationReport, BatchValidationReport
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.errors import ERROR_REGISTRY, ErrorCode, get_error_by_code
+from greenlang.agents.foundation.schema.models.report import ValidationReport, BatchValidationReport
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.errors import ERROR_REGISTRY, ErrorCode, get_error_by_code
 
 
 # SARIF severity levels mapping

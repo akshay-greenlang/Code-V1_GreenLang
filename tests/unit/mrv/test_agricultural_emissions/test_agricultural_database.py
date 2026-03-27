@@ -24,7 +24,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.agricultural_emissions.agricultural_database import (
+    from greenlang.agents.mrv.agricultural_emissions.agricultural_database import (
         AgriculturalDatabaseEngine,
     )
     DB_AVAILABLE = True

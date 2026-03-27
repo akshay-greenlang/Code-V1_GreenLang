@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Tuple
 
 import pytest
 
-from greenlang.process_emissions.material_balance import (
+from greenlang.agents.mrv.process_emissions.material_balance import (
     MaterialBalanceEngine,
     MaterialInput,
     CarbonBalance,
@@ -710,21 +710,21 @@ class TestCKDCorrection:
 
     def test_default_ckd_factor(self, engine: MaterialBalanceEngine):
         """Default CKD correction factor is 1.02 (2%)."""
-        from greenlang.process_emissions.material_balance import (
+        from greenlang.agents.mrv.process_emissions.material_balance import (
             CKD_CORRECTION_FACTOR_DEFAULT,
         )
         assert CKD_CORRECTION_FACTOR_DEFAULT == _D("1.02")
 
     def test_clinker_to_cement_ratio_default(self, engine: MaterialBalanceEngine):
         """Default clinker-to-cement ratio is 0.95."""
-        from greenlang.process_emissions.material_balance import (
+        from greenlang.agents.mrv.process_emissions.material_balance import (
             CLINKER_TO_CEMENT_RATIO_DEFAULT,
         )
         assert CLINKER_TO_CEMENT_RATIO_DEFAULT == _D("0.95")
 
     def test_clinker_ratio_bounds(self, engine: MaterialBalanceEngine):
         """Clinker ratio min=0.50, max=1.00."""
-        from greenlang.process_emissions.material_balance import (
+        from greenlang.agents.mrv.process_emissions.material_balance import (
             CLINKER_TO_CEMENT_RATIO_MIN,
             CLINKER_TO_CEMENT_RATIO_MAX,
         )

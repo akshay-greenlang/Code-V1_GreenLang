@@ -2,7 +2,7 @@
 """
 Unit tests for ChangeDetectorEngine - AGENT-DATA-017
 
-Tests the ChangeDetectorEngine from greenlang.schema_migration.change_detector
+Tests the ChangeDetectorEngine from greenlang.agents.data.schema_migration.change_detector
 with ~120 tests covering initialization, field additions, field removals,
 type changes, constraint changes, rename detection (Jaro-Winkler), nested
 changes, enum changes, default changes, array changes, reordering,
@@ -23,7 +23,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.schema_migration.change_detector import (
+from greenlang.agents.data.schema_migration.change_detector import (
     ChangeDetectorEngine,
     _jaro_similarity,
     _jaro_winkler_similarity,
@@ -36,7 +36,7 @@ from greenlang.schema_migration.change_detector import (
     _compute_sha256,
     _RENAME_SIMILARITY_THRESHOLD,
 )
-from greenlang.schema_migration.provenance import ProvenanceTracker
+from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
 
 
 # ---------------------------------------------------------------------------

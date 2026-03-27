@@ -33,14 +33,14 @@ from hypothesis import given, settings, assume, HealthCheck, Phase
 from hypothesis import strategies as st
 
 # Import components under test
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     ValidationProfile,
     CoercionPolicy,
     UnknownFieldPolicy,
 )
-from greenlang.schema.models.finding import Finding, Severity
-from greenlang.schema.compiler.ir import (
+from greenlang.agents.foundation.schema.models.finding import Finding, Severity
+from greenlang.agents.foundation.schema.compiler.ir import (
     SchemaIR, PropertyIR, NumericConstraintIR, StringConstraintIR,
     ArrayConstraintIR, CompiledPattern
 )

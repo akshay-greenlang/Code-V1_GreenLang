@@ -28,7 +28,7 @@ from typing import Any, Dict
 from unittest.mock import Mock, patch, MagicMock
 import pytest
 
-from greenlang.waste_generated.metrics import (
+from greenlang.agents.mrv.waste_generated.metrics import (
     WasteGeneratedMetrics,
     get_metrics,
     PROMETHEUS_AVAILABLE,

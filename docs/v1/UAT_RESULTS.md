@@ -6,9 +6,9 @@ Demonstrate that non-core teams can stand up each v1 app profile using standardi
 
 ## Immutable Evidence Header
 
-- Evidence run timestamp (UTC): `2026-03-26T16:45:17Z`
-- Commit SHA: `4e5ef5a72e4b61088086fa5aeaa3834b24e4ed4e`
-- Evidence workspace: `phase1_evidence/`
+- Evidence run timestamp (UTC): `2026-03-27T11:41:28Z`
+- Commit SHA: `0c12d8a57e30597739d4e18e5adc810dfbcc1f21`
+- Evidence workspace: `phase1_evidence/current_head/`
 - Strict mode: `GL_V1_ALLOW_BACKEND_FALLBACK=0`
 
 ## Test Protocol
@@ -51,6 +51,18 @@ gl run vcci applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/examples/sample
 ## Exit Criterion
 
 All three teams completed the protocol successfully without private tribal knowledge.
+
+## Current-HEAD Evidence Files
+
+- `phase1_evidence/current_head/metadata.txt`
+- `phase1_evidence/current_head/exit_codes.txt`
+- `phase1_evidence/current_head/v1_validate_contracts.log`
+- `phase1_evidence/current_head/v1_check_policy.log`
+- `phase1_evidence/current_head/v1_full_backend_checks.log`
+- `phase1_evidence/current_head/v1_gate.log`
+- `phase1_evidence/current_head/tests_v1_backend_semantics.log`
+- `phase1_evidence/current_head/tests_web_security_contract.log`
+- `phase1_evidence/current_head/extra_test_exit_codes.txt`
 
 ## Web UX Validation Addendum
 

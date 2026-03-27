@@ -20,14 +20,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.data_lineage_tracker.lineage_graph import LineageGraphEngine
-from greenlang.data_lineage_tracker.impact_analyzer import (
+from greenlang.agents.data.data_lineage_tracker.lineage_graph import LineageGraphEngine
+from greenlang.agents.data.data_lineage_tracker.impact_analyzer import (
     ImpactAnalyzerEngine,
     SEVERITY_THRESHOLDS,
     _ASSET_TYPE_WEIGHTS,
     _DEFAULT_ASSET_TYPE_WEIGHT,
 )
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
 
 # ============================================================================

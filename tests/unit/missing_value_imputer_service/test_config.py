@@ -19,7 +19,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.missing_value_imputer.config import (
+from greenlang.agents.data.missing_value_imputer.config import (
     MissingValueImputerConfig,
     get_config,
     reset_config,

@@ -8,7 +8,7 @@ provenance tracker, metrics, engines, setup facade, and API router.
 
 All tests are self-contained with no external dependencies.
 
-Includes a module-level stub for greenlang.spend_categorizer.__init__ to bypass
+Includes a module-level stub for greenlang.agents.data.spend_categorizer.__init__ to bypass
 engine imports that are not yet built, allowing direct submodule imports to work.
 
 Author: GreenLang Platform Team
@@ -28,13 +28,13 @@ import pytest
 
 # ---------------------------------------------------------------------------
 # Stub the spend_categorizer package to bypass broken __init__ imports.
-# This must run BEFORE any test module imports from greenlang.spend_categorizer.
+# This must run BEFORE any test module imports from greenlang.agents.data.spend_categorizer.
 # We register a lightweight package module that exposes the real submodules
 # (config, models, provenance, metrics) without triggering the full __init__
 # that tries to load engines not yet built.
 # ---------------------------------------------------------------------------
 
-_PKG_NAME = "greenlang.spend_categorizer"
+_PKG_NAME = "greenlang.agents.data.spend_categorizer"
 
 if _PKG_NAME not in sys.modules:
     # Only stub if the package has not been loaded yet
@@ -68,7 +68,7 @@ def _clean_spend_cat_env(monkeypatch):
             monkeypatch.delenv(key, raising=False)
 
     # Reset the config singleton so each test starts fresh
-    from greenlang.spend_categorizer.config import reset_config
+    from greenlang.agents.data.spend_categorizer.config import reset_config
 
     reset_config()
 

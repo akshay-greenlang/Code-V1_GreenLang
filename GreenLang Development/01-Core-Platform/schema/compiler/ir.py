@@ -20,7 +20,7 @@ Design Principles:
     - O(1) lookup for common validation operations
 
 Example:
-    >>> from greenlang.schema.compiler.ir import SchemaIR
+    >>> from greenlang.agents.foundation.schema.compiler.ir import SchemaIR
     >>> ir = compiler.compile(schema_source).ir
     >>> print(ir.schema_hash)
     >>> print(ir.properties["/energy_consumption"])

@@ -15,7 +15,7 @@ Components:
     - engine: Main fix suggestion orchestration
 
 Example:
-    >>> from greenlang.schema.suggestions import PatchGenerator, apply_patch
+    >>> from greenlang.agents.foundation.schema.suggestions import PatchGenerator, apply_patch
     >>> generator = PatchGenerator()
     >>> patch = generator.generate_add("/energy", {"value": 100, "unit": "kWh"})
     >>>
@@ -29,7 +29,7 @@ Version: 0.1.0
 GL-FOUND-X-002: Schema Compiler & Validator
 """
 
-from greenlang.schema.suggestions.patches import (
+from greenlang.agents.foundation.schema.suggestions.patches import (
     # Exceptions
     JSONPointerError,
     PatchApplicationError,
@@ -67,7 +67,7 @@ from greenlang.schema.suggestions.patches import (
 )
 
 # Safety classification
-from greenlang.schema.suggestions.safety import (
+from greenlang.agents.foundation.schema.suggestions.safety import (
     # Constants
     SAFE_OPERATIONS,
     NEEDS_REVIEW_OPERATIONS,
@@ -91,7 +91,7 @@ from greenlang.schema.suggestions.safety import (
 )
 
 # Heuristics for fix suggestions
-from greenlang.schema.suggestions.heuristics import (
+from greenlang.agents.foundation.schema.suggestions.heuristics import (
     FixHeuristics,
     MAX_TYPO_DISTANCE,
     MAX_ENUM_DISTANCE,
@@ -101,7 +101,7 @@ from greenlang.schema.suggestions.heuristics import (
 )
 
 # Engine for orchestrating fix suggestion generation
-from greenlang.schema.suggestions.engine import (
+from greenlang.agents.foundation.schema.suggestions.engine import (
     FIXABLE_CODES,
     SuggestionEngineResult,
     FixSuggestionEngine,

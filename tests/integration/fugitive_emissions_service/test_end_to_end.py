@@ -16,7 +16,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.fugitive_emissions.setup import (
+from greenlang.agents.mrv.fugitive_emissions.setup import (
     FugitiveEmissionsService,
     CalculateResponse,
     BatchCalculateResponse,

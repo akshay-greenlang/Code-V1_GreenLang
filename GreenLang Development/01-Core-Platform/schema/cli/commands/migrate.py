@@ -92,7 +92,7 @@ class ValidationPattern(BaseModel):
         ...     pattern_type="jsonschema",
         ...     code_snippet="jsonschema.validate(data, schema)",
         ...     migration_difficulty="easy",
-        ...     suggestion="Replace with greenlang.schema.validate()"
+        ...     suggestion="Replace with greenlang.agents.foundation.schema.validate()"
         ... )
     """
 
@@ -537,7 +537,7 @@ class MigrationAnalyzer:
                         migration_difficulty="easy",
                         suggestion=(
                             f"Replace {description} with "
-                            "greenlang.schema.validate(). "
+                            "greenlang.agents.foundation.schema.validate(). "
                             "GreenLang is compatible with JSON Schema Draft 2020-12."
                         ),
                     ))

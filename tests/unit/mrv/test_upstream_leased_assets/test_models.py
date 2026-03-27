@@ -28,7 +28,7 @@ import pytest
 from pydantic import ValidationError as PydanticValidationError
 
 try:
-    from greenlang.upstream_leased_assets.models import (
+    from greenlang.agents.mrv.upstream_leased_assets.models import (
         # Enumerations
         CalculationMethod,
         AssetCategory,

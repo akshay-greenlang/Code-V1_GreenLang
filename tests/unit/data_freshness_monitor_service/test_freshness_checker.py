@@ -21,14 +21,14 @@ import pytest
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List
 
-from greenlang.data_freshness_monitor.freshness_checker import (
+from greenlang.agents.data.data_freshness_monitor.freshness_checker import (
     FreshnessCheckerEngine,
     FreshnessCheck,
     FreshnessSummary,
     FreshnessLevel,
     SLAStatus,
 )
-from greenlang.data_freshness_monitor.config import DataFreshnessMonitorConfig
+from greenlang.agents.data.data_freshness_monitor.config import DataFreshnessMonitorConfig
 
 
 # ---------------------------------------------------------------------------

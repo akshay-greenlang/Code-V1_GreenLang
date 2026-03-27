@@ -30,7 +30,7 @@ Query/Response Models (14):
 Compatibility:
     Imports EUDRCommodity, CustodyModel (as BaseCustodyModel), RiskLevel
     (as BaseRiskLevel), and ComplianceStatus (as BaseComplianceStatus) from
-    greenlang.eudr_traceability.models for cross-agent consistency with
+    greenlang.agents.data.eudr_traceability.models for cross-agent consistency with
     AGENT-DATA-005 EUDR Traceability Connector.
 
 Author: GreenLang Platform Team
@@ -55,15 +55,22 @@ from pydantic import (
     model_validator,
 )
 
+from greenlang.schemas import (
+    GreenLangBase,
+    GreenLangRecord,
+    GreenLangRequest,
+    GreenLangResponse,
+    ProvenanceMixin,
+    utcnow,
+    new_uuid,
+)
+
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Helpers (local alias for backward compatibility)
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
+_utcnow = utcnow
 
 
 # ---------------------------------------------------------------------------
@@ -140,7 +147,7 @@ class EUDRCommodity(str, Enum):
     The EU Deforestation Regulation covers seven primary commodities
     and their key derived products as listed in Annex I of Regulation
     (EU) 2023/1115. This enum mirrors the definition in
-    greenlang.eudr_traceability.models for cross-agent consistency.
+    greenlang.agents.data.eudr_traceability.models for cross-agent consistency.
     """
 
     # Primary commodities

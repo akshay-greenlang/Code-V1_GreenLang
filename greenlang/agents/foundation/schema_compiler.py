@@ -52,14 +52,14 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.schema.sdk import validate as _sdk_validate
-    from greenlang.schema.models.finding import Severity as _SdkSeverity
-    from greenlang.schema.models.report import ValidationReport as _SdkValidationReport
+    from greenlang.agents.foundation.schema.sdk import validate as _sdk_validate
+    from greenlang.agents.foundation.schema.models.finding import Severity as _SdkSeverity
+    from greenlang.agents.foundation.schema.models.report import ValidationReport as _SdkValidationReport
     SCHEMA_SDK_AVAILABLE = True
 except ImportError:
     SCHEMA_SDK_AVAILABLE = False
     logger.info(
-        "greenlang.schema.sdk not available; using built-in jsonschema validation"
+        "greenlang.agents.foundation.schema.sdk not available; using built-in jsonschema validation"
     )
 
 
@@ -1379,7 +1379,7 @@ class SchemaCompilerAgent(BaseAgent):
         """
         Validate payload against JSON schema.
 
-        Attempts to delegate to the Layer 2 SDK (greenlang.schema.sdk)
+        Attempts to delegate to the Layer 2 SDK (greenlang.agents.foundation.schema.sdk)
         for richer validation. Falls back to jsonschema Draft-07 or
         basic validation if the SDK is unavailable.
 
@@ -1453,7 +1453,7 @@ class SchemaCompilerAgent(BaseAgent):
         agent.
 
         Args:
-            sdk_report: ValidationReport from greenlang.schema.sdk.validate().
+            sdk_report: ValidationReport from greenlang.agents.foundation.schema.sdk.validate().
 
         Returns:
             ValidationResult compatible with the foundation agent pipeline.

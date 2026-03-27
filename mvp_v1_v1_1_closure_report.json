@@ -1,0 +1,89 @@
+{
+  "report_id": "mvp-v1-v1_1-closure-2026-03-27",
+  "generated_at_utc": "2026-03-27T11:41:28Z",
+  "commit_sha": "0c12d8a57e30597739d4e18e5adc810dfbcc1f21",
+  "scope": {
+    "mvp": "CBAM flagship loop",
+    "v1": "platformization across CBAM/CSRD/VCCI",
+    "v1_1": "strict full-backend parity and evidence refresh",
+    "frontend": "multi-app shell + security/contract test coverage + CI quality blocker"
+  },
+  "release_profile": {
+    "strict_backend_mode": "GL_V1_ALLOW_BACKEND_FALLBACK=0",
+    "cbam_monorepo_fallback_policy": {
+      "env_flag": "GL_ALLOW_MONOREPO_CBAM_FALLBACK",
+      "release_blockers": [
+        "GL_RELEASE_STRICT=1",
+        "CI=true"
+      ]
+    }
+  },
+  "gate_commands": [
+    {
+      "name": "v1 validate contracts",
+      "command": "python -m greenlang.cli.main v1 validate-contracts",
+      "status": "pass",
+      "log": "phase1_evidence/current_head/v1_validate_contracts.log"
+    },
+    {
+      "name": "v1 signed-pack policy",
+      "command": "python -m greenlang.cli.main v1 check-policy",
+      "status": "pass",
+      "log": "phase1_evidence/current_head/v1_check_policy.log"
+    },
+    {
+      "name": "v1 full backend checks",
+      "command": "python -m greenlang.cli.main v1 full-backend-checks",
+      "status": "pass",
+      "log": "phase1_evidence/current_head/v1_full_backend_checks.log"
+    },
+    {
+      "name": "v1 release gate",
+      "command": "python -m greenlang.cli.main v1 gate",
+      "status": "pass",
+      "log": "phase1_evidence/current_head/v1_gate.log"
+    }
+  ],
+  "additional_tests": [
+    {
+      "name": "backend semantic tests",
+      "command": "python -m pytest -q tests/v1/test_full_backends.py tests/v1/test_cli_v1.py",
+      "status": "pass",
+      "log": "phase1_evidence/current_head/tests_v1_backend_semantics.log"
+    },
+    {
+      "name": "web security and contract tests",
+      "command": "python -m pytest -q cbam-pack-mvp/tests/test_web_security.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v1_contract.py",
+      "status": "pass",
+      "log": "phase1_evidence/current_head/tests_web_security_contract.log"
+    }
+  ],
+  "artifact_hashes_sha256": {
+    "phase1_evidence/cbam/cbam_report.xml": "d62568bc26dc3384ce7741849b133ce493eb5001ab0e9d814b545844e1a08db8",
+    "phase1_evidence/cbam/report_summary.xlsx": "b446802db4c788d7d1eacdd171a39616a984d8bcf187e4d1592ac0fe2e71ac2e",
+    "phase1_evidence/csrd/esrs_report.json": "a1e59b92c7dd6ca330ac0a1bfe8079c3ed566c92e32ac5690636fa3cd84d52ee",
+    "phase1_evidence/vcci/scope3_inventory.json": "bfbbc207677069f77b72cd510efba0de1eabc8b92900d9be3d82b232de9b1f6b"
+  },
+  "ci_blockers": [
+    ".github/workflows/cbam-mvp-ci.yml",
+    ".github/workflows/greenlang-v1-platform-ci.yml",
+    ".github/workflows/csrd-v1-backend-ci.yml",
+    ".github/workflows/vcci-v1-backend-ci.yml",
+    ".github/workflows/vcci-frontend-ci.yml"
+  ],
+  "docs_refreshed": [
+    "docs/v1/UAT_RESULTS.md",
+    "docs/v1/RC_SOAK_LOG.md",
+    "docs/v1/GO_NO_GO_RECORD.md",
+    "docs/v1/AUDIT_STATUS_MATRIX.md"
+  ],
+  "approval_metadata": {
+    "decision": "go",
+    "board": "v1 Release Board",
+    "notes": [
+      "All strict v1 gates passed on current HEAD.",
+      "Backend semantic tests and web security/contract tests passed.",
+      "Frontend quality blocker workflow added for VCCI frontend lint/type/test/build."
+    ]
+  }
+}

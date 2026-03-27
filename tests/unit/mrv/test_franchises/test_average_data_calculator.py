@@ -18,7 +18,7 @@ from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 import pytest
 
-from greenlang.franchises.average_data_calculator import (
+from greenlang.agents.mrv.franchises.average_data_calculator import (
     AverageDataCalculatorEngine,
     FranchiseUnitInput,
     FranchiseCalculationResult,

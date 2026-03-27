@@ -27,7 +27,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.waste_treatment_emissions.setup import (
+    from greenlang.agents.mrv.waste_treatment_emissions.setup import (
         WasteTreatmentEmissionsService,
         CalculateResponse,
         BatchCalculateResponse,

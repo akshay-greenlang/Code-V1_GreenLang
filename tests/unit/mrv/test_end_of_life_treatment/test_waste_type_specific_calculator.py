@@ -27,7 +27,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.end_of_life_treatment.waste_type_specific_calculator import (
+    from greenlang.agents.mrv.end_of_life_treatment.waste_type_specific_calculator import (
         WasteTypeSpecificCalculatorEngine,
     )
     _AVAILABLE = True

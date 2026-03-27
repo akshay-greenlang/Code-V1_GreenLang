@@ -21,15 +21,15 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.data_lineage_tracker.lineage_graph import LineageGraphEngine
-from greenlang.data_lineage_tracker.lineage_reporter import (
+from greenlang.agents.data.data_lineage_tracker.lineage_graph import LineageGraphEngine
+from greenlang.agents.data.data_lineage_tracker.lineage_reporter import (
     LineageReporterEngine,
     VALID_REPORT_TYPES,
     VALID_FORMATS,
     _sanitize_label,
     _compute_sha256,
 )
-from greenlang.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 
 
 # ============================================================================

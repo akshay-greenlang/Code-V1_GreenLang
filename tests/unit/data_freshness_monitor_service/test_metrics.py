@@ -7,7 +7,7 @@ helper functions, DummyCounter/DummyHistogram/DummyGauge fallback classes,
 metric labels, metric descriptions, and graceful fallback when
 prometheus_client is not installed.
 
-Target: 80+ tests, 85%+ coverage of greenlang.data_freshness_monitor.metrics
+Target: 80+ tests, 85%+ coverage of greenlang.agents.data.data_freshness_monitor.metrics
 
 Author: GreenLang Platform Team
 Date: February 2026
@@ -22,8 +22,8 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.data_freshness_monitor import metrics as metrics_mod
-from greenlang.data_freshness_monitor.metrics import (
+from greenlang.agents.data.data_freshness_monitor import metrics as metrics_mod
+from greenlang.agents.data.data_freshness_monitor.metrics import (
     PROMETHEUS_AVAILABLE,
     DummyCounter,
     DummyGauge,

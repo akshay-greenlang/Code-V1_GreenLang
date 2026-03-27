@@ -31,7 +31,7 @@ _ENV_PREFIX = "GL_EXCEL_NORMALIZER_"
 
 @dataclass
 class ExcelNormalizerConfig:
-    """Mirrors greenlang.excel_normalizer.config.ExcelNormalizerConfig."""
+    """Mirrors greenlang.agents.data.excel_normalizer.config.ExcelNormalizerConfig."""
 
     database_url: str = ""
     redis_url: str = ""

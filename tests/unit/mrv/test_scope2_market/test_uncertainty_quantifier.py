@@ -25,7 +25,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.scope2_market.uncertainty_quantifier import (
+    from greenlang.agents.mrv.scope2_market.uncertainty_quantifier import (
         UncertaintyQuantifierEngine,
         INSTRUMENT_UNCERTAINTY,
         RESIDUAL_MIX_UNCERTAINTY,

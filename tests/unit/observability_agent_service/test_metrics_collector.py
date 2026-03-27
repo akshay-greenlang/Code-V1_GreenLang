@@ -19,7 +19,7 @@ from typing import Any
 
 import pytest
 
-from greenlang.observability_agent.metrics_collector import (
+from greenlang.agents.foundation.observability_agent.metrics_collector import (
     DEFAULT_HISTOGRAM_BUCKETS,
     MetricDefinition,
     MetricRecording,

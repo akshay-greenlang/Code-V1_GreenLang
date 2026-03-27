@@ -1,5 +1,5 @@
 """
-Unit tests for greenlang.schema.errors module.
+Unit tests for greenlang.agents.foundation.schema.errors module.
 
 Tests all error codes defined in GL-FOUND-X-002 for:
     1. Uniqueness of all error codes
@@ -18,7 +18,7 @@ from typing import Set
 
 import pytest
 
-from greenlang.schema.errors import (
+from greenlang.agents.foundation.schema.errors import (
     ErrorCode,
     ErrorInfo,
     ErrorCategory,

@@ -21,7 +21,7 @@ from typing import Dict, List, Any, Optional
 from unittest.mock import Mock, patch, MagicMock
 
 try:
-    from greenlang.purchased_goods_services.supplier_specific_calculator import (
+    from greenlang.agents.mrv.purchased_goods_services.supplier_specific_calculator import (
         SupplierSpecificCalculatorEngine,
         SupplierSpecificInput,
         SupplierSpecificOutput,

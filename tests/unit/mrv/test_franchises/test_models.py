@@ -30,7 +30,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError as PydanticValidationError
 
-from greenlang.franchises.models import (
+from greenlang.agents.mrv.franchises.models import (
     # Metadata
     AGENT_ID,
     AGENT_COMPONENT,

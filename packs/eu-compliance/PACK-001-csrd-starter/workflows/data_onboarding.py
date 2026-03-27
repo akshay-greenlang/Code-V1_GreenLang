@@ -641,7 +641,7 @@ class DataOnboardingWorkflow:
 
         Agents invoked:
             - greenlang.agents.foundation.schema_compiler (type/format validation)
-            - greenlang.validation_rule_engine (business rule checks)
+            - greenlang.agents.data.validation_rule_engine (business rule checks)
             - greenlang.agents.foundation.unit_normalizer (unit consistency)
             - greenlang.outlier_detection (anomaly flagging)
         """
@@ -805,7 +805,7 @@ class DataOnboardingWorkflow:
         Establish a data quality baseline across all discovered sources.
 
         Agents invoked:
-            - greenlang.data_quality_profiler (comprehensive profiling)
+            - greenlang.agents.data.data_quality_profiler (comprehensive profiling)
             - greenlang.duplicate_detection (dedup check)
             - greenlang.outlier_detection (statistical outlier detection)
         """
@@ -1016,10 +1016,10 @@ class DataOnboardingWorkflow:
             - greenlang.agents.data.document_ingestion_agent (document import)
             - greenlang.excel_csv_normalizer (spreadsheet normalization)
             - greenlang.agents.data.erp_connector_agent (ERP sync)
-            - greenlang.validation_rule_engine (full validation)
-            - greenlang.data_lineage_tracker (lineage registration)
+            - greenlang.agents.data.validation_rule_engine (full validation)
+            - greenlang.agents.data.data_lineage_tracker (lineage registration)
             - greenlang.duplicate_detection (dedup enforcement)
-            - greenlang.missing_value_imputer (gap filling)
+            - greenlang.agents.data.missing_value_imputer (gap filling)
         """
         step_name = "full_import"
         errors: List[str] = []

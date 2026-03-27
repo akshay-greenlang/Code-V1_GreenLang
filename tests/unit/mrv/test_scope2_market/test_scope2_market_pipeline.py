@@ -26,7 +26,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 try:
-    from greenlang.scope2_market.scope2_market_pipeline import (
+    from greenlang.agents.mrv.scope2_market.scope2_market_pipeline import (
         Scope2MarketPipelineEngine,
         PIPELINE_STAGES,
         GWP_TABLE,

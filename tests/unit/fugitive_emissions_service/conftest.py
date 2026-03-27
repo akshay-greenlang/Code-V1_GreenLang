@@ -71,7 +71,7 @@ def clean_env(monkeypatch):
 
     # Reset the config singleton so each test gets a fresh one
     try:
-        from greenlang.fugitive_emissions.config import reset_config
+        from greenlang.agents.mrv.fugitive_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
@@ -80,7 +80,7 @@ def clean_env(monkeypatch):
 
     # Post-test cleanup
     try:
-        from greenlang.fugitive_emissions.config import reset_config
+        from greenlang.agents.mrv.fugitive_emissions.config import reset_config
         reset_config()
     except ImportError:
         pass
@@ -94,14 +94,14 @@ def clean_env(monkeypatch):
 @pytest.fixture
 def default_config():
     """Create a default FugitiveEmissionsConfig with all defaults."""
-    from greenlang.fugitive_emissions.config import FugitiveEmissionsConfig
+    from greenlang.agents.mrv.fugitive_emissions.config import FugitiveEmissionsConfig
     return FugitiveEmissionsConfig()
 
 
 @pytest.fixture
 def custom_config():
     """Create a FugitiveEmissionsConfig with custom overrides for testing."""
-    from greenlang.fugitive_emissions.config import FugitiveEmissionsConfig
+    from greenlang.agents.mrv.fugitive_emissions.config import FugitiveEmissionsConfig
     return FugitiveEmissionsConfig(
         enabled=True,
         max_batch_size=100,
@@ -240,7 +240,7 @@ def sample_batch_requests() -> List[Dict[str, Any]]:
 @pytest.fixture
 def source_database_engine():
     """Create a FugitiveSourceDatabaseEngine instance for testing."""
-    from greenlang.fugitive_emissions.fugitive_source_database import (
+    from greenlang.agents.mrv.fugitive_emissions.fugitive_source_database import (
         FugitiveSourceDatabaseEngine,
     )
     return FugitiveSourceDatabaseEngine()
@@ -249,7 +249,7 @@ def source_database_engine():
 @pytest.fixture
 def source_database_engine_ar5():
     """Create a FugitiveSourceDatabaseEngine with AR5 GWP default."""
-    from greenlang.fugitive_emissions.fugitive_source_database import (
+    from greenlang.agents.mrv.fugitive_emissions.fugitive_source_database import (
         FugitiveSourceDatabaseEngine,
     )
     return FugitiveSourceDatabaseEngine(config={"default_gwp_source": "AR5"})
@@ -263,7 +263,7 @@ def emission_calculator_engine():
     do not require it to still pass.
     """
     try:
-        from greenlang.fugitive_emissions.emission_calculator import (
+        from greenlang.agents.mrv.fugitive_emissions.emission_calculator import (
             EmissionCalculatorEngine,
         )
         return EmissionCalculatorEngine()
@@ -275,7 +275,7 @@ def emission_calculator_engine():
 def leak_detection_engine():
     """Create a mock LeakDetectionEngine for testing."""
     try:
-        from greenlang.fugitive_emissions.leak_detection import (
+        from greenlang.agents.mrv.fugitive_emissions.leak_detection import (
             LeakDetectionEngine,
         )
         return LeakDetectionEngine()
@@ -287,7 +287,7 @@ def leak_detection_engine():
 def equipment_engine():
     """Create a mock EquipmentComponentEngine for testing."""
     try:
-        from greenlang.fugitive_emissions.equipment_component import (
+        from greenlang.agents.mrv.fugitive_emissions.equipment_component import (
             EquipmentComponentEngine,
         )
         return EquipmentComponentEngine()
@@ -299,7 +299,7 @@ def equipment_engine():
 def uncertainty_engine():
     """Create a mock UncertaintyQuantifierEngine for testing."""
     try:
-        from greenlang.fugitive_emissions.uncertainty_quantifier import (
+        from greenlang.agents.mrv.fugitive_emissions.uncertainty_quantifier import (
             UncertaintyQuantifierEngine,
         )
         return UncertaintyQuantifierEngine()
@@ -311,7 +311,7 @@ def uncertainty_engine():
 def compliance_engine():
     """Create a mock ComplianceCheckerEngine for testing."""
     try:
-        from greenlang.fugitive_emissions.compliance_checker import (
+        from greenlang.agents.mrv.fugitive_emissions.compliance_checker import (
             ComplianceCheckerEngine,
         )
         return ComplianceCheckerEngine()
@@ -323,7 +323,7 @@ def compliance_engine():
 def pipeline_engine():
     """Create a mock FugitiveEmissionsPipeline for testing."""
     try:
-        from greenlang.fugitive_emissions.fugitive_emissions_pipeline import (
+        from greenlang.agents.mrv.fugitive_emissions.fugitive_emissions_pipeline import (
             FugitiveEmissionsPipeline,
         )
         return FugitiveEmissionsPipeline()
@@ -339,14 +339,14 @@ def pipeline_engine():
 @pytest.fixture
 def tracker():
     """Create a fresh ProvenanceTracker instance for testing."""
-    from greenlang.fugitive_emissions.provenance import ProvenanceTracker
+    from greenlang.agents.mrv.fugitive_emissions.provenance import ProvenanceTracker
     return ProvenanceTracker()
 
 
 @pytest.fixture
 def tracker_small():
     """Create a ProvenanceTracker with low max_entries for eviction testing."""
-    from greenlang.fugitive_emissions.provenance import ProvenanceTracker
+    from greenlang.agents.mrv.fugitive_emissions.provenance import ProvenanceTracker
     return ProvenanceTracker(max_entries=5)
 
 

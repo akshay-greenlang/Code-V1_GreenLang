@@ -32,8 +32,8 @@ Fixable Error Codes:
     - GLSCHEMA-W700: suspicious_key (if close match)
 
 Example:
-    >>> from greenlang.schema.suggestions.engine import FixSuggestionEngine
-    >>> from greenlang.schema.suggestions.engine import generate_suggestions
+    >>> from greenlang.agents.foundation.schema.suggestions.engine import FixSuggestionEngine
+    >>> from greenlang.agents.foundation.schema.suggestions.engine import generate_suggestions
     >>> engine = FixSuggestionEngine(ir, options)
     >>> result = engine.generate(findings, payload)
     >>> for fix in result.suggestions:

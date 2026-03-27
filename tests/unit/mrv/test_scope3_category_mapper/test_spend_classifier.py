@@ -42,7 +42,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from greenlang.scope3_category_mapper.category_database import (
+from greenlang.agents.mrv.scope3_category_mapper.category_database import (
     CategoryDatabaseEngine,
     GLLookupResult,
     KeywordLookupResult,

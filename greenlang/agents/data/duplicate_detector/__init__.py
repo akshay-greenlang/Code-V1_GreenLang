@@ -156,8 +156,8 @@ except ImportError:
 # Layer 1 re-exports from normalizer (Entity Resolution)
 # ---------------------------------------------------------------------------
 try:
-    from greenlang.normalizer.entity_resolver import EntityResolver
-    from greenlang.normalizer.models import ConfidenceLevel, EntityMatch
+    from greenlang.agents.foundation.normalizer.entity_resolver import EntityResolver
+    from greenlang.agents.foundation.normalizer.models import ConfidenceLevel, EntityMatch
 except ImportError:
     EntityResolver = None  # type: ignore[assignment, misc]
     ConfidenceLevel = None  # type: ignore[assignment, misc]

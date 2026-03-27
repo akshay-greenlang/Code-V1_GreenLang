@@ -24,7 +24,7 @@ Key Features:
     - Provenance tracking via schema hashes
 
 Example:
-    >>> from greenlang.schema.compiler import SchemaCompiler
+    >>> from greenlang.agents.foundation.schema.compiler import SchemaCompiler
     >>> compiler = SchemaCompiler()
     >>> result = compiler.compile(schema_source, "emissions/activity", "1.3.0")
     >>> if result.success:
@@ -46,7 +46,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from greenlang.schema.compiler.ir import (
+from greenlang.agents.foundation.schema.compiler.ir import (
     ArrayConstraintIR,
     CompiledPattern,
     CompilationError,
@@ -60,9 +60,9 @@ from greenlang.schema.compiler.ir import (
     StringConstraintIR,
     UnitSpecIR,
 )
-from greenlang.schema.compiler.parser import parse_payload, ParseError
-from greenlang.schema.compiler.resolver import RefResolver, SchemaRegistry
-from greenlang.schema.constants import (
+from greenlang.agents.foundation.schema.compiler.parser import parse_payload, ParseError
+from greenlang.agents.foundation.schema.compiler.resolver import RefResolver, SchemaRegistry
+from greenlang.agents.foundation.schema.constants import (
     MAX_REGEX_COMPLEXITY_SCORE,
     MAX_REGEX_LENGTH,
     REGEX_TIMEOUT_MS,

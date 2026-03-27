@@ -36,7 +36,7 @@ from datetime import datetime, timezone
 from typing import Dict, Any
 import pytest
 
-from greenlang.employee_commuting.provenance import (
+from greenlang.agents.mrv.employee_commuting.provenance import (
     ProvenanceEntry,
     ProvenanceChain,
     ProvenanceTracker,

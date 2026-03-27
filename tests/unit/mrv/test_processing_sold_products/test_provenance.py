@@ -20,7 +20,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.processing_sold_products.provenance import (
+    from greenlang.agents.mrv.processing_sold_products.provenance import (
         ProvenanceChainBuilder,
         ProvenanceChain,
         ProvenanceStage,

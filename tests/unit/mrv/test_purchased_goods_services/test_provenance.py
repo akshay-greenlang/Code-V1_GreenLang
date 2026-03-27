@@ -8,8 +8,8 @@ import pytest
 from datetime import datetime
 from decimal import Decimal
 
-from greenlang.purchased_goods_services.provenance import PurchasedGoodsProvenanceTracker
-from greenlang.purchased_goods_services.models import (
+from greenlang.agents.mrv.purchased_goods_services.provenance import PurchasedGoodsProvenanceTracker
+from greenlang.agents.mrv.purchased_goods_services.models import (
     CalculationMethod,
     EEIODatabase,
     PhysicalEFSource,

@@ -30,7 +30,7 @@ _ENV_PREFIX = "GL_CITATIONS_"
 
 @dataclass
 class CitationsConfig:
-    """Mirrors greenlang.citations.config.CitationsConfig."""
+    """Mirrors greenlang.agents.foundation.citations.config.CitationsConfig."""
 
     # Registry
     max_citations: int = 100000

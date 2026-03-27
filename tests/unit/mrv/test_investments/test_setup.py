@@ -36,7 +36,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    from greenlang.investments.setup import (
+    from greenlang.agents.mrv.investments.setup import (
         InvestmentsService,
         get_service,
         get_router,

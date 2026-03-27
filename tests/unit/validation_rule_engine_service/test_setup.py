@@ -37,13 +37,13 @@ from pydantic import ValidationError
 # ---------------------------------------------------------------------------
 
 _ENGINE_MODULES = [
-    "greenlang.validation_rule_engine.rule_registry",
-    "greenlang.validation_rule_engine.rule_composer",
-    "greenlang.validation_rule_engine.rule_evaluator",
-    "greenlang.validation_rule_engine.conflict_detector",
-    "greenlang.validation_rule_engine.rule_pack",
-    "greenlang.validation_rule_engine.validation_reporter",
-    "greenlang.validation_rule_engine.validation_pipeline",
+    "greenlang.agents.data.validation_rule_engine.rule_registry",
+    "greenlang.agents.data.validation_rule_engine.rule_composer",
+    "greenlang.agents.data.validation_rule_engine.rule_evaluator",
+    "greenlang.agents.data.validation_rule_engine.conflict_detector",
+    "greenlang.agents.data.validation_rule_engine.rule_pack",
+    "greenlang.agents.data.validation_rule_engine.validation_reporter",
+    "greenlang.agents.data.validation_rule_engine.validation_pipeline",
 ]
 
 # Save originals so we can restore after importing setup.py
@@ -53,14 +53,14 @@ for _mod_name in _ENGINE_MODULES:
         _saved_modules[_mod_name] = sys.modules[_mod_name]
     else:
         _stub = types.ModuleType(_mod_name)
-        _stub.__package__ = "greenlang.validation_rule_engine"
+        _stub.__package__ = "greenlang.agents.data.validation_rule_engine"
         _class_name = _mod_name.rsplit(".", 1)[-1]
         _pascal = "".join(part.capitalize() for part in _class_name.split("_")) + "Engine"
         setattr(_stub, _pascal, None)
         sys.modules[_mod_name] = _stub
 
-from greenlang.validation_rule_engine.config import ValidationRuleEngineConfig
-from greenlang.validation_rule_engine.setup import (
+from greenlang.agents.data.validation_rule_engine.config import ValidationRuleEngineConfig
+from greenlang.agents.data.validation_rule_engine.setup import (
     ValidationRuleEngineService,
     configure_validation_rule_engine,
     get_validation_rule_engine,
@@ -100,13 +100,13 @@ def _make_config(**overrides: Any) -> ValidationRuleEngineConfig:
 def _make_service(**overrides: Any) -> ValidationRuleEngineService:
     """Create a ValidationRuleEngineService with engines stubbed to None."""
     cfg = _make_config(**overrides)
-    with patch("greenlang.validation_rule_engine.setup.RuleRegistryEngine", None), \
-         patch("greenlang.validation_rule_engine.setup.RuleComposerEngine", None), \
-         patch("greenlang.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
-         patch("greenlang.validation_rule_engine.setup.ConflictDetectorEngine", None), \
-         patch("greenlang.validation_rule_engine.setup.RulePackEngine", None), \
-         patch("greenlang.validation_rule_engine.setup.ValidationReporterEngine", None), \
-         patch("greenlang.validation_rule_engine.setup.ValidationPipelineEngine", None):
+    with patch("greenlang.agents.data.validation_rule_engine.setup.RuleRegistryEngine", None), \
+         patch("greenlang.agents.data.validation_rule_engine.setup.RuleComposerEngine", None), \
+         patch("greenlang.agents.data.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
+         patch("greenlang.agents.data.validation_rule_engine.setup.ConflictDetectorEngine", None), \
+         patch("greenlang.agents.data.validation_rule_engine.setup.RulePackEngine", None), \
+         patch("greenlang.agents.data.validation_rule_engine.setup.ValidationReporterEngine", None), \
+         patch("greenlang.agents.data.validation_rule_engine.setup.ValidationPipelineEngine", None):
         return ValidationRuleEngineService(config=cfg)
 
 
@@ -1101,27 +1101,27 @@ class TestGetValidationRuleEngine:
     """Tests for the get_validation_rule_engine singleton function."""
 
     def test_returns_singleton_service(self):
-        with patch("greenlang.validation_rule_engine.setup.RuleRegistryEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleComposerEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ConflictDetectorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RulePackEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationReporterEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationPipelineEngine", None), \
-             patch("greenlang.validation_rule_engine.setup._singleton_instance", None):
+        with patch("greenlang.agents.data.validation_rule_engine.setup.RuleRegistryEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleComposerEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ConflictDetectorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RulePackEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationReporterEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationPipelineEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup._singleton_instance", None):
             svc1 = get_validation_rule_engine()
             svc2 = get_validation_rule_engine()
             assert svc1 is svc2
 
     def test_creates_service_on_first_call(self):
-        with patch("greenlang.validation_rule_engine.setup.RuleRegistryEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleComposerEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ConflictDetectorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RulePackEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationReporterEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationPipelineEngine", None), \
-             patch("greenlang.validation_rule_engine.setup._singleton_instance", None):
+        with patch("greenlang.agents.data.validation_rule_engine.setup.RuleRegistryEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleComposerEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ConflictDetectorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RulePackEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationReporterEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationPipelineEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup._singleton_instance", None):
             svc = get_validation_rule_engine()
             assert isinstance(svc, ValidationRuleEngineService)
 
@@ -1133,15 +1133,15 @@ class TestConfigureValidationRuleEngine:
         app = MagicMock()
         app.state = MagicMock()
 
-        with patch("greenlang.validation_rule_engine.setup.RuleRegistryEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleComposerEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ConflictDetectorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RulePackEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationReporterEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationPipelineEngine", None), \
-             patch("greenlang.validation_rule_engine.setup._singleton_instance", None), \
-             patch("greenlang.validation_rule_engine.setup.get_router", return_value=None):
+        with patch("greenlang.agents.data.validation_rule_engine.setup.RuleRegistryEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleComposerEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ConflictDetectorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RulePackEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationReporterEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationPipelineEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup._singleton_instance", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.get_router", return_value=None):
             loop = asyncio.new_event_loop()
             try:
                 service = loop.run_until_complete(
@@ -1156,15 +1156,15 @@ class TestConfigureValidationRuleEngine:
         app = MagicMock()
         app.state = MagicMock()
 
-        with patch("greenlang.validation_rule_engine.setup.RuleRegistryEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleComposerEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ConflictDetectorEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.RulePackEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationReporterEngine", None), \
-             patch("greenlang.validation_rule_engine.setup.ValidationPipelineEngine", None), \
-             patch("greenlang.validation_rule_engine.setup._singleton_instance", None), \
-             patch("greenlang.validation_rule_engine.setup.get_router", return_value=None):
+        with patch("greenlang.agents.data.validation_rule_engine.setup.RuleRegistryEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleComposerEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RuleEvaluatorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ConflictDetectorEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.RulePackEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationReporterEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.ValidationPipelineEngine", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup._singleton_instance", None), \
+             patch("greenlang.agents.data.validation_rule_engine.setup.get_router", return_value=None):
             loop = asyncio.new_event_loop()
             try:
                 service = loop.run_until_complete(
@@ -1179,19 +1179,19 @@ class TestGetRouter:
     """Tests for the get_router function."""
 
     def test_returns_router_when_fastapi_available(self):
-        with patch("greenlang.validation_rule_engine.setup.FASTAPI_AVAILABLE", True):
+        with patch("greenlang.agents.data.validation_rule_engine.setup.FASTAPI_AVAILABLE", True):
             result = get_router()
         # get_router() creates an internal APIRouter; if FastAPI is available
         # it should return a non-None router object
         assert result is not None or result is None  # Does not raise
 
     def test_returns_none_when_import_fails(self):
-        with patch("greenlang.validation_rule_engine.setup.FASTAPI_AVAILABLE", False):
+        with patch("greenlang.agents.data.validation_rule_engine.setup.FASTAPI_AVAILABLE", False):
             result = get_router()
         assert result is None
 
     def test_accepts_optional_service_arg(self):
-        with patch("greenlang.validation_rule_engine.setup.FASTAPI_AVAILABLE", True):
+        with patch("greenlang.agents.data.validation_rule_engine.setup.FASTAPI_AVAILABLE", True):
             result = get_router(service=MagicMock())
         # Should not raise regardless of the service argument
         assert result is not None or result is None

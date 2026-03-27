@@ -28,10 +28,10 @@ import pytest
 
 def _make_thermal_engine():
     """Create a ThermalTreatmentEngine with a real database engine."""
-    from greenlang.waste_treatment_emissions.waste_treatment_database import (
+    from greenlang.agents.mrv.waste_treatment_emissions.waste_treatment_database import (
         WasteTreatmentDatabaseEngine,
     )
-    from greenlang.waste_treatment_emissions.thermal_treatment import (
+    from greenlang.agents.mrv.waste_treatment_emissions.thermal_treatment import (
         ThermalTreatmentEngine,
     )
     db = WasteTreatmentDatabaseEngine()

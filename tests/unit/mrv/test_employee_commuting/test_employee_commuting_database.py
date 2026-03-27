@@ -27,7 +27,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def _reset_singleton():
     """Reset the database engine singleton before each test."""
-    from greenlang.employee_commuting.employee_commuting_database import (
+    from greenlang.agents.mrv.employee_commuting.employee_commuting_database import (
         EmployeeCommutingDatabaseEngine,
     )
     EmployeeCommutingDatabaseEngine._instance = None
@@ -38,7 +38,7 @@ def _reset_singleton():
 @pytest.fixture
 def engine():
     """Create a fresh EmployeeCommutingDatabaseEngine instance."""
-    from greenlang.employee_commuting.employee_commuting_database import (
+    from greenlang.agents.mrv.employee_commuting.employee_commuting_database import (
         EmployeeCommutingDatabaseEngine,
     )
     return EmployeeCommutingDatabaseEngine()
@@ -53,7 +53,7 @@ class TestSingletonPattern:
 
     def test_singleton_returns_same_instance(self, engine):
         """Two constructions return the same object."""
-        from greenlang.employee_commuting.employee_commuting_database import (
+        from greenlang.agents.mrv.employee_commuting.employee_commuting_database import (
             EmployeeCommutingDatabaseEngine,
         )
         second = EmployeeCommutingDatabaseEngine()
@@ -61,7 +61,7 @@ class TestSingletonPattern:
 
     def test_singleton_thread_safety(self):
         """Concurrent construction from multiple threads returns the same instance."""
-        from greenlang.employee_commuting.employee_commuting_database import (
+        from greenlang.agents.mrv.employee_commuting.employee_commuting_database import (
             EmployeeCommutingDatabaseEngine,
         )
         instances = []

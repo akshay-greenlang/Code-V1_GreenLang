@@ -134,7 +134,7 @@ class _FlexSourceReliability:
 # Patch the models in staleness_detector module BEFORE importing the engine
 # ---------------------------------------------------------------------------
 
-import greenlang.data_freshness_monitor.staleness_detector as _sd_module
+import greenlang.agents.data.data_freshness_monitor.staleness_detector as _sd_module
 
 _sd_module.PatternType = _FlexPatternType  # type: ignore[misc]
 _sd_module.BreachSeverity = _FlexBreachSeverity  # type: ignore[misc]
@@ -161,7 +161,7 @@ def _patched_severity_from_ratio(ratio: float) -> _FlexBreachSeverity:
 _sd_module._severity_from_ratio = _patched_severity_from_ratio  # type: ignore[misc]
 
 # Now import everything from the patched module
-from greenlang.data_freshness_monitor.staleness_detector import (
+from greenlang.agents.data.data_freshness_monitor.staleness_detector import (
     StalenessDetectorEngine,
     _coefficient_of_variation,
     _intervals_from_history,

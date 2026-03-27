@@ -15,14 +15,14 @@ from __future__ import annotations
 import pytest
 from datetime import datetime, timezone
 
-from greenlang.cross_source_reconciliation.source_registry import (
+from greenlang.agents.data.cross_source_reconciliation.source_registry import (
     SourceRegistryEngine,
     _jaro_winkler_similarity,
     _jaro_similarity,
     CERTIFICATION_SCORES,
     DEFAULT_CREDIBILITY_WEIGHTS,
 )
-from greenlang.cross_source_reconciliation.models import (
+from greenlang.agents.data.cross_source_reconciliation.models import (
     SourceType,
     SourceStatus,
     SchemaMapping,

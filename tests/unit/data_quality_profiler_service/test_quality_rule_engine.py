@@ -15,7 +15,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_quality_profiler.quality_rule_engine import (
+from greenlang.agents.data.data_quality_profiler.quality_rule_engine import (
     QualityRuleEngine,
     RULE_COMPLETENESS,
     RULE_RANGE,

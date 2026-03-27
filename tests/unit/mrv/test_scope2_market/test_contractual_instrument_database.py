@@ -22,7 +22,7 @@ from unittest.mock import Mock
 import pytest
 
 try:
-    from greenlang.scope2_market.contractual_instrument_database import (
+    from greenlang.agents.mrv.scope2_market.contractual_instrument_database import (
         ContractualInstrumentDatabaseEngine,
         INSTRUMENT_TYPES,
         RESIDUAL_MIX_FACTORS,

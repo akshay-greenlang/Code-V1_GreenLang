@@ -31,7 +31,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greenlang.land_use_emissions.soil_organic_carbon import (
+from greenlang.agents.mrv.land_use_emissions.soil_organic_carbon import (
     SoilOrganicCarbonEngine,
     SOCHistoryEntry,
     DEFAULT_TRANSITION_PERIOD,
@@ -45,7 +45,7 @@ from greenlang.land_use_emissions.soil_organic_carbon import (
     _D,
     _safe_decimal,
 )
-from greenlang.land_use_emissions.land_use_database import (
+from greenlang.agents.mrv.land_use_emissions.land_use_database import (
     SOC_REFERENCE_STOCKS,
     SOC_LAND_USE_FACTORS,
     SOC_MANAGEMENT_FACTORS,

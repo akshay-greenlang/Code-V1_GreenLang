@@ -3,7 +3,7 @@
 Unit Tests for DatasetProfiler Engine - AGENT-DATA-010 (GL-DATA-X-013)
 ======================================================================
 
-Tests DatasetProfiler from greenlang.data_quality_profiler.dataset_profiler.
+Tests DatasetProfiler from greenlang.agents.data.data_quality_profiler.dataset_profiler.
 
 Covers:
     - Initialization (default/custom config, empty stores, stats, None config)
@@ -37,7 +37,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from greenlang.data_quality_profiler.dataset_profiler import (
+from greenlang.agents.data.data_quality_profiler.dataset_profiler import (
     DatasetProfiler,
     _safe_mean,
     _safe_median,

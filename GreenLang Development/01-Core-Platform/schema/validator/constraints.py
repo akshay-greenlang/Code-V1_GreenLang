@@ -13,7 +13,7 @@ against compiled schema IR. It provides comprehensive validation for:
 All validations use the GLSCHEMA-E2xx error code range for constraint violations.
 
 Example:
-    >>> from greenlang.schema.validator.constraints import ConstraintValidator
+    >>> from greenlang.agents.foundation.schema.validator.constraints import ConstraintValidator
     >>> validator = ConstraintValidator(ir, options)
     >>> findings = validator.validate_numeric(42, constraints, "/value")
 
@@ -392,7 +392,7 @@ class ConstraintValidator:
         _findings: Internal list of accumulated findings
 
     Example:
-        >>> from greenlang.schema.validator.constraints import ConstraintValidator
+        >>> from greenlang.agents.foundation.schema.validator.constraints import ConstraintValidator
         >>> validator = ConstraintValidator(ir, options)
         >>> findings = validator.validate(payload, "")
         >>> for f in findings:

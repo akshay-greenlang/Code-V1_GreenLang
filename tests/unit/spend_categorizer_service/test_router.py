@@ -25,9 +25,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from greenlang.spend_categorizer.api.router import router
-from greenlang.spend_categorizer.config import SpendCategorizerConfig
-from greenlang.spend_categorizer.setup import (
+from greenlang.agents.data.spend_categorizer.api.router import router
+from greenlang.agents.data.spend_categorizer.config import SpendCategorizerConfig
+from greenlang.agents.data.spend_categorizer.setup import (
     AnalyticsResponse,
     CategoryRuleResponse,
     ClassificationResponse,

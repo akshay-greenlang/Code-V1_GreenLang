@@ -23,7 +23,7 @@ from typing import Any, Dict, List
 import pytest
 
 try:
-    from greenlang.scope2_market.setup import (
+    from greenlang.agents.mrv.scope2_market.setup import (
         Scope2MarketService,
         get_service,
         SERVICE_VERSION,

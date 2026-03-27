@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from greenlang.outlier_detector.setup import (
+from greenlang.agents.data.outlier_detector.setup import (
     OutlierDetectorService,
     DetectionResponse,
     BatchDetectionResponse,

@@ -35,7 +35,7 @@ _AVAILABLE = True
 _IMPORT_ERROR = None
 
 try:
-    from greenlang.downstream_transportation.distance_based_calculator import (
+    from greenlang.agents.mrv.downstream_transportation.distance_based_calculator import (
         DistanceBasedCalculatorEngine,
     )
 except ImportError as exc:

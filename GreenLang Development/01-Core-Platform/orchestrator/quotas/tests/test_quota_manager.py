@@ -22,7 +22,7 @@ import time
 from datetime import datetime, timezone
 from typing import List
 
-from greenlang.orchestrator.quotas.manager import (
+from greenlang.agents.foundation.orchestrator.quotas.manager import (
     QuotaConfig,
     QuotaUsage,
     QuotaManager,

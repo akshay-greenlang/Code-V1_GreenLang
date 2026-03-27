@@ -17,7 +17,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.stationary_combustion.config import (
+from greenlang.agents.mrv.stationary_combustion.config import (
     StationaryCombustionConfig,
     get_config,
     reset_config,

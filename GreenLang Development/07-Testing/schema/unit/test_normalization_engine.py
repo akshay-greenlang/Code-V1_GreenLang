@@ -27,7 +27,7 @@ from typing import Any, Dict
 
 import pytest
 
-from greenlang.schema.normalizer.engine import (
+from greenlang.agents.foundation.schema.normalizer.engine import (
     NormalizationEngine,
     NormalizationMeta,
     NormalizationResult,
@@ -35,21 +35,21 @@ from greenlang.schema.normalizer.engine import (
     is_normalization_idempotent,
     _remove_meta_block,
 )
-from greenlang.schema.normalizer.coercions import CoercionRecord
-from greenlang.schema.normalizer.canonicalizer import ConversionRecord
-from greenlang.schema.normalizer.keys import KeyRename, RenameReason
-from greenlang.schema.compiler.ir import (
+from greenlang.agents.foundation.schema.normalizer.coercions import CoercionRecord
+from greenlang.agents.foundation.schema.normalizer.canonicalizer import ConversionRecord
+from greenlang.agents.foundation.schema.normalizer.keys import KeyRename, RenameReason
+from greenlang.agents.foundation.schema.compiler.ir import (
     SchemaIR,
     PropertyIR,
     UnitSpecIR,
 )
-from greenlang.schema.units.catalog import UnitCatalog
-from greenlang.schema.models.config import (
+from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+from greenlang.agents.foundation.schema.models.config import (
     ValidationOptions,
     CoercionPolicy,
     ValidationProfile,
 )
-from greenlang.schema.models.schema_ref import SchemaRef
+from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 
 
 # =============================================================================

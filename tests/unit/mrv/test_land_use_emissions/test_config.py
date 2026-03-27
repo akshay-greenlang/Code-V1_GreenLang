@@ -20,7 +20,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greenlang.land_use_emissions.config import (
+from greenlang.agents.mrv.land_use_emissions.config import (
     LandUseConfig,
     get_config,
     set_config,
