@@ -24,7 +24,7 @@ python-dotenv==1.0.0
 
 # HTTP Client (for testing/integrations)
 httpx==0.25.2
-requests==2.31.0
+requests==2.33.0
 
 # Development Dependencies
 pytest==7.4.3
