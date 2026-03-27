@@ -99,7 +99,7 @@ data = [
   "jinja2==3.1.6",
   "weasyprint==60.2",
   "sqlalchemy==2.0.25",
-  "alembic==1.13.1",
+  "alembic==1.18.4",
   "psycopg2-binary==2.9.9",
   "pymongo==4.16.0",
   "lxml==5.1.0",
