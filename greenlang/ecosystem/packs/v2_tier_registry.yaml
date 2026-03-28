@@ -1,0 +1,135 @@
+registry_version: "2.0"
+generated_for_phase: "v2-phase2"
+pilot_packs:
+  - pack_slug: "demo"
+    app_id: "GL-CBAM-APP"
+    tier: "experimental"
+    owner_team: "platform-runtime"
+    support_channel: "#gl-packs-platform"
+    promotion_status: "pilot-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: false
+      security_scan: false
+      determinism_report: false
+  - pack_slug: "demo-test"
+    app_id: "GL-CBAM-APP"
+    tier: "experimental"
+    owner_team: "platform-runtime"
+    support_channel: "#gl-packs-platform"
+    promotion_status: "pilot-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: false
+      security_scan: false
+      determinism_report: false
+  - pack_slug: "boiler_replacement"
+    app_id: "GL-CBAM-APP"
+    tier: "experimental"
+    owner_team: "cbam-domain"
+    support_channel: "#gl-cbam"
+    promotion_status: "pilot-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: false
+      security_scan: false
+      determinism_report: false
+  - pack_slug: "fuel_ai"
+    app_id: "GL-GHG-APP"
+    tier: "candidate"
+    owner_team: "ghg-domain"
+    support_channel: "#gl-ghg"
+    promotion_status: "candidate-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: false
+      security_scan: true
+      determinism_report: false
+  - pack_slug: "report_ai"
+    app_id: "GL-CSRD-APP"
+    tier: "candidate"
+    owner_team: "csrd-domain"
+    support_channel: "#gl-csrd"
+    promotion_status: "candidate-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: false
+      security_scan: true
+      determinism_report: false
+  - pack_slug: "forecast_sarima_ai"
+    app_id: "GL-GHG-APP"
+    tier: "candidate"
+    owner_team: "ghg-domain"
+    support_channel: "#gl-ghg"
+    promotion_status: "candidate-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: false
+      security_scan: true
+      determinism_report: false
+  - pack_slug: "emissions-core"
+    app_id: "GL-VCCI-Carbon-APP"
+    tier: "supported"
+    owner_team: "vcci-domain"
+    support_channel: "#gl-vcci"
+    promotion_status: "supported-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: true
+      security_scan: true
+      determinism_report: false
+  - pack_slug: "hvac-measures"
+    app_id: "GL-ISO14064-APP"
+    tier: "supported"
+    owner_team: "iso14064-domain"
+    support_channel: "#gl-iso14064"
+    promotion_status: "supported-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: true
+      security_scan: true
+      determinism_report: false
+  - pack_slug: "cement-lca"
+    app_id: "GL-CSRD-APP"
+    tier: "supported"
+    owner_team: "csrd-domain"
+    support_channel: "#gl-csrd"
+    promotion_status: "supported-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: true
+      security_scan: true
+      determinism_report: false
+  - pack_slug: "boiler-solar"
+    app_id: "GL-EUDR-APP"
+    tier: "regulated-critical"
+    owner_team: "eudr-domain"
+    support_channel: "#gl-eudr"
+    promotion_status: "regulated-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: true
+      security_scan: true
+      determinism_report: true
+  - pack_slug: "waste_heat_recovery_ai"
+    app_id: "GL-GHG-APP"
+    tier: "regulated-critical"
+    owner_team: "ghg-domain"
+    support_channel: "#gl-ghg"
+    promotion_status: "regulated-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: true
+      security_scan: true
+      determinism_report: true
+  - pack_slug: "industrial_process_heat_ai"
+    app_id: "GL-VCCI-Carbon-APP"
+    tier: "regulated-critical"
+    owner_team: "vcci-domain"
+    support_channel: "#gl-vcci"
+    promotion_status: "regulated-approved"
+    evidence:
+      docs_contract: true
+      signed_artifact: true
+      security_scan: true
+      determinism_report: true

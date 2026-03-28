@@ -1,0 +1,23 @@
+contract_version: "2.0"
+app_id: "GL-GHG-APP"
+pipeline_id: "ghg-inventory-v2"
+runtime: "greenlang-v2"
+stages:
+  - id: validate_inputs
+    type: validate
+  - id: compute_inventory
+    type: compute
+  - id: apply_policy
+    type: policy
+  - id: export_outputs
+    type: export
+  - id: write_audit
+    type: audit
+runtime_conventions:
+  command: "gl run ghg <input.json> <output_dir>"
+  success_exit_code: 0
+  blocked_exit_code: 4
+  artifact_contract:
+    - ghg_inventory.json
+    - audit/run_manifest.json
+    - audit/checksums.json

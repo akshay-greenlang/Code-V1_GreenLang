@@ -1,0 +1,17 @@
+contract_version: "2.0"
+name: "gl-eudr-app-v2-pack"
+app_id: "GL-EUDR-APP"
+version: "2.0.0"
+kind: "pack"
+runtime: "greenlang-v2"
+entry_pipeline: "gl.yaml"
+metadata:
+  owner_team: "platform-eudr"
+  support_channel: "#gl-eudr-support"
+  lifecycle: "experimental"
+  quality_tier: "experimental"
+security:
+  signed: false
+  signatures: []
+  sbom: null
+  provenance: null

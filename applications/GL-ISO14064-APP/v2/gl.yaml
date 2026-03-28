@@ -1,0 +1,23 @@
+contract_version: "2.0"
+app_id: "GL-ISO14064-APP"
+pipeline_id: "iso14064-verification-v2"
+runtime: "greenlang-v2"
+stages:
+  - id: validate_inputs
+    type: validate
+  - id: compute_verification
+    type: compute
+  - id: apply_policy
+    type: policy
+  - id: export_outputs
+    type: export
+  - id: write_audit
+    type: audit
+runtime_conventions:
+  command: "gl run iso14064 <input.json> <output_dir>"
+  success_exit_code: 0
+  blocked_exit_code: 4
+  artifact_contract:
+    - iso14064_verification_report.json
+    - audit/run_manifest.json
+    - audit/checksums.json

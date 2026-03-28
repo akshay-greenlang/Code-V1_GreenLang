@@ -1,0 +1,23 @@
+contract_version: "2.0"
+app_id: "GL-CSRD-APP"
+pipeline_id: "csrd-esrs-v2"
+runtime: "greenlang-v2"
+stages:
+  - id: validate_inputs
+    type: validate
+  - id: compute_disclosures
+    type: compute
+  - id: apply_policy
+    type: policy
+  - id: export_outputs
+    type: export
+  - id: write_audit
+    type: audit
+runtime_conventions:
+  command: "gl run csrd <input.csv|json> <output_dir>"
+  success_exit_code: 0
+  blocked_exit_code: 4
+  artifact_contract:
+    - esrs_report.json
+    - audit/run_manifest.json
+    - audit/checksums.json

@@ -1,0 +1,34 @@
+{
+  "phase": "V2-Phase3",
+  "phase3_complete": true,
+  "generated_at_utc": "2026-03-28T02:33:07Z",
+  "reference_commit_sha": "fc93dc5ad40e4e87d1f78b57d0f85d1031e6e8d7",
+  "checklist": {
+    "phase3_charter_exists": true,
+    "agent_registry_validated": true,
+    "agent_runtime_enforcement_enabled": true,
+    "prioritized_connector_registry_defined": true,
+    "reliability_profile_runtime_validation_enabled": true,
+    "behavioral_reliability_tests_passing": true,
+    "ci_blockers_enabled": true,
+    "alert_matrix_published": true
+  },
+  "evidence_files": [
+    "docs/v2/PHASE3_CHARTER.md",
+    "greenlang/agents/v2_agent_registry.yaml",
+    "greenlang/v2/agent_lifecycle.py",
+    "greenlang/v2/reliability_runtime.py",
+    "applications/connectors/v2_connector_registry.yaml",
+    "docs/v2/PRIORITIZED_CONNECTORS.md",
+    "greenlang/v2/conformance.py",
+    "greenlang/cli/cmd_v2.py",
+    "greenlang/agents/registry.py",
+    "greenlang/integration/integrations/base_connector.py",
+    "tests/v2/test_agent_lifecycle_phase3.py",
+    "tests/v2/test_connector_reliability.py",
+    "tests/v2/test_connector_reliability_acceptance.py",
+    ".github/workflows/greenlang-v2-platform-ci.yml",
+    "docs/runbooks/V2_CONNECTOR_ALERT_MATRIX.md",
+    "docs/v2/ONCALL_AND_SLOS.md"
+  ]
+}

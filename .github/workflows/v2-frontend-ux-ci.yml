@@ -1,0 +1,61 @@
+name: V2 Frontend UX CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "release/**"
+    paths:
+      - "cbam-pack-mvp/src/cbam_pack/web/**"
+      - "cbam-pack-mvp/tests/test_web_*.py"
+      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
+      - ".github/workflows/v2-frontend-ux-ci.yml"
+  pull_request:
+    paths:
+      - "cbam-pack-mvp/src/cbam_pack/web/**"
+      - "cbam-pack-mvp/tests/test_web_*.py"
+      - "applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/**"
+      - ".github/workflows/v2-frontend-ux-ci.yml"
+
+jobs:
+  v2-shell-e2e-visual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -e "./cbam-pack-mvp[dev,web]"
+      - name: Run web e2e and visual baseline tests
+        run: |
+          pytest -q cbam-pack-mvp/tests/test_web_multiapp_shell.py cbam-pack-mvp/tests/test_web_v1_contract.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_visual_regression.py
+
+  v2-frontend-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Frontend lint type test build
+        run: |
+          npm run lint
+          npm run type-check
+          npm run test
+          npm run build

@@ -19,6 +19,7 @@ from typing import Optional, Dict, Any, List
 import shutil
 from urllib.parse import urlparse
 import requests
+import yaml
 
 from .manifest import PackManifest
 from .registry import PackRegistry, InstalledPack
@@ -36,6 +37,7 @@ from ...governance.security.signatures import (
     PackVerifier,
     SignatureVerificationError,
 )
+from ...v2.pack_tiers import evaluate_pack_path
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,9 @@ class PackInstaller:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.session = create_secure_session()
         self.verifier = PackVerifier()
+        self.v2_tier_registry_path = (
+            Path(__file__).resolve().parent / "v2_tier_registry.yaml"
+        )
 
     def install_pack(
         self,
@@ -319,6 +324,9 @@ class PackInstaller:
         if not manifest_path.exists():
             raise ValueError(f"No pack.yaml found at {path}")
 
+        # Enforce V2 tier lifecycle gates where applicable.
+        self._enforce_v2_tier_lifecycle(manifest_path)
+
         logger.info(f"Installing from local directory: {path}")
 
         # Load and validate manifest
@@ -339,6 +347,32 @@ class PackInstaller:
 
         logger.info(f"Successfully installed: {installed.name} v{installed.version}")
         return installed
+
+    def _enforce_v2_tier_lifecycle(self, manifest_path: Path) -> None:
+        """
+        Enforce V2 tier lifecycle gates for v2 pack contracts.
+
+        Legacy (non-v2) manifests are intentionally skipped.
+        """
+        try:
+            payload = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) or {}
+        except Exception as exc:
+            raise ValueError(f"Unable to parse pack manifest: {manifest_path} ({exc})")
+        if not isinstance(payload, dict):
+            raise ValueError(f"Invalid pack manifest root type: {manifest_path}")
+
+        if str(payload.get("contract_version", "")).strip() != "2.0":
+            return
+
+        evaluation = evaluate_pack_path(
+            pack_yaml_path=manifest_path,
+            registry_path=self.v2_tier_registry_path if self.v2_tier_registry_path.exists() else None,
+        )
+        if not evaluation.ok:
+            raise ValueError(
+                "V2 tier lifecycle enforcement failed for "
+                f"{evaluation.pack_slug}: {', '.join(evaluation.errors)}"
+            )
 
     def _install_from_github(
         self, repo_spec: str, version: Optional[str] = None, verify: bool = True

@@ -1,0 +1,23 @@
+version: "2.0.0"
+phase: "v2-scale-productization"
+runtime_semantics:
+  command_family: "gl v2"
+  run_profiles:
+    - cbam
+    - csrd
+    - vcci
+    - eudr
+    - ghg
+    - iso14064
+  exits:
+    success: 0
+    blocked: 4
+    validation_error: 2
+    execution_error: 1
+release_policy:
+  strict_mode_env:
+    - GL_RELEASE_STRICT
+    - CI
+  require_signed_packs_for_tiers:
+    - supported
+    - regulated-critical

@@ -17,6 +17,7 @@ from rich.console import Console
 from click.core import Parameter
 from typer.core import TyperArgument, TyperOption
 from greenlang.v1.backends import run_csrd_backend, run_vcci_backend
+from greenlang.v2.backends import V2_BLOCKED_EXIT_CODE, run_v2_profile_backend
 
 # Fallback version constant
 FALLBACK_VERSION = "0.3.0"
@@ -329,6 +330,7 @@ def _safe_add_typer(module_name: str, command_name: str, help_text: str) -> None
 
 _safe_add_typer("cmd_pack", "pack", "Pack management commands")
 _safe_add_typer("cmd_v1", "v1", "GreenLang v1 platformization commands")
+_safe_add_typer("cmd_v2", "v2", "GreenLang v2 scale and productization commands")
 
 
 # Add run command
@@ -348,6 +350,22 @@ def run(
     """Run a pipeline file/reference or the CBAM MVP flow."""
     dry_run = _coerce_bool(dry_run)
     audit = _coerce_bool(audit)
+
+    def _emit_profile_backend_result(profile_name: str, result) -> None:
+        if result.success and result.exit_code == 0:
+            console.print(f"[green][OK][/green] {profile_name.upper()} run completed. Artifacts: {output_path}")
+            raise typer.Exit(0)
+        if result.success and result.exit_code == V2_BLOCKED_EXIT_CODE:
+            console.print(
+                f"[yellow]{profile_name.upper()} run completed with export blocked "
+                f"(exit {result.exit_code}).[/yellow]"
+            )
+            for warning in result.warnings:
+                console.print(f"[yellow]{warning}[/yellow]")
+            raise typer.Exit(result.exit_code)
+        for err in result.errors:
+            console.print(f"[red]{err}[/red]")
+        raise typer.Exit(result.exit_code or 1)
 
     pipeline_lower = pipeline.lower()
     if pipeline_lower in {"cbam", "cbam-mvp"}:
@@ -452,7 +470,7 @@ def run(
     v1_vcci_pipeline = Path("applications/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/v1/gl.yaml").resolve()
     requested_pipeline = Path(pipeline).resolve() if Path(pipeline).exists() else None
     if (
-        pipeline_lower in {"csrd", "vcci"}
+        pipeline_lower in {"csrd", "vcci", "eudr", "ghg", "iso14064"}
         and cbam_imports not in {None, "", "-"}
         and output_dir == "out"
     ):
@@ -482,12 +500,7 @@ def run(
             strict=True,
             allow_fallback=allow_fallback,
         )
-        if result.success:
-            console.print(f"[green][OK][/green] CSRD run completed. Artifacts: {output_path}")
-            raise typer.Exit(0)
-        for err in result.errors:
-            console.print(f"[red]{err}[/red]")
-        raise typer.Exit(result.exit_code or 1)
+        _emit_profile_backend_result("csrd", result)
 
     if pipeline_lower == "vcci" or (requested_pipeline and requested_pipeline == v1_vcci_pipeline):
         if not input_or_config:
@@ -509,12 +522,28 @@ def run(
             strict=True,
             allow_fallback=allow_fallback,
         )
-        if result.success:
-            console.print(f"[green][OK][/green] VCCI run completed. Artifacts: {output_path}")
-            raise typer.Exit(0)
-        for err in result.errors:
-            console.print(f"[red]{err}[/red]")
-        raise typer.Exit(result.exit_code or 1)
+        _emit_profile_backend_result("vcci", result)
+
+    v2_profile_keys = {"eudr", "ghg", "iso14064"}
+    if pipeline_lower in v2_profile_keys:
+        if not input_or_config:
+            console.print(
+                f"[red]Usage for {pipeline_lower.upper()}: "
+                f"gl run {pipeline_lower} <input.json> [output_dir][/red]"
+            )
+            raise typer.Exit(2)
+        input_path = Path(input_or_config)
+        if not input_path.exists():
+            console.print(f"[red]{pipeline_lower.upper()} input not found: {input_path}[/red]")
+            raise typer.Exit(2)
+        result = run_v2_profile_backend(
+            profile_key=pipeline_lower,
+            input_path=input_path,
+            output_dir=output_path,
+            strict=True,
+            allow_fallback=False,
+        )
+        _emit_profile_backend_result(pipeline_lower, result)
 
     # Generic GreenLang pipeline execution path.
     from greenlang.execution.runtime.executor import Executor

@@ -1,0 +1,28 @@
+{
+  "phase": "V2-Phase2",
+  "phase2_complete": true,
+  "generated_at_utc": "2026-03-28T02:08:12Z",
+  "reference_commit_sha": "fc93dc5ad40e4e87d1f78b57d0f85d1031e6e8d7",
+  "checklist": {
+    "compatibility_matrix_defined": true,
+    "pack_tier_policy_defined": true,
+    "pilot_cohort_defined": true,
+    "tier_registry_defined": true,
+    "runtime_tier_enforcement_enabled": true,
+    "policy_bundle_enforces_promotion_constraints": true,
+    "lifecycle_tests_added": true,
+    "ci_enforces_tier_registry_and_lifecycle_tests": true
+  },
+  "evidence_files": [
+    "docs/v2/COMPATIBILITY_MATRIX.md",
+    "docs/v2/PACK_TIERING_POLICY.md",
+    "docs/v2/PILOT_PACK_COHORT.md",
+    "greenlang/ecosystem/packs/v2_tier_registry.yaml",
+    "greenlang/v2/pack_tiers.py",
+    "greenlang/ecosystem/packs/installer.py",
+    "greenlang/governance/policy/bundles/v2_pack_tier_policy.rego",
+    "tests/v2/test_pack_tiers.py",
+    "tests/v2/test_pack_tier_lifecycle.py",
+    ".github/workflows/greenlang-v2-platform-ci.yml"
+  ]
+}

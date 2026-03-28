@@ -19,6 +19,7 @@ from enum import Enum
 import logging
 
 from pydantic import BaseModel, Field
+from greenlang.v2.agent_lifecycle import enforce_agent_state_for_runtime
 
 logger = logging.getLogger(__name__)
 
@@ -406,6 +407,14 @@ class AgentRegistry:
                 DeprecationWarning,
                 stacklevel=2
             )
+
+        # Enforce V2 lifecycle policy if canonical agent is listed in v2 registry.
+        # This blocks retired agents and deprecated agents without replacements.
+        try:
+            canonical_agent_id = f"greenlang.agent.{agent_name.lower().replace('_', '.')}"
+            enforce_agent_state_for_runtime(canonical_agent_id)
+        except ValueError as exc:
+            raise ValueError(str(exc))
 
         # Check experimental
         if agent_info.status == AgentStatus.EXPERIMENTAL and not self.config.allow_experimental:

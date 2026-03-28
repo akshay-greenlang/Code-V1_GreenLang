@@ -1,0 +1,78 @@
+registry_version: "2.0"
+connectors:
+  - connector_id: "sap-erp"
+    app_id: "GL-VCCI-Carbon-APP"
+    owner_team: "data-integration"
+    support_channel: "#gl-vcci-oncall"
+    reliability_profile:
+      retry:
+        max_attempts: 3
+        backoff_strategy: "exponential"
+        retryable_status_codes: [429, 502, 503]
+      timeout:
+        connect_ms: 1000
+        read_ms: 2000
+        overall_ms: 4000
+      circuit_breaker:
+        failure_rate_threshold: 0.5
+        open_state_seconds: 30
+        half_open_probe_requests: 2
+      idempotency_required: true
+      dead_letter_enabled: true
+  - connector_id: "oracle-erp"
+    app_id: "GL-VCCI-Carbon-APP"
+    owner_team: "data-integration"
+    support_channel: "#gl-vcci-oncall"
+    reliability_profile:
+      retry:
+        max_attempts: 3
+        backoff_strategy: "exponential"
+        retryable_status_codes: [429, 502, 503]
+      timeout:
+        connect_ms: 1000
+        read_ms: 2000
+        overall_ms: 4000
+      circuit_breaker:
+        failure_rate_threshold: 0.5
+        open_state_seconds: 30
+        half_open_probe_requests: 2
+      idempotency_required: true
+      dead_letter_enabled: true
+  - connector_id: "workday-erp"
+    app_id: "GL-CSRD-APP"
+    owner_team: "data-integration"
+    support_channel: "#gl-csrd-oncall"
+    reliability_profile:
+      retry:
+        max_attempts: 4
+        backoff_strategy: "exponential"
+        retryable_status_codes: [429, 500, 502, 503]
+      timeout:
+        connect_ms: 1000
+        read_ms: 2000
+        overall_ms: 4500
+      circuit_breaker:
+        failure_rate_threshold: 0.5
+        open_state_seconds: 45
+        half_open_probe_requests: 2
+      idempotency_required: true
+      dead_letter_enabled: true
+  - connector_id: "azure-iot"
+    app_id: "GL-EUDR-APP"
+    owner_team: "app-reliability"
+    support_channel: "#gl-eudr-oncall"
+    reliability_profile:
+      retry:
+        max_attempts: 3
+        backoff_strategy: "exponential"
+        retryable_status_codes: [429, 502, 503]
+      timeout:
+        connect_ms: 800
+        read_ms: 1200
+        overall_ms: 3000
+      circuit_breaker:
+        failure_rate_threshold: 0.4
+        open_state_seconds: 20
+        half_open_probe_requests: 2
+      idempotency_required: true
+      dead_letter_enabled: true

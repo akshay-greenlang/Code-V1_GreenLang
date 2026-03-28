@@ -46,6 +46,7 @@ import asyncio
 import hashlib
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 # Retry logic with exponential backoff
 from tenacity import (
@@ -79,6 +80,11 @@ TPayload = TypeVar('TPayload', bound=BaseModel)
 TConfig = TypeVar('TConfig', bound=BaseModel)
 
 logger = logging.getLogger(__name__)
+
+from greenlang.v2.reliability_runtime import (
+    classify_connector_error,
+    get_reliability_profile,
+)
 
 
 class HealthStatus(str, Enum):
@@ -148,6 +154,10 @@ class ConnectorConfig(BaseModel):
 
     # Mock mode for testing
     mock_mode: bool = Field(default=False, description="Use mock implementation")
+    reliability_registry_path: Optional[str] = Field(
+        default="applications/connectors/v2_connector_registry.yaml",
+        description="Optional v2 connector reliability registry path"
+    )
 
     class Config:
         frozen = False  # Allow modification for dynamic config
@@ -266,6 +276,23 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
         )
         self.logger = logging.getLogger(f"{__name__}.{config.connector_id}")
 
+        # Optional V2 profile binding: if connector_id is in registry, enforce profile values.
+        self.reliability_profile = None
+        if config.reliability_registry_path:
+            registry_path = Path(config.reliability_registry_path)
+            if not registry_path.is_absolute():
+                registry_path = (Path(__file__).resolve().parents[3] / registry_path).resolve()
+            self.reliability_profile = get_reliability_profile(config.connector_id, registry_path)
+            if self.reliability_profile:
+                config.max_retries = self.reliability_profile.retry.max_attempts
+                # Convert ms budget to conservative seconds for request wrapper.
+                config.timeout_seconds = max(1, int(self.reliability_profile.timeout.overall_ms / 1000))
+                config.circuit_breaker_threshold = max(
+                    1,
+                    int(self.reliability_profile.circuit_breaker.failure_rate_threshold * 10),
+                )
+                config.circuit_breaker_timeout = self.reliability_profile.circuit_breaker.open_state_seconds
+
         # Circuit breaker initialization
         if config.circuit_breaker_enabled:
             self.circuit_breaker = CircuitBreaker(
@@ -275,6 +302,9 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             )
         else:
             self.circuit_breaker = None
+
+        self._internal_circuit_open_until: Optional[datetime] = None
+        self._consecutive_failures: int = 0
 
         # Connection pool (placeholder - implement in subclass if needed)
         self._connection_pool: Optional[Any] = None
@@ -391,6 +421,8 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
         timeout = timeout or self.config.timeout_seconds
 
         try:
+            self._enforce_internal_circuit_state()
+
             # Check health before fetching
             if not await self.health_check():
                 self.logger.warning(f"Health check failed for {self.config.connector_id}")
@@ -404,6 +436,8 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             # Success - update metrics
             self.metrics.successful_requests += 1
             self.metrics.last_success_time = datetime.now(timezone.utc)
+            self._consecutive_failures = 0
+            self._internal_circuit_open_until = None
 
             # Calculate response time
             response_time = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
@@ -422,20 +456,25 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
         except CircuitBreakerError as e:
             self.metrics.failed_requests += 1
             self.metrics.circuit_breaker_opens += 1
+            self._record_failure_for_circuit()
             self.logger.error(f"Circuit breaker open for {self.config.connector_id}: {e}")
             raise
 
         except asyncio.TimeoutError as e:
             self.metrics.failed_requests += 1
             self.metrics.last_failure_time = datetime.now(timezone.utc)
+            self._record_failure_for_circuit()
             self.logger.error(f"Request timeout for {self.config.connector_id} after {timeout}s")
             raise TimeoutError(f"Request timed out after {timeout}s") from e
 
         except Exception as e:
             self.metrics.failed_requests += 1
             self.metrics.last_failure_time = datetime.now(timezone.utc)
+            self._record_failure_for_circuit()
+            error_class = classify_connector_error(e).value
             self.logger.error(
-                f"Failed to fetch data from {self.config.connector_id}: {e}",
+                f"Failed to fetch data from {self.config.connector_id}: {e} "
+                f"(error_class={error_class})",
                 exc_info=True
             )
             raise
@@ -470,6 +509,24 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             return await self._fetch_data_impl(query)
 
         return await _fetch_with_tenacity()
+
+    def _enforce_internal_circuit_state(self) -> None:
+        if self._internal_circuit_open_until is None:
+            return
+        if datetime.now(timezone.utc) < self._internal_circuit_open_until:
+            raise CircuitBreakerError(
+                f"internal circuit open for {self.config.connector_id} until "
+                f"{self._internal_circuit_open_until.isoformat()}"
+            )
+        self._internal_circuit_open_until = None
+        self._consecutive_failures = 0
+
+    def _record_failure_for_circuit(self) -> None:
+        self._consecutive_failures += 1
+        if self._consecutive_failures >= self.config.circuit_breaker_threshold:
+            self._internal_circuit_open_until = datetime.now(timezone.utc) + timedelta(
+                seconds=self.config.circuit_breaker_timeout
+            )
 
     async def health_check(self) -> bool:
         """
@@ -544,11 +601,17 @@ class BaseConnector(ABC, Generic[TQuery, TPayload, TConfig]):
             )
 
         # Calculate query hash
-        query_json = query.json(sort_keys=True)
+        if hasattr(query, "model_dump_json"):
+            query_json = query.model_dump_json()
+        else:
+            query_json = query.json(sort_keys=True)
         query_hash = hashlib.sha256(query_json.encode()).hexdigest()
 
         # Calculate response hash
-        payload_json = payload.json(sort_keys=True)
+        if hasattr(payload, "model_dump_json"):
+            payload_json = payload.model_dump_json()
+        else:
+            payload_json = payload.json(sort_keys=True)
         response_hash = hashlib.sha256(payload_json.encode()).hexdigest()
 
         return ConnectorProvenance(

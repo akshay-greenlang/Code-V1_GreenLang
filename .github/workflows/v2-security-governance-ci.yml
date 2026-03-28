@@ -1,0 +1,53 @@
+name: V2 Security Governance CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "release/**"
+    paths:
+      - "greenlang/v2/**"
+      - "greenlang/governance/policy/bundles/**"
+      - "tests/v2/**"
+      - ".github/workflows/v2-security-governance-ci.yml"
+  pull_request:
+    paths:
+      - "greenlang/v2/**"
+      - "greenlang/governance/policy/bundles/**"
+      - "tests/v2/**"
+      - ".github/workflows/v2-security-governance-ci.yml"
+
+jobs:
+  v2-security-governance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest bandit pip-audit
+
+      - name: V2 policy file presence
+        run: |
+          test -f greenlang/governance/policy/bundles/v2_pack_tier_policy.rego
+
+      - name: Run V2 tests
+        run: |
+          pytest -q tests/v2
+
+      - name: Bandit security scan
+        run: |
+          bandit -q -r greenlang/v2
+
+      - name: Dependency vulnerability scan
+        run: |
+          pip-audit --strict

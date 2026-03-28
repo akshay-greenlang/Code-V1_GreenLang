@@ -1,0 +1,46 @@
+{
+  "report_id": "greenlang-v2-90-day-closure",
+  "generated_at_utc": "2026-03-28T02:00:00Z",
+  "phase": "V2 Scale and Productization",
+  "scope": {
+    "apps_target": "6-8",
+    "packs_target": "35+",
+    "quality_model": "release-train with mandatory blockers"
+  },
+  "gates": {
+    "v2_validate_contracts": "configured",
+    "v2_runtime_checks": "configured",
+    "v2_docs_checks": "configured",
+    "v2_gate": "configured",
+    "tests_v2": "configured",
+    "frontend_ux_blockers": "configured",
+    "security_governance_blockers": "configured"
+  },
+  "artifacts": {
+    "charter": "docs/v2/PHASE0_CHARTER.md",
+    "scope": "docs/v2/V2_SCOPE_AND_DEFERRED.md",
+    "rfc": "docs/v2/RFC_PROCESS.md",
+    "ownership": "docs/v2/OWNERSHIP_MATRIX.md",
+    "compatibility_matrix": "docs/v2/COMPATIBILITY_MATRIX.md",
+    "pack_policy": "docs/v2/PACK_TIERING_POLICY.md",
+    "agent_policy": "docs/v2/AGENT_LIFECYCLE_POLICY.md",
+    "reliability_standard": "docs/v2/CONNECTOR_RELIABILITY_STANDARD.md",
+    "security_governance": "docs/v2/SECURITY_GOVERNANCE.md",
+    "determinism_contract": "docs/v2/DETERMINISM_CONTRACT.md",
+    "release_trains": "docs/v2/RELEASE_TRAINS.md",
+    "ux_shell": "docs/v2/UX_ENTERPRISE_SHELL.md",
+    "handbook": "docs/v2/PLATFORM_HANDBOOK.md",
+    "oncall_slos": "docs/v2/ONCALL_AND_SLOS.md",
+    "migration_playbooks": "docs/v2/MIGRATION_PLAYBOOKS.md",
+    "uat_results": "docs/v2/UAT_RESULTS.md",
+    "rc_soak_log": "docs/v2/RC_SOAK_LOG.md",
+    "go_no_go_record": "docs/v2/GO_NO_GO_RECORD.md"
+  },
+  "workflows": [
+    ".github/workflows/greenlang-v2-platform-ci.yml",
+    ".github/workflows/v2-security-governance-ci.yml",
+    ".github/workflows/v2-release-train.yml",
+    ".github/workflows/v2-frontend-ux-ci.yml"
+  ],
+  "decision": "go"
+}

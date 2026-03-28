@@ -1,0 +1,47 @@
+{
+  "phase": "V2-Phase0",
+  "phase0_complete": true,
+  "generated_at_utc": "2026-03-28T01:34:17Z",
+  "reference_commit_sha": "fc93dc5ad40e4e87d1f78b57d0f85d1031e6e8d7",
+  "checklist": {
+    "charter_published": true,
+    "scope_and_deferred_published": true,
+    "rfc_process_frozen": true,
+    "ownership_matrix_published": true,
+    "app_shortlist_defined": true,
+    "pack_targets_defined": true,
+    "quality_bars_defined": true,
+    "release_authority_model_defined": true,
+    "named_owners_and_gate_authority_defined": true,
+    "signed_charter_record_present": true
+  },
+  "approvers": [
+    {
+      "role": "Release Board Chair",
+      "name": "Karan Malhotra",
+      "decision": "approved"
+    },
+    {
+      "role": "Architecture Board Chair",
+      "name": "Akshay Kulkarni",
+      "decision": "approved"
+    },
+    {
+      "role": "Security Council Lead",
+      "name": "Ananya Gupta",
+      "decision": "approved"
+    },
+    {
+      "role": "Program PMO Lead",
+      "name": "Devika Rao",
+      "decision": "approved"
+    }
+  ],
+  "evidence_files": [
+    "docs/v2/PHASE0_CHARTER.md",
+    "docs/v2/V2_SCOPE_AND_DEFERRED.md",
+    "docs/v2/RFC_PROCESS.md",
+    "docs/v2/OWNERSHIP_MATRIX.md",
+    "docs/v2/PHASE0_SIGNOFF.md"
+  ]
+}
